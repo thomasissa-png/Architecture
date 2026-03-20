@@ -2,8 +2,8 @@
 
 ## Contexte Produit
 
-VisiRenov est un outil de home staging virtuel par IA destine aux professionnels de l'immobilier.
-L'utilisateur uploade des photos de biens bruts (vides) et l'IA genere des visuels meubles dans un style choisi.
+VisiRenov est un outil de home staging virtuel par IA pour architectes, marchands de biens et particuliers.
+L'utilisateur uploade des photos de pieces vides et l'IA genere des visuels meubles dans un style choisi parmi 12 ambiances.
 
 - **Stack** : Next.js 14, React, TypeScript, Tailwind CSS, App Router
 - **APIs IA** : OpenAI GPT-image-1 (principal) + Replicate SDXL (fallback)
@@ -23,21 +23,25 @@ app/
     route.ts        — API generation IA (OpenAI + Replicate fallback)
 components/
   UploadZone.tsx    — Zone drag & drop (react-dropzone, max 5 photos, 10Mo)
-  StylePicker.tsx   — Choix de style (Scandinave, Industriel, Contemporain, Custom)
-  ImageComparator.tsx — Comparateur avant/apres (react-compare-slider)
+  StylePicker.tsx   — Choix de style (12 styles + Custom avec emoji identifiers)
+  ImageComparator.tsx — Comparateur avant/apres + partage (WhatsApp, copier, native share)
   StepIndicator.tsx — Indicateur de progression 3 etapes
 agents/
   ux-director.md    — Agent UX Director (Maxime Renault, grille 10 criteres)
+  persona-claire-architecte.md  — Persona Claire, 40 ans, architecte
+  persona-thomas-marchand.md    — Persona Thomas, 35 ans, marchand de biens
+  persona-lea-acheteuse.md      — Persona Lea, 32 ans, acheteuse particuliere
 ```
 
 ## Parcours Utilisateur (3 etapes)
 
 1. **Upload** — Glisser/deposer ou clic, JPG/PNG/WEBP, max 5 photos, 10Mo
-2. **Style** — Choix parmi 3 predefinis + mode personnalise (textarea)
+2. **Style** — Choix parmi 12 styles predefinis + mode personnalise (textarea)
 3. **Resultat** — Comparateur slider avant/apres + telechargement HD
 
 ## Corrections UX Appliquees
 
+### Sprint 1 — Audit UX Director
 1. Auto-scroll entre etapes (upload -> style -> generer -> resultats)
 2. Bouton supprimer visible sur mobile (pas hover-only)
 3. Feedback visuel apres upload (toast vert avec checkmark)
@@ -45,6 +49,17 @@ agents/
 5. Bouton "Reessayer" relance la generation directement (handleRetry)
 6. Timer + estimation au loader de generation
 7. Focus-visible:ring sur tous les elements interactifs + ARIA roles
+
+### Sprint 2 — Feedback Personas
+8. 12 styles au lieu de 3 (Japandi, Art Deco, Mid-Century, Boheme, Haussmannien, Mediterraneen, Cosy, Wabi-Sabi, Maximaliste)
+9. Hero multi-cible (Architectes, Marchands, Particuliers) avec pills
+10. Visuels Hero enrichis (SVG architectural avant/apres au lieu de rectangles gris)
+11. Boutons de partage (Telecharger HD, Copier image, WhatsApp, Partager natif mobile)
+12. Batch export "Tout telecharger" quand plusieurs resultats
+13. Section Pricing 3 tiers (Gratuit / Pro 29EUR / Business 79EUR)
+14. Header avec nav (Tarifs + CTA Essayer)
+15. Footer corrige : annee 2026, messaging ouvert a tous
+16. Social proof line sous le Hero (12 styles, 10-30s, HD gratuit)
 
 ## Agents Disponibles
 
