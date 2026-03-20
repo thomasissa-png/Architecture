@@ -16,9 +16,14 @@ const config: Config = {
           light: "#9BB594",
           dark: "#5F7A58",
         },
+        muted: "#6B6B6D",
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
+      },
+      letterSpacing: {
+        tight: "-0.02em",
+        tighter: "-0.03em",
       },
     },
   },

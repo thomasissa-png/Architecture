@@ -39,50 +39,43 @@ export default function UploadZone({ files, onFilesChange }: UploadZoneProps) {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div
         {...getRootProps()}
-        className={`relative border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all duration-300 ${
+        className={`relative border border-dashed rounded-2xl p-14 text-center cursor-pointer transition-all duration-300 ${
           isDragActive
-            ? "border-sage bg-sage/5 scale-[1.02]"
+            ? "border-foreground bg-foreground/[0.02] scale-[1.01]"
             : files.length >= MAX_FILES
-            ? "border-gray-200 bg-gray-50 cursor-not-allowed opacity-60"
-            : "border-gray-300 hover:border-sage hover:bg-sage/5"
+            ? "border-gray-200 bg-gray-50/50 cursor-not-allowed opacity-50"
+            : "border-gray-300 hover:border-gray-400"
         }`}
       >
         <input {...getInputProps()} />
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-14 h-14 rounded-full bg-sage/10 flex items-center justify-center">
-            <svg
-              className="w-7 h-7 text-sage"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-          </div>
+        <div className="flex flex-col items-center gap-4">
+          <svg
+            className={`w-8 h-8 transition-colors duration-300 ${
+              isDragActive ? "text-foreground" : "text-gray-300"
+            }`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={1}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+          </svg>
           {isDragActive ? (
-            <p className="text-sage font-medium">Déposez vos photos ici...</p>
+            <p className="text-foreground font-medium text-sm">Déposez ici…</p>
           ) : files.length >= MAX_FILES ? (
-            <p className="text-gray-400">
-              Nombre maximum de photos atteint ({MAX_FILES})
+            <p className="text-gray-400 text-sm font-light">
+              Maximum atteint ({MAX_FILES} photos)
             </p>
           ) : (
             <>
-              <p className="text-foreground font-medium">
-                Glissez-déposez vos photos ici
+              <p className="text-foreground text-sm font-medium">
+                Glissez vos photos ici
               </p>
-              <p className="text-gray-400 text-sm">
-                ou cliquez pour sélectionner — JPG, PNG, WEBP (max 10 Mo)
-              </p>
-              <p className="text-gray-400 text-xs">
-                Jusqu&apos;à {MAX_FILES} photos, traitées une par une
+              <p className="text-muted text-xs font-light">
+                ou cliquez pour sélectionner — JPG, PNG, WEBP — max 10 Mo — jusqu&apos;à {MAX_FILES} photos
               </p>
             </>
           )}
@@ -90,8 +83,8 @@ export default function UploadZone({ files, onFilesChange }: UploadZoneProps) {
       </div>
 
       {fileRejections.length > 0 && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-          <p className="text-red-600 text-sm">
+        <div className="bg-red-50/50 border border-red-200/60 rounded-xl p-4">
+          <p className="text-red-500/80 text-xs font-light">
             {fileRejections.some((r) =>
               r.errors.some((e) => e.code === "file-too-large")
             )
@@ -102,10 +95,10 @@ export default function UploadZone({ files, onFilesChange }: UploadZoneProps) {
       )}
 
       {files.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
           {files.map((file, index) => (
             <div key={`${file.name}-${index}`} className="relative group">
-              <div className="aspect-[4/3] rounded-lg overflow-hidden bg-gray-100">
+              <div className="aspect-[4/3] rounded-xl overflow-hidden bg-gray-100">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={URL.createObjectURL(file)}
@@ -115,11 +108,14 @@ export default function UploadZone({ files, onFilesChange }: UploadZoneProps) {
               </div>
               <button
                 onClick={() => removeFile(index)}
-                className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity shadow-md hover:bg-red-600"
+                aria-label={`Supprimer ${file.name}`}
+                className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-foreground text-background rounded-full flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 &times;
               </button>
-              <p className="text-xs text-gray-400 mt-1 truncate">{file.name}</p>
+              <p className="text-[10px] text-muted/60 mt-1.5 truncate font-light">
+                {file.name}
+              </p>
             </div>
           ))}
         </div>
