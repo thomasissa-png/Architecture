@@ -2,9 +2,15 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "VisiRénov — Home Staging IA pour Marchands de Biens",
+  title: "VisiRénov — Home Staging IA | Architectes, Marchands de Biens & Particuliers",
   description:
-    "Visualisez le potentiel de vos biens en quelques secondes grâce à l'intelligence artificielle. Home staging virtuel pour professionnels de l'immobilier.",
+    "Visualisez vos espaces meublés par l'IA en quelques secondes. 12 styles de décoration, téléchargement HD gratuit. Pour architectes, marchands de biens et particuliers.",
+  keywords: ["home staging", "IA", "décoration intérieure", "virtual staging", "immobilier", "architecture", "meuble par IA"],
+  openGraph: {
+    title: "VisiRénov — Meublez vos espaces par l'IA",
+    description: "Uploadez une photo de pièce vide, choisissez un style, recevez un visuel meublé en secondes.",
+    type: "website",
+  },
 };
 
 export default function RootLayout({

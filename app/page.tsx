@@ -5,6 +5,7 @@ import StepIndicator from "@/components/StepIndicator";
 import UploadZone from "@/components/UploadZone";
 import StylePicker, { StyleOption } from "@/components/StylePicker";
 import ImageComparator from "@/components/ImageComparator";
+import { processImage, isLikelyInterior } from "@/lib/image-utils";
 
 interface GenerationResult {
   originalUrl: string;
@@ -81,14 +82,6 @@ export default function Home() {
       ? 2
       : 1;
 
-  const fileToBase64 = (file: File): Promise<string> =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-
   const handleGenerate = useCallback(async () => {
     if (files.length === 0) return;
     const stylePrompt = selectedStyle?.prompt || customPrompt;
@@ -98,39 +91,88 @@ export default function Home() {
     setError(null);
     setResults([]);
 
-    for (let i = 0; i < files.length; i++) {
-      setCurrentProcessing(i);
-      try {
-        const base64 = await fileToBase64(files[i]);
-        const response = await fetch("/api/generate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ image: base64, stylePrompt }),
-        });
+    // Step 1: Validate all images (fast, parallel)
+    try {
+      const validations = await Promise.all(files.map((f) => isLikelyInterior(f)));
+      const invalidIndex = validations.findIndex((v) => !v.pass);
+      if (invalidIndex !== -1) {
+        setError(
+          `"${files[invalidIndex].name}" ne semble pas \u00eatre une photo d\u2019int\u00e9rieur. Uploadez une photo de pi\u00e8ce pour un meilleur r\u00e9sultat.`
+        );
+        setIsGenerating(false);
+        return;
+      }
+    } catch {
+      // Validation failed — proceed anyway (fail open)
+    }
 
-        if (!response.ok) {
+    // Step 2: Process images (resize/compress) in parallel
+    let processedImages: { base64: string; width: number; height: number; fileIndex: number }[];
+    try {
+      const processed = await Promise.all(files.map((f) => processImage(f)));
+      processedImages = processed.map((p, i) => ({ ...p, fileIndex: i }));
+    } catch {
+      setError("Erreur lors du traitement des images. V\u00e9rifiez vos fichiers.");
+      setIsGenerating(false);
+      return;
+    }
+
+    // Step 3: Generate in parallel batches (max 2 concurrent)
+    const MAX_CONCURRENT = 2;
+    const allResults: GenerationResult[] = [];
+    let hasError = false;
+
+    for (let batch = 0; batch < processedImages.length; batch += MAX_CONCURRENT) {
+      if (hasError) break;
+      const chunk = processedImages.slice(batch, batch + MAX_CONCURRENT);
+      setCurrentProcessing(batch);
+
+      const batchResults = await Promise.allSettled(
+        chunk.map(async (img) => {
+          const response = await fetch("/api/generate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              image: img.base64,
+              stylePrompt,
+              width: img.width,
+              height: img.height,
+            }),
+          });
+
+          if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.error || "Erreur lors de la g\u00e9n\u00e9ration");
+          }
+
           const data = await response.json();
-          throw new Error(data.error || "Erreur lors de la g\u00e9n\u00e9ration");
-        }
-
-        const data = await response.json();
-        setResults((prev) => [
-          ...prev,
-          {
-            originalUrl: URL.createObjectURL(files[i]),
+          return {
+            originalUrl: URL.createObjectURL(files[img.fileIndex]),
             generatedUrl: data.image,
             model: data.model,
-          },
-        ]);
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Erreur lors de la g\u00e9n\u00e9ration"
-        );
-        break;
+          } as GenerationResult;
+        })
+      );
+
+      for (const result of batchResults) {
+        if (result.status === "fulfilled") {
+          allResults.push(result.value);
+          setResults((prev) => [...prev, result.value]);
+        } else {
+          hasError = true;
+          setError(
+            result.reason instanceof Error
+              ? result.reason.message
+              : "Erreur lors de la g\u00e9n\u00e9ration"
+          );
+        }
       }
     }
+
     setIsGenerating(false);
-    scrollToElement("step-results");
+    if (allResults.length > 0) {
+      scrollToElement("step-results");
+    }
   }, [files, selectedStyle, customPrompt]);
 
   const handleRetry = useCallback(() => {
@@ -380,25 +422,61 @@ export default function Home() {
             </div>
           )}
 
-          {/* Loading state */}
+          {/* Loading state with blur preview */}
           {isGenerating && (
-            <div className="text-center py-12">
-              <div className="inline-flex items-center gap-4 bg-background border border-gray-200/80 rounded-2xl px-8 py-5 shadow-sm">
-                <div className="flex gap-1.5">
-                  <div className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                  <div className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                  <div className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
-                </div>
-                <div>
-                  <p className="text-sm text-muted font-light">
-                    L&apos;IA analyse et meuble votre bien&hellip;
-                  </p>
-                  <p className="text-[10px] text-muted/50 font-light mt-1">
-                    {generationElapsed < 10
-                      ? `${generationElapsed}s — Estimation : 10-30 secondes`
-                      : `${generationElapsed}s — Presque termin\u00e9\u2026`}
-                  </p>
-                </div>
+            <div className="space-y-6 py-8">
+              {/* Blur preview placeholders */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {files.map((file, i) => {
+                  const done = i < results.length;
+                  const active = i >= currentProcessing && i < currentProcessing + 2 && !done;
+                  return (
+                    <div key={i} className="relative rounded-2xl overflow-hidden border border-gray-200/60">
+                      <div className="aspect-[4/3]">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={URL.createObjectURL(file)}
+                          alt=""
+                          className={`w-full h-full object-cover transition-all duration-700 ${done ? "" : "blur-sm brightness-95"}`}
+                        />
+                      </div>
+                      <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-500 ${done ? "opacity-0" : "opacity-100"}`}>
+                        {active ? (
+                          <div className="bg-white/90 backdrop-blur-sm rounded-xl px-4 py-2.5 flex items-center gap-3 shadow-sm">
+                            <div className="flex gap-1">
+                              <div className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                              <div className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                              <div className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                            </div>
+                            <span className="text-xs text-muted font-light">G&eacute;n&eacute;ration&hellip;</span>
+                          </div>
+                        ) : done ? null : (
+                          <div className="bg-white/80 backdrop-blur-sm rounded-xl px-4 py-2 shadow-sm">
+                            <span className="text-xs text-muted/60 font-light">En attente</span>
+                          </div>
+                        )}
+                      </div>
+                      {done && (
+                        <div className="absolute top-2 right-2 w-6 h-6 bg-sage rounded-full flex items-center justify-center">
+                          <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Timer */}
+              <div className="text-center">
+                <p className="text-xs text-muted/50 font-light">
+                  {generationElapsed < 10
+                    ? `${generationElapsed}s — Estimation : 10-30 secondes par image`
+                    : generationElapsed < 30
+                    ? `${generationElapsed}s — G\u00e9n\u00e9ration en cours\u2026`
+                    : `${generationElapsed}s — Presque termin\u00e9\u2026`}
+                </p>
               </div>
             </div>
           )}
