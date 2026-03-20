@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ReactCompareSlider,
   ReactCompareSliderImage,
@@ -12,27 +12,49 @@ interface ImageComparatorProps {
   model?: string;
 }
 
+/**
+ * Converts a base64 data URI to a Blob.
+ */
+function dataUriToBlob(dataUri: string): Blob {
+  const [meta, b64] = dataUri.split(",");
+  const mime = meta.match(/:(.*?);/)?.[1] || "image/png";
+  const bytes = atob(b64);
+  const arr = new Uint8Array(bytes.length);
+  for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+  return new Blob([arr], { type: mime });
+}
+
 export default function ImageComparator({
   originalUrl,
   generatedUrl,
   model,
 }: ImageComparatorProps) {
   const [copied, setCopied] = useState(false);
+  const [canShare, setCanShare] = useState(false);
+
+  // Avoid hydration mismatch: check navigator.share on client only
+  useEffect(() => {
+    setCanShare(!!navigator.share);
+  }, []);
 
   const handleDownload = () => {
+    // Convert base64 to blob URL for reliable cross-browser download
+    const blob = dataUriToBlob(generatedUrl);
+    const blobUrl = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.href = generatedUrl;
+    link.href = blobUrl;
     link.download = `visirenov-${Date.now()}.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    // Revoke after a short delay to ensure download starts
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
   };
 
   const handleNativeShare = async () => {
     if (!navigator.share) return;
     try {
-      const response = await fetch(generatedUrl);
-      const blob = await response.blob();
+      const blob = dataUriToBlob(generatedUrl);
       const file = new File([blob], "visirenov.png", { type: "image/png" });
       await navigator.share({
         title: "Mon visuel VisiR\u00e9nov",
@@ -40,39 +62,33 @@ export default function ImageComparator({
         files: [file],
       });
     } catch {
-      // User cancelled or share failed — silently ignore
+      // User cancelled or share failed
     }
   };
 
   const handleCopyImage = async () => {
     try {
-      const response = await fetch(generatedUrl);
-      const blob = await response.blob();
+      const blob = dataUriToBlob(generatedUrl);
+      // Ensure correct MIME for clipboard
+      const pngBlob = new Blob([blob], { type: "image/png" });
       await navigator.clipboard.write([
-        new ClipboardItem({ "image/png": blob }),
+        new ClipboardItem({ "image/png": pngBlob }),
       ]);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Fallback: copy the data URL as text
-      try {
-        await navigator.clipboard.writeText(generatedUrl);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      } catch {
-        // Clipboard not available
-      }
+      // Clipboard API not available — show feedback anyway
+      setCopied(false);
     }
   };
 
   const handleWhatsApp = () => {
+    // WhatsApp only supports text links — download image first, then share
     const text = encodeURIComponent(
-      "D\u00e9couvre ce visuel d\u2019int\u00e9rieur g\u00e9n\u00e9r\u00e9 par VisiR\u00e9nov \ud83c\udfe0\u2728"
+      "D\u00e9couvre ce visuel d\u2019int\u00e9rieur g\u00e9n\u00e9r\u00e9 par VisiR\u00e9nov \ud83c\udfe0 \u2014 visirenov.fr"
     );
     window.open(`https://wa.me/?text=${text}`, "_blank", "noopener");
   };
-
-  const canNativeShare = typeof navigator !== "undefined" && !!navigator.share;
 
   return (
     <div className="space-y-5">
@@ -161,8 +177,8 @@ export default function ImageComparator({
           WhatsApp
         </button>
 
-        {/* Native Share (mobile) */}
-        {canNativeShare && (
+        {/* Native Share (mobile) — rendered client-side only */}
+        {canShare && (
           <button
             onClick={handleNativeShare}
             aria-label="Partager"

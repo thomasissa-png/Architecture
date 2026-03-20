@@ -3,11 +3,14 @@ import OpenAI from "openai";
 import Replicate from "replicate";
 
 // ─── Rate Limiting (in-memory, IP-based) ────────────────────────────
+// Note: On serverless (Vercel), this is per-instance and resets on cold starts.
+// For production, replace with Redis/Upstash rate limiting.
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 const RATE_LIMIT_WINDOW = 60_000; // 1 minute
 const RATE_LIMIT_MAX = 10; // max requests per window
 
 function checkRateLimit(ip: string): boolean {
+  // Lazy cleanup: remove expired entries when checking
   const now = Date.now();
   const entry = rateLimitMap.get(ip);
 
@@ -24,17 +27,6 @@ function checkRateLimit(ip: string): boolean {
   return true;
 }
 
-// Periodic cleanup to prevent memory leaks (every 5 min)
-if (typeof globalThis !== "undefined") {
-  const cleanup = () => {
-    const now = Date.now();
-    rateLimitMap.forEach((entry, ip) => {
-      if (now > entry.resetAt) rateLimitMap.delete(ip);
-    });
-  };
-  setInterval(cleanup, 5 * 60_000).unref?.();
-}
-
 // ─── Prompt Engineering ─────────────────────────────────────────────
 const ARCHITECTURAL_CONSTRAINTS = [
   "Keep the exact room architecture, walls, floors, ceiling, windows, doors and lighting completely unchanged.",
@@ -46,11 +38,11 @@ const ARCHITECTURAL_CONSTRAINTS = [
   "The result must look like a high-end real estate photography with professional staging — photorealistic, not a 3D render.",
 ].join(" ");
 
+const AVOID_TERMS = "Do not produce: blurry, distorted, cartoon, painting, 3D render, changed architecture, altered proportions, floating furniture, watermark or text.";
+
 function buildPrompt(stylePrompt: string): string {
   return `${ARCHITECTURAL_CONSTRAINTS} Style: ${stylePrompt}. The staging should feel curated and intentional, as if done by a professional interior designer for a luxury real estate listing. ${AVOID_TERMS}`;
 }
-
-const AVOID_TERMS = "Do not produce: blurry, distorted, cartoon, painting, 3D render, changed architecture, altered proportions, floating furniture, watermark or text.";
 
 // ─── Aspect Ratio Detection ────────────────────────────────────────
 function getOpenAISize(width?: number, height?: number): "1024x1024" | "1536x1024" | "1024x1536" {
@@ -70,9 +62,10 @@ async function tryOpenAI(
 ): Promise<{ image: string; model: string }> {
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+  // Client sends JPEG — label the File correctly
   const imageBuffer = Buffer.from(imageBase64, "base64");
-  const imageFile = new File([imageBuffer], "input.png", {
-    type: "image/png",
+  const imageFile = new File([imageBuffer], "input.jpg", {
+    type: "image/jpeg",
   });
 
   const size = getOpenAISize(width, height);
@@ -83,6 +76,7 @@ async function tryOpenAI(
     prompt,
     n: 1,
     size,
+    response_format: "b64_json",
   });
 
   const outputBase64 = response.data?.[0]?.b64_json;
@@ -96,44 +90,49 @@ async function tryOpenAI(
   };
 }
 
-// ─── Replicate Fallback (Flux for inpainting) ──────────────────────
+// ─── Replicate Fallback (SDXL img2img — proper image editing) ──────
 async function tryReplicate(
   imageBase64: string,
   prompt: string
 ): Promise<{ image: string; model: string }> {
   const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
 
-  const dataUri = `data:image/png;base64,${imageBase64}`;
+  const dataUri = `data:image/jpeg;base64,${imageBase64}`;
 
+  // Use stability-ai/sdxl in img2img mode with LOW prompt_strength
+  // to preserve room architecture while adding furniture
   const output = await replicate.run(
-    "black-forest-labs/flux-1.1-pro" as `${string}/${string}`,
+    "stability-ai/sdxl:7762fd07cf82c948538e41f63f77d685e02b063e37e496e96eefd46c929f9bdc" as `${string}/${string}:${string}`,
     {
       input: {
-        prompt: prompt,
         image: dataUri,
-        prompt_upsampling: true,
+        prompt: `Interior design photo, professionally staged room. ${prompt}`,
+        negative_prompt:
+          "blurry, distorted, different room, changed architecture, different perspective, unrealistic, cartoon, painting, 3D render, modified walls, modified windows, modified floor plan, changed ceiling, altered proportions, floating furniture, watermark, text",
+        prompt_strength: 0.35,
         num_outputs: 1,
-        output_format: "png",
-        guidance: 3.5,
-        steps: 28,
+        guidance_scale: 7.5,
+        num_inference_steps: 35,
+        scheduler: "K_EULER",
       },
     }
   );
 
-  // Flux returns a URL or array of URLs
-  const outputUrl = Array.isArray(output) ? output[0] : output;
-  if (!outputUrl || typeof outputUrl !== "string") {
+  // SDXL returns an array of URLs
+  const outputArray = output as string[];
+  if (!outputArray || outputArray.length === 0) {
     throw new Error("No image returned from Replicate");
   }
 
-  // Fetch and convert to base64
-  const imageResponse = await fetch(outputUrl);
+  // Fetch the image and convert to base64
+  const imageUrl = outputArray[0];
+  const imageResponse = await fetch(imageUrl);
   const arrayBuffer = await imageResponse.arrayBuffer();
   const base64 = Buffer.from(arrayBuffer).toString("base64");
 
   return {
     image: `data:image/png;base64,${base64}`,
-    model: "Flux 1.1 Pro",
+    model: "Replicate SDXL",
   };
 }
 
@@ -161,7 +160,7 @@ export async function POST(request: NextRequest) {
       height?: number;
     };
 
-    if (!image || !stylePrompt) {
+    if (!image || !stylePrompt || !stylePrompt.trim()) {
       return NextResponse.json(
         { error: "Image et style requis" },
         { status: 400 }
@@ -169,7 +168,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Strip data URI prefix if present
-    const base64Image = image.replace(/^data:image\/\w+;base64,/, "");
+    const base64Image = image.replace(/^data:image\/[\w+]+;base64,/, "");
 
     // Check rough size (base64 is ~33% larger than binary)
     const estimatedSize = (base64Image.length * 3) / 4;
@@ -180,7 +179,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const prompt = buildPrompt(stylePrompt);
+    const prompt = buildPrompt(stylePrompt.trim());
 
     // Try OpenAI first, then Replicate as fallback
     if (process.env.OPENAI_API_KEY) {

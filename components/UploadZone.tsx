@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState, useEffect, useMemo } from "react";
 import { useDropzone } from "react-dropzone";
 
 interface UploadZoneProps {
@@ -21,6 +21,18 @@ export default function UploadZone({ files, onFilesChange }: UploadZoneProps) {
     return () => clearTimeout(timer);
   }, [uploadFeedback]);
 
+  // Stable object URLs — created once per file, revoked on cleanup
+  const fileUrls = useMemo(() => {
+    return files.map((file) => URL.createObjectURL(file));
+  }, [files]);
+
+  // Revoke old URLs when files change
+  useEffect(() => {
+    return () => {
+      fileUrls.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [fileUrls]);
+
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       const remaining = MAX_FILES - files.length;
@@ -29,8 +41,8 @@ export default function UploadZone({ files, onFilesChange }: UploadZoneProps) {
         onFilesChange([...files, ...newFiles]);
         setUploadFeedback(
           newFiles.length === 1
-            ? "Photo ajoutée avec succès"
-            : `${newFiles.length} photos ajoutées avec succès`
+            ? "Photo ajout\u00e9e avec succ\u00e8s"
+            : `${newFiles.length} photos ajout\u00e9es avec succ\u00e8s`
         );
       }
     },
@@ -44,6 +56,8 @@ export default function UploadZone({ files, onFilesChange }: UploadZoneProps) {
         "image/jpeg": [".jpg", ".jpeg"],
         "image/png": [".png"],
         "image/webp": [".webp"],
+        "image/heic": [".heic"],
+        "image/heif": [".heif"],
       },
       maxSize: MAX_SIZE,
       maxFiles: MAX_FILES - files.length,
@@ -80,7 +94,7 @@ export default function UploadZone({ files, onFilesChange }: UploadZoneProps) {
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
           </svg>
           {isDragActive ? (
-            <p className="text-foreground font-medium text-sm">Déposez ici…</p>
+            <p className="text-foreground font-medium text-sm">D&eacute;posez ici&hellip;</p>
           ) : files.length >= MAX_FILES ? (
             <p className="text-gray-400 text-sm font-light">
               Maximum atteint ({MAX_FILES} photos)
@@ -91,7 +105,7 @@ export default function UploadZone({ files, onFilesChange }: UploadZoneProps) {
                 Glissez vos photos ici
               </p>
               <p className="text-muted text-xs font-light">
-                ou cliquez pour sélectionner — JPG, PNG, WEBP — max 10 Mo — jusqu&apos;à {MAX_FILES} photos
+                ou cliquez pour s&eacute;lectionner — JPG, PNG, WEBP, HEIC — max 10 Mo — jusqu&apos;&agrave; {MAX_FILES} photos
               </p>
             </>
           )}
@@ -113,8 +127,8 @@ export default function UploadZone({ files, onFilesChange }: UploadZoneProps) {
             {fileRejections.some((r) =>
               r.errors.some((e) => e.code === "file-too-large")
             )
-              ? "Certains fichiers dépassent la taille maximale de 10 Mo."
-              : "Format non accepté. Utilisez JPG, PNG ou WEBP."}
+              ? "Certains fichiers d\u00e9passent la taille maximale de 10 Mo."
+              : "Format non accept\u00e9. Utilisez JPG, PNG, WEBP ou HEIC."}
           </p>
         </div>
       )}
@@ -126,7 +140,7 @@ export default function UploadZone({ files, onFilesChange }: UploadZoneProps) {
               <div className="aspect-[4/3] rounded-xl overflow-hidden bg-gray-100">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={URL.createObjectURL(file)}
+                  src={fileUrls[index]}
                   alt={file.name}
                   className="w-full h-full object-cover"
                 />

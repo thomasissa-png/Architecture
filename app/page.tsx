@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import StepIndicator from "@/components/StepIndicator";
 import UploadZone from "@/components/UploadZone";
 import StylePicker, { StyleOption } from "@/components/StylePicker";
@@ -73,6 +73,20 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [isGenerating]);
 
+  // Stable object URLs for file previews (no leak on re-render)
+  const filePreviewUrls = useMemo(() => {
+    return files.map((file) => URL.createObjectURL(file));
+  }, [files]);
+
+  useEffect(() => {
+    return () => {
+      filePreviewUrls.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [filePreviewUrls]);
+
+  // Abort controller for cancelling in-flight requests
+  const abortControllerRef = useRef<AbortController | null>(null);
+
   const currentStep =
     results.length > 0
       ? 3
@@ -84,8 +98,13 @@ export default function Home() {
 
   const handleGenerate = useCallback(async () => {
     if (files.length === 0) return;
-    const stylePrompt = selectedStyle?.prompt || customPrompt;
+    const stylePrompt = selectedStyle?.prompt || customPrompt.trim();
     if (!stylePrompt) return;
+
+    // Cancel any previous in-flight requests
+    abortControllerRef.current?.abort();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
     setIsGenerating(true);
     setError(null);
@@ -106,6 +125,8 @@ export default function Home() {
       // Validation failed — proceed anyway (fail open)
     }
 
+    if (controller.signal.aborted) return;
+
     // Step 2: Process images (resize/compress) in parallel
     let processedImages: { base64: string; width: number; height: number; fileIndex: number }[];
     try {
@@ -117,13 +138,15 @@ export default function Home() {
       return;
     }
 
+    if (controller.signal.aborted) return;
+
     // Step 3: Generate in parallel batches (max 2 concurrent)
     const MAX_CONCURRENT = 2;
     const allResults: GenerationResult[] = [];
     let hasError = false;
 
     for (let batch = 0; batch < processedImages.length; batch += MAX_CONCURRENT) {
-      if (hasError) break;
+      if (hasError || controller.signal.aborted) break;
       const chunk = processedImages.slice(batch, batch + MAX_CONCURRENT);
       setCurrentProcessing(batch);
 
@@ -138,6 +161,7 @@ export default function Home() {
               width: img.width,
               height: img.height,
             }),
+            signal: controller.signal,
           });
 
           if (!response.ok) {
@@ -147,7 +171,7 @@ export default function Home() {
 
           const data = await response.json();
           return {
-            originalUrl: URL.createObjectURL(files[img.fileIndex]),
+            originalUrl: filePreviewUrls[img.fileIndex],
             generatedUrl: data.image,
             model: data.model,
           } as GenerationResult;
@@ -159,6 +183,8 @@ export default function Home() {
           allResults.push(result.value);
           setResults((prev) => [...prev, result.value]);
         } else {
+          // Ignore abort errors
+          if (result.reason?.name === "AbortError") continue;
           hasError = true;
           setError(
             result.reason instanceof Error
@@ -169,11 +195,13 @@ export default function Home() {
       }
     }
 
-    setIsGenerating(false);
-    if (allResults.length > 0) {
-      scrollToElement("step-results");
+    if (!controller.signal.aborted) {
+      setIsGenerating(false);
+      if (allResults.length > 0) {
+        scrollToElement("step-results");
+      }
     }
-  }, [files, selectedStyle, customPrompt]);
+  }, [files, selectedStyle, customPrompt, filePreviewUrls]);
 
   const handleRetry = useCallback(() => {
     setResults([]);
@@ -189,21 +217,33 @@ export default function Home() {
   };
 
   const handleFullReset = () => {
+    abortControllerRef.current?.abort();
     setFiles([]);
     setSelectedStyle(null);
     setCustomPrompt("");
     setResults([]);
     setError(null);
+    setIsGenerating(false);
   };
 
   const handleDownloadAll = () => {
     results.forEach((result, index) => {
+      // Convert base64 data URI to blob URL for reliable cross-browser download
+      const [meta, b64] = result.generatedUrl.split(",");
+      const mime = meta.match(/:(.*?);/)?.[1] || "image/png";
+      const bytes = atob(b64);
+      const arr = new Uint8Array(bytes.length);
+      for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+      const blob = new Blob([arr], { type: mime });
+      const blobUrl = URL.createObjectURL(blob);
+
       const link = document.createElement("a");
-      link.href = result.generatedUrl;
+      link.href = blobUrl;
       link.download = `visirenov-${index + 1}-${Date.now()}.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
     });
   };
 
@@ -217,7 +257,7 @@ export default function Home() {
   }, [files.length]);
 
   const canGenerate =
-    files.length > 0 && (selectedStyle !== null || customPrompt.length > 0);
+    files.length > 0 && (selectedStyle !== null || customPrompt.trim().length > 0);
 
   return (
     <div className="min-h-screen bg-background">
@@ -435,7 +475,7 @@ export default function Home() {
                       <div className="aspect-[4/3]">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src={URL.createObjectURL(file)}
+                          src={filePreviewUrls[i]}
                           alt=""
                           className={`w-full h-full object-cover transition-all duration-700 ${done ? "" : "blur-sm brightness-95"}`}
                         />
