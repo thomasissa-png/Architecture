@@ -6,7 +6,7 @@ VisiRenov est un outil de home staging virtuel par IA pour architectes, marchand
 L'utilisateur uploade des photos de pieces vides et l'IA genere des visuels meubles dans un style choisi parmi 12 ambiances.
 
 - **Stack** : Next.js 14, React, TypeScript, Tailwind CSS, App Router
-- **APIs IA** : OpenAI GPT-image-1 (principal) + Replicate SDXL (fallback)
+- **APIs IA** : OpenAI GPT-image-1 (principal) + Flux 1.1 Pro via Replicate (fallback)
 - **Design** : Minimaliste, architecture-grade, inspiration Apple/Foster+Partners
 - **Langue UI** : Francais
 - **Palette** : Background #FAFAF8, Foreground #1C1C1E, Sage #7D9B76
@@ -16,11 +16,13 @@ L'utilisateur uploade des photos de pieces vides et l'IA genere des visuels meub
 
 ```
 app/
-  page.tsx          — Page principale (Hero + Outil 3 etapes)
-  layout.tsx        — Layout racine (metadata, lang fr)
+  page.tsx          — Page principale (Hero + Outil 3 etapes + Pricing)
+  layout.tsx        — Layout racine (metadata SEO + OpenGraph, lang fr)
   globals.css       — Styles globaux, animations, scrollbar custom
   api/generate/
-    route.ts        — API generation IA (OpenAI + Replicate fallback)
+    route.ts        — API generation IA (rate limit, OpenAI + Flux fallback)
+lib/
+  image-utils.ts    — Resize/compression client + validation contenu image
 components/
   UploadZone.tsx    — Zone drag & drop (react-dropzone, max 5 photos, 10Mo)
   StylePicker.tsx   — Choix de style (12 styles + Custom avec emoji identifiers)
@@ -60,6 +62,18 @@ agents/
 14. Header avec nav (Tarifs + CTA Essayer)
 15. Footer corrige : annee 2026, messaging ouvert a tous
 16. Social proof line sous le Hero (12 styles, 10-30s, HD gratuit)
+
+### Sprint 3 — Audit IA (Agent Yann Leclair)
+17. Resize/compression client (max 2048px, JPEG 85%) dans lib/image-utils.ts
+18. Rate limiting IP-based (10 req/min) avec cleanup memoire automatique
+19. Remplacement fallback SDXL par Flux 1.1 Pro (vrai modele d'editing)
+20. Support ratios natifs (landscape 1536x1024, portrait 1024x1536, square 1024x1024)
+21. Traitement multi-images parallele (Promise.allSettled, max 2 concurrent)
+22. Prompt engineering enrichi (7 constraints architecturales : perspective, eclairage, fixtures, echelle, lignes de fuite, photorealisme)
+23. Validation client du contenu image (heuristique uniformite couleur + saturation)
+24. Preview blur pendant generation (photos originales floues avec status par image)
+25. Metadata SEO multi-audience + OpenGraph tags
+26. Negative constraints integrees dans le prompt principal
 
 ## Agents Disponibles
 
