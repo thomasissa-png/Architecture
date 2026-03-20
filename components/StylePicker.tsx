@@ -98,6 +98,10 @@ export default function StylePicker({
     setIsCustom(false);
     onStyleSelect(style);
     onCustomPromptChange("");
+    // Scroll to generate button
+    setTimeout(() => {
+      document.getElementById("step-generate")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 150);
   };
 
   const handleCustomClick = () => {
@@ -107,7 +111,7 @@ export default function StylePicker({
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div role="radiogroup" aria-label="Choix du style" className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {STYLES.map((style, index) => {
           const Icon = ICONS[index];
           const isSelected = selectedStyle?.id === style.id && !isCustom;
@@ -115,7 +119,9 @@ export default function StylePicker({
             <button
               key={style.id}
               onClick={() => handleStyleClick(style)}
-              className={`group text-left p-6 rounded-2xl border transition-all duration-300 hover:shadow-sm ${
+              role="radio"
+              aria-checked={isSelected}
+              className={`group text-left p-6 rounded-2xl border transition-all duration-300 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
                 isSelected
                   ? "border-foreground bg-foreground/[0.02]"
                   : "border-gray-200 hover:border-gray-300"
@@ -138,7 +144,9 @@ export default function StylePicker({
 
         <button
           onClick={handleCustomClick}
-          className={`group text-left p-6 rounded-2xl border transition-all duration-300 hover:shadow-sm ${
+          role="radio"
+          aria-checked={isCustom}
+          className={`group text-left p-6 rounded-2xl border transition-all duration-300 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
             isCustom
               ? "border-foreground bg-foreground/[0.02]"
               : "border-gray-200 hover:border-gray-300"
@@ -164,7 +172,7 @@ export default function StylePicker({
             value={customPrompt}
             onChange={(e) => onCustomPromptChange(e.target.value)}
             placeholder="Ex : style Art Déco avec mobilier doré, tapis persans et éclairage chaleureux…"
-            className="w-full p-5 border border-gray-200 rounded-2xl focus:border-foreground focus:outline-none resize-none h-28 text-sm font-light transition-colors placeholder:text-gray-300"
+            className="w-full p-5 border border-gray-200 rounded-2xl focus:border-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 resize-none h-28 text-sm font-light transition-colors placeholder:text-gray-300"
           />
         </div>
       )}

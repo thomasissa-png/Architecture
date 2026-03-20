@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 
 interface UploadZoneProps {
@@ -12,11 +12,27 @@ const MAX_FILES = 5;
 const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 
 export default function UploadZone({ files, onFilesChange }: UploadZoneProps) {
+  const [uploadFeedback, setUploadFeedback] = useState<string | null>(null);
+
+  // Auto-dismiss feedback
+  useEffect(() => {
+    if (!uploadFeedback) return;
+    const timer = setTimeout(() => setUploadFeedback(null), 2500);
+    return () => clearTimeout(timer);
+  }, [uploadFeedback]);
+
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       const remaining = MAX_FILES - files.length;
       const newFiles = acceptedFiles.slice(0, remaining);
-      onFilesChange([...files, ...newFiles]);
+      if (newFiles.length > 0) {
+        onFilesChange([...files, ...newFiles]);
+        setUploadFeedback(
+          newFiles.length === 1
+            ? "Photo ajoutée avec succès"
+            : `${newFiles.length} photos ajoutées avec succès`
+        );
+      }
     },
     [files, onFilesChange]
   );
@@ -82,6 +98,15 @@ export default function UploadZone({ files, onFilesChange }: UploadZoneProps) {
         </div>
       </div>
 
+      {uploadFeedback && (
+        <div className="flex items-center gap-2 bg-sage/10 border border-sage/20 rounded-xl px-4 py-3 animate-fade-in-up">
+          <svg className="w-4 h-4 text-sage flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+          <p className="text-sage-dark text-xs font-medium">{uploadFeedback}</p>
+        </div>
+      )}
+
       {fileRejections.length > 0 && (
         <div className="bg-red-50/50 border border-red-200/60 rounded-xl p-4">
           <p className="text-red-500/80 text-xs font-light">
@@ -109,7 +134,7 @@ export default function UploadZone({ files, onFilesChange }: UploadZoneProps) {
               <button
                 onClick={() => removeFile(index)}
                 aria-label={`Supprimer ${file.name}`}
-                className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-foreground text-background rounded-full flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-foreground text-background rounded-full flex items-center justify-center text-[10px] sm:opacity-0 sm:group-hover:opacity-100 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
               >
                 &times;
               </button>

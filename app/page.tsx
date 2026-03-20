@@ -34,6 +34,12 @@ function useReveal() {
   return ref;
 }
 
+function scrollToElement(id: string) {
+  setTimeout(() => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, 150);
+}
+
 export default function Home() {
   const [files, setFiles] = useState<File[]>([]);
   const [selectedStyle, setSelectedStyle] = useState<StyleOption | null>(null);
@@ -42,9 +48,22 @@ export default function Home() {
   const [results, setResults] = useState<GenerationResult[]>([]);
   const [currentProcessing, setCurrentProcessing] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [generationElapsed, setGenerationElapsed] = useState(0);
 
   const heroRef = useReveal();
   const toolRef = useReveal();
+
+  // Timer for generation elapsed time
+  useEffect(() => {
+    if (!isGenerating) {
+      setGenerationElapsed(0);
+      return;
+    }
+    const interval = setInterval(() => {
+      setGenerationElapsed((prev) => prev + 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [isGenerating]);
 
   const currentStep =
     results.length > 0
@@ -104,7 +123,17 @@ export default function Home() {
       }
     }
     setIsGenerating(false);
+    scrollToElement("step-results");
   }, [files, selectedStyle, customPrompt]);
+
+  const handleRetry = useCallback(() => {
+    setResults([]);
+    setError(null);
+    // Re-trigger generation after state clears
+    setTimeout(() => {
+      handleGenerate();
+    }, 100);
+  }, [handleGenerate]);
 
   const handleReset = () => {
     setResults([]);
@@ -118,6 +147,15 @@ export default function Home() {
     setResults([]);
     setError(null);
   };
+
+  // Auto-scroll to style step when files are added
+  const prevFilesLength = useRef(0);
+  useEffect(() => {
+    if (files.length > 0 && prevFilesLength.current === 0) {
+      scrollToElement("step-style");
+    }
+    prevFilesLength.current = files.length;
+  }, [files.length]);
 
   const canGenerate =
     files.length > 0 && (selectedStyle !== null || customPrompt.length > 0);
@@ -137,7 +175,7 @@ export default function Home() {
       </header>
 
       {/* Hero */}
-      <section className="pt-40 pb-32 px-8">
+      <section className="pt-28 pb-20 px-8">
         <div ref={heroRef} className="reveal max-w-4xl mx-auto text-center">
           <p className="text-sm text-sage font-medium tracking-widest uppercase mb-6">
             Pour les marchands de biens
@@ -147,13 +185,13 @@ export default function Home() {
             <br />
             <span className="font-light text-muted">de vos biens</span>
           </h2>
-          <p className="text-lg text-muted font-light leading-relaxed max-w-xl mx-auto mb-12">
+          <p className="text-lg text-muted font-light leading-relaxed max-w-xl mx-auto mb-8">
             Transformez vos photos de biens bruts en visuels meublés
             grâce à l&apos;IA. Précommercialisez plus vite.
           </p>
 
           {/* Hero mock — before/after visual */}
-          <div className="max-w-3xl mx-auto mb-14">
+          <div className="max-w-3xl mx-auto mb-10">
             <div className="grid grid-cols-2 gap-4">
               <div className="relative">
                 <div className="aspect-[4/3] rounded-2xl hero-mock-gradient flex items-center justify-center overflow-hidden">
@@ -186,7 +224,7 @@ export default function Home() {
 
           <a
             href="#outil"
-            className="inline-flex items-center gap-3 bg-foreground text-background px-8 py-4 rounded-full font-medium hover:bg-foreground/85 transition-all text-sm tracking-wide"
+            className="inline-flex items-center gap-3 bg-foreground text-background px-8 py-4 rounded-full font-medium hover:bg-foreground/85 transition-all text-sm tracking-wide focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
           >
             Essayer l&apos;outil
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -223,7 +261,7 @@ export default function Home() {
 
           {/* Step 2: Style */}
           {files.length > 0 && (
-            <div className="mb-16 animate-fade-in-up">
+            <div id="step-style" className="mb-16 animate-fade-in-up scroll-mt-28">
               <h4 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
                 02 — Style
               </h4>
@@ -238,11 +276,11 @@ export default function Home() {
 
           {/* Generate Button */}
           {canGenerate && results.length === 0 && (
-            <div className="text-center mb-16 animate-fade-in-up">
+            <div id="step-generate" className="text-center mb-16 animate-fade-in-up">
               <button
                 onClick={handleGenerate}
                 disabled={isGenerating}
-                className="inline-flex items-center gap-3 bg-foreground text-background px-10 py-4 rounded-full font-medium text-base hover:bg-foreground/85 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-3 bg-foreground text-background px-10 py-4 rounded-full font-medium text-base hover:bg-foreground/85 transition-all disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
               >
                 {isGenerating ? (
                   <>
@@ -273,9 +311,16 @@ export default function Home() {
                   <div className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
                   <div className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
                 </div>
-                <p className="text-sm text-muted font-light">
-                  L&apos;IA analyse et meuble votre bien…
-                </p>
+                <div>
+                  <p className="text-sm text-muted font-light">
+                    L&apos;IA analyse et meuble votre bien…
+                  </p>
+                  <p className="text-[10px] text-muted/50 font-light mt-1">
+                    {generationElapsed < 10
+                      ? `${generationElapsed}s — Estimation : 10-30 secondes`
+                      : `${generationElapsed}s — Presque terminé…`}
+                  </p>
+                </div>
               </div>
             </div>
           )}
@@ -285,8 +330,8 @@ export default function Home() {
             <div className="mb-12 bg-red-50/50 border border-red-200/60 rounded-2xl p-6 text-center">
               <p className="text-red-600/80 text-sm">{error}</p>
               <button
-                onClick={handleReset}
-                className="mt-3 text-xs text-red-400 underline underline-offset-4 hover:text-red-600 transition-colors"
+                onClick={handleRetry}
+                className="mt-3 text-xs text-red-400 underline underline-offset-4 hover:text-red-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded"
               >
                 Réessayer
               </button>
@@ -295,7 +340,7 @@ export default function Home() {
 
           {/* Step 3: Results */}
           {results.length > 0 && (
-            <div className="animate-fade-in-up">
+            <div id="step-results" className="animate-fade-in-up scroll-mt-28">
               <h4 className="text-sm font-medium text-muted uppercase tracking-widest mb-6">
                 03 — Résultat
               </h4>
@@ -312,13 +357,13 @@ export default function Home() {
               <div className="flex flex-col sm:flex-row gap-3 justify-center mt-12">
                 <button
                   onClick={handleReset}
-                  className="inline-flex items-center justify-center gap-2 bg-foreground text-background px-7 py-3.5 rounded-full text-sm font-medium hover:bg-foreground/85 transition-colors"
+                  className="inline-flex items-center justify-center gap-2 bg-foreground text-background px-7 py-3.5 rounded-full text-sm font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
                 >
                   Relancer avec un autre style
                 </button>
                 <button
                   onClick={handleFullReset}
-                  className="inline-flex items-center justify-center gap-2 border border-gray-300 text-muted px-7 py-3.5 rounded-full text-sm font-medium hover:bg-gray-50 transition-colors"
+                  className="inline-flex items-center justify-center gap-2 border border-gray-300 text-muted px-7 py-3.5 rounded-full text-sm font-medium hover:bg-gray-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
                 >
                   Nouvelle session
                 </button>
