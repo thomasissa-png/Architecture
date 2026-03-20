@@ -40,6 +40,12 @@ function scrollToElement(id: string) {
   }, 150);
 }
 
+const USE_CASES = [
+  { label: "Architectes", desc: "Partagez des pistes d\u2019inspiration" },
+  { label: "Marchands de biens", desc: "Pr\u00e9commercialisez vos op\u00e9rations" },
+  { label: "Particuliers", desc: "D\u00e9corez votre futur chez-vous" },
+];
+
 export default function Home() {
   const [files, setFiles] = useState<File[]>([]);
   const [selectedStyle, setSelectedStyle] = useState<StyleOption | null>(null);
@@ -52,6 +58,7 @@ export default function Home() {
 
   const heroRef = useReveal();
   const toolRef = useReveal();
+  const pricingRef = useReveal();
 
   // Timer for generation elapsed time
   useEffect(() => {
@@ -103,7 +110,7 @@ export default function Home() {
 
         if (!response.ok) {
           const data = await response.json();
-          throw new Error(data.error || "Erreur lors de la génération");
+          throw new Error(data.error || "Erreur lors de la g\u00e9n\u00e9ration");
         }
 
         const data = await response.json();
@@ -117,7 +124,7 @@ export default function Home() {
         ]);
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : "Erreur lors de la génération"
+          err instanceof Error ? err.message : "Erreur lors de la g\u00e9n\u00e9ration"
         );
         break;
       }
@@ -129,7 +136,6 @@ export default function Home() {
   const handleRetry = useCallback(() => {
     setResults([]);
     setError(null);
-    // Re-trigger generation after state clears
     setTimeout(() => {
       handleGenerate();
     }, 100);
@@ -146,6 +152,17 @@ export default function Home() {
     setCustomPrompt("");
     setResults([]);
     setError(null);
+  };
+
+  const handleDownloadAll = () => {
+    results.forEach((result, index) => {
+      const link = document.createElement("a");
+      link.href = result.generatedUrl;
+      link.download = `visirenov-${index + 1}-${Date.now()}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
   };
 
   // Auto-scroll to style step when files are added
@@ -166,67 +183,116 @@ export default function Home() {
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-gray-200/40">
         <div className="max-w-6xl mx-auto px-8 py-4 flex items-center justify-between">
           <h1 className="text-xl font-semibold text-foreground tracking-tighter">
-            VisiRénov
+            VisiR&eacute;nov
           </h1>
-          <span className="text-xs text-muted font-light tracking-wide uppercase">
-            Home staging IA
-          </span>
+          <nav className="flex items-center gap-6">
+            <a href="#pricing" className="text-xs text-muted font-light hover:text-foreground transition-colors hidden sm:block">
+              Tarifs
+            </a>
+            <a
+              href="#outil"
+              className="text-xs bg-foreground text-background px-4 py-2 rounded-full font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+            >
+              Essayer
+            </a>
+          </nav>
         </div>
       </header>
 
       {/* Hero */}
-      <section className="pt-28 pb-20 px-8">
+      <section className="pt-28 pb-16 px-8">
         <div ref={heroRef} className="reveal max-w-4xl mx-auto text-center">
-          <p className="text-sm text-sage font-medium tracking-widest uppercase mb-6">
-            Pour les marchands de biens
-          </p>
-          <h2 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-foreground leading-[1.05] tracking-tighter mb-8">
-            Visualisez le potentiel
+          {/* Multi-audience pills */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+            {USE_CASES.map((uc) => (
+              <span
+                key={uc.label}
+                className="text-[11px] font-medium text-sage bg-sage/10 px-3 py-1.5 rounded-full"
+              >
+                {uc.label}
+              </span>
+            ))}
+          </div>
+
+          <h2 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-foreground leading-[1.05] tracking-tighter mb-6">
+            Visualisez vos espaces
             <br />
-            <span className="font-light text-muted">de vos biens</span>
+            <span className="font-light text-muted">meubl&eacute;s par l&apos;IA</span>
           </h2>
-          <p className="text-lg text-muted font-light leading-relaxed max-w-xl mx-auto mb-8">
-            Transformez vos photos de biens bruts en visuels meublés
-            grâce à l&apos;IA. Précommercialisez plus vite.
+          <p className="text-lg text-muted font-light leading-relaxed max-w-2xl mx-auto mb-8">
+            Uploadez une photo de pi&egrave;ce vide, choisissez un style parmi 12 ambiances, et recevez un visuel meubl&eacute; en quelques secondes. Pour les pros comme pour les particuliers.
           </p>
 
-          {/* Hero mock — before/after visual */}
-          <div className="max-w-3xl mx-auto mb-10">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="relative">
-                <div className="aspect-[4/3] rounded-2xl hero-mock-gradient flex items-center justify-center overflow-hidden">
-                  <div className="text-center">
-                    <svg className="w-10 h-10 text-gray-400/60 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
+          {/* Hero before/after — richly illustrated mock */}
+          <div className="max-w-3xl mx-auto mb-8">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              <div className="relative group">
+                <div className="aspect-[4/3] rounded-2xl overflow-hidden hero-before-scene">
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    {/* Architectural room outline */}
+                    <svg className="w-24 h-24 sm:w-32 sm:h-32 text-gray-400/50" viewBox="0 0 120 100" fill="none" stroke="currentColor" strokeWidth={0.8}>
+                      {/* Floor */}
+                      <line x1="10" y1="80" x2="110" y2="80" />
+                      {/* Back wall */}
+                      <rect x="15" y="20" width="90" height="60" rx="1" strokeDasharray="3 3" />
+                      {/* Window */}
+                      <rect x="40" y="28" width="40" height="30" rx="1" />
+                      <line x1="60" y1="28" x2="60" y2="58" />
+                      <line x1="40" y1="43" x2="80" y2="43" />
                     </svg>
-                    <span className="text-sm text-gray-400/80 font-light">Bien brut</span>
+                    <span className="text-xs text-gray-400/70 font-light mt-2">Pi&egrave;ce vide</span>
                   </div>
                 </div>
-                <span className="absolute bottom-3 left-3 text-[10px] font-medium text-gray-400 bg-white/80 backdrop-blur-sm px-2.5 py-1 rounded-full">
+                <span className="absolute bottom-2.5 left-2.5 text-[10px] font-medium text-gray-400 bg-white/80 backdrop-blur-sm px-2.5 py-1 rounded-full">
                   AVANT
                 </span>
               </div>
-              <div className="relative">
-                <div className="aspect-[4/3] rounded-2xl hero-mock-gradient-after flex items-center justify-center overflow-hidden">
-                  <div className="text-center">
-                    <svg className="w-10 h-10 text-sage/40 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
+              <div className="relative group">
+                <div className="aspect-[4/3] rounded-2xl overflow-hidden hero-after-scene">
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    {/* Furnished room illustration */}
+                    <svg className="w-24 h-24 sm:w-32 sm:h-32 text-sage/50" viewBox="0 0 120 100" fill="none" stroke="currentColor" strokeWidth={0.8}>
+                      {/* Floor */}
+                      <line x1="10" y1="80" x2="110" y2="80" />
+                      {/* Back wall */}
+                      <rect x="15" y="20" width="90" height="60" rx="1" />
+                      {/* Window */}
+                      <rect x="40" y="28" width="40" height="30" rx="1" />
+                      <line x1="60" y1="28" x2="60" y2="58" />
+                      {/* Sofa */}
+                      <rect x="22" y="62" width="36" height="12" rx="3" fill="currentColor" fillOpacity="0.15" />
+                      <rect x="22" y="56" width="36" height="8" rx="2" fill="currentColor" fillOpacity="0.1" />
+                      {/* Coffee table */}
+                      <rect x="62" y="68" width="16" height="8" rx="1" fill="currentColor" fillOpacity="0.12" />
+                      {/* Plant */}
+                      <circle cx="90" cy="62" r="6" fill="currentColor" fillOpacity="0.15" />
+                      <line x1="90" y1="68" x2="90" y2="76" />
+                      {/* Lamp */}
+                      <line x1="25" y1="40" x2="25" y2="56" />
+                      <path d="M20 40 L30 40 L27 35 L23 35 Z" fill="currentColor" fillOpacity="0.1" />
+                      {/* Rug */}
+                      <ellipse cx="55" cy="78" rx="25" ry="4" fill="currentColor" fillOpacity="0.08" />
                     </svg>
-                    <span className="text-sm text-sage/60 font-light">Meublé par l&apos;IA</span>
+                    <span className="text-xs text-sage/60 font-light mt-2">Meubl&eacute; par l&apos;IA</span>
                   </div>
                 </div>
-                <span className="absolute bottom-3 left-3 text-[10px] font-medium text-sage bg-white/80 backdrop-blur-sm px-2.5 py-1 rounded-full">
-                  APRES
+                <span className="absolute bottom-2.5 left-2.5 text-[10px] font-medium text-sage bg-white/80 backdrop-blur-sm px-2.5 py-1 rounded-full">
+                  APR&Egrave;S
                 </span>
               </div>
             </div>
           </div>
 
+          {/* Social proof line */}
+          <p className="text-xs text-muted/50 font-light mb-6">
+            12 styles disponibles &middot; R&eacute;sultat en 10-30 secondes &middot; T&eacute;l&eacute;chargement HD gratuit
+          </p>
+
           <a
             href="#outil"
             className="inline-flex items-center gap-3 bg-foreground text-background px-8 py-4 rounded-full font-medium hover:bg-foreground/85 transition-all text-sm tracking-wide focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
           >
-            Essayer l&apos;outil
+            Essayer gratuitement
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
             </svg>
@@ -234,18 +300,30 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Use cases */}
+      <section className="pb-16 px-8">
+        <div className="max-w-3xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {USE_CASES.map((uc, i) => (
+            <div key={uc.label} className={`text-center p-6 rounded-2xl border border-gray-200/60 bg-white/40 ${i === 0 ? "animate-fade-in-up" : i === 1 ? "animate-fade-in-up animate-delay-100" : "animate-fade-in-up animate-delay-200"}`}>
+              <p className="text-sm font-semibold text-foreground mb-1">{uc.label}</p>
+              <p className="text-xs text-muted font-light">{uc.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* Separator */}
       <div className="max-w-24 mx-auto border-t border-gray-200/60" />
 
       {/* Tool Section */}
-      <section id="outil" className="pt-28 pb-32 px-8">
+      <section id="outil" className="pt-24 pb-32 px-8">
         <div ref={toolRef} className="reveal max-w-4xl mx-auto">
           <div className="text-center mb-16">
             <h3 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight mb-3">
               Transformez vos photos
             </h3>
             <p className="text-muted font-light">
-              En trois étapes simples
+              En trois &eacute;tapes simples
             </p>
           </div>
 
@@ -288,11 +366,11 @@ export default function Home() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                     </svg>
-                    Génération en cours… ({currentProcessing + 1}/{files.length})
+                    G&eacute;n&eacute;ration en cours&hellip; ({currentProcessing + 1}/{files.length})
                   </>
                 ) : (
                   <>
-                    Générer la visualisation
+                    G&eacute;n&eacute;rer la visualisation
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
@@ -313,12 +391,12 @@ export default function Home() {
                 </div>
                 <div>
                   <p className="text-sm text-muted font-light">
-                    L&apos;IA analyse et meuble votre bien…
+                    L&apos;IA analyse et meuble votre bien&hellip;
                   </p>
                   <p className="text-[10px] text-muted/50 font-light mt-1">
                     {generationElapsed < 10
                       ? `${generationElapsed}s — Estimation : 10-30 secondes`
-                      : `${generationElapsed}s — Presque terminé…`}
+                      : `${generationElapsed}s — Presque termin\u00e9\u2026`}
                   </p>
                 </div>
               </div>
@@ -333,7 +411,7 @@ export default function Home() {
                 onClick={handleRetry}
                 className="mt-3 text-xs text-red-400 underline underline-offset-4 hover:text-red-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded"
               >
-                Réessayer
+                R&eacute;essayer
               </button>
             </div>
           )}
@@ -342,7 +420,7 @@ export default function Home() {
           {results.length > 0 && (
             <div id="step-results" className="animate-fade-in-up scroll-mt-28">
               <h4 className="text-sm font-medium text-muted uppercase tracking-widest mb-6">
-                03 — Résultat
+                03 — R&eacute;sultat
               </h4>
               <div className="space-y-10">
                 {results.map((result, index) => (
@@ -354,7 +432,23 @@ export default function Home() {
                   />
                 ))}
               </div>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center mt-12">
+
+              {/* Batch download */}
+              {results.length > 1 && (
+                <div className="text-center mt-8">
+                  <button
+                    onClick={handleDownloadAll}
+                    className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors underline underline-offset-4 font-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+                    </svg>
+                    Tout t&eacute;l&eacute;charger ({results.length} images)
+                  </button>
+                </div>
+              )}
+
+              <div className="flex flex-col sm:flex-row gap-3 justify-center mt-10">
                 <button
                   onClick={handleReset}
                   className="inline-flex items-center justify-center gap-2 bg-foreground text-background px-7 py-3.5 rounded-full text-sm font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
@@ -373,26 +467,125 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Pricing */}
+      <section id="pricing" className="py-24 px-8 bg-white/40">
+        <div ref={pricingRef} className="reveal max-w-4xl mx-auto">
+          <div className="text-center mb-14">
+            <h3 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight mb-3">
+              Tarifs simples et transparents
+            </h3>
+            <p className="text-muted font-light">
+              Commencez gratuitement, &eacute;voluez selon vos besoins
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto">
+            {/* Free */}
+            <div className="border border-gray-200 rounded-2xl p-6 text-center bg-background">
+              <p className="text-xs text-muted font-medium uppercase tracking-widest mb-3">D&eacute;couverte</p>
+              <p className="text-3xl font-bold text-foreground mb-1">Gratuit</p>
+              <p className="text-xs text-muted font-light mb-6">Pour tester l&apos;outil</p>
+              <ul className="text-sm text-muted font-light space-y-2.5 text-left mb-6">
+                <li className="flex items-start gap-2">
+                  <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  3 g&eacute;n&eacute;rations / jour
+                </li>
+                <li className="flex items-start gap-2">
+                  <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  12 styles disponibles
+                </li>
+                <li className="flex items-start gap-2">
+                  <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  T&eacute;l&eacute;chargement HD
+                </li>
+              </ul>
+              <a href="#outil" className="block w-full text-center border border-gray-300 text-foreground px-4 py-2.5 rounded-full text-sm font-medium hover:bg-gray-50 transition-colors">
+                Commencer
+              </a>
+            </div>
+
+            {/* Pro */}
+            <div className="border-2 border-foreground rounded-2xl p-6 text-center bg-background relative">
+              <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-foreground text-background text-[10px] font-medium px-3 py-1 rounded-full uppercase tracking-wider">Populaire</span>
+              <p className="text-xs text-muted font-medium uppercase tracking-widest mb-3">Pro</p>
+              <p className="text-3xl font-bold text-foreground mb-1">29&euro;<span className="text-base font-light text-muted">/mois</span></p>
+              <p className="text-xs text-muted font-light mb-6">Pour les professionnels</p>
+              <ul className="text-sm text-muted font-light space-y-2.5 text-left mb-6">
+                <li className="flex items-start gap-2">
+                  <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  50 g&eacute;n&eacute;rations / mois
+                </li>
+                <li className="flex items-start gap-2">
+                  <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  Style personnalis&eacute; illimit&eacute;
+                </li>
+                <li className="flex items-start gap-2">
+                  <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  R&eacute;solution maximale
+                </li>
+                <li className="flex items-start gap-2">
+                  <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  Priorit&eacute; de traitement
+                </li>
+              </ul>
+              <button className="w-full bg-foreground text-background px-4 py-2.5 rounded-full text-sm font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2">
+                Bient&ocirc;t disponible
+              </button>
+            </div>
+
+            {/* Business */}
+            <div className="border border-gray-200 rounded-2xl p-6 text-center bg-background">
+              <p className="text-xs text-muted font-medium uppercase tracking-widest mb-3">Business</p>
+              <p className="text-3xl font-bold text-foreground mb-1">79&euro;<span className="text-base font-light text-muted">/mois</span></p>
+              <p className="text-xs text-muted font-light mb-6">Pour les agences &amp; MDB</p>
+              <ul className="text-sm text-muted font-light space-y-2.5 text-left mb-6">
+                <li className="flex items-start gap-2">
+                  <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  G&eacute;n&eacute;rations illimit&eacute;es
+                </li>
+                <li className="flex items-start gap-2">
+                  <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  API &amp; int&eacute;grations
+                </li>
+                <li className="flex items-start gap-2">
+                  <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  Marque blanche
+                </li>
+                <li className="flex items-start gap-2">
+                  <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  Support d&eacute;di&eacute;
+                </li>
+              </ul>
+              <a href="mailto:contact@visirenov.fr" className="block w-full text-center border border-gray-300 text-foreground px-4 py-2.5 rounded-full text-sm font-medium hover:bg-gray-50 transition-colors">
+                Nous contacter
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Disclaimer */}
-      <div className="text-center px-8 pb-6">
+      <div className="text-center px-8 pb-6 pt-8">
         <p className="text-[11px] text-muted/50 font-light">
-          Les visuels générés sont des projections indicatives à des fins de
-          précommercialisation.
+          Les visuels g&eacute;n&eacute;r&eacute;s sont des projections indicatives &agrave; des fins d&apos;inspiration et de pr&eacute;commercialisation.
         </p>
       </div>
 
       {/* Footer */}
       <footer className="border-t border-gray-200/40 py-10 px-8">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted/60 font-light">
-          <p>Outil réservé aux professionnels de l&apos;immobilier</p>
+          <p>Pour les architectes, marchands de biens et particuliers</p>
           <div className="flex items-center gap-6">
+            <a href="#pricing" className="hover:text-foreground transition-colors">
+              Tarifs
+            </a>
             <a
               href="mailto:contact@visirenov.fr"
               className="hover:text-foreground transition-colors"
             >
               Contact
             </a>
-            <span>&copy; VisiRénov 2025</span>
+            <span>&copy; VisiR&eacute;nov 2026</span>
           </div>
         </div>
       </footer>

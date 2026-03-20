@@ -73,11 +73,36 @@ html {
   transform: translateY(0);
 }
 
-/* Hero mock placeholder gradient */
-.hero-mock-gradient {
-  background: linear-gradient(135deg, #e8e6e1 0%, #d4d0c8 50%, #e8e6e1 100%);
+/* Hero before scene — empty room feel */
+.hero-before-scene {
+  background:
+    linear-gradient(180deg, #e8e6e1 0%, #d8d4cc 40%, #c8c3ba 100%);
+  position: relative;
 }
 
-.hero-mock-gradient-after {
-  background: linear-gradient(135deg, #eef2ec 0%, #dce5d8 50%, #eef2ec 100%);
+.hero-before-scene::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 30%;
+  background: linear-gradient(0deg, rgba(200, 195, 186, 0.6) 0%, transparent 100%);
+}
+
+/* Hero after scene — furnished warm feel */
+.hero-after-scene {
+  background:
+    linear-gradient(180deg, #eef2ec 0%, #dce5d8 30%, #c8d5c0 100%);
+  position: relative;
+}
+
+.hero-after-scene::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 30%;
+  background: linear-gradient(0deg, rgba(200, 213, 192, 0.4) 0%, transparent 100%);
 }

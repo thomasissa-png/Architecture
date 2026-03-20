@@ -7,6 +7,7 @@ export interface StyleOption {
   name: string;
   description: string;
   prompt: string;
+  emoji: string;
 }
 
 const STYLES: StyleOption[] = [
@@ -14,70 +15,108 @@ const STYLES: StyleOption[] = [
     id: "scandinavian",
     name: "Scandinave",
     description: "Bois clair, tons neutres, épure absolue",
+    emoji: "🪵",
     prompt:
       "Scandinavian minimalist style with light wood furniture, neutral tones, white and beige textiles, simple clean lines, natural materials",
-  },
-  {
-    id: "industrial",
-    name: "Industriel",
-    description: "Métal, béton, volumes bruts sublimés",
-    prompt:
-      "Industrial loft style with metal and dark wood furniture, exposed materials aesthetic, vintage leather, Edison bulbs, raw elegant look",
   },
   {
     id: "contemporary",
     name: "Contemporain",
     description: "Lignes nettes, palette sobre, modernité",
+    emoji: "◻️",
     prompt:
       "Contemporary modern style with clean lines, neutral color palette, elegant minimalist furniture, subtle luxury touches, sophisticated simplicity",
   },
+  {
+    id: "industrial",
+    name: "Industriel",
+    description: "Métal, béton, volumes bruts sublimés",
+    emoji: "⚙️",
+    prompt:
+      "Industrial loft style with metal and dark wood furniture, exposed materials aesthetic, vintage leather, Edison bulbs, raw elegant look",
+  },
+  {
+    id: "japandi",
+    name: "Japandi",
+    description: "Minimalisme japonais, chaleur scandinave",
+    emoji: "🎋",
+    prompt:
+      "Japandi style combining Japanese minimalism with Scandinavian warmth, low furniture, natural wood, muted earth tones, wabi-sabi imperfections, zen simplicity, organic textures",
+  },
+  {
+    id: "art-deco",
+    name: "Art Déco",
+    description: "Géométrie dorée, velours, luxe années 20",
+    emoji: "✨",
+    prompt:
+      "Art Deco style with geometric patterns, gold and brass accents, velvet furniture in deep jewel tones, marble surfaces, glamorous 1920s luxury, statement lighting",
+  },
+  {
+    id: "mid-century",
+    name: "Mid-Century",
+    description: "Lignes organiques, bois chaud, vintage chic",
+    emoji: "🪑",
+    prompt:
+      "Mid-Century Modern style with organic curved furniture, warm walnut wood, iconic design pieces, mustard and teal accents, tapered legs, retro-modern elegance",
+  },
+  {
+    id: "bohemian",
+    name: "Bohème",
+    description: "Textiles ethniques, plantes, chaleur nomade",
+    emoji: "🌿",
+    prompt:
+      "Bohemian boho style with layered textiles, macramé, abundant plants, rattan and wicker furniture, warm earthy tones, persian rugs, eclectic collected-over-time aesthetic",
+  },
+  {
+    id: "haussmannian",
+    name: "Haussmannien",
+    description: "Moulures, parquet, élégance parisienne",
+    emoji: "🏛️",
+    prompt:
+      "Modern Haussmannian Parisian style with elegant moldings, herringbone parquet, mix of classic and contemporary furniture, marble fireplace, muted sophisticated palette, French art de vivre",
+  },
+  {
+    id: "mediterranean",
+    name: "Méditerranéen",
+    description: "Terre cuite, lin blanc, lumière du sud",
+    emoji: "☀️",
+    prompt:
+      "Mediterranean style with terracotta tiles, white linen, olive and warm stone tones, wrought iron accents, arched doorways feel, natural light, rustic refined elegance",
+  },
+  {
+    id: "cosy",
+    name: "Cosy Moderne",
+    description: "Textures douces, tons chauds, cocooning",
+    emoji: "🛋️",
+    prompt:
+      "Modern cozy style with soft boucle textures, warm neutral tones, plush oversized sofa, layered cushions, warm lighting, sheepskin throws, intimate welcoming atmosphere",
+  },
+  {
+    id: "wabi-sabi",
+    name: "Wabi-Sabi",
+    description: "Imperfection noble, matières brutes, sérénité",
+    emoji: "🏺",
+    prompt:
+      "Wabi-sabi style embracing imperfection, handmade ceramics, raw natural materials, muted earth palette, aged wood, organic shapes, serene meditative atmosphere, less is more",
+  },
+  {
+    id: "maximalist",
+    name: "Maximaliste",
+    description: "Couleurs vives, motifs audacieux, personnalité",
+    emoji: "🎨",
+    prompt:
+      "Maximalist eclectic style with bold colors, mixed patterns, gallery wall, statement furniture, rich fabrics, layered textures, curated abundance, vibrant personality-filled space",
+  },
 ];
-
-/* Flat SVG icons — monochrome, architecture-grade */
-function IconScandinave({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth={1.2} strokeLinecap="round" strokeLinejoin="round">
-      {/* Simple chair silhouette */}
-      <rect x="8" y="6" width="16" height="2" rx="1" />
-      <line x1="10" y1="8" x2="10" y2="26" />
-      <line x1="22" y1="8" x2="22" y2="26" />
-      <line x1="10" y1="16" x2="22" y2="16" />
-    </svg>
-  );
-}
-
-function IconIndustrial({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth={1.2} strokeLinecap="round" strokeLinejoin="round">
-      {/* Industrial beam / structure */}
-      <polyline points="4,26 4,8 12,14 12,8 20,14 20,8 28,14 28,26" />
-      <line x1="4" y1="26" x2="28" y2="26" />
-    </svg>
-  );
-}
-
-function IconContemporary({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth={1.2} strokeLinecap="round" strokeLinejoin="round">
-      {/* Clean geometric shapes */}
-      <rect x="6" y="10" width="20" height="14" rx="1" />
-      <line x1="16" y1="10" x2="16" y2="24" />
-      <line x1="6" y1="17" x2="26" y2="17" />
-    </svg>
-  );
-}
 
 function IconCustom({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth={1.2} strokeLinecap="round" strokeLinejoin="round">
-      {/* Pen / customize */}
       <path d="M20 6l6 6-14 14H6v-6L20 6z" />
       <line x1="16" y1="10" x2="22" y2="16" />
     </svg>
   );
 }
-
-const ICONS = [IconScandinave, IconIndustrial, IconContemporary];
 
 interface StylePickerProps {
   selectedStyle: StyleOption | null;
@@ -98,7 +137,6 @@ export default function StylePicker({
     setIsCustom(false);
     onStyleSelect(style);
     onCustomPromptChange("");
-    // Scroll to generate button
     setTimeout(() => {
       document.getElementById("step-generate")?.scrollIntoView({ behavior: "smooth", block: "center" });
     }, 150);
@@ -111,9 +149,8 @@ export default function StylePicker({
 
   return (
     <div className="space-y-4">
-      <div role="radiogroup" aria-label="Choix du style" className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {STYLES.map((style, index) => {
-          const Icon = ICONS[index];
+      <div role="radiogroup" aria-label="Choix du style" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        {STYLES.map((style) => {
           const isSelected = selectedStyle?.id === style.id && !isCustom;
           return (
             <button
@@ -121,21 +158,19 @@ export default function StylePicker({
               onClick={() => handleStyleClick(style)}
               role="radio"
               aria-checked={isSelected}
-              className={`group text-left p-6 rounded-2xl border transition-all duration-300 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
+              className={`group text-left p-5 rounded-2xl border transition-all duration-300 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
                 isSelected
-                  ? "border-foreground bg-foreground/[0.02]"
+                  ? "border-foreground bg-foreground/[0.02] shadow-sm"
                   : "border-gray-200 hover:border-gray-300"
               }`}
             >
-              <Icon
-                className={`w-7 h-7 mb-4 transition-colors duration-300 ${
-                  isSelected ? "text-foreground" : "text-gray-300 group-hover:text-muted"
-                }`}
-              />
+              <span className="text-xl mb-3 block" aria-hidden="true">
+                {style.emoji}
+              </span>
               <h4 className="text-sm font-semibold text-foreground mb-1 tracking-tight">
                 {style.name}
               </h4>
-              <p className="text-xs text-muted font-light leading-relaxed">
+              <p className="text-[11px] text-muted font-light leading-relaxed">
                 {style.description}
               </p>
             </button>
@@ -146,21 +181,21 @@ export default function StylePicker({
           onClick={handleCustomClick}
           role="radio"
           aria-checked={isCustom}
-          className={`group text-left p-6 rounded-2xl border transition-all duration-300 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
+          className={`group text-left p-5 rounded-2xl border border-dashed transition-all duration-300 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
             isCustom
-              ? "border-foreground bg-foreground/[0.02]"
-              : "border-gray-200 hover:border-gray-300"
+              ? "border-foreground bg-foreground/[0.02] shadow-sm"
+              : "border-gray-300 hover:border-gray-400"
           }`}
         >
           <IconCustom
-            className={`w-7 h-7 mb-4 transition-colors duration-300 ${
+            className={`w-5 h-5 mb-3 transition-colors duration-300 ${
               isCustom ? "text-foreground" : "text-gray-300 group-hover:text-muted"
             }`}
           />
           <h4 className="text-sm font-semibold text-foreground mb-1 tracking-tight">
             Personnalisé
           </h4>
-          <p className="text-xs text-muted font-light leading-relaxed">
+          <p className="text-[11px] text-muted font-light leading-relaxed">
             Décrivez votre style idéal
           </p>
         </button>
