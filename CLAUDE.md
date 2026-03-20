@@ -6,7 +6,7 @@ VisiRenov est un outil de home staging virtuel par IA pour architectes, marchand
 L'utilisateur uploade des photos de pieces vides et l'IA genere des visuels meubles dans un style choisi parmi 12 ambiances.
 
 - **Stack** : Next.js 14, React, TypeScript, Tailwind CSS, App Router
-- **APIs IA** : OpenAI GPT-image-1 (principal) + Flux 1.1 Pro via Replicate (fallback)
+- **APIs IA** : OpenAI GPT-image-1 (principal) + SDXL img2img via Replicate (fallback)
 - **Design** : Minimaliste, architecture-grade, inspiration Apple/Foster+Partners
 - **Langue UI** : Francais
 - **Palette** : Background #FAFAF8, Foreground #1C1C1E, Sage #7D9B76
@@ -20,7 +20,7 @@ app/
   layout.tsx        — Layout racine (metadata SEO + OpenGraph, lang fr)
   globals.css       — Styles globaux, animations, scrollbar custom
   api/generate/
-    route.ts        — API generation IA (rate limit, OpenAI + Flux fallback)
+    route.ts        — API generation IA (rate limit, OpenAI + SDXL fallback)
 lib/
   image-utils.ts    — Resize/compression client + validation contenu image
 components/
@@ -37,7 +37,7 @@ agents/
 
 ## Parcours Utilisateur (3 etapes)
 
-1. **Upload** — Glisser/deposer ou clic, JPG/PNG/WEBP, max 5 photos, 10Mo
+1. **Upload** — Glisser/deposer ou clic, JPG/PNG/WEBP/HEIC, max 5 photos, 10Mo
 2. **Style** — Choix parmi 12 styles predefinis + mode personnalise (textarea)
 3. **Resultat** — Comparateur slider avant/apres + telechargement HD
 
@@ -66,7 +66,7 @@ agents/
 ### Sprint 3 — Audit IA (Agent Yann Leclair)
 17. Resize/compression client (max 2048px, JPEG 85%) dans lib/image-utils.ts
 18. Rate limiting IP-based (10 req/min) avec cleanup memoire automatique
-19. Remplacement fallback SDXL par Flux 1.1 Pro (vrai modele d'editing)
+19. Fallback SDXL img2img avec prompt_strength 0.35 (preserve architecture)
 20. Support ratios natifs (landscape 1536x1024, portrait 1024x1536, square 1024x1024)
 21. Traitement multi-images parallele (Promise.allSettled, max 2 concurrent)
 22. Prompt engineering enrichi (7 constraints architecturales : perspective, eclairage, fixtures, echelle, lignes de fuite, photorealisme)
@@ -132,6 +132,20 @@ agents/
 - **Citation** : "Je veux voir a quoi MON salon ressemblerait en scandinave, pas le salon de quelqu'un d'autre sur Pinterest"
 
 ---
+
+### Sprint 4 — Audit Production (28 issues)
+27. CRITIQUE : Ajout response_format "b64_json" a OpenAI images.edit (sans ca, b64_json toujours undefined)
+28. CRITIQUE : Fix MIME type image/jpeg (client envoie JPEG, route.ts disait PNG)
+29. CRITIQUE : Revert Flux 1.1 Pro -> SDXL img2img (Flux est text-to-image, ignore l'input image)
+30. HAUTE : Fix fuite memoire URL.createObjectURL — useMemo + cleanup dans page.tsx et UploadZone
+31. HAUTE : handleDownloadAll utilise blob URL au lieu de data URI (Safari)
+32. HAUTE : ImageComparator reecrit avec dataUriToBlob() pour download, clipboard, native share
+33. HAUTE : Fix hydration mismatch navigator.share (useEffect + state)
+34. MOYENNE : loadImage() — revoke URL en cas d'erreur (fuite memoire)
+35. MOYENNE : AbortController pour annuler les requetes fetch en cours
+36. MOYENNE : handleFullReset abort les requetes in-flight + reset isGenerating
+37. MOYENNE : Support HEIC/HEIF dans UploadZone dropzone accept config
+38. MOYENNE : next.config.mjs — suppression cle "api" invalide, garde serverActions bodySizeLimit
 
 ## Regles de Developpement
 
