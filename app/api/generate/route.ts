@@ -136,7 +136,7 @@ async function tryFluxDepth(
         control_image: dataUri,
         steps: 25,
         guidance: 30,
-        output_format: "webp",
+        output_format: "png",
       },
     }
   );
