@@ -374,6 +374,55 @@ agents/
     - Yann evalue : fidelite stylistique, composition, echelle, credibilite pro
     - Lucas evalue : preservation geometrie, lumiere, ombres, photorealisme
 
+### Sprint 16 — Audit croise Yann Duval + Lucas Moreau (generation #7 Mediterraneen, note 6.7/10)
+106. CRITIQUE : Suppression "update the ceiling light fixture" du builder generique (contradiction avec surfacePrompts)
+    - Le builder disait "update" mais 10/12 surfacePrompts disaient "preserve existing" → le modele inventait un luminaire
+    - Fix : "For the ceiling light fixture, follow the style description above exactly"
+107. CRITIQUE : Ajout directive preservation structurelle dans buildSurfacesResponsesPrompt + Flux
+    - "Preserve the ceiling geometry exactly — vaults, beams, ribs, arches, and structural elements must remain visible"
+    - "Apply the finish OVER the existing geometry, do not smooth or flatten any structural features"
+    - Cause : "smooth white ceiling" effacait les nervures de beton voute (elements porteurs, pas des finitions)
+108. CRITIQUE : Fix paradoxe luminosite dans builder
+    - Ancien : "preserve exposure exactly" — impossible quand murs blancs remplacent murs bruts (plus de reflexion)
+    - Nouveau : "shadow patterns and light gradients must remain in the same positions and relative intensity"
+    - Le modele peut augmenter la luminosite ambiante (physiquement correct) mais les ombres restent ancrees
+109. CRITIQUE : Sol — materiau CIBLE nomme par style au lieu de "preserving existing floor material"
+    - Ancien : "light-toned matte finish on existing floor preserving the material" — contresens sur chantier brut
+    - Scandinave/Cosy : light oak wide-plank flooring
+    - Contemporain : light grey engineered stone flooring
+    - Industriel : smooth grey concrete floor (deja correct)
+    - Japandi : light ash wide-plank flooring
+    - Art Deco : dark stained herringbone parquet (deja correct)
+    - Mid-Century : warm walnut-toned wood plank flooring
+    - Boheme : warm honey-toned wood plank flooring
+    - Mediterraneen : pale terracotta or warm travertine floor tiles with natural veining
+    - Wabi-Sabi : natural stone or aged concrete flooring with subtle worn texture
+    - Maximaliste : polished dark wood flooring (deja correct)
+110. CRITIQUE : Plafond — "smooth white ceiling" remplace par directive preservant la geometrie
+    - Tous les 12 styles : "white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs"
+    - Mediterraneen ajoute : "if beams are visible whitewash them"
+111. HAUTE : Luminaire specifique par style au lieu de "preserve existing ceiling light"
+    - Scandinave : minimal white dome pendant 40cm
+    - Contemporain : minimal recessed or flush-mount in brushed chrome
+    - Industriel : matte black pendant with metal shade + Edison bulb (deja correct)
+    - Japandi : round washi paper pendant (deja correct)
+    - Art Deco : brass and frosted glass geometric pendant chandelier (deja correct)
+    - Mid-Century : Sputnik-style brass and black multi-arm pendant (deplace du furniturePrompt)
+    - Boheme : woven rattan pendant light in natural tone
+    - Mediterraneen : wrought iron pendant lantern with aged patina
+    - Cosy : warm fabric drum pendant in cream tone
+    - Wabi-Sabi : simple ceramic pendant in natural unglazed finish
+    - Maximaliste : dramatic sculptural pendant in brass with colored glass (deja correct)
+112. MOYENNE : Mid-Century — luminaire Sputnik deplace du furniturePrompt au surfacePrompt
+    - Evite le doublon : le luminaire est un element de plafond, pas du mobilier freestanding
+113. Apprentissages consolides :
+    - Le builder generique ne doit JAMAIS contredire les surfacePrompts individuels
+    - "smooth white ceiling" = instruction de LISSAGE, pas de finition — sur voute = destruction geometrie
+    - "preserve existing floor material" = contresens sur chantier brut — toujours nommer le materiau cible
+    - "preserve existing ceiling light" = ambigu quand pas de luminaire visible — toujours prescrire un luminaire
+    - Le paradoxe luminosite (murs blancs = plus clair) est physiquement correct — ancrer les OMBRES, pas l'exposition
+114. Page /admin : fix force-dynamic sur /api/logs et /api/logs/image (Next.js cachait les GET en production)
+
 ## Regles de Developpement
 
 - Design minimaliste, pas de surcharge visuelle
@@ -399,3 +448,8 @@ agents/
 - **Dimensions de mobilier explicites** (230cm wide, 120cm table, 200x300cm rug) pour ancrer l'echelle.
 - **Prompt COURT et instructif** : chaque passe ~6-8 phrases max.
 - **Distribution en profondeur** : la passe 2 doit distribuer le mobilier sur TOUTE la profondeur de la piece. Si l'espace est grand ou multi-zones, creer un groupe primaire au premier plan ET un groupe secondaire en arriere-plan. Directive conditionnelle ("if space allows") pour ne pas surcharger les petites pieces.
+- **surfacePrompt : TOUJOURS nommer le materiau de sol cible** (oak plank, travertine tiles, concrete, etc.) — NE JAMAIS ecrire "preserving existing floor material" car sur chantier brut il n'y a rien a preserver.
+- **surfacePrompt : TOUJOURS prescrire un luminaire specifique** par style — NE JAMAIS ecrire "preserve existing ceiling light" car souvent il n'y a pas de luminaire sur chantier brut.
+- **surfacePrompt : TOUJOURS preserver la geometrie du plafond** — ecrire "white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs" et JAMAIS "smooth white ceiling" (efface les voutes/poutres).
+- **Builder : NE JAMAIS contredire les surfacePrompts** — le builder dit "follow the style description exactly" pour le luminaire, pas "update the fixture".
+- **Paradoxe luminosite** : quand les murs passent de brut a blanc, la piece devient physiquement plus claire. Ancrer les OMBRES et GRADIENTS, pas l'exposition globale.
