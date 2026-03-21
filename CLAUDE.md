@@ -211,6 +211,14 @@ agents/
     - "No furniture" repete explicitement pour eviter toute hallucination de meubles
 63. SDXL prompt_strength a 0.35 (surfaces seulement = changement minimal)
 64. Negative prompt SDXL : inclut furniture/sofa/chair/table pour forcer piece vide
+65. Audit Agent Expert IA Image (Lucas Moreau) — 5 corrections appliquees :
+    - R1 : lumiere PRESERVEE au lieu d'IMPOSEE ("preserve existing lighting conditions")
+    - R2 : descripteurs photo techniques (DSLR full-frame, wide-angle, deep DOF, sharp focus)
+    - R3 : preservation perspective renforcee (lens distortion, vanishing points, window positions)
+    - R4 : adaptabilite conditions variables (plus d'hypothese fenetre/lumiere naturelle)
+    - R5 : negative prompt SDXL enrichi (distorted perspective, fisheye, stretched walls)
+    - DALL-E 2 : prompt descriptif au lieu d'instructif
+    - SDXL : style en tete de prompt (premiers tokens = plus d'influence)
 
 ## Regles de Developpement
 

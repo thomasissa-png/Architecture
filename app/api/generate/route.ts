@@ -39,33 +39,35 @@ function checkRateLimit(ip: string): boolean {
 function buildGPTPrompt(stylePrompt: string): string {
   return [
     "Edit this photo of a room.",
-    "Keep the exact same camera angle, walls, ceiling, floor shape, windows, and doors.",
+    "Keep the exact same camera angle, perspective, lens distortion, vanishing points, walls, ceiling, floor shape, windows, and doors.",
+    "Preserve exact window positions and sizes.",
     "Make the surfaces look finished: clean smooth painted walls, clean ceiling, polished or finished floor.",
     "Add one ceiling light fixture appropriate for the space.",
     "Keep the room completely empty — no furniture, no rugs, no decoration.",
     `Wall and floor color palette inspired by: ${stylePrompt}.`,
-    "Natural daylight from the windows. Photorealistic result.",
+    "Preserve the existing lighting conditions, light direction, shadows, and color temperature exactly as they appear in this photo.",
+    "DSLR full-frame camera, wide-angle lens, deep depth of field, sharp focus throughout.",
   ].join(" ");
 }
 
 function buildDalle2Prompt(stylePrompt: string): string {
   const prompt = [
-    "Same room, same angle.",
-    "Clean painted walls, finished floor, clean ceiling with light fixture.",
-    "Empty room, no furniture.",
-    `Colors: ${stylePrompt}.`,
-    "Photorealistic interior photo.",
+    `A clean finished empty room with ${stylePrompt} color palette.`,
+    "Smooth painted walls, polished floor, clean ceiling with one light fixture.",
+    "No furniture, no rugs, no decoration.",
+    "Same perspective and lighting as original photo.",
+    "DSLR wide-angle interior photograph, deep depth of field, sharp focus.",
   ].join(" ");
   return prompt.slice(0, 1000);
 }
 
 function buildSDXLPrompt(stylePrompt: string): string {
   return [
-    "Same room same angle.",
-    "Clean painted walls, polished floor, finished ceiling, ceiling light.",
-    "Empty room no furniture.",
-    `${stylePrompt} color palette.`,
-    "Photorealistic interior photograph, natural daylight.",
+    `${stylePrompt} color palette, clean finished empty room.`,
+    "Smooth painted walls, polished floor, clean ceiling, one ceiling light fixture.",
+    "No furniture, no rugs, no decoration.",
+    "Same room same angle same perspective same lighting.",
+    "DSLR wide-angle interior photograph, deep depth of field, sharp focus.",
   ].join(" ");
 }
 
@@ -74,6 +76,8 @@ const SDXL_NEGATIVE_PROMPT = [
   "construction site", "exposed wires", "raw concrete", "raw plaster",
   "blurry", "cartoon", "painting", "3D render", "watermark", "text",
   "animal", "person", "different room", "different angle",
+  "distorted perspective", "fisheye", "different viewpoint", "new room", "stretched walls",
+  "shallow depth of field", "bokeh",
 ].join(", ");
 
 // ─── Aspect Ratio Detection ────────────────────────────────────────

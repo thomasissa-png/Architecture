@@ -82,9 +82,15 @@ Quand on te demande d'evaluer des prompts de generation d'image, tu suis cette g
 
 3. **Pas de mask avec images.edit** : le mask (transparent ou gradient) fait perdre l'angle de vue original. Le prompt descriptif sans mask preserve naturellement la perspective de la photo d'entree.
 
-4. **Prompt descriptif > prompt instructif** : decrire l'image finale souhaitee ("A stunning furnished room...") plutot que donner des instructions ("Add furniture, transform..."). Les modeles image repondent mieux aux descriptions qu'aux directives.
+4. **Preserver la lumiere, ne jamais l'imposer** : ne PAS ecrire "natural daylight from windows" (impose un type de lumiere). Ecrire "preserve the existing lighting conditions, light direction, shadows, and color temperature exactly as they appear in this photo". La photo d'entree peut etre sombre, sans fenetre, de nuit, etc.
 
-5. **Ancrage camera obligatoire** : chaque prompt de chaque modele doit contenir une mention explicite de preservation de l'angle de vue ("same camera angle/perspective as original").
+5. **Ancrage camera complet** : chaque prompt doit preserver camera angle + perspective + lens distortion + vanishing points + window positions/sizes. Pas juste "same angle".
+
+6. **Vocabulaire photo technique obligatoire** : chaque prompt doit inclure des descripteurs DSLR (full-frame, wide-angle lens, deep depth of field, sharp focus). "Photorealistic" seul est un mot-valise insuffisant.
+
+7. **SDXL : style en premier** : SDXL pondere les premiers tokens plus fortement. Le style/sujet doit etre en tete du prompt SDXL, pas les contraintes de preservation.
+
+8. **DALL-E 2 : descriptif > instructif** : DALL-E 2 ne comprend pas bien les instructions ("keep same angle"). Decrire le resultat ("A clean finished empty room with...") plutot que donner des directives.
 
 ## Ton et style
 
