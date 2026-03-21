@@ -80,7 +80,7 @@ const STYLES: StyleOption[] = [
     surfacePrompt:
       "Bohemian: soft warm off-white walls keeping the same overall brightness as the input photo, light-toned matte finish on existing floor preserving the material, smooth white ceiling, preserve existing ceiling light",
     furniturePrompt:
-      "Bohemian furniture: deep low linen sofa in natural ecru with layered kilim and mudcloth cushions in terracotta rust and indigo 220cm wide, round reclaimed wood coffee table with organic edge 90cm diameter, faded vintage Persian rug layered over natural jute rug 200x300cm, rattan peacock chair with sheepskin throw draped over, two trailing pothos in terracotta pots and one monstera in a woven basket, brass Moroccan-style pierced lantern on the floor, wooden tray with pillar candles and dried pampas grass on the table, tall freestanding wooden tripod plant stand with trailing pothos",
+      "Bohemian furniture: deep relaxed linen sofa with slouchy cushions in natural ecru with layered kilim and mudcloth cushions in terracotta rust and indigo 220cm wide, round reclaimed wood coffee table with organic edge 90cm diameter, faded vintage Persian rug layered over natural jute rug 200x300cm, rattan peacock chair with sheepskin throw draped over, two trailing pothos in terracotta pots and one monstera in a woven basket, small brass Moroccan-style pierced lantern on the floor, wooden tray with pillar candles and dried pampas grass on the table, tall freestanding natural wood tripod plant stand with trailing pothos",
   },
   {
     id: "mediterranean",
