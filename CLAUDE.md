@@ -322,6 +322,21 @@ agents/
     - Les directives de lumiere dans les styles ecrasent systematiquement "preserve lighting"
     - Les dimensions de silhouette mobilier (cm) ameliorent la coherence d'echelle
 
+### Sprint 14 — Distribution spatiale en profondeur (Audit croise Yann Duval + Lucas Moreau)
+95. CRITIQUE : Directive de distribution spatiale en profondeur dans route.ts (passe 2)
+    - Probleme : le modele concentre tout le mobilier au premier plan, laissant l'arriere de la piece vide
+    - Cause : biais de composition photo des modeles IA (sujet = premier plan) + aucune instruction spatiale dans le prompt
+    - Particulierement visible sur les grands espaces (lofts, mezzanines, pieces en L, double volume)
+    - Solution : ajout directive "Distribute furniture across the FULL DEPTH of the room" dans buildFurnitureResponsesPrompt et buildFurnitureFluxPrompt
+    - Formulation conditionnelle : "if the room is deep or has multiple zones" — neutre sur les petites pieces
+    - Suggestion de zone secondaire : "reading nook, small desk, console table, side chair" — objets legers qui n'ecrasent pas l'espace
+    - Applique dans route.ts (pas dans les stylePrompts) car c'est une contrainte de COMPOSITION, pas de STYLE
+96. Apprentissages :
+    - Les modeles IA composent comme des photographes : sujet au premier plan, arriere-plan vide
+    - Les furniturePrompts decrivent un ENSEMBLE de meubles, pas une SCENOGRAPHIE spatiale
+    - La directive spatiale doit etre conditionnelle pour ne pas surcharger les petites pieces
+    - "If space allows" / "if the room is deep" = le modele decide intelligemment selon la geometrie
+
 ## Regles de Developpement
 
 - Design minimaliste, pas de surcharge visuelle
@@ -346,3 +361,4 @@ agents/
 - **NE PAS utiliser "TRANSFORM"** : utiliser "Edit" (passe 1) ou "Add" (passe 2).
 - **Dimensions de mobilier explicites** (230cm wide, 120cm table, 200x300cm rug) pour ancrer l'echelle.
 - **Prompt COURT et instructif** : chaque passe ~6-8 phrases max.
+- **Distribution en profondeur** : la passe 2 doit distribuer le mobilier sur TOUTE la profondeur de la piece. Si l'espace est grand ou multi-zones, creer un groupe primaire au premier plan ET un groupe secondaire en arriere-plan. Directive conditionnelle ("if space allows") pour ne pas surcharger les petites pieces.
