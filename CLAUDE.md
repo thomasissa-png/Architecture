@@ -189,6 +189,15 @@ agents/
 53. P7 : Ajout deep DOF / sharp focus coherent avec f/8 grand-angle (standard photo immobiliere) + negative SDXL "shallow depth of field, bokeh"
 54. Fix critique : ajout directive d'action explicite "Furnish and stage this empty room" en tete des 3 prompts (GPT-image-1, DALL-E 2, SDXL)
 
+### Sprint 7 — Fix Generation IA (images quasi identiques a l'input)
+55. CRITIQUE : Reecriture complete des prompts GPT-image-1 — approche ACTION-DOMINANTE au lieu de contraintes-dominantes
+    - Ancien prompt : ~400 mots dont ~250 mots de "ne rien changer" → modele ultra-conservateur, retourne l'image quasi inchangee
+    - Nouveau prompt : ~120 mots, action forte en tete ("TRANSFORM this empty room into a fully furnished interior"), style ensuite, 1 seule ligne de contraintes a la fin
+56. CRITIQUE : SDXL prompt_strength augmente de 0.35 a 0.55 (ancien = 65% image originale preservee, aucun meuble visible)
+57. Ajout "empty room, unfurnished, bare walls, no furniture" au negative prompt SDXL (force le modele a ne PAS reproduire la piece vide)
+58. Prompts DALL-E 2 et SDXL alignes sur la meme strategie action-dominante
+59. Fix partage WhatsApp : utilise navigator.share avec fichier image sur mobile (au lieu de wa.me text-only)
+
 ## Regles de Developpement
 
 - Design minimaliste, pas de surcharge visuelle

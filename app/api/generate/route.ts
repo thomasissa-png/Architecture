@@ -27,52 +27,38 @@ function checkRateLimit(ip: string): boolean {
   return true;
 }
 
-// ─── Prompt Engineering (Audit Lucas Moreau — P0 to P7) ─────────────
+// ─── Prompt Engineering ──────────────────────────────────────────────
+// Strategy: ACTION-DOMINANT prompts. The #1 problem with virtual staging
+// is over-constraining — if the model reads 250 words of "don't change X",
+// it becomes ultra-conservative and returns the input nearly unchanged.
+// The fix: strong transformation directive FIRST, style details SECOND,
+// minimal constraints LAST (and only the essential ones).
 
-// P0 — Photographic technical descriptors force camera-realistic output
-// P7 — Deep DOF consistent with f/8 wide-angle (real estate standard: everything sharp)
-const PHOTO_REALISM = "Shot on a professional full-frame DSLR with a 16-35mm wide-angle lens at f/8, deep depth of field with sharp focus throughout the entire room, natural ambient light, RAW photograph quality, color-accurate white balance, no HDR tonemapping artifacts.";
-
-// P1 — Lighting coherence: added furniture must match the existing light
-// P5 — Adaptive exposure conditions (dark rooms, blown windows)
-const LIGHTING_COHERENCE = "Match the exact lighting conditions of the input photo: same light direction, shadow angles, shadow softness, highlight intensity, specular reflections on surfaces, and color temperature. All added furniture and objects must cast shadows fully consistent with the existing light sources visible or implied in the original image. If the room is dark or underexposed, keep the low-light mood but ensure furniture remains visible with subtle ambient fill. If windows are overexposed with blown highlights, preserve those bright areas as-is.";
-
-// P2 — Real construction-site conditions clause
-const SITE_CONDITIONS = "If the input photo shows a construction site, empty rough space, or unfinished room, interpret it as a room awaiting renovation. Add finished surfaces (fresh paint, clean floors) only where the chosen style requires, while keeping the exact room geometry, ceiling height, beams, and architectural volumes unchanged.";
-
-// P6 — Condensed architectural constraints (3 phrases instead of 6, reduces token dilution)
-const ARCHITECTURAL_CONSTRAINTS = [
-  "Keep the exact room architecture completely unchanged: walls, floors, ceiling, beams, ceiling height, windows, doors, all fixed elements (outlets, switches, baseboards, radiators, built-in shelving, door handles) and all architectural volumes.",
-  "Maintain the original perspective, vanishing points, lens distortion, and any reflections in windows, mirrors or glossy surfaces.",
-  "Only add movable furniture and decor — ensure realistic scale using door handles (~1m) and outlets as references.",
-].join(" ");
-
-// P3 — Restructured prompt for GPT-image-1: action FIRST, then style, then photo intent, then constraints
+// GPT-image-1 prompt — concise, action-heavy (~120 words max)
 function buildPrompt(stylePrompt: string): string {
   return [
-    "Furnish and stage this empty room. Add furniture, rugs, plants, artwork, lighting fixtures and decorative objects.",
-    `Style: ${stylePrompt}.`,
-    "The result must look like a professional interior staging for a luxury real estate listing, curated and intentional.",
-    PHOTO_REALISM,
-    LIGHTING_COHERENCE,
-    ARCHITECTURAL_CONSTRAINTS,
-    SITE_CONDITIONS,
+    "TRANSFORM this empty room into a fully furnished, professionally staged interior.",
+    "Fill the space with a complete set of furniture: sofa, coffee table, armchairs, rugs, curtains, lighting fixtures, wall art, plants, and decorative accessories.",
+    `Design style: ${stylePrompt}.`,
+    "This must look like a luxury real estate listing photo — shot on a DSLR wide-angle lens, photorealistic, natural light with consistent shadows on all added furniture.",
+    "If the room is unfinished or under construction, add clean painted walls and finished flooring appropriate to the style.",
+    "Keep the room geometry, windows, doors and ceiling unchanged.",
   ].join(" ");
 }
 
-// dall-e-2 has a 1000-character prompt limit — condensed version with photo descriptors
+// DALL-E 2 prompt — 1000 char limit, even more concise
 function buildDalle2Prompt(stylePrompt: string): string {
-  const short = `Furnish and stage this empty room with furniture, rugs, plants and decor. Style: ${stylePrompt}. Professional DSLR photograph, 16-35mm wide-angle, f/8, deep focus, natural light. Luxury real estate staging. Keep all room architecture, walls, floors, ceiling, windows unchanged. Match existing lighting and shadows. If dark room, keep mood. Photorealistic, color-accurate.`;
+  const short = `TRANSFORM this empty room into a fully furnished, staged interior. Add sofa, coffee table, armchairs, rugs, curtains, lamps, wall art, plants and accessories. Style: ${stylePrompt}. Luxury real estate photo, DSLR wide-angle, photorealistic, natural light. If unfinished room, add clean walls and floors. Keep room shape, windows and doors unchanged.`;
   return short.slice(0, 1000);
 }
 
-// P4 — Dedicated SDXL prompt: shorter (~60 words), style-first, optimized for SDXL attention window
+// SDXL prompt — ~50 words, style-first for attention window
 function buildSDXLPrompt(stylePrompt: string): string {
-  return `Furnish and stage this empty room. ${stylePrompt}. Professional interior design photograph, DSLR 16-35mm wide-angle, f/8 deep focus, natural ambient light, photorealistic. Add furniture, rugs, plants, artwork and decor. Shadows and lighting match the original photo. Furniture scale realistic. RAW photo quality, color-accurate.`;
+  return `A beautifully furnished and staged room interior. ${stylePrompt}. Complete furniture set with sofa, coffee table, rugs, curtains, lamps, wall art and plants. Professional real estate photograph, DSLR wide-angle, photorealistic, natural ambient light, sharp focus.`;
 }
 
-// P4 — Dedicated SDXL negative prompt: deduplicated, precise terms
-const SDXL_NEGATIVE_PROMPT = "blurry, distorted, cartoon, painting, 3D render, changed architecture, altered room geometry, different perspective, floating furniture, unrealistic scale, watermark, text, oversaturated, flat lighting, shallow depth of field, bokeh";
+// SDXL negative prompt
+const SDXL_NEGATIVE_PROMPT = "empty room, unfurnished, bare walls, no furniture, blurry, cartoon, painting, 3D render, floating furniture, unrealistic scale, watermark, text, oversaturated, shallow depth of field, bokeh";
 
 // ─── Aspect Ratio Detection ────────────────────────────────────────
 function getOpenAISize(width?: number, height?: number): "1024x1024" | "1536x1024" | "1024x1536" {
@@ -169,7 +155,7 @@ async function tryReplicate(
         image: dataUri,
         prompt: buildSDXLPrompt(stylePrompt),
         negative_prompt: SDXL_NEGATIVE_PROMPT,
-        prompt_strength: 0.35,
+        prompt_strength: 0.55,
         num_outputs: 1,
         guidance_scale: 7.5,
         num_inference_steps: 35,
