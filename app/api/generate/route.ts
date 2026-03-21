@@ -38,7 +38,8 @@ function buildSurfacesResponsesPrompt(stylePrompt: string): string {
     "clean painted walls, finished floor (hardwood, tile, or polished concrete as appropriate), smooth ceiling.",
     "Add appropriate ceiling light fixture. Add baseboards and trim.",
     "Keep the room EMPTY — no furniture, no rugs, no curtains, no decoration.",
-    "Preserve all window and door positions exactly. Preserve the existing natural lighting.",
+    "DO NOT add, remove, or move any window or door. The number and position of openings must be IDENTICAL to the input.",
+    "Preserve the existing lighting direction, shadows, and exposure.",
     "Photo-realistic result, DSLR wide-angle, deep DOF.",
   ].join(" ");
 }
@@ -48,9 +49,10 @@ function buildSurfacesFluxPrompt(stylePrompt: string): string {
     `Empty room with ${stylePrompt} finished surfaces.`,
     "Clean painted walls, finished floor, smooth ceiling with light fixture.",
     "No furniture, no rugs, no curtains, no decoration. Completely empty room.",
-    "Same room geometry, same windows, same doors, same lighting.",
+    "Same room geometry, same number of windows and doors, same positions, same lighting.",
+    "Do not add or remove any window or door.",
     "Photo-realistic interior photograph, DSLR 16-35mm f/8, deep DOF, sharp focus.",
-    "No distortion, no cartoon, no 3D render, no watermark.",
+    "No distortion, no cartoon, no 3D render, no watermark, no extra openings.",
   ].join(" ");
 }
 
@@ -58,8 +60,9 @@ function buildSurfacesFluxPrompt(stylePrompt: string): string {
 function buildFurnitureResponsesPrompt(stylePrompt: string): string {
   return [
     "This is a photo of a finished, empty room. Add furniture and decoration only.",
-    "DO NOT change the walls, floor, ceiling, paint color, windows, doors, or any existing surface.",
-    "DO NOT change the lighting, shadows, or exposure. The room surfaces must look IDENTICAL to the input photo.",
+    "DO NOT change the walls, floor, ceiling, paint color, or any existing surface.",
+    "DO NOT add, remove, or move any window or door. Keep every architectural opening IDENTICAL.",
+    "DO NOT change the lighting, shadows, or exposure.",
     `Place furniture in ${stylePrompt} style.`,
     "The furniture must sit naturally on the existing floor with correct perspective and scale.",
     "Output a photo-realistic interior photograph, same camera angle, same lens.",
@@ -70,10 +73,11 @@ function buildFurnitureFluxPrompt(stylePrompt: string): string {
   return [
     `Room with ${stylePrompt} furniture and decoration.`,
     "Keep the exact same walls, floor, ceiling, paint, windows, and doors from the input photo.",
+    "Do not add or remove any window or door. Same number of openings, same positions.",
     "Only add furniture, rugs, curtains, and decoration. Do not repaint or refinish any surface.",
     "Same lighting, same shadows, same exposure as the original photo.",
     "Photo-realistic interior, DSLR 16-35mm f/8, deep DOF, sharp focus.",
-    "No distortion, no cartoon, no 3D render, no watermark.",
+    "No distortion, no cartoon, no 3D render, no watermark, no extra windows.",
   ].join(" ");
 }
 
