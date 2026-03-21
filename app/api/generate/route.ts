@@ -91,61 +91,30 @@ function checkRateLimit(ip: string): boolean {
 }
 
 // ─── Prompt Engineering ──────────────────────────────────────────────
-// Strategy: FURNITURE-FIRST with explicit item list.
+// Strategy v3: DESCRIBE THE OUTPUT IMAGE, not editing instructions.
 //
-// Problem observed (Sprint 8): GPT-image-1 images.edit is ultra-conservative.
-// On a construction-site photo (exposed wires, raw concrete), the model was:
-//   - "Stylizing" electrical wires into decorative sculptures instead of hiding them
-//   - Adding only 1-2 tiny accessories instead of real furniture
-//   - Returning a still-empty room with smoothed surfaces
+// Failed approaches:
+//   v1 "TRANSFORM this room..." → model retouches minimally
+//   v2 "ADD ALL OF THE FOLLOWING..." → model adds 1-2 accessories, ignores list
+//   Both failed because images.edit treats prompts as retouching guidance.
 //
-// Root cause: Even with "TRANSFORM", the model treats images.edit as minimal
-// retouching. Constraint lines ("keep geometry unchanged") reinforce conservatism.
-//
-// Fix: Lead with an EXPLICIT furniture inventory (what + where), treat the room
-// as a blank canvas to be furnished. Remove all "keep/preserve/unchanged" language
-// — the model already preserves structure by default in images.edit mode.
-// Add explicit instruction to HIDE construction elements behind furniture.
+// v3 insight: Describe the DESIRED FINAL IMAGE as if photographing an
+// already-furnished room. The model fills in to match the description.
+// Keep it short (~60 words) — long prompts dilute the visual signal.
 
-// GPT-image-1 prompt — furniture-inventory approach
 function buildPrompt(stylePrompt: string): string {
-  return [
-    "You are a professional virtual home stager. Completely furnish and decorate this empty room.",
-    "",
-    "ADD ALL OF THE FOLLOWING FURNITURE AND DECOR:",
-    "- A large sofa (3-seater) as the main seating piece, placed against a wall",
-    "- A coffee table in front of the sofa",
-    "- One or two armchairs facing the sofa",
-    "- A large area rug under the seating arrangement",
-    "- Curtains or drapes on every window",
-    "- At least 2 lighting fixtures (floor lamp, table lamp, or pendant)",
-    "- Wall art or framed prints on the walls",
-    "- 2-3 decorative plants (potted, on floor or surfaces)",
-    "- Side tables with books, candles, or decorative objects",
-    "- Finished flooring (hardwood, tile or carpet) covering any raw concrete",
-    "- Clean painted or finished walls covering any construction elements",
-    "",
-    `STYLE: ${stylePrompt}.`,
-    "",
-    "IMPORTANT: Any visible construction elements (exposed wires, electrical boxes, raw plaster joints, cables) must be completely hidden — covered by furniture, art, finished walls, or simply removed from the image.",
-    "",
-    "The result must look like a photo from an Architectural Digest feature — a fully lived-in, beautifully decorated room. Not an empty space with a few accessories.",
-    "Photorealistic, DSLR wide-angle interior photograph, natural light with consistent shadows on all furniture.",
-  ].join("\n");
+  return `A stunning, fully furnished living room photographed for Architectural Digest. ${stylePrompt}. The room features a large sofa, coffee table, armchairs, a big area rug, curtains, floor and table lamps, framed art on the walls, potted plants, and styled side tables with books and candles. Clean finished walls and polished floors. Professional interior photography, DSLR wide-angle lens, natural daylight, photorealistic.`;
 }
 
-// DALL-E 2 prompt — 1000 char limit
 function buildDalle2Prompt(stylePrompt: string): string {
-  const short = `Professional virtual home staging. Completely furnish this empty room with: large 3-seater sofa against a wall, coffee table, armchairs, large area rug, curtains on all windows, floor lamp and table lamp, wall art, potted plants, side tables with books and candles. Add finished hardwood flooring and clean painted walls. Hide all construction elements (wires, cables, raw plaster). Style: ${stylePrompt}. Result must look like Architectural Digest — fully decorated, not empty. Photorealistic DSLR wide-angle interior photo, natural light.`;
+  const short = `A stunning fully furnished living room for Architectural Digest. ${stylePrompt}. Large sofa, coffee table, armchairs, area rug, curtains, floor lamp, table lamp, framed wall art, potted plants, side tables with books and candles. Clean walls, polished floors. Professional DSLR wide-angle interior photo, natural light, photorealistic.`;
   return short.slice(0, 1000);
 }
 
-// SDXL prompt — style-first, explicit furniture list
 function buildSDXLPrompt(stylePrompt: string): string {
-  return `Luxury furnished interior, ${stylePrompt}. Large sofa, coffee table, armchairs, area rug, curtains, floor lamp, table lamp, wall art, potted plants, side tables with books. Finished hardwood floor, clean painted walls, no exposed wires. Professional real estate photograph, DSLR wide-angle, photorealistic, natural light, fully decorated room.`;
+  return `Stunning fully furnished living room, Architectural Digest. ${stylePrompt}. Large sofa, coffee table, armchairs, area rug, curtains, lamps, framed wall art, potted plants, styled side tables. Clean walls, polished floors. DSLR wide-angle interior photograph, natural daylight, photorealistic.`;
 }
 
-// SDXL negative prompt
 const SDXL_NEGATIVE_PROMPT = "empty room, unfurnished, bare walls, no furniture, empty floor, construction site, exposed wires, electrical cables, raw concrete, raw plaster, unfinished, sparse, minimal furniture, blurry, cartoon, painting, 3D render, floating furniture, unrealistic scale, watermark, text, oversaturated, shallow depth of field, bokeh";
 
 // ─── Aspect Ratio Detection ────────────────────────────────────────
@@ -191,6 +160,7 @@ async function tryOpenAI(
       prompt,
       n: 1,
       size,
+      quality: "high",
       response_format: "b64_json",
     });
 
@@ -248,7 +218,9 @@ async function tryReplicate(
 
   const dataUri = `data:image/jpeg;base64,${imageBase64}`;
 
-  // P4 — Use dedicated SDXL prompt (shorter, style-first) + deduplicated negative prompt
+  // SDXL img2img: prompt_strength controls how much the prompt overrides the input.
+  // 0.55 was too low — the model preserved the empty room too much.
+  // 0.72 gives enough freedom to add real furniture while keeping room geometry.
   const output = await replicate.run(
     "stability-ai/sdxl:7762fd07cf82c948538e41f63f77d685e02b063e37e496e96eefd46c929f9bdc" as `${string}/${string}:${string}`,
     {
@@ -256,10 +228,10 @@ async function tryReplicate(
         image: dataUri,
         prompt: buildSDXLPrompt(stylePrompt),
         negative_prompt: SDXL_NEGATIVE_PROMPT,
-        prompt_strength: 0.55,
+        prompt_strength: 0.72,
         num_outputs: 1,
-        guidance_scale: 7.5,
-        num_inference_steps: 35,
+        guidance_scale: 8.5,
+        num_inference_steps: 40,
         scheduler: "K_EULER",
       },
     }
