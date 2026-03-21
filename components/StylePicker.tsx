@@ -98,9 +98,9 @@ const STYLES: StyleOption[] = [
     description: "Textures douces, tons chauds, cocooning",
     emoji: "🛋️",
     surfacePrompt:
-      "Modern cozy: warm cream matte walls keeping the same overall brightness as the input photo, light oak wood refinish with gentle warm grain, smooth white ceiling, fabric drum pendant light in warm oatmeal tone",
+      "Modern cozy: soft white walls with barely visible warm tint keeping the same overall brightness as the input photo, light-toned matte finish on existing floor preserving the material, smooth white ceiling, preserve existing ceiling light",
     furniturePrompt:
-      "Modern cozy furniture with organic rounded forms: oversized deep boucle sofa in warm cream with plump rounded arms and wide cushioned seats 260cm wide, oversized round shearling floor pouf in natural cream 60cm diameter as signature cocooning piece, round light oak coffee table with thick turned legs 100cm diameter, layered wool area rug in cream and soft blush 200x300cm, chunky hand-knit throw blanket in cream draped over one armrest, cushions in cream camel and soft blush textures, natural sheepskin rug draped beside the sofa, soft fabric table lamp in cream tone on a round oak side table, camel boucle reading armchair with cashmere throw, pillar candles and stacked linen-bound books on the coffee table, trailing dark green pothos in a matte charcoal pot on the side table",
+      "Modern cozy furniture, MUCH more densely layered than Scandinavian, all rounded organic forms: oversized visibly large three-seat boucle sofa in warm cream with plump rounded arms 260cm wide, oversized round shearling floor pouf in natural cream 60cm diameter as signature cocooning piece, camel boucle reading armchair with cashmere throw, round light oak coffee table with thick turned legs 100cm diameter, layered wool area rug in cream and soft blush 200x300cm, five to six cushions in varying textures boucle velvet knitted and cashmere in cream camel and soft blush, chunky hand-knit throw blanket in cream draped over one armrest, natural sheepskin rug draped on the floor beside the sofa, pillar candles and stacked linen-bound books on the coffee table, large trailing dark green pothos in a matte charcoal pot on a round oak side table, soft fabric table lamp in cream tone on the side table",
   },
   {
     id: "wabi-sabi",
