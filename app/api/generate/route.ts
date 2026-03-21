@@ -63,7 +63,7 @@ function buildSurfacesResponsesPrompt(surfacePrompt: string): string {
     "The number of windows and doors must be EXACTLY the same as in the input. If there are zero windows, there must be zero windows in the output.",
     "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation.",
     "Preserve the existing lighting conditions, light direction, shadow angles, color temperature, and exposure exactly as in the input.",
-    "DSLR full-frame wide-angle 16-35mm f/8, deep depth of field, sharp focus throughout.",
+    "DSLR full-frame wide-angle 16-35mm f/8, deep depth of field, sharp focus throughout. No text, watermarks, or logos in the output.",
   ].join(" ");
 }
 
@@ -83,11 +83,11 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string): string {
   return [
     `Add the following furniture and decoration into this photo of a finished room: ${furniturePrompt}.`,
     "Place all objects naturally on the existing floor with correct perspective, scale, and shadows consistent with the existing light direction.",
-    "ONLY add freestanding objects that rest on the floor or sit on existing surfaces. Do NOT attach anything to walls. No wall art, no built-in shelving, no curtains.",
+    "ONLY add freestanding objects that rest on the floor or sit on existing surfaces. Do NOT attach anything to walls. No wall-mounted art, no built-in shelving, no curtains.",
     "Room structure is LOCKED: every wall, window, door, ceiling, and floor surface must remain pixel-identical to the input. No new openings, no color shift on any surface.",
     "If the input has zero windows, the output must have zero windows.",
     "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation.",
-    "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, photo-realistic interior photograph.",
+    "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, photo-realistic interior photograph. No text, watermarks, or logos in the output.",
   ].join(" ");
 }
 

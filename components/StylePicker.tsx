@@ -58,7 +58,7 @@ const STYLES: StyleOption[] = [
     description: "Géométrie dorée, velours, luxe années 20",
     emoji: "✨",
     surfacePrompt:
-      "Art Deco: warm ivory matte walls with smooth finish keeping the same overall brightness as the input photo, dark stained herringbone parquet refinish on the existing floor, smooth ceiling with simple elegant cornice trim, brass and frosted glass geometric pendant chandelier",
+      "Art Deco: warm ivory matte walls with smooth finish keeping the same overall brightness as the input photo, dark stained herringbone parquet refinish on the existing floor, smooth ceiling with clean plaster edge, brass and frosted glass geometric pendant chandelier",
     furniturePrompt:
       "Art Deco furniture: channel-tufted velvet sofa in deep emerald green with polished brass legs 230cm wide arranged symmetrically in the room, round polished brass coffee table with smoked glass top on pedestal base 90cm diameter, geometric patterned area rug in black gold and cream 200x300cm, fluted dark lacquer drinks cabinet with brass handles 120cm tall, marble-top brass side table with crystal decanter and gold-rimmed glasses, tall brass floor lamp with pleated cream silk shade, brass sunburst mirror leaning against the wall on the drinks cabinet as signature piece, potted areca palm in polished brass planter, matching pair of brass table lamps on side tables flanking the sofa, velvet cushions in sapphire and gold with geometric patterns",
   },
@@ -88,7 +88,7 @@ const STYLES: StyleOption[] = [
     description: "Moulures, parquet, élégance parisienne",
     emoji: "🏛️",
     surfacePrompt:
-      "Haussmannian Parisian: soft warm grey walls with smooth matte finish keeping the same overall brightness as the input photo, light oak herringbone parquet refinish with classic proportions, smooth white ceiling with simple period ceiling rose, elegant contemporary pendant light in brass and white glass",
+      "Haussmannian Parisian: soft warm grey walls with smooth matte finish keeping the same overall brightness as the input photo, light oak herringbone parquet refinish with classic proportions, smooth white ceiling with clean finish, elegant contemporary pendant light in brass and white glass",
     furniturePrompt:
       "Haussmannian furniture: velvet sofa with curved back and turned dark wood legs in muted sage green 220cm wide, contemporary round white marble coffee table with slim brass legs 90cm diameter, elegant wool area rug in soft grey and cream 200x300cm, upholstered Louis XV-style bergère armchair in dusty blue velvet, oversized gilded frame mirror leaning against the wall on the floor 150cm tall, sculptural contemporary brass floor lamp with linen shade, art books and ceramic objects on the table, potted white orchid in simple white ceramic pot, brass candlesticks on a slim marble console table against the wall",
   },
