@@ -1,107 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import Replicate from "replicate";
-import { deflateSync } from "zlib";
-
-// ─── Transparent Mask Generator ──────────────────────────────────────
-// GPT-image-1 images.edit WITHOUT a mask is ultra-conservative: it "retouches"
-// instead of transforming. By sending a fully transparent mask, we tell the
-// model "you can modify every pixel" — critical for virtual home staging.
-
-function crc32(buf: Buffer): number {
-  // CRC32 lookup table (standard polynomial 0xEDB88320)
-  const table = new Uint32Array(256);
-  for (let i = 0; i < 256; i++) {
-    let c = i;
-    for (let j = 0; j < 8; j++) {
-      c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
-    }
-    table[i] = c;
-  }
-  let crc = 0xffffffff;
-  for (let i = 0; i < buf.length; i++) {
-    crc = table[(crc ^ buf[i]) & 0xff] ^ (crc >>> 8);
-  }
-  return (crc ^ 0xffffffff) >>> 0;
-}
-
-function pngChunk(type: string, data: Buffer): Buffer {
-  const len = Buffer.alloc(4);
-  len.writeUInt32BE(data.length, 0);
-  const typeB = Buffer.from(type, "ascii");
-  const crcB = Buffer.alloc(4);
-  crcB.writeUInt32BE(crc32(Buffer.concat([typeB, data])), 0);
-  return Buffer.concat([len, typeB, data, crcB]);
-}
-
-/**
- * Creates a gradient mask PNG for images.edit.
- *
- * The mask tells GPT-image-1 WHERE it can edit:
- *   - Transparent pixels (alpha=0) → model CAN change these
- *   - Opaque pixels (alpha=255)    → model must PRESERVE these
- *
- * For virtual staging we want:
- *   - Top 20% fully opaque    → preserve ceiling / room structure
- *   - 20-40% gradient          → smooth transition, preserve upper walls
- *   - Bottom 60% transparent   → model can add furniture, rugs, art, floor finish
- *
- * This prevents the model from replacing the entire room geometry (windows,
- * walls, ceiling) while giving it full freedom to furnish the lower space.
- */
-function createStagingMask(width: number, height: number): Buffer {
-  const signature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
-
-  const ihdr = Buffer.alloc(13);
-  ihdr.writeUInt32BE(width, 0);
-  ihdr.writeUInt32BE(height, 4);
-  ihdr[8] = 8;  // bit depth
-  ihdr[9] = 6;  // color type: RGBA
-  ihdr[10] = 0; // compression
-  ihdr[11] = 0; // filter
-  ihdr[12] = 0; // interlace
-
-  const rowBytes = 1 + width * 4; // filter byte + RGBA per pixel
-  const rawData = Buffer.alloc(height * rowBytes);
-
-  // Zone boundaries (fraction of image height)
-  const opaqueEnd = Math.floor(height * 0.20);   // top 20% = fully opaque (ceiling)
-  const gradientEnd = Math.floor(height * 0.40);  // 20-40% = gradient (upper walls)
-  // bottom 60% = fully transparent (furniture zone)
-
-  for (let y = 0; y < height; y++) {
-    const rowOffset = y * rowBytes;
-    rawData[rowOffset] = 0; // filter byte = None
-
-    let alpha: number;
-    if (y < opaqueEnd) {
-      // Top zone: fully opaque → preserve ceiling
-      alpha = 255;
-    } else if (y < gradientEnd) {
-      // Gradient zone: smooth transition from opaque to transparent
-      const t = (y - opaqueEnd) / (gradientEnd - opaqueEnd);
-      alpha = Math.round(255 * (1 - t));
-    } else {
-      // Bottom zone: fully transparent → model can add furniture
-      alpha = 0;
-    }
-
-    for (let x = 0; x < width; x++) {
-      const pixelOffset = rowOffset + 1 + x * 4;
-      // R=0, G=0, B=0 (already 0 from Buffer.alloc)
-      rawData[pixelOffset + 3] = alpha;
-    }
-  }
-
-  const compressed = deflateSync(rawData);
-
-  return Buffer.concat([
-    signature,
-    pngChunk("IHDR", ihdr),
-    pngChunk("IDAT", compressed),
-    pngChunk("IEND", Buffer.alloc(0)),
-  ]);
-}
 
 // ─── Rate Limiting (in-memory, IP-based) ────────────────────────────
 // Note: On serverless (Vercel), this is per-instance and resets on cold starts.
@@ -129,23 +28,26 @@ function checkRateLimit(ip: string): boolean {
 }
 
 // ─── Prompt Engineering ──────────────────────────────────────────────
-// Strategy v3: DESCRIBE THE OUTPUT IMAGE, not editing instructions.
+// Strategy v4: DESCRIPTIVE prompt + NO mask + CAMERA ANGLE anchoring.
 //
 // Failed approaches:
-//   v1 "TRANSFORM this room..." → model retouches minimally
-//   v2 "ADD ALL OF THE FOLLOWING..." → model adds 1-2 accessories, ignores list
-//   Both failed because images.edit treats prompts as retouching guidance.
+//   v1 "TRANSFORM this room..." (no mask) → model retouches minimally, room stays empty
+//   v2 "ADD ALL OF THE FOLLOWING..." (no mask) → same, 1-2 accessories only
+//   v3 descriptive + full transparent mask → room fully furnished but geometry replaced
+//   v3b descriptive + gradient mask → furniture added but camera angle/perspective lost
 //
-// v3 insight: Describe the DESIRED FINAL IMAGE as if photographing an
-// already-furnished room. The model fills in to match the description.
-// Keep it short (~60 words) — long prompts dilute the visual signal.
+// v4 insight: The mask is the problem. ANY mask (full or gradient) gives the model
+// permission to redraw the scene from scratch, losing the original perspective.
+// Without a mask, images.edit naturally preserves the photo's geometry and viewpoint.
+// The key is combining the v3 DESCRIPTIVE prompt (which triggers furniture addition)
+// with NO mask (which preserves the camera angle) + explicit angle anchoring language.
 
 function buildPrompt(stylePrompt: string): string {
-  return `A stunning, fully furnished living room photographed for Architectural Digest. ${stylePrompt}. The room features a large sofa, coffee table, armchairs, a big area rug, curtains, floor and table lamps, framed art on the walls, potted plants, and styled side tables with books and candles. Clean finished walls and polished floors. Keep the exact same room shape, walls, ceiling, and architectural features visible in the original photo. Professional interior photography, DSLR wide-angle lens, natural daylight, photorealistic.`;
+  return `A stunning, fully furnished living room photographed for Architectural Digest. ${stylePrompt}. The room features a large sofa, coffee table, armchairs, a big area rug, curtains, floor and table lamps, framed art on the walls, potted plants, and styled side tables with books and candles. Clean finished walls and polished floors. Same camera position, same angle of view, same perspective and vanishing points as the original photograph. Any construction elements (exposed wires, cables, raw plaster) are hidden behind furniture or clean finished surfaces. Professional interior photography, DSLR wide-angle lens, natural daylight, photorealistic.`;
 }
 
 function buildDalle2Prompt(stylePrompt: string): string {
-  const short = `A stunning fully furnished living room for Architectural Digest. ${stylePrompt}. Large sofa, coffee table, armchairs, area rug, curtains, floor lamp, table lamp, framed wall art, potted plants, side tables with books and candles. Clean walls, polished floors. Professional DSLR wide-angle interior photo, natural light, photorealistic.`;
+  const short = `A stunning fully furnished living room for Architectural Digest. ${stylePrompt}. Large sofa, coffee table, armchairs, area rug, curtains, floor lamp, table lamp, framed wall art, potted plants, side tables with books and candles. Clean walls, polished floors. Same camera angle and perspective as original. Hide construction elements. Professional DSLR wide-angle interior photo, natural light, photorealistic.`;
   return short.slice(0, 1000);
 }
 
@@ -182,19 +84,16 @@ async function tryOpenAI(
 
   const size = getOpenAISize(width, height);
 
-  // Gradient mask: top 20% opaque (preserve ceiling), bottom 60% transparent (add furniture).
-  // Without this, model either retouches minimally (no mask) or replaces everything (full mask).
-  const maskWidth = width || 1024;
-  const maskHeight = height || 1024;
-  const maskBuffer = createStagingMask(maskWidth, maskHeight);
-  const maskFile = new File([new Uint8Array(maskBuffer)], "mask.png", { type: "image/png" });
+  // NO MASK — this is intentional. With a mask (full or gradient), the model
+  // redraws the scene from scratch and loses the original camera angle/perspective.
+  // Without a mask, images.edit preserves the photo's geometry and viewpoint naturally.
+  // The descriptive prompt (v4) is enough to trigger furniture addition.
 
   // Try gpt-image-1 first (requires Usage Tier 1+)
   try {
     const response = await openai.images.edit({
       model: "gpt-image-1",
       image: imageFile,
-      mask: maskFile,
       prompt,
       n: 1,
       size,
@@ -222,14 +121,9 @@ async function tryOpenAI(
     type: "image/png",
   });
 
-  // dall-e-2 also benefits from the staging mask at its max size (1024x1024)
-  const dalleMask = createStagingMask(1024, 1024);
-  const dalleMaskFile = new File([new Uint8Array(dalleMask)], "mask.png", { type: "image/png" });
-
   const response = await openai.images.edit({
     model: "dall-e-2",
     image: dalleFile,
-    mask: dalleMaskFile,
     prompt: buildDalle2Prompt(stylePrompt),
     n: 1,
     size: "1024x1024",
