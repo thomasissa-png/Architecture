@@ -82,8 +82,8 @@ function buildSurfacesFluxPrompt(surfacePrompt: string): string {
 function buildFurnitureResponsesPrompt(furniturePrompt: string): string {
   return [
     `Add the following furniture and decoration into this photo of a finished room: ${furniturePrompt}.`,
-    "Distribute furniture across the FULL DEPTH of the room. If the room is deep or has multiple zones (e.g. under a mezzanine, an alcove, a back area), place a primary furniture group in the foreground AND a secondary group further back (reading nook, small desk, console table, side chair). Do not leave the back of the room empty.",
-    "Place all objects naturally on the existing floor with correct perspective, scale, and shadows consistent with the existing light direction.",
+    "Distribute furniture across the FULL DEPTH and WIDTH of the room. If the room is deep or has multiple zones (e.g. under a mezzanine, an alcove, a back area), place a primary furniture group in the foreground AND a secondary group further back (reading nook, small desk, console table, side chair). If the room is also wide, add a lateral anchor (accent chair, floor lamp, or side table) on the opposite side to balance the composition. Do not leave the back or sides of the room empty.",
+    "Place all objects naturally on the existing floor. Every piece of furniture — including those in the back of the room — must have correct perspective, scale, and cast realistic shadows consistent with the existing light direction and intensity.",
     "ONLY add freestanding objects that rest on the floor or sit on existing surfaces. Do NOT attach anything to walls. No wall-mounted art, no built-in shelving, no curtains.",
     "Room structure is LOCKED: every wall, window, door, ceiling, and floor surface must remain pixel-identical to the input. No new openings, no color shift on any surface.",
     "If the input has zero windows, the output must have zero windows.",
@@ -95,7 +95,7 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string): string {
 function buildFurnitureFluxPrompt(furniturePrompt: string): string {
   return [
     `${furniturePrompt}, placed naturally across the full depth of this finished room interior.`,
-    "Distribute furniture in depth: primary group in foreground, secondary group in the back of the room if space allows. Do not leave rear areas empty.",
+    "Distribute furniture in depth and width: primary group in foreground, secondary group in the back if space allows, lateral anchor (accent chair, floor lamp) on the opposite side if room is wide. Do not leave rear or side areas empty.",
     "Freestanding furniture only. No wall-mounted objects, no built-in shelving, no curtains.",
     "Every wall, floor, and ceiling surface identical to input — same colors, same textures, no new openings.",
     "Same room geometry, same proportions, same camera angle, same lighting conditions.",

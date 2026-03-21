@@ -331,11 +331,19 @@ agents/
     - Formulation conditionnelle : "if the room is deep or has multiple zones" — neutre sur les petites pieces
     - Suggestion de zone secondaire : "reading nook, small desk, console table, side chair" — objets legers qui n'ecrasent pas l'espace
     - Applique dans route.ts (pas dans les stylePrompts) car c'est une contrainte de COMPOSITION, pas de STYLE
-96. Apprentissages :
+96. HAUTE : Ajout distribution LATERALE en plus de la profondeur
+    - Probleme : sur les pieces larges (lofts, double volume), la zone face aux baies vitrees restait vide
+    - Solution : directive "If the room is also wide, add a lateral anchor (accent chair, floor lamp, side table)"
+    - Egalement conditionnel — neutre sur les pieces etroites
+97. HAUTE : Renforcement ombres portees sur mobilier en profondeur
+    - Probleme : le mobilier en zone secondaire (fond de piece) semblait "flotter" sans ombres
+    - Solution : directive explicite "Every piece of furniture — including those in the back — must cast realistic shadows"
+98. Apprentissages :
     - Les modeles IA composent comme des photographes : sujet au premier plan, arriere-plan vide
     - Les furniturePrompts decrivent un ENSEMBLE de meubles, pas une SCENOGRAPHIE spatiale
     - La directive spatiale doit etre conditionnelle pour ne pas surcharger les petites pieces
-    - "If space allows" / "if the room is deep" = le modele decide intelligemment selon la geometrie
+    - "If space allows" / "if the room is deep/wide" = le modele decide intelligemment selon la geometrie
+    - Les ombres portees sont moins detaillees sur les objets eloignes — il faut le specifier explicitement
 
 ## Regles de Developpement
 
