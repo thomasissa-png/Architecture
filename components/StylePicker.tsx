@@ -20,7 +20,7 @@ const STYLES: StyleOption[] = [
     surfacePrompt:
       "Scandinavian minimalist: pale matte white walls, light oak hardwood floor with visible wood grain, smooth white ceiling, simple matte black flush-mount ceiling light",
     furniturePrompt:
-      "Scandinavian furniture: large three-seat modular sofa in oatmeal boucle with low rounded arms and birch legs 230cm wide, light birch rectangular coffee table with tapered legs 120cm, cream wool loop-pile area rug 200x300cm, matte black arched floor lamp with dome shade, sheepskin throw draped over one sofa arm, white ceramic ribbed vases and taper candles on the table, small round birch side table with stacked design books, potted trailing pothos in light grey stoneware planter, dried birch branches in a tall cylindrical stoneware vase, two textured linen cushions in dusty blue and warm grey",
+      "Scandinavian furniture with clean geometric lines: large three-seat modular sofa in oatmeal boucle with low squared arms and birch legs 230cm wide, light birch rectangular coffee table with slim tapered legs 120cm, cream wool loop-pile area rug 200x300cm, matte black arched floor lamp with rounded matte white dome shade as signature pendant, sheepskin throw draped over one sofa arm, white ceramic ribbed vases and taper candles on the table, small round birch side table with stacked design books, potted trailing pothos in light grey stoneware planter, dried birch branches in a tall cylindrical stoneware vase, two textured linen cushions in dusty blue and warm grey",
   },
   {
     id: "contemporary",
@@ -40,7 +40,7 @@ const STYLES: StyleOption[] = [
     surfacePrompt:
       "Industrial loft: light grey walls with subtle raw concrete texture keeping the same overall brightness as the input photo, polished light grey concrete floor, ceiling with original structure preserved, matte black industrial pendant light with metal shade and visible Edison filament bulb",
     furniturePrompt:
-      "Industrial furniture: large three-seat worn leather sofa in warm cognac with visible patina stitching and riveted seams 230cm wide, reclaimed wood and black welded steel rectangular coffee table 130cm, faded vintage Persian rug in muted red and navy 200x300cm, matte black open metal bookshelf 180cm tall with books and aged brass objects, black metal factory stool as side table, potted large fiddle leaf fig in corrugated metal container, leather and black steel butterfly chair, aged brass industrial desk lamp on the bookshelf, two weathered leather cushions",
+      "Industrial furniture: large three-seat worn leather sofa in warm cognac with visible patina stitching and riveted seams 230cm wide, reclaimed wood and black welded steel rectangular coffee table 130cm, faded vintage Persian rug in muted red and navy 200x300cm, matte black open metal bookshelf 180cm tall with books and aged brass objects, oversized vintage industrial clock on the top shelf as signature piece, black metal factory stool as side table, potted large fiddle leaf fig in corrugated metal container, leather and black steel butterfly chair, aged brass industrial desk lamp on the bookshelf, two weathered leather cushions",
   },
   {
     id: "japandi",
@@ -58,9 +58,9 @@ const STYLES: StyleOption[] = [
     description: "Géométrie dorée, velours, luxe années 20",
     emoji: "✨",
     surfacePrompt:
-      "Art Deco: warm ivory matte walls with smooth finish, dark polished wood parquet floor in herringbone pattern, smooth ceiling with simple elegant cornice trim, brass and frosted glass geometric pendant chandelier",
+      "Art Deco: warm ivory matte walls with smooth finish keeping the same overall brightness as the input photo, dark stained herringbone parquet refinish on the existing floor, smooth ceiling with simple elegant cornice trim, brass and frosted glass geometric pendant chandelier",
     furniturePrompt:
-      "Art Deco furniture: channel-tufted velvet sofa in deep emerald green with polished brass legs 230cm wide arranged symmetrically in the room, round polished brass coffee table with smoked glass top on pedestal base 90cm diameter, geometric patterned area rug in black gold and cream 200x300cm, fluted dark lacquer drinks cabinet with brass handles 120cm tall, marble-top brass side table with crystal decanter and gold-rimmed glasses, tall brass floor lamp with pleated cream silk shade, potted areca palm in polished brass planter, matching pair of brass table lamps on side tables flanking the sofa, velvet cushions in sapphire and gold with geometric patterns",
+      "Art Deco furniture: channel-tufted velvet sofa in deep emerald green with polished brass legs 230cm wide arranged symmetrically in the room, round polished brass coffee table with smoked glass top on pedestal base 90cm diameter, geometric patterned area rug in black gold and cream 200x300cm, fluted dark lacquer drinks cabinet with brass handles 120cm tall, marble-top brass side table with crystal decanter and gold-rimmed glasses, tall brass floor lamp with pleated cream silk shade, brass sunburst mirror leaning against the wall on the drinks cabinet as signature piece, potted areca palm in polished brass planter, matching pair of brass table lamps on side tables flanking the sofa, velvet cushions in sapphire and gold with geometric patterns",
   },
   {
     id: "mid-century",
@@ -88,7 +88,7 @@ const STYLES: StyleOption[] = [
     description: "Moulures, parquet, élégance parisienne",
     emoji: "🏛️",
     surfacePrompt:
-      "Haussmannian Parisian: soft warm grey walls with smooth matte finish, light oak herringbone parquet floor with classic proportions, smooth white ceiling with simple period ceiling rose, elegant contemporary pendant light in brass and white glass",
+      "Haussmannian Parisian: soft warm grey walls with smooth matte finish keeping the same overall brightness as the input photo, light oak herringbone parquet refinish with classic proportions, smooth white ceiling with simple period ceiling rose, elegant contemporary pendant light in brass and white glass",
     furniturePrompt:
       "Haussmannian furniture: velvet sofa with curved back and turned dark wood legs in muted sage green 220cm wide, contemporary round white marble coffee table with slim brass legs 90cm diameter, elegant wool area rug in soft grey and cream 200x300cm, upholstered Louis XV-style bergère armchair in dusty blue velvet, oversized gilded frame mirror leaning against the wall on the floor 150cm tall, sculptural contemporary brass floor lamp with linen shade, art books and ceramic objects on the table, potted white orchid in simple white ceramic pot, brass candlesticks on a slim marble console table against the wall",
   },
@@ -110,7 +110,7 @@ const STYLES: StyleOption[] = [
     surfacePrompt:
       "Modern cozy: warm cream matte walls, light oak or warm-toned wood floor with gentle grain, smooth white ceiling, fabric drum pendant light in warm oatmeal tone with soft diffused glow",
     furniturePrompt:
-      "Modern cozy furniture: oversized deep boucle sofa in warm cream with rounded arms and wide cushioned seats 260cm wide, round light oak coffee table with thick turned legs 100cm diameter, layered wool area rug in cream and soft blush 200x300cm, chunky hand-knit throw blanket in cream draped over one armrest, cushions in cream camel and soft blush textures, natural sheepskin rug draped beside the sofa, soft fabric table lamp with warm glow on a round oak side table, camel boucle reading armchair with cashmere throw, pillar candles and stacked linen-bound books on the coffee table, trailing potted plant on the side table",
+      "Modern cozy furniture with organic rounded forms: oversized deep boucle sofa in warm cream with plump rounded arms and wide cushioned seats 260cm wide, round light oak coffee table with thick turned legs 100cm diameter, layered wool area rug in cream and soft blush 200x300cm, chunky hand-knit throw blanket in cream draped over one armrest, cushions in cream camel and soft blush textures, natural sheepskin rug draped beside the sofa, soft fabric table lamp with warm glow on a round oak side table, camel boucle reading armchair with cashmere throw, pillar candles and stacked linen-bound books on the coffee table, trailing potted plant on the side table",
   },
   {
     id: "wabi-sabi",
@@ -128,7 +128,7 @@ const STYLES: StyleOption[] = [
     description: "Couleurs vives, motifs audacieux, personnalité",
     emoji: "🎨",
     surfacePrompt:
-      "Maximalist eclectic: rich deep teal or plum accent on one wall with remaining walls in warm white, polished dark wood floor with rich warm tone, smooth white ceiling, dramatic sculptural pendant light in brass with colored glass elements",
+      "Maximalist eclectic: rich deep teal or plum accent on one wall with remaining walls in warm white keeping the same overall brightness as the input photo, polished dark wood refinish on the existing floor, smooth white ceiling, dramatic sculptural pendant light in brass with colored glass elements",
     furniturePrompt:
       "Maximalist furniture: bold jewel-toned velvet sofa in fuchsia or cobalt blue with brass legs 230cm wide, brass and marble side table overflowing with art books and curated objects, layered rugs mixing faded vintage Persian and contemporary bold graphic patterns 200x300cm, sculptural brass floor lamp with oversized colored shade, mixed throw pillows in clashing patterns that harmonize — leopard print velvet and bold geometric, eclectic collection of framed artwork leaning against walls on the floor, large potted monstera in colorful glazed ceramic pot, vintage brass tray with pillar candles and small sculptural objects on the coffee table, ornate round coffee table in lacquered color with brass inlay 100cm, room 70 percent furnished with curated abundance",
   },
