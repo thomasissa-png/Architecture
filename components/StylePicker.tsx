@@ -158,19 +158,19 @@ export default function StylePicker({
               onClick={() => handleStyleClick(style)}
               role="radio"
               aria-checked={isSelected}
-              className={`group text-left p-5 rounded-2xl border transition-all duration-300 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
+              className={`group text-left p-3.5 sm:p-5 rounded-2xl border transition-all duration-300 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
                 isSelected
                   ? "border-foreground bg-foreground/[0.02] shadow-sm"
                   : "border-gray-200 hover:border-gray-300"
               }`}
             >
-              <span className="text-xl mb-3 block" aria-hidden="true">
+              <span className="text-lg sm:text-xl mb-2 sm:mb-3 block" aria-hidden="true">
                 {style.emoji}
               </span>
-              <h4 className="text-sm font-semibold text-foreground mb-1 tracking-tight">
+              <h4 className="text-sm font-semibold text-foreground mb-0.5 sm:mb-1 tracking-tight">
                 {style.name}
               </h4>
-              <p className="text-[11px] text-muted font-light leading-relaxed">
+              <p className="text-xs sm:text-[11px] text-muted font-light leading-relaxed">
                 {style.description}
               </p>
             </button>
@@ -181,7 +181,7 @@ export default function StylePicker({
           onClick={handleCustomClick}
           role="radio"
           aria-checked={isCustom}
-          className={`group text-left p-5 rounded-2xl border border-dashed transition-all duration-300 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
+          className={`group text-left p-3.5 sm:p-5 rounded-2xl border border-dashed transition-all duration-300 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
             isCustom
               ? "border-foreground bg-foreground/[0.02] shadow-sm"
               : "border-gray-300 hover:border-gray-400"

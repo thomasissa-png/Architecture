@@ -263,12 +263,12 @@ export default function Home() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-gray-200/40">
-        <div className="max-w-6xl mx-auto px-8 py-4 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 py-3 sm:py-4 flex items-center justify-between">
           <h1 className="text-xl font-semibold text-foreground tracking-tighter">
             VisiR&eacute;nov
           </h1>
-          <nav className="flex items-center gap-6">
-            <a href="#pricing" className="text-xs text-muted font-light hover:text-foreground transition-colors hidden sm:block">
+          <nav className="flex items-center gap-4 sm:gap-6">
+            <a href="#pricing" className="text-xs text-muted font-light hover:text-foreground transition-colors">
               Tarifs
             </a>
             <a
@@ -282,7 +282,7 @@ export default function Home() {
       </header>
 
       {/* Hero */}
-      <section className="pt-28 pb-16 px-8">
+      <section className="pt-24 sm:pt-28 pb-12 sm:pb-16 px-5 sm:px-8">
         <div ref={heroRef} className="reveal max-w-4xl mx-auto text-center">
           {/* Multi-audience pills */}
           <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
@@ -296,12 +296,12 @@ export default function Home() {
             ))}
           </div>
 
-          <h2 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-foreground leading-[1.05] tracking-tighter mb-6">
+          <h2 className="text-3xl sm:text-5xl lg:text-7xl font-bold text-foreground leading-[1.08] tracking-tighter mb-5 sm:mb-6">
             Visualisez vos espaces
             <br />
             <span className="font-light text-muted">meubl&eacute;s par l&apos;IA</span>
           </h2>
-          <p className="text-lg text-muted font-light leading-relaxed max-w-2xl mx-auto mb-8">
+          <p className="text-base sm:text-lg text-muted font-light leading-relaxed max-w-2xl mx-auto mb-6 sm:mb-8">
             Uploadez une photo de pi&egrave;ce vide, choisissez un style parmi 12 ambiances, et recevez un visuel meubl&eacute; en quelques secondes. Pour les pros comme pour les particuliers.
           </p>
 
@@ -366,7 +366,7 @@ export default function Home() {
           </div>
 
           {/* Social proof line */}
-          <p className="text-xs text-muted/50 font-light mb-6">
+          <p className="text-xs text-muted/70 font-light mb-6">
             12 styles disponibles &middot; R&eacute;sultat en 10-30 secondes &middot; T&eacute;l&eacute;chargement HD gratuit
           </p>
 
@@ -383,7 +383,7 @@ export default function Home() {
       </section>
 
       {/* Use cases */}
-      <section className="pb-16 px-8">
+      <section className="pb-16 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4">
           {USE_CASES.map((uc, i) => (
             <div key={uc.label} className={`text-center p-6 rounded-2xl border border-gray-200/60 bg-white/40 ${i === 0 ? "animate-fade-in-up" : i === 1 ? "animate-fade-in-up animate-delay-100" : "animate-fade-in-up animate-delay-200"}`}>
@@ -398,7 +398,7 @@ export default function Home() {
       <div className="max-w-24 mx-auto border-t border-gray-200/60" />
 
       {/* Tool Section */}
-      <section id="outil" className="pt-24 pb-32 px-8">
+      <section id="outil" className="pt-16 sm:pt-24 pb-20 sm:pb-32 px-5 sm:px-8 scroll-mt-16">
         <div ref={toolRef} className="reveal max-w-4xl mx-auto">
           <div className="text-center mb-16">
             <h3 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight mb-3">
@@ -421,7 +421,7 @@ export default function Home() {
 
           {/* Step 2: Style */}
           {files.length > 0 && (
-            <div id="step-style" className="mb-16 animate-fade-in-up scroll-mt-28">
+            <div id="step-style" className="mb-16 animate-fade-in-up scroll-mt-20">
               <h4 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
                 02 — Style
               </h4>
@@ -586,7 +586,7 @@ export default function Home() {
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="py-24 px-8 bg-white/40">
+      <section id="pricing" className="py-16 sm:py-24 px-5 sm:px-8 bg-white/40">
         <div ref={pricingRef} className="reveal max-w-4xl mx-auto">
           <div className="text-center mb-14">
             <h3 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight mb-3">
@@ -683,23 +683,23 @@ export default function Home() {
       </section>
 
       {/* Disclaimer */}
-      <div className="text-center px-8 pb-6 pt-8">
+      <div className="text-center px-5 sm:px-8 pb-6 pt-8">
         <p className="text-[11px] text-muted/50 font-light">
           Les visuels g&eacute;n&eacute;r&eacute;s sont des projections indicatives &agrave; des fins d&apos;inspiration et de pr&eacute;commercialisation.
         </p>
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-gray-200/40 py-10 px-8">
+      <footer className="border-t border-gray-200/40 py-10 px-5 sm:px-8">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted/60 font-light">
           <p>Pour les architectes, marchands de biens et particuliers</p>
           <div className="flex items-center gap-6">
-            <a href="#pricing" className="hover:text-foreground transition-colors">
+            <a href="#pricing" className="hover:text-foreground transition-colors py-2">
               Tarifs
             </a>
             <a
               href="mailto:contact@visirenov.fr"
-              className="hover:text-foreground transition-colors"
+              className="hover:text-foreground transition-colors py-2"
             >
               Contact
             </a>

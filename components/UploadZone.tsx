@@ -72,7 +72,7 @@ export default function UploadZone({ files, onFilesChange }: UploadZoneProps) {
     <div className="space-y-5">
       <div
         {...getRootProps()}
-        className={`relative border border-dashed rounded-2xl p-14 text-center cursor-pointer transition-all duration-300 ${
+        className={`relative border border-dashed rounded-2xl p-8 sm:p-14 text-center cursor-pointer transition-all duration-300 ${
           isDragActive
             ? "border-foreground bg-foreground/[0.02] scale-[1.01]"
             : files.length >= MAX_FILES
@@ -102,7 +102,8 @@ export default function UploadZone({ files, onFilesChange }: UploadZoneProps) {
           ) : (
             <>
               <p className="text-foreground text-sm font-medium">
-                Glissez vos photos ici
+                <span className="sm:hidden">Appuyez pour ajouter des photos</span>
+                <span className="hidden sm:inline">Glissez vos photos ici</span>
               </p>
               <p className="text-muted text-xs font-light">
                 ou cliquez pour s&eacute;lectionner — JPG, PNG, WEBP, HEIC — max 10 Mo — jusqu&apos;&agrave; {MAX_FILES} photos
@@ -134,7 +135,7 @@ export default function UploadZone({ files, onFilesChange }: UploadZoneProps) {
       )}
 
       {files.length > 0 && (
-        <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           {files.map((file, index) => (
             <div key={`${file.name}-${index}`} className="relative group">
               <div className="aspect-[4/3] rounded-xl overflow-hidden bg-gray-100">
@@ -148,7 +149,7 @@ export default function UploadZone({ files, onFilesChange }: UploadZoneProps) {
               <button
                 onClick={() => removeFile(index)}
                 aria-label={`Supprimer ${file.name}`}
-                className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-foreground text-background rounded-full flex items-center justify-center text-[10px] sm:opacity-0 sm:group-hover:opacity-100 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                className="absolute -top-2 -right-2 w-7 h-7 sm:w-5 sm:h-5 bg-foreground text-background rounded-full flex items-center justify-center text-xs sm:text-[10px] sm:opacity-0 sm:group-hover:opacity-100 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
               >
                 &times;
               </button>
