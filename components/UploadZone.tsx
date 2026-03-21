@@ -149,11 +149,11 @@ export default function UploadZone({ files, onFilesChange }: UploadZoneProps) {
               <button
                 onClick={() => removeFile(index)}
                 aria-label={`Supprimer ${file.name}`}
-                className="absolute -top-2 -right-2 w-7 h-7 sm:w-5 sm:h-5 bg-foreground text-background rounded-full flex items-center justify-center text-xs sm:text-[10px] sm:opacity-0 sm:group-hover:opacity-100 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                className="absolute -top-2 -right-2 w-7 h-7 sm:w-5 sm:h-5 bg-foreground text-background rounded-full flex items-center justify-center text-xs sm:text-[10px] sm:opacity-60 sm:group-hover:opacity-100 transition-opacity focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
               >
                 &times;
               </button>
-              <p className="text-[10px] text-muted/60 mt-1.5 truncate font-light">
+              <p className="text-[10px] text-muted/70 mt-1.5 truncate font-light">
                 {file.name}
               </p>
             </div>

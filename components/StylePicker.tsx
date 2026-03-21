@@ -149,7 +149,7 @@ export default function StylePicker({
 
   return (
     <div className="space-y-4">
-      <div role="radiogroup" aria-label="Choix du style" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+      <div role="radiogroup" aria-label="Choix du style" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
         {STYLES.map((style) => {
           const isSelected = selectedStyle?.id === style.id && !isCustom;
           return (
@@ -158,9 +158,9 @@ export default function StylePicker({
               onClick={() => handleStyleClick(style)}
               role="radio"
               aria-checked={isSelected}
-              className={`group text-left p-3.5 sm:p-5 rounded-2xl border transition-all duration-300 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
+              className={`group text-left p-3.5 sm:p-5 rounded-2xl border transition-all duration-300 hover:shadow-sm hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
                 isSelected
-                  ? "border-foreground bg-foreground/[0.02] shadow-sm"
+                  ? "border-foreground bg-foreground/[0.02] shadow-sm scale-[1.02]"
                   : "border-gray-200 hover:border-gray-300"
               }`}
             >

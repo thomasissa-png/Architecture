@@ -399,7 +399,7 @@ export default function Home() {
 
       {/* Tool Section */}
       <section id="outil" className="pt-16 sm:pt-24 pb-20 sm:pb-32 px-5 sm:px-8 scroll-mt-16">
-        <div ref={toolRef} className="reveal max-w-4xl mx-auto">
+        <div ref={toolRef} className="reveal max-w-5xl mx-auto">
           <div className="text-center mb-16">
             <h3 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight mb-3">
               Transformez vos photos
@@ -436,11 +436,11 @@ export default function Home() {
 
           {/* Generate Button */}
           {canGenerate && results.length === 0 && (
-            <div id="step-generate" className="text-center mb-16 animate-fade-in-up">
+            <div id="step-generate" className="text-center mb-16 animate-fade-in-up sticky bottom-6 z-40">
               <button
                 onClick={handleGenerate}
                 disabled={isGenerating}
-                className="inline-flex items-center gap-3 bg-foreground text-background px-10 py-4 rounded-full font-medium text-base hover:bg-foreground/85 transition-all disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+                className="inline-flex items-center gap-3 bg-foreground text-background px-10 py-4 rounded-full font-medium text-base hover:bg-foreground/85 transition-all disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 shadow-lg"
               >
                 {isGenerating ? (
                   <>
@@ -492,7 +492,7 @@ export default function Home() {
                           </div>
                         ) : done ? null : (
                           <div className="bg-white/80 backdrop-blur-sm rounded-xl px-4 py-2 shadow-sm">
-                            <span className="text-xs text-muted/60 font-light">En attente</span>
+                            <span className="text-xs text-muted/70 font-light">En attente</span>
                           </div>
                         )}
                       </div>
@@ -510,7 +510,7 @@ export default function Home() {
 
               {/* Timer */}
               <div className="text-center">
-                <p className="text-xs text-muted/50 font-light">
+                <p className="text-xs text-muted/70 font-light">
                   {generationElapsed < 10
                     ? `${generationElapsed}s — Estimation : 10-30 secondes par image`
                     : generationElapsed < 30
@@ -684,14 +684,14 @@ export default function Home() {
 
       {/* Disclaimer */}
       <div className="text-center px-5 sm:px-8 pb-6 pt-8">
-        <p className="text-[11px] text-muted/50 font-light">
+        <p className="text-[11px] text-muted/70 font-light">
           Les visuels g&eacute;n&eacute;r&eacute;s sont des projections indicatives &agrave; des fins d&apos;inspiration et de pr&eacute;commercialisation.
         </p>
       </div>
 
       {/* Footer */}
       <footer className="border-t border-gray-200/40 py-10 px-5 sm:px-8">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted/60 font-light">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted/70 font-light">
           <p>Pour les architectes, marchands de biens et particuliers</p>
           <div className="flex items-center gap-6">
             <a href="#pricing" className="hover:text-foreground transition-colors py-2">

@@ -109,7 +109,7 @@ export default function ImageComparator({
           className="aspect-[4/3] sm:aspect-[16/10]"
           style={{ width: "100%" }}
           handle={
-            <div className="flex flex-col items-center h-full">
+            <div className="flex flex-col items-center h-full" role="slider" aria-label="Comparer avant et apr\u00e8s" aria-valuemin={0} aria-valuemax={100} aria-valuenow={50}>
               <div className="w-px h-full bg-white/80" />
               <div className="absolute top-1/2 -translate-y-1/2 w-11 h-11 sm:w-9 sm:h-9 bg-white rounded-full shadow-md flex items-center justify-center">
                 <svg className="w-4 h-4 text-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -194,7 +194,7 @@ export default function ImageComparator({
       </div>
 
       {model && (
-        <p className="text-center text-[10px] text-muted/40 font-light">
+        <p className="text-center text-[10px] text-muted/70 font-light">
           G&eacute;n&eacute;r&eacute; avec {model}
         </p>
       )}
