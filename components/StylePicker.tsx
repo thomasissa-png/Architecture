@@ -18,9 +18,9 @@ const STYLES: StyleOption[] = [
     description: "Bois clair, tons neutres, épure absolue",
     emoji: "🪵",
     surfacePrompt:
-      "Scandinavian minimalist: pale matte white walls, light oak hardwood floor with visible wood grain, smooth white ceiling, simple matte black flush-mount ceiling light",
+      "Scandinavian minimalist: pale matte white walls, light oak hardwood floor in soaped or whitewashed finish with visible grain, smooth white ceiling, simple matte black flush-mount ceiling light",
     furniturePrompt:
-      "Scandinavian furniture with clean geometric lines: large three-seat modular sofa in oatmeal boucle with low squared arms and birch legs 230cm wide, light birch rectangular coffee table with slim tapered legs 120cm, cream wool loop-pile area rug 200x300cm, matte black arched floor lamp with rounded matte white dome shade as signature pendant, sheepskin throw draped over one sofa arm, white ceramic ribbed vases and taper candles on the table, small round birch side table with stacked design books, potted trailing pothos in light grey stoneware planter, dried birch branches in a tall cylindrical stoneware vase, two textured linen cushions in dusty blue and warm grey",
+      "Scandinavian furniture with clean geometric lines: large straight three-seat sofa in oatmeal boucle with low squared arms and birch legs 230cm wide, light birch rectangular coffee table with slim tapered legs 120cm, cream wool loop-pile area rug 200x300cm, matte black arched floor lamp with rounded matte white dome shade as signature pendant, sheepskin throw draped over one sofa arm, white ceramic ribbed vases and taper candles on the table, small round birch side table with stacked design books, potted trailing pothos in light grey stoneware planter, dried birch branches in a tall cylindrical stoneware vase, two textured linen cushions in dusty blue and warm grey",
   },
   {
     id: "contemporary",
@@ -38,9 +38,9 @@ const STYLES: StyleOption[] = [
     description: "Métal, béton, volumes bruts sublimés",
     emoji: "⚙️",
     surfacePrompt:
-      "Industrial loft: light grey walls with subtle raw concrete texture keeping the same overall brightness as the input photo, polished light grey concrete floor, ceiling with original structure preserved, matte black industrial pendant light with metal shade and visible Edison filament bulb",
+      "Industrial loft: light grey walls with subtle raw concrete texture keeping the same overall brightness as the input photo, smooth grey concrete floor with matte waxed finish, ceiling with original structure preserved, matte black industrial pendant light with metal shade and visible Edison filament bulb",
     furniturePrompt:
-      "Industrial furniture: large three-seat worn leather sofa in warm cognac with visible patina stitching and riveted seams 230cm wide, reclaimed wood and black welded steel rectangular coffee table 130cm, faded vintage Persian rug in muted red and navy 200x300cm, matte black open metal bookshelf 180cm tall with books and aged brass objects, oversized vintage industrial clock on the top shelf as signature piece, black metal factory stool as side table, potted large fiddle leaf fig in corrugated metal container, leather and black steel butterfly chair, aged brass industrial desk lamp on the bookshelf, two weathered leather cushions",
+      "Industrial furniture: large three-seat worn leather sofa in warm cognac with visible patina stitching and riveted seams 230cm wide, reclaimed wood and black welded steel rectangular coffee table 130cm, faded vintage Persian rug in muted red and navy 200x300cm, raw steel open-frame bookshelf with visible welds 180cm tall with books and aged brass objects, oversized vintage industrial clock on the top shelf as signature piece, black metal factory stool as side table, potted large fiddle leaf fig in corrugated metal container, leather and black steel butterfly chair, aged brass industrial desk lamp on the bookshelf, two weathered leather cushions",
   },
   {
     id: "japandi",
