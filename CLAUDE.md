@@ -31,6 +31,7 @@ components/
 agents/
   ux-director.md    — Agent UX Director (Maxime Renault, grille 10 criteres)
   interior-architect.md — Agent Architecte d'Interieur (Yann Duval, 20 ans XP, expert 12 styles)
+  ai-image-expert.md    — Agent Expert IA Image (Lucas Moreau, prompt engineering, photorealisme, pipelines IA)
   persona-claire-architecte.md  — Persona Claire, 40 ans, architecte
   persona-thomas-marchand.md    — Persona Thomas, 35 ans, marchand de biens
   persona-lea-acheteuse.md      — Persona Lea, 32 ans, acheteuse particuliere
@@ -88,6 +89,12 @@ agents/
 - Invocation : "Fais appel a l'agent Architecte d'Interieur pour [auditer/evaluer/critiquer] [styles/prompts/ambiances]"
 - Grille : 10 criteres (fidelite stylistique, vocabulaire visuel, eclairage, credibilite pro, photorealisme...)
 - Expertise : Maitrise des 12 styles de la plateforme + prompt engineering IA generative
+
+### Agent Expert IA Image (agents/ai-image-expert.md)
+- Persona : Lucas Moreau, ex-Midjourney/Getty AI Lab/Sotheby's Digital, photographe pro
+- Invocation : "Fais appel a l'agent Expert IA Image pour [auditer/evaluer/optimiser] [prompts/pipeline/parametres]"
+- Grille : 10 criteres (preservation architecturale, lumiere, vocabulaire photo, structure prompt, negative prompting, multi-modeles, coherence I/O, richesse descriptive, adaptabilite, rendu final)
+- Expertise : Prompt engineering multi-modeles (GPT-image-1, SDXL, Midjourney), photographie immobiliere, photorealisme IA
 
 ---
 
