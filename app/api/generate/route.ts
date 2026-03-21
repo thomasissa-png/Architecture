@@ -59,11 +59,12 @@ function buildSurfacesResponsesPrompt(surfacePrompt: string): string {
   return [
     "Edit this photo of a room.",
     `Apply this surface finish: ${surfacePrompt}.`,
-    "Refinish the floor, repaint or replaster walls, update the ceiling light fixture to match the style description above.",
+    "Refinish the floor and repaint or replaster the walls. For the ceiling light fixture, follow the style description above exactly.",
+    "Preserve the ceiling geometry exactly — vaults, beams, ribs, arches, and structural elements must remain visible and unchanged. Apply the finish (paint or plaster) OVER the existing geometry, do not smooth or flatten any structural features.",
     "Keep the room COMPLETELY EMPTY — no furniture, no rugs, no textiles, no decoration, no objects.",
     "The number of windows and doors must be EXACTLY the same as in the input. If there are zero windows, there must be zero windows in the output.",
     "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation.",
-    "Preserve the existing lighting conditions, light direction, shadow angles, color temperature, and exposure exactly as in the input.",
+    "Preserve the existing light direction, shadow angles, shadow intensity, color temperature, and highlight/shadow distribution. The overall room may appear slightly brighter due to lighter surfaces — this is acceptable — but shadow patterns and light gradients must remain in the same positions and relative intensity.",
     "DSLR full-frame wide-angle 16-35mm f/8, deep depth of field, sharp focus throughout. No text, watermarks, or logos in the output.",
   ].join(" ");
 }
@@ -71,10 +72,11 @@ function buildSurfacesResponsesPrompt(surfacePrompt: string): string {
 function buildSurfacesFluxPrompt(surfacePrompt: string): string {
   return [
     `${surfacePrompt}, finished empty room interior.`,
-    "Refinished floor, repainted walls, updated ceiling light fixture.",
+    "Refinished floor, repainted walls. Ceiling light per style description.",
+    "Preserve ceiling geometry — vaults, beams, ribs, arches remain visible. Apply finish over existing structure.",
     "Completely empty room — no furniture, no rugs, no textiles, no objects.",
     "Exact same number of windows and doors as the original. Same room geometry, same proportions.",
-    "Preserve existing lighting conditions and camera angle.",
+    "Preserve existing light direction, shadow patterns, and camera angle.",
     "Photo-realistic interior photograph, DSLR full-frame 16-35mm f/8, deep DOF, sharp focus.",
   ].join(" ");
 }
