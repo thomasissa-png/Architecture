@@ -70,23 +70,54 @@ async function tryOpenAI(
 
   const size = getOpenAISize(width, height);
 
+  // Try gpt-image-1 first (requires Usage Tier 1+)
+  try {
+    const response = await openai.images.edit({
+      model: "gpt-image-1",
+      image: imageFile,
+      prompt,
+      n: 1,
+      size,
+      response_format: "b64_json",
+    });
+
+    const outputBase64 = response.data?.[0]?.b64_json;
+    if (!outputBase64) {
+      throw new Error("No image returned from OpenAI gpt-image-1");
+    }
+
+    return {
+      image: `data:image/png;base64,${outputBase64}`,
+      model: "OpenAI GPT-image-1",
+    };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("gpt-image-1 failed, trying dall-e-2:", msg);
+  }
+
+  // Fallback to dall-e-2 (available on all paid accounts)
+  // dall-e-2 only supports 256x256, 512x512, 1024x1024
+  const dalleFile = new File([imageBuffer], "input.png", {
+    type: "image/png",
+  });
+
   const response = await openai.images.edit({
-    model: "gpt-image-1",
-    image: imageFile,
+    model: "dall-e-2",
+    image: dalleFile,
     prompt,
     n: 1,
-    size,
+    size: "1024x1024",
     response_format: "b64_json",
   });
 
   const outputBase64 = response.data?.[0]?.b64_json;
   if (!outputBase64) {
-    throw new Error("No image returned from OpenAI");
+    throw new Error("No image returned from OpenAI dall-e-2");
   }
 
   return {
     image: `data:image/png;base64,${outputBase64}`,
-    model: "OpenAI GPT-image-1",
+    model: "OpenAI DALL-E 2",
   };
 }
 
