@@ -232,6 +232,26 @@ agents/
 68. Suppression sharp et code mask (inutile sans mask)
 69. Negative prompt SDXL enrichi : "dangling cables", "junction box", "unfinished floor"
 
+### Sprint 10 — Changement d'architecture API (Responses API + Flux Depth Pro)
+70. CRITIQUE : Abandon total de images.edit — outil d'inpainting inadapte pour l'edition de surfaces
+    - Sans mask : modele ultra-conservateur, copie l'input
+    - Mask full transparent : modele genere une image nouvelle, perd toute la geometrie
+    - Aucun juste milieu possible avec cette API
+71. CRITIQUE : Abandon SDXL img2img — prompt_strength trop grossier
+    - 0.35 = aucun changement visible
+    - 0.50 = geometrie perdue + meubles ajoutes malgre le negative prompt
+72. PRIMARY : Migration vers OpenAI Responses API (openai.responses.create)
+    - Le modele VOIT l'image via la vision (comme ChatGPT) et genere une version editee
+    - Tool image_generation avec input_fidelity: "high" preserve la geometrie
+    - Modele gpt-4.1 pour la meilleure qualite vision + generation
+    - Fondamentalement different de images.edit : vision contextuelle vs inpainting pixel
+73. FALLBACK : Flux Depth Pro sur Replicate (black-forest-labs/flux-depth-pro)
+    - Extrait automatiquement une depth map de l'image input
+    - Utilise la depth map pour contraindre la generation (geometrie 3D verrouillee)
+    - Permet le restyling de surface tout en preservant la structure spatiale
+74. Suppression de DALL-E 2 (deprecated, shutdown 2026-05-12)
+75. Reecriture complete de route.ts — architecture propre avec 2 providers
+
 ## Regles de Developpement
 
 - Design minimaliste, pas de surcharge visuelle
@@ -244,10 +264,10 @@ agents/
 
 ## Regles Prompts IA (CRITIQUE)
 
-- **TOUJOURS individualiser les prompts par modele** : chaque modele (GPT-image-1, DALL-E 2, SDXL) a son propre builder (buildGPTPrompt, buildDalle2Prompt, buildSDXLPrompt). Repercuter chaque modif sur les 3.
-- **Ne jamais oublier un fallback** : verifier les 3 builders + parametres API (quality, prompt_strength, negative_prompt)
-- **PAS de mask avec images.edit** : mask full transparent = le modele genere une image nouvelle (perd geometrie). Pas de mask = trop conservateur. L'API images.edit est un outil d'INPAINTING, pas de style transfer — inadapte pour l'edition de surfaces.
-- **SDXL img2img en priorite** : SDXL est concu pour le image-to-image avec controle fin via prompt_strength (0.50). GPT-image-1 via images.edit est le fallback uniquement.
+- **Responses API en priorite** : utiliser `openai.responses.create()` avec le tool `image_generation` + `input_fidelity: "high"`. Le modele VOIT l'image via la vision et genere une version editee. Fondamentalement different de `images.edit` (inpainting).
+- **Flux Depth Pro en fallback** : modele Replicate qui extrait une depth map de l'input pour verrouiller la geometrie 3D tout en permettant le restyling des surfaces.
+- **NE PAS utiliser images.edit** : c'est un outil d'inpainting. Sans mask = trop conservateur. Avec mask = perd toute la geometrie. Inadapte pour l'edition de surfaces.
+- **NE PAS utiliser SDXL img2img** : prompt_strength est un outil trop grossier. A 0.35 rien ne change, a 0.50 la geometrie est perdue et des meubles apparaissent malgre le negative prompt.
+- **DALL-E 2 est deprecated** (shutdown 2026-05-12) — ne plus utiliser.
 - **Pipeline 2 passes** : passe 1 = surfaces (murs, sol, plafond, luminaire), passe 2 = mobilier. Ne JAMAIS tout demander en une seule passe.
-- **Prompt COURT et instructif** : "Edit this photo. Keep exact same angle. Make surfaces finished." Pas de description de scene complete. Le modele doit editer, pas generer.
-- **Moins on demande = mieux c'est** : le modele preserve mieux la geometrie quand on demande peu de changements. Un prompt trop riche = scene recree de zero.
+- **Prompt COURT et instructif** : "Edit this photo of a room under construction. Keep same angle. Replace raw concrete floor..." Le modele doit editer, pas generer.

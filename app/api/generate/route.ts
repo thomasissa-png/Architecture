@@ -26,141 +26,101 @@ function checkRateLimit(ip: string): boolean {
 
 // ─── Prompt Engineering ──────────────────────────────────────────────
 //
-// STEP 1 ONLY — finish the room surfaces (walls, floor, ceiling, lighting).
-// No furniture. The goal is to take a raw/construction photo and produce
-// a clean, finished empty room that preserves the EXACT same geometry,
-// camera angle, perspective, and architectural proportions.
-//
-// Step 2 (furniture) will come later once step 1 is validated.
-//
-// Key principle: the less we ask the model to change, the better it
-// preserves the original image's geometry and camera angle.
+// STEP 1 ONLY — finish room surfaces (walls, floor, ceiling, lighting).
+// No furniture. Transform a construction-site photo into a clean,
+// finished empty room while preserving geometry + camera angle.
 
-function buildGPTPrompt(stylePrompt: string): string {
+function buildResponsesPrompt(stylePrompt: string): string {
   return [
-    "Edit this photo. This is a SURFACE-ONLY edit — do NOT change the room layout.",
-    "CRITICAL: Keep the EXACT same camera angle, the EXACT same perspective, the EXACT same room shape, the EXACT same wall positions, the EXACT same window positions and sizes, the EXACT same door positions. Do NOT crop, zoom, or reframe.",
-    "ONLY change surface finishes: REPLACE raw concrete floor with polished finished floor. REPLACE raw plaster with smooth painted walls. REPLACE unfinished ceiling with clean painted ceiling.",
-    "REMOVE exposed wires, dangling cables, junction boxes. ADD one ceiling light fixture. ADD baseboards. ADD finished outlet covers.",
-    "Keep the room EMPTY — absolutely no furniture, no table, no chair, no rug, no decoration, no objects.",
+    "Edit this photo of a room under construction.",
+    "Keep the exact same camera angle, perspective, and room shape.",
+    "Replace the raw concrete floor with a polished finished floor.",
+    "Replace raw plaster walls with smooth painted walls. Add baseboards.",
+    "Replace the unfinished ceiling with a clean painted ceiling.",
+    "Remove all exposed wires, dangling cables, and junction boxes.",
+    "Add one elegant ceiling light fixture where wires hang.",
+    "Add finished covers on all electrical outlets.",
+    "Keep the room completely empty — no furniture, no decoration.",
     `Color palette: ${stylePrompt}.`,
-    "Preserve existing lighting direction and color temperature.",
   ].join(" ");
 }
 
-function buildDalle2Prompt(stylePrompt: string): string {
-  const prompt = [
-    `Interior photo of a finished empty room with ${stylePrompt} color palette.`,
-    "Same exact room, same angle, same perspective as original photo.",
-    "Smooth painted walls with baseboards, polished floor, clean ceiling with one light fixture, finished outlet covers.",
-    "No exposed wires, no raw concrete, no construction debris. Preserve beams and ceiling structure.",
-    "Completely empty — no furniture, no objects, no decoration.",
-    "DSLR 16-35mm f/8, deep depth of field, sharp focus.",
-  ].join(" ");
-  return prompt.slice(0, 1000);
-}
-
-function buildSDXLPrompt(stylePrompt: string): string {
+function buildFluxPrompt(stylePrompt: string): string {
   return [
-    `${stylePrompt} color palette, beautifully finished empty room.`,
-    "Smooth painted walls with baseboards, polished floor, clean ceiling, elegant ceiling light fixture, finished outlet covers.",
-    "No exposed wires, no raw concrete, no construction debris, preserve beams.",
-    "No furniture, no rugs, no decoration.",
-    "Same room same angle same perspective same lighting.",
-    "DSLR 16-35mm f/8 interior photograph, deep depth of field, sharp focus.",
+    `Beautifully finished empty room, ${stylePrompt} color palette.`,
+    "Smooth painted walls with baseboards, polished floor, clean painted ceiling, elegant ceiling light fixture, finished outlet covers.",
+    "No exposed wires, no raw concrete, no construction debris.",
+    "Completely empty — no furniture, no rugs, no decoration, no objects.",
+    "Interior architecture photograph, DSLR 16-35mm f/8, deep depth of field, sharp focus, natural lighting.",
   ].join(" ");
 }
 
-const SDXL_NEGATIVE_PROMPT = [
-  "furniture", "sofa", "chair", "table", "bed", "rug", "curtains", "cushion",
-  "construction site", "exposed wires", "dangling cables", "junction box", "raw concrete", "raw plaster", "unfinished floor",
-  "blurry", "cartoon", "painting", "3D render", "watermark", "text",
-  "animal", "person", "different room", "different angle",
-  "distorted perspective", "fisheye", "different viewpoint", "new room", "stretched walls",
-  "shallow depth of field", "bokeh",
-].join(", ");
-
-// ─── Aspect Ratio Detection ────────────────────────────────────────
-function getOpenAISize(width?: number, height?: number): "1024x1024" | "1536x1024" | "1024x1536" {
-  if (!width || !height) return "1024x1024";
-  const ratio = width / height;
-  if (ratio > 1.3) return "1536x1024";
-  if (ratio < 0.77) return "1024x1536";
-  return "1024x1024";
-}
-
-// ─── OpenAI Provider ────────────────────────────────────────────────
-async function tryOpenAI(
+// ─── OpenAI Responses API (PRIMARY) ─────────────────────────────────
+//
+// Uses the Responses API with the image_generation tool.
+// The model SEES the image via vision and generates an edited version.
+// input_fidelity: "high" preserves geometry, lighting, and perspective.
+// This is fundamentally different from images.edit (inpainting).
+async function tryOpenAIResponses(
   imageBase64: string,
-  prompt: string,
-  stylePrompt: string,
-  width?: number,
-  height?: number
+  stylePrompt: string
 ): Promise<{ image: string; model: string }> {
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-  const imageBuffer = Buffer.from(imageBase64, "base64");
-  const imageFile = new File([new Uint8Array(imageBuffer)], "input.png", {
-    type: "image/png",
+  const prompt = buildResponsesPrompt(stylePrompt);
+
+  const response = await openai.responses.create({
+    model: "gpt-4.1",
+    input: [
+      {
+        role: "user",
+        content: [
+          {
+            type: "input_image",
+            image_url: `data:image/jpeg;base64,${imageBase64}`,
+            detail: "high",
+          },
+          {
+            type: "input_text",
+            text: prompt,
+          },
+        ],
+      },
+    ],
+    tools: [
+      {
+        type: "image_generation",
+        input_fidelity: "high",
+      },
+    ],
   });
 
-  const size = getOpenAISize(width, height);
+  // Extract the generated image from response output
+  const imageOutput = response.output.find(
+    (o: { type: string }) => o.type === "image_generation_call"
+  );
 
-  // GPT-image-1 images.edit without mask — used as fallback only.
-  // Without mask the model is conservative, but combined with a strong
-  // action-descriptive prompt it can still make surface changes.
-  try {
-    const response = await openai.images.edit({
-      model: "gpt-image-1",
-      image: imageFile,
-      prompt,
-      n: 1,
-      size,
-      quality: "high",
-      response_format: "b64_json",
-    });
-
-    const outputBase64 = response.data?.[0]?.b64_json;
-    if (!outputBase64) {
-      throw new Error("No image returned from OpenAI gpt-image-1");
-    }
-
-    return {
-      image: `data:image/png;base64,${outputBase64}`,
-      model: "OpenAI GPT-image-1",
-    };
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.error("gpt-image-1 failed, trying dall-e-2:", msg);
+  if (!imageOutput || !("result" in imageOutput)) {
+    throw new Error("No image generated by OpenAI Responses API");
   }
 
-  // Fallback: dall-e-2 (256/512/1024 only)
-  const dalleFile = new File([new Uint8Array(imageBuffer)], "input.png", {
-    type: "image/png",
-  });
-
-  const response = await openai.images.edit({
-    model: "dall-e-2",
-    image: dalleFile,
-    prompt: buildDalle2Prompt(stylePrompt),
-    n: 1,
-    size: "1024x1024",
-    response_format: "b64_json",
-  });
-
-  const outputBase64 = response.data?.[0]?.b64_json;
-  if (!outputBase64) {
-    throw new Error("No image returned from OpenAI dall-e-2");
+  const resultB64 = (imageOutput as { result: string }).result;
+  if (!resultB64) {
+    throw new Error("Empty image result from OpenAI Responses API");
   }
 
   return {
-    image: `data:image/png;base64,${outputBase64}`,
-    model: "OpenAI DALL-E 2",
+    image: `data:image/png;base64,${resultB64}`,
+    model: "OpenAI GPT-4.1 (Responses API)",
   };
 }
 
-// ─── Replicate Fallback (SDXL img2img) ──────────────────────────────
-async function tryReplicate(
+// ─── Replicate Fallback (Flux Depth Pro) ─────────────────────────────
+//
+// Flux Depth Pro extracts a depth map from the input image and uses it
+// to constrain generation. This preserves the 3D spatial structure
+// (walls, floor, ceiling, windows) while allowing surface restyling.
+async function tryFluxDepth(
   imageBase64: string,
   stylePrompt: string
 ): Promise<{ image: string; model: string }> {
@@ -168,39 +128,38 @@ async function tryReplicate(
 
   const dataUri = `data:image/jpeg;base64,${imageBase64}`;
 
-  // prompt_strength 0.50 = balanced edit.
-  // 0.35 was too conservative (no visible changes).
-  // 0.50 = 50% input preservation + 50% prompt influence — enough to change
-  // surfaces (floor, walls, ceiling) while keeping room geometry.
   const output = await replicate.run(
-    "stability-ai/sdxl:7762fd07cf82c948538e41f63f77d685e02b063e37e496e96eefd46c929f9bdc" as `${string}/${string}:${string}`,
+    "black-forest-labs/flux-depth-pro" as `${string}/${string}`,
     {
       input: {
-        image: dataUri,
-        prompt: buildSDXLPrompt(stylePrompt),
-        negative_prompt: SDXL_NEGATIVE_PROMPT,
-        prompt_strength: 0.50,
-        num_outputs: 1,
-        guidance_scale: 8.5,
-        num_inference_steps: 40,
-        scheduler: "K_EULER",
+        prompt: buildFluxPrompt(stylePrompt),
+        control_image: dataUri,
+        steps: 25,
+        guidance: 30,
+        output_format: "webp",
       },
     }
   );
 
-  const outputArray = output as string[];
-  if (!outputArray || outputArray.length === 0) {
-    throw new Error("No image returned from Replicate");
+  // Flux Depth Pro returns a FileOutput or URL string
+  let imageUrl: string;
+  if (typeof output === "string") {
+    imageUrl = output;
+  } else if (output && typeof output === "object" && "url" in output) {
+    imageUrl = (output as { url: () => string }).url();
+  } else if (Array.isArray(output) && output.length > 0) {
+    imageUrl = typeof output[0] === "string" ? output[0] : String(output[0]);
+  } else {
+    throw new Error("Unexpected output format from Flux Depth Pro");
   }
 
-  const imageUrl = outputArray[0];
   const imageResponse = await fetch(imageUrl);
   const arrayBuffer = await imageResponse.arrayBuffer();
   const base64 = Buffer.from(arrayBuffer).toString("base64");
 
   return {
-    image: `data:image/png;base64,${base64}`,
-    model: "Replicate SDXL",
+    image: `data:image/webp;base64,${base64}`,
+    model: "Flux Depth Pro",
   };
 }
 
@@ -220,11 +179,9 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { image, stylePrompt, width, height } = body as {
+    const { image, stylePrompt } = body as {
       image: string;
       stylePrompt: string;
-      width?: number;
-      height?: number;
     };
 
     if (!image || !stylePrompt || !stylePrompt.trim()) {
@@ -244,34 +201,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const prompt = buildGPTPrompt(stylePrompt.trim());
-
-    // Try Replicate SDXL first (designed for img2img with prompt_strength control),
-    // then OpenAI as fallback (images.edit is inpainting, not ideal for surface editing).
-    let replicateError: Error | null = null;
+    // Priority 1: OpenAI Responses API (vision + image generation)
+    // Priority 2: Flux Depth Pro on Replicate (depth-map structural preservation)
     let openaiError: Error | null = null;
-
-    if (process.env.REPLICATE_API_TOKEN) {
-      try {
-        const result = await tryReplicate(base64Image, stylePrompt.trim());
-        return NextResponse.json(result);
-      } catch (err) {
-        replicateError = err instanceof Error ? err : new Error(String(err));
-        console.error("Replicate failed:", replicateError.message);
-      }
-    }
+    let replicateError: Error | null = null;
 
     if (process.env.OPENAI_API_KEY) {
       try {
-        const result = await tryOpenAI(base64Image, prompt, stylePrompt.trim(), width, height);
+        const result = await tryOpenAIResponses(base64Image, stylePrompt.trim());
         return NextResponse.json(result);
       } catch (err) {
         openaiError = err instanceof Error ? err : new Error(String(err));
-        console.error("OpenAI also failed:", openaiError.message);
+        console.error("OpenAI Responses API failed:", openaiError.message);
       }
     }
 
-    if (!process.env.REPLICATE_API_TOKEN && !process.env.OPENAI_API_KEY) {
+    if (process.env.REPLICATE_API_TOKEN) {
+      try {
+        const result = await tryFluxDepth(base64Image, stylePrompt.trim());
+        return NextResponse.json(result);
+      } catch (err) {
+        replicateError = err instanceof Error ? err : new Error(String(err));
+        console.error("Flux Depth Pro also failed:", replicateError.message);
+      }
+    }
+
+    if (!process.env.OPENAI_API_KEY && !process.env.REPLICATE_API_TOKEN) {
       return NextResponse.json(
         { error: "Aucune clé API configurée. Veuillez configurer OPENAI_API_KEY ou REPLICATE_API_TOKEN." },
         { status: 500 }
@@ -279,8 +234,8 @@ export async function POST(request: NextRequest) {
     }
 
     const details: string[] = [];
-    if (replicateError) details.push(`Replicate : ${replicateError.message}`);
     if (openaiError) details.push(`OpenAI : ${openaiError.message}`);
+    if (replicateError) details.push(`Replicate : ${replicateError.message}`);
 
     return NextResponse.json(
       { error: `Échec de la génération. ${details.join(" | ")}` },
