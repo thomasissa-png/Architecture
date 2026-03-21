@@ -88,9 +88,9 @@ const STYLES: StyleOption[] = [
     description: "Terre cuite, lin blanc, lumière du sud",
     emoji: "☀️",
     surfacePrompt:
-      "Mediterranean: warm white limewash walls with subtle hand-applied plaster texture keeping the same overall brightness as the input photo, warm terracotta-toned refinish on the existing floor, smooth white ceiling, simple wrought iron pendant light with warm-toned shade",
+      "Mediterranean: soft matte white walls keeping the same overall brightness as the input photo, walls must stay close to input brightness and not darken or shift to ochre, warm-toned matte finish preserving existing floor material, smooth white ceiling, preserve existing ceiling light",
     furniturePrompt:
-      "Mediterranean furniture: deep natural linen sofa with loose slipcover in off-white 230cm wide, rustic olive wood coffee table with natural live edge 110cm, woven esparto grass rug in natural tone 200x300cm, wrought iron side table with glazed turquoise ceramic bowl, handwoven rush-seat wooden chair as accent piece, large olive branches in a rustic terracotta amphora jar 80cm tall, glazed ceramic plates and bowls as decor on the table in cobalt and terracotta, linen cushions in warm sand and sun-bleached blue, potted rosemary and trailing jasmine in terracotta pots",
+      "Mediterranean furniture: deep generous three-seat natural linen sofa with loose slipcover in off-white 230cm wide, rustic olive wood coffee table with natural live edge 110cm, woven esparto grass rug in natural tone 200x300cm, patinated wrought iron side table with curved legs and glazed turquoise ceramic bowl, handwoven rush-seat wooden chair as accent piece, large olive branches in a rustic terracotta amphora jar 80cm tall, glazed ceramic plates and bowls as decor on the table in cobalt and terracotta, linen cushions in warm sand and sun-bleached blue, potted rosemary and trailing jasmine in terracotta pots",
   },
   {
     id: "cosy",
