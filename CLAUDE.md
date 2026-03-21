@@ -252,6 +252,21 @@ agents/
 74. Suppression de DALL-E 2 (deprecated, shutdown 2026-05-12)
 75. Reecriture complete de route.ts — architecture propre avec 2 providers
 
+### Sprint 11 — Implementation pipeline 2 passes complet
+76. CRITIQUE : Implementation du pipeline 2 passes dans route.ts
+    - Passe 1 (surfaces) : finition murs/sol/plafond/luminaire, piece VIDE — fonctionnait deja
+    - Passe 2 (mobilier) : ajout meubles/textiles/decoration sur la piece finie
+    - Le serveur enchaine les 2 passes automatiquement (passe 1 → resultat → passe 2)
+    - Le client n'a pas besoin de changer — un seul appel API, 2 passes internes
+77. CRITIQUE : Prompts passe 2 ultra-conservateurs pour ne PAS modifier les surfaces
+    - "DO NOT change the walls, floor, ceiling, paint color, windows, doors"
+    - "The room surfaces must look IDENTICAL to the input photo"
+    - Objectif : le modele doit comprendre que l'image input est FINIE, il doit juste AJOUTER des objets
+78. Apprentissage : "TRANSFORM" dans le prompt = le modele regenere toute la piece
+    - Solution : "Add furniture and decoration to this photo" — instruction d'AJOUT, pas de transformation
+79. Flux Depth Pro : guidance differenciee par passe (12 pour surfaces, 15 pour mobilier)
+80. Fonction generatePass() factorise la logique OpenAI/Flux avec fallback par passe
+
 ## Regles de Developpement
 
 - Design minimaliste, pas de surcharge visuelle
@@ -269,5 +284,8 @@ agents/
 - **NE PAS utiliser images.edit** : c'est un outil d'inpainting. Sans mask = trop conservateur. Avec mask = perd toute la geometrie. Inadapte pour l'edition de surfaces.
 - **NE PAS utiliser SDXL img2img** : prompt_strength est un outil trop grossier. A 0.35 rien ne change, a 0.50 la geometrie est perdue et des meubles apparaissent malgre le negative prompt.
 - **DALL-E 2 est deprecated** (shutdown 2026-05-12) — ne plus utiliser.
-- **Pipeline 2 passes** : passe 1 = surfaces (murs, sol, plafond, luminaire), passe 2 = mobilier. Ne JAMAIS tout demander en une seule passe.
-- **Prompt COURT et instructif** : "Edit this photo of a room under construction. Keep same angle. Replace raw concrete floor..." Le modele doit editer, pas generer.
+- **Pipeline 2 passes (implemente)** : le serveur enchaine automatiquement passe 1 (surfaces) puis passe 2 (mobilier). Le client fait un seul appel. Ne JAMAIS tout demander en une seule passe.
+- **Passe 1 = surfaces** : "Edit this photo of a room. Apply [style] finish to the surfaces only. Keep the room EMPTY." Mots-cles : no furniture, no rugs, no curtains.
+- **Passe 2 = mobilier** : "Add furniture and decoration to this photo of a finished room. DO NOT change the walls, floor, ceiling..." Mots-cles : IDENTICAL surfaces, add only.
+- **NE PAS utiliser "TRANSFORM"** : ce mot pousse le modele a regenerer toute la scene. Utiliser "Add" ou "Edit" a la place.
+- **Prompt COURT et instructif** : chaque passe ~6 phrases max. Le modele doit editer, pas generer.

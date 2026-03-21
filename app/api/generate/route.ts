@@ -26,46 +26,69 @@ function checkRateLimit(ip: string): boolean {
 
 // ─── Prompt Engineering ──────────────────────────────────────────────
 //
-// FURNISHING PASS — add furniture and decoration matching the chosen style.
-// The input image is either an empty finished room or a construction photo.
-// The prompt must clearly instruct the model to ADD furniture while
-// preserving the room's geometry, camera angle, and architectural elements.
+// PIPELINE 2 PASSES:
+// Pass 1 (surfaces): Finish raw surfaces (walls, floor, ceiling) — NO furniture.
+// Pass 2 (furniture): Add furniture and decoration to the finished room — NO surface changes.
 
-function buildResponsesPrompt(stylePrompt: string): string {
+// ── Pass 1: Surface finishing ────────────────────────────────────────
+function buildSurfacesResponsesPrompt(stylePrompt: string): string {
   return [
-    "TRANSFORM this empty room into a fully furnished, styled interior.",
-    `Style: ${stylePrompt}.`,
-    "Preserve the exact camera angle, lens distortion, vanishing points, and all wall/window/door positions.",
-    "Preserve the existing lighting conditions exactly — same light direction, shadows, color temperature, and exposure.",
-    "Keep the room's architectural geometry intact. Only ADD furniture, textiles, rugs, lighting fixtures, and decoration.",
-    "Professional interior design photograph, DSLR full-frame, 16-35mm wide-angle, f/8, deep depth of field, sharp focus throughout.",
+    "Edit this photo of a room. Keep the exact same camera angle, perspective, and room shape.",
+    `Apply a ${stylePrompt} interior finish to the surfaces only:`,
+    "clean painted walls, finished floor (hardwood, tile, or polished concrete as appropriate), smooth ceiling.",
+    "Add appropriate ceiling light fixture. Add baseboards and trim.",
+    "Keep the room EMPTY — no furniture, no rugs, no curtains, no decoration.",
+    "Preserve all window and door positions exactly. Preserve the existing natural lighting.",
+    "Photo-realistic result, DSLR wide-angle, deep DOF.",
   ].join(" ");
 }
 
-function buildFluxPrompt(stylePrompt: string): string {
+function buildSurfacesFluxPrompt(stylePrompt: string): string {
   return [
-    `${stylePrompt}.`,
-    "Fully furnished and professionally staged interior.",
-    "Preserve exact room geometry, wall positions, windows, doors, ceiling height.",
-    "Match the existing lighting — same light direction, shadow angles, color temperature.",
-    "Interior design photograph, DSLR full-frame 16-35mm f/8, deep depth of field, sharp focus, high resolution.",
+    `Empty room with ${stylePrompt} finished surfaces.`,
+    "Clean painted walls, finished floor, smooth ceiling with light fixture.",
+    "No furniture, no rugs, no curtains, no decoration. Completely empty room.",
+    "Same room geometry, same windows, same doors, same lighting.",
+    "Photo-realistic interior photograph, DSLR 16-35mm f/8, deep DOF, sharp focus.",
+    "No distortion, no cartoon, no 3D render, no watermark.",
+  ].join(" ");
+}
+
+// ── Pass 2: Furniture placement ──────────────────────────────────────
+function buildFurnitureResponsesPrompt(stylePrompt: string): string {
+  return [
+    "This is a photo of a finished, empty room. Add furniture and decoration only.",
+    "DO NOT change the walls, floor, ceiling, paint color, windows, doors, or any existing surface.",
+    "DO NOT change the lighting, shadows, or exposure. The room surfaces must look IDENTICAL to the input photo.",
+    `Place furniture in ${stylePrompt} style.`,
+    "The furniture must sit naturally on the existing floor with correct perspective and scale.",
+    "Output a photo-realistic interior photograph, same camera angle, same lens.",
+  ].join(" ");
+}
+
+function buildFurnitureFluxPrompt(stylePrompt: string): string {
+  return [
+    `Room with ${stylePrompt} furniture and decoration.`,
+    "Keep the exact same walls, floor, ceiling, paint, windows, and doors from the input photo.",
+    "Only add furniture, rugs, curtains, and decoration. Do not repaint or refinish any surface.",
+    "Same lighting, same shadows, same exposure as the original photo.",
+    "Photo-realistic interior, DSLR 16-35mm f/8, deep DOF, sharp focus.",
     "No distortion, no cartoon, no 3D render, no watermark.",
   ].join(" ");
 }
 
 // ─── OpenAI Responses API (PRIMARY) ─────────────────────────────────
-//
-// Uses the Responses API with the image_generation tool.
-// The model SEES the image via vision and generates an edited version.
-// input_fidelity: "high" preserves geometry, lighting, and perspective.
-// This is fundamentally different from images.edit (inpainting).
 async function tryOpenAIResponses(
   imageBase64: string,
-  stylePrompt: string
+  stylePrompt: string,
+  pass: 1 | 2
 ): Promise<{ image: string; model: string }> {
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-  const prompt = buildResponsesPrompt(stylePrompt);
+  const prompt =
+    pass === 1
+      ? buildSurfacesResponsesPrompt(stylePrompt)
+      : buildFurnitureResponsesPrompt(stylePrompt);
 
   const response = await openai.responses.create({
     model: "gpt-4.1",
@@ -93,7 +116,6 @@ async function tryOpenAIResponses(
     ],
   });
 
-  // Extract the generated image from response output
   const imageOutput = response.output.find(
     (o: { type: string }) => o.type === "image_generation_call"
   );
@@ -109,37 +131,41 @@ async function tryOpenAIResponses(
 
   return {
     image: `data:image/png;base64,${resultB64}`,
-    model: "OpenAI GPT-4.1 (Responses API)",
+    model: `OpenAI GPT-4.1 (pass ${pass})`,
   };
 }
 
 // ─── Replicate Fallback (Flux Depth Pro) ─────────────────────────────
-//
-// Flux Depth Pro extracts a depth map from the input image and uses it
-// to constrain generation. This preserves the 3D spatial structure
-// (walls, floor, ceiling, windows) while allowing surface restyling.
 async function tryFluxDepth(
   imageBase64: string,
-  stylePrompt: string
+  stylePrompt: string,
+  pass: 1 | 2
 ): Promise<{ image: string; model: string }> {
   const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
 
   const dataUri = `data:image/jpeg;base64,${imageBase64}`;
+  const prompt =
+    pass === 1
+      ? buildSurfacesFluxPrompt(stylePrompt)
+      : buildFurnitureFluxPrompt(stylePrompt);
+
+  // Pass 1 (surfaces): lower guidance to stay closer to input geometry
+  // Pass 2 (furniture): slightly higher guidance to ensure furniture appears
+  const guidance = pass === 1 ? 12 : 15;
 
   const output = await replicate.run(
     "black-forest-labs/flux-depth-pro" as `${string}/${string}`,
     {
       input: {
-        prompt: buildFluxPrompt(stylePrompt),
+        prompt,
         control_image: dataUri,
         steps: 25,
-        guidance: 15,
+        guidance,
         output_format: "png",
       },
     }
   );
 
-  // Flux Depth Pro returns a FileOutput or URL string
   let imageUrl: string;
   if (typeof output === "string") {
     imageUrl = output;
@@ -157,8 +183,45 @@ async function tryFluxDepth(
 
   return {
     image: `data:image/png;base64,${base64}`,
-    model: "Flux Depth Pro",
+    model: `Flux Depth Pro (pass ${pass})`,
   };
+}
+
+// ─── Generate one pass with fallback ─────────────────────────────────
+async function generatePass(
+  base64Image: string,
+  stylePrompt: string,
+  pass: 1 | 2
+): Promise<{ image: string; model: string }> {
+  let openaiError: Error | null = null;
+  let replicateError: Error | null = null;
+
+  if (process.env.OPENAI_API_KEY) {
+    try {
+      return await tryOpenAIResponses(base64Image, stylePrompt, pass);
+    } catch (err) {
+      openaiError = err instanceof Error ? err : new Error(String(err));
+      console.error(`OpenAI pass ${pass} failed:`, openaiError.message);
+    }
+  }
+
+  if (process.env.REPLICATE_API_TOKEN) {
+    try {
+      return await tryFluxDepth(base64Image, stylePrompt, pass);
+    } catch (err) {
+      replicateError = err instanceof Error ? err : new Error(String(err));
+      console.error(`Flux Depth pass ${pass} failed:`, replicateError.message);
+    }
+  }
+
+  if (!process.env.OPENAI_API_KEY && !process.env.REPLICATE_API_TOKEN) {
+    throw new Error("Aucune clé API configurée.");
+  }
+
+  const details: string[] = [];
+  if (openaiError) details.push(`OpenAI : ${openaiError.message}`);
+  if (replicateError) details.push(`Replicate : ${replicateError.message}`);
+  throw new Error(`Échec passe ${pass}. ${details.join(" | ")}`);
 }
 
 // ─── API Route Handler ──────────────────────────────────────────────
@@ -199,51 +262,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Priority 1: OpenAI Responses API (vision + image generation)
-    // Priority 2: Flux Depth Pro on Replicate (depth-map structural preservation)
-    let openaiError: Error | null = null;
-    let replicateError: Error | null = null;
+    // ── Pipeline 2 passes ────────────────────────────────────────────
+    // Pass 1: Finish surfaces (walls, floor, ceiling) — room stays empty
+    // Pass 2: Add furniture on the finished room — surfaces untouched
+    const trimmedStyle = stylePrompt.trim();
 
-    if (process.env.OPENAI_API_KEY) {
-      try {
-        const result = await tryOpenAIResponses(base64Image, stylePrompt.trim());
-        return NextResponse.json(result);
-      } catch (err) {
-        openaiError = err instanceof Error ? err : new Error(String(err));
-        console.error("OpenAI Responses API failed:", openaiError.message);
-      }
-    }
+    console.log("Starting pass 1 (surfaces)...");
+    const pass1 = await generatePass(base64Image, trimmedStyle, 1);
+    const pass1Base64 = pass1.image.replace(/^data:image\/[\w+]+;base64,/, "");
 
-    if (process.env.REPLICATE_API_TOKEN) {
-      try {
-        const result = await tryFluxDepth(base64Image, stylePrompt.trim());
-        return NextResponse.json(result);
-      } catch (err) {
-        replicateError = err instanceof Error ? err : new Error(String(err));
-        console.error("Flux Depth Pro also failed:", replicateError.message);
-      }
-    }
+    console.log("Starting pass 2 (furniture)...");
+    const pass2 = await generatePass(pass1Base64, trimmedStyle, 2);
 
-    if (!process.env.OPENAI_API_KEY && !process.env.REPLICATE_API_TOKEN) {
-      return NextResponse.json(
-        { error: "Aucune clé API configurée. Veuillez configurer OPENAI_API_KEY ou REPLICATE_API_TOKEN." },
-        { status: 500 }
-      );
-    }
-
-    const details: string[] = [];
-    if (openaiError) details.push(`OpenAI : ${openaiError.message}`);
-    if (replicateError) details.push(`Replicate : ${replicateError.message}`);
-
-    return NextResponse.json(
-      { error: `Échec de la génération. ${details.join(" | ")}` },
-      { status: 503 }
-    );
+    return NextResponse.json({
+      image: pass2.image,
+      model: `${pass1.model} → ${pass2.model}`,
+    });
   } catch (error) {
     console.error("Generation error:", error);
-    return NextResponse.json(
-      { error: "Erreur interne du serveur" },
-      { status: 500 }
-    );
+    const message =
+      error instanceof Error ? error.message : "Erreur interne du serveur";
+    return NextResponse.json({ error: message }, { status: 503 });
   }
 }
