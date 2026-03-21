@@ -44,6 +44,12 @@ function buildPrompt(stylePrompt: string): string {
   return `${ARCHITECTURAL_CONSTRAINTS} Style: ${stylePrompt}. The staging should feel curated and intentional, as if done by a professional interior designer for a luxury real estate listing. ${AVOID_TERMS}`;
 }
 
+// dall-e-2 has a 1000-character prompt limit — use a condensed version
+function buildDalle2Prompt(stylePrompt: string): string {
+  const short = `Keep the exact room architecture, walls, floors, windows unchanged. Add furniture and decor only. Style: ${stylePrompt}. Professional interior staging, photorealistic, high-end real estate photography. No blurry, distorted, cartoon, 3D render, changed architecture, watermark.`;
+  return short.slice(0, 1000);
+}
+
 // ─── Aspect Ratio Detection ────────────────────────────────────────
 function getOpenAISize(width?: number, height?: number): "1024x1024" | "1536x1024" | "1024x1536" {
   if (!width || !height) return "1024x1024";
@@ -57,6 +63,7 @@ function getOpenAISize(width?: number, height?: number): "1024x1024" | "1536x102
 async function tryOpenAI(
   imageBase64: string,
   prompt: string,
+  stylePrompt: string,
   width?: number,
   height?: number
 ): Promise<{ image: string; model: string }> {
@@ -104,7 +111,7 @@ async function tryOpenAI(
   const response = await openai.images.edit({
     model: "dall-e-2",
     image: dalleFile,
-    prompt,
+    prompt: buildDalle2Prompt(stylePrompt),
     n: 1,
     size: "1024x1024",
     response_format: "b64_json",
@@ -218,7 +225,7 @@ export async function POST(request: NextRequest) {
 
     if (process.env.OPENAI_API_KEY) {
       try {
-        const result = await tryOpenAI(base64Image, prompt, width, height);
+        const result = await tryOpenAI(base64Image, prompt, stylePrompt.trim(), width, height);
         return NextResponse.json(result);
       } catch (err) {
         openaiError = err instanceof Error ? err : new Error(String(err));
