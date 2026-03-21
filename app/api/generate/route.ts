@@ -38,34 +38,36 @@ function checkRateLimit(ip: string): boolean {
 
 function buildGPTPrompt(stylePrompt: string): string {
   return [
-    "Edit this photo of a room.",
-    "Keep the exact same camera angle, perspective, lens distortion, vanishing points, walls, ceiling, floor shape, windows, and doors.",
-    "Preserve exact window positions and sizes. Preserve any visible beams, rafters, or ceiling structure.",
-    "Make the surfaces look finished: clean smooth painted walls, clean ceiling, polished or finished floor.",
-    "Add one ceiling light fixture appropriate for the space.",
+    "TRANSFORM this construction-site room into a beautifully finished empty room.",
+    "REMOVE all exposed wires, dangling cables, junction boxes, raw electrical outlets, and construction debris.",
+    "REPLACE the raw concrete floor with a polished finished floor. REPLACE raw plaster walls with smooth painted walls. REPLACE unfinished ceiling with a clean painted ceiling.",
+    "ADD baseboards along all walls. ADD finished outlet covers. ADD one elegant ceiling light fixture where wires currently hang.",
     "Keep the room completely empty — no furniture, no rugs, no decoration.",
-    `Wall and floor color palette inspired by: ${stylePrompt}.`,
-    "Preserve the existing lighting conditions, light direction, shadows, and color temperature exactly as they appear in this photo.",
+    `Color palette: ${stylePrompt}.`,
+    "Keep the exact same camera angle, perspective, room shape, windows, and doors. Preserve any visible beams or rafters.",
+    "Match the existing light direction and color temperature.",
     "DSLR full-frame 16-35mm f/8, deep depth of field, sharp focus throughout.",
   ].join(" ");
 }
 
 function buildDalle2Prompt(stylePrompt: string): string {
   const prompt = [
-    `A clean finished empty room with ${stylePrompt} color palette.`,
-    "Smooth painted walls, polished floor, clean ceiling with one light fixture.",
+    `A beautifully finished empty room with ${stylePrompt} color palette.`,
+    "Smooth painted walls with baseboards, polished floor, clean painted ceiling with one elegant light fixture.",
+    "All electrical outlets have finished covers. No exposed wires, no raw concrete, no construction materials.",
     "Preserve any visible beams or ceiling structure.",
     "No furniture, no rugs, no decoration.",
     "Same perspective and lighting as original photo.",
-    "DSLR 16-35mm f/8 wide-angle interior photograph, deep depth of field, sharp focus.",
+    "DSLR 16-35mm f/8 interior photograph, deep depth of field, sharp focus.",
   ].join(" ");
   return prompt.slice(0, 1000);
 }
 
 function buildSDXLPrompt(stylePrompt: string): string {
   return [
-    `${stylePrompt} color palette, clean finished empty room.`,
-    "Smooth painted walls, polished floor, clean ceiling, one ceiling light fixture, preserve beams.",
+    `${stylePrompt} color palette, beautifully finished empty room.`,
+    "Smooth painted walls with baseboards, polished floor, clean ceiling, elegant ceiling light fixture, finished outlet covers.",
+    "No exposed wires, no raw concrete, no construction debris, preserve beams.",
     "No furniture, no rugs, no decoration.",
     "Same room same angle same perspective same lighting.",
     "DSLR 16-35mm f/8 interior photograph, deep depth of field, sharp focus.",
@@ -74,7 +76,7 @@ function buildSDXLPrompt(stylePrompt: string): string {
 
 const SDXL_NEGATIVE_PROMPT = [
   "furniture", "sofa", "chair", "table", "bed", "rug", "curtains", "cushion",
-  "construction site", "exposed wires", "raw concrete", "raw plaster",
+  "construction site", "exposed wires", "dangling cables", "junction box", "raw concrete", "raw plaster", "unfinished floor",
   "blurry", "cartoon", "painting", "3D render", "watermark", "text",
   "animal", "person", "different room", "different angle",
   "distorted perspective", "fisheye", "different viewpoint", "new room", "stretched walls",
