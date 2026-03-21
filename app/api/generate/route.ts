@@ -28,38 +28,62 @@ function checkRateLimit(ip: string): boolean {
 }
 
 // ─── Prompt Engineering ──────────────────────────────────────────────
-// Strategy: ACTION-DOMINANT prompts. The #1 problem with virtual staging
-// is over-constraining — if the model reads 250 words of "don't change X",
-// it becomes ultra-conservative and returns the input nearly unchanged.
-// The fix: strong transformation directive FIRST, style details SECOND,
-// minimal constraints LAST (and only the essential ones).
+// Strategy: FURNITURE-FIRST with explicit item list.
+//
+// Problem observed (Sprint 8): GPT-image-1 images.edit is ultra-conservative.
+// On a construction-site photo (exposed wires, raw concrete), the model was:
+//   - "Stylizing" electrical wires into decorative sculptures instead of hiding them
+//   - Adding only 1-2 tiny accessories instead of real furniture
+//   - Returning a still-empty room with smoothed surfaces
+//
+// Root cause: Even with "TRANSFORM", the model treats images.edit as minimal
+// retouching. Constraint lines ("keep geometry unchanged") reinforce conservatism.
+//
+// Fix: Lead with an EXPLICIT furniture inventory (what + where), treat the room
+// as a blank canvas to be furnished. Remove all "keep/preserve/unchanged" language
+// — the model already preserves structure by default in images.edit mode.
+// Add explicit instruction to HIDE construction elements behind furniture.
 
-// GPT-image-1 prompt — action-heavy, ~150 words with targeted guard-rails (R1-R5)
+// GPT-image-1 prompt — furniture-inventory approach
 function buildPrompt(stylePrompt: string): string {
   return [
-    "TRANSFORM this empty room into a fully furnished, professionally staged interior.",
-    "Fill the space with a complete set of furniture: sofa, coffee table, armchairs, rugs, curtains, lighting fixtures, wall art, plants, and decorative accessories.",
-    `Design style: ${stylePrompt}.`,
-    "This must look like a luxury real estate listing photo — shot on a DSLR 16-35mm wide-angle lens at f/8, deep depth of field, sharp focus throughout, photorealistic, natural light.",
-    "All added furniture must have shadows and reflections consistent with the existing light sources in the photo — same direction, same softness, same color temperature.",
-    "If the room is unfinished or under construction, add clean painted walls and finished flooring appropriate to the style. If the room is dark, keep the low-light atmosphere. Preserve any bright window highlights as-is.",
-    "Keep the exact room geometry, walls, floor, ceiling, windows, doors, perspective and vanishing points unchanged.",
-  ].join(" ");
+    "You are a professional virtual home stager. Completely furnish and decorate this empty room.",
+    "",
+    "ADD ALL OF THE FOLLOWING FURNITURE AND DECOR:",
+    "- A large sofa (3-seater) as the main seating piece, placed against a wall",
+    "- A coffee table in front of the sofa",
+    "- One or two armchairs facing the sofa",
+    "- A large area rug under the seating arrangement",
+    "- Curtains or drapes on every window",
+    "- At least 2 lighting fixtures (floor lamp, table lamp, or pendant)",
+    "- Wall art or framed prints on the walls",
+    "- 2-3 decorative plants (potted, on floor or surfaces)",
+    "- Side tables with books, candles, or decorative objects",
+    "- Finished flooring (hardwood, tile or carpet) covering any raw concrete",
+    "- Clean painted or finished walls covering any construction elements",
+    "",
+    `STYLE: ${stylePrompt}.`,
+    "",
+    "IMPORTANT: Any visible construction elements (exposed wires, electrical boxes, raw plaster joints, cables) must be completely hidden — covered by furniture, art, finished walls, or simply removed from the image.",
+    "",
+    "The result must look like a photo from an Architectural Digest feature — a fully lived-in, beautifully decorated room. Not an empty space with a few accessories.",
+    "Photorealistic, DSLR wide-angle interior photograph, natural light with consistent shadows on all furniture.",
+  ].join("\n");
 }
 
-// DALL-E 2 prompt — 1000 char limit, even more concise
+// DALL-E 2 prompt — 1000 char limit
 function buildDalle2Prompt(stylePrompt: string): string {
-  const short = `TRANSFORM this empty room into a fully furnished, staged interior. Add sofa, coffee table, armchairs, rugs, curtains, lamps, wall art, plants and accessories. Style: ${stylePrompt}. Luxury real estate photo, DSLR 16-35mm wide-angle f/8, deep focus, sharp throughout, photorealistic, natural light. Furniture shadows match existing light direction and color temperature. If unfinished room, add clean walls and floors. If dark room, keep mood. Keep room geometry, walls, floor, ceiling, windows, doors and perspective unchanged.`;
+  const short = `Professional virtual home staging. Completely furnish this empty room with: large 3-seater sofa against a wall, coffee table, armchairs, large area rug, curtains on all windows, floor lamp and table lamp, wall art, potted plants, side tables with books and candles. Add finished hardwood flooring and clean painted walls. Hide all construction elements (wires, cables, raw plaster). Style: ${stylePrompt}. Result must look like Architectural Digest — fully decorated, not empty. Photorealistic DSLR wide-angle interior photo, natural light.`;
   return short.slice(0, 1000);
 }
 
-// SDXL prompt — ~60 words, directive style, optimized for attention window
+// SDXL prompt — style-first, explicit furniture list
 function buildSDXLPrompt(stylePrompt: string): string {
-  return `TRANSFORM this empty room into a furnished staged interior. ${stylePrompt}. Complete furniture set with sofa, coffee table, rugs, curtains, lamps, wall art and plants. Furniture shadows match existing light. Professional real estate photograph, DSLR 16-35mm wide-angle f/8, deep focus, sharp throughout, photorealistic, natural ambient light.`;
+  return `Luxury furnished interior, ${stylePrompt}. Large sofa, coffee table, armchairs, area rug, curtains, floor lamp, table lamp, wall art, potted plants, side tables with books. Finished hardwood floor, clean painted walls, no exposed wires. Professional real estate photograph, DSLR wide-angle, photorealistic, natural light, fully decorated room.`;
 }
 
 // SDXL negative prompt
-const SDXL_NEGATIVE_PROMPT = "empty room, unfurnished, bare walls, no furniture, empty floor, construction site, blurry, cartoon, painting, 3D render, floating furniture, unrealistic scale, watermark, text, oversaturated, shallow depth of field, bokeh";
+const SDXL_NEGATIVE_PROMPT = "empty room, unfurnished, bare walls, no furniture, empty floor, construction site, exposed wires, electrical cables, raw concrete, raw plaster, unfinished, sparse, minimal furniture, blurry, cartoon, painting, 3D render, floating furniture, unrealistic scale, watermark, text, oversaturated, shallow depth of field, bokeh";
 
 // ─── Aspect Ratio Detection ────────────────────────────────────────
 function getOpenAISize(width?: number, height?: number): "1024x1024" | "1536x1024" | "1024x1536" {
