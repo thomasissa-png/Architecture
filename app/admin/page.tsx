@@ -28,8 +28,31 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [authenticated, setAuthenticated] = useState(false);
+  const [password, setPassword] = useState("");
+  const [authError, setAuthError] = useState(false);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("/api/admin-auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+      if (res.ok) {
+        setAuthenticated(true);
+        setAuthError(false);
+      } else {
+        setAuthError(true);
+      }
+    } catch {
+      setAuthError(true);
+    }
+  };
 
   useEffect(() => {
+    if (!authenticated) return;
     fetch("/api/logs")
       .then((r) => r.json())
       .then((data) => {
@@ -38,7 +61,39 @@ export default function AdminPage() {
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  }, []);
+  }, [authenticated]);
+
+  if (!authenticated) {
+    return (
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", fontFamily: "Inter, sans-serif", background: "#FAFAF8" }}>
+        <form onSubmit={handleLogin} style={{ background: "#fff", padding: "40px 48px", borderRadius: 16, border: "1px solid #e0e0e0", textAlign: "center", maxWidth: 360, width: "100%" }}>
+          <h1 style={{ fontSize: 20, fontWeight: 600, color: "#1C1C1E", marginBottom: 8 }}>VisiRenov Admin</h1>
+          <p style={{ fontSize: 13, color: "#888", marginBottom: 24 }}>Acces restreint</p>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => { setPassword(e.target.value); setAuthError(false); }}
+            placeholder="Mot de passe"
+            autoFocus
+            style={{
+              width: "100%", padding: "10px 14px", border: `1px solid ${authError ? "#c00" : "#ddd"}`, borderRadius: 8,
+              fontSize: 14, outline: "none", marginBottom: 16, boxSizing: "border-box",
+            }}
+          />
+          {authError && <p style={{ fontSize: 12, color: "#c00", marginBottom: 12 }}>Mot de passe incorrect</p>}
+          <button
+            type="submit"
+            style={{
+              width: "100%", padding: "10px 0", background: "#1C1C1E", color: "#fff", border: "none",
+              borderRadius: 8, fontSize: 14, fontWeight: 500, cursor: "pointer",
+            }}
+          >
+            Connexion
+          </button>
+        </form>
+      </div>
+    );
+  }
 
   if (loading) return <div style={{ padding: 40, fontFamily: "Inter, sans-serif" }}>Chargement...</div>;
   if (error) return <div style={{ padding: 40, fontFamily: "Inter, sans-serif", color: "#c00" }}>Erreur : {error}</div>;
