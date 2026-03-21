@@ -51,6 +51,7 @@ export default function Home() {
   const [files, setFiles] = useState<File[]>([]);
   const [selectedStyle, setSelectedStyle] = useState<StyleOption | null>(null);
   const [customPrompt, setCustomPrompt] = useState("");
+  const [withFurniture, setWithFurniture] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [results, setResults] = useState<GenerationResult[]>([]);
   const [currentProcessing, setCurrentProcessing] = useState(0);
@@ -160,6 +161,7 @@ export default function Home() {
               image: img.base64,
               surfacePrompt,
               furniturePrompt,
+              withFurniture,
               width: img.width,
               height: img.height,
             }),
@@ -203,7 +205,7 @@ export default function Home() {
         scrollToElement("step-results");
       }
     }
-  }, [files, selectedStyle, customPrompt, filePreviewUrls]);
+  }, [files, selectedStyle, customPrompt, withFurniture, filePreviewUrls]);
 
   const handleRetry = useCallback(() => {
     setResults([]);
@@ -433,6 +435,39 @@ export default function Home() {
                 onStyleSelect={setSelectedStyle}
                 onCustomPromptChange={setCustomPrompt}
               />
+            </div>
+          )}
+
+          {/* Furniture toggle */}
+          {canGenerate && results.length === 0 && !isGenerating && (
+            <div className="mb-8 animate-fade-in-up">
+              <div className="flex items-center justify-center gap-3">
+                <button
+                  onClick={() => setWithFurniture(false)}
+                  className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all ${
+                    !withFurniture
+                      ? "bg-foreground text-background shadow-sm"
+                      : "bg-gray-100 text-muted hover:bg-gray-200"
+                  }`}
+                >
+                  Surfaces uniquement
+                </button>
+                <button
+                  onClick={() => setWithFurniture(true)}
+                  className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all ${
+                    withFurniture
+                      ? "bg-foreground text-background shadow-sm"
+                      : "bg-gray-100 text-muted hover:bg-gray-200"
+                  }`}
+                >
+                  Surfaces + Mobilier
+                </button>
+              </div>
+              <p className="text-center text-xs text-muted font-light mt-2">
+                {withFurniture
+                  ? "Finitions et mobilier complet"
+                  : "Pi\u00e8ce finie sans meuble \u2014 id\u00e9al pour voir les surfaces"}
+              </p>
             </div>
           )}
 

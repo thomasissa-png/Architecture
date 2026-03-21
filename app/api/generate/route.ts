@@ -279,10 +279,11 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { image, surfacePrompt, furniturePrompt, width, height } = body as {
+    const { image, surfacePrompt, furniturePrompt, withFurniture = true, width, height } = body as {
       image: string;
       surfacePrompt: string;
       furniturePrompt: string;
+      withFurniture?: boolean;
       width?: number;
       height?: number;
     };
@@ -309,12 +310,21 @@ export async function POST(request: NextRequest) {
 
     // ── Pipeline 2 passes ────────────────────────────────────────────
     // Pass 1: Finish surfaces using surfacePrompt — room stays empty
-    // Pass 2: Add furniture using furniturePrompt — surfaces untouched
+    // Pass 2 (optional): Add furniture using furniturePrompt — surfaces untouched
     const trimmedSurface = surfacePrompt.trim();
     const trimmedFurniture = furniturePrompt.trim();
 
     console.log(`Starting pass 1 (surfaces)... Output size: ${outputSize.openai}`);
     const pass1 = await generatePass(base64Image, trimmedSurface, trimmedFurniture, 1, outputSize);
+
+    // If surfaces-only mode, return pass 1 result directly
+    if (!withFurniture) {
+      return NextResponse.json({
+        image: pass1.image,
+        model: `${pass1.model} (surfaces uniquement)`,
+      });
+    }
+
     const pass1Base64 = pass1.image.replace(/^data:image\/[\w+]+;base64,/, "");
 
     console.log("Starting pass 2 (furniture)...");
