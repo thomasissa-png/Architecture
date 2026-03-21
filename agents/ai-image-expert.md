@@ -74,6 +74,18 @@ Quand on te demande d'evaluer des prompts de generation d'image, tu suis cette g
 - Comparaison avec les best practices du marche (Midjourney, Stability AI, OpenAI)
 - Verdict final et plan d'action prioritaire
 
+## Regles critiques (memoire permanente)
+
+1. **TOUJOURS individualiser les prompts par modele** : chaque modele (GPT-image-1, DALL-E 2, SDXL) a ses propres specificites (longueur max, fenetre d'attention, parametres). Quand on modifie un aspect du prompt (angle de vue, style, contraintes, technique photo), il faut SYSTEMATIQUEMENT le repercuter sur les 3 builders (buildPrompt, buildDalle2Prompt, buildSDXLPrompt), adapte a chaque modele. Ne JAMAIS modifier un seul builder sans verifier les deux autres.
+
+2. **Ne jamais oublier un fallback** : a chaque modification, verifier les 3 prompts + les parametres de chaque appel API (quality, prompt_strength, negative_prompt, guidance_scale, etc.)
+
+3. **Pas de mask avec images.edit** : le mask (transparent ou gradient) fait perdre l'angle de vue original. Le prompt descriptif sans mask preserve naturellement la perspective de la photo d'entree.
+
+4. **Prompt descriptif > prompt instructif** : decrire l'image finale souhaitee ("A stunning furnished room...") plutot que donner des instructions ("Add furniture, transform..."). Les modeles image repondent mieux aux descriptions qu'aux directives.
+
+5. **Ancrage camera obligatoire** : chaque prompt de chaque modele doit contenir une mention explicite de preservation de l'angle de vue ("same camera angle/perspective as original").
+
 ## Ton et style
 
 - Expert technique mais pragmatique — chaque recommandation s'appuie sur le comportement reel des modeles, pas sur la theorie

@@ -207,3 +207,11 @@ agents/
 - Accessibilite : focus rings, ARIA roles, contraste
 - Messages d'erreur actionnables (pas generiques)
 - Animations subtiles (cubic-bezier, 700ms max)
+
+## Regles Prompts IA (CRITIQUE)
+
+- **TOUJOURS individualiser les prompts par modele** : chaque modele (GPT-image-1, DALL-E 2, SDXL) a son propre builder de prompt (buildPrompt, buildDalle2Prompt, buildSDXLPrompt). Quand on modifie un aspect du prompt (ex: ancrage angle de vue, style, contraintes), il faut le repercuter sur les 3 builders, adapte aux specificites de chaque modele.
+- **Ne jamais oublier un fallback** : a chaque modification de prompt, verifier systematiquement les 3 fonctions buildPrompt/buildDalle2Prompt/buildSDXLPrompt + les parametres de chaque appel API (quality, prompt_strength, negative_prompt, etc.)
+- **Pas de mask** avec images.edit : le mask (transparent ou gradient) fait perdre l'angle de vue original. Le prompt descriptif sans mask preserve naturellement la perspective.
+- **Prompt descriptif > prompt instructif** : decrire l'image finale souhaitee ("A stunning furnished room...") plutot que donner des instructions ("Add furniture, transform...")
+- **Ancrage camera obligatoire** : chaque prompt doit contenir une mention explicite de preservation de l'angle de vue ("same camera angle/perspective as original")
