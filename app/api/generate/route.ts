@@ -32,12 +32,14 @@ function checkRateLimit(ip: string): boolean {
 
 // ── Pass 1: Surface finishing ────────────────────────────────────────
 function buildSurfacesResponsesPrompt(stylePrompt: string): string {
+  const cleanStyle = sanitizeStyleForFurniturePass(stylePrompt);
   return [
     "Edit this photo of a room.",
-    `Apply a ${stylePrompt} finish to the surfaces: refinish the floor, repaint or replaster walls and ceiling to match the style.`,
-    "Preserve the exact color and texture of every wall surface from the input photo. Every wall must remain solid, continuous, and unbroken from floor to ceiling — identical to the input.",
-    "Include baseboards, trim, and a ceiling light fixture consistent with the style.",
-    "Keep the room COMPLETELY EMPTY — no furniture, no rugs, no textiles, no decoration.",
+    `Apply a ${cleanStyle} finish to the surfaces only: refinish the floor, repaint or replaster walls and ceiling to match the style.`,
+    "Refinish existing baseboards and trim to match the style. Replace the existing ceiling light fixture with one consistent with the style.",
+    "Match the wall color precisely to the input — do not shift the hue, do not warm up or cool down the tone.",
+    "The number of windows and doors must be EXACTLY the same as in the input photo. If there are zero windows, there must be zero windows in the output.",
+    "Keep the room COMPLETELY EMPTY — no furniture, no rugs, no curtains, no textiles, no decoration, no objects on the floor or walls.",
     "Preserve the exact same camera angle, lens distortion, vanishing points, and room proportions.",
     "Preserve the existing lighting conditions, light direction, shadow angles, color temperature, and exposure exactly as in the input photo.",
     "DSLR full-frame, wide-angle 16-35mm, f/8, deep depth of field, sharp focus throughout.",
@@ -45,34 +47,65 @@ function buildSurfacesResponsesPrompt(stylePrompt: string): string {
 }
 
 function buildSurfacesFluxPrompt(stylePrompt: string): string {
+  const cleanStyle = sanitizeStyleForFurniturePass(stylePrompt);
   return [
-    `${stylePrompt} finished empty room interior.`,
-    "Refinished floor, repainted walls, smooth ceiling with light fixture.",
-    "Every wall is solid and unbroken from floor to ceiling, matching the original surfaces exactly.",
-    "Completely empty room — no furniture, no rugs, no textiles, no decoration, no objects.",
+    `${cleanStyle} finished empty room interior.`,
+    "Refinished floor, repainted walls, smooth ceiling with updated light fixture.",
+    "Exact same number of windows and doors as the original photo. Wall color hue unchanged.",
+    "Completely empty room — no furniture, no rugs, no curtains, no textiles, no decoration, no objects.",
     "Same room geometry, same proportions, same lighting conditions, same camera angle.",
     "Photo-realistic interior photograph, DSLR full-frame 16-35mm f/8, deep DOF, sharp focus.",
   ].join(" ");
 }
 
+// ── Style prompt sanitizer for pass 2 ────────────────────────────────
+// Remove curtain/drape/window references from the style prompt to prevent
+// the model from hallucinating windows to hang curtains on.
+function sanitizeStyleForFurniturePass(stylePrompt: string): string {
+  // Remove clauses that mention curtains, drapes, or windows to prevent
+  // the model from hallucinating windows to hang curtains on.
+  return stylePrompt
+    // Remove full comma-separated clauses containing curtains/drapes
+    // Matches: ", sheer linen curtains filtering soft diffused Nordic daylight"
+    // Matches: ", heavy velvet drapes in deep jewel tones"
+    // Matches: ", heavy linen or velvet drapes in muted tones"
+    // Matches: ", floor-to-ceiling sheer curtains"
+    .replace(/,\s*[^,]*(?:curtains?|drapes?)[^,]*/gi, "")
+    // Remove "no curtains with bare/raw windows" patterns (also comma-delimited)
+    .replace(/,\s*no curtains\s+with\s+[^,]*/gi, "")
+    // Remove "from tall French windows" in light descriptions
+    .replace(/from\s+(tall\s+)?French\s+windows/gi, "")
+    // Clean up punctuation artifacts
+    .replace(/,\s*,/g, ",")       // double commas
+    .replace(/,\s*$/g, "")         // trailing comma
+    .replace(/^\s*,/g, "")         // leading comma
+    .replace(/\s+,/g, ",")         // space before comma
+    .replace(/\s{2,}/g, " ")       // multiple spaces
+    .trim();
+}
+
 // ── Pass 2: Furniture placement ──────────────────────────────────────
 function buildFurnitureResponsesPrompt(stylePrompt: string): string {
+  const cleanStyle = sanitizeStyleForFurniturePass(stylePrompt);
   return [
-    `Place ${stylePrompt} furniture and decoration into this photo of a finished empty room.`,
-    "Add a sofa or seating, a coffee table, a rug, shelving or storage, plants, and decorative objects appropriate for the style.",
-    "Every wall, floor, ceiling, and painted surface must remain IDENTICAL to the input photo — same colors, same textures, same geometry.",
-    "Every wall stays solid and unbroken. The architecture of the room is frozen — only furniture and objects are new.",
-    "Furniture must sit naturally on the existing floor with correct perspective, scale, and shadow direction matching the existing light.",
+    `Add ${cleanStyle} furniture and freestanding decoration into this photo of a finished room.`,
+    "Add seating, a coffee table, a floor rug, floor lamps, plants, and decorative objects appropriate for the style.",
+    "ONLY add freestanding objects that rest on the floor or sit on existing surfaces. Do NOT attach anything to walls, do NOT add wall art, do NOT add built-in shelving.",
+    "The room structure is LOCKED: every wall, window, door, ceiling, and floor surface must appear pixel-identical to the input. No new openings, no removed openings, no color shift on any surface.",
+    "If the input has no windows, the output must have no windows. If the input has one window, the output must have exactly one window in the same position.",
+    "Furniture must sit on the existing floor with correct perspective, scale, and shadows consistent with the existing light direction.",
     "Photo-realistic interior photograph, same camera angle, same lens distortion, same vanishing points, DSLR full-frame 16-35mm f/8, deep DOF.",
   ].join(" ");
 }
 
 function buildFurnitureFluxPrompt(stylePrompt: string): string {
+  const cleanStyle = sanitizeStyleForFurniturePass(stylePrompt);
   return [
-    `${stylePrompt} furnished room interior.`,
-    "Sofa, coffee table, rug, shelving, plants, and decorative objects placed naturally on the existing floor.",
-    "Every wall, floor, and ceiling surface remains identical — same colors, same textures, solid and unbroken.",
-    "Same room geometry, same proportions, same lighting, same camera angle.",
+    `${cleanStyle} furnished room interior.`,
+    "Sofa, coffee table, floor rug, floor lamp, plants, and decorative objects placed naturally on the existing floor.",
+    "Freestanding furniture only. No wall-mounted objects, no built-in shelving.",
+    "Every wall, floor, and ceiling surface identical to input — same colors, same textures, no new openings in walls.",
+    "Exact same number of windows and doors as original. Same room geometry, same proportions, same lighting, same camera angle.",
     "Photo-realistic interior photograph, DSLR full-frame 16-35mm f/8, deep DOF, sharp focus.",
   ].join(" ");
 }

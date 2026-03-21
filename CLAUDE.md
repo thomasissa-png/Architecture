@@ -267,6 +267,21 @@ agents/
 79. Flux Depth Pro : guidance differenciee par passe (12 pour surfaces, 15 pour mobilier)
 80. Fonction generatePass() factorise la logique OpenAI/Flux avec fallback par passe
 
+### Sprint 12 — Fix hallucination fenetres (Audit Expert IA Image)
+81. CRITIQUE : Cause racine identifiee — les stylePrompts de StylePicker.tsx contiennent "curtains/drapes" dans 10/12 styles
+    - Le modele invente une fenetre pour rendre "sheer linen curtains" coherent
+    - Solution : fonction sanitizeStyleForFurniturePass() qui supprime les clauses curtains/drapes avant injection
+82. HAUTE : Reformulation positive des contraintes murales
+    - "Every wall stays solid and unbroken" au lieu de "DO NOT add windows" (la negation amorce le modele)
+    - Contrainte de comptage explicite : "If the input has no windows, the output must have no windows"
+83. HAUTE : Ancrage colorimetrique anti-derive
+    - "Do not shift the hue, do not warm up or cool down the tone" (empeche le color grading global)
+84. MOYENNE : Passe 2 restructuree — "freestanding objects ONLY"
+    - Interdit wall art, built-in shelving (reduit la tentation de modifier les murs)
+    - "Room structure is LOCKED" remplace "architecture frozen"
+85. Apprentissage : mentionner "window/door" meme en negatif AMORCE le modele a les generer
+    - NE JAMAIS mentionner d'elements architecturaux qu'on ne veut pas voir apparaitre
+
 ## Regles de Developpement
 
 - Design minimaliste, pas de surcharge visuelle
