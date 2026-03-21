@@ -27,28 +27,52 @@ function checkRateLimit(ip: string): boolean {
   return true;
 }
 
-// ─── Prompt Engineering ─────────────────────────────────────────────
+// ─── Prompt Engineering (Audit Lucas Moreau — P0 to P4) ─────────────
+
+// P0 — Photographic technical descriptors force camera-realistic output
+const PHOTO_REALISM = "Shot on a professional full-frame DSLR with a 16-35mm wide-angle lens at f/8, natural ambient light, RAW photograph quality, color-accurate white balance, no HDR tonemapping artifacts.";
+
+// P1 — Lighting coherence: added furniture must match the existing light
+const LIGHTING_COHERENCE = "Match the exact lighting conditions of the input photo: same light direction, shadow angles, shadow softness, highlight intensity, specular reflections on surfaces, and color temperature. All added furniture and objects must cast shadows fully consistent with the existing light sources visible or implied in the original image.";
+
+// P2 — Real construction-site conditions clause
+const SITE_CONDITIONS = "If the input photo shows a construction site, empty rough space, or unfinished room, interpret it as a room awaiting renovation. Add finished surfaces (fresh paint, clean floors) only where the chosen style requires, while keeping the exact room geometry, ceiling height, beams, and architectural volumes unchanged.";
+
+// Architectural preservation constraints (enhanced with ceiling geometry + reflections)
 const ARCHITECTURAL_CONSTRAINTS = [
-  "Keep the exact room architecture, walls, floors, ceiling, windows, doors and lighting completely unchanged.",
+  "Keep the exact room architecture completely unchanged: walls, floors, ceiling, ceiling beams, ceiling height, windows, doors, and all architectural volumes.",
   "Preserve all fixed elements: electrical outlets, light switches, baseboards, radiators, built-in shelving, door handles.",
   "Maintain the original perspective, vanishing points and lens distortion exactly.",
-  "Respect the natural light direction, shadows and color temperature from the original photo.",
+  "Preserve any reflections in windows, mirrors, or glossy surfaces consistent with the original photo.",
   "Only add movable furniture, soft furnishings (cushions, throws, rugs), decorative objects, plants and artwork.",
-  "Ensure furniture scale is realistic relative to the room dimensions visible in the photo.",
-  "The result must look like a high-end real estate photography with professional staging — photorealistic, not a 3D render.",
+  "Ensure furniture scale is realistic: use door handles (~1m height) and electrical outlets as scale references.",
 ].join(" ");
 
-const AVOID_TERMS = "Do not produce: blurry, distorted, cartoon, painting, 3D render, changed architecture, altered proportions, floating furniture, watermark or text.";
-
+// P3 — Restructured prompt for GPT-image-1: style FIRST (highest token weight), then photo intent, then constraints
 function buildPrompt(stylePrompt: string): string {
-  return `${ARCHITECTURAL_CONSTRAINTS} Style: ${stylePrompt}. The staging should feel curated and intentional, as if done by a professional interior designer for a luxury real estate listing. ${AVOID_TERMS}`;
+  return [
+    `Style: ${stylePrompt}.`,
+    "Professional interior staging for a luxury real estate listing, curated and intentional.",
+    PHOTO_REALISM,
+    LIGHTING_COHERENCE,
+    ARCHITECTURAL_CONSTRAINTS,
+    SITE_CONDITIONS,
+  ].join(" ");
 }
 
-// dall-e-2 has a 1000-character prompt limit — use a condensed version
+// dall-e-2 has a 1000-character prompt limit — condensed version with photo descriptors
 function buildDalle2Prompt(stylePrompt: string): string {
-  const short = `Keep the exact room architecture, walls, floors, windows unchanged. Add furniture and decor only. Style: ${stylePrompt}. Professional interior staging, photorealistic, high-end real estate photography. No blurry, distorted, cartoon, 3D render, changed architecture, watermark.`;
+  const short = `Style: ${stylePrompt}. Professional DSLR photograph, 16-35mm wide-angle lens, f/8, natural ambient light. Luxury real estate interior staging. Keep exact room architecture, walls, floors, ceiling, windows unchanged. Match existing light direction and shadows. Add furniture and decor only. Photorealistic, color-accurate.`;
   return short.slice(0, 1000);
 }
+
+// P4 — Dedicated SDXL prompt: shorter (~100 words), style-first, optimized for SDXL attention window
+function buildSDXLPrompt(stylePrompt: string): string {
+  return `${stylePrompt}. Professional interior design photograph, DSLR wide-angle lens, natural ambient light, photorealistic. Luxury staged room with furniture, rugs, plants, artwork. Shadows and lighting match the original photo exactly. Furniture scale realistic relative to room. RAW photo quality, color-accurate.`;
+}
+
+// P4 — Dedicated SDXL negative prompt: deduplicated, precise terms
+const SDXL_NEGATIVE_PROMPT = "blurry, distorted, cartoon, painting, 3D render, changed architecture, altered room geometry, different perspective, floating furniture, unrealistic scale, watermark, text, oversaturated, flat lighting";
 
 // ─── Aspect Ratio Detection ────────────────────────────────────────
 function getOpenAISize(width?: number, height?: number): "1024x1024" | "1536x1024" | "1024x1536" {
@@ -131,22 +155,20 @@ async function tryOpenAI(
 // ─── Replicate Fallback (SDXL img2img — proper image editing) ──────
 async function tryReplicate(
   imageBase64: string,
-  prompt: string
+  stylePrompt: string
 ): Promise<{ image: string; model: string }> {
   const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
 
   const dataUri = `data:image/jpeg;base64,${imageBase64}`;
 
-  // Use stability-ai/sdxl in img2img mode with LOW prompt_strength
-  // to preserve room architecture while adding furniture
+  // P4 — Use dedicated SDXL prompt (shorter, style-first) + deduplicated negative prompt
   const output = await replicate.run(
     "stability-ai/sdxl:7762fd07cf82c948538e41f63f77d685e02b063e37e496e96eefd46c929f9bdc" as `${string}/${string}:${string}`,
     {
       input: {
         image: dataUri,
-        prompt: `Interior design photo, professionally staged room. ${prompt}`,
-        negative_prompt:
-          "blurry, distorted, different room, changed architecture, different perspective, unrealistic, cartoon, painting, 3D render, modified walls, modified windows, modified floor plan, changed ceiling, altered proportions, floating furniture, watermark, text",
+        prompt: buildSDXLPrompt(stylePrompt),
+        negative_prompt: SDXL_NEGATIVE_PROMPT,
         prompt_strength: 0.35,
         num_outputs: 1,
         guidance_scale: 7.5,
@@ -235,7 +257,7 @@ export async function POST(request: NextRequest) {
 
     if (process.env.REPLICATE_API_TOKEN) {
       try {
-        const result = await tryReplicate(base64Image, prompt);
+        const result = await tryReplicate(base64Image, stylePrompt.trim());
         return NextResponse.json(result);
       } catch (err) {
         replicateError = err instanceof Error ? err : new Error(String(err));

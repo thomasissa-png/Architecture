@@ -173,6 +173,18 @@ agents/
     - Differenciation renforcee du Contemporain (sculptural lamp, smoked glass, editorial aesthetic)
     - Prompts enrichis de 20-30 mots a 60-80 mots pour meilleure qualite GPT-image-1
 
+### Sprint 6 — Audit Expert IA Image (Agent Lucas Moreau)
+41. Ajout agent Expert IA Image (agents/ai-image-expert.md) — prompt engineering multi-modeles, photorealisme, photographie pro
+42. P0 : Ajout descripteurs photographiques techniques (DSLR full-frame, 16-35mm f/8, RAW quality, white balance)
+43. P1 : Ajout coherence eclairage (shadow angles, shadow softness, specular reflections, color temperature matching)
+44. P2 : Ajout clause conditions de chantier (pieces brutes, non finies — ajout peinture/sol propre sans deformer la geometrie)
+45. P3 : Restructuration ordre du prompt GPT-image-1 (style FIRST pour poids token maximal, puis intention photo, puis contraintes)
+46. P4 : Creation buildSDXLPrompt() dedie (~60 mots, style-first, optimise pour fenetre d'attention SDXL)
+47. P4 : Creation SDXL_NEGATIVE_PROMPT deduplique et precis (14 termes vs 17 redondants)
+48. Renforcement contraintes architecturales (geometrie plafond, poutres, hauteur sous plafond, reflexions vitres/miroirs)
+49. Ajout references d'echelle mobilier (poignees de porte ~1m, prises electriques)
+50. Mise a jour buildDalle2Prompt() avec descripteurs photo condenses (1000 chars max)
+
 ## Regles de Developpement
 
 - Design minimaliste, pas de surcharge visuelle
