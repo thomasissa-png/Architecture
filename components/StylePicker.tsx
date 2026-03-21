@@ -38,7 +38,7 @@ const STYLES: StyleOption[] = [
     description: "Métal, béton, volumes bruts sublimés",
     emoji: "⚙️",
     surfacePrompt:
-      "Industrial loft: light grey walls with subtle raw concrete texture keeping the same overall brightness as the input photo, smooth grey concrete floor with matte waxed finish, ceiling with original structure preserved, matte black industrial pendant light with metal shade and visible Edison filament bulb",
+      "Industrial loft: preserve existing wall finish and texture, keep the same overall brightness as the input photo, smooth grey concrete floor with matte waxed finish, ceiling with original structure preserved, matte black industrial pendant light with metal shade and visible Edison filament bulb",
     furniturePrompt:
       "Industrial furniture: large three-seat worn leather sofa in warm cognac with visible patina stitching and riveted seams 230cm wide, reclaimed wood and black welded steel rectangular coffee table 130cm, faded vintage Persian rug in muted red and navy 200x300cm, raw steel open-frame bookshelf with visible welds 180cm tall with books and aged brass objects, oversized vintage industrial clock on the top shelf as signature piece, black metal factory stool as side table, potted large fiddle leaf fig in corrugated metal container, leather and black steel butterfly chair, aged brass industrial desk lamp on the bookshelf, two weathered leather cushions",
   },
@@ -58,9 +58,9 @@ const STYLES: StyleOption[] = [
     description: "Géométrie dorée, velours, luxe années 20",
     emoji: "✨",
     surfacePrompt:
-      "Art Deco: warm ivory matte walls with smooth finish keeping the same overall brightness as the input photo, dark stained herringbone parquet refinish on the existing floor, smooth ceiling with clean plaster edge, brass and frosted glass geometric pendant chandelier",
+      "Art Deco: slightly warm white walls with smooth finish keeping the same overall brightness as the input photo, dark stained herringbone parquet refinish on the existing floor, smooth flat ceiling junction with no molding, brass and frosted glass geometric pendant chandelier",
     furniturePrompt:
-      "Art Deco furniture: channel-tufted velvet sofa in deep emerald green with polished brass legs 230cm wide arranged symmetrically in the room, round polished brass coffee table with smoked glass top on pedestal base 90cm diameter, geometric patterned area rug in black gold and cream 200x300cm, fluted dark lacquer drinks cabinet with brass handles 120cm tall, marble-top brass side table with crystal decanter and gold-rimmed glasses, tall brass floor lamp with pleated cream silk shade, brass sunburst mirror resting on top of the drinks cabinet as signature piece, potted areca palm in polished brass planter, matching pair of brass table lamps on side tables flanking the sofa, velvet cushions in sapphire and gold with geometric patterns",
+      "Art Deco furniture: channel-tufted velvet sofa in deep emerald green with polished brass legs 230cm wide arranged symmetrically in the room, round polished brass coffee table with smoked glass top on pedestal base 90cm diameter, geometric patterned area rug in black gold and cream 200x300cm, fluted dark lacquer drinks cabinet with brass handles 120cm tall, marble-top brass side table with crystal decanter and gold-rimmed glasses, tall brass floor lamp with pleated cream silk shade, brass sunburst mirror leaning against the wall resting on top of the drinks cabinet as signature piece, potted areca palm in polished brass planter, matching pair of brass table lamps on side tables flanking the sofa, velvet cushions in sapphire and gold with geometric patterns",
   },
   {
     id: "mid-century",
