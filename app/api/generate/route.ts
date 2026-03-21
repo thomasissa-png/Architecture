@@ -1,6 +1,69 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import Replicate from "replicate";
+import { deflateSync } from "zlib";
+
+// ─── Transparent Mask Generator ──────────────────────────────────────
+// GPT-image-1 images.edit WITHOUT a mask is ultra-conservative: it "retouches"
+// instead of transforming. By sending a fully transparent mask, we tell the
+// model "you can modify every pixel" — critical for virtual home staging.
+
+function crc32(buf: Buffer): number {
+  // CRC32 lookup table (standard polynomial 0xEDB88320)
+  const table = new Uint32Array(256);
+  for (let i = 0; i < 256; i++) {
+    let c = i;
+    for (let j = 0; j < 8; j++) {
+      c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    }
+    table[i] = c;
+  }
+  let crc = 0xffffffff;
+  for (let i = 0; i < buf.length; i++) {
+    crc = table[(crc ^ buf[i]) & 0xff] ^ (crc >>> 8);
+  }
+  return (crc ^ 0xffffffff) >>> 0;
+}
+
+function pngChunk(type: string, data: Buffer): Buffer {
+  const len = Buffer.alloc(4);
+  len.writeUInt32BE(data.length, 0);
+  const typeB = Buffer.from(type, "ascii");
+  const crcB = Buffer.alloc(4);
+  crcB.writeUInt32BE(crc32(Buffer.concat([typeB, data])), 0);
+  return Buffer.concat([len, typeB, data, crcB]);
+}
+
+/**
+ * Creates a fully transparent PNG of given dimensions.
+ * Every pixel is RGBA(0,0,0,0) → entire image is "editable" by images.edit.
+ */
+function createTransparentMask(width: number, height: number): Buffer {
+  const signature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
+
+  // IHDR: width, height, 8-bit RGBA
+  const ihdr = Buffer.alloc(13);
+  ihdr.writeUInt32BE(width, 0);
+  ihdr.writeUInt32BE(height, 4);
+  ihdr[8] = 8;  // bit depth
+  ihdr[9] = 6;  // color type: RGBA
+  ihdr[10] = 0; // compression
+  ihdr[11] = 0; // filter
+  ihdr[12] = 0; // interlace
+
+  // Raw scanlines: each row = 1 filter byte (0=None) + width*4 RGBA bytes (all 0 = transparent)
+  const rawData = Buffer.alloc(height * (1 + width * 4));
+  // Buffer.alloc initializes to 0 → fully transparent
+
+  const compressed = deflateSync(rawData);
+
+  return Buffer.concat([
+    signature,
+    pngChunk("IHDR", ihdr),
+    pngChunk("IDAT", compressed),
+    pngChunk("IEND", Buffer.alloc(0)),
+  ]);
+}
 
 // ─── Rate Limiting (in-memory, IP-based) ────────────────────────────
 // Note: On serverless (Vercel), this is per-instance and resets on cold starts.
@@ -112,11 +175,19 @@ async function tryOpenAI(
 
   const size = getOpenAISize(width, height);
 
+  // Create a fully transparent mask so GPT-image-1 knows it can modify everything.
+  // Without this mask, images.edit is ultra-conservative and barely changes the input.
+  const maskWidth = width || 1024;
+  const maskHeight = height || 1024;
+  const maskBuffer = createTransparentMask(maskWidth, maskHeight);
+  const maskFile = new File([maskBuffer], "mask.png", { type: "image/png" });
+
   // Try gpt-image-1 first (requires Usage Tier 1+)
   try {
     const response = await openai.images.edit({
       model: "gpt-image-1",
       image: imageFile,
+      mask: maskFile,
       prompt,
       n: 1,
       size,
@@ -143,9 +214,14 @@ async function tryOpenAI(
     type: "image/png",
   });
 
+  // dall-e-2 also benefits from a mask — create one at 1024x1024 (its max size)
+  const dalleMask = createTransparentMask(1024, 1024);
+  const dalleMaskFile = new File([dalleMask], "mask.png", { type: "image/png" });
+
   const response = await openai.images.edit({
     model: "dall-e-2",
     image: dalleFile,
+    mask: dalleMaskFile,
     prompt: buildDalle2Prompt(stylePrompt),
     n: 1,
     size: "1024x1024",
