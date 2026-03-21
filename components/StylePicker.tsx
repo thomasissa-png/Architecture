@@ -108,9 +108,9 @@ const STYLES: StyleOption[] = [
     description: "Imperfection noble, matières brutes, sérénité",
     emoji: "🏺",
     surfacePrompt:
-      "Wabi-sabi: soft matte warm grey walls with subtle imperfect hand-applied texture keeping the same overall brightness as the input photo, floor with aged wood-effect refinish preserving existing material, smooth ceiling in muted warm white, simple handmade ceramic bowl-shaped pendant light in earth tone",
+      "Wabi-sabi: soft matte warm grey walls keeping the same overall brightness as the input photo, light-toned matte finish on existing floor preserving the material, smooth white ceiling, preserve existing ceiling light",
     furniturePrompt:
-      "Wabi-sabi furniture with nothing symmetrical, every object placed with studied asymmetry: raw linen sofa with natural wrinkles in undyed flax tone with low simple reclaimed wood frame 200cm wide, weathered oak rectangular coffee table with visible wood grain and worn edges 120cm, rough textured wool rug in undyed natural fiber 180x250cm, aged reclaimed wood bench with visible wear marks 100cm, single dark charcoal tea bowl with crackle glaze on the table as signature kintsugi-inspired piece, handmade asymmetric ceramic vase with single dried branch, smooth river stone as sculptural object on the floor, leave at least 60 percent of the floor area completely empty for serene intentional space",
+      "Wabi-sabi furniture with nothing symmetrical, every object placed with studied asymmetry: raw linen sofa visibly wrinkled and creased in undyed flax tone with low dark weathered reclaimed wood frame 200cm wide, weathered oak rectangular coffee table with visible wood grain and worn edges 120cm, rough textured wool rug in undyed natural fiber 180x250cm, aged reclaimed wood bench with visible wear marks 100cm, single dark charcoal tea bowl with crackle glaze on the table as signature kintsugi-inspired piece, handmade asymmetric ceramic vase with single dried branch, smooth river stone as sculptural object on the floor, leave at least 60 percent of the floor area completely empty for serene intentional space",
   },
   {
     id: "maximalist",
