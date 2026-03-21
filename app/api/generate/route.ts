@@ -51,8 +51,9 @@ const ARCHITECTURAL_CONSTRAINTS = [
 // P3 — Restructured prompt for GPT-image-1: style FIRST (highest token weight), then photo intent, then constraints
 function buildPrompt(stylePrompt: string): string {
   return [
+    `Furnish and stage this empty room. Add furniture, rugs, plants, artwork, lighting fixtures and decorative objects.`,
     `Style: ${stylePrompt}.`,
-    "Professional interior staging for a luxury real estate listing, curated and intentional.",
+    "The result must look like a professional interior staging for a luxury real estate listing, curated and intentional.",
     PHOTO_REALISM,
     LIGHTING_COHERENCE,
     ARCHITECTURAL_CONSTRAINTS,
@@ -62,13 +63,13 @@ function buildPrompt(stylePrompt: string): string {
 
 // dall-e-2 has a 1000-character prompt limit — condensed version with photo descriptors
 function buildDalle2Prompt(stylePrompt: string): string {
-  const short = `Style: ${stylePrompt}. Professional DSLR photograph, 16-35mm wide-angle lens, f/8, natural ambient light. Luxury real estate interior staging. Keep exact room architecture, walls, floors, ceiling, windows unchanged. Match existing light direction and shadows. Add furniture and decor only. Photorealistic, color-accurate.`;
+  const short = `Furnish and stage this empty room with furniture, rugs, plants and decor. Style: ${stylePrompt}. Professional DSLR photograph, wide-angle lens, natural light. Luxury real estate staging. Keep room architecture, walls, floors, ceiling, windows unchanged. Match existing lighting. Photorealistic, color-accurate.`;
   return short.slice(0, 1000);
 }
 
-// P4 — Dedicated SDXL prompt: shorter (~100 words), style-first, optimized for SDXL attention window
+// P4 — Dedicated SDXL prompt: shorter (~60 words), style-first, optimized for SDXL attention window
 function buildSDXLPrompt(stylePrompt: string): string {
-  return `${stylePrompt}. Professional interior design photograph, DSLR wide-angle lens, natural ambient light, photorealistic. Luxury staged room with furniture, rugs, plants, artwork. Shadows and lighting match the original photo exactly. Furniture scale realistic relative to room. RAW photo quality, color-accurate.`;
+  return `Furnish and stage this empty room. ${stylePrompt}. Professional interior design photograph, DSLR wide-angle lens, natural ambient light, photorealistic. Add furniture, rugs, plants, artwork and decor. Shadows and lighting match the original photo. Furniture scale realistic. RAW photo quality, color-accurate.`;
 }
 
 // P4 — Dedicated SDXL negative prompt: deduplicated, precise terms
