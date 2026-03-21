@@ -182,12 +182,16 @@ export async function POST(request: NextRequest) {
     const prompt = buildPrompt(stylePrompt.trim());
 
     // Try OpenAI first, then Replicate as fallback
+    let openaiError: Error | null = null;
+    let replicateError: Error | null = null;
+
     if (process.env.OPENAI_API_KEY) {
       try {
         const result = await tryOpenAI(base64Image, prompt, width, height);
         return NextResponse.json(result);
-      } catch (openaiError) {
-        console.error("OpenAI failed, trying Replicate fallback:", openaiError);
+      } catch (err) {
+        openaiError = err instanceof Error ? err : new Error(String(err));
+        console.error("OpenAI failed:", openaiError.message);
       }
     }
 
@@ -195,24 +199,33 @@ export async function POST(request: NextRequest) {
       try {
         const result = await tryReplicate(base64Image, prompt);
         return NextResponse.json(result);
-      } catch (replicateError) {
-        console.error("Replicate also failed:", replicateError);
-        return NextResponse.json(
-          {
-            error:
-              "Les deux services de g\u00e9n\u00e9ration sont indisponibles. Veuillez r\u00e9essayer plus tard.",
-          },
-          { status: 503 }
-        );
+      } catch (err) {
+        replicateError = err instanceof Error ? err : new Error(String(err));
+        console.error("Replicate also failed:", replicateError.message);
       }
     }
 
+    // Both failed or no keys — return detailed error for debugging
+    if (!process.env.OPENAI_API_KEY && !process.env.REPLICATE_API_TOKEN) {
+      return NextResponse.json(
+        {
+          error:
+            "Aucune cl\u00e9 API configur\u00e9e. Veuillez configurer OPENAI_API_KEY ou REPLICATE_API_TOKEN.",
+        },
+        { status: 500 }
+      );
+    }
+
+    // At least one key was present but both providers failed
+    const details: string[] = [];
+    if (openaiError) details.push(`OpenAI : ${openaiError.message}`);
+    if (replicateError) details.push(`Replicate : ${replicateError.message}`);
+
     return NextResponse.json(
       {
-        error:
-          "Aucune cl\u00e9 API configur\u00e9e. Veuillez configurer OPENAI_API_KEY ou REPLICATE_API_TOKEN.",
+        error: `\u00c9chec de la g\u00e9n\u00e9ration. ${details.join(" | ")}`,
       },
-      { status: 500 }
+      { status: 503 }
     );
   } catch (error) {
     console.error("Generation error:", error);
