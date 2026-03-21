@@ -28,9 +28,9 @@ const STYLES: StyleOption[] = [
     description: "Lignes nettes, palette sobre, modernité",
     emoji: "◻️",
     surfacePrompt:
-      "Contemporary modern: warm grey matte walls keeping the same overall brightness as the input photo, large-format light stone tile refinish with minimal grout lines, smooth white ceiling, slim linear track lighting in matte black",
+      "Contemporary modern: very light warm grey walls barely tinted from the original keeping the same overall brightness as the input photo, light-toned matte finish on existing floor preserving the material, smooth white ceiling, preserve existing ceiling light",
     furniturePrompt:
-      "Contemporary furniture: large low-profile L-shaped sectional sofa in charcoal premium bouclé with slim brushed steel legs 280cm, sculptural smoked glass coffee table on brushed brass pedestal base 110cm, heathered grey thick wool area rug 250x350cm, brushed brass arc floor lamp with frosted globe shade, single large abstract canvas propped on the floor against the baseboard, architectural coffee table books in a neat stack, tall matte white sculptural ceramic object on a slim black metal pedestal, potted architectural snake plant in matte black cylinder planter, two charcoal and cream geometric cushions",
+      "Contemporary furniture: large low-profile L-shaped sectional sofa in charcoal premium bouclé with slim brushed steel legs 280cm, sculptural smoked glass coffee table on brushed brass pedestal base 110cm, heathered grey thick wool area rug 250x350cm, brushed brass arc floor lamp with frosted globe shade, single large abstract canvas sitting on the floor leaning against the baseboard NOT hung on the wall, architectural coffee table books in a neat stack, tall matte white sculptural ceramic object on a slim black metal pedestal, potted architectural snake plant in matte black cylinder planter, two charcoal and cream geometric cushions",
   },
   {
     id: "industrial",
