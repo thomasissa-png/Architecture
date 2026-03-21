@@ -48,9 +48,9 @@ const STYLES: StyleOption[] = [
     description: "Minimalisme japonais, chaleur scandinave",
     emoji: "🎋",
     surfacePrompt:
-      "Japandi: warm sand-toned limewash walls keeping the same overall brightness as the input photo, light ash wood plank refinish with delicate grain, smooth white ceiling, round washi paper pendant light in natural off-white",
+      "Japandi: soft warm white walls with very subtle sand undertone keeping the same overall brightness as the input photo, light-toned matte finish on existing floor preserving the material, smooth white ceiling, round washi paper pendant light in natural off-white",
     furniturePrompt:
-      "Japandi furniture with precise geometric lines and ordered symmetry: low-profile platform sofa with clean lines in natural undyed linen in warm ecru with exposed light ash wood frame 220cm wide, light ash rectangular coffee table with rounded edges and short legs 100cm, flat-weave natural fiber rug in warm straw tone 200x250cm, single ikebana dried branch arrangement in hand-thrown irregular ceramic vase, floor cushion in muted clay tone beside the table, minimal round side table in light ash 40cm with black cast iron teapot (tetsubin) as signature piece, potted single-stem orchid in unglazed charcoal pottery, thin cashmere throw in warm sand tone draped over one sofa arm, intentional negative space with only 30 percent of room furnished",
+      "Japandi furniture with precise geometric lines and ordered symmetry: low-profile platform sofa with clean lines in natural undyed linen in warm ecru with exposed light ash wood frame 220cm wide, light ash rectangular coffee table with rounded edges and short legs 100cm, flat-weave natural fiber rug in warm straw tone 200x250cm, single ikebana dried branch arrangement in geometric cylindrical ceramic vase, floor cushion in muted clay tone beside the table, minimal round side table in light ash 40cm with black cast iron teapot (tetsubin) as signature piece, potted single-stem orchid in unglazed charcoal pottery, thin cashmere throw in warm sand tone draped over one sofa arm, intentional negative space with only 30 percent of room furnished",
   },
   {
     id: "art-deco",
@@ -78,7 +78,7 @@ const STYLES: StyleOption[] = [
     description: "Textiles ethniques, plantes, chaleur nomade",
     emoji: "🌿",
     surfacePrompt:
-      "Bohemian: warm off-white walls with subtle handmade plaster texture keeping the same overall brightness as the input photo, warm natural wood plank refinish with visible knots, smooth white ceiling, woven rattan pendant light in natural tone",
+      "Bohemian: soft warm off-white walls keeping the same overall brightness as the input photo, light-toned matte finish on existing floor preserving the material, smooth white ceiling, preserve existing ceiling light",
     furniturePrompt:
       "Bohemian furniture: deep low linen sofa in natural ecru with layered kilim and mudcloth cushions in terracotta rust and indigo 220cm wide, round reclaimed wood coffee table with organic edge 90cm diameter, faded vintage Persian rug layered over natural jute rug 200x300cm, rattan peacock chair with sheepskin throw draped over, two trailing pothos in terracotta pots and one monstera in a woven basket, brass Moroccan-style pierced lantern on the floor, wooden tray with pillar candles and dried pampas grass on the table, tall freestanding wooden tripod plant stand with trailing pothos",
   },
@@ -108,7 +108,7 @@ const STYLES: StyleOption[] = [
     description: "Imperfection noble, matières brutes, sérénité",
     emoji: "🏺",
     surfacePrompt:
-      "Wabi-sabi: raw plaster limewash walls in warm grey with subtle imperfect hand-applied texture keeping the same overall brightness as the input photo, floor with aged wood-effect refinish preserving existing material, smooth ceiling in muted warm white, simple handmade ceramic bowl-shaped pendant light in earth tone",
+      "Wabi-sabi: soft matte warm grey walls with subtle imperfect hand-applied texture keeping the same overall brightness as the input photo, floor with aged wood-effect refinish preserving existing material, smooth ceiling in muted warm white, simple handmade ceramic bowl-shaped pendant light in earth tone",
     furniturePrompt:
       "Wabi-sabi furniture with nothing symmetrical, every object placed with studied asymmetry: raw linen sofa with natural wrinkles in undyed flax tone with low simple reclaimed wood frame 200cm wide, weathered oak rectangular coffee table with visible wood grain and worn edges 120cm, rough textured wool rug in undyed natural fiber 180x250cm, aged reclaimed wood bench with visible wear marks 100cm, single dark charcoal tea bowl with crackle glaze on the table as signature kintsugi-inspired piece, handmade asymmetric ceramic vase with single dried branch, smooth river stone as sculptural object on the floor, leave at least 60 percent of the floor area completely empty for serene intentional space",
   },
