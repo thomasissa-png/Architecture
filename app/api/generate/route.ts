@@ -34,31 +34,32 @@ function checkRateLimit(ip: string): boolean {
 // The fix: strong transformation directive FIRST, style details SECOND,
 // minimal constraints LAST (and only the essential ones).
 
-// GPT-image-1 prompt — concise, action-heavy (~120 words max)
+// GPT-image-1 prompt — action-heavy, ~150 words with targeted guard-rails (R1-R5)
 function buildPrompt(stylePrompt: string): string {
   return [
     "TRANSFORM this empty room into a fully furnished, professionally staged interior.",
     "Fill the space with a complete set of furniture: sofa, coffee table, armchairs, rugs, curtains, lighting fixtures, wall art, plants, and decorative accessories.",
     `Design style: ${stylePrompt}.`,
-    "This must look like a luxury real estate listing photo — shot on a DSLR wide-angle lens, photorealistic, natural light with consistent shadows on all added furniture.",
-    "If the room is unfinished or under construction, add clean painted walls and finished flooring appropriate to the style.",
-    "Keep the room geometry, windows, doors and ceiling unchanged.",
+    "This must look like a luxury real estate listing photo — shot on a DSLR 16-35mm wide-angle lens at f/8, deep depth of field, sharp focus throughout, photorealistic, natural light.",
+    "All added furniture must have shadows and reflections consistent with the existing light sources in the photo — same direction, same softness, same color temperature.",
+    "If the room is unfinished or under construction, add clean painted walls and finished flooring appropriate to the style. If the room is dark, keep the low-light atmosphere. Preserve any bright window highlights as-is.",
+    "Keep the exact room geometry, walls, floor, ceiling, windows, doors, perspective and vanishing points unchanged.",
   ].join(" ");
 }
 
 // DALL-E 2 prompt — 1000 char limit, even more concise
 function buildDalle2Prompt(stylePrompt: string): string {
-  const short = `TRANSFORM this empty room into a fully furnished, staged interior. Add sofa, coffee table, armchairs, rugs, curtains, lamps, wall art, plants and accessories. Style: ${stylePrompt}. Luxury real estate photo, DSLR wide-angle, photorealistic, natural light. If unfinished room, add clean walls and floors. Keep room shape, windows and doors unchanged.`;
+  const short = `TRANSFORM this empty room into a fully furnished, staged interior. Add sofa, coffee table, armchairs, rugs, curtains, lamps, wall art, plants and accessories. Style: ${stylePrompt}. Luxury real estate photo, DSLR 16-35mm wide-angle f/8, deep focus, sharp throughout, photorealistic, natural light. Furniture shadows match existing light direction and color temperature. If unfinished room, add clean walls and floors. If dark room, keep mood. Keep room geometry, walls, floor, ceiling, windows, doors and perspective unchanged.`;
   return short.slice(0, 1000);
 }
 
-// SDXL prompt — ~50 words, style-first for attention window
+// SDXL prompt — ~60 words, directive style, optimized for attention window
 function buildSDXLPrompt(stylePrompt: string): string {
-  return `A beautifully furnished and staged room interior. ${stylePrompt}. Complete furniture set with sofa, coffee table, rugs, curtains, lamps, wall art and plants. Professional real estate photograph, DSLR wide-angle, photorealistic, natural ambient light, sharp focus.`;
+  return `TRANSFORM this empty room into a furnished staged interior. ${stylePrompt}. Complete furniture set with sofa, coffee table, rugs, curtains, lamps, wall art and plants. Furniture shadows match existing light. Professional real estate photograph, DSLR 16-35mm wide-angle f/8, deep focus, sharp throughout, photorealistic, natural ambient light.`;
 }
 
 // SDXL negative prompt
-const SDXL_NEGATIVE_PROMPT = "empty room, unfurnished, bare walls, no furniture, blurry, cartoon, painting, 3D render, floating furniture, unrealistic scale, watermark, text, oversaturated, shallow depth of field, bokeh";
+const SDXL_NEGATIVE_PROMPT = "empty room, unfurnished, bare walls, no furniture, empty floor, construction site, blurry, cartoon, painting, 3D render, floating furniture, unrealistic scale, watermark, text, oversaturated, shallow depth of field, bokeh";
 
 // ─── Aspect Ratio Detection ────────────────────────────────────────
 function getOpenAISize(width?: number, height?: number): "1024x1024" | "1536x1024" | "1024x1536" {
