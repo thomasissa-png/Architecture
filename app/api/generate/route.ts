@@ -28,33 +28,39 @@ function checkRateLimit(ip: string): boolean {
 }
 
 // ─── Prompt Engineering ──────────────────────────────────────────────
-// Strategy v4b: DESCRIPTIVE prompt + NO mask + CAMERA ANGLE FIRST.
+// Strategy v5: SHORT edit-instruction prompt anchored to the input image.
 //
 // Failed approaches:
 //   v1 "TRANSFORM this room..." (no mask) → model retouches minimally, room stays empty
 //   v2 "ADD ALL OF THE FOLLOWING..." (no mask) → same, 1-2 accessories only
 //   v3 descriptive + full transparent mask → room fully furnished but geometry replaced
 //   v3b descriptive + gradient mask → furniture added but camera angle/perspective lost
-//   v4  camera anchoring at END of prompt → model ignores it (late token dilution)
+//   v4  camera anchoring at END of long prompt → model ignores it (late token dilution)
+//   v4b camera anchoring at START of long prompt → model still recreates entire scene
+//        because the prompt describes a complete room (~80 words of furniture list)
+//        which overwhelms the edit instruction — model generates a new image instead
 //
-// v4b insight: Camera angle anchoring must be the FIRST tokens of the prompt.
-// Models weight early tokens most heavily. "From this exact camera position..."
-// as the opener forces perspective preservation before any style description.
+// v5 insight: The prompt must be SHORT and reference "this room" / "this photo"
+// explicitly so the model treats the input image as the anchor, not the prompt text.
+// Long descriptive prompts (v3/v4) make the model generate from the text description
+// and ignore the input image entirely. By keeping the prompt under ~40 words and
+// focusing on "add furniture to THIS room", the model is forced to use the input
+// image as the base and only add elements on top.
 
 function buildPrompt(stylePrompt: string): string {
-  return `From this exact camera position and angle of view, keeping the same perspective, vanishing points, and lens distortion as the original photograph: a stunning, fully furnished interior photographed for Architectural Digest. ${stylePrompt}. The room features a large sofa, coffee table, armchairs, a big area rug, curtains, floor and table lamps, framed art on the walls, potted plants, and styled side tables with books and candles. Clean finished walls and polished floors. Any construction elements (exposed wires, cables, raw plaster) are hidden behind furniture or clean finished surfaces. Professional interior photography, DSLR wide-angle lens, natural daylight, photorealistic.`;
+  return `Keep this exact room, walls, ceiling, floor, windows, and camera angle completely unchanged. Add stylish furniture and decor to this empty room in a ${stylePrompt} style. Add a sofa, coffee table, rug, curtains, lamps, wall art, and plants. Photorealistic interior photography.`;
 }
 
 function buildDalle2Prompt(stylePrompt: string): string {
-  const short = `From this exact camera position, same perspective and vanishing points as original photo. Fully furnished interior, Architectural Digest quality. ${stylePrompt}. Sofa, coffee table, armchairs, area rug, curtains, lamps, framed art, plants, styled side tables. Clean walls, polished floors. Hide construction elements. DSLR wide-angle interior photo, natural light, photorealistic.`;
+  const short = `Keep this exact room and camera angle unchanged. Furnish this empty room: ${stylePrompt} style. Add sofa, coffee table, rug, curtains, lamps, wall art, plants. Photorealistic interior photo.`;
   return short.slice(0, 1000);
 }
 
 function buildSDXLPrompt(stylePrompt: string): string {
-  return `From this exact camera position, same perspective and vanishing points as original photo. Stunning fully furnished interior, Architectural Digest. ${stylePrompt}. Sofa, coffee table, armchairs, area rug, curtains, lamps, wall art, plants, styled side tables. Clean walls, polished floors. DSLR wide-angle interior photograph, natural daylight, photorealistic.`;
+  return `This exact room furnished in ${stylePrompt} style. Sofa, coffee table, rug, curtains, lamps, wall art, plants. Same room, same walls, same angle. Photorealistic interior photography.`;
 }
 
-const SDXL_NEGATIVE_PROMPT = "empty room, unfurnished, bare walls, no furniture, empty floor, construction site, exposed wires, electrical cables, raw concrete, raw plaster, unfinished, sparse, minimal furniture, blurry, cartoon, painting, 3D render, floating furniture, unrealistic scale, watermark, text, oversaturated, shallow depth of field, bokeh";
+const SDXL_NEGATIVE_PROMPT = "empty room, unfurnished, bare walls, no furniture, empty floor, construction site, exposed wires, electrical cables, raw concrete, raw plaster, unfinished, sparse, blurry, cartoon, painting, 3D render, floating furniture, unrealistic scale, watermark, text, oversaturated, shallow depth of field, bokeh, animal, dog, cat, mannequin, dress form, garment rack, person, different room, different angle";
 
 // ─── Aspect Ratio Detection ────────────────────────────────────────
 function getOpenAISize(width?: number, height?: number): "1024x1024" | "1536x1024" | "1024x1536" {
@@ -150,8 +156,9 @@ async function tryReplicate(
   const dataUri = `data:image/jpeg;base64,${imageBase64}`;
 
   // SDXL img2img: prompt_strength controls how much the prompt overrides the input.
-  // 0.55 was too low — the model preserved the empty room too much.
-  // 0.72 gives enough freedom to add real furniture while keeping room geometry.
+  // 0.72 was too high — model recreated the scene from scratch, ignoring input geometry.
+  // 0.55 was too low with old long prompts but should work with v5 short prompts.
+  // 0.60 = sweet spot: enough to add furniture, not enough to redraw the room.
   const output = await replicate.run(
     "stability-ai/sdxl:7762fd07cf82c948538e41f63f77d685e02b063e37e496e96eefd46c929f9bdc" as `${string}/${string}:${string}`,
     {
@@ -159,7 +166,7 @@ async function tryReplicate(
         image: dataUri,
         prompt: buildSDXLPrompt(stylePrompt),
         negative_prompt: SDXL_NEGATIVE_PROMPT,
-        prompt_strength: 0.72,
+        prompt_strength: 0.60,
         num_outputs: 1,
         guidance_scale: 8.5,
         num_inference_steps: 40,

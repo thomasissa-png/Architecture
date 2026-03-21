@@ -199,12 +199,13 @@ agents/
 59. Fix partage WhatsApp : utilise navigator.share avec fichier image sur mobile (au lieu de wa.me text-only)
 
 ### Sprint 8 — Fix Angle de Vue (camera angle non preserve)
-60. CRITIQUE : Ancrage camera deplace en TETE de prompt sur les 3 builders (GPT-image-1, DALL-E 2, SDXL)
-    - Ancien : "Same camera angle..." enfoui en fin de prompt (token tardif, ignore par le modele)
-    - Nouveau : "From this exact camera position, same perspective and vanishing points..." en premiere phrase
-    - Les modeles IA ponderent les premiers tokens plus fortement — l'ancrage camera doit etre l'ouverture
-61. Strategie v4b : camera-angle-first + descriptive prompt + no mask (combinaison des apprentissages v3/v4)
-62. Audit Agent Architecte d'Interieur (Yann Duval) sur resultats generes
+60. CRITIQUE : Strategie v5 — prompts COURTS ancres a l'image source (remplacement total de v4b)
+    - Ancien v4b : prompts de ~80 mots decrivant une scene complete → le modele genere depuis le texte, ignore l'image source
+    - Nouveau v5 : prompts de ~35 mots qui referent "this room" / "this exact room" → force le modele a editer l'image plutot que generer
+    - Cle : "Keep this exact room, walls, ceiling, floor, windows unchanged. Add furniture..." au lieu de decrire une scene de zero
+61. SDXL prompt_strength reduit de 0.72 a 0.60 (0.72 = trop de liberte, scene recree)
+62. Negative prompt SDXL enrichi : animal, dog, cat, mannequin, different room, different angle
+63. Audit Agent Architecte d'Interieur (Yann Duval) : artefacts (chien/fourrure), scene recree au lieu d'editee
 
 ## Regles de Developpement
 
@@ -221,5 +222,5 @@ agents/
 - **TOUJOURS individualiser les prompts par modele** : chaque modele (GPT-image-1, DALL-E 2, SDXL) a son propre builder de prompt (buildPrompt, buildDalle2Prompt, buildSDXLPrompt). Quand on modifie un aspect du prompt (ex: ancrage angle de vue, style, contraintes), il faut le repercuter sur les 3 builders, adapte aux specificites de chaque modele.
 - **Ne jamais oublier un fallback** : a chaque modification de prompt, verifier systematiquement les 3 fonctions buildPrompt/buildDalle2Prompt/buildSDXLPrompt + les parametres de chaque appel API (quality, prompt_strength, negative_prompt, etc.)
 - **Pas de mask** avec images.edit : le mask (transparent ou gradient) fait perdre l'angle de vue original. Le prompt descriptif sans mask preserve naturellement la perspective.
-- **Prompt descriptif > prompt instructif** : decrire l'image finale souhaitee ("A stunning furnished room...") plutot que donner des instructions ("Add furniture, transform...")
-- **Ancrage camera EN TETE DE PROMPT** : chaque prompt doit COMMENCER par l'ancrage camera ("From this exact camera position, same perspective and vanishing points as original photo"). Les modeles IA ponderent les premiers tokens plus fortement — l'ancrage en fin de prompt est ignore (apprentissage v4 → v4b)
+- **Prompt COURT ancre a l'image source** : le prompt doit etre COURT (~35 mots) et referer explicitement "this room" / "this exact room". Un prompt long et descriptif (~80+ mots) fait generer une nouvelle scene au lieu d'editer la photo. Strategie v5 : "Keep this exact room unchanged. Add furniture in [style]." (apprentissage v4b → v5)
+- **Pas de description de scene complete** : ne PAS lister tous les meubles en detail dans le prompt. Le modele doit utiliser l'image source comme ancre, pas le texte. Un prompt trop riche = le modele ignore l'image d'entree
