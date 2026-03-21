@@ -115,7 +115,7 @@ export default function AdminPage() {
                       <div style={{ textAlign: "center" }}>
                         <div style={{ fontSize: 11, color: "#888", marginBottom: 4 }}>Input</div>
                         <img
-                          src={log.input_image_path}
+                          src={`/api/logs/image?file=${encodeURIComponent(log.input_image_path.replace("/logs/", ""))}`}
                           alt="input"
                           style={{ height: 200, borderRadius: 8, border: "1px solid #eee" }}
                         />
@@ -125,7 +125,7 @@ export default function AdminPage() {
                       <div style={{ textAlign: "center" }}>
                         <div style={{ fontSize: 11, color: "#888", marginBottom: 4 }}>Passe 1 (surfaces)</div>
                         <img
-                          src={log.pass1_image_path}
+                          src={`/api/logs/image?file=${encodeURIComponent(log.pass1_image_path.replace("/logs/", ""))}`}
                           alt="pass1"
                           style={{ height: 200, borderRadius: 8, border: "1px solid #eee" }}
                         />
@@ -135,7 +135,7 @@ export default function AdminPage() {
                       <div style={{ textAlign: "center" }}>
                         <div style={{ fontSize: 11, color: "#888", marginBottom: 4 }}>Output (final)</div>
                         <img
-                          src={log.output_image_path}
+                          src={`/api/logs/image?file=${encodeURIComponent(log.output_image_path.replace("/logs/", ""))}`}
                           alt="output"
                           style={{ height: 200, borderRadius: 8, border: "1px solid #eee" }}
                         />
