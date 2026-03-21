@@ -328,6 +328,10 @@ export async function POST(request: NextRequest) {
     const pass1 = await generatePass(base64Image, trimmedSurface, trimmedFurniture, 1, outputSize);
     const t1 = Date.now();
 
+    // Build the final prompts for logging (what the model actually receives)
+    const builtPromptPass1 = buildSurfacesResponsesPrompt(trimmedSurface);
+    const builtPromptPass2 = buildFurnitureResponsesPrompt(trimmedFurniture);
+
     // If surfaces-only mode, return pass 1 result directly
     if (!withFurniture) {
       const outputBase64 = pass1.image.replace(/^data:image\/[\w+]+;base64,/, "");
@@ -336,13 +340,15 @@ export async function POST(request: NextRequest) {
         model: `${pass1.model} (surfaces uniquement)`,
       });
 
-      // Fire-and-forget: log to DB
+      // Fire-and-forget: log to DB + save images to filesystem
       logGeneration({
         ip, styleId, surfacePrompt: trimmedSurface, furniturePrompt: trimmedFurniture,
         withFurniture: false, inputWidth: width, inputHeight: height,
         modelUsed: `${pass1.model} (surfaces uniquement)`,
         pass1Model: pass1.model, durationMs: t1 - t0, pass1DurationMs: t1 - t0,
-        success: true, inputBase64: base64Image, outputBase64: outputBase64,
+        success: true,
+        builtPromptPass1,
+        inputBase64: base64Image, outputBase64: outputBase64,
       }).catch((err) => console.error("DB log failed:", err));
 
       return response;
@@ -360,14 +366,16 @@ export async function POST(request: NextRequest) {
       model: `${pass1.model} → ${pass2.model}`,
     });
 
-    // Fire-and-forget: log to DB
+    // Fire-and-forget: log to DB + save images to filesystem
     logGeneration({
       ip, styleId, surfacePrompt: trimmedSurface, furniturePrompt: trimmedFurniture,
       withFurniture: true, inputWidth: width, inputHeight: height,
       modelUsed: `${pass1.model} → ${pass2.model}`,
       pass1Model: pass1.model, pass2Model: pass2.model,
       durationMs: t2 - t0, pass1DurationMs: t1 - t0, pass2DurationMs: t2 - t1,
-      success: true, inputBase64: base64Image, outputBase64: outputBase64,
+      success: true,
+      builtPromptPass1, builtPromptPass2,
+      inputBase64: base64Image, pass1Base64, outputBase64: outputBase64,
     }).catch((err) => console.error("DB log failed:", err));
 
     return response;

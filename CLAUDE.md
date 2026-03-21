@@ -345,21 +345,34 @@ agents/
     - "If space allows" / "if the room is deep/wide" = le modele decide intelligemment selon la geometrie
     - Les ombres portees sont moins detaillees sur les objets eloignes — il faut le specifier explicitement
 
-### Sprint 15 — Logging PostgreSQL (analyse des rendus)
+### Sprint 15 — Logging PostgreSQL + images filesystem (audit agents)
 99. CRITIQUE : Ajout base de donnees PostgreSQL pour logger toutes les generations
     - Table generation_logs : ip, style_id, surfacePrompt, furniturePrompt, dimensions, modele utilise, duree par passe, succes/erreur
-    - Thumbnails 200px (input + output) stockes en base (~15KB chacun) via sharp
-    - Images full-size NON stockees (5-11MB/row = insoutenable)
+    - Images full-size sauvegardees sur filesystem dans public/logs/ (input, pass1, output)
+    - Chemins stockes en DB (input_image_path, pass1_image_path, output_image_path)
     - Fire-and-forget : le log ne ralentit pas la reponse (promise detachee sans await)
     - Auto-creation de la table au premier INSERT (CREATE TABLE IF NOT EXISTS)
-100. HAUTE : Timing par passe (pass1_duration_ms, pass2_duration_ms, duration_ms total)
+100. CRITIQUE : Prompts finaux construits stockes en DB (built_prompt_pass1, built_prompt_pass2)
+    - Pas juste le stylePrompt, mais le prompt COMPLET envoye au modele (avec directives profondeur, ombres, etc.)
+    - Permet aux agents Yann/Lucas d'auditer le prompt exact en meme temps que le rendu
+101. HAUTE : Image intermediaire passe 1 (surfaces) sauvegardee separement
+    - Permet de diagnostiquer si un probleme vient de la passe surfaces ou de la passe mobilier
+    - Chemin : public/logs/{timestamp}_{styleId}_pass1.jpg
+102. HAUTE : Timing par passe (pass1_duration_ms, pass2_duration_ms, duration_ms total)
     - Permet d'identifier quel modele/passe est le goulot d'etranglement
-101. HAUTE : Le client envoie styleId dans le body de la requete
+103. HAUTE : Le client envoie styleId dans le body de la requete
     - Permet d'analyser quel style produit les meilleurs/pires resultats
-102. Fichiers :
-    - lib/db.ts : Pool singleton pg, ensureTable(), logGeneration(), makeThumbnail()
-    - app/api/generate/route.ts : import logGeneration, timing, fire-and-forget
+104. Fichiers :
+    - lib/db.ts : Pool singleton pg, ensureTable(), logGeneration(), saveImage()
+    - app/api/generate/route.ts : import logGeneration, timing, prompts construits, fire-and-forget
     - app/page.tsx : envoi styleId dans le fetch
+    - public/logs/ : dossier images (gitignore)
+105. Workflow d'audit agents :
+    - Query DB pour lister les generations recentes (style, duree, succes)
+    - Lire les images full-size via Read tool (public/logs/...)
+    - Lire les prompts construits en DB pour auditer prompt + rendu ensemble
+    - Yann evalue : fidelite stylistique, composition, echelle, credibilite pro
+    - Lucas evalue : preservation geometrie, lumiere, ombres, photorealisme
 
 ## Regles de Developpement
 

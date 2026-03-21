@@ -1,5 +1,6 @@
 import { Pool } from "pg";
-import sharp from "sharp";
+import { writeFile, mkdir } from "fs/promises";
+import path from "path";
 
 // ─── Singleton Pool ──────────────────────────────────────────────────
 let pool: Pool | null = null;
@@ -44,8 +45,11 @@ async function ensureTable(): Promise<void> {
       pass2_duration_ms INT,
       success           BOOLEAN NOT NULL DEFAULT TRUE,
       error_message     TEXT,
-      input_thumbnail   TEXT,
-      output_thumbnail  TEXT
+      built_prompt_pass1 TEXT,
+      built_prompt_pass2 TEXT,
+      input_image_path   TEXT,
+      pass1_image_path   TEXT,
+      output_image_path  TEXT
     );
     CREATE INDEX IF NOT EXISTS idx_gen_logs_created ON generation_logs (created_at DESC);
     CREATE INDEX IF NOT EXISTS idx_gen_logs_style ON generation_logs (style_id);
@@ -53,15 +57,15 @@ async function ensureTable(): Promise<void> {
   tableEnsured = true;
 }
 
-// ─── Thumbnail helper ────────────────────────────────────────────────
-async function makeThumbnail(base64: string): Promise<string | null> {
-  try {
-    const buffer = Buffer.from(base64, "base64");
-    const thumb = await sharp(buffer).resize(200).jpeg({ quality: 60 }).toBuffer();
-    return thumb.toString("base64");
-  } catch {
-    return null;
-  }
+// ─── Save image to filesystem ────────────────────────────────────────
+const LOGS_DIR = path.join(process.cwd(), "public", "logs");
+
+async function saveImage(base64: string, name: string): Promise<string> {
+  await mkdir(LOGS_DIR, { recursive: true });
+  const filePath = path.join(LOGS_DIR, `${name}.jpg`);
+  const buffer = Buffer.from(base64, "base64");
+  await writeFile(filePath, buffer);
+  return `/logs/${name}.jpg`;
 }
 
 // ─── Log a generation (fire-and-forget) ──────────────────────────────
@@ -81,7 +85,10 @@ export interface GenerationLogParams {
   pass2DurationMs?: number;
   success: boolean;
   errorMessage?: string;
+  builtPromptPass1?: string;
+  builtPromptPass2?: string;
   inputBase64?: string;
+  pass1Base64?: string;
   outputBase64?: string;
 }
 
@@ -90,10 +97,14 @@ export async function logGeneration(params: GenerationLogParams): Promise<void> 
 
   await ensureTable();
 
-  // Generate thumbnails in background (small, ~15KB each)
-  const [inputThumb, outputThumb] = await Promise.all([
-    params.inputBase64 ? makeThumbnail(params.inputBase64) : null,
-    params.outputBase64 ? makeThumbnail(params.outputBase64) : null,
+  // Save full-size images to filesystem
+  const ts = Date.now();
+  const prefix = `${ts}_${params.styleId}`;
+
+  const [inputPath, pass1Path, outputPath] = await Promise.all([
+    params.inputBase64 ? saveImage(params.inputBase64, `${prefix}_input`) : null,
+    params.pass1Base64 ? saveImage(params.pass1Base64, `${prefix}_pass1`) : null,
+    params.outputBase64 ? saveImage(params.outputBase64, `${prefix}_output`) : null,
   ]);
 
   const db = getPool();
@@ -102,8 +113,10 @@ export async function logGeneration(params: GenerationLogParams): Promise<void> 
       ip, style_id, surface_prompt, furniture_prompt, with_furniture,
       input_width, input_height, model_used, pass1_model, pass2_model,
       duration_ms, pass1_duration_ms, pass2_duration_ms,
-      success, error_message, input_thumbnail, output_thumbnail
-    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)`,
+      success, error_message,
+      built_prompt_pass1, built_prompt_pass2,
+      input_image_path, pass1_image_path, output_image_path
+    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)`,
     [
       params.ip,
       params.styleId,
@@ -120,8 +133,11 @@ export async function logGeneration(params: GenerationLogParams): Promise<void> 
       params.pass2DurationMs ?? null,
       params.success,
       params.errorMessage ?? null,
-      inputThumb,
-      outputThumb,
+      params.builtPromptPass1 ?? null,
+      params.builtPromptPass2 ?? null,
+      inputPath,
+      pass1Path,
+      outputPath,
     ]
   );
 }
