@@ -423,6 +423,39 @@ agents/
     - Le paradoxe luminosite (murs blancs = plus clair) est physiquement correct — ancrer les OMBRES, pas l'exposition
 114. Page /admin : fix force-dynamic sur /api/logs et /api/logs/image (Next.js cachait les GET en production)
 
+### Sprint 16b — Audit Scandinave #9 et #11 (Yann 7.5-7.9/10, Lucas 7.2-7.5/10)
+115. HAUTE : Scandinave surfacePrompt — PH5-style layered pendant (remplace flush-mount anonyme)
+    - "matte white tiered pendant light with soft diffused glow 45cm diameter (PH5-style layered shade)"
+116. HAUTE : Scandinave surfacePrompt — sol whitewashed ash avec grain visible
+    - "wide-plank whitewashed ash flooring with visible natural grain and knots matte finish"
+117. HAUTE : Scandinave furniturePrompt — AJ-style floor lamp (remplace arc generique)
+    - "slim matte black asymmetric floor lamp with angled cone shade in warm white (AJ-style)"
+    - L'arc generique noir revenait dans TOUS les styles — tue la differenciation
+118. HAUTE : Scandinave furniturePrompt — fauteuil accent Wegner-style ajoute
+    - "light ash lounge chair with woven paper cord seat and curved back (Wegner-style)"
+119. HAUTE : Scandinave furniturePrompt — coussins Nordic pattern (remplace lin uni)
+    - "woven wool cushions with simple geometric Nordic pattern in muted blue and warm grey"
+120. HAUTE : Builder passe 1 — preservation light falloff original
+    - "Keep the original light falloff from windows to back wall — do not artificially brighten dark areas"
+    - Empeche l'effet "HDR artificiel" qui homogeneise toute la piece
+121. HAUTE : Builder passe 2 — ombres conditionnelles au type d'eclairage
+    - "Match shadow hardness to the lighting type: soft diffused shadows for overcast, hard-edged for direct sunlight"
+    - Conditionnel = neutre, ne casse rien sur les eclairages standards
+122. HAUTE : Builder passe 2 — scaling mobilier conditionnel double hauteur
+    - "If the ceiling appears very high (>3m) or room is very large, scale up furniture proportionally"
+    - Conditionnel = neutre sur les pieces standards
+123. MOYENNE : Grain photographique ISO 200 + vignettage naturel dans tous les builders
+    - Empeche le rendu "CGI-clean" trop lisse qui trahit l'IA
+    - "subtle sensor grain (ISO 200), natural corner vignetting"
+124. MOYENNE : Flux negative prompt enrichi : "CGI, plastic, overly clean, flat lighting"
+125. Page /admin : mot de passe via ADMIN_PASSWORD env var (API /api/logs reste ouverte pour audits)
+126. Apprentissages consolides :
+    - Le lampadaire arc noir generique est un "marqueur IA" — chaque style doit avoir son propre luminaire
+    - Les pieces iconiques (PH5, AJ, Wegner) ancrent l'identite stylistique instantanement
+    - Le grain ISO + vignettage sont les micro-imperfections qui separent "photo" de "CGI"
+    - Les directives conditionnelles ("if ceiling > 3m", "if light is diffused") sont NEUTRES sur les cas standards
+    - Le pipeline 2 passes est VALIDE : surfaces passe 1 intactes en passe 2, distribution profondeur fonctionne
+
 ## Regles de Developpement
 
 - Design minimaliste, pas de surcharge visuelle
