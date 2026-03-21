@@ -30,6 +30,7 @@ components/
   StepIndicator.tsx — Indicateur de progression 3 etapes
 agents/
   ux-director.md    — Agent UX Director (Maxime Renault, grille 10 criteres)
+  interior-architect.md — Agent Architecte d'Interieur (Yann Duval, 20 ans XP, expert 12 styles)
   persona-claire-architecte.md  — Persona Claire, 40 ans, architecte
   persona-thomas-marchand.md    — Persona Thomas, 35 ans, marchand de biens
   persona-lea-acheteuse.md      — Persona Lea, 32 ans, acheteuse particuliere
@@ -81,6 +82,12 @@ agents/
 - Persona : Maxime Renault, 18 ans XP, ex-Zaha Hadid/Foster+Partners/BIG
 - Invocation : "Fais appel a l'agent UX Director pour [auditer/evaluer] [cible]"
 - Grille : 10 criteres notes sur 10, format tableau + problemes + recommandations
+
+### Agent Architecte d'Interieur (agents/interior-architect.md)
+- Persona : Yann Duval, 20 ans XP, ex-Jean-Louis Deniot/Studioilse/Yabu Pushelberg
+- Invocation : "Fais appel a l'agent Architecte d'Interieur pour [auditer/evaluer/critiquer] [styles/prompts/ambiances]"
+- Grille : 10 criteres (fidelite stylistique, vocabulaire visuel, eclairage, credibilite pro, photorealisme...)
+- Expertise : Maitrise des 12 styles de la plateforme + prompt engineering IA generative
 
 ---
 
@@ -146,6 +153,18 @@ agents/
 36. MOYENNE : handleFullReset abort les requetes in-flight + reset isGenerating
 37. MOYENNE : Support HEIC/HEIF dans UploadZone dropzone accept config
 38. MOYENNE : next.config.mjs — suppression cle "api" invalide, garde serverActions bodySizeLimit
+
+### Sprint 5 — Audit Architecte d'Interieur (Agent Yann Duval)
+39. Ajout agent Architecte d'Interieur (agents/interior-architect.md) — expert 12 styles, grille 10 criteres
+40. Reecriture complete des 12 prompts de generation (StylePicker.tsx) :
+    - Ajout direction d'eclairage specifique par style (Nordic daylight, warm 2700K, golden hour, etc.)
+    - Ajout hero pieces iconiques (Eames lounge, Noguchi table, sunburst mirror, etc.)
+    - Ajout textiles de fenetre (sheer linen, heavy velvet drapes, no curtains, etc.)
+    - Ajout palettes de couleurs concretes (warm greige, dusty blue, cognac leather, etc.)
+    - Ajout accessoires secondaires (livres, bougies, vases, plateaux, plantes specifiques)
+    - Ajout ratio meuble/espace (Wabi-Sabi 30%, Maximaliste 80%)
+    - Differenciation renforcee du Contemporain (sculptural lamp, smoked glass, editorial aesthetic)
+    - Prompts enrichis de 20-30 mots a 60-80 mots pour meilleure qualite GPT-image-1
 
 ## Regles de Developpement
 
