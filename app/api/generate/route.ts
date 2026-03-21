@@ -39,27 +39,24 @@ function checkRateLimit(ip: string): boolean {
 
 function buildGPTPrompt(stylePrompt: string): string {
   return [
-    "TRANSFORM this construction-site room into a beautifully finished empty room.",
-    "REMOVE all exposed wires, dangling cables, junction boxes, raw electrical outlets, and construction debris.",
-    "REPLACE the raw concrete floor with a polished finished floor. REPLACE raw plaster walls with smooth painted walls. REPLACE unfinished ceiling with a clean painted ceiling.",
-    "ADD baseboards along all walls. ADD finished outlet covers. ADD one elegant ceiling light fixture where wires currently hang.",
-    "Keep the room completely empty — no furniture, no rugs, no decoration.",
+    "Edit this photo. This is a SURFACE-ONLY edit — do NOT change the room layout.",
+    "CRITICAL: Keep the EXACT same camera angle, the EXACT same perspective, the EXACT same room shape, the EXACT same wall positions, the EXACT same window positions and sizes, the EXACT same door positions. Do NOT crop, zoom, or reframe.",
+    "ONLY change surface finishes: REPLACE raw concrete floor with polished finished floor. REPLACE raw plaster with smooth painted walls. REPLACE unfinished ceiling with clean painted ceiling.",
+    "REMOVE exposed wires, dangling cables, junction boxes. ADD one ceiling light fixture. ADD baseboards. ADD finished outlet covers.",
+    "Keep the room EMPTY — absolutely no furniture, no table, no chair, no rug, no decoration, no objects.",
     `Color palette: ${stylePrompt}.`,
-    "Keep the exact same camera angle, perspective, room shape, windows, and doors. Preserve any visible beams or rafters.",
-    "Match the existing light direction and color temperature.",
-    "DSLR full-frame 16-35mm f/8, deep depth of field, sharp focus throughout.",
+    "Preserve existing lighting direction and color temperature.",
   ].join(" ");
 }
 
 function buildDalle2Prompt(stylePrompt: string): string {
   const prompt = [
-    `A beautifully finished empty room with ${stylePrompt} color palette.`,
-    "Smooth painted walls with baseboards, polished floor, clean painted ceiling with one elegant light fixture.",
-    "All electrical outlets have finished covers. No exposed wires, no raw concrete, no construction materials.",
-    "Preserve any visible beams or ceiling structure.",
-    "No furniture, no rugs, no decoration.",
-    "Same perspective and lighting as original photo.",
-    "DSLR 16-35mm f/8 interior photograph, deep depth of field, sharp focus.",
+    `Interior photo of a finished empty room with ${stylePrompt} color palette.`,
+    "Same exact room, same angle, same perspective as original photo.",
+    "Smooth painted walls with baseboards, polished floor, clean ceiling with one light fixture, finished outlet covers.",
+    "No exposed wires, no raw concrete, no construction debris. Preserve beams and ceiling structure.",
+    "Completely empty — no furniture, no objects, no decoration.",
+    "DSLR 16-35mm f/8, deep depth of field, sharp focus.",
   ].join(" ");
   return prompt.slice(0, 1000);
 }
