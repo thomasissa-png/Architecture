@@ -345,6 +345,22 @@ agents/
     - "If space allows" / "if the room is deep/wide" = le modele decide intelligemment selon la geometrie
     - Les ombres portees sont moins detaillees sur les objets eloignes — il faut le specifier explicitement
 
+### Sprint 15 — Logging PostgreSQL (analyse des rendus)
+99. CRITIQUE : Ajout base de donnees PostgreSQL pour logger toutes les generations
+    - Table generation_logs : ip, style_id, surfacePrompt, furniturePrompt, dimensions, modele utilise, duree par passe, succes/erreur
+    - Thumbnails 200px (input + output) stockes en base (~15KB chacun) via sharp
+    - Images full-size NON stockees (5-11MB/row = insoutenable)
+    - Fire-and-forget : le log ne ralentit pas la reponse (promise detachee sans await)
+    - Auto-creation de la table au premier INSERT (CREATE TABLE IF NOT EXISTS)
+100. HAUTE : Timing par passe (pass1_duration_ms, pass2_duration_ms, duration_ms total)
+    - Permet d'identifier quel modele/passe est le goulot d'etranglement
+101. HAUTE : Le client envoie styleId dans le body de la requete
+    - Permet d'analyser quel style produit les meilleurs/pires resultats
+102. Fichiers :
+    - lib/db.ts : Pool singleton pg, ensureTable(), logGeneration(), makeThumbnail()
+    - app/api/generate/route.ts : import logGeneration, timing, fire-and-forget
+    - app/page.tsx : envoi styleId dans le fetch
+
 ## Regles de Developpement
 
 - Design minimaliste, pas de surcharge visuelle

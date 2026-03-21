@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import Replicate from "replicate";
+import { logGeneration } from "@/lib/db";
 
 // ─── Rate Limiting (in-memory, IP-based) ────────────────────────────
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
@@ -279,16 +280,21 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  let styleId = "unknown";
+
   try {
     const body = await request.json();
-    const { image, surfacePrompt, furniturePrompt, withFurniture = true, width, height } = body as {
+    const { image, surfacePrompt, furniturePrompt, styleId: bodyStyleId = "custom", withFurniture = true, width, height } = body as {
       image: string;
       surfacePrompt: string;
       furniturePrompt: string;
+      styleId?: string;
       withFurniture?: boolean;
       width?: number;
       height?: number;
     };
+
+    styleId = bodyStyleId;
 
     // Calculate output size matching the input aspect ratio
     const outputSize = getOutputSize(width, height);
@@ -316,30 +322,67 @@ export async function POST(request: NextRequest) {
     const trimmedSurface = surfacePrompt.trim();
     const trimmedFurniture = furniturePrompt.trim();
 
+    const t0 = Date.now();
+
     console.log(`Starting pass 1 (surfaces)... Output size: ${outputSize.openai}`);
     const pass1 = await generatePass(base64Image, trimmedSurface, trimmedFurniture, 1, outputSize);
+    const t1 = Date.now();
 
     // If surfaces-only mode, return pass 1 result directly
     if (!withFurniture) {
-      return NextResponse.json({
+      const outputBase64 = pass1.image.replace(/^data:image\/[\w+]+;base64,/, "");
+      const response = NextResponse.json({
         image: pass1.image,
         model: `${pass1.model} (surfaces uniquement)`,
       });
+
+      // Fire-and-forget: log to DB
+      logGeneration({
+        ip, styleId, surfacePrompt: trimmedSurface, furniturePrompt: trimmedFurniture,
+        withFurniture: false, inputWidth: width, inputHeight: height,
+        modelUsed: `${pass1.model} (surfaces uniquement)`,
+        pass1Model: pass1.model, durationMs: t1 - t0, pass1DurationMs: t1 - t0,
+        success: true, inputBase64: base64Image, outputBase64: outputBase64,
+      }).catch((err) => console.error("DB log failed:", err));
+
+      return response;
     }
 
     const pass1Base64 = pass1.image.replace(/^data:image\/[\w+]+;base64,/, "");
 
     console.log("Starting pass 2 (furniture)...");
     const pass2 = await generatePass(pass1Base64, trimmedSurface, trimmedFurniture, 2, outputSize);
+    const t2 = Date.now();
 
-    return NextResponse.json({
+    const outputBase64 = pass2.image.replace(/^data:image\/[\w+]+;base64,/, "");
+    const response = NextResponse.json({
       image: pass2.image,
       model: `${pass1.model} → ${pass2.model}`,
     });
+
+    // Fire-and-forget: log to DB
+    logGeneration({
+      ip, styleId, surfacePrompt: trimmedSurface, furniturePrompt: trimmedFurniture,
+      withFurniture: true, inputWidth: width, inputHeight: height,
+      modelUsed: `${pass1.model} → ${pass2.model}`,
+      pass1Model: pass1.model, pass2Model: pass2.model,
+      durationMs: t2 - t0, pass1DurationMs: t1 - t0, pass2DurationMs: t2 - t1,
+      success: true, inputBase64: base64Image, outputBase64: outputBase64,
+    }).catch((err) => console.error("DB log failed:", err));
+
+    return response;
   } catch (error) {
     console.error("Generation error:", error);
     const message =
       error instanceof Error ? error.message : "Erreur interne du serveur";
+
+    // Log failures too
+    logGeneration({
+      ip, styleId,
+      surfacePrompt: "error", furniturePrompt: "error",
+      withFurniture: true, success: false, errorMessage: message,
+    }).catch((err) => console.error("DB log failed:", err));
+
     return NextResponse.json({ error: message }, { status: 503 });
   }
 }

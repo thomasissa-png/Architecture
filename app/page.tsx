@@ -161,6 +161,7 @@ export default function Home() {
               image: img.base64,
               surfacePrompt,
               furniturePrompt,
+              styleId: selectedStyle?.id ?? "custom",
               withFurniture,
               width: img.width,
               height: img.height,
