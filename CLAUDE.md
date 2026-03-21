@@ -198,14 +198,19 @@ agents/
 58. Prompts DALL-E 2 et SDXL alignes sur la meme strategie action-dominante
 59. Fix partage WhatsApp : utilise navigator.share avec fichier image sur mobile (au lieu de wa.me text-only)
 
-### Sprint 8 — Fix Angle de Vue (camera angle non preserve)
-60. CRITIQUE : Strategie v5 — prompts COURTS ancres a l'image source (remplacement total de v4b)
-    - Ancien v4b : prompts de ~80 mots decrivant une scene complete → le modele genere depuis le texte, ignore l'image source
-    - Nouveau v5 : prompts de ~35 mots qui referent "this room" / "this exact room" → force le modele a editer l'image plutot que generer
-    - Cle : "Keep this exact room, walls, ceiling, floor, windows unchanged. Add furniture..." au lieu de decrire une scene de zero
-61. SDXL prompt_strength reduit de 0.72 a 0.60 (0.72 = trop de liberte, scene recree)
-62. Negative prompt SDXL enrichi : animal, dog, cat, mannequin, different room, different angle
-63. Audit Agent Architecte d'Interieur (Yann Duval) : artefacts (chien/fourrure), scene recree au lieu d'editee
+### Sprint 8 — Pipeline 2 passes : surfaces d'abord, mobilier ensuite
+60. CRITIQUE : Reecriture complete de route.ts depuis zero — abandon des patchs v1-v5
+    - Apprentissage : toutes les approches single-pass (decrire surfaces + meubles en une fois) echouent
+    - Le modele recree la scene au lieu d'editer quand le prompt demande trop de changements
+61. Strategie v6 : pipeline en 2 passes
+    - Passe 1 (actuelle) : finition des surfaces UNIQUEMENT (murs, sol, plafond, luminaire)
+    - Passe 2 (future) : ajout du mobilier sur la piece finie
+    - Principe : moins on demande de changement par passe, mieux la geometrie est preservee
+62. Prompts GPT-image-1 reecrit de zero : "Edit this photo of a room. Keep exact same camera angle..."
+    - Phrase par phrase, chaque instruction clairement separee
+    - "No furniture" repete explicitement pour eviter toute hallucination de meubles
+63. SDXL prompt_strength a 0.35 (surfaces seulement = changement minimal)
+64. Negative prompt SDXL : inclut furniture/sofa/chair/table pour forcer piece vide
 
 ## Regles de Developpement
 
@@ -219,8 +224,9 @@ agents/
 
 ## Regles Prompts IA (CRITIQUE)
 
-- **TOUJOURS individualiser les prompts par modele** : chaque modele (GPT-image-1, DALL-E 2, SDXL) a son propre builder de prompt (buildPrompt, buildDalle2Prompt, buildSDXLPrompt). Quand on modifie un aspect du prompt (ex: ancrage angle de vue, style, contraintes), il faut le repercuter sur les 3 builders, adapte aux specificites de chaque modele.
-- **Ne jamais oublier un fallback** : a chaque modification de prompt, verifier systematiquement les 3 fonctions buildPrompt/buildDalle2Prompt/buildSDXLPrompt + les parametres de chaque appel API (quality, prompt_strength, negative_prompt, etc.)
-- **Pas de mask** avec images.edit : le mask (transparent ou gradient) fait perdre l'angle de vue original. Le prompt descriptif sans mask preserve naturellement la perspective.
-- **Prompt COURT ancre a l'image source** : le prompt doit etre COURT (~35 mots) et referer explicitement "this room" / "this exact room". Un prompt long et descriptif (~80+ mots) fait generer une nouvelle scene au lieu d'editer la photo. Strategie v5 : "Keep this exact room unchanged. Add furniture in [style]." (apprentissage v4b → v5)
-- **Pas de description de scene complete** : ne PAS lister tous les meubles en detail dans le prompt. Le modele doit utiliser l'image source comme ancre, pas le texte. Un prompt trop riche = le modele ignore l'image d'entree
+- **TOUJOURS individualiser les prompts par modele** : chaque modele (GPT-image-1, DALL-E 2, SDXL) a son propre builder (buildGPTPrompt, buildDalle2Prompt, buildSDXLPrompt). Repercuter chaque modif sur les 3.
+- **Ne jamais oublier un fallback** : verifier les 3 builders + parametres API (quality, prompt_strength, negative_prompt)
+- **Pas de mask** avec images.edit : le mask fait perdre l'angle de vue. Sans mask = geometrie preservee.
+- **Pipeline 2 passes** : passe 1 = surfaces (murs, sol, plafond, luminaire), passe 2 = mobilier. Ne JAMAIS tout demander en une seule passe.
+- **Prompt COURT et instructif** : "Edit this photo. Keep exact same angle. Make surfaces finished." Pas de description de scene complete. Le modele doit editer, pas generer.
+- **Moins on demande = mieux c'est** : le modele preserve mieux la geometrie quand on demande peu de changements. Un prompt trop riche = scene recree de zero.
