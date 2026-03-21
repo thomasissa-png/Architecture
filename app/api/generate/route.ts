@@ -180,7 +180,7 @@ async function tryOpenAI(
   const maskWidth = width || 1024;
   const maskHeight = height || 1024;
   const maskBuffer = createTransparentMask(maskWidth, maskHeight);
-  const maskFile = new File([maskBuffer], "mask.png", { type: "image/png" });
+  const maskFile = new File([new Uint8Array(maskBuffer)], "mask.png", { type: "image/png" });
 
   // Try gpt-image-1 first (requires Usage Tier 1+)
   try {
@@ -216,7 +216,7 @@ async function tryOpenAI(
 
   // dall-e-2 also benefits from a mask — create one at 1024x1024 (its max size)
   const dalleMask = createTransparentMask(1024, 1024);
-  const dalleMaskFile = new File([dalleMask], "mask.png", { type: "image/png" });
+  const dalleMaskFile = new File([new Uint8Array(dalleMask)], "mask.png", { type: "image/png" });
 
   const response = await openai.images.edit({
     model: "dall-e-2",
