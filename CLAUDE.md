@@ -198,6 +198,14 @@ agents/
 58. Prompts DALL-E 2 et SDXL alignes sur la meme strategie action-dominante
 59. Fix partage WhatsApp : utilise navigator.share avec fichier image sur mobile (au lieu de wa.me text-only)
 
+### Sprint 8 — Fix Angle de Vue (camera angle non preserve)
+60. CRITIQUE : Ancrage camera deplace en TETE de prompt sur les 3 builders (GPT-image-1, DALL-E 2, SDXL)
+    - Ancien : "Same camera angle..." enfoui en fin de prompt (token tardif, ignore par le modele)
+    - Nouveau : "From this exact camera position, same perspective and vanishing points..." en premiere phrase
+    - Les modeles IA ponderent les premiers tokens plus fortement — l'ancrage camera doit etre l'ouverture
+61. Strategie v4b : camera-angle-first + descriptive prompt + no mask (combinaison des apprentissages v3/v4)
+62. Audit Agent Architecte d'Interieur (Yann Duval) sur resultats generes
+
 ## Regles de Developpement
 
 - Design minimaliste, pas de surcharge visuelle
@@ -214,4 +222,4 @@ agents/
 - **Ne jamais oublier un fallback** : a chaque modification de prompt, verifier systematiquement les 3 fonctions buildPrompt/buildDalle2Prompt/buildSDXLPrompt + les parametres de chaque appel API (quality, prompt_strength, negative_prompt, etc.)
 - **Pas de mask** avec images.edit : le mask (transparent ou gradient) fait perdre l'angle de vue original. Le prompt descriptif sans mask preserve naturellement la perspective.
 - **Prompt descriptif > prompt instructif** : decrire l'image finale souhaitee ("A stunning furnished room...") plutot que donner des instructions ("Add furniture, transform...")
-- **Ancrage camera obligatoire** : chaque prompt doit contenir une mention explicite de preservation de l'angle de vue ("same camera angle/perspective as original")
+- **Ancrage camera EN TETE DE PROMPT** : chaque prompt doit COMMENCER par l'ancrage camera ("From this exact camera position, same perspective and vanishing points as original photo"). Les modeles IA ponderent les premiers tokens plus fortement — l'ancrage en fin de prompt est ignore (apprentissage v4 → v4b)

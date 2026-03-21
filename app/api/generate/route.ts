@@ -28,31 +28,30 @@ function checkRateLimit(ip: string): boolean {
 }
 
 // ─── Prompt Engineering ──────────────────────────────────────────────
-// Strategy v4: DESCRIPTIVE prompt + NO mask + CAMERA ANGLE anchoring.
+// Strategy v4b: DESCRIPTIVE prompt + NO mask + CAMERA ANGLE FIRST.
 //
 // Failed approaches:
 //   v1 "TRANSFORM this room..." (no mask) → model retouches minimally, room stays empty
 //   v2 "ADD ALL OF THE FOLLOWING..." (no mask) → same, 1-2 accessories only
 //   v3 descriptive + full transparent mask → room fully furnished but geometry replaced
 //   v3b descriptive + gradient mask → furniture added but camera angle/perspective lost
+//   v4  camera anchoring at END of prompt → model ignores it (late token dilution)
 //
-// v4 insight: The mask is the problem. ANY mask (full or gradient) gives the model
-// permission to redraw the scene from scratch, losing the original perspective.
-// Without a mask, images.edit naturally preserves the photo's geometry and viewpoint.
-// The key is combining the v3 DESCRIPTIVE prompt (which triggers furniture addition)
-// with NO mask (which preserves the camera angle) + explicit angle anchoring language.
+// v4b insight: Camera angle anchoring must be the FIRST tokens of the prompt.
+// Models weight early tokens most heavily. "From this exact camera position..."
+// as the opener forces perspective preservation before any style description.
 
 function buildPrompt(stylePrompt: string): string {
-  return `A stunning, fully furnished living room photographed for Architectural Digest. ${stylePrompt}. The room features a large sofa, coffee table, armchairs, a big area rug, curtains, floor and table lamps, framed art on the walls, potted plants, and styled side tables with books and candles. Clean finished walls and polished floors. Same camera position, same angle of view, same perspective and vanishing points as the original photograph. Any construction elements (exposed wires, cables, raw plaster) are hidden behind furniture or clean finished surfaces. Professional interior photography, DSLR wide-angle lens, natural daylight, photorealistic.`;
+  return `From this exact camera position and angle of view, keeping the same perspective, vanishing points, and lens distortion as the original photograph: a stunning, fully furnished interior photographed for Architectural Digest. ${stylePrompt}. The room features a large sofa, coffee table, armchairs, a big area rug, curtains, floor and table lamps, framed art on the walls, potted plants, and styled side tables with books and candles. Clean finished walls and polished floors. Any construction elements (exposed wires, cables, raw plaster) are hidden behind furniture or clean finished surfaces. Professional interior photography, DSLR wide-angle lens, natural daylight, photorealistic.`;
 }
 
 function buildDalle2Prompt(stylePrompt: string): string {
-  const short = `A stunning fully furnished living room for Architectural Digest. ${stylePrompt}. Large sofa, coffee table, armchairs, area rug, curtains, floor lamp, table lamp, framed wall art, potted plants, side tables with books and candles. Clean walls, polished floors. Same camera angle and perspective as original. Hide construction elements. Professional DSLR wide-angle interior photo, natural light, photorealistic.`;
+  const short = `From this exact camera position, same perspective and vanishing points as original photo. Fully furnished interior, Architectural Digest quality. ${stylePrompt}. Sofa, coffee table, armchairs, area rug, curtains, lamps, framed art, plants, styled side tables. Clean walls, polished floors. Hide construction elements. DSLR wide-angle interior photo, natural light, photorealistic.`;
   return short.slice(0, 1000);
 }
 
 function buildSDXLPrompt(stylePrompt: string): string {
-  return `Stunning fully furnished living room, Architectural Digest. ${stylePrompt}. Large sofa, coffee table, armchairs, area rug, curtains, lamps, framed wall art, potted plants, styled side tables. Clean walls, polished floors. Same camera angle and perspective as original photo. DSLR wide-angle interior photograph, natural daylight, photorealistic.`;
+  return `From this exact camera position, same perspective and vanishing points as original photo. Stunning fully furnished interior, Architectural Digest. ${stylePrompt}. Sofa, coffee table, armchairs, area rug, curtains, lamps, wall art, plants, styled side tables. Clean walls, polished floors. DSLR wide-angle interior photograph, natural daylight, photorealistic.`;
 }
 
 const SDXL_NEGATIVE_PROMPT = "empty room, unfurnished, bare walls, no furniture, empty floor, construction site, exposed wires, electrical cables, raw concrete, raw plaster, unfinished, sparse, minimal furniture, blurry, cartoon, painting, 3D render, floating furniture, unrealistic scale, watermark, text, oversaturated, shallow depth of field, bokeh";
