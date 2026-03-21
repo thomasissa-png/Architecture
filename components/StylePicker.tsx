@@ -17,7 +17,7 @@ const STYLES: StyleOption[] = [
     description: "Bois clair, tons neutres, épure absolue",
     emoji: "🪵",
     prompt:
-      "Scandinavian minimalist interior with pale oak furniture, soft white linen sofa, light birch coffee table, sheepskin throw draped over an armchair, white ceramic vases, taper candles in simple holders, sheer linen curtains filtering soft diffused Nordic daylight, palette of warm greige off-white and pale oak with matte black accents, woven wool rug in cream tones, potted monstera and trailing ivy, stacked books on the table, clean functional elegance with hygge warmth",
+      "Scandinavian minimalist interior with pale oak furniture, soft white linen sofa, light birch coffee table, sheepskin throw draped over an armchair, white ceramic vases, taper candles in simple holders, sheer linen curtains filtering soft diffused Nordic daylight, palette of warm greige off-white and pale oak with matte black accents, woven wool rug in cream tones, potted trailing pothos and dried birch branches in a stoneware vase, stacked books on the table, clean functional elegance with hygge warmth",
   },
   {
     id: "contemporary",
@@ -25,7 +25,7 @@ const STYLES: StyleOption[] = [
     description: "Lignes nettes, palette sobre, modernité",
     emoji: "◻️",
     prompt:
-      "Contemporary modern interior with low-profile modular sofa in premium grey fabric, smoked glass or Carrara marble coffee table, sculptural arc floor lamp in brushed brass, monochromatic palette of charcoal warm grey and off-white with one muted accent tone, no ornamentation, large abstract artwork on the wall, thick wool area rug in heathered grey, architectural coffee table books, single sculptural object on a pedestal, floor-to-ceiling sheer curtains, cool balanced natural light with warm accent lighting, editorial interior photography aesthetic",
+      "Contemporary modern interior with low-profile modular sofa in premium grey fabric, smoked glass or Carrara marble coffee table, sculptural arc floor lamp in brushed brass, monochromatic palette of charcoal warm grey and off-white with one muted accent tone, no ornamentation, matte lacquer surfaces and seamless joinery, large abstract artwork on the wall, thick wool area rug in heathered grey, architectural coffee table books, single sculptural object on a pedestal, floor-to-ceiling sheer curtains, cool balanced natural light with warm accent lighting, editorial interior photography aesthetic",
   },
   {
     id: "industrial",
@@ -49,7 +49,7 @@ const STYLES: StyleOption[] = [
     description: "Géométrie dorée, velours, luxe années 20",
     emoji: "✨",
     prompt:
-      "Art Deco interior with channel-tufted velvet sofa in deep emerald or sapphire, polished brass and gold geometric accents, sunburst mirror on the wall, fluted cabinet in dark lacquer with brass handles, marble-top side table, dramatic accent lighting with gold reflections on metallic surfaces, heavy velvet drapes in deep jewel tones, geometric patterned rug in black gold and cream, crystal or brass table lamp, decorative tray with perfume bottles and gold objects, palette of emerald sapphire gold black and cream, opulent 1920s glamour with curated restraint",
+      "Art Deco interior with channel-tufted velvet sofa in deep emerald or sapphire, polished brass and gold geometric accents, sunburst mirror on the wall, fluted cabinet in dark lacquer with brass handles, marble-top side table, dramatic accent lighting with gold reflections on metallic surfaces, heavy velvet drapes in deep jewel tones, geometric patterned rug in black gold and cream, crystal or brass table lamp, lacquered tray with crystal decanter and gold objects, palette of emerald sapphire gold black and cream, opulent 1920s glamour with curated restraint",
   },
   {
     id: "mid-century",
@@ -65,7 +65,7 @@ const STYLES: StyleOption[] = [
     description: "Textiles ethniques, plantes, chaleur nomade",
     emoji: "🌿",
     prompt:
-      "Bohemian boho interior with low linen sofa covered in layered kilim and mudcloth cushions, macrame wall hanging, abundant trailing plants in terracotta and woven basket pots, rattan peacock chair, vintage Persian rug layered over jute rug, brass Moroccan lantern casting warm patterned light, wooden tray with candles and dried flowers, floor poufs in woven leather, palette of terracotta rust ochre sage cream and indigo, beaded curtains or light cotton drapes, warm golden ambient lighting, eclectic collected-over-time aesthetic with intentional curation not clutter",
+      "Bohemian boho interior with low linen sofa covered in layered kilim and mudcloth cushions, macrame wall hanging, abundant trailing plants in terracotta and woven basket pots, rattan peacock chair, vintage Persian rug layered over jute rug, brass Moroccan lantern casting warm patterned light, wooden tray with candles and dried flowers, floor poufs in woven leather, palette of terracotta rust ochre sage cream and indigo, light natural cotton drapes in raw ecru, warm golden ambient lighting, eclectic collected-over-time aesthetic with intentional curation not clutter",
   },
   {
     id: "haussmannian",
