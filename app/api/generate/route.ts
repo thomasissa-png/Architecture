@@ -34,21 +34,22 @@ function checkRateLimit(ip: string): boolean {
 function buildResponsesPrompt(stylePrompt: string): string {
   return [
     "TRANSFORM this empty room into a fully furnished, styled interior.",
-    "Keep the exact same camera angle, perspective, wall positions, windows, and room shape.",
-    "Preserve the existing floor, walls, and ceiling as they are.",
-    `Add furniture and decoration: ${stylePrompt}.`,
-    "Fill the room naturally — sofa, coffee table, rug, lighting, curtains, accessories.",
-    "The result must look like a professional interior design photograph.",
-    "DSLR full-frame, 16-35mm wide-angle, f/8, deep depth of field, sharp focus.",
+    `Style: ${stylePrompt}.`,
+    "Preserve the exact camera angle, lens distortion, vanishing points, and all wall/window/door positions.",
+    "Preserve the existing lighting conditions exactly — same light direction, shadows, color temperature, and exposure.",
+    "Keep the room's architectural geometry intact. Only ADD furniture, textiles, rugs, lighting fixtures, and decoration.",
+    "Professional interior design photograph, DSLR full-frame, 16-35mm wide-angle, f/8, deep depth of field, sharp focus throughout.",
   ].join(" ");
 }
 
 function buildFluxPrompt(stylePrompt: string): string {
   return [
     `${stylePrompt}.`,
-    "Fully furnished and decorated interior, professional staging.",
-    "Preserve exact room geometry, walls, floor, ceiling, windows, doors.",
-    "Interior design photograph, DSLR 16-35mm f/8, deep depth of field, sharp focus, natural lighting.",
+    "Fully furnished and professionally staged interior.",
+    "Preserve exact room geometry, wall positions, windows, doors, ceiling height.",
+    "Match the existing lighting — same light direction, shadow angles, color temperature.",
+    "Interior design photograph, DSLR full-frame 16-35mm f/8, deep depth of field, sharp focus, high resolution.",
+    "No distortion, no cartoon, no 3D render, no watermark.",
   ].join(" ");
 }
 
@@ -132,7 +133,7 @@ async function tryFluxDepth(
         prompt: buildFluxPrompt(stylePrompt),
         control_image: dataUri,
         steps: 25,
-        guidance: 30,
+        guidance: 15,
         output_format: "png",
       },
     }
