@@ -184,6 +184,10 @@ agents/
 48. Renforcement contraintes architecturales (geometrie plafond, poutres, hauteur sous plafond, reflexions vitres/miroirs)
 49. Ajout references d'echelle mobilier (poignees de porte ~1m, prises electriques)
 50. Mise a jour buildDalle2Prompt() avec descripteurs photo condenses (1000 chars max)
+51. P5 : Gestion conditions d'exposition variables (pieces sombres → garder ambiance low-light, fenetres cramees → preserver highlights)
+52. P6 : Condensation ARCHITECTURAL_CONSTRAINTS de 6 phrases a 3 (reduction dilution tokens tardifs, -30 mots)
+53. P7 : Ajout deep DOF / sharp focus coherent avec f/8 grand-angle (standard photo immobiliere) + negative SDXL "shallow depth of field, bokeh"
+54. Fix critique : ajout directive d'action explicite "Furnish and stage this empty room" en tete des 3 prompts (GPT-image-1, DALL-E 2, SDXL)
 
 ## Regles de Developpement
 
