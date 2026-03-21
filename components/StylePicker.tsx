@@ -28,7 +28,7 @@ const STYLES: StyleOption[] = [
     description: "Lignes nettes, palette sobre, modernité",
     emoji: "◻️",
     surfacePrompt:
-      "Contemporary modern: warm grey matte walls, large-format light stone tile floor with minimal grout lines, smooth white ceiling, minimal recessed downlights or slim track lighting in matte black",
+      "Contemporary modern: warm grey matte walls keeping the same overall brightness as the input photo, large-format light stone tile refinish with minimal grout lines, smooth white ceiling, minimal recessed downlights or slim track lighting in matte black",
     furniturePrompt:
       "Contemporary furniture: large low-profile L-shaped sectional sofa in charcoal premium bouclé with slim brushed steel legs 280cm, sculptural smoked glass coffee table on brushed brass pedestal base 110cm, heathered grey thick wool area rug 250x350cm, brushed brass arc floor lamp with frosted globe shade, single large abstract canvas leaning against the wall on the floor, architectural coffee table books in a neat stack, tall matte white sculptural ceramic object on a slim black metal pedestal, potted architectural snake plant in matte black cylinder planter, two charcoal and cream geometric cushions",
   },
@@ -48,7 +48,7 @@ const STYLES: StyleOption[] = [
     description: "Minimalisme japonais, chaleur scandinave",
     emoji: "🎋",
     surfacePrompt:
-      "Japandi: warm sand-toned limewash walls with subtle plaster texture, light ash wood plank floor with delicate grain, smooth white ceiling, round washi paper pendant light in natural off-white",
+      "Japandi: warm sand-toned limewash walls keeping the same overall brightness as the input photo, light ash wood plank refinish with delicate grain, smooth white ceiling, round washi paper pendant light in natural off-white",
     furniturePrompt:
       "Japandi furniture: low-profile platform sofa with clean lines in natural undyed linen with exposed light ash wood frame 220cm wide, light ash rectangular coffee table with rounded edges and short legs 100cm, woven tatami-style rug in natural straw tone 200x250cm, single ikebana dried branch arrangement in hand-thrown irregular ceramic vase, floor cushion in muted clay tone beside the table, minimal round side table in light ash 40cm, single smooth river stone as sculptural object, potted single-stem orchid in unglazed charcoal pottery, intentional negative space with only 30 percent of room furnished",
   },
@@ -68,7 +68,7 @@ const STYLES: StyleOption[] = [
     description: "Lignes organiques, bois chaud, vintage chic",
     emoji: "🪑",
     surfacePrompt:
-      "Mid-Century Modern: warm white walls with slight cream undertone, warm walnut-toned wood floor with medium grain, smooth white ceiling, Sputnik-style brass and black multi-arm ceiling light",
+      "Mid-Century Modern: warm white walls with slight cream undertone keeping the same overall brightness as the input photo, warm walnut-toned refinish on the existing floor with medium grain, smooth white ceiling, Sputnik-style brass and black multi-arm ceiling light",
     furniturePrompt:
       "Mid-Century Modern furniture: curved organic sofa in mustard woven fabric with walnut tapered legs 220cm wide, sculptural free-form walnut coffee table with biomorphic shape 120cm, warm-toned geometric area rug in cream mustard and teal 200x300cm, walnut credenza with sliding doors and brass pulls 160cm wide against the wall, black leather and walnut bentwood lounge chair with matching ottoman, brass arc floor lamp with white dome shade, potted fiddle leaf fig in warm terracotta planter, stacked vintage design books and small brass starburst clock on the credenza, two cushions in teal and burnt orange",
   },
@@ -78,9 +78,9 @@ const STYLES: StyleOption[] = [
     description: "Textiles ethniques, plantes, chaleur nomade",
     emoji: "🌿",
     surfacePrompt:
-      "Bohemian: warm off-white walls with subtle handmade plaster texture, warm natural wood plank floor with visible knots, smooth white ceiling, woven rattan pendant light in natural tone",
+      "Bohemian: warm off-white walls with subtle handmade plaster texture keeping the same overall brightness as the input photo, warm natural wood plank refinish with visible knots, smooth white ceiling, woven rattan pendant light in natural tone",
     furniturePrompt:
-      "Bohemian furniture: deep low linen sofa in natural ecru with layered kilim and mudcloth cushions in terracotta rust and indigo 220cm wide, round reclaimed wood coffee table with organic edge 90cm diameter, layered rugs — faded vintage Persian rug over natural jute rug 200x300cm, rattan peacock chair with sheepskin throw draped over, woven leather floor pouf in cognac, abundant trailing pothos and monstera in terracotta and woven basket pots, brass Moroccan-style pierced lantern on the floor, wooden tray with pillar candles and dried pampas grass on the table, macramé plant hanger suspended from a freestanding wooden tripod",
+      "Bohemian furniture: deep low linen sofa in natural ecru with layered kilim and mudcloth cushions in terracotta rust and indigo 220cm wide, round reclaimed wood coffee table with organic edge 90cm diameter, layered rugs — faded vintage Persian rug over natural jute rug 200x300cm, rattan peacock chair with sheepskin throw draped over, woven leather floor pouf in cognac, abundant trailing pothos and monstera in terracotta and woven basket pots, brass Moroccan-style pierced lantern on the floor, wooden tray with pillar candles and dried pampas grass on the table, macramé plant holder on a tall freestanding wooden tripod stand resting on the floor",
   },
   {
     id: "haussmannian",
@@ -98,7 +98,7 @@ const STYLES: StyleOption[] = [
     description: "Terre cuite, lin blanc, lumière du sud",
     emoji: "☀️",
     surfacePrompt:
-      "Mediterranean: warm white limewash walls with subtle hand-applied plaster texture, terracotta tile floor with natural color variation, smooth white ceiling, simple wrought iron pendant light with warm-toned shade",
+      "Mediterranean: warm white limewash walls with subtle hand-applied plaster texture keeping the same overall brightness as the input photo, warm terracotta-toned refinish on the existing floor, smooth white ceiling, simple wrought iron pendant light with warm-toned shade",
     furniturePrompt:
       "Mediterranean furniture: deep natural linen sofa with loose slipcover in off-white 230cm wide, rustic olive wood coffee table with natural live edge 110cm, woven esparto grass rug in natural tone 200x300cm, wrought iron side table with glazed turquoise ceramic bowl, handwoven rush-seat wooden chair as accent piece, large olive branches in a rustic terracotta amphora jar 80cm tall, glazed ceramic plates and bowls as decor on the table in cobalt and terracotta, dried lavender bunch in a simple glass bottle, linen cushions in warm sand and sun-bleached blue, potted rosemary and trailing jasmine in terracotta pots",
   },
@@ -108,7 +108,7 @@ const STYLES: StyleOption[] = [
     description: "Textures douces, tons chauds, cocooning",
     emoji: "🛋️",
     surfacePrompt:
-      "Modern cozy: warm cream matte walls, light oak or warm-toned wood floor with gentle grain, smooth white ceiling, fabric drum pendant light in warm oatmeal tone with soft diffused glow",
+      "Modern cozy: warm cream matte walls keeping the same overall brightness as the input photo, light oak or warm-toned wood refinish with gentle grain, smooth white ceiling, fabric drum pendant light in warm oatmeal tone with soft diffused glow",
     furniturePrompt:
       "Modern cozy furniture with organic rounded forms: oversized deep boucle sofa in warm cream with plump rounded arms and wide cushioned seats 260cm wide, round light oak coffee table with thick turned legs 100cm diameter, layered wool area rug in cream and soft blush 200x300cm, chunky hand-knit throw blanket in cream draped over one armrest, cushions in cream camel and soft blush textures, natural sheepskin rug draped beside the sofa, soft fabric table lamp with warm glow on a round oak side table, camel boucle reading armchair with cashmere throw, pillar candles and stacked linen-bound books on the coffee table, trailing potted plant on the side table",
   },
@@ -118,7 +118,7 @@ const STYLES: StyleOption[] = [
     description: "Imperfection noble, matières brutes, sérénité",
     emoji: "🏺",
     surfacePrompt:
-      "Wabi-sabi: raw plaster limewash walls in warm grey with subtle imperfect hand-applied texture, aged reclaimed wood plank floor with visible patina and knots, smooth ceiling in muted warm white, simple handmade ceramic bowl-shaped pendant light in earth tone",
+      "Wabi-sabi: raw plaster limewash walls in warm grey with subtle imperfect hand-applied texture keeping the same overall brightness as the input photo, floor with aged wood-effect refinish preserving existing material, smooth ceiling in muted warm white, simple handmade ceramic bowl-shaped pendant light in earth tone",
     furniturePrompt:
       "Wabi-sabi furniture: raw linen sofa with natural wrinkles in undyed flax tone with low simple reclaimed wood frame 200cm wide, weathered oak rectangular coffee table with visible wood grain and worn edges 120cm, rough textured wool rug in undyed natural fiber 180x250cm, aged reclaimed wood bench with visible wear marks 100cm, single hand-thrown pottery bowl with wabi-sabi irregular glaze on the table, handmade asymmetric ceramic vase with single dried branch, smooth river stone as sculptural object on the floor, room only 30 percent furnished with intentional serene emptiness",
   },
