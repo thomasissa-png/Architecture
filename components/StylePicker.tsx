@@ -50,7 +50,7 @@ const STYLES: StyleOption[] = [
     surfacePrompt:
       "Japandi: warm sand-toned limewash walls keeping the same overall brightness as the input photo, light ash wood plank refinish with delicate grain, smooth white ceiling, round washi paper pendant light in natural off-white",
     furniturePrompt:
-      "Japandi furniture: low-profile platform sofa with clean lines in natural undyed linen with exposed light ash wood frame 220cm wide, light ash rectangular coffee table with rounded edges and short legs 100cm, woven tatami-style rug in natural straw tone 200x250cm, single ikebana dried branch arrangement in hand-thrown irregular ceramic vase, floor cushion in muted clay tone beside the table, minimal round side table in light ash 40cm, single smooth river stone as sculptural object, potted single-stem orchid in unglazed charcoal pottery, intentional negative space with only 30 percent of room furnished",
+      "Japandi furniture with precise geometric lines and ordered symmetry: low-profile platform sofa with clean lines in natural undyed linen in warm ecru with exposed light ash wood frame 220cm wide, light ash rectangular coffee table with rounded edges and short legs 100cm, flat-weave natural fiber rug in warm straw tone 200x250cm, single ikebana dried branch arrangement in hand-thrown irregular ceramic vase, floor cushion in muted clay tone beside the table, minimal round side table in light ash 40cm with black cast iron teapot (tetsubin) as signature piece, potted single-stem orchid in unglazed charcoal pottery, thin cashmere throw in warm sand tone draped over one sofa arm, intentional negative space with only 30 percent of room furnished",
   },
   {
     id: "art-deco",
@@ -70,7 +70,7 @@ const STYLES: StyleOption[] = [
     surfacePrompt:
       "Mid-Century Modern: warm white walls with slight cream undertone keeping the same overall brightness as the input photo, warm walnut-toned refinish on the existing floor with medium grain, smooth white ceiling, Sputnik-style brass and black multi-arm ceiling light",
     furniturePrompt:
-      "Mid-Century Modern furniture: curved organic sofa in mustard woven fabric with walnut tapered legs 220cm wide, sculptural free-form walnut coffee table with biomorphic shape 120cm, warm-toned geometric area rug in cream mustard and teal 200x300cm, walnut credenza with sliding doors and brass pulls 160cm wide placed along the back of the room, black leather and walnut bentwood lounge chair with matching ottoman, brass arc floor lamp with white dome shade, potted fiddle leaf fig in warm terracotta planter, stacked vintage design books and small brass starburst clock on the credenza, two cushions in teal and burnt orange",
+      "Mid-Century Modern furniture, all pieces raised on legs with visible daylight beneath: curved organic sofa in mustard woven fabric with walnut tapered legs 220cm wide, sculptural free-form walnut coffee table with biomorphic shape 120cm, warm-toned geometric area rug in cream mustard and teal 200x300cm, walnut credenza with sliding doors and brass pulls 160cm wide placed along the back of the room, black leather and walnut bentwood lounge chair with matching ottoman, brass arc floor lamp with white dome shade, potted fiddle leaf fig in warm terracotta planter, stacked vintage design books and small brass starburst clock on the credenza, two cushions in teal and burnt orange",
   },
   {
     id: "bohemian",
@@ -83,16 +83,6 @@ const STYLES: StyleOption[] = [
       "Bohemian furniture: deep low linen sofa in natural ecru with layered kilim and mudcloth cushions in terracotta rust and indigo 220cm wide, round reclaimed wood coffee table with organic edge 90cm diameter, faded vintage Persian rug layered over natural jute rug 200x300cm, rattan peacock chair with sheepskin throw draped over, two trailing pothos in terracotta pots and one monstera in a woven basket, brass Moroccan-style pierced lantern on the floor, wooden tray with pillar candles and dried pampas grass on the table, tall freestanding wooden tripod plant stand with trailing pothos",
   },
   {
-    id: "haussmannian",
-    name: "Haussmannien",
-    description: "Moulures, parquet, élégance parisienne",
-    emoji: "🏛️",
-    surfacePrompt:
-      "Haussmannian Parisian: soft warm grey walls with smooth matte finish keeping the same overall brightness as the input photo, light oak herringbone parquet refinish with classic proportions, smooth white ceiling with clean finish, elegant contemporary pendant light in brass and white glass",
-    furniturePrompt:
-      "Haussmannian furniture: velvet sofa with curved back and turned dark wood legs in muted sage green 220cm wide, contemporary round white marble coffee table with slim brass legs 90cm diameter, elegant wool area rug in soft grey and cream 200x300cm, classic bergère armchair with curved cabriole legs in dusty blue velvet, oversized gilded frame mirror propped on the floor leaning at an angle 150cm tall, sculptural contemporary brass floor lamp with linen shade, art books and ceramic objects on the table, potted white orchid in simple white ceramic pot, brass candlesticks on a slim marble console table placed along the back of the room",
-  },
-  {
     id: "mediterranean",
     name: "Méditerranéen",
     description: "Terre cuite, lin blanc, lumière du sud",
@@ -100,7 +90,7 @@ const STYLES: StyleOption[] = [
     surfacePrompt:
       "Mediterranean: warm white limewash walls with subtle hand-applied plaster texture keeping the same overall brightness as the input photo, warm terracotta-toned refinish on the existing floor, smooth white ceiling, simple wrought iron pendant light with warm-toned shade",
     furniturePrompt:
-      "Mediterranean furniture: deep natural linen sofa with loose slipcover in off-white 230cm wide, rustic olive wood coffee table with natural live edge 110cm, woven esparto grass rug in natural tone 200x300cm, wrought iron side table with glazed turquoise ceramic bowl, handwoven rush-seat wooden chair as accent piece, large olive branches in a rustic terracotta amphora jar 80cm tall, glazed ceramic plates and bowls as decor on the table in cobalt and terracotta, dried lavender bunch in a simple glass bottle, linen cushions in warm sand and sun-bleached blue, potted rosemary and trailing jasmine in terracotta pots",
+      "Mediterranean furniture: deep natural linen sofa with loose slipcover in off-white 230cm wide, rustic olive wood coffee table with natural live edge 110cm, woven esparto grass rug in natural tone 200x300cm, wrought iron side table with glazed turquoise ceramic bowl, handwoven rush-seat wooden chair as accent piece, large olive branches in a rustic terracotta amphora jar 80cm tall, glazed ceramic plates and bowls as decor on the table in cobalt and terracotta, linen cushions in warm sand and sun-bleached blue, potted rosemary and trailing jasmine in terracotta pots",
   },
   {
     id: "cosy",
@@ -120,7 +110,7 @@ const STYLES: StyleOption[] = [
     surfacePrompt:
       "Wabi-sabi: raw plaster limewash walls in warm grey with subtle imperfect hand-applied texture keeping the same overall brightness as the input photo, floor with aged wood-effect refinish preserving existing material, smooth ceiling in muted warm white, simple handmade ceramic bowl-shaped pendant light in earth tone",
     furniturePrompt:
-      "Wabi-sabi furniture: raw linen sofa with natural wrinkles in undyed flax tone with low simple reclaimed wood frame 200cm wide, weathered oak rectangular coffee table with visible wood grain and worn edges 120cm, rough textured wool rug in undyed natural fiber 180x250cm, aged reclaimed wood bench with visible wear marks 100cm, single hand-thrown pottery bowl with visible finger marks and uneven earth-toned glaze on the table, handmade asymmetric ceramic vase with single dried branch, smooth river stone as sculptural object on the floor, leave at least 60 percent of the floor area completely empty for serene intentional space",
+      "Wabi-sabi furniture with nothing symmetrical, every object placed with studied asymmetry: raw linen sofa with natural wrinkles in undyed flax tone with low simple reclaimed wood frame 200cm wide, weathered oak rectangular coffee table with visible wood grain and worn edges 120cm, rough textured wool rug in undyed natural fiber 180x250cm, aged reclaimed wood bench with visible wear marks 100cm, single dark charcoal tea bowl with crackle glaze on the table as signature kintsugi-inspired piece, handmade asymmetric ceramic vase with single dried branch, smooth river stone as sculptural object on the floor, leave at least 60 percent of the floor area completely empty for serene intentional space",
   },
   {
     id: "maximalist",
