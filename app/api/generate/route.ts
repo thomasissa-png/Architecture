@@ -24,6 +24,22 @@ function checkRateLimit(ip: string): boolean {
   return true;
 }
 
+// ─── Output Size (preserve input aspect ratio) ──────────────────────
+// Maps input dimensions to the closest OpenAI-compatible size.
+// OpenAI image_generation supports: 1024x1024, 1536x1024, 1024x1536
+function getOutputSize(
+  width?: number,
+  height?: number
+): { openai: string; w: number; h: number } {
+  if (!width || !height) {
+    return { openai: "1024x1024", w: 1024, h: 1024 };
+  }
+  const ratio = width / height;
+  if (ratio > 1.3) return { openai: "1536x1024", w: 1536, h: 1024 }; // landscape
+  if (ratio < 0.77) return { openai: "1024x1536", w: 1024, h: 1536 }; // portrait
+  return { openai: "1024x1024", w: 1024, h: 1024 }; // square-ish
+}
+
 // ─── Prompt Engineering ──────────────────────────────────────────────
 //
 // PIPELINE 2 PASSES:
@@ -114,7 +130,8 @@ function buildFurnitureFluxPrompt(stylePrompt: string): string {
 async function tryOpenAIResponses(
   imageBase64: string,
   stylePrompt: string,
-  pass: 1 | 2
+  pass: 1 | 2,
+  size: string
 ): Promise<{ image: string; model: string }> {
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -145,6 +162,7 @@ async function tryOpenAIResponses(
       {
         type: "image_generation",
         input_fidelity: "high",
+        size: size as "1024x1024" | "1536x1024" | "1024x1536",
       },
     ],
   });
@@ -172,7 +190,9 @@ async function tryOpenAIResponses(
 async function tryFluxDepth(
   imageBase64: string,
   stylePrompt: string,
-  pass: 1 | 2
+  pass: 1 | 2,
+  width: number,
+  height: number
 ): Promise<{ image: string; model: string }> {
   const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
 
@@ -192,6 +212,8 @@ async function tryFluxDepth(
       input: {
         prompt,
         control_image: dataUri,
+        width,
+        height,
         steps: 25,
         guidance,
         output_format: "png",
@@ -224,14 +246,15 @@ async function tryFluxDepth(
 async function generatePass(
   base64Image: string,
   stylePrompt: string,
-  pass: 1 | 2
+  pass: 1 | 2,
+  outputSize: { openai: string; w: number; h: number }
 ): Promise<{ image: string; model: string }> {
   let openaiError: Error | null = null;
   let replicateError: Error | null = null;
 
   if (process.env.OPENAI_API_KEY) {
     try {
-      return await tryOpenAIResponses(base64Image, stylePrompt, pass);
+      return await tryOpenAIResponses(base64Image, stylePrompt, pass, outputSize.openai);
     } catch (err) {
       openaiError = err instanceof Error ? err : new Error(String(err));
       console.error(`OpenAI pass ${pass} failed:`, openaiError.message);
@@ -240,7 +263,7 @@ async function generatePass(
 
   if (process.env.REPLICATE_API_TOKEN) {
     try {
-      return await tryFluxDepth(base64Image, stylePrompt, pass);
+      return await tryFluxDepth(base64Image, stylePrompt, pass, outputSize.w, outputSize.h);
     } catch (err) {
       replicateError = err instanceof Error ? err : new Error(String(err));
       console.error(`Flux Depth pass ${pass} failed:`, replicateError.message);
@@ -273,10 +296,15 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { image, stylePrompt } = body as {
+    const { image, stylePrompt, width, height } = body as {
       image: string;
       stylePrompt: string;
+      width?: number;
+      height?: number;
     };
+
+    // Calculate output size matching the input aspect ratio
+    const outputSize = getOutputSize(width, height);
 
     if (!image || !stylePrompt || !stylePrompt.trim()) {
       return NextResponse.json(
@@ -300,12 +328,12 @@ export async function POST(request: NextRequest) {
     // Pass 2: Add furniture on the finished room — surfaces untouched
     const trimmedStyle = stylePrompt.trim();
 
-    console.log("Starting pass 1 (surfaces)...");
-    const pass1 = await generatePass(base64Image, trimmedStyle, 1);
+    console.log(`Starting pass 1 (surfaces)... Output size: ${outputSize.openai}`);
+    const pass1 = await generatePass(base64Image, trimmedStyle, 1, outputSize);
     const pass1Base64 = pass1.image.replace(/^data:image\/[\w+]+;base64,/, "");
 
     console.log("Starting pass 2 (furniture)...");
-    const pass2 = await generatePass(pass1Base64, trimmedStyle, 2);
+    const pass2 = await generatePass(pass1Base64, trimmedStyle, 2, outputSize);
 
     return NextResponse.json({
       image: pass2.image,
