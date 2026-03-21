@@ -26,32 +26,29 @@ function checkRateLimit(ip: string): boolean {
 
 // ─── Prompt Engineering ──────────────────────────────────────────────
 //
-// STEP 1 ONLY — finish room surfaces (walls, floor, ceiling, lighting).
-// No furniture. Transform a construction-site photo into a clean,
-// finished empty room while preserving geometry + camera angle.
+// FURNISHING PASS — add furniture and decoration matching the chosen style.
+// The input image is either an empty finished room or a construction photo.
+// The prompt must clearly instruct the model to ADD furniture while
+// preserving the room's geometry, camera angle, and architectural elements.
 
 function buildResponsesPrompt(stylePrompt: string): string {
   return [
-    "Edit this photo of a room under construction.",
-    "Keep the exact same camera angle, perspective, and room shape.",
-    "Replace the raw concrete floor with a polished finished floor.",
-    "Replace raw plaster walls with smooth painted walls. Add baseboards.",
-    "Replace the unfinished ceiling with a clean painted ceiling.",
-    "Remove all exposed wires, dangling cables, and junction boxes.",
-    "Add one elegant ceiling light fixture where wires hang.",
-    "Add finished covers on all electrical outlets.",
-    "Keep the room completely empty — no furniture, no decoration.",
-    `Color palette: ${stylePrompt}.`,
+    "TRANSFORM this empty room into a fully furnished, styled interior.",
+    "Keep the exact same camera angle, perspective, wall positions, windows, and room shape.",
+    "Preserve the existing floor, walls, and ceiling as they are.",
+    `Add furniture and decoration: ${stylePrompt}.`,
+    "Fill the room naturally — sofa, coffee table, rug, lighting, curtains, accessories.",
+    "The result must look like a professional interior design photograph.",
+    "DSLR full-frame, 16-35mm wide-angle, f/8, deep depth of field, sharp focus.",
   ].join(" ");
 }
 
 function buildFluxPrompt(stylePrompt: string): string {
   return [
-    `Beautifully finished empty room, ${stylePrompt} color palette.`,
-    "Smooth painted walls with baseboards, polished floor, clean painted ceiling, elegant ceiling light fixture, finished outlet covers.",
-    "No exposed wires, no raw concrete, no construction debris.",
-    "Completely empty — no furniture, no rugs, no decoration, no objects.",
-    "Interior architecture photograph, DSLR 16-35mm f/8, deep depth of field, sharp focus, natural lighting.",
+    `${stylePrompt}.`,
+    "Fully furnished and decorated interior, professional staging.",
+    "Preserve exact room geometry, walls, floor, ceiling, windows, doors.",
+    "Interior design photograph, DSLR 16-35mm f/8, deep depth of field, sharp focus, natural lighting.",
   ].join(" ");
 }
 
@@ -158,7 +155,7 @@ async function tryFluxDepth(
   const base64 = Buffer.from(arrayBuffer).toString("base64");
 
   return {
-    image: `data:image/webp;base64,${base64}`,
+    image: `data:image/png;base64,${base64}`,
     model: "Flux Depth Pro",
   };
 }
