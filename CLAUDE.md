@@ -220,6 +220,19 @@ agents/
     - DALL-E 2 : prompt descriptif au lieu d'instructif
     - SDXL : style en tete de prompt (premiers tokens = plus d'influence)
 
+### Sprint 9 — Fix modele ultra-conservateur (image identique a l'input)
+66. CRITIQUE : Ajout mask entierement transparent a images.edit (sharp)
+    - Sans mask, GPT-image-1 decide de ne rien modifier — rendu = copie de l'input
+    - Mask alpha=0 sur toute l'image = "chaque pixel est editable"
+    - L'image input reste la reference geometrique (angle, perspective)
+    - Ajout de sharp comme dependance pour generer le mask PNG aux dimensions exactes
+67. CRITIQUE : Prompts action-dominants avec verbes MAJUSCULES
+    - TRANSFORM, REMOVE, REPLACE, ADD ciblent explicitement les elements de chantier
+    - Fils electriques, chape beton, prises brutes, plinthes manquantes nommes un par un
+    - Ancien prompt trop passif : "Make surfaces finished" ignore par le modele
+68. Conversion input en PNG avant envoi a images.edit (requis avec mask)
+69. Negative prompt SDXL enrichi : "dangling cables", "junction box", "unfinished floor"
+
 ## Regles de Developpement
 
 - Design minimaliste, pas de surcharge visuelle
@@ -234,7 +247,7 @@ agents/
 
 - **TOUJOURS individualiser les prompts par modele** : chaque modele (GPT-image-1, DALL-E 2, SDXL) a son propre builder (buildGPTPrompt, buildDalle2Prompt, buildSDXLPrompt). Repercuter chaque modif sur les 3.
 - **Ne jamais oublier un fallback** : verifier les 3 builders + parametres API (quality, prompt_strength, negative_prompt)
-- **Pas de mask** avec images.edit : le mask fait perdre l'angle de vue. Sans mask = geometrie preservee.
+- **Mask FULL TRANSPARENT** avec images.edit : un mask entierement transparent (alpha=0, genere par sharp) est envoye pour dire au modele "chaque pixel est editable". Sans mask, GPT-image-1 est ultra-conservateur et ne change rien. Le mask ne fait PAS perdre l'angle de vue car l'image input reste la reference geometrique — c'est le mask PARTIEL qui causait des problemes, pas le mask full.
 - **Pipeline 2 passes** : passe 1 = surfaces (murs, sol, plafond, luminaire), passe 2 = mobilier. Ne JAMAIS tout demander en une seule passe.
 - **Prompt COURT et instructif** : "Edit this photo. Keep exact same angle. Make surfaces finished." Pas de description de scene complete. Le modele doit editer, pas generer.
 - **Moins on demande = mieux c'est** : le modele preserve mieux la geometrie quand on demande peu de changements. Un prompt trop riche = scene recree de zero.

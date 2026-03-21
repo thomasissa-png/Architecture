@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import Replicate from "replicate";
+import sharp from "sharp";
 
 // ─── Rate Limiting (in-memory, IP-based) ────────────────────────────
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
@@ -103,17 +104,41 @@ async function tryOpenAI(
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
   const imageBuffer = Buffer.from(imageBase64, "base64");
-  const imageFile = new File([imageBuffer], "input.jpg", {
-    type: "image/jpeg",
+
+  // Convert input to PNG (required for images.edit with mask)
+  const pngBuffer = await sharp(imageBuffer).png().toBuffer();
+  const imageFile = new File([new Uint8Array(pngBuffer)], "input.png", {
+    type: "image/png",
+  });
+
+  // Create a fully transparent mask (alpha=0 everywhere).
+  // This tells GPT-image-1 "every pixel is editable" while still using
+  // the input image as geometric reference. Without this mask, the model
+  // defaults to ultra-conservative behavior and changes almost nothing.
+  const metadata = await sharp(imageBuffer).metadata();
+  const maskWidth = metadata.width || 1024;
+  const maskHeight = metadata.height || 1024;
+  const transparentMaskBuffer = await sharp({
+    create: {
+      width: maskWidth,
+      height: maskHeight,
+      channels: 4,
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
+    },
+  })
+    .png()
+    .toBuffer();
+  const maskFile = new File([new Uint8Array(transparentMaskBuffer)], "mask.png", {
+    type: "image/png",
   });
 
   const size = getOpenAISize(width, height);
 
-  // No mask — preserves original geometry and camera angle naturally.
   try {
     const response = await openai.images.edit({
       model: "gpt-image-1",
       image: imageFile,
+      mask: maskFile,
       prompt,
       n: 1,
       size,
@@ -136,13 +161,14 @@ async function tryOpenAI(
   }
 
   // Fallback: dall-e-2 (256/512/1024 only)
-  const dalleFile = new File([imageBuffer], "input.png", {
+  const dalleFile = new File([new Uint8Array(pngBuffer)], "input.png", {
     type: "image/png",
   });
 
   const response = await openai.images.edit({
     model: "dall-e-2",
     image: dalleFile,
+    mask: maskFile,
     prompt: buildDalle2Prompt(stylePrompt),
     n: 1,
     size: "1024x1024",
