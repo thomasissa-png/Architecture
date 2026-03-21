@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readFile } from "fs/promises";
+import { readFile, access } from "fs/promises";
 import path from "path";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   const file = req.nextUrl.searchParams.get("file");
@@ -8,9 +10,11 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Invalid file parameter" }, { status: 400 });
   }
 
-  const filePath = path.join(process.cwd(), "public", "logs", path.basename(file));
+  const basename = path.basename(file);
+  const filePath = path.join(process.cwd(), "public", "logs", basename);
 
   try {
+    await access(filePath);
     const buffer = await readFile(filePath);
     return new NextResponse(buffer, {
       headers: {
@@ -19,6 +23,9 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch {
-    return NextResponse.json({ error: "Image not found" }, { status: 404 });
+    return NextResponse.json(
+      { error: "Image not found", path: filePath, cwd: process.cwd() },
+      { status: 404 }
+    );
   }
 }
