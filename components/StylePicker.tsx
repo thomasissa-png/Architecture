@@ -6,7 +6,8 @@ export interface StyleOption {
   id: string;
   name: string;
   description: string;
-  prompt: string;
+  surfacePrompt: string;
+  furniturePrompt: string;
   emoji: string;
 }
 
@@ -16,96 +17,120 @@ const STYLES: StyleOption[] = [
     name: "Scandinave",
     description: "Bois clair, tons neutres, épure absolue",
     emoji: "🪵",
-    prompt:
-      "Scandinavian minimalist interior with pale oak furniture, soft white linen sofa, light birch coffee table, sheepskin throw draped over an armchair, white ceramic vases, taper candles in simple holders, sheer linen curtains filtering soft diffused Nordic daylight, palette of warm greige off-white and pale oak with matte black accents, woven wool rug in cream tones, potted trailing pothos and dried birch branches in a stoneware vase, stacked books on the table, clean functional elegance with hygge warmth",
+    surfacePrompt:
+      "Scandinavian minimalist: pale matte white walls, light oak hardwood floor with visible wood grain, smooth white ceiling, simple matte black flush-mount ceiling light",
+    furniturePrompt:
+      "Scandinavian furniture: large three-seat modular sofa in oatmeal boucle with low rounded arms and birch legs 230cm wide, light birch rectangular coffee table with tapered legs 120cm, cream wool loop-pile area rug 200x300cm, matte black arched floor lamp with dome shade, sheepskin throw draped over one sofa arm, white ceramic ribbed vases and taper candles on the table, small round birch side table with stacked design books, potted trailing pothos in light grey stoneware planter, dried birch branches in a tall cylindrical stoneware vase, two textured linen cushions in dusty blue and warm grey",
   },
   {
     id: "contemporary",
     name: "Contemporain",
     description: "Lignes nettes, palette sobre, modernité",
     emoji: "◻️",
-    prompt:
-      "Contemporary modern interior with low-profile modular sofa in premium grey fabric, smoked glass or Carrara marble coffee table, sculptural arc floor lamp in brushed brass, monochromatic palette of charcoal warm grey and off-white with one muted accent tone, no ornamentation, matte lacquer surfaces and seamless joinery, large abstract artwork on the wall, thick wool area rug in heathered grey, architectural coffee table books, single sculptural object on a pedestal, floor-to-ceiling sheer curtains, cool balanced natural light with warm accent lighting, editorial interior photography aesthetic",
+    surfacePrompt:
+      "Contemporary modern: warm grey matte walls, large-format light stone tile floor with minimal grout lines, smooth white ceiling, minimal recessed downlights or slim track lighting in matte black",
+    furniturePrompt:
+      "Contemporary furniture: large low-profile L-shaped sectional sofa in charcoal premium bouclé with slim brushed steel legs 280cm, sculptural smoked glass coffee table on brushed brass pedestal base 110cm, heathered grey thick wool area rug 250x350cm, brushed brass arc floor lamp with frosted globe shade, single large abstract canvas leaning against the wall on the floor, architectural coffee table books in a neat stack, tall matte white sculptural ceramic object on a slim black metal pedestal, potted architectural snake plant in matte black cylinder planter, two charcoal and cream geometric cushions",
   },
   {
     id: "industrial",
     name: "Industriel",
     description: "Métal, béton, volumes bruts sublimés",
     emoji: "⚙️",
-    prompt:
-      "Industrial loft interior with aged leather Chesterfield sofa, reclaimed wood and black steel coffee table, metal factory-style pendant lights with Edison filament bulbs casting warm amber glow, vintage cognac leather armchair, raw steel bookshelf with books and aged objects, dark wood and matte black palette with cognac leather accents, concrete-look accessories, no curtains with raw window frames, worn Persian rug on the floor, exposed metal side table, warm tungsten accent lighting contrasting with cool daylight",
+    surfacePrompt:
+      "Industrial loft: light grey walls with subtle raw concrete texture keeping the same overall brightness as the input photo, polished light grey concrete floor, ceiling with original structure preserved, matte black industrial pendant light with metal shade and visible Edison filament bulb",
+    furniturePrompt:
+      "Industrial furniture: large three-seat worn leather sofa in warm cognac with visible patina stitching and riveted seams 230cm wide, reclaimed wood and black welded steel rectangular coffee table 130cm, faded vintage Persian rug in muted red and navy 200x300cm, matte black open metal bookshelf 180cm tall with books and aged brass objects, black metal factory stool as side table, potted large fiddle leaf fig in corrugated metal container, leather and black steel butterfly chair, aged brass industrial desk lamp on the bookshelf, two weathered leather cushions",
   },
   {
     id: "japandi",
     name: "Japandi",
     description: "Minimalisme japonais, chaleur scandinave",
     emoji: "🎋",
-    prompt:
-      "Japandi interior combining Japanese minimalism with Scandinavian warmth, low platform sofa with clean lines in natural linen, light ash wood furniture with rounded edges, single ikebana flower arrangement in handmade ceramic vase, floor-level seating cushion in muted earth tone, washi paper pendant lamp diffusing soft warm light, palette of warm sand soft grey pale wood and charcoal, linen curtains in undyed natural tone, tatami-inspired woven rug, intentional negative space with only 30 percent of room furnished, serene meditative atmosphere",
+    surfacePrompt:
+      "Japandi: warm sand-toned limewash walls with subtle plaster texture, light ash wood plank floor with delicate grain, smooth white ceiling, round washi paper pendant light in natural off-white",
+    furniturePrompt:
+      "Japandi furniture: low-profile platform sofa with clean lines in natural undyed linen with exposed light ash wood frame 220cm wide, light ash rectangular coffee table with rounded edges and short legs 100cm, woven tatami-style rug in natural straw tone 200x250cm, single ikebana dried branch arrangement in hand-thrown irregular ceramic vase, floor cushion in muted clay tone beside the table, minimal round side table in light ash 40cm, single smooth river stone as sculptural object, potted single-stem orchid in unglazed charcoal pottery, intentional negative space with only 30 percent of room furnished",
   },
   {
     id: "art-deco",
     name: "Art Déco",
     description: "Géométrie dorée, velours, luxe années 20",
     emoji: "✨",
-    prompt:
-      "Art Deco interior with channel-tufted velvet sofa in deep emerald or sapphire, polished brass and gold geometric accents, sunburst mirror on the wall, fluted cabinet in dark lacquer with brass handles, marble-top side table, dramatic accent lighting with gold reflections on metallic surfaces, heavy velvet drapes in deep jewel tones, geometric patterned rug in black gold and cream, crystal or brass table lamp, lacquered tray with crystal decanter and gold objects, palette of emerald sapphire gold black and cream, opulent 1920s glamour with curated restraint",
+    surfacePrompt:
+      "Art Deco: warm ivory matte walls with smooth finish, dark polished wood parquet floor in herringbone pattern, smooth ceiling with simple elegant cornice trim, brass and frosted glass geometric pendant chandelier",
+    furniturePrompt:
+      "Art Deco furniture: channel-tufted velvet sofa in deep emerald green with polished brass legs 230cm wide arranged symmetrically in the room, round polished brass coffee table with smoked glass top on pedestal base 90cm diameter, geometric patterned area rug in black gold and cream 200x300cm, fluted dark lacquer drinks cabinet with brass handles 120cm tall, marble-top brass side table with crystal decanter and gold-rimmed glasses, tall brass floor lamp with pleated cream silk shade, potted areca palm in polished brass planter, matching pair of brass table lamps on side tables flanking the sofa, velvet cushions in sapphire and gold with geometric patterns",
   },
   {
     id: "mid-century",
     name: "Mid-Century",
     description: "Lignes organiques, bois chaud, vintage chic",
     emoji: "🪑",
-    prompt:
-      "Mid-Century Modern interior with Eames-style molded lounge chair and ottoman in black leather, Noguchi-inspired sculptural coffee table, warm walnut wood credenza with tapered legs, organic curved sofa in mustard or burnt orange fabric, teak wood side table, Sputnik-style chandelier or arc floor lamp, palette of warm walnut mustard teal burnt orange and cream, geometric area rug with retro pattern, potted fiddle leaf fig, stacked vintage design books, light linen curtains, warm natural afternoon light with brass accent lamps, optimistic retro-modern elegance",
+    surfacePrompt:
+      "Mid-Century Modern: warm white walls with slight cream undertone, warm walnut-toned wood floor with medium grain, smooth white ceiling, Sputnik-style brass and black multi-arm ceiling light",
+    furniturePrompt:
+      "Mid-Century Modern furniture: curved organic sofa in mustard woven fabric with walnut tapered legs 220cm wide, sculptural free-form walnut coffee table with biomorphic shape 120cm, warm-toned geometric area rug in cream mustard and teal 200x300cm, walnut credenza with sliding doors and brass pulls 160cm wide against the wall, black leather and walnut bentwood lounge chair with matching ottoman, brass arc floor lamp with white dome shade, potted fiddle leaf fig in warm terracotta planter, stacked vintage design books and small brass starburst clock on the credenza, two cushions in teal and burnt orange",
   },
   {
     id: "bohemian",
     name: "Bohème",
     description: "Textiles ethniques, plantes, chaleur nomade",
     emoji: "🌿",
-    prompt:
-      "Bohemian boho interior with low linen sofa covered in layered kilim and mudcloth cushions, macrame wall hanging, abundant trailing plants in terracotta and woven basket pots, rattan peacock chair, vintage Persian rug layered over jute rug, brass Moroccan lantern casting warm patterned light, wooden tray with candles and dried flowers, floor poufs in woven leather, palette of terracotta rust ochre sage cream and indigo, light natural cotton drapes in raw ecru, warm golden ambient lighting, eclectic collected-over-time aesthetic with intentional curation not clutter",
+    surfacePrompt:
+      "Bohemian: warm off-white walls with subtle handmade plaster texture, warm natural wood plank floor with visible knots, smooth white ceiling, woven rattan pendant light in natural tone",
+    furniturePrompt:
+      "Bohemian furniture: deep low linen sofa in natural ecru with layered kilim and mudcloth cushions in terracotta rust and indigo 220cm wide, round reclaimed wood coffee table with organic edge 90cm diameter, layered rugs — faded vintage Persian rug over natural jute rug 200x300cm, rattan peacock chair with sheepskin throw draped over, woven leather floor pouf in cognac, abundant trailing pothos and monstera in terracotta and woven basket pots, brass Moroccan-style pierced lantern on the floor, wooden tray with pillar candles and dried pampas grass on the table, macramé plant hanger suspended from a freestanding wooden tripod",
   },
   {
     id: "haussmannian",
     name: "Haussmannien",
     description: "Moulures, parquet, élégance parisienne",
     emoji: "🏛️",
-    prompt:
-      "Modern Haussmannian Parisian interior with elegant plaster moldings and ceiling rosette, herringbone oak parquet floor, marble fireplace mantel with art and brass candlesticks, velvet sofa in muted sage or dusty blue, mix of Louis XV bergere chair with contemporary coffee table, oversized gilded mirror, heavy linen or velvet drapes in muted tones, sculptural contemporary pendant light, palette of soft grey warm white dusty blue sage and antique gold, stacked art books and ceramic objects, refined warm natural light from tall French windows, French art de vivre sophistication",
+    surfacePrompt:
+      "Haussmannian Parisian: soft warm grey walls with smooth matte finish, light oak herringbone parquet floor with classic proportions, smooth white ceiling with simple period ceiling rose, elegant contemporary pendant light in brass and white glass",
+    furniturePrompt:
+      "Haussmannian furniture: velvet sofa with curved back and turned dark wood legs in muted sage green 220cm wide, contemporary round white marble coffee table with slim brass legs 90cm diameter, elegant wool area rug in soft grey and cream 200x300cm, upholstered Louis XV-style bergère armchair in dusty blue velvet, oversized gilded frame mirror leaning against the wall on the floor 150cm tall, sculptural contemporary brass floor lamp with linen shade, art books and ceramic objects on the table, potted white orchid in simple white ceramic pot, brass candlesticks on a slim marble console table against the wall",
   },
   {
     id: "mediterranean",
     name: "Méditerranéen",
     description: "Terre cuite, lin blanc, lumière du sud",
     emoji: "☀️",
-    prompt:
-      "Mediterranean interior with natural linen sofa with loose slipcover, terracotta and warm stone accessories, olive branches in a rustic ceramic jar, wrought iron side table, handwoven rush-seat chairs, whitewashed wood furniture, palette of terracotta warm sand olive white and sun-bleached blue, sheer white linen curtains billowing with warm golden afternoon light from the south, woven esparto rug, glazed ceramic bowls and plates as decor, dried lavender bunch, warm golden hour sunlight flooding the space with long soft shadows, rustic refined coastal elegance",
+    surfacePrompt:
+      "Mediterranean: warm white limewash walls with subtle hand-applied plaster texture, terracotta tile floor with natural color variation, smooth white ceiling, simple wrought iron pendant light with warm-toned shade",
+    furniturePrompt:
+      "Mediterranean furniture: deep natural linen sofa with loose slipcover in off-white 230cm wide, rustic olive wood coffee table with natural live edge 110cm, woven esparto grass rug in natural tone 200x300cm, wrought iron side table with glazed turquoise ceramic bowl, handwoven rush-seat wooden chair as accent piece, large olive branches in a rustic terracotta amphora jar 80cm tall, glazed ceramic plates and bowls as decor on the table in cobalt and terracotta, dried lavender bunch in a simple glass bottle, linen cushions in warm sand and sun-bleached blue, potted rosemary and trailing jasmine in terracotta pots",
   },
   {
     id: "cosy",
     name: "Cosy Moderne",
     description: "Textures douces, tons chauds, cocooning",
     emoji: "🛋️",
-    prompt:
-      "Modern cozy interior with oversized deep boucle sofa in warm cream, chunky knit throw blanket draped over the armrest, layered cushions in cream camel and soft blush, sheepskin rug beside the sofa, round oak coffee table with candles and a book, soft fabric table lamp with warm 2700K glow casting intimate shadows, heavy linen curtains in warm oatmeal, palette of warm cream camel soft blush oatmeal and muted terracotta, trailing potted plant on a side table, cashmere throw on a reading chair, warm amber toned ambient lighting throughout, enveloping cocoon atmosphere",
+    surfacePrompt:
+      "Modern cozy: warm cream matte walls, light oak or warm-toned wood floor with gentle grain, smooth white ceiling, fabric drum pendant light in warm oatmeal tone with soft diffused glow",
+    furniturePrompt:
+      "Modern cozy furniture: oversized deep boucle sofa in warm cream with rounded arms and wide cushioned seats 260cm wide, round light oak coffee table with thick turned legs 100cm diameter, layered wool area rug in cream and soft blush 200x300cm, chunky hand-knit throw blanket in cream draped over one armrest, cushions in cream camel and soft blush textures, natural sheepskin rug draped beside the sofa, soft fabric table lamp with warm glow on a round oak side table, camel boucle reading armchair with cashmere throw, pillar candles and stacked linen-bound books on the coffee table, trailing potted plant on the side table",
   },
   {
     id: "wabi-sabi",
     name: "Wabi-Sabi",
     description: "Imperfection noble, matières brutes, sérénité",
     emoji: "🏺",
-    prompt:
-      "Wabi-sabi interior embracing noble imperfection, handmade irregular ceramic vase with single dried branch, aged reclaimed wood bench with visible patina, raw linen sofa with natural wrinkles, hand-thrown pottery bowl on a weathered oak table, palette of raw plaster warm grey aged wood and muted earth tones, no curtains with bare windows letting in soft diffused natural light, room only 30 percent furnished with intentional emptiness, rough textured wool rug in undyed natural fiber, single stone sculpture, walls that echo raw plaster or lime wash texture, serene meditative atmosphere celebrating the beauty of impermanence",
+    surfacePrompt:
+      "Wabi-sabi: raw plaster limewash walls in warm grey with subtle imperfect hand-applied texture, aged reclaimed wood plank floor with visible patina and knots, smooth ceiling in muted warm white, simple handmade ceramic bowl-shaped pendant light in earth tone",
+    furniturePrompt:
+      "Wabi-sabi furniture: raw linen sofa with natural wrinkles in undyed flax tone with low simple reclaimed wood frame 200cm wide, weathered oak rectangular coffee table with visible wood grain and worn edges 120cm, rough textured wool rug in undyed natural fiber 180x250cm, aged reclaimed wood bench with visible wear marks 100cm, single hand-thrown pottery bowl with wabi-sabi irregular glaze on the table, handmade asymmetric ceramic vase with single dried branch, smooth river stone as sculptural object on the floor, room only 30 percent furnished with intentional serene emptiness",
   },
   {
     id: "maximalist",
     name: "Maximaliste",
     description: "Couleurs vives, motifs audacieux, personnalité",
     emoji: "🎨",
-    prompt:
-      "Maximalist eclectic interior with bold jewel-toned velvet sofa in fuchsia or cobalt, floor-to-ceiling gallery wall with mixed frames and art styles, patterned wallpaper accent with botanical or geometric motif, layered rugs mixing Persian and contemporary graphic patterns, brass and marble side table overflowing with books and curated objects, dramatic pendant light in sculptural form, heavy printed curtains in contrasting pattern, palette of fuchsia cobalt emerald gold saffron and deep plum, room 80 percent furnished with curated abundance, mixed throw pillows in clashing patterns that somehow harmonize, warm dramatic accent lighting with colored shadows, personality-filled space inspired by Kelly Wearstler",
+    surfacePrompt:
+      "Maximalist eclectic: rich deep teal or plum accent on one wall with remaining walls in warm white, polished dark wood floor with rich warm tone, smooth white ceiling, dramatic sculptural pendant light in brass with colored glass elements",
+    furniturePrompt:
+      "Maximalist furniture: bold jewel-toned velvet sofa in fuchsia or cobalt blue with brass legs 230cm wide, brass and marble side table overflowing with art books and curated objects, layered rugs mixing faded vintage Persian and contemporary bold graphic patterns 200x300cm, sculptural brass floor lamp with oversized colored shade, mixed throw pillows in clashing patterns that harmonize — leopard print velvet and bold geometric, eclectic collection of framed artwork leaning against walls on the floor, large potted monstera in colorful glazed ceramic pot, vintage brass tray with pillar candles and small sculptural objects on the coffee table, ornate round coffee table in lacquered color with brass inlay 100cm, room 70 percent furnished with curated abundance",
   },
 ];
 

@@ -98,8 +98,9 @@ export default function Home() {
 
   const handleGenerate = useCallback(async () => {
     if (files.length === 0) return;
-    const stylePrompt = selectedStyle?.prompt || customPrompt.trim();
-    if (!stylePrompt) return;
+    const surfacePrompt = selectedStyle?.surfacePrompt || customPrompt.trim();
+    const furniturePrompt = selectedStyle?.furniturePrompt || customPrompt.trim();
+    if (!surfacePrompt && !furniturePrompt) return;
 
     // Cancel any previous in-flight requests
     abortControllerRef.current?.abort();
@@ -157,7 +158,8 @@ export default function Home() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               image: img.base64,
-              stylePrompt,
+              surfacePrompt,
+              furniturePrompt,
               width: img.width,
               height: img.height,
             }),

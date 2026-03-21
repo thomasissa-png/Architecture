@@ -282,6 +282,46 @@ agents/
 85. Apprentissage : mentionner "window/door" meme en negatif AMORCE le modele a les generer
     - NE JAMAIS mentionner d'elements architecturaux qu'on ne veut pas voir apparaitre
 
+### Sprint 13 — Refonte structurelle prompts (Audit croise Yann Duval + Lucas Moreau)
+86. CRITIQUE : Split des 12 stylePrompts en surfacePrompt + furniturePrompt (StylePicker.tsx)
+    - Ancien : un seul prompt monolithique (~60 mots) injecte dans les 2 passes
+    - Probleme : le style ecrasait les contraintes de preservation (murs blancs → plâtre ocre, sol → geometrique)
+    - Nouveau : surfacePrompt (couleur murs, sol, plafond, luminaire) pour passe 1, furniturePrompt (mobilier + deco) pour passe 2
+    - Chaque passe recoit UNIQUEMENT les informations pertinentes
+87. CRITIQUE : Suppression de TOUTES les directives de lumiere des stylePrompts
+    - Ancien : "warm tungsten accent lighting", "golden hour sunlight flooding" → le modele changeait l'eclairage original
+    - Nouveau : AUCUNE directive de lumiere dans les styles — la lumiere de l'input est sacree
+    - Les prompts disent "preserve existing lighting conditions" sans exception
+88. CRITIQUE : Suppression de TOUTES les mentions de curtains/drapes/windows des styles
+    - Plus besoin du sanitizer sanitizeStyleForFurniturePass() — les prompts sont propres a la source
+    - Zero risque d'hallucination de fenetre car zero mention de rideaux
+89. CRITIQUE : Fix format/dimensions de l'image de sortie
+    - Le client envoie width/height, le serveur calcule le ratio et passe le size a OpenAI + Flux
+    - OpenAI : parametre size sur le tool image_generation (1536x1024, 1024x1536, 1024x1024)
+    - Flux : parametres width/height explicites
+90. HAUTE : Enrichissement des furniturePrompts avec silhouettes de mobilier precises
+    - Dimensions explicites (230cm wide, 120cm table, 200x300cm rug)
+    - Formes specifiques (channel-tufted, biomorphic, tapered legs, curved back)
+    - References de style sans marques (Eames-style, Sputnik-style, Louis XV-style)
+    - Textiles precis (kilim cushions, boucle fabric, sheepskin throw)
+91. HAUTE : surfacePrompts limites aux finitions SANS modifications structurelles
+    - Pas de moulures, pas de motifs de sol geometriques, pas de cheminee
+    - Seuls autorises : couleur/finition murs, type de sol, plafond, luminaire plafond
+    - Art Deco : herringbone parquet + cornice trim (subtil) au lieu de sol geometrique noir/dore
+    - Industriel : "light grey walls keeping same brightness as input" au lieu de murs ocre sombre
+92. HAUTE : Negative prompt SDXL/Flux enrichi et unifie (FLUX_NEGATIVE_PROMPT)
+    - 16 termes : distorted perspective, fisheye, extra windows/doors, floating furniture, etc.
+93. MOYENNE : API route.ts accepte surfacePrompt + furniturePrompt separement
+    - Le client envoie les 2 prompts dans le body de la requete
+    - Pour les prompts custom, le meme texte est envoye pour les 2 passes
+    - Suppression complete de sanitizeStyleForFurniturePass() (plus necessaire)
+94. Apprentissages consolides des agents :
+    - Plus un style est visuellement eloigne de l'input, plus le modele regenere au lieu d'editer
+    - Solution : limiter la passe 1 a des changements de FINITION, pas de STRUCTURE
+    - La passe 2 ne doit contenir QUE du mobilier freestanding, jamais d'elements muraux
+    - Les directives de lumiere dans les styles ecrasent systematiquement "preserve lighting"
+    - Les dimensions de silhouette mobilier (cm) ameliorent la coherence d'echelle
+
 ## Regles de Developpement
 
 - Design minimaliste, pas de surcharge visuelle
@@ -294,13 +334,15 @@ agents/
 
 ## Regles Prompts IA (CRITIQUE)
 
-- **Responses API en priorite** : utiliser `openai.responses.create()` avec le tool `image_generation` + `input_fidelity: "high"`. Le modele VOIT l'image via la vision et genere une version editee. Fondamentalement different de `images.edit` (inpainting).
-- **Flux Depth Pro en fallback** : modele Replicate qui extrait une depth map de l'input pour verrouiller la geometrie 3D tout en permettant le restyling des surfaces.
-- **NE PAS utiliser images.edit** : c'est un outil d'inpainting. Sans mask = trop conservateur. Avec mask = perd toute la geometrie. Inadapte pour l'edition de surfaces.
-- **NE PAS utiliser SDXL img2img** : prompt_strength est un outil trop grossier. A 0.35 rien ne change, a 0.50 la geometrie est perdue et des meubles apparaissent malgre le negative prompt.
-- **DALL-E 2 est deprecated** (shutdown 2026-05-12) — ne plus utiliser.
-- **Pipeline 2 passes (implemente)** : le serveur enchaine automatiquement passe 1 (surfaces) puis passe 2 (mobilier). Le client fait un seul appel. Ne JAMAIS tout demander en une seule passe.
-- **Passe 1 = surfaces** : "Edit this photo of a room. Apply [style] finish to the surfaces only. Keep the room EMPTY." Mots-cles : no furniture, no rugs, no curtains.
-- **Passe 2 = mobilier** : "Add furniture and decoration to this photo of a finished room. DO NOT change the walls, floor, ceiling..." Mots-cles : IDENTICAL surfaces, add only.
-- **NE PAS utiliser "TRANSFORM"** : ce mot pousse le modele a regenerer toute la scene. Utiliser "Add" ou "Edit" a la place.
-- **Prompt COURT et instructif** : chaque passe ~6 phrases max. Le modele doit editer, pas generer.
+- **Responses API en priorite** : utiliser `openai.responses.create()` avec le tool `image_generation` + `input_fidelity: "high"` + `size` correspondant au ratio de l'input. Le modele VOIT l'image via la vision et genere une version editee.
+- **Flux Depth Pro en fallback** : modele Replicate qui extrait une depth map de l'input. Passer `width` + `height` + `negative_prompt` explicitement.
+- **NE PAS utiliser images.edit / SDXL img2img / DALL-E 2** — inadaptes ou deprecated.
+- **Pipeline 2 passes avec PROMPTS SEPARES** : le client envoie `surfacePrompt` et `furniturePrompt`. Chaque passe recoit UNIQUEMENT le prompt qui la concerne.
+- **Passe 1 = surfaces** : utilise `surfacePrompt` (couleur murs, sol, plafond, luminaire). Piece VIDE. Preserve lumiere, angle, format.
+- **Passe 2 = mobilier** : utilise `furniturePrompt` (mobilier freestanding, textiles au sol, plantes, deco). Surfaces LOCKED. Preserve tout.
+- **NE JAMAIS melanger surfaces et mobilier** dans le meme prompt — c'est la cause racine des echecs precedents.
+- **NE JAMAIS inclure de directives de lumiere** dans les stylePrompts — la lumiere de l'input est sacree.
+- **NE JAMAIS mentionner curtains/drapes/windows** dans les stylePrompts — risque d'hallucination.
+- **NE PAS utiliser "TRANSFORM"** : utiliser "Edit" (passe 1) ou "Add" (passe 2).
+- **Dimensions de mobilier explicites** (230cm wide, 120cm table, 200x300cm rug) pour ancrer l'echelle.
+- **Prompt COURT et instructif** : chaque passe ~6-8 phrases max.

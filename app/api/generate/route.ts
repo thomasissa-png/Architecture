@@ -42,94 +42,74 @@ function getOutputSize(
 
 // ─── Prompt Engineering ──────────────────────────────────────────────
 //
-// PIPELINE 2 PASSES:
-// Pass 1 (surfaces): Finish raw surfaces (walls, floor, ceiling) — NO furniture.
-// Pass 2 (furniture): Add furniture and decoration to the finished room — NO surface changes.
+// PIPELINE 2 PASSES with SPLIT PROMPTS:
+// Pass 1 (surfaces): Uses surfacePrompt — wall color, floor finish, ceiling, fixture ONLY.
+// Pass 2 (furniture): Uses furniturePrompt — freestanding objects ONLY.
+//
+// RULES:
+// - NO lighting directives in style prompts (preserve input light)
+// - NO curtains/drapes (hallucination risk)
+// - NO structural modifications beyond surface finish
+// - surfacePrompt: color/finish of walls, floor, ceiling + ceiling fixture
+// - furniturePrompt: freestanding objects with precise silhouettes + scale
 
 // ── Pass 1: Surface finishing ────────────────────────────────────────
-function buildSurfacesResponsesPrompt(stylePrompt: string): string {
-  const cleanStyle = sanitizeStyleForFurniturePass(stylePrompt);
+function buildSurfacesResponsesPrompt(surfacePrompt: string): string {
   return [
     "Edit this photo of a room.",
-    `Apply a ${cleanStyle} finish to the surfaces only: refinish the floor, repaint or replaster walls and ceiling to match the style.`,
-    "Refinish existing baseboards and trim to match the style. Replace the existing ceiling light fixture with one consistent with the style.",
-    "Match the wall color precisely to the input — do not shift the hue, do not warm up or cool down the tone.",
-    "The number of windows and doors must be EXACTLY the same as in the input photo. If there are zero windows, there must be zero windows in the output.",
-    "Keep the room COMPLETELY EMPTY — no furniture, no rugs, no curtains, no textiles, no decoration, no objects on the floor or walls.",
-    "Preserve the exact same camera angle, lens distortion, vanishing points, and room proportions.",
-    "Preserve the existing lighting conditions, light direction, shadow angles, color temperature, and exposure exactly as in the input photo.",
-    "DSLR full-frame, wide-angle 16-35mm, f/8, deep depth of field, sharp focus throughout.",
+    `Apply this surface finish: ${surfacePrompt}.`,
+    "Refinish the floor, repaint or replaster walls, update the ceiling light fixture to match the style description above.",
+    "Keep the room COMPLETELY EMPTY — no furniture, no rugs, no textiles, no decoration, no objects.",
+    "The number of windows and doors must be EXACTLY the same as in the input. If there are zero windows, there must be zero windows in the output.",
+    "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation.",
+    "Preserve the existing lighting conditions, light direction, shadow angles, color temperature, and exposure exactly as in the input.",
+    "DSLR full-frame wide-angle 16-35mm f/8, deep depth of field, sharp focus throughout.",
   ].join(" ");
 }
 
-function buildSurfacesFluxPrompt(stylePrompt: string): string {
-  const cleanStyle = sanitizeStyleForFurniturePass(stylePrompt);
+function buildSurfacesFluxPrompt(surfacePrompt: string): string {
   return [
-    `${cleanStyle} finished empty room interior.`,
-    "Refinished floor, repainted walls, smooth ceiling with updated light fixture.",
-    "Exact same number of windows and doors as the original photo. Wall color hue unchanged.",
-    "Completely empty room — no furniture, no rugs, no curtains, no textiles, no decoration, no objects.",
-    "Same room geometry, same proportions, same lighting conditions, same camera angle.",
+    `${surfacePrompt}, finished empty room interior.`,
+    "Refinished floor, repainted walls, updated ceiling light fixture.",
+    "Completely empty room — no furniture, no rugs, no textiles, no objects.",
+    "Exact same number of windows and doors as the original. Same room geometry, same proportions.",
+    "Preserve existing lighting conditions and camera angle.",
     "Photo-realistic interior photograph, DSLR full-frame 16-35mm f/8, deep DOF, sharp focus.",
   ].join(" ");
-}
-
-// ── Style prompt sanitizer for pass 2 ────────────────────────────────
-// Remove curtain/drape/window references from the style prompt to prevent
-// the model from hallucinating windows to hang curtains on.
-function sanitizeStyleForFurniturePass(stylePrompt: string): string {
-  // Remove clauses that mention curtains, drapes, or windows to prevent
-  // the model from hallucinating windows to hang curtains on.
-  return stylePrompt
-    // Remove full comma-separated clauses containing curtains/drapes
-    // Matches: ", sheer linen curtains filtering soft diffused Nordic daylight"
-    // Matches: ", heavy velvet drapes in deep jewel tones"
-    // Matches: ", heavy linen or velvet drapes in muted tones"
-    // Matches: ", floor-to-ceiling sheer curtains"
-    .replace(/,\s*[^,]*(?:curtains?|drapes?)[^,]*/gi, "")
-    // Remove "no curtains with bare/raw windows" patterns (also comma-delimited)
-    .replace(/,\s*no curtains\s+with\s+[^,]*/gi, "")
-    // Remove "from tall French windows" in light descriptions
-    .replace(/from\s+(tall\s+)?French\s+windows/gi, "")
-    // Clean up punctuation artifacts
-    .replace(/,\s*,/g, ",")       // double commas
-    .replace(/,\s*$/g, "")         // trailing comma
-    .replace(/^\s*,/g, "")         // leading comma
-    .replace(/\s+,/g, ",")         // space before comma
-    .replace(/\s{2,}/g, " ")       // multiple spaces
-    .trim();
 }
 
 // ── Pass 2: Furniture placement ──────────────────────────────────────
-function buildFurnitureResponsesPrompt(stylePrompt: string): string {
-  const cleanStyle = sanitizeStyleForFurniturePass(stylePrompt);
+function buildFurnitureResponsesPrompt(furniturePrompt: string): string {
   return [
-    `Add ${cleanStyle} furniture and freestanding decoration into this photo of a finished room.`,
-    "Add seating, a coffee table, a floor rug, floor lamps, plants, and decorative objects appropriate for the style.",
-    "ONLY add freestanding objects that rest on the floor or sit on existing surfaces. Do NOT attach anything to walls, do NOT add wall art, do NOT add built-in shelving.",
-    "The room structure is LOCKED: every wall, window, door, ceiling, and floor surface must appear pixel-identical to the input. No new openings, no removed openings, no color shift on any surface.",
-    "If the input has no windows, the output must have no windows. If the input has one window, the output must have exactly one window in the same position.",
-    "Furniture must sit on the existing floor with correct perspective, scale, and shadows consistent with the existing light direction.",
-    "Photo-realistic interior photograph, same camera angle, same lens distortion, same vanishing points, DSLR full-frame 16-35mm f/8, deep DOF.",
+    `Add the following furniture and decoration into this photo of a finished room: ${furniturePrompt}.`,
+    "Place all objects naturally on the existing floor with correct perspective, scale, and shadows consistent with the existing light direction.",
+    "ONLY add freestanding objects that rest on the floor or sit on existing surfaces. Do NOT attach anything to walls. No wall art, no built-in shelving, no curtains.",
+    "Room structure is LOCKED: every wall, window, door, ceiling, and floor surface must remain pixel-identical to the input. No new openings, no color shift on any surface.",
+    "If the input has zero windows, the output must have zero windows.",
+    "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation.",
+    "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, photo-realistic interior photograph.",
   ].join(" ");
 }
 
-function buildFurnitureFluxPrompt(stylePrompt: string): string {
-  const cleanStyle = sanitizeStyleForFurniturePass(stylePrompt);
+function buildFurnitureFluxPrompt(furniturePrompt: string): string {
   return [
-    `${cleanStyle} furnished room interior.`,
-    "Sofa, coffee table, floor rug, floor lamp, plants, and decorative objects placed naturally on the existing floor.",
-    "Freestanding furniture only. No wall-mounted objects, no built-in shelving.",
-    "Every wall, floor, and ceiling surface identical to input — same colors, same textures, no new openings in walls.",
-    "Exact same number of windows and doors as original. Same room geometry, same proportions, same lighting, same camera angle.",
+    `${furniturePrompt}, placed naturally in this finished room interior.`,
+    "Freestanding furniture only. No wall-mounted objects, no built-in shelving, no curtains.",
+    "Every wall, floor, and ceiling surface identical to input — same colors, same textures, no new openings.",
+    "Same room geometry, same proportions, same camera angle, same lighting conditions.",
     "Photo-realistic interior photograph, DSLR full-frame 16-35mm f/8, deep DOF, sharp focus.",
   ].join(" ");
 }
+
+// Flux Depth Pro negative prompt — prevents common artifacts
+const FLUX_NEGATIVE_PROMPT =
+  "distorted perspective, fisheye, stretched walls, shallow depth of field, bokeh, cartoon, illustration, 3D render, watermark, text, blurry, overexposed windows, extra windows, extra doors, floating furniture, dangling cables, junction box, unfinished floor";
 
 // ─── OpenAI Responses API (PRIMARY) ─────────────────────────────────
 async function tryOpenAIResponses(
   imageBase64: string,
-  stylePrompt: string,
+  surfacePrompt: string,
+  furniturePrompt: string,
   pass: 1 | 2,
   size: string
 ): Promise<{ image: string; model: string }> {
@@ -137,8 +117,8 @@ async function tryOpenAIResponses(
 
   const prompt =
     pass === 1
-      ? buildSurfacesResponsesPrompt(stylePrompt)
-      : buildFurnitureResponsesPrompt(stylePrompt);
+      ? buildSurfacesResponsesPrompt(surfacePrompt)
+      : buildFurnitureResponsesPrompt(furniturePrompt);
 
   const response = await openai.responses.create({
     model: "gpt-4.1",
@@ -189,7 +169,8 @@ async function tryOpenAIResponses(
 // ─── Replicate Fallback (Flux Depth Pro) ─────────────────────────────
 async function tryFluxDepth(
   imageBase64: string,
-  stylePrompt: string,
+  surfacePrompt: string,
+  furniturePrompt: string,
   pass: 1 | 2,
   width: number,
   height: number
@@ -199,8 +180,8 @@ async function tryFluxDepth(
   const dataUri = `data:image/jpeg;base64,${imageBase64}`;
   const prompt =
     pass === 1
-      ? buildSurfacesFluxPrompt(stylePrompt)
-      : buildFurnitureFluxPrompt(stylePrompt);
+      ? buildSurfacesFluxPrompt(surfacePrompt)
+      : buildFurnitureFluxPrompt(furniturePrompt);
 
   // Pass 1 (surfaces): lower guidance to stay closer to input geometry
   // Pass 2 (furniture): slightly higher guidance to ensure furniture appears
@@ -211,6 +192,7 @@ async function tryFluxDepth(
     {
       input: {
         prompt,
+        negative_prompt: FLUX_NEGATIVE_PROMPT,
         control_image: dataUri,
         width,
         height,
@@ -245,7 +227,8 @@ async function tryFluxDepth(
 // ─── Generate one pass with fallback ─────────────────────────────────
 async function generatePass(
   base64Image: string,
-  stylePrompt: string,
+  surfacePrompt: string,
+  furniturePrompt: string,
   pass: 1 | 2,
   outputSize: { openai: string; w: number; h: number }
 ): Promise<{ image: string; model: string }> {
@@ -254,7 +237,7 @@ async function generatePass(
 
   if (process.env.OPENAI_API_KEY) {
     try {
-      return await tryOpenAIResponses(base64Image, stylePrompt, pass, outputSize.openai);
+      return await tryOpenAIResponses(base64Image, surfacePrompt, furniturePrompt, pass, outputSize.openai);
     } catch (err) {
       openaiError = err instanceof Error ? err : new Error(String(err));
       console.error(`OpenAI pass ${pass} failed:`, openaiError.message);
@@ -263,7 +246,7 @@ async function generatePass(
 
   if (process.env.REPLICATE_API_TOKEN) {
     try {
-      return await tryFluxDepth(base64Image, stylePrompt, pass, outputSize.w, outputSize.h);
+      return await tryFluxDepth(base64Image, surfacePrompt, furniturePrompt, pass, outputSize.w, outputSize.h);
     } catch (err) {
       replicateError = err instanceof Error ? err : new Error(String(err));
       console.error(`Flux Depth pass ${pass} failed:`, replicateError.message);
@@ -296,9 +279,10 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { image, stylePrompt, width, height } = body as {
+    const { image, surfacePrompt, furniturePrompt, width, height } = body as {
       image: string;
-      stylePrompt: string;
+      surfacePrompt: string;
+      furniturePrompt: string;
       width?: number;
       height?: number;
     };
@@ -306,7 +290,7 @@ export async function POST(request: NextRequest) {
     // Calculate output size matching the input aspect ratio
     const outputSize = getOutputSize(width, height);
 
-    if (!image || !stylePrompt || !stylePrompt.trim()) {
+    if (!image || !surfacePrompt || !furniturePrompt) {
       return NextResponse.json(
         { error: "Image et style requis" },
         { status: 400 }
@@ -324,16 +308,17 @@ export async function POST(request: NextRequest) {
     }
 
     // ── Pipeline 2 passes ────────────────────────────────────────────
-    // Pass 1: Finish surfaces (walls, floor, ceiling) — room stays empty
-    // Pass 2: Add furniture on the finished room — surfaces untouched
-    const trimmedStyle = stylePrompt.trim();
+    // Pass 1: Finish surfaces using surfacePrompt — room stays empty
+    // Pass 2: Add furniture using furniturePrompt — surfaces untouched
+    const trimmedSurface = surfacePrompt.trim();
+    const trimmedFurniture = furniturePrompt.trim();
 
     console.log(`Starting pass 1 (surfaces)... Output size: ${outputSize.openai}`);
-    const pass1 = await generatePass(base64Image, trimmedStyle, 1, outputSize);
+    const pass1 = await generatePass(base64Image, trimmedSurface, trimmedFurniture, 1, outputSize);
     const pass1Base64 = pass1.image.replace(/^data:image\/[\w+]+;base64,/, "");
 
     console.log("Starting pass 2 (furniture)...");
-    const pass2 = await generatePass(pass1Base64, trimmedStyle, 2, outputSize);
+    const pass2 = await generatePass(pass1Base64, trimmedSurface, trimmedFurniture, 2, outputSize);
 
     return NextResponse.json({
       image: pass2.image,
