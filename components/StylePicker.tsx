@@ -18,7 +18,7 @@ const STYLES: StyleOption[] = [
     description: "Bois clair, tons neutres, épure absolue",
     emoji: "🪵",
     surfacePrompt:
-      "Scandinavian minimalist: pale matte white walls, light oak hardwood floor in soaped or whitewashed finish with visible grain, smooth white ceiling, simple matte black flush-mount ceiling light",
+      "Scandinavian minimalist: pale matte white walls, light oak hardwood floor in soaped whitewashed finish with visible grain, smooth white ceiling, simple matte black flush-mount ceiling light",
     furniturePrompt:
       "Scandinavian furniture with clean geometric lines: large straight three-seat sofa in oatmeal boucle with low squared arms and birch legs 230cm wide, light birch rectangular coffee table with slim tapered legs 120cm, cream wool loop-pile area rug 200x300cm, matte black arched floor lamp with rounded matte white dome shade as signature pendant, sheepskin throw draped over one sofa arm, white ceramic ribbed vases and taper candles on the table, small round birch side table with stacked design books, potted trailing pothos in light grey stoneware planter, dried birch branches in a tall cylindrical stoneware vase, two textured linen cushions in dusty blue and warm grey",
   },
@@ -28,9 +28,9 @@ const STYLES: StyleOption[] = [
     description: "Lignes nettes, palette sobre, modernité",
     emoji: "◻️",
     surfacePrompt:
-      "Contemporary modern: warm grey matte walls keeping the same overall brightness as the input photo, large-format light stone tile refinish with minimal grout lines, smooth white ceiling, minimal recessed downlights or slim track lighting in matte black",
+      "Contemporary modern: warm grey matte walls keeping the same overall brightness as the input photo, large-format light stone tile refinish with minimal grout lines, smooth white ceiling, slim linear track lighting in matte black",
     furniturePrompt:
-      "Contemporary furniture: large low-profile L-shaped sectional sofa in charcoal premium bouclé with slim brushed steel legs 280cm, sculptural smoked glass coffee table on brushed brass pedestal base 110cm, heathered grey thick wool area rug 250x350cm, brushed brass arc floor lamp with frosted globe shade, single large abstract canvas leaning against the wall on the floor, architectural coffee table books in a neat stack, tall matte white sculptural ceramic object on a slim black metal pedestal, potted architectural snake plant in matte black cylinder planter, two charcoal and cream geometric cushions",
+      "Contemporary furniture: large low-profile L-shaped sectional sofa in charcoal premium bouclé with slim brushed steel legs 280cm, sculptural smoked glass coffee table on brushed brass pedestal base 110cm, heathered grey thick wool area rug 250x350cm, brushed brass arc floor lamp with frosted globe shade, single large abstract canvas propped on the floor against the baseboard, architectural coffee table books in a neat stack, tall matte white sculptural ceramic object on a slim black metal pedestal, potted architectural snake plant in matte black cylinder planter, two charcoal and cream geometric cushions",
   },
   {
     id: "industrial",
@@ -60,7 +60,7 @@ const STYLES: StyleOption[] = [
     surfacePrompt:
       "Art Deco: warm ivory matte walls with smooth finish keeping the same overall brightness as the input photo, dark stained herringbone parquet refinish on the existing floor, smooth ceiling with clean plaster edge, brass and frosted glass geometric pendant chandelier",
     furniturePrompt:
-      "Art Deco furniture: channel-tufted velvet sofa in deep emerald green with polished brass legs 230cm wide arranged symmetrically in the room, round polished brass coffee table with smoked glass top on pedestal base 90cm diameter, geometric patterned area rug in black gold and cream 200x300cm, fluted dark lacquer drinks cabinet with brass handles 120cm tall, marble-top brass side table with crystal decanter and gold-rimmed glasses, tall brass floor lamp with pleated cream silk shade, brass sunburst mirror leaning against the wall on the drinks cabinet as signature piece, potted areca palm in polished brass planter, matching pair of brass table lamps on side tables flanking the sofa, velvet cushions in sapphire and gold with geometric patterns",
+      "Art Deco furniture: channel-tufted velvet sofa in deep emerald green with polished brass legs 230cm wide arranged symmetrically in the room, round polished brass coffee table with smoked glass top on pedestal base 90cm diameter, geometric patterned area rug in black gold and cream 200x300cm, fluted dark lacquer drinks cabinet with brass handles 120cm tall, marble-top brass side table with crystal decanter and gold-rimmed glasses, tall brass floor lamp with pleated cream silk shade, brass sunburst mirror resting on top of the drinks cabinet as signature piece, potted areca palm in polished brass planter, matching pair of brass table lamps on side tables flanking the sofa, velvet cushions in sapphire and gold with geometric patterns",
   },
   {
     id: "mid-century",
@@ -70,7 +70,7 @@ const STYLES: StyleOption[] = [
     surfacePrompt:
       "Mid-Century Modern: warm white walls with slight cream undertone keeping the same overall brightness as the input photo, warm walnut-toned refinish on the existing floor with medium grain, smooth white ceiling, Sputnik-style brass and black multi-arm ceiling light",
     furniturePrompt:
-      "Mid-Century Modern furniture: curved organic sofa in mustard woven fabric with walnut tapered legs 220cm wide, sculptural free-form walnut coffee table with biomorphic shape 120cm, warm-toned geometric area rug in cream mustard and teal 200x300cm, walnut credenza with sliding doors and brass pulls 160cm wide against the wall, black leather and walnut bentwood lounge chair with matching ottoman, brass arc floor lamp with white dome shade, potted fiddle leaf fig in warm terracotta planter, stacked vintage design books and small brass starburst clock on the credenza, two cushions in teal and burnt orange",
+      "Mid-Century Modern furniture: curved organic sofa in mustard woven fabric with walnut tapered legs 220cm wide, sculptural free-form walnut coffee table with biomorphic shape 120cm, warm-toned geometric area rug in cream mustard and teal 200x300cm, walnut credenza with sliding doors and brass pulls 160cm wide placed along the back of the room, black leather and walnut bentwood lounge chair with matching ottoman, brass arc floor lamp with white dome shade, potted fiddle leaf fig in warm terracotta planter, stacked vintage design books and small brass starburst clock on the credenza, two cushions in teal and burnt orange",
   },
   {
     id: "bohemian",
@@ -80,7 +80,7 @@ const STYLES: StyleOption[] = [
     surfacePrompt:
       "Bohemian: warm off-white walls with subtle handmade plaster texture keeping the same overall brightness as the input photo, warm natural wood plank refinish with visible knots, smooth white ceiling, woven rattan pendant light in natural tone",
     furniturePrompt:
-      "Bohemian furniture: deep low linen sofa in natural ecru with layered kilim and mudcloth cushions in terracotta rust and indigo 220cm wide, round reclaimed wood coffee table with organic edge 90cm diameter, layered rugs — faded vintage Persian rug over natural jute rug 200x300cm, rattan peacock chair with sheepskin throw draped over, woven leather floor pouf in cognac, abundant trailing pothos and monstera in terracotta and woven basket pots, brass Moroccan-style pierced lantern on the floor, wooden tray with pillar candles and dried pampas grass on the table, macramé plant holder on a tall freestanding wooden tripod stand resting on the floor",
+      "Bohemian furniture: deep low linen sofa in natural ecru with layered kilim and mudcloth cushions in terracotta rust and indigo 220cm wide, round reclaimed wood coffee table with organic edge 90cm diameter, faded vintage Persian rug layered over natural jute rug 200x300cm, rattan peacock chair with sheepskin throw draped over, two trailing pothos in terracotta pots and one monstera in a woven basket, brass Moroccan-style pierced lantern on the floor, wooden tray with pillar candles and dried pampas grass on the table, tall freestanding wooden tripod plant stand with trailing pothos",
   },
   {
     id: "haussmannian",
@@ -90,7 +90,7 @@ const STYLES: StyleOption[] = [
     surfacePrompt:
       "Haussmannian Parisian: soft warm grey walls with smooth matte finish keeping the same overall brightness as the input photo, light oak herringbone parquet refinish with classic proportions, smooth white ceiling with clean finish, elegant contemporary pendant light in brass and white glass",
     furniturePrompt:
-      "Haussmannian furniture: velvet sofa with curved back and turned dark wood legs in muted sage green 220cm wide, contemporary round white marble coffee table with slim brass legs 90cm diameter, elegant wool area rug in soft grey and cream 200x300cm, upholstered Louis XV-style bergère armchair in dusty blue velvet, oversized gilded frame mirror leaning against the wall on the floor 150cm tall, sculptural contemporary brass floor lamp with linen shade, art books and ceramic objects on the table, potted white orchid in simple white ceramic pot, brass candlesticks on a slim marble console table against the wall",
+      "Haussmannian furniture: velvet sofa with curved back and turned dark wood legs in muted sage green 220cm wide, contemporary round white marble coffee table with slim brass legs 90cm diameter, elegant wool area rug in soft grey and cream 200x300cm, classic bergère armchair with curved cabriole legs in dusty blue velvet, oversized gilded frame mirror propped on the floor leaning at an angle 150cm tall, sculptural contemporary brass floor lamp with linen shade, art books and ceramic objects on the table, potted white orchid in simple white ceramic pot, brass candlesticks on a slim marble console table placed along the back of the room",
   },
   {
     id: "mediterranean",
@@ -108,9 +108,9 @@ const STYLES: StyleOption[] = [
     description: "Textures douces, tons chauds, cocooning",
     emoji: "🛋️",
     surfacePrompt:
-      "Modern cozy: warm cream matte walls keeping the same overall brightness as the input photo, light oak or warm-toned wood refinish with gentle grain, smooth white ceiling, fabric drum pendant light in warm oatmeal tone with soft diffused glow",
+      "Modern cozy: warm cream matte walls keeping the same overall brightness as the input photo, light oak wood refinish with gentle warm grain, smooth white ceiling, fabric drum pendant light in warm oatmeal tone",
     furniturePrompt:
-      "Modern cozy furniture with organic rounded forms: oversized deep boucle sofa in warm cream with plump rounded arms and wide cushioned seats 260cm wide, oversized round shearling floor pouf in natural cream 60cm diameter as signature cocooning piece, round light oak coffee table with thick turned legs 100cm diameter, layered wool area rug in cream and soft blush 200x300cm, chunky hand-knit throw blanket in cream draped over one armrest, cushions in cream camel and soft blush textures, natural sheepskin rug draped beside the sofa, soft fabric table lamp with warm glow on a round oak side table, camel boucle reading armchair with cashmere throw, pillar candles and stacked linen-bound books on the coffee table",
+      "Modern cozy furniture with organic rounded forms: oversized deep boucle sofa in warm cream with plump rounded arms and wide cushioned seats 260cm wide, oversized round shearling floor pouf in natural cream 60cm diameter as signature cocooning piece, round light oak coffee table with thick turned legs 100cm diameter, layered wool area rug in cream and soft blush 200x300cm, chunky hand-knit throw blanket in cream draped over one armrest, cushions in cream camel and soft blush textures, natural sheepskin rug draped beside the sofa, soft fabric table lamp in cream tone on a round oak side table, camel boucle reading armchair with cashmere throw, pillar candles and stacked linen-bound books on the coffee table, trailing dark green pothos in a matte charcoal pot on the side table",
   },
   {
     id: "wabi-sabi",
@@ -128,9 +128,9 @@ const STYLES: StyleOption[] = [
     description: "Couleurs vives, motifs audacieux, personnalité",
     emoji: "🎨",
     surfacePrompt:
-      "Maximalist eclectic: rich deep teal or plum accent on one wall with remaining walls in warm white keeping the same overall brightness as the input photo, polished dark wood refinish on the existing floor, smooth white ceiling, dramatic sculptural pendant light in brass with colored glass elements",
+      "Maximalist eclectic: rich deep teal accent on the largest visible surface with remaining areas in warm white keeping the same overall brightness as the input photo, polished dark wood refinish on the existing floor, smooth white ceiling, dramatic sculptural pendant light in brass with colored glass elements",
     furniturePrompt:
-      "Maximalist furniture: bold jewel-toned velvet sofa in fuchsia or cobalt blue with brass legs 230cm wide, ornate round coffee table in lacquered color with brass inlay 100cm, layered rugs mixing faded vintage Persian and contemporary bold graphic patterns 200x300cm, eclectic collection of framed artwork leaning against walls on the floor, sculptural brass floor lamp with oversized colored shade, one cushion in animal print velvet and one in bold geometric stripe, large potted monstera in colorful glazed ceramic pot, brass and marble side table with art books and curated objects, vintage brass tray with pillar candles on the coffee table",
+      "Maximalist furniture: bold jewel-toned velvet sofa in deep cobalt blue with brass legs 230cm wide, ornate round coffee table in lacquered color with brass inlay 100cm, layered rugs mixing faded vintage Persian and contemporary bold graphic patterns 200x300cm, two framed art prints propped on the floor against the baseboard, sculptural brass floor lamp with oversized colored shade, one cushion in animal print velvet and one in bold geometric stripe, large potted monstera in colorful glazed ceramic pot, brass and marble side table with stacked art books and two curated objects, vintage brass tray with pillar candles on the coffee table",
   },
 ];
 
