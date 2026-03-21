@@ -40,13 +40,13 @@ function buildGPTPrompt(stylePrompt: string): string {
   return [
     "Edit this photo of a room.",
     "Keep the exact same camera angle, perspective, lens distortion, vanishing points, walls, ceiling, floor shape, windows, and doors.",
-    "Preserve exact window positions and sizes.",
+    "Preserve exact window positions and sizes. Preserve any visible beams, rafters, or ceiling structure.",
     "Make the surfaces look finished: clean smooth painted walls, clean ceiling, polished or finished floor.",
     "Add one ceiling light fixture appropriate for the space.",
     "Keep the room completely empty — no furniture, no rugs, no decoration.",
     `Wall and floor color palette inspired by: ${stylePrompt}.`,
     "Preserve the existing lighting conditions, light direction, shadows, and color temperature exactly as they appear in this photo.",
-    "DSLR full-frame camera, wide-angle lens, deep depth of field, sharp focus throughout.",
+    "DSLR full-frame 16-35mm f/8, deep depth of field, sharp focus throughout.",
   ].join(" ");
 }
 
@@ -54,9 +54,10 @@ function buildDalle2Prompt(stylePrompt: string): string {
   const prompt = [
     `A clean finished empty room with ${stylePrompt} color palette.`,
     "Smooth painted walls, polished floor, clean ceiling with one light fixture.",
+    "Preserve any visible beams or ceiling structure.",
     "No furniture, no rugs, no decoration.",
     "Same perspective and lighting as original photo.",
-    "DSLR wide-angle interior photograph, deep depth of field, sharp focus.",
+    "DSLR 16-35mm f/8 wide-angle interior photograph, deep depth of field, sharp focus.",
   ].join(" ");
   return prompt.slice(0, 1000);
 }
@@ -64,10 +65,10 @@ function buildDalle2Prompt(stylePrompt: string): string {
 function buildSDXLPrompt(stylePrompt: string): string {
   return [
     `${stylePrompt} color palette, clean finished empty room.`,
-    "Smooth painted walls, polished floor, clean ceiling, one ceiling light fixture.",
+    "Smooth painted walls, polished floor, clean ceiling, one ceiling light fixture, preserve beams.",
     "No furniture, no rugs, no decoration.",
     "Same room same angle same perspective same lighting.",
-    "DSLR wide-angle interior photograph, deep depth of field, sharp focus.",
+    "DSLR 16-35mm f/8 interior photograph, deep depth of field, sharp focus.",
   ].join(" ");
 }
 
