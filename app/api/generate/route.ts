@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import Replicate from "replicate";
-import sharp from "sharp";
 
 // ─── Rate Limiting (in-memory, IP-based) ────────────────────────────
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
@@ -101,41 +100,19 @@ async function tryOpenAI(
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
   const imageBuffer = Buffer.from(imageBase64, "base64");
-
-  // Convert input to PNG (required for images.edit with mask)
-  const pngBuffer = await sharp(imageBuffer).png().toBuffer();
-  const imageFile = new File([new Uint8Array(pngBuffer)], "input.png", {
-    type: "image/png",
-  });
-
-  // Create a fully transparent mask (alpha=0 everywhere).
-  // This tells GPT-image-1 "every pixel is editable" while still using
-  // the input image as geometric reference. Without this mask, the model
-  // defaults to ultra-conservative behavior and changes almost nothing.
-  const metadata = await sharp(imageBuffer).metadata();
-  const maskWidth = metadata.width || 1024;
-  const maskHeight = metadata.height || 1024;
-  const transparentMaskBuffer = await sharp({
-    create: {
-      width: maskWidth,
-      height: maskHeight,
-      channels: 4,
-      background: { r: 0, g: 0, b: 0, alpha: 0 },
-    },
-  })
-    .png()
-    .toBuffer();
-  const maskFile = new File([new Uint8Array(transparentMaskBuffer)], "mask.png", {
+  const imageFile = new File([new Uint8Array(imageBuffer)], "input.png", {
     type: "image/png",
   });
 
   const size = getOpenAISize(width, height);
 
+  // GPT-image-1 images.edit without mask — used as fallback only.
+  // Without mask the model is conservative, but combined with a strong
+  // action-descriptive prompt it can still make surface changes.
   try {
     const response = await openai.images.edit({
       model: "gpt-image-1",
       image: imageFile,
-      mask: maskFile,
       prompt,
       n: 1,
       size,
@@ -158,14 +135,13 @@ async function tryOpenAI(
   }
 
   // Fallback: dall-e-2 (256/512/1024 only)
-  const dalleFile = new File([new Uint8Array(pngBuffer)], "input.png", {
+  const dalleFile = new File([new Uint8Array(imageBuffer)], "input.png", {
     type: "image/png",
   });
 
   const response = await openai.images.edit({
     model: "dall-e-2",
     image: dalleFile,
-    mask: maskFile,
     prompt: buildDalle2Prompt(stylePrompt),
     n: 1,
     size: "1024x1024",
@@ -192,8 +168,10 @@ async function tryReplicate(
 
   const dataUri = `data:image/jpeg;base64,${imageBase64}`;
 
-  // prompt_strength 0.35 = very conservative edit.
-  // We only want to clean surfaces — minimal change = maximal geometry preservation.
+  // prompt_strength 0.50 = balanced edit.
+  // 0.35 was too conservative (no visible changes).
+  // 0.50 = 50% input preservation + 50% prompt influence — enough to change
+  // surfaces (floor, walls, ceiling) while keeping room geometry.
   const output = await replicate.run(
     "stability-ai/sdxl:7762fd07cf82c948538e41f63f77d685e02b063e37e496e96eefd46c929f9bdc" as `${string}/${string}:${string}`,
     {
@@ -201,7 +179,7 @@ async function tryReplicate(
         image: dataUri,
         prompt: buildSDXLPrompt(stylePrompt),
         negative_prompt: SDXL_NEGATIVE_PROMPT,
-        prompt_strength: 0.35,
+        prompt_strength: 0.50,
         num_outputs: 1,
         guidance_scale: 8.5,
         num_inference_steps: 40,
@@ -268,19 +246,10 @@ export async function POST(request: NextRequest) {
 
     const prompt = buildGPTPrompt(stylePrompt.trim());
 
-    // Try OpenAI first, then Replicate as fallback
-    let openaiError: Error | null = null;
+    // Try Replicate SDXL first (designed for img2img with prompt_strength control),
+    // then OpenAI as fallback (images.edit is inpainting, not ideal for surface editing).
     let replicateError: Error | null = null;
-
-    if (process.env.OPENAI_API_KEY) {
-      try {
-        const result = await tryOpenAI(base64Image, prompt, stylePrompt.trim(), width, height);
-        return NextResponse.json(result);
-      } catch (err) {
-        openaiError = err instanceof Error ? err : new Error(String(err));
-        console.error("OpenAI failed:", openaiError.message);
-      }
-    }
+    let openaiError: Error | null = null;
 
     if (process.env.REPLICATE_API_TOKEN) {
       try {
@@ -288,11 +257,21 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(result);
       } catch (err) {
         replicateError = err instanceof Error ? err : new Error(String(err));
-        console.error("Replicate also failed:", replicateError.message);
+        console.error("Replicate failed:", replicateError.message);
       }
     }
 
-    if (!process.env.OPENAI_API_KEY && !process.env.REPLICATE_API_TOKEN) {
+    if (process.env.OPENAI_API_KEY) {
+      try {
+        const result = await tryOpenAI(base64Image, prompt, stylePrompt.trim(), width, height);
+        return NextResponse.json(result);
+      } catch (err) {
+        openaiError = err instanceof Error ? err : new Error(String(err));
+        console.error("OpenAI also failed:", openaiError.message);
+      }
+    }
+
+    if (!process.env.REPLICATE_API_TOKEN && !process.env.OPENAI_API_KEY) {
       return NextResponse.json(
         { error: "Aucune clé API configurée. Veuillez configurer OPENAI_API_KEY ou REPLICATE_API_TOKEN." },
         { status: 500 }
@@ -300,8 +279,8 @@ export async function POST(request: NextRequest) {
     }
 
     const details: string[] = [];
-    if (openaiError) details.push(`OpenAI : ${openaiError.message}`);
     if (replicateError) details.push(`Replicate : ${replicateError.message}`);
+    if (openaiError) details.push(`OpenAI : ${openaiError.message}`);
 
     return NextResponse.json(
       { error: `Échec de la génération. ${details.join(" | ")}` },
