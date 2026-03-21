@@ -18,7 +18,7 @@ const STYLES: StyleOption[] = [
     description: "Bois clair, tons neutres, épure absolue",
     emoji: "🪵",
     surfacePrompt:
-      "Scandinavian minimalist: pale matte white walls, light oak hardwood floor in soaped whitewashed finish with visible grain, smooth white ceiling, simple matte black flush-mount ceiling light",
+      "Scandinavian minimalist: soft white walls keeping the same overall brightness as the input photo, light-toned matte finish on existing floor preserving the material, smooth white ceiling, preserve existing ceiling light",
     furniturePrompt:
       "Scandinavian furniture with clean geometric lines: large straight three-seat sofa in oatmeal boucle with low squared arms and birch legs 230cm wide, light birch rectangular coffee table with slim tapered legs 120cm, cream wool loop-pile area rug 200x300cm, matte black arched floor lamp with rounded matte white dome shade as signature pendant, sheepskin throw draped over one sofa arm, white ceramic ribbed vases and taper candles on the table, small round birch side table with stacked design books, potted trailing pothos in light grey stoneware planter, dried birch branches in a tall cylindrical stoneware vase, two textured linen cushions in dusty blue and warm grey",
   },
@@ -68,9 +68,9 @@ const STYLES: StyleOption[] = [
     description: "Lignes organiques, bois chaud, vintage chic",
     emoji: "🪑",
     surfacePrompt:
-      "Mid-Century Modern: warm white walls with slight cream undertone keeping the same overall brightness as the input photo, warm walnut-toned refinish on the existing floor with medium grain, smooth white ceiling, Sputnik-style brass and black multi-arm ceiling light",
+      "Mid-Century Modern: soft white walls with barely visible warm tint keeping the same overall brightness as the input photo, warm-toned matte finish on existing floor preserving the material, smooth white ceiling, preserve existing ceiling light",
     furniturePrompt:
-      "Mid-Century Modern furniture, all pieces raised on legs with visible daylight beneath: curved organic sofa in mustard woven fabric with walnut tapered legs 220cm wide, sculptural free-form walnut coffee table with biomorphic shape 120cm, warm-toned geometric area rug in cream mustard and teal 200x300cm, walnut credenza with sliding doors and brass pulls 160cm wide placed along the back of the room, black leather and walnut bentwood lounge chair with matching ottoman, brass arc floor lamp with white dome shade, potted fiddle leaf fig in warm terracotta planter, stacked vintage design books and small brass starburst clock on the credenza, two cushions in teal and burnt orange",
+      "Mid-Century Modern furniture, all pieces raised on legs with visible daylight beneath, Sputnik-style brass and black multi-arm ceiling light as signature pendant: curved organic sofa in mustard woven fabric with walnut tapered legs 220cm wide, sculptural free-form walnut coffee table with biomorphic shape 120cm, warm-toned geometric area rug in cream mustard and teal 200x300cm, walnut credenza with sliding doors and brass pulls 160cm wide placed along the back of the room, black leather and walnut bentwood lounge chair with matching ottoman, brass arc floor lamp with white dome shade, potted fiddle leaf fig in warm terracotta planter, stacked vintage design books and small brass starburst clock on the credenza, two cushions in teal and burnt orange",
   },
   {
     id: "bohemian",
