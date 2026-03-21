@@ -52,7 +52,7 @@ function buildDalle2Prompt(stylePrompt: string): string {
 }
 
 function buildSDXLPrompt(stylePrompt: string): string {
-  return `Stunning fully furnished living room, Architectural Digest. ${stylePrompt}. Large sofa, coffee table, armchairs, area rug, curtains, lamps, framed wall art, potted plants, styled side tables. Clean walls, polished floors. DSLR wide-angle interior photograph, natural daylight, photorealistic.`;
+  return `Stunning fully furnished living room, Architectural Digest. ${stylePrompt}. Large sofa, coffee table, armchairs, area rug, curtains, lamps, framed wall art, potted plants, styled side tables. Clean walls, polished floors. Same camera angle and perspective as original photo. DSLR wide-angle interior photograph, natural daylight, photorealistic.`;
 }
 
 const SDXL_NEGATIVE_PROMPT = "empty room, unfurnished, bare walls, no furniture, empty floor, construction site, exposed wires, electrical cables, raw concrete, raw plaster, unfinished, sparse, minimal furniture, blurry, cartoon, painting, 3D render, floating furniture, unrealistic scale, watermark, text, oversaturated, shallow depth of field, bokeh";
