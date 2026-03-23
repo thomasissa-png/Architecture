@@ -160,20 +160,25 @@ export default function AdminPage() {
 
   const auditPromptText = `Fais appel aux agents Architecte d'Interieur (Yann Duval) et Expert IA Image (Lucas Moreau) pour auditer les generations recentes de production.
 
-Workflow :
-1. Consulte /api/logs pour lister les generations recentes (style, duree, succes/erreur)
-2. Pour chaque generation, ouvre le detail et examine :
-   - L'image INPUT (photo de depart)
-   - L'image PASSE 1 (surfaces finies, piece vide)
-   - L'image OUTPUT (piece meublee finale)
-   - Le prompt construit passe 1 et passe 2
-3. Yann evalue : fidelite stylistique, composition, echelle mobilier, coherence matieres, credibilite pro, differenciation entre styles
-4. Lucas evalue : preservation geometrie, lumiere/ombres, photorealisme, absence d'artefacts IA, coherence I/O, qualite photographique
-5. Chaque agent attribue une note /10 par generation avec sa grille complete (10 criteres chacun)
-6. Identifie les patterns recurrents (problemes communs a plusieurs generations)
-7. Propose des corrections concretes (prompts, parametres, pipeline) classees par priorite (P0-P4)
+Methode d'acces aux donnees de production :
+- Utilise WebFetch sur https://architecture-toum92.replit.app/api/logs pour recuperer TOUS les logs (style, duree, succes, prompts construits, chemins images)
+- Pour les images : WebFetch sur https://architecture-toum92.replit.app/api/logs/image?file={filename} (le filename est dans input_image_path, pass1_image_path, output_image_path)
+- Note : les images peuvent etre indisponibles (404) si le serveur a ete redeploy depuis la generation. Dans ce cas, auditer sur la base des prompts construits.
 
-Demande : "Fais appel a l'agent Architecte d'Interieur et a l'agent Expert IA Image pour auditer toutes les generations depuis le dernier audit. Donne la note de chaque generation, identifie les patterns de problemes recurrents, et propose un plan d'amelioration prioritaire."`;
+Workflow d'audit :
+1. Recupere les logs via l'API production (WebFetch sur /api/logs)
+2. Identifie les generations NOUVELLES depuis le dernier audit (voir CLAUDE.md pour le numero du dernier audit)
+3. Pour chaque generation, examine :
+   - Les images INPUT, PASSE 1 et OUTPUT (via /api/logs/image?file=...)
+   - Le prompt construit passe 1 (built_prompt_pass1) et passe 2 (built_prompt_pass2)
+   - Le style utilise, la duree par passe, le modele utilise
+4. Yann evalue (grille 10 criteres, fidelite et credibilite comptent double) : fidelite stylistique, vocabulaire visuel, hero pieces, coherence matieres, eclairage, credibilite pro, completude, differenciation, adaptabilite spatiale, potentiel photorealiste
+5. Lucas evalue (grille 10 criteres, preservation et rendu comptent double) : preservation architecturale, contraintes lumiere, vocabulaire photo, structure prompt, negative prompting, compatibilite multi-modeles, coherence I/O, richesse descriptive, adaptabilite conditions variables, rendu final credible
+6. Note /10 par generation + classement comparatif
+7. Patterns recurrents (problemes communs a plusieurs generations)
+8. Plan d'amelioration prioritaire (P0-P4) avec corrections concretes de prompts/parametres
+
+Demande type : "Fais appel a l'agent Architecte d'Interieur et a l'agent Expert IA Image pour auditer toutes les generations depuis le dernier audit. Donne la note de chaque generation, identifie les patterns de problemes recurrents, et propose un plan d'amelioration prioritaire."`;
 
   return (
     <div style={{ padding: "24px 32px", fontFamily: "Inter, sans-serif", maxWidth: 1400, margin: "0 auto" }}>
