@@ -504,6 +504,26 @@ agents/
     - Le lampadaire arc et le pothos sont des "marqueurs IA" generiques — chaque style doit avoir ses propres luminaires et plantes
     - Les directives de placement spatial ("placed along the back") sont fragiles — preferer des termes compositionnels ("background anchor")
 
+### Sprint 17b — Audit production croise (28 generations, #1 a #28)
+138. Audit complet des 28 generations de production via API Replit /api/logs
+139. Progression des notes par version de builders :
+    - Anciens builders (#1-11) : moyenne Lucas 5.8/10
+    - Transition (#12-17) : moyenne Lucas 7.3/10
+    - Post-Sprint 17 (#18-28) : moyenne Lucas 8.4/10 (+2.6 pts)
+140. Meilleures generations : #28 Scandinavian 8.4/10, #18 Art Deco 8.3/10, #22-26 Japandi 7.9/10
+141. Pires generations : #13 Custom FR brut 3.3/10, #17 Custom cuisine FR 3.5/10
+142. CRITIQUE : Images de production inaccessibles (404) — Replit wipe le filesystem au redeploy
+    - Toutes les images dans public/logs/ sont perdues a chaque deploy
+    - Action P0 : migrer vers un stockage persistant (Replit Object Storage, S3, ou Cloudflare R2)
+143. HAUTE : Pre-processing custom insuffisant pour les built-ins
+    - "kitchen island" passe le filtre alors que c'est un meuble encastre
+    - Action : renforcer les regles de filtrage dans le system prompt de GPT-4.1-mini
+144. MOYENNE : 7/12 styles jamais testes en pipeline 2 passes complet
+    - Styles non testes : Contemporain, Boheme, Mediterraneen (2 passes), Cosy (avec corrections Sprint 17), Wabi-Sabi, Maximaliste, Haussmannien
+145. Page /admin : prompt d'audit agents ajoute en banner (collapsible + copier)
+    - Workflow complet avec methode d'acces via WebFetch sur API production
+    - Permet de lancer un audit en une seule commande dans une nouvelle session
+
 ## Regles de Developpement
 
 - Design minimaliste, pas de surcharge visuelle
