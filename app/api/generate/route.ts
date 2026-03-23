@@ -64,7 +64,7 @@ function buildSurfacesResponsesPrompt(surfacePrompt: string): string {
     "Keep the room COMPLETELY EMPTY — no furniture, no rugs, no textiles, no decoration, no objects.",
     "The number of windows and doors must be EXACTLY the same as in the input. If there are zero windows, there must be zero windows in the output.",
     "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation.",
-    "Preserve the existing light direction, shadow angles, shadow intensity, color temperature, and highlight/shadow distribution. The overall room may appear slightly brighter due to lighter surfaces — this is acceptable — but shadow patterns and light gradients must remain in the same positions and relative intensity. Keep the original light falloff from windows to back wall — do not artificially brighten dark areas.",
+    "Preserve the existing light direction, shadow angles, shadow intensity, color temperature, and highlight/shadow distribution. The overall room may appear slightly brighter due to lighter surfaces — this is acceptable — but shadow patterns and light gradients must remain in the same positions and relative intensity. Keep the original light distribution — do not artificially brighten darker areas.",
     "DSLR full-frame wide-angle 16-35mm f/8, deep depth of field, sharp focus throughout, subtle sensor grain (ISO 200), natural corner vignetting. No text, watermarks, or logos in the output.",
   ].join(" ");
 }
@@ -88,8 +88,9 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string): string {
     "Distribute furniture across the FULL DEPTH and WIDTH of the room. If the room is deep or has multiple zones (e.g. under a mezzanine, an alcove, a back area), place a primary furniture group in the foreground AND a secondary group further back (reading nook, small desk, console table, side chair). If the room is also wide, add a lateral anchor (accent chair, floor lamp, or side table) on the opposite side to balance the composition. Do not leave the back or sides of the room empty.",
     "Place all objects naturally on the existing floor. Every piece of furniture — including those in the back of the room — must have correct perspective, scale, and cast realistic shadows consistent with the existing light direction and intensity. Match shadow hardness to the lighting type: soft diffused shadows for overcast or indirect light, hard-edged shadows for direct sunlight.",
     "If the ceiling appears very high (double height, >3m) or the room is very large, scale up furniture proportionally — use larger modular pieces, taller floor lamps, and more imposing accent furniture to match the volume.",
+    "Respect the furniture density implied by the style description. If the style is minimalist, leave large areas of empty floor visible. If the room appears small, reduce accent pieces — skip secondary items rather than cramming everything in.",
     "ONLY add freestanding objects that rest on the floor or sit on existing surfaces. Do NOT attach anything to walls. No wall-mounted art, no built-in shelving, no curtains.",
-    "Room structure is LOCKED: every wall, window, door, ceiling, and floor surface must remain pixel-identical to the input. No new openings, no color shift on any surface.",
+    "Room structure is LOCKED: every wall, window, door, ceiling, and floor surface must remain visually identical to the input — same colors, same textures, same geometry. Shadows cast by new furniture on walls and floor are expected and natural. No new openings.",
     "If the input has zero windows, the output must have zero windows.",
     "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation.",
     "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, subtle sensor grain (ISO 200), natural corner vignetting. Photo-realistic interior photograph. No text, watermarks, or logos in the output.",
@@ -102,7 +103,7 @@ function buildFurnitureFluxPrompt(furniturePrompt: string): string {
     "Distribute furniture in depth and width: primary group in foreground, secondary group in the back if space allows, lateral anchor (accent chair, floor lamp) on the opposite side if room is wide. Do not leave rear or side areas empty.",
     "Shadow hardness matches lighting: soft for diffused light, hard for direct sunlight. Scale furniture up if ceiling is very high.",
     "Freestanding furniture only. No wall-mounted objects, no built-in shelving, no curtains.",
-    "Every wall, floor, and ceiling surface identical to input — same colors, same textures, no new openings.",
+    "Every wall, floor, and ceiling surface visually identical to input — same colors, same textures. Shadows from furniture are natural. No new openings.",
     "Same room geometry, same proportions, same camera angle, same lighting conditions.",
     "Photo-realistic interior photograph, DSLR full-frame 16-35mm f/8, deep DOF, sharp focus, subtle film grain.",
   ].join(" ");
@@ -110,7 +111,7 @@ function buildFurnitureFluxPrompt(furniturePrompt: string): string {
 
 // Flux Depth Pro negative prompt — prevents common artifacts
 const FLUX_NEGATIVE_PROMPT =
-  "distorted perspective, fisheye, stretched walls, shallow depth of field, bokeh, cartoon, illustration, 3D render, CGI, plastic, watermark, text, blurry, overexposed windows, extra windows, extra doors, floating furniture, dangling cables, junction box, unfinished floor, overly clean, flat lighting";
+  "distorted perspective, fisheye, stretched walls, shallow depth of field, bokeh, cartoon, illustration, 3D render, CGI, plastic, watermark, text, blurry, overexposed windows, extra windows, extra doors, floating furniture, dangling cables, junction box, unfinished floor, overly clean, flat lighting, color grading, warm color shift, cool color shift";
 
 // ─── OpenAI Responses API (PRIMARY) ─────────────────────────────────
 async function tryOpenAIResponses(

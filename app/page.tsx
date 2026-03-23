@@ -57,6 +57,7 @@ export default function Home() {
   const [currentProcessing, setCurrentProcessing] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [generationElapsed, setGenerationElapsed] = useState(0);
+  const [preprocessWarnings, setPreprocessWarnings] = useState<string[]>([]);
 
   const heroRef = useReveal();
   const toolRef = useReveal();
@@ -99,8 +100,8 @@ export default function Home() {
 
   const handleGenerate = useCallback(async () => {
     if (files.length === 0) return;
-    const surfacePrompt = selectedStyle?.surfacePrompt || customPrompt.trim();
-    const furniturePrompt = selectedStyle?.furniturePrompt || customPrompt.trim();
+    let surfacePrompt = selectedStyle?.surfacePrompt || customPrompt.trim();
+    let furniturePrompt = selectedStyle?.furniturePrompt || customPrompt.trim();
     if (!surfacePrompt && !furniturePrompt) return;
 
     // Cancel any previous in-flight requests
@@ -111,6 +112,32 @@ export default function Home() {
     setIsGenerating(true);
     setError(null);
     setResults([]);
+    setPreprocessWarnings([]);
+
+    // Pre-process custom prompts via GPT-4.1-mini (translate, split, enrich)
+    if (!selectedStyle && customPrompt.trim()) {
+      try {
+        const ppResponse = await fetch("/api/preprocess-prompt", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: customPrompt.trim() }),
+          signal: controller.signal,
+        });
+        if (ppResponse.ok) {
+          const ppData = await ppResponse.json();
+          if (ppData.surfacePrompt) surfacePrompt = ppData.surfacePrompt;
+          if (ppData.furniturePrompt) furniturePrompt = ppData.furniturePrompt;
+          if (Array.isArray(ppData.warnings) && ppData.warnings.length > 0) {
+            setPreprocessWarnings(ppData.warnings);
+          }
+        }
+      } catch (e: unknown) {
+        // On abort, stop entirely
+        if (e instanceof Error && e.name === "AbortError") return;
+        // On any other error, proceed with the raw custom prompt (backward compatible)
+      }
+      if (controller.signal.aborted) return;
+    }
 
     // Step 1: Validate all images (fast, parallel)
     try {
@@ -219,6 +246,7 @@ export default function Home() {
   const handleReset = () => {
     setResults([]);
     setError(null);
+    setPreprocessWarnings([]);
   };
 
   const handleFullReset = () => {
@@ -229,6 +257,7 @@ export default function Home() {
     setResults([]);
     setError(null);
     setIsGenerating(false);
+    setPreprocessWarnings([]);
   };
 
   const handleDownloadAll = () => {
@@ -556,6 +585,23 @@ export default function Home() {
                     : `${generationElapsed}s — Presque termin\u00e9\u2026`}
                 </p>
               </div>
+            </div>
+          )}
+
+          {/* Preprocess warnings */}
+          {preprocessWarnings.length > 0 && (
+            <div className="mb-8 bg-amber-50/50 border border-amber-200/60 rounded-2xl p-5 text-left max-w-2xl mx-auto">
+              <p className="text-amber-700/90 text-xs font-medium mb-2">
+                Certains éléments ont été ajustés :
+              </p>
+              <ul className="space-y-1">
+                {preprocessWarnings.map((w, i) => (
+                  <li key={i} className="text-amber-600/80 text-xs font-light flex items-start gap-2">
+                    <span className="mt-0.5 shrink-0">⚠</span>
+                    <span>{w}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
 
