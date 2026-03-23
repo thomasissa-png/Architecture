@@ -6,11 +6,15 @@ VisiRenov est un outil de home staging virtuel par IA pour architectes, marchand
 L'utilisateur uploade des photos de pieces vides et l'IA genere des visuels meubles dans un style choisi parmi 12 ambiances.
 
 - **Stack** : Next.js 14, React, TypeScript, Tailwind CSS, App Router
-- **APIs IA** : OpenAI GPT-image-1 (principal) + SDXL img2img via Replicate (fallback)
+- **APIs IA** : OpenAI Responses API gpt-4.1 (principal) + Flux Depth Pro via Replicate (fallback)
 - **Design** : Minimaliste, architecture-grade, inspiration Apple/Foster+Partners
 - **Langue UI** : Francais
 - **Palette** : Background #FAFAF8, Foreground #1C1C1E, Sage #7D9B76
 - **Typographie** : Inter (300-800)
+- **Deploiement** : Replit — https://architecture-toum92.replit.app/
+- **Admin** : https://architecture-toum92.replit.app/admin (visualisation generations + logs DB)
+- **API Logs** : https://architecture-toum92.replit.app/api/logs (consultation generations recentes)
+- **API Images** : https://architecture-toum92.replit.app/api/logs/image?path=... (images full-size)
 
 ## Architecture Fichiers
 
