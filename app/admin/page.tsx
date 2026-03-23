@@ -89,6 +89,7 @@ export default function AdminPage() {
   const [authenticated, setAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
   const [authError, setAuthError] = useState(false);
+  const [showAuditPrompt, setShowAuditPrompt] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -157,11 +158,66 @@ export default function AdminPage() {
   if (error) return <div style={{ padding: 40, fontFamily: "Inter, sans-serif", color: "#c00" }}>Erreur : {error}</div>;
   if (logs.length === 0) return <div style={{ padding: 40, fontFamily: "Inter, sans-serif" }}>Aucune generation loguee.</div>;
 
+  const auditPromptText = `Fais appel aux agents Architecte d'Interieur (Yann Duval) et Expert IA Image (Lucas Moreau) pour auditer les generations recentes de production.
+
+Workflow :
+1. Consulte /api/logs pour lister les generations recentes (style, duree, succes/erreur)
+2. Pour chaque generation, ouvre le detail et examine :
+   - L'image INPUT (photo de depart)
+   - L'image PASSE 1 (surfaces finies, piece vide)
+   - L'image OUTPUT (piece meublee finale)
+   - Le prompt construit passe 1 et passe 2
+3. Yann evalue : fidelite stylistique, composition, echelle mobilier, coherence matieres, credibilite pro, differenciation entre styles
+4. Lucas evalue : preservation geometrie, lumiere/ombres, photorealisme, absence d'artefacts IA, coherence I/O, qualite photographique
+5. Chaque agent attribue une note /10 par generation avec sa grille complete (10 criteres chacun)
+6. Identifie les patterns recurrents (problemes communs a plusieurs generations)
+7. Propose des corrections concretes (prompts, parametres, pipeline) classees par priorite (P0-P4)
+
+Demande : "Fais appel a l'agent Architecte d'Interieur et a l'agent Expert IA Image pour auditer toutes les generations depuis le dernier audit. Donne la note de chaque generation, identifie les patterns de problemes recurrents, et propose un plan d'amelioration prioritaire."`;
+
   return (
     <div style={{ padding: "24px 32px", fontFamily: "Inter, sans-serif", maxWidth: 1400, margin: "0 auto" }}>
-      <h1 style={{ fontSize: 24, fontWeight: 600, marginBottom: 24, color: "#1C1C1E" }}>
+      <h1 style={{ fontSize: 24, fontWeight: 600, marginBottom: 16, color: "#1C1C1E" }}>
         VisiRenov — Logs de generation ({logs.length})
       </h1>
+
+      {/* Audit prompt banner */}
+      <div style={{ marginBottom: 20, background: "#f0f4ee", border: "1px solid #c8d8c4", borderRadius: 12, overflow: "hidden" }}>
+        <div
+          onClick={() => setShowAuditPrompt(!showAuditPrompt)}
+          style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", cursor: "pointer" }}
+        >
+          <span style={{ fontSize: 16 }}>&#x1f9d1;&#x200d;&#x1f3a8;</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: "#3d5a38" }}>
+            Prompt d&apos;audit agents (Yann Duval + Lucas Moreau)
+          </span>
+          <span style={{ marginLeft: "auto", fontSize: 12, color: "#7D9B76" }}>
+            {showAuditPrompt ? "Masquer" : "Copier le prompt pour lancer un audit"}
+          </span>
+        </div>
+        {showAuditPrompt && (
+          <div style={{ padding: "0 16px 16px" }}>
+            <pre
+              style={{
+                background: "#fff", padding: 16, borderRadius: 8, fontSize: 12,
+                whiteSpace: "pre-wrap", wordBreak: "break-word", lineHeight: 1.6,
+                border: "1px solid #dde8db", color: "#1C1C1E", maxHeight: 400, overflow: "auto",
+              }}
+            >
+              {auditPromptText}
+            </pre>
+            <button
+              onClick={() => { navigator.clipboard.writeText(auditPromptText); }}
+              style={{
+                marginTop: 8, padding: "6px 16px", background: "#7D9B76", color: "#fff",
+                border: "none", borderRadius: 6, fontSize: 12, fontWeight: 500, cursor: "pointer",
+              }}
+            >
+              Copier dans le presse-papier
+            </button>
+          </div>
+        )}
+      </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         {logs.map((log) => {
