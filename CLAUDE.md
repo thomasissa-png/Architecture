@@ -460,6 +460,50 @@ agents/
     - Les directives conditionnelles ("if ceiling > 3m", "if light is diffused") sont NEUTRES sur les cas standards
     - Le pipeline 2 passes est VALIDE : surfaces passe 1 intactes en passe 2, distribution profondeur fonctionne
 
+### Sprint 17 — Audit croise Yann Duval + Lucas Moreau (6 generations, notes 3.3-8.8)
+127. CRITIQUE : Pre-processing des prompts custom via GPT-4.1-mini (lib/custom-prompt.ts)
+    - Traduction automatique FR→EN avant injection dans le pipeline
+    - Split surfacePrompt / furniturePrompt a partir du texte libre utilisateur
+    - Enrichissement avec dimensions, materiaux, textures, couleurs specifiques
+    - Filtrage elements incompatibles (decoration murale, cuisine equipee, rideaux) avec warnings FR
+    - Nouvel endpoint /api/preprocess-prompt (POST)
+    - Backward compatible : si pas de cle API, le prompt brut est utilise
+    - Cout : ~0.5s + ~$0.001 par appel GPT-4.1-mini
+128. CRITIQUE : Fix "pixel-identical" → "visually identical" dans builder passe 2
+    - "pixel-identical" rendait le modele ultra-conservateur (ne rien ajouter pour ne pas modifier les pixels)
+    - Nouveau : "visually identical — same colors, textures, geometry. Shadows from furniture are expected and natural"
+129. CRITIQUE : Fix "light falloff from windows to back wall" → "original light distribution"
+    - L'ancien formulait une directive inappropriee pour les pieces sans fenetres (sous-sols, pieces aveugles)
+    - Nouveau : neutre, fonctionne pour toutes les conditions d'eclairage
+130. HAUTE : Densite conditionnelle dans builder passe 2
+    - "Respect furniture density implied by the style. If minimalist, leave large empty floor areas. If room is small, reduce accent pieces."
+    - Empeche le cramming sur les petites pieces et respecte les styles minimalistes (Japandi 30%, Wabi-Sabi)
+131. HAUTE : Japandi "ordered symmetry" → "balanced asymmetry"
+    - La symetrie ordonnee est anti-Japandi (wabi = imperfection) et produit des compositions "catalogue IKEA"
+132. HAUTE : Mid-Century lampadaire arc generique → tripod teck 60s-style
+    - "walnut and brass tripod floor lamp with natural linen cone shade (60s-style)"
+    - L'arc en laiton revenait dans plusieurs styles — tue la differenciation
+133. HAUTE : Mid-Century credenza "placed along the back of the room" → "as background anchor"
+    - Le modele n'est pas un moteur de layout — "background anchor" guide la composition sans etre directif
+134. HAUTE : Cosy — palette enrichie + plante distinctive + lampe precise
+    - Ajout "one velvet cushion in warm cognac" (accent chaud dans la palette cream/camel)
+    - Pothos → "string of pearls in cream ribbed ceramic hanging planter" (differenciation vs Scandinave)
+    - Lampe → "ceramic table lamp with natural linen pleated drum shade on ribbed cream stoneware base"
+    - "oversized" → "generously proportioned" (evite disproportion)
+135. MOYENNE : FLUX_NEGATIVE_PROMPT enrichi : "color grading, warm color shift, cool color shift"
+    - Flux Depth Pro a tendance a appliquer un color grade cinematographique
+136. HAUTE : Page /admin refonte affichage images
+    - Composant LogImage avec error fallback "Image indisponible"
+    - Sizing responsive (max-width 300px, object-fit contain)
+    - Click-to-enlarge (ouvre dans nouvel onglet)
+    - extractFilename() robuste (gere tous formats de path)
+137. Apprentissages consolides :
+    - Le mode Custom representait 2/6 generations avec les PIRES notes (3.3 et 3.5) — le pre-processing LLM est obligatoire
+    - "pixel-identical" est une promesse impossible — ajouter un canape MODIFIE les pixels du mur (ombre portee)
+    - "from windows" dans une directive exclut les pieces sans fenetres — toujours formuler de facon neutre
+    - Le lampadaire arc et le pothos sont des "marqueurs IA" generiques — chaque style doit avoir ses propres luminaires et plantes
+    - Les directives de placement spatial ("placed along the back") sont fragiles — preferer des termes compositionnels ("background anchor")
+
 ## Regles de Developpement
 
 - Design minimaliste, pas de surcharge visuelle
