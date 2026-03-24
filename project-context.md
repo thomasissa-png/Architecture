@@ -32,8 +32,8 @@
 - **Ton de marque** : Premium et sobre
 - **3 mots qui DÉFINISSENT la marque** : Qualité, Efficacité, Valeur ajoutée
 - **3 mots qui ne DÉFINISSENT PAS la marque** : Cheap, Fake, Gadget
-- **Concurrent principal** : ⚠️ À COMPLÉTER PAR AGENTS — Benchmark concurrentiel à réaliser par @creative-strategy (HomeDesigns AI, REimagineHome, Virtual Staging AI, DecorMatters, etc.)
-- **Notre différence clé vs lui** : ⚠️ À COMPLÉTER PAR AGENTS — Dépend du benchmark ci-dessus
+- **Concurrent principal (marché FR)** : Gepetto (Bordeaux, fondé par un architecte d'intérieur, positionnement qualité) + Renovate Club (9,99€/mois illimité, Made in France, 10 000+ utilisateurs)
+- **Notre différence clé vs eux** : Pipeline 2 passes unique sur le marché (préservation géométrie prouvée) + multi-cible explicite (architecte + marchand + particulier) + 12 styles curatés par des experts nommés vs styles génériques en volume
 
 ---
 
@@ -157,6 +157,7 @@
 | @orchestrator | 2026-03-24 | lib/db.ts (19 ALTER TABLE migrations) | Fix backoffice vide : CREATE TABLE IF NOT EXISTS ne vérifie pas les colonnes manquantes. 19 ALTER TABLE idempotents ajoutés dans ensureTable() pour toutes les colonnes post-création (Sprint 15b à F3). | Cause racine : la table a été créée par une version ancienne du code, les colonnes ajoutées après n'existaient pas → logGeneration() échouait silencieusement (fire-and-forget) → 0 logs → backoffice vide. Alt écartée : DROP+CREATE (perte des données existantes). |
 | Yann+Lucas | 2026-03-24 | Audit visuel générations #29 et #30 Maximalist | #29 passe 1 : Yann 7.6/10, Lucas 8.1/10 — lustre Murano excellent, élimination chantier parfaite. #30 itération "ajoute WC" : Yann 2.8/10, Lucas 3.8/10 — bug BASE STYLE injection + tableau mural hallucination. | Audit sur images de production via API /api/logs. Passe 1 Maximalist validée. L'itération #30 a révélé 2 problèmes : injection systématique du furniturePrompt complet en itération + absence de negative prompt explicite pour wall art. |
 | @orchestrator | 2026-03-24 | lib/iteration-prompt.ts, app/api/generate/route.ts, lib/custom-prompt.ts | P0 : Itérations TOUJOURS exclusives (suppression BASE STYLE). P0 : "no wall art/paintings/prints/mirrors" dans tous builders passe 2. P1 : "no baseboards unless in input" passe 1. P1 : filtre sanitaire dans pre-processing itération. | Décision architecturale : en itération, les modifications accumulées décrivent TOUT ce que l'utilisateur veut — le BASE STYLE n'a pas sa place. Alt écartée : garder isExclusive conditionnel (trop fragile, dépend de mots-clés). Wall art : les styles chargés (Maximaliste, Art Déco) ont un biais fort vers l'ajout de tableaux — il faut l'interdire explicitement. |
+| @creative-strategy | 2026-03-24 | docs/strategy/competitive-benchmark.md, docs/strategy/brand-platform.md, docs/strategy/personas.md, docs/strategy/creative-brief.md | Positionnement : "Le home staging virtuel par IA qui ne trahit pas votre espace." Territoire : qualité architecturale + multi-cible (architecte/marchand/particulier) — espace libre non occupé par les concurrents. Concurrent principal : Gepetto (seul acteur FR sur la qualité). Espaces libres clés : premium français + outil de conversation client. 15 mots-clés territoire. 10 exclusions absolues (dont "magique", "révolutionnaire", "accessible"). | Positionnement qualité architecturale choisi vs volume-prix : Renovate Club (9,99€ illimité) et Collov (0,17$/photo) sont imbattables sur le prix. L'espace libre est la crédibilité professionnelle. Multi-cible retenu (vs focus immobilier) : aucun concurrent ne nomme les 3 personas explicitement. Packages one-shot confirmés vs abonnement (cohérent avec les pics d'usage des 3 personas). |
 
 ---
 
