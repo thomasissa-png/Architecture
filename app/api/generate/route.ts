@@ -1057,25 +1057,31 @@ export async function POST(request: NextRequest) {
       let responsesPrompt: string;
       let fluxPrompt: string;
 
+      const isExclusive = preprocessResult.isExclusive;
+
       if (cached.meta.isOutdoor) {
         responsesPrompt = buildIterationOutdoorFurnitureResponsesPrompt(
           originalFurniturePrompt,
-          allModifications
+          allModifications,
+          isExclusive
         );
         fluxPrompt = buildIterationOutdoorFurnitureFluxPrompt(
           originalFurniturePrompt,
-          allModifications
+          allModifications,
+          isExclusive
         );
       } else {
         responsesPrompt = buildIterationFurnitureResponsesPrompt(
           originalFurniturePrompt,
           allModifications,
-          iterMeta
+          iterMeta,
+          isExclusive
         );
         fluxPrompt = buildIterationFurnitureFluxPrompt(
           originalFurniturePrompt,
           allModifications,
-          iterMeta
+          iterMeta,
+          isExclusive
         );
       }
 

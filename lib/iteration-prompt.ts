@@ -13,7 +13,8 @@ const PASS1_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 export function buildIterationFurnitureResponsesPrompt(
   furniturePrompt: string,
   modifications: string[],
-  meta: { width?: number; height?: number; roomType?: string | null }
+  meta: { width?: number; height?: number; roomType?: string | null },
+  isExclusive: boolean = false
 ): string {
   const modBlock = modifications
     .map((m, i) => {
@@ -26,12 +27,17 @@ export function buildIterationFurnitureResponsesPrompt(
     "This is a REFINEMENT of a previous generation. The room surfaces in this photo are FINAL and PERFECT. They must not change in any way — not even subtle color shifts, lighting changes, or texture smoothing.",
     "Focus ONLY on adjusting the furniture and decoration as described below.",
     `APPLY THESE CHANGES:\n${modBlock}`,
-    `BASE STYLE (keep everything not contradicted by the changes above): ${furniturePrompt}.`,
-    // Distribution directives only for rooms large enough to benefit
-    ...(!["wc", "laundry", "cellar", "entryway"].includes(meta.roomType ?? "") ? [
-      "Distribute furniture across the FULL DEPTH and WIDTH of the room. If the room is deep or has multiple zones, place a primary group in the foreground AND a secondary group further back. If the room is also wide, add a lateral anchor on the opposite side.",
-      "If the ceiling appears very high or the room is very large, scale up furniture proportionally.",
-    ] : []),
+    // Exclusive mode: ONLY the requested items, no base style injection
+    ...(isExclusive ? [
+      "Add ONLY the items described in the changes above. Do NOT add any other furniture, decoration, rug, lamp, plant, or object not explicitly mentioned. The room should contain ONLY what the user asked for — leave the rest of the floor empty.",
+    ] : [
+      `BASE STYLE (keep everything not contradicted by the changes above): ${furniturePrompt}.`,
+      // Distribution directives only for rooms large enough to benefit
+      ...(!["wc", "laundry", "cellar", "entryway"].includes(meta.roomType ?? "") ? [
+        "Distribute furniture across the FULL DEPTH and WIDTH of the room. If the room is deep or has multiple zones, place a primary group in the foreground AND a secondary group further back. If the room is also wide, add a lateral anchor on the opposite side.",
+        "If the ceiling appears very high or the room is very large, scale up furniture proportionally.",
+      ] : []),
+    ]),
     "Place all objects naturally on the existing floor. Every piece of furniture must have correct perspective, scale, and cast realistic shadows consistent with the existing light direction. Match shadow hardness to the lighting type.",
     "Respect the furniture density implied by the style. If minimalist, leave large empty floor areas. If the room is small, reduce accent pieces.",
     // Room-type-specific fixture rules
@@ -58,7 +64,8 @@ export function buildIterationFurnitureResponsesPrompt(
 export function buildIterationFurnitureFluxPrompt(
   furniturePrompt: string,
   modifications: string[],
-  meta: { width?: number; height?: number; roomType?: string | null }
+  meta: { width?: number; height?: number; roomType?: string | null },
+  isExclusive: boolean = false
 ): string {
   // Flux: modifications FIRST (first tokens = most weight), then condensed style
   const modSummary = modifications
@@ -70,12 +77,17 @@ export function buildIterationFurnitureFluxPrompt(
 
   return [
     `CHANGES: ${modSummary}.`,
-    `BASE STYLE (keep uncontradicted items): ${furniturePrompt}.`,
-    // Distribution directives only for rooms large enough to benefit
-    ...(!["wc", "laundry", "cellar", "entryway"].includes(meta.roomType ?? "") ? [
-      "Placed naturally across the full depth of this finished room. Primary group foreground, secondary group in back if space allows, lateral anchor if room is wide.",
+    // Exclusive mode: ONLY the requested items, no base style injection
+    ...(isExclusive ? [
+      "Add ONLY the items described above. Do NOT add any other furniture, decoration, rug, lamp, plant, or object not mentioned. Leave the rest of the floor empty.",
     ] : [
-      "Placed naturally in this finished room.",
+      `BASE STYLE (keep uncontradicted items): ${furniturePrompt}.`,
+      // Distribution directives only for rooms large enough to benefit
+      ...(!["wc", "laundry", "cellar", "entryway"].includes(meta.roomType ?? "") ? [
+        "Placed naturally across the full depth of this finished room. Primary group foreground, secondary group in back if space allows, lateral anchor if room is wide.",
+      ] : [
+        "Placed naturally in this finished room.",
+      ]),
     ]),
     // Room-type-specific fixture rules
     meta.roomType === "kitchen" || meta.roomType === "bathroom"
@@ -108,7 +120,8 @@ export const FLUX_ITERATION_NEGATIVE_PROMPT =
 
 export function buildIterationOutdoorFurnitureResponsesPrompt(
   furniturePrompt: string,
-  modifications: string[]
+  modifications: string[],
+  isExclusive: boolean = false
 ): string {
   const modBlock = modifications
     .map((m, i) => {
@@ -121,8 +134,13 @@ export function buildIterationOutdoorFurnitureResponsesPrompt(
     "This is a REFINEMENT of a previous outdoor generation. The ground surface and vertical structures in this photo are FINAL and PERFECT. They must not change in any way — not even subtle color shifts or texture changes.",
     "Focus ONLY on adjusting the outdoor furniture and decoration as described below.",
     `APPLY THESE CHANGES:\n${modBlock}`,
-    `BASE STYLE (keep everything not contradicted by the changes above): ${furniturePrompt}.`,
-    "Distribute furniture naturally across the available floor space. If the space is large, place a primary seating group and a secondary accent further back.",
+    // Exclusive mode: ONLY the requested items, no base style injection
+    ...(isExclusive ? [
+      "Add ONLY the items described in the changes above. Do NOT add any other furniture, decoration, planter, lamp, or object not explicitly mentioned. Leave the rest of the space empty.",
+    ] : [
+      `BASE STYLE (keep everything not contradicted by the changes above): ${furniturePrompt}.`,
+      "Distribute furniture naturally across the available floor space. If the space is large, place a primary seating group and a secondary accent further back.",
+    ]),
     "Place all objects naturally on the existing ground. Every piece of outdoor furniture must have correct perspective, scale, and cast realistic shadows consistent with the existing natural light direction.",
     "ONLY add freestanding outdoor objects. Do NOT attach anything to walls, guard rails, or facades.",
     "Do not place opaque structures (screens, shelving, A-frames) directly in front of full-height windows or glass doors.",
@@ -137,7 +155,8 @@ export function buildIterationOutdoorFurnitureResponsesPrompt(
 
 export function buildIterationOutdoorFurnitureFluxPrompt(
   furniturePrompt: string,
-  modifications: string[]
+  modifications: string[],
+  isExclusive: boolean = false
 ): string {
   const modSummary = modifications
     .map((m, i) => {
@@ -148,8 +167,13 @@ export function buildIterationOutdoorFurnitureFluxPrompt(
 
   return [
     `CHANGES: ${modSummary}.`,
-    `BASE STYLE (keep uncontradicted items): ${furniturePrompt}.`,
-    "Placed naturally across the available floor space. Primary seating group in foreground, secondary accent further back if space allows.",
+    // Exclusive mode: ONLY the requested items, no base style injection
+    ...(isExclusive ? [
+      "Add ONLY the items described above. Do NOT add any other furniture, decoration, planter, lamp, or object not mentioned. Leave the rest of the space empty.",
+    ] : [
+      `BASE STYLE (keep uncontradicted items): ${furniturePrompt}.`,
+      "Placed naturally across the available floor space. Primary seating group in foreground, secondary accent further back if space allows.",
+    ]),
     "Freestanding outdoor furniture only. No wall-mounted objects, no objects attached to guard rails.",
     "No opaque structures (screens, shelving, A-frames) in front of full-height windows or glass doors.",
     "Ground surface and vertical structures LOCKED — guard rails, walls, facades same colors, textures, geometry. Shadows from furniture are natural.",
