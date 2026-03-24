@@ -21,6 +21,11 @@ interface LogEntry {
   input_image_path: string | null;
   pass1_image_path: string | null;
   output_image_path: string | null;
+  is_replay: boolean | null;
+  replay_source_id: number | null;
+  replay_label: string | null;
+  pixel_diff_pct: number | null;
+  color_shift_score: number | null;
 }
 
 function extractFilename(path: string): string {
@@ -347,6 +352,21 @@ Demande type : "Fais appel a l'agent Architecte d'Interieur et a l'agent Expert 
                 <span style={{ fontSize: 13, color: log.success ? "#7D9B76" : "#c00", fontWeight: 600 }}>
                   {log.success ? "OK" : "ERREUR"}
                 </span>
+                {log.is_replay && (
+                  <span style={{ background: "#4a90d9", color: "#fff", padding: "2px 8px", borderRadius: 6, fontSize: 11, fontWeight: 600 }}>
+                    REPLAY{log.replay_source_id ? ` de #${log.replay_source_id}` : ""}
+                  </span>
+                )}
+                {log.replay_label && (
+                  <span style={{ background: "#eee", color: "#555", padding: "2px 8px", borderRadius: 6, fontSize: 11 }}>
+                    {log.replay_label}
+                  </span>
+                )}
+                {log.pixel_diff_pct != null && (
+                  <span style={{ fontSize: 11, color: "#888" }}>
+                    diff: {log.pixel_diff_pct}% | color: {log.color_shift_score?.toFixed(1)}
+                  </span>
+                )}
                 <span style={{ marginLeft: "auto", fontSize: 12, color: "#aaa" }}>{expanded ? "▲" : "▼"}</span>
               </div>
 
@@ -420,12 +440,106 @@ Demande type : "Fais appel a l'agent Architecte d'Interieur et a l'agent Expert 
                       </pre>
                     </div>
                   )}
+
+                  {/* Replay button */}
+                  {log.success && log.input_image_path && !log.is_replay && (
+                    <ReplayButton logId={log.id} styleId={log.style_id} onReplayDone={() => {
+                      // Refresh logs
+                      fetch("/api/logs").then(r => r.json()).then(data => { if (data.logs) setLogs(data.logs); });
+                    }} />
+                  )}
                 </div>
               )}
             </div>
           );
         })}
       </div>
+    </div>
+  );
+}
+
+function ReplayButton({ logId, styleId, onReplayDone }: { logId: number; styleId: string; onReplayDone: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [label, setLabel] = useState("");
+  const [result, setResult] = useState<string | null>(null);
+
+  const handleReplay = async () => {
+    setLoading(true);
+    setResult(null);
+    try {
+      const res = await fetch("/api/replay", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sourceGenerationId: logId,
+          replayPass: "both",
+          replayLabel: label || `replay-${styleId}-${Date.now()}`,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setResult(`Replay #${data.replayId} cree (${(data.durationMs / 1000).toFixed(1)}s)${data.metrics ? ` — diff: ${data.metrics.pixelDiffPct}%` : ""}`);
+        onReplayDone();
+      } else {
+        setResult(`Erreur: ${data.error}`);
+      }
+    } catch (e) {
+      setResult(`Erreur: ${e instanceof Error ? e.message : "unknown"}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        style={{
+          marginTop: 16, padding: "6px 16px", background: "#4a90d9", color: "#fff",
+          border: "none", borderRadius: 6, fontSize: 12, fontWeight: 500, cursor: "pointer",
+        }}
+      >
+        Rejouer avec les prompts actuels
+      </button>
+    );
+  }
+
+  return (
+    <div style={{ marginTop: 16, padding: 16, background: "#f0f6ff", borderRadius: 8, border: "1px solid #c4d8f0" }}>
+      <div style={{ fontSize: 13, fontWeight: 600, color: "#1C1C1E", marginBottom: 8 }}>
+        Replay de #{logId} ({styleId})
+      </div>
+      <input
+        type="text"
+        value={label}
+        onChange={(e) => setLabel(e.target.value)}
+        placeholder="Label (ex: sprint20-fix-lumiere)"
+        style={{ width: "100%", padding: "6px 10px", border: "1px solid #ccc", borderRadius: 6, fontSize: 12, marginBottom: 8, boxSizing: "border-box" }}
+      />
+      <div style={{ display: "flex", gap: 8 }}>
+        <button
+          onClick={handleReplay}
+          disabled={loading}
+          style={{
+            padding: "6px 16px", background: loading ? "#999" : "#4a90d9", color: "#fff",
+            border: "none", borderRadius: 6, fontSize: 12, fontWeight: 500, cursor: loading ? "wait" : "pointer",
+          }}
+        >
+          {loading ? "Generation en cours..." : "Lancer le replay"}
+        </button>
+        <button
+          onClick={() => setOpen(false)}
+          style={{ padding: "6px 12px", background: "#eee", color: "#555", border: "none", borderRadius: 6, fontSize: 12, cursor: "pointer" }}
+        >
+          Annuler
+        </button>
+      </div>
+      {result && (
+        <div style={{ marginTop: 8, fontSize: 12, color: result.startsWith("Erreur") ? "#c00" : "#3d5a38" }}>
+          {result}
+        </div>
+      )}
     </div>
   );
 }

@@ -17,7 +17,9 @@ export async function GET() {
              success, error_message,
              input_width, input_height,
              built_prompt_pass1, built_prompt_pass2,
-             input_image_path, pass1_image_path, output_image_path
+             input_image_path, pass1_image_path, output_image_path,
+             is_replay, replay_source_id, replay_label,
+             pixel_diff_pct, color_shift_score
       FROM generation_logs
       ORDER BY created_at DESC
       LIMIT 50
