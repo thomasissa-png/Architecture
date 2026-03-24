@@ -19,10 +19,10 @@ Moyenne — 4 agents (Yann, Lucas, fullstack, reviewer), 3 phases
 ### Phase 1 — Audit prompts iteration (Yann + Lucas en parallele)
 - Agents : Yann Duval (interior-architect), Lucas Moreau (ai-image-expert)
 - Parallelisation : OUI (pas de dependance entre eux)
-- Statut : En cours
-- Livrables attendus : docs/ia/f1-iteration-prompts.md (co-redige)
-- Livrables recus : []
-- Verdict verification : []
+- Statut : Termine
+- Livrables attendus : docs/ia/f1-iteration-prompts-yann.md, docs/ia/f1-iteration-prompts-lucas.md, docs/ia/f1-iteration-prompts.md (fusionne)
+- Livrables recus : docs/ia/f1-iteration-prompts-yann.md (Yann — stylistique), docs/ia/f1-iteration-prompts-lucas.md (Lucas — technique), docs/ia/f1-iteration-prompts.md (fusionne pour @fullstack)
+- Verdict verification : OK — recommandations coherentes, pas de contradiction entre les deux agents. Decisions cles alignees : enrichir pas remplacer, builders separes, modifications en tete du prompt, cumul des iterations, meta.json avec cache passe 1
 
 ### Phase 2 — Implementation fullstack
 - Agents : @fullstack
