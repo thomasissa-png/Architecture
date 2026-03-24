@@ -101,12 +101,26 @@
 
 - **Statut actuel** : Alpha fonctionnelle — pipeline 2 passes opérationnel, 12 styles, 28+ générations de test
 - **Fonctionnalités live** : Upload multi-photos, 12 styles + custom, comparateur avant/après, téléchargement HD, partage (WhatsApp, copie, natif), pricing affiché
-- **Roadmap produit** :
+- **Roadmap produit** (features détaillées dans docs/product/functional-specs.md) :
   1. Commentaire sur visuel généré → nouvelle génération (1 à 3 itérations selon package)
   2. Option type de pièce (salon, chambre, salle de bain, cuisine, etc.)
   3. Option extérieur (terrasse, balcon, patio, etc.)
   4. Mode marchand de biens : dossiers de pré-commercialisation automatiques
   5. Mode décorateur d'intérieur : meublage à partir de vrais produits (IKEA, Leroy Merlin, etc.) avec présentation produits/prix/liens
+
+### Ordre de développement validé (2026-03-24)
+
+> Décidé par le fondateur. Remplace l'ordre suggéré par @product-manager (F2→F1→F3→F4→F5).
+
+| Étape | Feature | Justification |
+|-------|---------|---------------|
+| 1 | **F1 — Itération commentaire** | Boucle de feedback = rétention + valeur perçue immédiate |
+| 2 | **F2 — Type de pièce** | Effort minimal, impact qualité sur toutes les générations |
+| 3 | **F3 — Extérieur** | Élargit le marché (terrasses, balcons) avant monétisation |
+| 4 | **Auth + Crédits + Stripe** | Monétisation — packages one-shot (4,90€ à 69€), gating F4/F5 |
+| 5 | **QA automatisée** | Vitest + Playwright, stabiliser avant les features avancées |
+| 6 | **F4 — Mode marchand** | Feature pro (réservée package Pro+), dossiers batch |
+| 7 | **F5 — Mode décorateur** | Feature premium, shopping list produits réels, la plus complexe |
 
 ---
 
