@@ -11,6 +11,11 @@ import {
   PASS1_TTL_MS,
 } from "@/lib/iteration-prompt";
 import { applyRoomTypeOverrides } from "@/lib/room-types";
+import { applyOutdoorSubtypeOverrides } from "@/lib/outdoor-subtypes";
+import {
+  buildIterationOutdoorFurnitureResponsesPrompt,
+  buildIterationOutdoorFurnitureFluxPrompt,
+} from "@/lib/iteration-prompt";
 
 // ─── Rate Limiting (in-memory, IP-based) ────────────────────────────
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
