@@ -523,6 +523,14 @@ agents/
 145. Page /admin : prompt d'audit agents ajoute en banner (collapsible + copier)
     - Workflow complet avec methode d'acces via WebFetch sur API production
     - Permet de lancer un audit en une seule commande dans une nouvelle session
+146. CRITIQUE : Migration stockage images vers Replit Object Storage (@replit/object-storage)
+    - Les images etaient dans public/logs/ (filesystem ephemere, wipe a chaque deploy)
+    - Nouveau : lib/db.ts saveImage() → object-storage uploadFromBytes(key, buffer)
+    - Nouveau : lib/db.ts getImage(key) → object-storage downloadAsBytes(key)
+    - API /api/logs/image lit depuis Object Storage au lieu du filesystem
+    - Zero config : le SDK auto-authenticate sur Replit (pas de cle API)
+    - Les images persistent desormais a travers les redeploys
+    - Les anciens chemins (input_image_path, pass1_image_path, output_image_path) stockent maintenant "logs/xxx.jpg" (cle Object Storage)
 
 ## Regles de Developpement
 
