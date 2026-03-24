@@ -8,11 +8,24 @@
       "Grep",
       "WebSearch",
       "WebFetch",
-      "Bash(mkdir *)",
+      "Bash(git *)",
       "Bash(ls *)",
+      "Bash(mkdir *)",
+      "Bash(cp *)",
       "Bash(cat *)",
-      "Bash(wc *)",
-      "Bash(git *)"
+      "Bash(head *)",
+      "Bash(npm *)",
+      "Bash(npx *)",
+      "Bash(pnpm *)",
+      "Bash(yarn *)",
+      "Bash(bun *)",
+      "Bash(node *)",
+      "Bash(tsc *)",
+      "Bash(vitest *)",
+      "Bash(playwright *)",
+      "Bash(eslint *)",
+      "Bash(prettier *)",
+      "Bash(diff *)"
     ]
   }
 }
