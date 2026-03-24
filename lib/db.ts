@@ -48,7 +48,13 @@ async function ensureTable(): Promise<void> {
       built_prompt_pass2 TEXT,
       input_image_path   TEXT,
       pass1_image_path   TEXT,
-      output_image_path  TEXT
+      output_image_path  TEXT,
+      is_iteration       BOOLEAN DEFAULT FALSE,
+      iteration_number   INT,
+      session_id         VARCHAR(100),
+      user_comment_raw   TEXT,
+      user_comment_enriched TEXT,
+      pass1_cache_key    TEXT
     );
     CREATE INDEX IF NOT EXISTS idx_gen_logs_created ON generation_logs (created_at DESC);
     CREATE INDEX IF NOT EXISTS idx_gen_logs_style ON generation_logs (style_id);
@@ -87,6 +93,75 @@ export async function getImage(key: string): Promise<Uint8Array | null> {
   return new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength);
 }
 
+// ─── Pass 1 cache for F1 iterations ─────────────────────────────────
+// Stores pass 1 image + metadata in Object Storage for re-pass 2.
+
+export interface Pass1Meta {
+  width: number;
+  height: number;
+  styleId: string;
+  furniturePrompt: string;
+  surfacePrompt: string;
+  createdAt: number; // Date.now()
+}
+
+export async function savePass1Cache(
+  key: string,
+  imageBase64: string,
+  meta: Pass1Meta
+): Promise<void> {
+  const storage = getStorage();
+
+  // Save image
+  const imgBuffer = Buffer.from(imageBase64, "base64");
+  const imgResult = await storage.uploadFromBytes(key, imgBuffer);
+  if (!imgResult.ok) {
+    throw new Error(`Failed to cache pass1 image: ${imgResult.error}`);
+  }
+
+  // Save meta alongside
+  const metaKey = key.replace(".jpg", "_meta.json");
+  const metaBuffer = Buffer.from(JSON.stringify(meta), "utf-8");
+  const metaResult = await storage.uploadFromBytes(metaKey, metaBuffer);
+  if (!metaResult.ok) {
+    throw new Error(`Failed to cache pass1 meta: ${metaResult.error}`);
+  }
+}
+
+export async function getPass1Cache(
+  key: string
+): Promise<{ imageBase64: string; meta: Pass1Meta } | null> {
+  const storage = getStorage();
+
+  // Read image
+  const imgResult = await storage.downloadAsBytes(key);
+  if (!imgResult.ok || !imgResult.value) return null;
+  const imgBuf = imgResult.value[0];
+  const imageBase64 = Buffer.from(imgBuf.buffer, imgBuf.byteOffset, imgBuf.byteLength).toString("base64");
+
+  // Read meta
+  const metaKey = key.replace(".jpg", "_meta.json");
+  const metaResult = await storage.downloadAsBytes(metaKey);
+  if (!metaResult.ok || !metaResult.value) return null;
+  const metaBuf = metaResult.value[0];
+  const meta: Pass1Meta = JSON.parse(
+    Buffer.from(metaBuf.buffer, metaBuf.byteOffset, metaBuf.byteLength).toString("utf-8")
+  );
+
+  return { imageBase64, meta };
+}
+
+export async function getPass1Meta(key: string): Promise<Pass1Meta | null> {
+  const storage = getStorage();
+  const metaKey = key.replace(".jpg", "_meta.json");
+  const result = await storage.downloadAsBytes(metaKey);
+  if (!result.ok || !result.value) return null;
+  const buf = result.value[0];
+  return JSON.parse(
+    Buffer.from(buf.buffer, buf.byteOffset, buf.byteLength).toString("utf-8")
+  );
+}
+
 // ─── Log a generation (fire-and-forget) ──────────────────────────────
 export interface GenerationLogParams {
   ip: string;
@@ -109,6 +184,13 @@ export interface GenerationLogParams {
   inputBase64?: string;
   pass1Base64?: string;
   outputBase64?: string;
+  // Iteration fields (F1)
+  isIteration?: boolean;
+  iterationNumber?: number;
+  sessionId?: string;
+  userCommentRaw?: string;
+  userCommentEnriched?: string;
+  pass1CacheKey?: string;
 }
 
 export async function logGeneration(params: GenerationLogParams): Promise<void> {

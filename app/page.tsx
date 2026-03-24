@@ -5,12 +5,33 @@ import StepIndicator from "@/components/StepIndicator";
 import UploadZone from "@/components/UploadZone";
 import StylePicker, { StyleOption } from "@/components/StylePicker";
 import ImageComparator from "@/components/ImageComparator";
+import RefineModal from "@/components/RefineModal";
+import VersionSelector from "@/components/VersionSelector";
 import { processImage, isLikelyInterior } from "@/lib/image-utils";
 
 interface GenerationResult {
   originalUrl: string;
   generatedUrl: string;
   model: string;
+  pass1Key?: string;
+}
+
+interface VersionEntry {
+  imageUrl: string;
+  comment?: string;
+  model: string;
+}
+
+const MAX_ITERATIONS = 3;
+
+function getSessionId(): string {
+  if (typeof window === "undefined") return "";
+  let sessionId = localStorage.getItem("visirenov_session_id");
+  if (!sessionId) {
+    sessionId = crypto.randomUUID();
+    localStorage.setItem("visirenov_session_id", sessionId);
+  }
+  return sessionId;
 }
 
 function useReveal() {
@@ -59,6 +80,18 @@ export default function Home() {
   const [generationElapsed, setGenerationElapsed] = useState(0);
   const [preprocessWarnings, setPreprocessWarnings] = useState<string[]>([]);
 
+  // F1 — Iteration state
+  const [iterationsRemaining, setIterationsRemaining] = useState(MAX_ITERATIONS);
+  const [versions, setVersions] = useState<VersionEntry[][]>([]); // per-result versions
+  const [activeVersions, setActiveVersions] = useState<number[]>([]); // active version index per result
+  const [isRefineModalOpen, setIsRefineModalOpen] = useState(false);
+  const [refineTargetIndex, setRefineTargetIndex] = useState<number>(0);
+  const [isRefining, setIsRefining] = useState(false);
+  const [refineError, setRefineError] = useState<string | null>(null);
+  const [lastRefineComment, setLastRefineComment] = useState<string>("");
+  const [refineWarnings, setRefineWarnings] = useState<string[]>([]);
+  const [refineElapsed, setRefineElapsed] = useState(0);
+
   const heroRef = useReveal();
   const toolRef = useReveal();
   const pricingRef = useReveal();
@@ -74,6 +107,18 @@ export default function Home() {
     }, 1000);
     return () => clearInterval(interval);
   }, [isGenerating]);
+
+  // Timer for refine elapsed time
+  useEffect(() => {
+    if (!isRefining) {
+      setRefineElapsed(0);
+      return;
+    }
+    const interval = setInterval(() => {
+      setRefineElapsed((prev) => prev + 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [isRefining]);
 
   // Stable object URLs for file previews (no leak on re-render)
   const filePreviewUrls = useMemo(() => {
@@ -192,6 +237,7 @@ export default function Home() {
               withFurniture,
               width: img.width,
               height: img.height,
+              sessionId: getSessionId(),
             }),
             signal: controller.signal,
           });
@@ -206,6 +252,7 @@ export default function Home() {
             originalUrl: filePreviewUrls[img.fileIndex],
             generatedUrl: data.image,
             model: data.model,
+            pass1Key: data.pass1Key,
           } as GenerationResult;
         })
       );
