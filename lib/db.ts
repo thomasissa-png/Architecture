@@ -216,8 +216,10 @@ export async function logGeneration(params: GenerationLogParams): Promise<void> 
       duration_ms, pass1_duration_ms, pass2_duration_ms,
       success, error_message,
       built_prompt_pass1, built_prompt_pass2,
-      input_image_path, pass1_image_path, output_image_path
-    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)`,
+      input_image_path, pass1_image_path, output_image_path,
+      is_iteration, iteration_number, session_id,
+      user_comment_raw, user_comment_enriched, pass1_cache_key
+    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26)`,
     [
       params.ip,
       params.styleId,
@@ -239,6 +241,12 @@ export async function logGeneration(params: GenerationLogParams): Promise<void> 
       inputPath,
       pass1Path,
       outputPath,
+      params.isIteration ?? false,
+      params.iterationNumber ?? null,
+      params.sessionId ?? null,
+      params.userCommentRaw ?? null,
+      params.userCommentEnriched ?? null,
+      params.pass1CacheKey ?? null,
     ]
   );
 }
