@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readFile, access } from "fs/promises";
-import path from "path";
+import { getImage } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -10,22 +9,26 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Invalid file parameter" }, { status: 400 });
   }
 
-  const basename = path.basename(file);
-  const filePath = path.join(process.cwd(), "public", "logs", basename);
+  // Normalize: accept either "logs/foo.jpg", "/logs/foo.jpg", or just "foo.jpg"
+  const basename = file.split("/").pop() || file;
+  const key = `logs/${basename}`;
 
   try {
-    await access(filePath);
-    const buffer = await readFile(filePath);
-    return new NextResponse(buffer, {
+    const buffer = await getImage(key);
+    if (!buffer) {
+      return NextResponse.json({ error: "Image not found", key }, { status: 404 });
+    }
+    return new NextResponse(new Uint8Array(buffer), {
       headers: {
         "Content-Type": "image/jpeg",
         "Cache-Control": "public, max-age=86400",
       },
     });
-  } catch {
+  } catch (err) {
+    console.error("Image fetch error:", err);
     return NextResponse.json(
-      { error: "Image not found", path: filePath, cwd: process.cwd() },
-      { status: 404 }
+      { error: "Failed to fetch image", key },
+      { status: 500 }
     );
   }
 }

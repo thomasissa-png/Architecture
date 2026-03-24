@@ -1,6 +1,5 @@
 import { Pool } from "pg";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
+import { Client as StorageClient } from "@replit/object-storage";
 
 // ─── Singleton Pool ──────────────────────────────────────────────────
 let pool: Pool | null = null;
@@ -57,15 +56,35 @@ async function ensureTable(): Promise<void> {
   tableEnsured = true;
 }
 
-// ─── Save image to filesystem ────────────────────────────────────────
-const LOGS_DIR = path.join(process.cwd(), "public", "logs");
+// ─── Save image to Replit Object Storage (persistent across deploys) ─
+let storageClient: StorageClient | null = null;
+
+function getStorage(): StorageClient {
+  if (!storageClient) {
+    storageClient = new StorageClient();
+  }
+  return storageClient;
+}
 
 async function saveImage(base64: string, name: string): Promise<string> {
-  await mkdir(LOGS_DIR, { recursive: true });
-  const filePath = path.join(LOGS_DIR, `${name}.jpg`);
+  const key = `logs/${name}.jpg`;
   const buffer = Buffer.from(base64, "base64");
-  await writeFile(filePath, buffer);
-  return `/logs/${name}.jpg`;
+  const storage = getStorage();
+  const { ok, error } = await storage.uploadFromBytes(key, buffer);
+  if (!ok) {
+    console.error("Object Storage upload failed:", error);
+    throw new Error(`Failed to upload ${key}: ${error}`);
+  }
+  return key;
+}
+
+export async function getImage(key: string): Promise<Uint8Array | null> {
+  const storage = getStorage();
+  const { ok, value } = await storage.downloadAsBytes(key);
+  if (!ok || !value) return null;
+  // SDK returns [Buffer] tuple
+  const buf = value[0];
+  return new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength);
 }
 
 // ─── Log a generation (fire-and-forget) ──────────────────────────────
