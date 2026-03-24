@@ -331,7 +331,7 @@ export default function Home() {
         scrollToElement("step-results");
       }
     }
-  }, [files, selectedStyle, customPrompt, withFurniture, filePreviewUrls, isOutdoor, selectedOutdoorStyle, outdoorSubtype]);
+  }, [files, selectedStyle, customPrompt, withFurniture, filePreviewUrls, isOutdoor, selectedOutdoorStyle, outdoorSubtype, selectedRoomType]);
 
   const handleRetry = useCallback(() => {
     setResults([]);
