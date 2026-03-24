@@ -341,83 +341,155 @@ Terrasse, balcon, patio, jardin, rooftop. Pipeline sans plafond. Mobilier outdoo
 ### F3.1 User Stories
 
 **US-F3-01 — Générer un visuel de terrasse meublée (Thomas)**
-- Job-to-be-done : Quand je vends un appartement avec une grande terrasse brute, je veux montrer son potentiel estival.
-- Given : L'utilisateur uploade une photo de terrasse/balcon vide et sélectionne le type "Extérieur".
+- Job-to-be-done : Quand je vends un appartement avec une grande terrasse brute, je veux montrer son potentiel estival à l'acquéreur sans payer un home stager.
+- Given : L'utilisateur uploade une photo de terrasse/balcon vide, sélectionne le toggle "Extérieur" et le sous-type "Terrasse".
 - When : Il choisit un style outdoor et lance la génération.
-- Then : Le pipeline génère un visuel avec mobilier outdoor (salon de jardin, parasol, plantes, lanternes). La passe 1 traite sol terrasse (dalles, bois composite) et murs extérieurs. La passe 2 ajoute le mobilier outdoor.
-- Critère d'acceptance : Aucun meuble indoor dans le résultat. Le ciel (si visible) est préservé.
+- Then : Le pipeline génère un visuel avec mobilier outdoor weatherproof (salon de jardin résine tressée ou teck huilé, parasol déporté, plantes en pot, lanternes posées). La passe 1 traite le sol terrasse (dalles, bois composite) et préserve les garde-corps existants. La passe 2 ajoute le mobilier outdoor freestanding.
+- Critère d'acceptance : Aucun meuble indoor dans le résultat. Le ciel visible est préservé. Le garde-corps original n'est pas modifié ni supprimé.
 
 **US-F3-02 — Choisir parmi des styles outdoor adaptés (Léa)**
-- Job-to-be-done : Quand j'ai un balcon parisien de 6m², je veux voir des idées de déco minimaliste adaptée à la taille.
-- Given : L'utilisateur est en mode Extérieur.
+- Job-to-be-done : Quand j'ai un balcon parisien de 6m², je veux voir des idées de déco minimaliste adaptées à la contrainte de taille — pas un salon de jardin 4 places impossible à installer.
+- Given : L'utilisateur est en mode Extérieur, sous-type "Balcon".
 - When : Il parcourt les styles disponibles.
-- Then : Les styles outdoor sont affichés (Contemporain Outdoor, Méditerranéen, Bohème, Minimaliste Urbain, Rooftop, Cosy Balcon). Les styles intérieurs sont masqués ou non applicables.
-- Critère d'acceptance : 6 styles outdoor minimum. Chaque style a un `surfacePrompt` et `furniturePrompt` outdoor spécifiques.
+- Then : Les 6 styles outdoor sont affichés (Contemporain Outdoor, Méditerranéen, Bohème Garden, Minimaliste Urbain, Rooftop, Cosy Balcon). Les 12 styles intérieurs sont masqués. Le style "Cosy Balcon" impose automatiquement du mobilier compact (table bistrot 60cm, 2 chaises pliantes, 1 plante haute).
+- Critère d'acceptance : 6 styles outdoor minimum. Chaque style a un `surfacePrompt` et `furniturePrompt` outdoor distincts, sans aucune mention de plafond, luminaire suspendu ou meuble indoor.
 
 **US-F3-03 — Pipeline sans contrainte de plafond (tous)**
-- Job-to-be-done : Quand je génère un visuel de jardin, l'IA ne doit pas inventer un plafond.
-- Given : L'utilisateur lance une génération en mode Extérieur.
-- When : La passe 1 s'exécute.
-- Then : Le prompt de la passe 1 inclut "open-air space, no ceiling, sky visible". La directive "preserve ceiling geometry" est supprimée pour ce mode.
-- Critère d'acceptance : Aucun plafond inventé dans les résultats de passe 1 ou 2.
+- Job-to-be-done : Quand je génère un visuel de jardin ou rooftop, l'IA ne doit pas inventer un plafond, une peinture murale intérieure ou un luminaire suspendu.
+- Given : L'utilisateur lance une génération en mode Extérieur (tout sous-type).
+- When : La passe 1 et la passe 2 s'exécutent dans `route.ts`.
+- Then : Les builders détectent `isOutdoor: true` et court-circuitent les directives "preserve ceiling geometry", "ceiling light fixture" et "wall paint color". Ils injectent à la place "open-air space — no ceiling, sky preserved as-is" en tête des deux prompts.
+- Critère d'acceptance : Aucun plafond inventé en passe 1 ou 2. Aucun luminaire de plafond outdoor inventé.
+
+**US-F3-04 — Alerter si photo intérieure uploadée en mode Extérieur (tous)**
+- Job-to-be-done : Quand je me trompe de mode, je veux être alerté avant de consommer un crédit inutilement.
+- Given : L'utilisateur est en mode Extérieur et uploade une photo visiblement intérieure (plafond visible, murs peints, absence de ciel).
+- When : L'upload est terminé (analyse GPT-4.1-mini en background, < 2s, non bloquante).
+- Then : Un bandeau d'alerte s'affiche : "Cette photo semble être une pièce intérieure. Basculer en mode Intérieur ?" avec [Basculer] [Continuer en Extérieur]. Si l'utilisateur bascule, le toggle est mis à jour et les styles outdoor sont remplacés par les styles intérieurs.
+- Critère d'acceptance : L'alerte n'est jamais bloquante. L'utilisateur peut continuer en mode Extérieur malgré l'alerte. Le crédit n'est jamais consommé avant le clic explicite sur "Générer".
 
 ---
 
 ### F3.2 Wireframes ASCII
 
-**État : Sélecteur mode Extérieur**
+**État : Toggle Intérieur / Extérieur (étape 2 — au-dessus du sélecteur de style)**
 ```
 ┌──────────────────────────────────────────────────────────┐
 │  Type d'espace                                           │
 │                                                          │
-│  [ Intérieur ▼ ]  [ Extérieur ▼ ]                       │
+│  ┌──────────────────┐  ┌──────────────────┐              │
+│  │    Intérieur     │  │   Extérieur  ←   │ (actif)      │
+│  └──────────────────┘  └──────────────────┘              │
 │                                                          │
-│  Mode Extérieur sélectionné :                            │
-│  [Terrasse]  [Balcon]  [Patio]  [Jardin]  [Rooftop]     │
+│  Sous-type outdoor :                                     │
+│  [Terrasse ✓]  [Balcon]  [Patio]  [Jardin]  [Rooftop]   │
+│   ^^^^^^^^ surligné sage #7D9B76                         │
 └──────────────────────────────────────────────────────────┘
 ```
 
-**État : Styles outdoor affichés**
+**État : Grille des 6 styles outdoor**
 ```
 ┌──────────────────────────────────────────────────────────┐
-│  Choisissez une ambiance outdoor                         │
+│  Ambiance outdoor                                        │
 │                                                          │
-│  [Contemporain]  [Méditerranéen]  [Bohème]              │
-│  [Minimaliste Urbain]  [Rooftop]  [Cosy Balcon]          │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐        │
+│  │Contemporain │ │Méditerranéen│ │Bohème Garden│        │
+│  │  Outdoor    │ │             │ │             │        │
+│  └─────────────┘ └─────────────┘ └─────────────┘        │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐        │
+│  │Minimaliste  │ │   Rooftop   │ │Cosy Balcon  │        │
+│  │  Urbain     │ │             │ │             │        │
+│  └─────────────┘ └─────────────┘ └─────────────┘        │
 │                                                          │
-│  ← Les styles intérieur ne s'affichent pas ici           │
+│  Les 12 styles intérieur ne s'affichent pas ici          │
 └──────────────────────────────────────────────────────────┘
 ```
 
-**État : Loading (indicateur spécifique outdoor)**
+**État : Alerte photo intérieure détectée en mode Extérieur**
 ```
-│  ⏳ Génération outdoor en cours... ~35 secondes          │
-│  "Aménagement terrasse Méditerranéen"                    │
-│  (pipeline adapté : pas de plafond)                      │
+┌──────────────────────────────────────────────────────────┐
+│  ⚠ Cette photo semble être une pièce intérieure.         │
+│  Basculer en mode Intérieur pour un meilleur résultat ?  │
+│                                                          │
+│  [Basculer en Intérieur]    [Continuer en Extérieur]     │
+└──────────────────────────────────────────────────────────┘
+```
+
+**État : Loading outdoor (2 passes avec labels adaptés)**
+```
+┌──────────────────────────────────────────────────────────┐
+│  [Photo floue — génération outdoor en cours...]          │
+│                                                          │
+│  ⏳ Aménagement Méditerranéen — Terrasse                 │
+│  Passe 1 : sol dalles + façades ... ~20s                 │
+│  Passe 2 : mobilier outdoor ... ~20s                     │
+│                                                          │
+│  [Annuler]                                               │
+└──────────────────────────────────────────────────────────┘
+```
+
+**État : Résultat outdoor dans le comparateur**
+```
+┌──────────────────────────────────────────────────────────┐
+│  [◄─────── Comparateur avant/après outdoor ────────────►]│
+│                                                          │
+│  Terrasse — Méditerranéen                                │
+│                                                          │
+│  [ ⬇ Télécharger HD ]   [ ✏ Affiner ]   [ Partager ]   │
+└──────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ### F3.3 Règles métier
 
-- Le mode Extérieur est sélectionné via un toggle "Intérieur / Extérieur" en tête de l'étape 2 (Style).
-- Sous-types disponibles : Terrasse, Balcon, Patio, Jardin, Rooftop. Chaque sous-type ajuste le prompt (ex. Balcon = espace contraint, mobilier compact).
-- **Passe 1 outdoor** : surfacePrompt cible les finitions extérieures (dalles en pierre, bois composite, béton ciré extérieur). Directive "open-air, no ceiling" obligatoire.
-- **Passe 2 outdoor** : furniturePrompt contient uniquement du mobilier outdoor weatherproof (résine tressée, teck huilé, aluminium). Aucun meuble indoor.
-- **Styles disponibles en mode Extérieur** : 6 styles dédiés (Contemporain Outdoor, Méditerranéen, Bohème Garden, Minimaliste Urbain, Rooftop, Cosy Balcon). Les 12 styles intérieurs ne s'affichent pas.
-- **Negative prompt outdoor** : ajout de "indoor furniture, sofa, carpet, curtains, ceiling fixture" pour passe 2.
-- **Coût crédit** : identique à l'intérieur (1 crédit / photo). Le mode extérieur n'est pas une feature premium séparée.
+**Toggle et sous-types :**
+- Le mode Extérieur est sélectionné via un toggle "Intérieur / Extérieur" en tête du sélecteur de style (étape 2). Valeur par défaut : Intérieur.
+- 5 sous-types : Terrasse, Balcon, Patio, Jardin, Rooftop. Chaque sous-type injecte un bloc de prompt additif défini dans `lib/outdoor-subtypes.ts`.
+- Sous-type "Balcon" : ajoute au furniturePrompt "compact furniture only — bistro table 60cm, folding chairs, no large garden sets, no sun loungers".
+- Sous-type "Jardin" : ajoute "preserve all existing trees, grass, hedges — add furniture in foreground only, do not alter background vegetation".
+- Sous-type "Rooftop" : ajoute aux deux passes "preserve skyline, horizon line and parapet walls exactly as in the input — do not invent new guard rails".
+- Sous-type "Patio" : ajoute "enclosed outdoor space, partial shade, stone or tile ground — preserve any existing walls or arches".
+
+**Pipeline outdoor — différences structurelles vs indoor :**
+
+Les builders de `route.ts` détectent `isOutdoor: true` dans le body de la requête et appliquent les substitutions suivantes :
+- Suppression des directives "preserve ceiling geometry", "ceiling light fixture", "wall paint color".
+- Injection en tête des deux prompts : "open-air space — no ceiling, sky preserved as-is".
+- Suppression de toute directive de luminaire (plafond ou suspendu).
+- Passe 1 cible : revêtement de sol extérieur uniquement (dalles pierre naturelle, bois composite, béton ciré extérieur, grès cérame antidérapant). Garde-corps, murets et façades existants PRESERVÉS ("do not alter guard rails, exterior walls or facades").
+- Passe 2 cible : mobilier outdoor freestanding uniquement. Aucun objet suspendu. Aucun élément fixé au sol ou aux murs.
+
+**Catalogue des 6 styles outdoor (défini dans `lib/outdoor-styles.ts`) :**
+
+| Style | surfacePrompt (résumé) | furniturePrompt (résumé) |
+|---|---|---|
+| Contemporain Outdoor | Dalles béton gris clair lissé, garde-corps acier inox | Canapé modulaire anthracite résine, table basse verre trempé, lanternes LED posées au sol |
+| Méditerranéen | Carrelage grès cérame ocre ou tomettes terre cuite, muret pierre | Table fer forgé blanc 120cm, 4 chaises bistrot, 2 pots d'olivier, pergola apparente |
+| Bohème Garden | Dalles grès récupéré irrégulier, graviers blancs | Poufs extérieur imperméables, tapis outdoor jute, plantes tropicales, guirlande solaire |
+| Minimaliste Urbain | Béton ciré extérieur gris, joints millimétriques | 2 chaises longues teck naturel, table basse rectangle en béton fibré, 1 plante haute pot béton |
+| Rooftop | Lames bois IPE gris argenté, garde-corps corten préservé | Banquette modulaire imperméable gris charbon, parasol déporté noir, vue sur ville préservée |
+| Cosy Balcon | Lames bois composite chaud 120mm, garde-corps existant préservé | Table bistrot ronde 60cm zinc, 2 chaises métal pliantes, 1 plante haute, guirlande LED posée |
+
+**Negative prompt outdoor (ajouté automatiquement en passe 2, dans FLUX_NEGATIVE_PROMPT et OpenAI prompt) :**
+- "indoor sofa, area rug, floor lamp, ceiling light, chandelier, curtains, drapes, wallpaper, baseboard, interior door, radiator, electrical outlet, kitchen appliances"
+
+**Coût crédit :**
+- 1 crédit / photo, identique à l'intérieur. Le mode Extérieur n'est pas une feature premium séparée.
+- Les itérations (F1) fonctionnent en mode Extérieur avec la même logique (re-passe 2 sur le résultat de passe 1 outdoor).
 
 ---
 
 ### F3.4 Edge cases
 
-1. **Photo avec ciel très exposé (surexposé)** : La directive "preserve highlights, do not recover blown-out sky" s'applique. Le résultat peut avoir un ciel blanc — acceptable.
-2. **Balcon de 4m²** : Le furniturePrompt Balcon impose "compact furniture only: bistro table 60cm, 2 folding chairs, 1 planter box". Pas de salon de jardin 4 places.
-3. **Photo de jardin très grand avec arbres existants** : La passe 1 ne touche pas à la végétation existante. Directive "preserve existing trees, hedges and lawn". La passe 2 ajoute du mobilier au premier plan uniquement.
-4. **Rooftop avec vue sur ville** : La directive "preserve skyline and horizon line" est ajoutée. Le modèle ne doit pas inventer de garde-corps ou de muret absent de l'original.
-5. **Jardin + style "Scandinave"** : Combinaison incohérente (Scandinave = intérieur). En mode Extérieur, le style "Scandinave" n'est pas proposé. Si l'utilisateur contourne via custom, GPT-4.1-mini adapte.
-6. **Photo intérieure uploadée en mode Extérieur** : GPT-4.1-mini détecte "indoor space" et affiche : "Cette photo semble être une pièce intérieure. Basculer en mode Intérieur ?" avec [Oui] [Continuer en Extérieur].
+1. **Photo avec ciel très surexposé (ciel blanc grillé)** : La directive "preserve highlights — do not recover blown-out sky" s'applique. Le résultat peut avoir un ciel blanc — acceptable. Ne pas inventer un ciel bleu absent de l'original.
+2. **Balcon de 4m² avec sous-type "Rooftop" sélectionné par erreur** : Combinaison incohérente. Pas de blocage côté système, mais le furniturePrompt Rooftop (banquette modulaire, parasol déporté) produit un résultat impraticable. Recommandation UX : le sous-type "Rooftop" affiche un tag "Grands espaces" pour guider l'utilisateur.
+3. **Jardin avec arbres existants en arrière-plan** : La passe 1 ne touche pas à la végétation. Directive explicite "preserve all existing trees, hedges and lawn — only update ground surface in the foreground zone". La passe 2 ajoute du mobilier au premier plan uniquement. Risque résiduel : le modèle peut coloriser légèrement la végétation pour cohérence colorimétrique — acceptable.
+4. **Rooftop avec garde-corps spécifique (corten, verre, inox)** : La directive "preserve guard rails and parapet walls exactly as in the input" est prioritaire. Le modèle ne doit ni supprimer ni remplacer le matériau du garde-corps. Risque : sur Flux Depth Pro, la depth map peut mal segmenter des garde-corps fins en verre — fallback OpenAI recommandé.
+5. **Patio avec murs intérieurs partiels (mi-intérieur, mi-extérieur)** : Les murs du patio sont traités comme des façades extérieures (pas de peinture intérieure). Si le mode Extérieur est actif, les directives "wall paint color" ne s'appliquent pas, même si des murs sont visibles.
+6. **Custom prompt en mode Extérieur** : GPT-4.1-mini reçoit `isOutdoor: true` dans son system prompt. Il filtre automatiquement les éléments indoor du texte custom (canapé, parquet, lustre) et les remplace par des équivalents outdoor (canapé d'extérieur résine, dalles, lanterne). Un warning FR est affiché si des substitutions sont faites.
+7. **Mode Extérieur + F2 Type de pièce actif simultanément** : F2 (sélecteur de type de pièce intérieure) est masqué en mode Extérieur. Si l'utilisateur bascule de Intérieur vers Extérieur avec un type de pièce déjà sélectionné, le type est désélectionné automatiquement (pas d'override de pièce indoor en mode outdoor).
+8. **Photo de nuit (terrasse éclairée artificiellemement)** : La directive "preserve existing lighting conditions" s'applique normalement. Le furniturePrompt peut inclure des lanternes et bougies (cohérents avec une ambiance nocturne). Ne pas forcer une lumière diurne absente de l'original.
 
 ---
 
@@ -425,29 +497,40 @@ Terrasse, balcon, patio, jardin, rooftop. Pipeline sans plafond. Mobilier outdoo
 
 | Event name | Properties | Trigger |
 |---|---|---|
-| `outdoor_mode_activated` | `{ subtype: 'terrasse'|'balcon'|'patio'|'jardin'|'rooftop' }` | Toggle Extérieur |
+| `outdoor_mode_activated` | `{ previous_mode: 'indoor' }` | Premier clic sur toggle Extérieur |
+| `outdoor_mode_deactivated` | `{ subtype_was: string }` | Retour au mode Intérieur |
+| `outdoor_subtype_selected` | `{ subtype: 'terrasse'|'balcon'|'patio'|'jardin'|'rooftop' }` | Clic sur sous-type outdoor |
 | `outdoor_style_selected` | `{ style_id, subtype }` | Clic sur style outdoor |
-| `outdoor_generation_started` | `{ style_id, subtype, photo_count }` | Lancement génération |
-| `outdoor_generation_completed` | `{ style_id, subtype, duration_ms, model_used }` | Fin génération |
-| `outdoor_indoor_conflict_detected` | `{ detected: 'indoor', user_mode: 'outdoor' }` | Détection auto-conflit |
+| `outdoor_generation_started` | `{ style_id, subtype, photo_count, custom_prompt: bool }` | Clic Générer en mode Extérieur |
+| `outdoor_generation_completed` | `{ style_id, subtype, duration_ms, model_used, success: bool }` | Fin de génération outdoor |
+| `outdoor_generation_failed` | `{ style_id, subtype, reason: 'timeout'|'api_error'|'fallback_failed' }` | Erreur génération outdoor |
+| `outdoor_indoor_conflict_detected` | `{ subtype, confidence: 'high'|'low' }` | GPT-4.1-mini détecte photo indoor |
+| `outdoor_indoor_conflict_switched` | `{ subtype }` | Clic "Basculer en Intérieur" après alerte |
+| `outdoor_indoor_conflict_dismissed` | `{ subtype }` | Clic "Continuer en Extérieur" malgré alerte |
+| `outdoor_custom_prompt_filtered` | `{ items_removed_count, style_id }` | GPT-4.1-mini a supprimé des éléments indoor du custom |
 
 ---
 
 ### F3.6 Dépendances
 
-- **Technique** : Création de `lib/outdoor-styles.ts` (6 styles × surfacePrompt + furniturePrompt outdoor).
-- **Technique** : Création de `lib/outdoor-room-types.ts` (5 sous-types × blocs de prompt additifs).
-- **Technique** : `route.ts` : ajout d'une branche `isOutdoor: bool`. Si true → suppression des directives plafond et luminaire des builders. Ajout du negative prompt outdoor.
-- **Technique** : `StylePicker.tsx` : toggle Intérieur/Extérieur. Mode Extérieur affiche les 6 styles outdoor et masque les 12 styles intérieurs.
-- **Produit** : F3 est indépendant de F1. F3 peut coexister avec F2 (type de pièce = extérieur). F3 doit être conçu après F2 (partage la logique de toggle type de pièce).
+- **Technique** : Création de `lib/outdoor-styles.ts` — 6 styles outdoor, chacun avec `surfacePrompt` et `furniturePrompt` distincts (aucune mention de plafond, luminaire suspendu, ou meuble indoor).
+- **Technique** : Création de `lib/outdoor-subtypes.ts` — 5 sous-types, chacun avec un bloc de prompt additif (blocs courts, < 20 mots, injectés en fin de surfacePrompt et furniturePrompt).
+- **Technique** : `route.ts` — ajout du paramètre `isOutdoor: bool` dans le body. Si `true` : les builders court-circuitent les directives plafond, luminaire et peinture murale. Le negative prompt outdoor est ajouté à la passe 2.
+- **Technique** : `StylePicker.tsx` — toggle Intérieur/Extérieur (état React local). Mode Extérieur affiche la grille des 6 styles outdoor et masque les 12 styles intérieurs. Le sous-type sélectionné est transmis dans le body via `outdoorSubtype`.
+- **Technique** : `/api/preprocess-prompt` — le system prompt de GPT-4.1-mini est mis à jour pour recevoir `isOutdoor: true` et filtrer les éléments indoor des prompts custom en mode Extérieur.
+- **Technique** : `app/page.tsx` — transmission de `isOutdoor` et `outdoorSubtype` dans le body du fetch `/api/generate`.
+- **Produit** : F3 est indépendant de F1 (itérations outdoor fonctionnent). F3 et F2 (type de pièce) sont mutuellement exclusifs en UI — masquage du sélecteur F2 en mode Extérieur. F3 partage la logique de toggle de F2.
+- **Produit** : F3 peut être implémenté après F2 sans dépendance de planning.
 
 ---
 
 ### F3.7 Performance
 
-- Pipeline outdoor = même latence que indoor (< 90s total, 2 passes).
-- Pas de traitement supplémentaire côté serveur (seul le prompt change).
-- Toggle Extérieur/Intérieur : instantané (client only).
+- Pipeline outdoor = même latence que indoor : < 90s total P95 (2 passes OpenAI Responses API).
+- Fallback Flux Depth Pro outdoor : < 70s. La depth map fonctionne sur les espaces extérieurs (sol, garde-corps, meubles). Risque : vegetation dense peut dégrader la depth map.
+- Toggle Extérieur/Intérieur : instantané (client only, 0ms serveur).
+- Détection photo intérieure en mode Extérieur (GPT-4.1-mini) : < 2s, déclenché après upload en background sans bloquer l'étape 2.
+- Aucune requête supplémentaire au moment de la génération : toute la logique outdoor est une substitution de prompt côté serveur, sans surcoût de latence.
 
 ---
 
