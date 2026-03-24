@@ -11,7 +11,7 @@ import {
   PASS1_TTL_MS,
 } from "@/lib/iteration-prompt";
 import { applyRoomTypeOverrides } from "@/lib/room-types";
-import { applyOutdoorSubtypeOverrides } from "@/lib/outdoor-subtypes";
+import { applyOutdoorSubtypeOverrides, OUTDOOR_SUBTYPES } from "@/lib/outdoor-subtypes";
 import {
   buildIterationOutdoorFurnitureResponsesPrompt,
   buildIterationOutdoorFurnitureFluxPrompt,
@@ -778,7 +778,7 @@ export async function POST(request: NextRequest) {
       negativeOverride = subtypeNegativeOverride;
 
       // Extract raw subtype overrides for injection into builders
-      const sub = outdoorSubtype ? (await import("@/lib/outdoor-subtypes")).OUTDOOR_SUBTYPES[outdoorSubtype] : null;
+      const sub = outdoorSubtype ? OUTDOOR_SUBTYPES[outdoorSubtype] : null;
       outdoorParam = {
         isOutdoor: true,
         subtypeSurfaceOverride: sub?.subtypeSurfaceOverride ?? "",
