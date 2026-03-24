@@ -730,6 +730,11 @@ export default function Home() {
                     selectedRoomType={selectedRoomType}
                     onSelect={setSelectedRoomType}
                   />
+                  {!selectedRoomType && selectedStyle && (
+                    <p className="text-xs text-sage font-light text-center mt-2">
+                      S&eacute;lectionnez un type de pi&egrave;ce pour continuer
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -786,7 +791,7 @@ export default function Home() {
             <div id="step-generate" className="text-center mb-16 animate-fade-in-up sticky bottom-6 z-40">
               <button
                 onClick={handleGenerate}
-                disabled={isGenerating}
+                disabled={isGenerating || (!isOutdoor && selectedStyle !== null && !selectedRoomType)}
                 className="inline-flex items-center gap-3 bg-foreground text-background px-10 py-4 rounded-full font-medium text-base hover:bg-foreground/85 transition-all disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 shadow-lg"
               >
                 {isGenerating ? (
