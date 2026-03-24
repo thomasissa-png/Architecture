@@ -111,11 +111,41 @@ Moyenne — 5 agents (reviewer, Yann, Lucas, fullstack, reviewer), 2 features su
 
 ---
 
+## Sprint 19 — Bug Fixes Production (2026-03-24)
+
+### Diagnostic
+3 bugs remontes par l'utilisateur :
+
+**P1a — Images back-office disparaissent** : Malgre la migration vers @replit/object-storage (Sprint 16), les images continuent a disparaitre. L'erreur "fetch failed" lors de l'init du StorageClient indique un probleme d'initialisation du SDK ou de provisioning du bucket.
+
+**P1b — Iterations cassees** : Meme cause racine que P1a. `getPass1Cache()` utilise le StorageClient qui echoue. L'erreur exacte cote client : "Error during client initialization: fetch failed. Votre iteration n'a pas ete consommee."
+
+**P2 — Type de piece avant style** : En mode interieur, RoomTypePicker est APRES StylePicker (page.tsx:726-732). En mode outdoor, le subtype est DANS StylePicker. Demande : uniformiser en mettant type de piece AVANT style pour l'interieur.
+
+### Phase S19.1 — Fix @fullstack
+- Agent : @fullstack
+- Statut : EN COURS
+- Corrections a effectuer :
+  1. Diagnostiquer et fixer le StorageClient (ou implementer alternative robuste)
+  2. Fixer le flux d'iteration (meme cause racine)
+  3. Deplacer RoomTypePicker AVANT StylePicker en mode interieur
+- Livrables attendus : lib/db.ts, app/page.tsx modifies
+- Criteres d'acceptation :
+  - Images persistent entre redeploys
+  - Iteration fonctionne sans erreur init
+  - Type de piece apparait avant style en mode interieur
+
+---
+
 ## Feedbacks remontants
 | # | Severite | Agent source | Agent cible | Probleme | Statut |
 |---|---|---|---|---|---|
+| 1 | P0 | utilisateur | @fullstack | Images Object Storage disparaissent | EN COURS |
+| 2 | P0 | utilisateur | @fullstack | Iteration "fetch failed" init client | EN COURS |
+| 3 | P2 | utilisateur | @fullstack | Type de piece apres style au lieu d'avant | EN COURS |
 
 ## Decisions d'arbitrage
 | # | Sujet | Decision | Justification | Agents impactes |
 |---|---|---|---|---|
 | 1 | Reserves F2 | Inclure fix H-01, H-02, M-01 dans Phase F3.2 | Corriger avant d'ajouter outdoor pour ne pas accumuler la dette | @fullstack |
+| 2 | Object Storage | Si le SDK ne fonctionne pas, migrer vers PostgreSQL bytea ou base64 stocke dans une table dediee | Replit Object Storage est le seul point de defaillance des 2 bugs P0 | @fullstack |
