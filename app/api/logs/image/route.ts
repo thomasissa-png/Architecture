@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
     const buffer = await getImage(key);
     if (!buffer) {
       console.warn(`/api/logs/image: 404 for key "${key}" (file param: "${file}")`);
-      return NextResponse.json({ error: "Image not found", key, detail: "Key does not exist in Object Storage" }, { status: 404 });
+      return NextResponse.json({ error: "Image not found", key, detail: "Key does not exist in database" }, { status: 404 });
     }
     return new NextResponse(new Uint8Array(buffer), {
       headers: {
