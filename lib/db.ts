@@ -55,7 +55,9 @@ async function ensureTable(): Promise<void> {
       user_comment_raw   TEXT,
       user_comment_enriched TEXT,
       pass1_cache_key    TEXT,
-      room_type          VARCHAR(50)
+      room_type          VARCHAR(50),
+      is_outdoor         BOOLEAN DEFAULT FALSE,
+      outdoor_subtype    VARCHAR(50)
     );
     CREATE INDEX IF NOT EXISTS idx_gen_logs_created ON generation_logs (created_at DESC);
     CREATE INDEX IF NOT EXISTS idx_gen_logs_style ON generation_logs (style_id);
@@ -105,6 +107,8 @@ export interface Pass1Meta {
   surfacePrompt: string;
   createdAt: number; // Date.now()
   roomType?: string | null; // F2: room type for iteration coherence
+  isOutdoor?: boolean; // F3: outdoor mode
+  outdoorSubtype?: string | null; // F3: terrasse, balcon, patio, jardin, rooftop
 }
 
 export async function savePass1Cache(
@@ -194,6 +198,9 @@ export interface GenerationLogParams {
   userCommentEnriched?: string;
   pass1CacheKey?: string;
   roomType?: string | null;
+  // F3 outdoor fields
+  isOutdoor?: boolean;
+  outdoorSubtype?: string | null;
 }
 
 export async function logGeneration(params: GenerationLogParams): Promise<void> {
@@ -222,8 +229,8 @@ export async function logGeneration(params: GenerationLogParams): Promise<void> 
       input_image_path, pass1_image_path, output_image_path,
       is_iteration, iteration_number, session_id,
       user_comment_raw, user_comment_enriched, pass1_cache_key,
-      room_type
-    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27)`,
+      room_type, is_outdoor, outdoor_subtype
+    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29)`,
     [
       params.ip,
       params.styleId,
@@ -252,6 +259,8 @@ export async function logGeneration(params: GenerationLogParams): Promise<void> 
       params.userCommentEnriched ?? null,
       params.pass1CacheKey ?? null,
       params.roomType ?? null,
+      params.isOutdoor ?? false,
+      params.outdoorSubtype ?? null,
     ]
   );
 }
