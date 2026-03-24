@@ -586,7 +586,7 @@ export default function Home() {
             <span className="font-light text-muted">meubl&eacute;s par l&apos;IA</span>
           </h2>
           <p className="text-base sm:text-lg text-muted font-light leading-relaxed max-w-2xl mx-auto mb-6 sm:mb-8">
-            Uploadez une photo de pi&egrave;ce vide, choisissez un style parmi 11 ambiances, et recevez un visuel meubl&eacute; en quelques secondes. Pour les pros comme pour les particuliers.
+            Uploadez une photo de pi&egrave;ce vide, choisissez un style parmi 11 ambiances, et recevez un visuel meubl&eacute; en quelques minutes. Pour les pros comme pour les particuliers.
           </p>
 
           {/* Hero before/after — richly illustrated mock */}
@@ -651,7 +651,7 @@ export default function Home() {
 
           {/* Social proof line */}
           <p className="text-xs text-muted/70 font-light mb-6">
-            11 styles disponibles &middot; R&eacute;sultat en 10-30 secondes &middot; T&eacute;l&eacute;chargement HD gratuit
+            11 styles disponibles &middot; R&eacute;sultat en ~2 minutes &middot; T&eacute;l&eacute;chargement HD gratuit
           </p>
 
           <a
@@ -844,9 +844,9 @@ export default function Home() {
               {/* Timer */}
               <div className="text-center">
                 <p className="text-xs text-muted/70 font-light">
-                  {generationElapsed < 10
-                    ? `${generationElapsed}s — Estimation : 10-30 secondes par image`
-                    : generationElapsed < 30
+                  {generationElapsed < 30
+                    ? `${generationElapsed}s — Estimation : jusqu\u2019\u00e0 2 minutes par image`
+                    : generationElapsed < 90
                     ? `${generationElapsed}s — G\u00e9n\u00e9ration en cours\u2026`
                     : `${generationElapsed}s — Presque termin\u00e9\u2026`}
                 </p>
@@ -918,7 +918,7 @@ export default function Home() {
                                   <div className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
                                 </div>
                                 <p className="text-sm text-foreground font-medium mb-1">
-                                  Ajustement en cours&hellip; ~25 secondes
+                                  Ajustement en cours&hellip; jusqu&apos;&agrave; 2 minutes
                                 </p>
                                 <p className="text-xs text-muted/70 font-light">
                                   {refineElapsed}s
