@@ -703,12 +703,23 @@ export default function Home() {
             <UploadZone files={files} onFilesChange={setFiles} />
           </div>
 
-          {/* Step 2: Style */}
+          {/* Step 2: Style (+ Room type for interior, before style picker) */}
           {files.length > 0 && (
             <div id="step-style" className="mb-16 animate-fade-in-up scroll-mt-20">
               <h4 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
                 02 — Style
               </h4>
+
+              {/* F2: Room type selector — BEFORE style in indoor mode (Sprint 19: uniformise with outdoor subtype flow) */}
+              {!isOutdoor && (
+                <div className="mb-6 pb-5 border-b border-gray-100">
+                  <RoomTypePicker
+                    selectedRoomType={selectedRoomType}
+                    onSelect={setSelectedRoomType}
+                  />
+                </div>
+              )}
+
               <StylePicker
                 selectedStyle={selectedStyle}
                 customPrompt={customPrompt}
@@ -721,16 +732,6 @@ export default function Home() {
                 selectedSubtype={outdoorSubtype}
                 onSelectSubtype={setOutdoorSubtype}
               />
-
-              {/* F2: Room type selector (optional) — hidden in outdoor mode */}
-              {!isOutdoor && (
-                <div className="mt-6 pt-5 border-t border-gray-100">
-                  <RoomTypePicker
-                    selectedRoomType={selectedRoomType}
-                    onSelect={setSelectedRoomType}
-                  />
-                </div>
-              )}
             </div>
           )}
 

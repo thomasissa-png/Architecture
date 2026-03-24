@@ -66,20 +66,48 @@ async function ensureTable(): Promise<void> {
 }
 
 // ─── Save image to Replit Object Storage (persistent across deploys) ─
+// Sprint 19: Resilient StorageClient with retry/reinit.
+// The SDK talks to a local sidecar (127.0.0.1:1106). If the sidecar is
+// unavailable at init time, the client enters a permanent "error" state
+// and never recovers. Fix: detect error state and create a fresh client.
 let storageClient: StorageClient | null = null;
 
 function getStorage(): StorageClient {
+  if (storageClient) {
+    // Check if client is stuck in error state (internal SDK state)
+    const state = (storageClient as unknown as { state?: { status?: string } }).state;
+    if (state?.status === "error") {
+      console.warn("Object Storage client in error state — reinitializing...");
+      storageClient = null;
+    }
+  }
   if (!storageClient) {
     storageClient = new StorageClient();
   }
   return storageClient;
 }
 
+/** Run a storage operation with 1 automatic retry (reinit client on failure). */
+async function withStorageRetry<T>(
+  operation: (client: StorageClient) => Promise<T>,
+  label: string
+): Promise<T> {
+  try {
+    return await operation(getStorage());
+  } catch (err) {
+    console.warn(`Object Storage "${label}" failed, retrying with fresh client...`, err instanceof Error ? err.message : err);
+    storageClient = null; // Force reinit
+    return await operation(getStorage());
+  }
+}
+
 async function saveImage(base64: string, name: string): Promise<string> {
   const key = `logs/${name}.jpg`;
   const buffer = Buffer.from(base64, "base64");
-  const storage = getStorage();
-  const { ok, error } = await storage.uploadFromBytes(key, buffer);
+  const { ok, error } = await withStorageRetry(
+    (client) => client.uploadFromBytes(key, buffer),
+    `saveImage(${key})`
+  );
   if (!ok) {
     console.error("Object Storage upload failed:", error);
     throw new Error(`Failed to upload ${key}: ${error}`);
@@ -88,8 +116,11 @@ async function saveImage(base64: string, name: string): Promise<string> {
 }
 
 export async function getImage(key: string): Promise<Uint8Array | null> {
-  const storage = getStorage();
-  const { ok, value } = await storage.downloadAsBytes(key);
+  const result = await withStorageRetry(
+    (client) => client.downloadAsBytes(key),
+    `getImage(${key})`
+  );
+  const { ok, value } = result;
   if (!ok || !value) return null;
   // SDK returns [Buffer] tuple
   const buf = value[0];
@@ -116,19 +147,23 @@ export async function savePass1Cache(
   imageBase64: string,
   meta: Pass1Meta
 ): Promise<void> {
-  const storage = getStorage();
-
-  // Save image
+  // Save image (with retry)
   const imgBuffer = Buffer.from(imageBase64, "base64");
-  const imgResult = await storage.uploadFromBytes(key, imgBuffer);
+  const imgResult = await withStorageRetry(
+    (client) => client.uploadFromBytes(key, imgBuffer),
+    `savePass1Cache-img(${key})`
+  );
   if (!imgResult.ok) {
     throw new Error(`Failed to cache pass1 image: ${imgResult.error}`);
   }
 
-  // Save meta alongside
+  // Save meta alongside (with retry)
   const metaKey = key.replace(".jpg", "_meta.json");
   const metaBuffer = Buffer.from(JSON.stringify(meta), "utf-8");
-  const metaResult = await storage.uploadFromBytes(metaKey, metaBuffer);
+  const metaResult = await withStorageRetry(
+    (client) => client.uploadFromBytes(metaKey, metaBuffer),
+    `savePass1Cache-meta(${metaKey})`
+  );
   if (!metaResult.ok) {
     throw new Error(`Failed to cache pass1 meta: ${metaResult.error}`);
   }
@@ -137,17 +172,21 @@ export async function savePass1Cache(
 export async function getPass1Cache(
   key: string
 ): Promise<{ imageBase64: string; meta: Pass1Meta } | null> {
-  const storage = getStorage();
-
-  // Read image
-  const imgResult = await storage.downloadAsBytes(key);
+  // Read image (with retry)
+  const imgResult = await withStorageRetry(
+    (client) => client.downloadAsBytes(key),
+    `getPass1Cache-img(${key})`
+  );
   if (!imgResult.ok || !imgResult.value) return null;
   const imgBuf = imgResult.value[0];
   const imageBase64 = Buffer.from(imgBuf.buffer, imgBuf.byteOffset, imgBuf.byteLength).toString("base64");
 
-  // Read meta
+  // Read meta (with retry)
   const metaKey = key.replace(".jpg", "_meta.json");
-  const metaResult = await storage.downloadAsBytes(metaKey);
+  const metaResult = await withStorageRetry(
+    (client) => client.downloadAsBytes(metaKey),
+    `getPass1Cache-meta(${metaKey})`
+  );
   if (!metaResult.ok || !metaResult.value) return null;
   const metaBuf = metaResult.value[0];
   const meta: Pass1Meta = JSON.parse(
@@ -158,9 +197,11 @@ export async function getPass1Cache(
 }
 
 export async function getPass1Meta(key: string): Promise<Pass1Meta | null> {
-  const storage = getStorage();
   const metaKey = key.replace(".jpg", "_meta.json");
-  const result = await storage.downloadAsBytes(metaKey);
+  const result = await withStorageRetry(
+    (client) => client.downloadAsBytes(metaKey),
+    `getPass1Meta(${metaKey})`
+  );
   if (!result.ok || !result.value) return null;
   const buf = result.value[0];
   return JSON.parse(

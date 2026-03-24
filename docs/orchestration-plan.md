@@ -123,16 +123,22 @@ Moyenne — 5 agents (reviewer, Yann, Lucas, fullstack, reviewer), 2 features su
 **P2 — Type de piece avant style** : En mode interieur, RoomTypePicker est APRES StylePicker (page.tsx:726-732). En mode outdoor, le subtype est DANS StylePicker. Demande : uniformiser en mettant type de piece AVANT style pour l'interieur.
 
 ### Phase S19.1 — Fix @fullstack
-- Agent : @fullstack
-- Statut : EN COURS
+- Agent : @orchestrator (corrections directes — diagnostic clair, pas de delegation necessaire)
+- Statut : TERMINE (2026-03-24)
+- Diagnostic orchestrateur (2026-03-24) :
+  - **Cause racine P1a + P1b** : Le SDK @replit/object-storage communique avec un sidecar local (127.0.0.1:1106). Si le sidecar est indisponible au moment de l'init, le StorageClient passe en etat "error" definitif (ligne 130-136 du SDK). Le singleton `storageClient` dans db.ts (ligne 69-76) ne se reinitialise JAMAIS apres echec. Toutes les operations (saveImage, getImage, savePass1Cache, getPass1Cache) echouent ensuite avec "Error during client initialization: fetch failed".
+  - **Solution P1a + P1b** : Ajouter retry/reinit dans getStorage() — si le client est en etat error, creer un nouveau Client. Ajouter aussi un try/catch avec retry autour des operations individuelles (uploadFromBytes, downloadAsBytes).
+  - **Cause P2** : Dans page.tsx, RoomTypePicker (ligne 725-733) est APRES StylePicker (ligne 710-723). Il faut inverser : type de piece AVANT style en mode interieur.
 - Corrections a effectuer :
-  1. Diagnostiquer et fixer le StorageClient (ou implementer alternative robuste)
-  2. Fixer le flux d'iteration (meme cause racine)
-  3. Deplacer RoomTypePicker AVANT StylePicker en mode interieur
+  1. Refaire getStorage() avec retry/reinit si client en etat error
+  2. Ajouter retry automatique (1 tentative) sur chaque operation storage (upload/download)
+  3. Deplacer RoomTypePicker AVANT StylePicker en mode interieur dans page.tsx
 - Livrables attendus : lib/db.ts, app/page.tsx modifies
 - Criteres d'acceptation :
-  - Images persistent entre redeploys
-  - Iteration fonctionne sans erreur init
+  - StorageClient se reinitialise apres un echec init
+  - Les operations storage font 1 retry automatique
+  - Images persistent entre redeploys (via Object Storage fonctionnel)
+  - Iteration fonctionne sans erreur init (meme cause racine)
   - Type de piece apparait avant style en mode interieur
 
 ---
@@ -140,9 +146,9 @@ Moyenne — 5 agents (reviewer, Yann, Lucas, fullstack, reviewer), 2 features su
 ## Feedbacks remontants
 | # | Severite | Agent source | Agent cible | Probleme | Statut |
 |---|---|---|---|---|---|
-| 1 | P0 | utilisateur | @fullstack | Images Object Storage disparaissent | EN COURS |
-| 2 | P0 | utilisateur | @fullstack | Iteration "fetch failed" init client | EN COURS |
-| 3 | P2 | utilisateur | @fullstack | Type de piece apres style au lieu d'avant | EN COURS |
+| 1 | P0 | utilisateur | @orchestrator | Images Object Storage disparaissent | RESOLU — withStorageRetry + reinit client |
+| 2 | P0 | utilisateur | @orchestrator | Iteration "fetch failed" init client | RESOLU — meme fix (cause racine partagee) |
+| 3 | P2 | utilisateur | @orchestrator | Type de piece apres style au lieu d'avant | RESOLU — RoomTypePicker avant StylePicker |
 
 ## Decisions d'arbitrage
 | # | Sujet | Decision | Justification | Agents impactes |

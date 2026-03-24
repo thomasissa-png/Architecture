@@ -557,6 +557,25 @@ agents/
     - Le color shift warm est cause par les surfacePrompts ("warm white", "warm tint") qui ecrasent la temperature d'origine
     - Toutes les corrections sont CONDITIONNELLES — neutres sur les pieces sans ces elements, ne cassent pas les generations existantes
 
+### Sprint 19 — Fix production (3 bugs utilisateur)
+153. CRITIQUE : Fix StorageClient resilient dans lib/db.ts
+    - Cause racine : le SDK @replit/object-storage communique avec un sidecar local (127.0.0.1:1106). Si le sidecar est indisponible a l'init, le client entre en etat "error" permanent et ne retente jamais.
+    - Le singleton storageClient dans db.ts ne se reinitialisait jamais apres un echec.
+    - Fix : getStorage() detecte l'etat "error" interne du SDK et reinitialise le client.
+    - Fix : withStorageRetry() wraps toutes les operations storage (upload/download) avec 1 retry automatique + reinit client.
+    - Toutes les fonctions (saveImage, getImage, savePass1Cache, getPass1Cache, getPass1Meta) migrees vers withStorageRetry.
+154. CRITIQUE : Fix iteration "Error during client initialization: fetch failed"
+    - Meme cause racine que 153 : getPass1Cache() utilisait getStorage() qui retournait un client en etat erreur permanent.
+    - Fix : la meme correction withStorageRetry() resout les 2 problemes (images + iterations).
+155. UX : RoomTypePicker deplace AVANT StylePicker en mode interieur (page.tsx)
+    - Ancien : type de piece apres style (incoherent avec le mode exterieur qui a le subtype avant le style)
+    - Nouveau : type de piece en premier, separe par un border-bottom, puis style
+    - Uniformise le flow interieur avec le flow exterieur
+156. Apprentissages :
+    - Le SDK @replit/object-storage n'a AUCUNE resilience intrinseque : un echec d'init est permanent et silencieux
+    - Toujours wrapper les SDKs tiers avec retry + reinit, surtout quand ils dependent d'un service local (sidecar)
+    - L'etat interne du SDK est accessible via (client as any).state.status — fragile mais necessaire sans API publique de health check
+
 ## Regles de Developpement
 
 - Design minimaliste, pas de surcharge visuelle
