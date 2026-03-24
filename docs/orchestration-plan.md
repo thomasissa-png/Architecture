@@ -68,10 +68,46 @@ Moyenne — 5 agents (reviewer, Yann, Lucas, fullstack, reviewer), 2 features su
 
 ### Phase F2.3 — Review croisee F2
 - Agents : @reviewer
-- Statut : En attente (apres Phase F2.2)
+- Statut : TERMINE (2026-03-24)
 - Livrables attendus : docs/reviews/f2-review.md
+- Livrables recus : [docs/reviews/f2-review.md]
+- Verdict verification : VALIDE AVEC RESERVES
+- Reserves ouvertes :
+  - H-01 : Iteration F1 ignore roomType (freestanding-only hardcode dans iteration-prompt.ts)
+  - H-02 : roomType absent des generation_logs
+  - M-01 : Directive lumiere dans bedroom surfaceOverride
+  - M-03 : Pre-processing custom ne recoit pas roomType
+
+---
+
+## F3 — Exterieur
+
+### Phase F3.1 — Audit prompts outdoor (Yann + Lucas en parallele)
+- Agents : Yann Duval (interior-architect), Lucas Moreau (ai-image-expert)
+- Parallelisation : OUI
+- Statut : EN COURS
+- Livrables attendus : docs/ia/f3-outdoor-prompts.md
 - Livrables recus : []
 - Verdict verification : []
+
+### Phase F3.2 — Implementation fullstack
+- Agents : @fullstack
+- Statut : En attente (depend Phase F3.1)
+- Livrables attendus :
+  - lib/outdoor-styles.ts (nouveau — 6 styles outdoor)
+  - lib/outdoor-types.ts (nouveau — 5 sous-types)
+  - components/StylePicker.tsx ou OutdoorStylePicker.tsx (toggle indoor/outdoor + styles outdoor)
+  - components/RoomTypePicker.tsx (masque en mode outdoor)
+  - app/api/generate/route.ts (builders outdoor dedies)
+  - app/page.tsx (integration mode exterieur)
+  - lib/custom-prompt.ts (isOutdoor dans pre-processing)
+  - lib/db.ts (is_outdoor + outdoor_subtype dans logs)
+  - + Fix reserves F2 : H-01, H-02, M-01
+
+### Phase F3.3 — Review croisee F3
+- Agents : @reviewer
+- Statut : En attente (depend Phase F3.2)
+- Livrables attendus : docs/reviews/f3-review.md
 
 ---
 
@@ -82,3 +118,4 @@ Moyenne — 5 agents (reviewer, Yann, Lucas, fullstack, reviewer), 2 features su
 ## Decisions d'arbitrage
 | # | Sujet | Decision | Justification | Agents impactes |
 |---|---|---|---|---|
+| 1 | Reserves F2 | Inclure fix H-01, H-02, M-01 dans Phase F3.2 | Corriger avant d'ajouter outdoor pour ne pas accumuler la dette | @fullstack |
