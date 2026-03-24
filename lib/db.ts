@@ -63,15 +63,40 @@ export async function ensureTable(): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_gen_logs_style ON generation_logs (style_id);
   `);
 
-  // Add replay columns (Sprint 20) — safe ALTER TABLE with IF NOT EXISTS pattern
-  const replayColumns = [
+  // Ensure ALL columns exist — covers tables created by older versions of the schema.
+  // The CREATE TABLE IF NOT EXISTS above only runs when the table doesn't exist yet.
+  // If the table was created by an earlier version (e.g., Sprint 15 with only
+  // input_thumbnail/output_thumbnail), columns added later are missing and the
+  // INSERT in logGeneration() fails silently (fire-and-forget).
+  // Pattern: DO $$ BEGIN ... EXCEPTION WHEN duplicate_column suppresses errors
+  // for columns that already exist.
+  const migrateColumns = [
+    // Sprint 15b — replace thumbnails with full-size image paths + built prompts
+    { name: "built_prompt_pass1", type: "TEXT" },
+    { name: "built_prompt_pass2", type: "TEXT" },
+    { name: "input_image_path", type: "TEXT" },
+    { name: "pass1_image_path", type: "TEXT" },
+    { name: "output_image_path", type: "TEXT" },
+    // F1 — iteration fields
+    { name: "is_iteration", type: "BOOLEAN DEFAULT FALSE" },
+    { name: "iteration_number", type: "INT" },
+    { name: "session_id", type: "VARCHAR(100)" },
+    { name: "user_comment_raw", type: "TEXT" },
+    { name: "user_comment_enriched", type: "TEXT" },
+    { name: "pass1_cache_key", type: "TEXT" },
+    // F2 — room type
+    { name: "room_type", type: "VARCHAR(50)" },
+    // F3 — outdoor
+    { name: "is_outdoor", type: "BOOLEAN DEFAULT FALSE" },
+    { name: "outdoor_subtype", type: "VARCHAR(50)" },
+    // Sprint 20 — replay
     { name: "is_replay", type: "BOOLEAN DEFAULT FALSE" },
     { name: "replay_source_id", type: "INT" },
     { name: "replay_label", type: "VARCHAR(200)" },
     { name: "pixel_diff_pct", type: "FLOAT" },
     { name: "color_shift_score", type: "FLOAT" },
   ];
-  for (const col of replayColumns) {
+  for (const col of migrateColumns) {
     await db.query(`
       DO $$ BEGIN
         ALTER TABLE generation_logs ADD COLUMN ${col.name} ${col.type};
