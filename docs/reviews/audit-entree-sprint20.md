@@ -130,3 +130,162 @@ Le prompt melange deux concepts :
 - **Texture de surface** = la FINITION (brut, coffrage, crepi, lisse) — DOIT etre modifiee pour paraitre fini
 
 Le modele ne peut pas distinguer ces deux concepts quand le prompt dit "preserve... with their original rough texture" — il preserve TOUT.
+
+---
+
+## 4. Corrections recommandees
+
+### P0 — Reecriture de la directive plafond dans buildSurfacesResponsesPrompt
+
+**Ancien** (route.ts, ligne 78) :
+```
+"Preserve the ceiling geometry exactly — vaults, beams, ribs, arches, and exposed structural
+elements must remain visible with their original rough texture, irregular edges, and surface
+patina intact. Apply the finish OVER the existing geometry. Do NOT smooth, flatten, or clean
+up beams or structural features."
+```
+
+**Nouveau propose** :
+```
+"Preserve the ceiling's 3D shape — vaults, arcs, and overall volume must keep their exact
+form and curvature. Structural beams and ribs must remain visible and protruding.
+HOWEVER, apply a smooth finished surface (plaster or paint) to ALL ceiling areas INCLUDING
+the flat or curved surfaces between beams. The ceiling must look FINISHED — no raw concrete,
+no formwork marks, no rough aggregate texture. Beams can keep a rustic wood or stone texture
+if the style calls for it, but the infill ceiling surface between them must be smooth and
+cleanly painted."
+```
+
+**Pourquoi ce changement fonctionne** :
+- Separe explicitement la FORME (arcs, volume, courbure) de la SURFACE (finition)
+- "INCLUDING the flat or curved surfaces between beams" = directive ciblee sur la zone problematique
+- "No raw concrete, no formwork marks, no rough aggregate texture" = negative constraints explicites pour le beton brut
+- "Beams can keep a rustic wood or stone texture if the style calls for it" = preserve le fix du Sprint 18 pour les poutres massives decoratives
+- "infill ceiling surface" = vocabulaire architectural precis qui distingue remplissage vs structure
+
+### P0 — Meme correction pour buildSurfacesFluxPrompt
+
+**Ancien** (route.ts, ligne 93) :
+```
+"Preserve ceiling geometry — vaults, beams, ribs, arches remain visible with original
+rough texture and edges. Apply finish over existing structure, do not smooth or flatten."
+```
+
+**Nouveau propose** :
+```
+"Preserve ceiling 3D shape — vaults, arcs, overall volume keep exact form. Beams and ribs
+remain visible and protruding. Apply smooth plaster finish to ALL ceiling surfaces between
+beams — no raw concrete, no formwork marks. Ceiling must look finished and cleanly painted.
+Beams can keep rustic texture if style requires it."
+```
+
+### P1 — Clarification dans les 12 surfacePrompts (optionnel mais recommande)
+
+Pour renforcer la directive, les surfacePrompts des 12 styles pourraient remplacer :
+```
+"white ceiling finish applied over existing ceiling geometry preserving any vault beams
+or structural ribs"
+```
+par :
+```
+"smooth white plaster ceiling finish — ceiling surface between any beams must be smooth
+and cleanly painted, beams and ribs remain visible and protruding with their form intact"
+```
+
+Ce changement clarifie que "finish" = surface lisse, pas juste un changement de couleur.
+
+### P2 — Negative prompt Flux enrichi pour le plafond
+
+Ajouter au `FLUX_NEGATIVE_PROMPT` (route.ts, ligne 152) :
+```
+"raw concrete ceiling, formwork marks on ceiling, unfinished ceiling texture, rough aggregate ceiling"
+```
+
+Filet de securite supplementaire pour Flux Depth Pro.
+
+### P3 — Ajout luminaire override pour room type entryway
+
+Le room type "entryway" dans `lib/room-types.ts` n'a pas de luminaire specifique dans son `roomSurfaceOverride`. Le modele invente donc des spots encastres generiques au lieu de suivre le luminaire prescrit par le style. Ajouter :
+
+```
+roomSurfaceOverride: "Additionally for this entryway: durable floor finish suitable for
+an entrance — ceramic tiles, natural stone, or hard-wearing wood. For the ceiling light,
+follow the style's prescribed fixture — do not default to recessed spots."
+```
+
+---
+
+## 5. Impact et risques des corrections
+
+### Risque de regression
+
+La correction du Sprint 18 (item 148) avait ete ajoutee pour preserver les poutres massives blanchies qui etaient lissees. La nouvelle formulation "Beams can keep a rustic wood or stone texture if the style calls for it" preserve ce comportement tout en autorisant le lissage de la surface inter-poutres.
+
+**Tests recommandes** :
+- Regenerer l'image d'entree avec les nouveaux prompts (cas beton brut massif avec arcs)
+- Regenerer une image avec poutres en bois apparentes (cas du Sprint 18 — verifier que les poutres ne sont pas lissees)
+- Regenerer une image avec plafond plat simple (cas standard — verifier qu'il n'y a pas de regression)
+
+### Cas limites a surveiller
+
+1. **Plafonds voutes en pierre (type cave)** : la directive "smooth plaster" pourrait plaquer du platre sur de la pierre apparente voulue par le style (ex: Mediterraneen avec voutes en pierre). Le surfacePrompt Mediterraneen dit "if beams are visible whitewash them" — il faudra peut-etre ajouter "if stone vault, whitewash but preserve stone texture".
+
+2. **Plafonds industriels (poutrelles metalliques + bac acier)** : le style Industriel pourrait vouloir garder le plafond brut. Le surfacePrompt Industriel dit "preserve existing wall finish and texture" mais ne mentionne pas le plafond explicitement. Le style Industriel devra peut-etre avoir une exception : "ceiling finish applied over existing structure, or left raw if Industrial style".
+
+3. **Double hauteur / mezzanine** : les plafonds tres hauts sont souvent partiellement finis. La directive doit fonctionner meme quand seule une partie du plafond est accessible visuellement.
+
+---
+
+## 6. Observations secondaires
+
+### Bon : distribution en profondeur
+La generation distribue bien le mobilier sur toute la longueur de l'espace : console + miroir au premier plan, lampadaire au milieu, fauteuils au fond. La directive de distribution spatiale (Sprint 14, items 95-96) fonctionne bien sur ce type d'espace lineaire profond.
+
+### Bon : nettoyage du reflet humain
+Le reflet de la personne visible dans la vitre gauche de l'input a ete supprime. Le modele a correctement interprete que c'etait un artefact et non un element architectural.
+
+### Attention : boitiers electriques
+Les boitiers electriques orange/rouge visibles sur le mur droit de l'input semblent avoir disparu dans l'output. La directive "Preserve all wall-mounted fixed equipment" (Sprint 18, item 147) devrait les preserver. A verifier si c'est un probleme de taille (trop petits pour etre detectes) ou si le modele les a traites comme du "bruit de chantier" a nettoyer.
+
+### Attention : luminaire invente
+Le surfacePrompt du style prescrit un luminaire specifique (selon le style choisi — ex: PH5-style pour Scandinave, flush-mount chrome pour Contemporain). L'output montre des spots encastres, qui ne correspondent a aucun des 12 surfacePrompts. Le modele a "invente" un luminaire generique au lieu de suivre la prescription du style. Causes possibles :
+- Le room type "entryway" n'a pas de luminaire override, creant un vide interpretatif
+- Les spots encastres sont le "defaut generique" du modele pour une entree
+- La directive "For the ceiling light fixture, follow the style description above exactly" dans le builder est trop faible face au biais du modele
+
+---
+
+## 7. Synthese et plan d'action
+
+| Priorite | Action | Fichier | Impact |
+|----------|--------|---------|--------|
+| P0 | Reecrire directive plafond builder passe 1 (OpenAI) — separer geometrie 3D vs texture surface | route.ts L78 | Fix principal du probleme plafond |
+| P0 | Reecrire directive plafond builder passe 1 (Flux) — aligner avec le fix OpenAI | route.ts L93 | Alignement multi-modeles |
+| P1 | Clarifier "finish" dans les 12 surfacePrompts — "smooth plaster" au lieu de "finish applied over" | StylePicker.tsx | Renforcement — supprime l'ambiguite |
+| P2 | Enrichir FLUX_NEGATIVE_PROMPT — "raw concrete ceiling, formwork marks" | route.ts L152 | Filet de securite Flux |
+| P2 | Verifier preservation boitiers electriques | Test generation | Validation directive equipements fixes |
+| P3 | Ajouter luminaire override pour room type entryway | room-types.ts | Eviter que le modele invente des spots |
+
+### Notes finales croisees
+
+- **Yann Duval** : 5.5/10 — Le plafond brut avec spots est un defaut eliminatoire en credibilite professionnelle. Sans ce defaut, la note serait environ 7.5/10 grace a la bonne distribution en profondeur et au mobilier d'entree pertinent.
+- **Lucas Moreau** : 5.8/10 — Le probleme est 100% prompt (contradiction interne dans le builder). Le modele a fait exactement ce qu'on lui a demande. La correction proposee est chirurgicale et testable.
+
+### Apprentissages consolides
+
+1. **"Preserve rough texture" sur un element structurel BLOQUE la finition de la surface adjacente** — le modele ne distingue pas poutre vs surface entre les poutres quand la directive est globale
+2. **"Do NOT smooth" est une directive trop puissante** — elle s'applique a TOUT le plafond, pas seulement aux poutres. Il faut etre chirurgical : "beams keep their form, surfaces between beams get smooth plaster"
+3. **La directive du Sprint 18 etait correcte DANS SON CONTEXTE** (poutres lissees) mais produit l'effet inverse sur du beton brut massif — les corrections doivent etre CONDITIONNELLES ou SEPAREES (structure vs remplissage)
+4. **Les spots encastres sont un marqueur d'incoherence** — si le plafond est brut, le modele devrait poser un luminaire en saillie (suspension, applique) et non des spots. Le surfacePrompt prescrit un luminaire specifique mais le modele l'a ignore au profit de spots generiques
+5. **La separation geometrie/texture est un concept que les modeles ne comprennent PAS nativement** — il faut des directives explicites distinctes pour chacun ("keep the 3D shape" vs "apply smooth surface")
+
+---
+
+**Handoff -> @fullstack**
+- Fichier produit : `/home/user/Architecture/docs/reviews/audit-entree-sprint20.md`
+- Decisions : reecriture de la directive plafond dans les builders passe 1 (OpenAI + Flux) pour separer preservation de geometrie 3D et finition de surface
+- Corrections P0 a appliquer dans `app/api/generate/route.ts` (lignes 78 et 93)
+- Corrections P1 optionnelles dans `components/StylePicker.tsx` (12 surfacePrompts)
+- Correction P2 dans `FLUX_NEGATIVE_PROMPT` (ligne 152 de route.ts)
+- Correction P3 dans `lib/room-types.ts` (entryway luminaire override)
+- Points d'attention : tester la regression sur les poutres en bois (Sprint 18), verifier le cas Industriel/Mediterraneen, verifier la preservation des boitiers electriques
