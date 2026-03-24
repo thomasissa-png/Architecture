@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import OutdoorSubtypePicker from "@/components/OutdoorSubtypePicker";
+import OutdoorStylePicker from "@/components/OutdoorStylePicker";
 
 export interface StyleOption {
   id: string;
@@ -138,6 +140,12 @@ interface StylePickerProps {
   customPrompt: string;
   onStyleSelect: (style: StyleOption | null) => void;
   onCustomPromptChange: (prompt: string) => void;
+  isOutdoor: boolean;
+  onToggleOutdoor: (outdoor: boolean) => void;
+  selectedOutdoorStyle: string | null;
+  onSelectOutdoorStyle: (styleId: string) => void;
+  selectedSubtype: string | null;
+  onSelectSubtype: (subtypeId: string) => void;
 }
 
 export default function StylePicker({
@@ -145,6 +153,12 @@ export default function StylePicker({
   customPrompt,
   onStyleSelect,
   onCustomPromptChange,
+  isOutdoor,
+  onToggleOutdoor,
+  selectedOutdoorStyle,
+  onSelectOutdoorStyle,
+  selectedSubtype,
+  onSelectSubtype,
 }: StylePickerProps) {
   const [isCustom, setIsCustom] = useState(false);
 
@@ -164,6 +178,65 @@ export default function StylePicker({
 
   return (
     <div className="space-y-4">
+      {/* Indoor / Outdoor toggle */}
+      <div className="space-y-3">
+        <p className="text-sm font-medium text-foreground tracking-tight">
+          Type d&apos;espace
+        </p>
+        <div
+          role="radiogroup"
+          aria-label="Choix entre interieur et exterieur"
+          className="inline-flex rounded-full bg-gray-100 p-0.5"
+        >
+          <button
+            role="radio"
+            aria-checked={!isOutdoor}
+            onClick={() => onToggleOutdoor(false)}
+            className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
+              !isOutdoor
+                ? "bg-foreground text-background shadow-sm"
+                : "text-muted hover:text-foreground"
+            }`}
+          >
+            Int&eacute;rieur
+          </button>
+          <button
+            role="radio"
+            aria-checked={isOutdoor}
+            onClick={() => onToggleOutdoor(true)}
+            className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
+              isOutdoor
+                ? "bg-foreground text-background shadow-sm"
+                : "text-muted hover:text-foreground"
+            }`}
+          >
+            Ext&eacute;rieur
+          </button>
+        </div>
+      </div>
+
+      {/* Outdoor mode: subtype + outdoor styles */}
+      {isOutdoor && (
+        <div className="space-y-6 animate-fade-in-up">
+          <OutdoorSubtypePicker
+            selectedSubtype={selectedSubtype}
+            onSelect={onSelectSubtype}
+          />
+          <OutdoorStylePicker
+            selectedStyle={selectedOutdoorStyle}
+            onSelect={(id) => {
+              onSelectOutdoorStyle(id);
+              setTimeout(() => {
+                document.getElementById("step-generate")?.scrollIntoView({ behavior: "smooth", block: "center" });
+              }, 150);
+            }}
+          />
+        </div>
+      )}
+
+      {/* Indoor mode: 12 styles + custom */}
+      {!isOutdoor && (
+        <>
       <div role="radiogroup" aria-label="Choix du style" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
         {STYLES.map((style) => {
           const isSelected = selectedStyle?.id === style.id && !isCustom;
@@ -225,6 +298,8 @@ export default function StylePicker({
             className="w-full p-5 border border-gray-200 rounded-2xl focus:border-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 resize-none h-28 text-sm font-light transition-colors placeholder:text-gray-300"
           />
         </div>
+      )}
+        </>
       )}
     </div>
   );
