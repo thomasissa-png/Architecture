@@ -733,6 +733,8 @@ export async function POST(request: NextRequest) {
         userCommentEnriched: preprocessResult.enrichedComment,
         pass1CacheKey: pass1Key,
         roomType: cached.meta.roomType,
+        isOutdoor: cached.meta.isOutdoor || undefined,
+        outdoorSubtype: cached.meta.outdoorSubtype ?? undefined,
       }).catch((err) => console.error("DB log (iteration) failed:", err));
 
       return response;
