@@ -27,8 +27,8 @@ Moyenne — 4 agents (Yann, Lucas, fullstack, reviewer), 3 phases
 ### Phase 2 — Implementation fullstack
 - Agents : @fullstack
 - Parallelisation : NON (depend des recommandations Phase 1)
-- Statut : En cours
-- Livrables attendus : modifications de route.ts, page.tsx, composants, lib/
+- Statut : En cours (lance 2026-03-24)
+- Livrables attendus : route.ts modifie, lib/db.ts modifie, lib/iteration-prompt.ts (nouveau), page.tsx modifie, components/RefineModal.tsx (nouveau), components/ImageComparator.tsx modifie
 - Livrables recus : []
 - Verdict verification : []
 
