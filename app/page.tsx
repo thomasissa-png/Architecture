@@ -163,9 +163,9 @@ export default function Home() {
   const currentStep =
     results.length > 0
       ? 4
-      : selectedStyle || customPrompt || selectedOutdoorStyle
+      : (selectedStyle || customPrompt || selectedOutdoorStyle) && files.length > 0
       ? 3
-      : files.length > 0
+      : files.length > 0 || selectedStyle || customPrompt || selectedOutdoorStyle || selectedRoomType || isOutdoor
       ? 2
       : 1;
 
@@ -717,92 +717,88 @@ export default function Home() {
             <UploadZone files={files} onFilesChange={setFiles} />
           </div>
 
-          {/* Step 2a: Type d'espace (intérieur/extérieur + sous-type) */}
-          {files.length > 0 && (
-            <div id="step-space-type" className="mb-16 animate-fade-in-up scroll-mt-20">
-              <h4 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
-                01 — Type d&apos;espace
-              </h4>
+          {/* Step 2a: Type d'espace (intérieur/extérieur + sous-type) — always visible */}
+          <div id="step-space-type" className="mb-16 scroll-mt-20">
+            <h4 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
+              01 — Type d&apos;espace
+            </h4>
 
-              {/* Indoor / Outdoor toggle */}
-              <div className="mb-6">
-                <div
-                  role="radiogroup"
-                  aria-label="Choix entre interieur et exterieur"
-                  className="inline-flex rounded-full bg-gray-100 p-0.5"
+            {/* Indoor / Outdoor toggle */}
+            <div className="mb-6">
+              <div
+                role="radiogroup"
+                aria-label="Choix entre interieur et exterieur"
+                className="inline-flex rounded-full bg-gray-100 p-0.5"
+              >
+                <button
+                  role="radio"
+                  aria-checked={!isOutdoor}
+                  onClick={() => handleToggleOutdoor(false)}
+                  className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
+                    !isOutdoor
+                      ? "bg-foreground text-background shadow-sm"
+                      : "text-muted hover:text-foreground"
+                  }`}
                 >
-                  <button
-                    role="radio"
-                    aria-checked={!isOutdoor}
-                    onClick={() => handleToggleOutdoor(false)}
-                    className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
-                      !isOutdoor
-                        ? "bg-foreground text-background shadow-sm"
-                        : "text-muted hover:text-foreground"
-                    }`}
-                  >
-                    Int&eacute;rieur
-                  </button>
-                  <button
-                    role="radio"
-                    aria-checked={isOutdoor}
-                    onClick={() => handleToggleOutdoor(true)}
-                    className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
-                      isOutdoor
-                        ? "bg-foreground text-background shadow-sm"
-                        : "text-muted hover:text-foreground"
-                    }`}
-                  >
-                    Ext&eacute;rieur
-                  </button>
-                </div>
+                  Int&eacute;rieur
+                </button>
+                <button
+                  role="radio"
+                  aria-checked={isOutdoor}
+                  onClick={() => handleToggleOutdoor(true)}
+                  className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
+                    isOutdoor
+                      ? "bg-foreground text-background shadow-sm"
+                      : "text-muted hover:text-foreground"
+                  }`}
+                >
+                  Ext&eacute;rieur
+                </button>
               </div>
-
-              {/* Indoor: room type picker */}
-              {!isOutdoor && (
-                <div className="animate-fade-in-up">
-                  <RoomTypePicker
-                    selectedRoomType={selectedRoomType}
-                    onSelect={setSelectedRoomType}
-                  />
-                  {!selectedRoomType && selectedStyle && (
-                    <p className="text-xs text-sage font-light text-center mt-2">
-                      S&eacute;lectionnez un type de pi&egrave;ce pour continuer
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {/* Outdoor: subtype picker */}
-              {isOutdoor && (
-                <div className="animate-fade-in-up">
-                  <OutdoorSubtypePicker
-                    selectedSubtype={outdoorSubtype}
-                    onSelect={setOutdoorSubtype}
-                  />
-                </div>
-              )}
             </div>
-          )}
 
-          {/* Step 2b: Style */}
-          {files.length > 0 && (
-            <div id="step-style" className="mb-16 animate-fade-in-up scroll-mt-20">
-              <h4 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
-                02 — Style
-              </h4>
+            {/* Indoor: room type picker */}
+            {!isOutdoor && (
+              <div className="animate-fade-in-up">
+                <RoomTypePicker
+                  selectedRoomType={selectedRoomType}
+                  onSelect={setSelectedRoomType}
+                />
+                {!selectedRoomType && selectedStyle && (
+                  <p className="text-xs text-sage font-light text-center mt-2">
+                    S&eacute;lectionnez un type de pi&egrave;ce pour continuer
+                  </p>
+                )}
+              </div>
+            )}
 
-              <StylePicker
-                selectedStyle={selectedStyle}
-                customPrompt={customPrompt}
-                onStyleSelect={setSelectedStyle}
-                onCustomPromptChange={setCustomPrompt}
-                isOutdoor={isOutdoor}
-                selectedOutdoorStyle={selectedOutdoorStyle}
-                onSelectOutdoorStyle={setSelectedOutdoorStyle}
-              />
-            </div>
-          )}
+            {/* Outdoor: subtype picker */}
+            {isOutdoor && (
+              <div className="animate-fade-in-up">
+                <OutdoorSubtypePicker
+                  selectedSubtype={outdoorSubtype}
+                  onSelect={setOutdoorSubtype}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Step 2b: Style — always visible */}
+          <div id="step-style" className="mb-16 scroll-mt-20">
+            <h4 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
+              02 — Style
+            </h4>
+
+            <StylePicker
+              selectedStyle={selectedStyle}
+              customPrompt={customPrompt}
+              onStyleSelect={setSelectedStyle}
+              onCustomPromptChange={setCustomPrompt}
+              isOutdoor={isOutdoor}
+              selectedOutdoorStyle={selectedOutdoorStyle}
+              onSelectOutdoorStyle={setSelectedOutdoorStyle}
+            />
+          </div>
 
           {/* Step 2c: Options (furniture toggle) */}
           {canGenerate && results.length === 0 && !isGenerating && (
