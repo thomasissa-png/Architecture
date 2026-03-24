@@ -28,7 +28,7 @@ export const OUTDOOR_STYLES: Record<string, OutdoorStyle> = {
     id: "contemporain_outdoor",
     label: "Contemporain Outdoor",
     emoji: "🏢",
-    description: "Dalles beton gris, mobilier modulaire anthracite",
+    description: "Dalles béton gris, mobilier modulaire anthracite",
     surfacePrompt:
       "Contemporary outdoor: large-format smooth grey concrete pavers 60x60cm with narrow joints, preserve all existing guard rails and exterior walls unchanged, no ceiling — open sky preserved as-is",
     furniturePrompt:
@@ -37,9 +37,9 @@ export const OUTDOOR_STYLES: Record<string, OutdoorStyle> = {
 
   mediterraneen_outdoor: {
     id: "mediterraneen_outdoor",
-    label: "Mediterraneen",
+    label: "Méditerranéen",
     emoji: "🫒",
-    description: "Tomettes terre cuite, table fer forge, oliviers",
+    description: "Tomettes terre cuite, table fer forgé, oliviers",
     surfacePrompt:
       "Mediterranean outdoor: natural stone or warm terracotta floor tiles with aged patina, preserve all existing walls facades and guard rails unchanged, no ceiling — open sky preserved as-is",
     furniturePrompt:
@@ -48,9 +48,9 @@ export const OUTDOOR_STYLES: Record<string, OutdoorStyle> = {
 
   boheme_garden: {
     id: "boheme_garden",
-    label: "Boheme Garden",
+    label: "Bohème Garden",
     emoji: "🌿",
-    description: "Dalles irregulieres, poufs, macrame, guirlandes",
+    description: "Dalles irrégulières, poufs, macrame, guirlandes",
     surfacePrompt:
       "Bohemian garden outdoor: reclaimed irregular stone pavers with white gravel borders, preserve all existing vegetation walls and fences unchanged, no ceiling — open sky preserved as-is",
     furniturePrompt:
@@ -61,7 +61,7 @@ export const OUTDOOR_STYLES: Record<string, OutdoorStyle> = {
     id: "minimaliste_urbain",
     label: "Minimaliste Urbain",
     emoji: "⬜",
-    description: "Beton poli, bains de soleil teck, herbe ornementale",
+    description: "Béton poli, bains de soleil teck, herbe ornementale",
     surfacePrompt:
       "Minimalist urban outdoor: smooth polished concrete floor with millimetric joints in light grey, preserve all existing guard rails walls and facades unchanged, no ceiling — open sky preserved as-is",
     furniturePrompt:
@@ -72,7 +72,7 @@ export const OUTDOOR_STYLES: Record<string, OutdoorStyle> = {
     id: "rooftop",
     label: "Rooftop",
     emoji: "🌆",
-    description: "Lames IPE argentees, banquette, parasol, vue ville",
+    description: "Lames IPE argentées, banquette, parasol, vue ville",
     surfacePrompt:
       "Rooftop outdoor: IPE wood deck planks silver-grey patina 140mm wide, preserve existing parapet walls guard rails and skyline exactly as in the input, no ceiling — open sky preserved as-is",
     furniturePrompt:
