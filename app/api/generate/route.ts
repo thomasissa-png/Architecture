@@ -811,17 +811,23 @@ export async function POST(request: NextRequest) {
       ? `sessions/${sessionId}/pass1_${Date.now()}.jpg`
       : `sessions/anon_${Date.now()}/pass1.jpg`;
 
-    savePass1Cache(pass1CacheKey, pass1Base64, {
-      width: width ?? outputSize.w,
-      height: height ?? outputSize.h,
-      styleId,
-      furniturePrompt: trimmedFurniture,
-      surfacePrompt: trimmedSurface,
-      createdAt: Date.now(),
-      roomType: isOutdoor ? null : (roomType ?? null),
-      isOutdoor: isOutdoor || undefined,
-      outdoorSubtype: isOutdoor ? (outdoorSubtype ?? undefined) : undefined,
-    }).catch((err) => console.error("Pass1 cache save failed:", err));
+    let pass1Saved = false;
+    try {
+      await savePass1Cache(pass1CacheKey, pass1Base64, {
+        width: width ?? outputSize.w,
+        height: height ?? outputSize.h,
+        styleId,
+        furniturePrompt: trimmedFurniture,
+        surfacePrompt: trimmedSurface,
+        createdAt: Date.now(),
+        roomType: isOutdoor ? null : (roomType ?? null),
+        isOutdoor: isOutdoor || undefined,
+        outdoorSubtype: isOutdoor ? (outdoorSubtype ?? undefined) : undefined,
+      });
+      pass1Saved = true;
+    } catch (err) {
+      console.error("Pass1 cache save failed:", err);
+    }
 
     // If surfaces-only mode, return pass 1 result directly
     if (!withFurniture) {
@@ -829,7 +835,7 @@ export async function POST(request: NextRequest) {
       const response = NextResponse.json({
         image: pass1.image,
         model: `${pass1.model} (surfaces uniquement)`,
-        pass1_key: pass1CacheKey,
+        ...(pass1Saved ? { pass1_key: pass1CacheKey } : {}),
       });
 
       // Fire-and-forget: log to DB + save images to filesystem
@@ -859,7 +865,7 @@ export async function POST(request: NextRequest) {
     const response = NextResponse.json({
       image: pass2.image,
       model: `${pass1.model} → ${pass2.model}`,
-      pass1_key: pass1CacheKey,
+      ...(pass1Saved ? { pass1_key: pass1CacheKey } : {}),
     });
 
     // Fire-and-forget: log to DB + save images to filesystem

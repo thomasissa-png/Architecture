@@ -286,8 +286,14 @@ export default function Home() {
           });
 
           if (!response.ok) {
-            const data = await response.json();
-            throw new Error(data.error || "Erreur lors de la g\u00e9n\u00e9ration");
+            let errorMsg = "Erreur lors de la génération";
+            try {
+              const data = await response.json();
+              errorMsg = data.error || errorMsg;
+            } catch {
+              errorMsg = `Erreur serveur (${response.status}). Réessayez dans quelques instants.`;
+            }
+            throw new Error(errorMsg);
           }
 
           const data = await response.json();
@@ -447,8 +453,15 @@ export default function Home() {
         });
 
         if (!response.ok) {
-          const data = await response.json();
-          throw new Error(data.error || "Erreur lors de l'ajustement");
+          let errorMsg = "Erreur lors de l'ajustement";
+          try {
+            const data = await response.json();
+            errorMsg = data.error || errorMsg;
+          } catch {
+            // Réponse non-JSON (timeout proxy, crash serveur)
+            errorMsg = `Erreur serveur (${response.status}). Réessayez dans quelques instants.`;
+          }
+          throw new Error(errorMsg);
         }
 
         const data = await response.json();

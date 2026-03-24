@@ -16,7 +16,8 @@ export async function GET(req: NextRequest) {
   try {
     const buffer = await getImage(key);
     if (!buffer) {
-      return NextResponse.json({ error: "Image not found", key }, { status: 404 });
+      console.warn(`/api/logs/image: 404 for key "${key}" (file param: "${file}")`);
+      return NextResponse.json({ error: "Image not found", key, detail: "Key does not exist in Object Storage" }, { status: 404 });
     }
     return new NextResponse(new Uint8Array(buffer), {
       headers: {
@@ -25,9 +26,10 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (err) {
-    console.error("Image fetch error:", err);
+    const detail = err instanceof Error ? err.message : "Unknown error";
+    console.error(`/api/logs/image: 500 for key "${key}":`, detail);
     return NextResponse.json(
-      { error: "Failed to fetch image", key },
+      { error: "Failed to fetch image", key, detail },
       { status: 500 }
     );
   }

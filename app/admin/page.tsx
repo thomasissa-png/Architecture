@@ -30,10 +30,31 @@ function extractFilename(path: string): string {
 }
 
 function LogImage({ path, label }: { path: string; label: string }) {
-  const [errored, setErrored] = useState(false);
+  const [errorInfo, setErrorInfo] = useState<string | null>(null);
   const src = `/api/logs/image?file=${encodeURIComponent(extractFilename(path))}`;
 
-  if (errored) {
+  const handleError = async () => {
+    // Try to fetch and get the actual error detail
+    try {
+      const res = await fetch(src);
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        if (res.status === 404) {
+          setErrorInfo("Image introuvable (404)");
+        } else if (res.status === 500) {
+          setErrorInfo(`Erreur stockage (500)${data?.detail ? `: ${data.detail}` : ""}`);
+        } else {
+          setErrorInfo(`Erreur ${res.status}`);
+        }
+      } else {
+        setErrorInfo("Image indisponible");
+      }
+    } catch {
+      setErrorInfo("Stockage inaccessible");
+    }
+  };
+
+  if (errorInfo) {
     return (
       <div style={{ textAlign: "center", flex: "1 1 auto", minWidth: 150, maxWidth: 300 }}>
         <div style={{ fontSize: 11, color: "#888", marginBottom: 4 }}>{label}</div>
@@ -45,14 +66,17 @@ function LogImage({ path, label }: { path: string; label: string }) {
             border: "1px solid #eee",
             background: "#f5f5f3",
             display: "flex",
+            flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
+            gap: 4,
             fontSize: 13,
             color: "#aaa",
             fontStyle: "italic",
           }}
         >
-          Image indisponible
+          <span>{errorInfo}</span>
+          <span style={{ fontSize: 10, color: "#ccc" }}>{extractFilename(path)}</span>
         </div>
       </div>
     );
@@ -64,7 +88,7 @@ function LogImage({ path, label }: { path: string; label: string }) {
       <img
         src={src}
         alt={label}
-        onError={() => setErrored(true)}
+        onError={() => handleError()}
         onClick={() => window.open(src, "_blank")}
         style={{
           maxWidth: 300,

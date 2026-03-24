@@ -116,15 +116,27 @@ async function saveImage(base64: string, name: string): Promise<string> {
 }
 
 export async function getImage(key: string): Promise<Uint8Array | null> {
-  const result = await withStorageRetry(
-    (client) => client.downloadAsBytes(key),
-    `getImage(${key})`
-  );
-  const { ok, value } = result;
-  if (!ok || !value) return null;
-  // SDK returns [Buffer] tuple
-  const buf = value[0];
-  return new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength);
+  try {
+    const result = await withStorageRetry(
+      (client) => client.downloadAsBytes(key),
+      `getImage(${key})`
+    );
+    const { ok, value } = result;
+    if (!ok || !value) {
+      console.warn(`getImage: key "${key}" not found in Object Storage`);
+      return null;
+    }
+    // SDK returns [Buffer] tuple
+    const buf = value[0];
+    if (!buf) {
+      console.warn(`getImage: key "${key}" returned empty buffer`);
+      return null;
+    }
+    return new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength);
+  } catch (err) {
+    console.error(`getImage: exception for key "${key}":`, err instanceof Error ? err.message : err);
+    return null;
+  }
 }
 
 // ─── Pass 1 cache for F1 iterations ─────────────────────────────────
