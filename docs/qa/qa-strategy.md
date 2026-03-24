@@ -355,10 +355,287 @@ test('E2E-04: mode marchand batch generation + PDF + lien', async ({ page }) => 
 
 ### E2E-05 : Shopping list mode decorateur
 
+Parcours : Generation Scandinave -> Clic "Voir les produits" -> Shopping list affichee -> Alternative budget -> Export PDF
+
+```typescript
+test('E2E-05: shopping list mode decorateur avec alternatives et export PDF', async ({ page }) => {
+  // Mock generation standard
+  await page.route('**/api/generate', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        results: [{ imageUrl: '/fixtures/result-scandinave.jpg', pass1Key: 'sessions/test/0/pass1.jpg' }],
+      }),
+    });
+  });
+
+  // Mock shopping list API
+  await page.route('**/api/shopping-list', async (route) => {
+    const body = JSON.parse(route.request().postData() || '{}');
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        products: [
+          { name: 'Canape 3 places tissu gris clair', enseigne: 'IKEA', price: '~699EUR indicatif', link: 'https://www.ikea.com/fr/fr/search/?q=canape+3+places+gris', type: 'canape' },
+          { name: 'Table basse ronde bois clair', enseigne: 'IKEA', price: '~129EUR indicatif', link: 'https://www.ikea.com/fr/fr/search/?q=table+basse+ronde+bois', type: 'table' },
+          { name: 'Tapis laine blanc 200x300', enseigne: 'Maisons du Monde', price: '~249EUR indicatif', link: 'https://www.maisonsdumonde.com/FR/fr/search/?q=tapis+laine+blanc', type: 'tapis' },
+          { name: 'Lampadaire arc laiton', enseigne: 'Leroy Merlin', price: '~89EUR indicatif', link: 'https://www.leroymerlin.fr/search/?q=lampadaire+arc', type: 'luminaire' },
+          { name: 'Plante monstera en pot', enseigne: 'Leroy Merlin', price: '~35EUR indicatif', link: 'https://www.leroymerlin.fr/search/?q=monstera+pot', type: 'plante' },
+        ],
+        disclaimer: 'Prix indicatifs a la date de generation.',
+      }),
+    });
+  });
+
+  // Mock alternatives budget
+  await page.route('**/api/shopping-list/alternative', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        alternative: { name: 'Canape convertible tissu gris', enseigne: 'IKEA', price: '~449EUR indicatif', link: 'https://www.ikea.com/fr/fr/search/?q=canape+convertible+gris', type: 'canape' },
+      }),
+    });
+  });
+
+  // Mock PDF export
+  await page.route('**/api/shopping-list/pdf', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/pdf',
+      body: Buffer.from('fake-pdf-shopping'),
+    });
+  });
+
+  await page.goto('/');
+
+  // Upload + Style + Generer (raccourci)
+  const fileInput = page.locator('[data-testid="upload-zone"] input[type="file"]');
+  await fileInput.setInputFiles('tests/fixtures/photo-salon.jpg');
+  await page.click('[data-testid="style-scandinave"]');
+  await page.click('[data-testid="btn-generate"]');
+  await expect(page.locator('[data-testid="image-comparator"]')).toBeVisible({ timeout: 15000 });
+
+  // Clic "Voir les produits"
+  await page.click('[data-testid="btn-shopping-list"]');
+  await expect(page.locator('[data-testid="shopping-list-loader"]')).toBeVisible();
+  await expect(page.locator('[data-testid="shopping-list-panel"]')).toBeVisible({ timeout: 10000 });
+
+  // Verifier >= 5 produits affiches
+  const productCards = page.locator('[data-testid^="product-card-"]');
+  const count = await productCards.count();
+  expect(count).toBeGreaterThanOrEqual(5);
+
+  // Verifier disclaimer prix indicatifs
+  await expect(page.locator('[data-testid="shopping-disclaimer"]')).toContainText('indicatif');
+
+  // Verifier que chaque produit a un lien valide (pattern domaine)
+  const firstLink = page.locator('[data-testid="product-card-0"] a[data-testid="product-link"]');
+  const href = await firstLink.getAttribute('href');
+  expect(href).toMatch(/ikea\.com|leroymerlin\.fr|maisonsdumonde\.com/);
+
+  // Alternative budget
+  await page.click('[data-testid="product-card-0"] [data-testid="btn-alternative-budget"]');
+  await expect(page.locator('[data-testid="product-card-0"] [data-testid="alternative-panel"]')).toBeVisible();
+  await expect(page.locator('[data-testid="product-card-0"] [data-testid="alternative-price"]')).toContainText('449');
+
+  // Toggle original / alternative
+  await page.click('[data-testid="product-card-0"] [data-testid="btn-toggle-original"]');
+  await expect(page.locator('[data-testid="product-card-0"] [data-testid="alternative-panel"]')).not.toBeVisible();
+
+  // Export PDF
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    page.click('[data-testid="btn-export-shopping-pdf"]'),
+  ]);
+  expect(download.suggestedFilename()).toMatch(/\.pdf$/);
+});
+```
+
 ### E2E-06 : Parcours gratuit -- limites et upsell
+
+Parcours : Utilisateur sans pack -> Upload -> Generer -> Resultat -> Tentative Affiner (bloque) -> Tentative Shopping list (bloque) -> CTA upsell visible
+
+```typescript
+test('E2E-06: parcours gratuit avec limites et upsell', async ({ page }) => {
+  // Mock generation (5 credits = pack Decouverte)
+  let generateCallCount = 0;
+  await page.route('**/api/generate', async (route) => {
+    generateCallCount++;
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        results: [{ imageUrl: '/fixtures/result-scandinave.jpg', pass1Key: 'sessions/test/0/pass1.jpg' }],
+        creditsRemaining: 5 - generateCallCount,
+      }),
+    });
+  });
+
+  await page.goto('/');
+
+  // Upload + Style + Generer
+  const fileInput = page.locator('[data-testid="upload-zone"] input[type="file"]');
+  await fileInput.setInputFiles('tests/fixtures/photo-salon.jpg');
+  await page.click('[data-testid="style-scandinave"]');
+  await page.click('[data-testid="btn-generate"]');
+  await expect(page.locator('[data-testid="image-comparator"]')).toBeVisible({ timeout: 15000 });
+
+  // Bouton Affiner : grise sur pack Decouverte (0 iteration)
+  const refineBtn = page.locator('[data-testid="btn-refine"]');
+  await expect(refineBtn).toBeDisabled();
+  await refineBtn.hover();
+  await expect(page.locator('[data-testid="tooltip-refine-locked"]')).toContainText(/pack|offre/i);
+
+  // Bouton Shopping list : absent ou grise (pas disponible sous Pro)
+  const shoppingBtn = page.locator('[data-testid="btn-shopping-list"]');
+  const shoppingVisible = await shoppingBtn.isVisible().catch(() => false);
+  if (shoppingVisible) {
+    await expect(shoppingBtn).toBeDisabled();
+  }
+
+  // CTA upsell visible quelque part sur la page
+  await expect(page.locator('[data-testid="upsell-banner"]')).toBeVisible();
+  await expect(page.locator('[data-testid="upsell-banner"]')).toContainText(/offre|pack|tarif/i);
+
+  // Clic sur CTA upsell mene a la section pricing
+  await page.click('[data-testid="upsell-banner"] a, [data-testid="upsell-banner"] button');
+  await expect(page.locator('[data-testid="pricing-section"]')).toBeInViewport();
+
+  // Verifier que les 4 packs sont affiches
+  const pricingCards = page.locator('[data-testid^="pricing-card-"]');
+  await expect(pricingCards).toHaveCount(4);
+
+  // Verifier le feature gating affiche (Decouverte = pas d'iteration, pas de shopping list)
+  const decouverte = page.locator('[data-testid="pricing-card-decouverte"]');
+  await expect(decouverte).toContainText('5 credits');
+  await expect(decouverte).toContainText(/0 iteration|sans iteration/i);
+});
+```
 
 ## Tests unitaires prioritaires (Vitest)
 
+### P0 — Critique (bloque le deploy si rouge)
+
+| ID | Fichier cible | Description | Assertions cles |
+|---|---|---|---|
+| UT-01 | `lib/room-types.ts` | roomFurnitureOverride et roomSurfaceOverride retournent les bons overrides par type | Salle de bain contient "vanity/mirror", Cuisine contient "countertop", Salon ne contient pas "vanity" |
+| UT-02 | `lib/room-types.ts` | Negative prompt par type exclut le mobilier incompatible | Salle de bain negative contient "sofa, coffee table", Cuisine negative contient "bed, wardrobe" |
+| UT-03 | `lib/custom-prompt.ts` | Pre-processing GPT-4.1-mini split surface/furniture correctement | Mock GPT-4.1-mini, verifier que la reponse contient surfacePrompt et furniturePrompt separes |
+| UT-04 | `lib/custom-prompt.ts` | Filtrage elements structurels (fenetres, murs, portes) retourne un warning | Input "ajoute une fenetre" → warnings non vide, contient "structurel" |
+| UT-05 | `lib/custom-prompt.ts` | Traduction FR→EN du commentaire | Input "canape rouge" → output contient "red sofa" ou equivalent anglais |
+| UT-06 | `components/StylePicker.tsx` | surfacePrompt et furniturePrompt sont distincts pour chaque style | Pour chaque styleId, surfacePrompt ne contient pas "sofa/chair/table", furniturePrompt ne contient pas "ceiling/wall paint" |
+| UT-07 | `components/StylePicker.tsx` | Aucun stylePrompt ne contient "curtains", "drapes", "window" | Iteration sur les 12 styles, regex match = 0 |
+| UT-08 | `components/StylePicker.tsx` | Aucun stylePrompt ne contient de directive de lumiere | Regex sur "warm light", "golden hour", "tungsten" = 0 match |
+| UT-09 | `lib/image-utils.ts` | Resize respecte max 2048px et compresse en JPEG 85% | Image 4000x3000 → sortie <= 2048 sur la plus grande dimension |
+| UT-10 | `lib/image-utils.ts` | Validation contenu image rejette les images uniformes | Image 100% noire → rejet, photo reelle → acceptation |
+| UT-11 | `app/api/generate/route.ts` | Rate limiting bloque apres 10 requetes/min par IP | 11eme requete → status 429 |
+
+### P1 — Important (bloque la PR si rouge)
+
+| ID | Fichier cible | Description | Assertions cles |
+|---|---|---|---|
+| UT-12 | `components/StylePicker.tsx` | Mode outdoor affiche 6 styles, mode indoor affiche 12 styles | isOutdoor=true → 6 styles rendus, isOutdoor=false → 12 styles rendus |
+| UT-13 | `components/StylePicker.tsx` | Aucun style outdoor ne contient "ceiling", "indoor" | Iteration sur les 6 styles outdoor |
+| UT-14 | `components/UploadZone.tsx` | Rejette fichiers > 10Mo avec message FR | Fichier 11Mo → message erreur contient "10 Mo" |
+| UT-15 | `components/UploadZone.tsx` | Accepte JPG, PNG, WEBP, HEIC | Fichiers valides → pas d'erreur |
+| UT-16 | `components/UploadZone.tsx` | Max 5 photos, 6eme rejetee avec message | 6 fichiers → message erreur contient "5 photos" |
+| UT-17 | `components/ImageComparator.tsx` | Download HD genere un blob valide | dataUriToBlob retourne un Blob avec type image/jpeg |
+| UT-18 | `lib/db.ts` | logGeneration stocke les prompts construits complets | Mock pg pool, verifier que built_prompt_pass1 et built_prompt_pass2 sont dans le INSERT |
+| UT-19 | `app/api/shopping-list/route.ts` | Reponse contient >= 5 produits avec nom, prix, lien | Mock GPT-4.1, structure de reponse validee par schema |
+| UT-20 | `app/api/shopping-list/route.ts` | Liens sont des URLs de recherche (/search/) pas des URLs produit | Chaque lien match /search|q=/ et ne match pas /\/p\/\d+/ |
+
+### P2 — Nice-to-have
+
+| ID | Fichier cible | Description | Assertions cles |
+|---|---|---|---|
+| UT-21 | `components/StepIndicator.tsx` | Etape active est visuellement distincte (aria-current) | Etape 2 active → aria-current="step" sur etape 2 |
+| UT-22 | `app/api/generate/route.ts` | AbortController annule les requetes en cours | Signal abort → fetch rejete |
+| UT-23 | `app/api/generate/route.ts` | Fallback Flux si OpenAI echoue | Mock OpenAI echec → Flux appele, resultat retourne |
+| UT-24 | `app/page.tsx` | handleFullReset remet tous les etats a zero | Apres reset → images vide, style null, isGenerating false |
+| UT-25 | `app/api/dossier/pdf/route.ts` | PDF genere contient le bon nombre de pages (couverture + N pieces) | 5 photos → 6 pages |
+
 ## Matrice de couverture
 
+| Feature / Composant | Unit (Vitest) | Integration (Vitest) | E2E (Playwright) | Visuel (screenshot) |
+|---|---|---|---|---|
+| **F1 — Iteration commentaire** | UT-03, UT-04, UT-05 (custom-prompt) | Pre-processing enrichissement, fallback GPT-4.1-mini, rollback compteur timeout | E2E-01 | Modale Affiner, selecteur versions |
+| **F2 — Type de piece** | UT-01, UT-02 (room-types) | Override injection dans payload /api/generate | E2E-02 | Selecteur type de piece |
+| **F3 — Exterieur** | UT-12, UT-13 (styles outdoor) | Prompts outdoor sans ceiling/indoor, detection photo interieure | E2E-03 | Toggle outdoor, 6 styles affiches |
+| **F4 — Mode marchand** | UT-25 (PDF pages) | Batch generation max 3 concurrent, PDF structure, lien partageable TTL 30j | E2E-04 | Panel marchand, batch progress |
+| **F5 — Mode decorateur** | UT-19, UT-20 (shopping list) | GPT-4.1 shopping list, alternatives budget, export PDF QR | E2E-05 | Shopping list panel, cartes produit |
+| **Pipeline generation** | UT-06, UT-07, UT-08 (prompts) | Pipeline 2 passes, fallback Flux, rate limiting | E2E-01 | Loader generation |
+| **Upload** | UT-09, UT-10, UT-14, UT-15, UT-16 | Resize + compression client | E2E-01 a E2E-06 | Zone drag-drop, previews |
+| **Comparateur** | UT-17 (download blob) | Partage WhatsApp, copie image | E2E-01 | Slider avant/apres |
+| **Pricing / Upsell** | -- | Feature gating par package | E2E-06 | Section pricing, CTA upsell |
+| **Accessibilite** | UT-21 (aria-current) | -- | axe-core integre dans tous les E2E | -- |
+
+**Seuils de couverture :**
+- Chemins critiques (pipeline generation, paiement, upload) : >= 90% branch coverage
+- Composants UI : >= 80% statement coverage
+- Utilitaires (lib/) : >= 85% branch coverage
+- API routes : >= 90% branch coverage (tous les status codes testes)
+
 ## Strategie de mocking
+
+### APIs IA — MSW (Mock Service Worker)
+
+**OpenAI Responses API (gpt-4.1)**
+- Mock `openai.responses.create()` via vi.mock('openai') dans Vitest
+- Reponse type : `{ output: [{ type: 'image_generation_call', result: 'base64_encoded_image' }] }`
+- Scenarios : succes, timeout (>90s simulee), erreur 429 (rate limit), erreur 500
+- En E2E Playwright : `page.route('**/api/generate')` intercepte au niveau HTTP (pas besoin de MSW)
+
+**GPT-4.1-mini (pre-processing)**
+- Mock `openai.chat.completions.create()` pour le pre-processing commentaire et shopping list
+- Reponses deterministes : JSON structure avec surfacePrompt, furniturePrompt, warnings
+- Scenarios : succes, echec (fallback prompt brut), reponse malformee
+
+**Flux Depth Pro (Replicate)**
+- Mock `replicate.run()` via vi.mock('replicate')
+- Reponse type : `['https://replicate.delivery/fake/output.jpg']`
+- Scenarios : succes, timeout, modele indisponible (fallback total echoue)
+
+### Stripe (paiement)
+
+- Vi.mock pour les tests unitaires : `stripe.checkout.sessions.create()` retourne un sessionId fixe
+- En E2E : `page.route('**/api/checkout')` retourne un redirect URL mock
+- Pas de test E2E avec Stripe reel en CI — uniquement en staging manuel
+- Webhook : mock du payload `checkout.session.completed` pour valider le credit des credits
+
+### Base de donnees PostgreSQL
+
+- Tests unitaires : vi.mock('pg') — mock du Pool avec query() retournant des resultats fixes
+- Tests integration : base de donnees de test dediee (DATABASE_URL_TEST dans .env.test)
+- Fixtures : `tests/fixtures/db-seed.sql` — donnees reproductibles (users, generations, shopping lists)
+- Nettoyage : `TRUNCATE` avant chaque suite de tests integration (pas entre chaque test, trop lent)
+
+### Object Storage (Replit)
+
+- Vi.mock('@replit/object-storage') — `uploadFromBytes` retourne void, `downloadAsBytes` retourne un buffer fixture
+- En E2E : pas de mock necessaire (les images sont mockees au niveau de /api/generate)
+
+### Fixtures fichiers
+
+```
+tests/fixtures/
+  photo-salon.jpg        -- Photo reelle 1200x900, salon vide (JPEG, ~200Ko)
+  photo-sdb.jpg          -- Salle de bain vide
+  photo-terrasse.jpg     -- Terrasse exterieure
+  photo-1.jpg ... 5.jpg  -- 5 photos pour batch marchand
+  result-scandinave.jpg  -- Resultat genere mock (pour comparateur)
+  result-japandi-sdb.jpg -- Resultat genere mock salle de bain
+  result-terrasse.jpg    -- Resultat genere mock exterieur
+  result-batch.jpg       -- Resultat genere mock batch
+  db-seed.sql            -- Seed base de test
+```
+
+### Regles de mocking
+
+1. **Jamais d'appel reel a OpenAI/Replicate en CI** — cout prohibitif + non deterministe
+2. **Jamais de mock qui masque un bug** — si le mock retourne toujours 200, ajouter des scenarios d'erreur
+3. **Les mocks E2E (page.route) sont preferes a MSW** — plus simple, pas de setup global, visible dans le test
+4. **Les mocks Vitest (vi.mock) sont preferes pour les tests unitaires** — isolation complete du module
+5. **Les fixtures images sont des fichiers reels** (pas des buffers vides) — necessaire pour tester resize/compression
