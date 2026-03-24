@@ -34,17 +34,30 @@ export const ROOM_TYPES: Record<string, RoomType> = {
     roomNegativeOverride: "",
   },
 
-  bedroom: {
-    id: "bedroom",
-    label: "Chambre",
+  bedroom_adults: {
+    id: "bedroom_adults",
+    label: "Chambre adultes",
     emoji: "🛏️",
-    description: "Mobilier adapté : lit, chevets, armoire",
+    description: "Mobilier adapte : lit double, chevets, armoire",
     roomSurfaceOverride:
-      "Additionally for this bedroom: warm-toned flooring suitable for bare feet.",
+      "Additionally for this adult bedroom: warm-toned flooring suitable for bare feet.",
     roomFurnitureOverride:
-      "Bedroom furniture: upholstered double bed 160cm wide with padded headboard and fitted bedlinen in neutral tones, two matching bedside tables 45cm wide with table lamps, a soft area rug 160x230cm beside the bed, a bench or ottoman at the foot of the bed, a tall wardrobe or dresser as background anchor. One accent chair or reading nook if space allows. Intentional calm — no clutter, no work-related objects.",
+      "Adult bedroom furniture: upholstered double bed 160cm wide with padded headboard and fitted bedlinen in neutral tones, two matching bedside tables 45cm wide with table lamps, a soft area rug 160x230cm beside the bed, a bench or ottoman at the foot of the bed, a tall wardrobe or dresser as background anchor. One accent chair or reading nook if space allows. Intentional calm — no clutter, no work-related objects.",
     roomNegativeOverride:
-      "sofa, coffee table, TV unit, dining table, office desk",
+      "sofa, coffee table, TV unit, dining table, office desk, crib, bunk bed, toy",
+  },
+
+  bedroom_children: {
+    id: "bedroom_children",
+    label: "Chambre enfants",
+    emoji: "🧒",
+    description: "Mobilier adapte : lit enfant, rangements, espace jeu",
+    roomSurfaceOverride:
+      "Additionally for this children bedroom: warm-toned flooring suitable for bare feet, durable and easy to clean.",
+    roomFurnitureOverride:
+      "Children bedroom furniture: single bed 90cm wide with simple headboard and colorful bedlinen, one bedside table 40cm wide with small lamp, a soft play rug 120x170cm beside the bed, low open shelving unit 100cm wide for books and toys, small desk 80cm wide with child-sized chair for homework if space allows, woven storage basket on the floor for toys. Playful but tidy — age-appropriate, no adult furniture, no fragile objects.",
+    roomNegativeOverride:
+      "sofa, coffee table, TV unit, dining table, office desk, double bed, king bed",
   },
 
   bathroom: {
@@ -122,18 +135,47 @@ export const ROOM_TYPES: Record<string, RoomType> = {
     roomNegativeOverride:
       "sofa, coffee table, TV unit, bed, wardrobe, dining table, office desk, chandelier, area rug, potted plant",
   },
+
+  cellar: {
+    id: "cellar",
+    label: "Cave",
+    emoji: "🍷",
+    description: "Amenagement adapte : rangements, etageres, eclairage",
+    roomSurfaceOverride:
+      "Additionally for this cellar: concrete or natural stone floor kept as-is or with simple sealant. Walls in clean matte white or light grey paint over existing masonry.",
+    roomFurnitureOverride:
+      "Cellar furnishing: sturdy metal or wooden storage shelving unit 180cm tall against the back wall, a few labeled storage boxes or wicker baskets on the shelves, simple overhead utility light fixture, wall-mounted wine rack 100cm wide if space allows, rubber floor mat near the entrance. Functional storage space — clean and organized, no luxury furniture, no decorative objects.",
+    roomNegativeOverride:
+      "sofa, coffee table, TV unit, bed, wardrobe, dining table, office desk, chandelier, area rug, potted plant, curtains",
+  },
+
+  wc: {
+    id: "wc",
+    label: "WC",
+    emoji: "🚽",
+    description: "Amenagement adapte : toilettes, lave-mains, rangement",
+    roomSurfaceOverride:
+      "Additionally for this WC/toilet room: waterproof floor — small-format ceramic tiles or vinyl in neutral tone. Walls in washable matte paint or ceramic tiles on the lower half.",
+    roomFurnitureOverride:
+      "WC room fixtures: wall-hung or floor-standing toilet, compact wall-mounted hand basin 40cm wide with small mirror above, small shelf or wall-mounted cabinet for storage, toilet brush holder, single pendant or wall sconce for lighting. Minimal and hygienic — this is a very small space, do not overcrowd, no luxury items, no large furniture.",
+    roomNegativeOverride:
+      "sofa, coffee table, TV unit, bed, wardrobe, dining table, office desk, chandelier, area rug, bathtub, shower",
+  },
 };
 
 /** Ordered list for UI display */
 export const ROOM_TYPE_LIST: RoomType[] = [
   ROOM_TYPES.living_room,
-  ROOM_TYPES.bedroom,
-  ROOM_TYPES.bathroom,
+  ROOM_TYPES.dining_room,
   ROOM_TYPES.kitchen,
+  ROOM_TYPES.bedroom_adults,
+  ROOM_TYPES.bedroom_children,
+  ROOM_TYPES.bathroom,
+  ROOM_TYPES.wc,
   ROOM_TYPES.office,
   ROOM_TYPES.entryway,
-  ROOM_TYPES.dining_room,
   ROOM_TYPES.laundry,
+  ROOM_TYPES.cellar,
 ];
 
 /**
