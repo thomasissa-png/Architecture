@@ -30,10 +30,14 @@ Moyenne — 5 agents (reviewer, Yann, Lucas, fullstack, reviewer), 2 features su
 
 ### Phase 3 — Review croisee F1
 - Agents : @reviewer
-- Statut : EN COURS
+- Statut : TERMINE (2026-03-24)
 - Livrables attendus : docs/reviews/f1-review.md
-- Livrables recus : []
-- Verdict verification : []
+- Livrables recus : [docs/reviews/f1-review.md]
+- Verdict verification : APPROUVE avec corrections
+- Problemes critiques :
+  - H-02 CRITIQUE : double mismatch pass1Key/pass1_key — iteration F1 entierement cassee
+  - H-01 HAUTE : double pre-processing commentaire (client + serveur)
+  - M-03 MOYENNE : iterationsRemaining global au lieu de par photo
 
 ---
 
@@ -42,17 +46,25 @@ Moyenne — 5 agents (reviewer, Yann, Lucas, fullstack, reviewer), 2 features su
 ### Phase F2.1 — Audit prompts par type de piece (Yann + Lucas en parallele)
 - Agents : Yann Duval (interior-architect), Lucas Moreau (ai-image-expert)
 - Parallelisation : OUI
-- Statut : En attente (apres Phase 3 F1)
+- Statut : TERMINE (2026-03-24)
 - Livrables attendus : docs/ia/f2-room-type-prompts.md
-- Livrables recus : []
-- Verdict verification : []
+- Livrables recus : [docs/ia/f2-room-type-prompts.md]
+- Verdict verification : OK
+- Decisions cles :
+  - roomFurnitureOverride REMPLACE le furniturePrompt du style (sauf Salon)
+  - Exception built-in pour Kitchen et Bathroom dans le builder passe 2
+  - Auto-detection optionnelle via GPT-4.1-mini vision
+  - roomType stocke dans Pass1Meta pour coherence F1 iterations
 
 ### Phase F2.2 — Implementation fullstack
 - Agents : @fullstack
-- Statut : En attente (apres Phase F2.1)
-- Livrables attendus : lib/room-types.ts (nouveau), components/RoomTypePicker.tsx (nouveau), app/page.tsx (modifie), app/api/generate/route.ts (modifie), lib/custom-prompt.ts (modifie)
-- Livrables recus : []
-- Verdict verification : []
+- Statut : TERMINE (2026-03-24)
+- Livrables attendus : lib/room-types.ts (nouveau), components/RoomTypePicker.tsx (nouveau), app/page.tsx (modifie), app/api/generate/route.ts (modifie), lib/db.ts (modifie)
+- Livrables recus : [lib/room-types.ts, components/RoomTypePicker.tsx, app/page.tsx, app/api/generate/route.ts, lib/db.ts]
+- Verdict verification : OK
+- Corrections bonus F1 incluses :
+  - H-02 FIX : pass1Key/pass1_key mismatch (page.tsx l.255, l.395)
+  - H-01 FIX : suppression double pre-processing commentaire (page.tsx handleRefine)
 
 ### Phase F2.3 — Review croisee F2
 - Agents : @reviewer

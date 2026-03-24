@@ -7,6 +7,7 @@ import StylePicker, { StyleOption } from "@/components/StylePicker";
 import ImageComparator from "@/components/ImageComparator";
 import RefineModal from "@/components/RefineModal";
 import VersionSelector from "@/components/VersionSelector";
+import RoomTypePicker from "@/components/RoomTypePicker";
 import { processImage, isLikelyInterior } from "@/lib/image-utils";
 
 interface GenerationResult {
@@ -73,6 +74,7 @@ export default function Home() {
   const [selectedStyle, setSelectedStyle] = useState<StyleOption | null>(null);
   const [customPrompt, setCustomPrompt] = useState("");
   const [withFurniture, setWithFurniture] = useState(true);
+  const [selectedRoomType, setSelectedRoomType] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [results, setResults] = useState<GenerationResult[]>([]);
   const [currentProcessing, setCurrentProcessing] = useState(0);
@@ -238,6 +240,7 @@ export default function Home() {
               width: img.width,
               height: img.height,
               sessionId: getSessionId(),
+              roomType: selectedRoomType,
             }),
             signal: controller.signal,
           });
@@ -252,7 +255,7 @@ export default function Home() {
             originalUrl: filePreviewUrls[img.fileIndex],
             generatedUrl: data.image,
             model: data.model,
-            pass1Key: data.pass1Key,
+            pass1Key: data.pass1_key,
           } as GenerationResult;
         })
       );
@@ -316,6 +319,7 @@ export default function Home() {
     setFiles([]);
     setSelectedStyle(null);
     setCustomPrompt("");
+    setSelectedRoomType(null);
     setResults([]);
     setError(null);
     setIsGenerating(false);
@@ -365,26 +369,10 @@ export default function Home() {
       abortControllerRef.current = controller;
 
       try {
-        // Pre-process comment via GPT-4.1-mini
-        let enrichedComment = comment;
-        try {
-          const ppResponse = await fetch("/api/preprocess-prompt", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ prompt: comment }),
-            signal: controller.signal,
-          });
-          if (ppResponse.ok) {
-            const ppData = await ppResponse.json();
-            if (ppData.furniturePrompt) enrichedComment = ppData.furniturePrompt;
-            if (Array.isArray(ppData.warnings) && ppData.warnings.length > 0) {
-              setRefineWarnings(ppData.warnings);
-            }
-          }
-        } catch (e: unknown) {
-          if (e instanceof Error && e.name === "AbortError") return;
-          // Fallback: use raw comment
-        }
+        // Send raw comment to server — server handles all pre-processing via
+        // preprocessIterationComment (dedicated iteration pre-processing, not
+        // the generic preprocessCustomPrompt). See review H-01.
+        const enrichedComment = comment;
 
         if (controller.signal.aborted) return;
 
@@ -392,7 +380,7 @@ export default function Home() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            pass1Key: targetResult.pass1Key,
+            pass1_key: targetResult.pass1Key,
             iterationComment: enrichedComment,
             previousModifications,
             sessionId: getSessionId(),
@@ -672,6 +660,14 @@ export default function Home() {
                 onStyleSelect={setSelectedStyle}
                 onCustomPromptChange={setCustomPrompt}
               />
+
+              {/* F2: Room type selector (optional) */}
+              <div className="mt-6 pt-5 border-t border-gray-100">
+                <RoomTypePicker
+                  selectedRoomType={selectedRoomType}
+                  onSelect={setSelectedRoomType}
+                />
+              </div>
             </div>
           )}
 

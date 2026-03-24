@@ -10,6 +10,7 @@ import {
   MAX_ITERATIONS,
   PASS1_TTL_MS,
 } from "@/lib/iteration-prompt";
+import { applyRoomTypeOverrides } from "@/lib/room-types";
 
 // ─── Rate Limiting (in-memory, IP-based) ────────────────────────────
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
@@ -94,14 +95,24 @@ function buildSurfacesFluxPrompt(surfacePrompt: string): string {
 }
 
 // ── Pass 2: Furniture placement ──────────────────────────────────────
-function buildFurnitureResponsesPrompt(furniturePrompt: string): string {
+function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: string | null): string {
+  // F2: Kitchen and bathroom need built-in elements (cabinetry, vanity)
+  let freestandingRule: string;
+  if (roomTypeId === "kitchen") {
+    freestandingRule = "Kitchen exception: built-in cabinetry, countertops, and integrated appliances are expected and should be placed realistically against walls. Other items (stools, pendant light, accessories) should be freestanding. No curtains.";
+  } else if (roomTypeId === "bathroom") {
+    freestandingRule = "Bathroom exception: wall-mounted vanity unit and mirror are expected. Other items (stool, basket, plant) should be freestanding. No curtains.";
+  } else {
+    freestandingRule = "ONLY add freestanding objects that rest on the floor or sit on existing surfaces. Do NOT attach anything to walls. No wall-mounted art, no built-in shelving, no curtains.";
+  }
+
   return [
     `Add the following furniture and decoration into this photo of a finished room: ${furniturePrompt}.`,
     "Distribute furniture across the FULL DEPTH and WIDTH of the room. If the room is deep or has multiple zones (e.g. under a mezzanine, an alcove, a back area), place a primary furniture group in the foreground AND a secondary group further back (reading nook, small desk, console table, side chair). If the room is also wide, add a lateral anchor (accent chair, floor lamp, or side table) on the opposite side to balance the composition. Do not leave the back or sides of the room empty.",
     "Place all objects naturally on the existing floor. Every piece of furniture — including those in the back of the room — must have correct perspective, scale, and cast realistic shadows consistent with the existing light direction and intensity. Match shadow hardness to the lighting type: soft diffused shadows for overcast or indirect light, hard-edged shadows for direct sunlight.",
     "If the ceiling appears very high (double height, >3m) or the room is very large, scale up furniture proportionally — use larger modular pieces, taller floor lamps, and more imposing accent furniture to match the volume.",
     "Respect the furniture density implied by the style description. If the style is minimalist, leave large areas of empty floor visible. If the room appears small, reduce accent pieces — skip secondary items rather than cramming everything in.",
-    "ONLY add freestanding objects that rest on the floor or sit on existing surfaces. Do NOT attach anything to walls. No wall-mounted art, no built-in shelving, no curtains.",
+    freestandingRule,
     "Room structure is LOCKED: every wall, window, door, ceiling, and floor surface must remain visually identical to the input — same colors, same textures, same geometry. Shadows cast by new furniture on walls and floor are expected and natural. No new openings.",
     "Preserve all wall-mounted fixed equipment visible in the input: radiators, heaters, vents, thermostats, and switches must remain visible. Do not place furniture in front of radiators.",
     "If the input has zero windows, the output must have zero windows.",
@@ -110,12 +121,21 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string): string {
   ].join(" ");
 }
 
-function buildFurnitureFluxPrompt(furniturePrompt: string): string {
+function buildFurnitureFluxPrompt(furniturePrompt: string, roomTypeId?: string | null): string {
+  let freestandingRule: string;
+  if (roomTypeId === "kitchen") {
+    freestandingRule = "Kitchen: built-in cabinetry and countertops expected against walls. Stools and accessories freestanding. No curtains.";
+  } else if (roomTypeId === "bathroom") {
+    freestandingRule = "Bathroom: wall-mounted vanity and mirror expected. Other items freestanding. No curtains.";
+  } else {
+    freestandingRule = "Freestanding furniture only. No wall-mounted objects, no built-in shelving, no curtains.";
+  }
+
   return [
     `${furniturePrompt}, placed naturally across the full depth of this finished room interior.`,
     "Distribute furniture in depth and width: primary group in foreground, secondary group in the back if space allows, lateral anchor (accent chair, floor lamp) on the opposite side if room is wide. Do not leave rear or side areas empty.",
     "Shadow hardness matches lighting: soft for diffused light, hard for direct sunlight. Scale furniture up if ceiling is very high.",
-    "Freestanding furniture only. No wall-mounted objects, no built-in shelving, no curtains.",
+    freestandingRule,
     "Every wall, floor, and ceiling surface visually identical to input — same colors, same textures. Shadows from furniture are natural. No new openings.",
     "Keep all wall-mounted equipment: radiators, heaters, vents, switches visible. Do not place furniture in front of radiators.",
     "Same room geometry, same proportions, same camera angle, same lighting conditions.",
@@ -133,14 +153,15 @@ async function tryOpenAIResponses(
   surfacePrompt: string,
   furniturePrompt: string,
   pass: 1 | 2,
-  size: string
+  size: string,
+  roomTypeId?: string | null
 ): Promise<{ image: string; model: string }> {
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
   const prompt =
     pass === 1
       ? buildSurfacesResponsesPrompt(surfacePrompt)
-      : buildFurnitureResponsesPrompt(furniturePrompt);
+      : buildFurnitureResponsesPrompt(furniturePrompt, roomTypeId);
 
   const response = await openai.responses.create({
     model: "gpt-4.1",
@@ -195,7 +216,9 @@ async function tryFluxDepth(
   furniturePrompt: string,
   pass: 1 | 2,
   width: number,
-  height: number
+  height: number,
+  additionalNegative: string = "",
+  roomTypeId?: string | null
 ): Promise<{ image: string; model: string }> {
   const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
 
@@ -203,7 +226,7 @@ async function tryFluxDepth(
   const prompt =
     pass === 1
       ? buildSurfacesFluxPrompt(surfacePrompt)
-      : buildFurnitureFluxPrompt(furniturePrompt);
+      : buildFurnitureFluxPrompt(furniturePrompt, roomTypeId);
 
   // Pass 1 (surfaces): lower guidance to stay closer to input geometry
   // Pass 2 (furniture): slightly higher guidance to ensure furniture appears
@@ -214,7 +237,9 @@ async function tryFluxDepth(
     {
       input: {
         prompt,
-        negative_prompt: FLUX_NEGATIVE_PROMPT,
+        negative_prompt: additionalNegative
+          ? `${FLUX_NEGATIVE_PROMPT}, ${additionalNegative}`
+          : FLUX_NEGATIVE_PROMPT,
         control_image: dataUri,
         width,
         height,
@@ -387,14 +412,16 @@ async function generatePass(
   surfacePrompt: string,
   furniturePrompt: string,
   pass: 1 | 2,
-  outputSize: { openai: string; w: number; h: number }
+  outputSize: { openai: string; w: number; h: number },
+  additionalNegative: string = "",
+  roomTypeId?: string | null
 ): Promise<{ image: string; model: string }> {
   let openaiError: Error | null = null;
   let replicateError: Error | null = null;
 
   if (process.env.OPENAI_API_KEY) {
     try {
-      return await tryOpenAIResponses(base64Image, surfacePrompt, furniturePrompt, pass, outputSize.openai);
+      return await tryOpenAIResponses(base64Image, surfacePrompt, furniturePrompt, pass, outputSize.openai, roomTypeId);
     } catch (err) {
       openaiError = err instanceof Error ? err : new Error(String(err));
       console.error(`OpenAI pass ${pass} failed:`, openaiError.message);
@@ -403,7 +430,7 @@ async function generatePass(
 
   if (process.env.REPLICATE_API_TOKEN) {
     try {
-      return await tryFluxDepth(base64Image, surfacePrompt, furniturePrompt, pass, outputSize.w, outputSize.h);
+      return await tryFluxDepth(base64Image, surfacePrompt, furniturePrompt, pass, outputSize.w, outputSize.h, additionalNegative, roomTypeId);
     } catch (err) {
       replicateError = err instanceof Error ? err : new Error(String(err));
       console.error(`Flux Depth pass ${pass} failed:`, replicateError.message);
@@ -451,6 +478,8 @@ export async function POST(request: NextRequest) {
       iterationComment,
       previousModifications = [],
       sessionId,
+      // F2 room type
+      roomType = null,
     } = body as {
       image?: string;
       surfacePrompt?: string;
@@ -463,6 +492,7 @@ export async function POST(request: NextRequest) {
       iterationComment?: string;
       previousModifications?: string[];
       sessionId?: string;
+      roomType?: string | null;
     };
 
     styleId = bodyStyleId;
@@ -600,18 +630,22 @@ export async function POST(request: NextRequest) {
     // ── Pipeline 2 passes ────────────────────────────────────────────
     // Pass 1: Finish surfaces using surfacePrompt — room stays empty
     // Pass 2 (optional): Add furniture using furniturePrompt — surfaces untouched
-    const trimmedSurface = surfacePrompt.trim();
-    const trimmedFurniture = furniturePrompt.trim();
+
+    // F2: Apply room type overrides to style prompts
+    const { effectiveSurfacePrompt, effectiveFurniturePrompt, roomNegativeOverride } =
+      applyRoomTypeOverrides(surfacePrompt.trim(), furniturePrompt.trim(), roomType ?? null);
+    const trimmedSurface = effectiveSurfacePrompt;
+    const trimmedFurniture = effectiveFurniturePrompt;
 
     const t0 = Date.now();
 
-    console.log(`Starting pass 1 (surfaces)... Output size: ${outputSize.openai}`);
-    const pass1 = await generatePass(base64Image, trimmedSurface, trimmedFurniture, 1, outputSize);
+    console.log(`Starting pass 1 (surfaces)... Output size: ${outputSize.openai}${roomType ? ` roomType: ${roomType}` : ""}`);
+    const pass1 = await generatePass(base64Image, trimmedSurface, trimmedFurniture, 1, outputSize, roomNegativeOverride, roomType);
     const t1 = Date.now();
 
     // Build the final prompts for logging (what the model actually receives)
     const builtPromptPass1 = buildSurfacesResponsesPrompt(trimmedSurface);
-    const builtPromptPass2 = buildFurnitureResponsesPrompt(trimmedFurniture);
+    const builtPromptPass2 = buildFurnitureResponsesPrompt(trimmedFurniture, roomType);
 
     const pass1Base64 = pass1.image.replace(/^data:image\/[\w+]+;base64,/, "");
 
@@ -627,6 +661,7 @@ export async function POST(request: NextRequest) {
       furniturePrompt: trimmedFurniture,
       surfacePrompt: trimmedSurface,
       createdAt: Date.now(),
+      roomType: roomType ?? null,
     }).catch((err) => console.error("Pass1 cache save failed:", err));
 
     // If surfaces-only mode, return pass 1 result directly
@@ -655,7 +690,7 @@ export async function POST(request: NextRequest) {
     }
 
     console.log("Starting pass 2 (furniture)...");
-    const pass2 = await generatePass(pass1Base64, trimmedSurface, trimmedFurniture, 2, outputSize);
+    const pass2 = await generatePass(pass1Base64, trimmedSurface, trimmedFurniture, 2, outputSize, roomNegativeOverride, roomType);
     const t2 = Date.now();
 
     const outputBase64 = pass2.image.replace(/^data:image\/[\w+]+;base64,/, "");

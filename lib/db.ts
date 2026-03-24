@@ -103,6 +103,7 @@ export interface Pass1Meta {
   furniturePrompt: string;
   surfacePrompt: string;
   createdAt: number; // Date.now()
+  roomType?: string | null; // F2: room type for iteration coherence
 }
 
 export async function savePass1Cache(
