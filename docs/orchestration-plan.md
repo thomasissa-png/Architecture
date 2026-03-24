@@ -1,7 +1,7 @@
-# Plan d'orchestration — VisiRenov F1 Iteration commentaire
+# Plan d'orchestration — VisiRenov F1 Review + F2 Type de piece
 
 ## Demande utilisateur
-Implementer F1 (Iteration commentaire) : permettre a l'utilisateur d'affiner un resultat genere en saisissant un commentaire, declenchant une re-passe 2 uniquement (surfaces preservees). Inclure obligatoirement les agents metier Yann Duval et Lucas Moreau pour la strategie prompts.
+Phase 3 : Review croisee de l'implementation F1 (iteration commentaire). Puis lancement F2 (type de piece) : audit prompts Yann+Lucas, implementation fullstack, review.
 
 ## Mode detecte
 Projet existant (MVP, 18 sprints d'historique) — Phases ciblees uniquement
@@ -12,33 +12,56 @@ Projet existant (MVP, 18 sprints d'historique) — Phases ciblees uniquement
 - Mode d'interaction : Standard (validation entre phases)
 
 ## Complexite estimee
-Moyenne — 4 agents (Yann, Lucas, fullstack, reviewer), 3 phases
+Moyenne — 5 agents (reviewer, Yann, Lucas, fullstack, reviewer), 2 features sur 5 phases
 
-## Plan par phase
+---
+
+## F1 — Iteration commentaire
 
 ### Phase 1 — Audit prompts iteration (Yann + Lucas en parallele)
-- Agents : Yann Duval (interior-architect), Lucas Moreau (ai-image-expert)
-- Parallelisation : OUI (pas de dependance entre eux)
-- Statut : Termine
-- Livrables attendus : docs/ia/f1-iteration-prompts-yann.md, docs/ia/f1-iteration-prompts-lucas.md, docs/ia/f1-iteration-prompts.md (fusionne)
-- Livrables recus : docs/ia/f1-iteration-prompts-yann.md (Yann — stylistique), docs/ia/f1-iteration-prompts-lucas.md (Lucas — technique), docs/ia/f1-iteration-prompts.md (fusionne pour @fullstack)
-- Verdict verification : OK — recommandations coherentes, pas de contradiction entre les deux agents. Decisions cles alignees : enrichir pas remplacer, builders separes, modifications en tete du prompt, cumul des iterations, meta.json avec cache passe 1
+- Statut : TERMINE
+- Livrables : docs/ia/f1-iteration-prompts-yann.md, docs/ia/f1-iteration-prompts-lucas.md, docs/ia/f1-iteration-prompts.md
+- Verdict : OK
 
 ### Phase 2 — Implementation fullstack
-- Agents : @fullstack
-- Parallelisation : NON (depend des recommandations Phase 1)
-- Statut : En cours (lance 2026-03-24)
-- Livrables attendus : route.ts modifie, lib/db.ts modifie, lib/iteration-prompt.ts (nouveau), page.tsx modifie, components/RefineModal.tsx (nouveau), components/ImageComparator.tsx modifie
-- Livrables recus : []
-- Verdict verification : []
+- Statut : TERMINE
+- Livrables : lib/iteration-prompt.ts, lib/custom-prompt.ts (modifie), lib/db.ts (modifie), app/api/generate/route.ts (modifie), components/RefineModal.tsx, components/VersionSelector.tsx, app/page.tsx (modifie)
+- Verdict : A verifier par Phase 3
 
-### Phase 3 — Review croisee
+### Phase 3 — Review croisee F1
 - Agents : @reviewer
-- Parallelisation : NON (depend de Phase 2)
-- Statut : En attente
+- Statut : EN COURS
 - Livrables attendus : docs/reviews/f1-review.md
 - Livrables recus : []
 - Verdict verification : []
+
+---
+
+## F2 — Type de piece
+
+### Phase F2.1 — Audit prompts par type de piece (Yann + Lucas en parallele)
+- Agents : Yann Duval (interior-architect), Lucas Moreau (ai-image-expert)
+- Parallelisation : OUI
+- Statut : En attente (apres Phase 3 F1)
+- Livrables attendus : docs/ia/f2-room-type-prompts.md
+- Livrables recus : []
+- Verdict verification : []
+
+### Phase F2.2 — Implementation fullstack
+- Agents : @fullstack
+- Statut : En attente (apres Phase F2.1)
+- Livrables attendus : lib/room-types.ts (nouveau), components/RoomTypePicker.tsx (nouveau), app/page.tsx (modifie), app/api/generate/route.ts (modifie), lib/custom-prompt.ts (modifie)
+- Livrables recus : []
+- Verdict verification : []
+
+### Phase F2.3 — Review croisee F2
+- Agents : @reviewer
+- Statut : En attente (apres Phase F2.2)
+- Livrables attendus : docs/reviews/f2-review.md
+- Livrables recus : []
+- Verdict verification : []
+
+---
 
 ## Feedbacks remontants
 | # | Severite | Agent source | Agent cible | Probleme | Statut |
