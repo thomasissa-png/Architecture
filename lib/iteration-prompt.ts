@@ -27,12 +27,24 @@ export function buildIterationFurnitureResponsesPrompt(
     "Focus ONLY on adjusting the furniture and decoration as described below.",
     `APPLY THESE CHANGES:\n${modBlock}`,
     `BASE STYLE (keep everything not contradicted by the changes above): ${furniturePrompt}.`,
-    "Distribute furniture across the FULL DEPTH and WIDTH of the room. If the room is deep or has multiple zones, place a primary group in the foreground AND a secondary group further back. If the room is also wide, add a lateral anchor on the opposite side.",
+    // Distribution directives only for rooms large enough to benefit
+    ...(!["wc", "laundry", "cellar", "entryway"].includes(meta.roomType ?? "") ? [
+      "Distribute furniture across the FULL DEPTH and WIDTH of the room. If the room is deep or has multiple zones, place a primary group in the foreground AND a secondary group further back. If the room is also wide, add a lateral anchor on the opposite side.",
+      "If the ceiling appears very high or the room is very large, scale up furniture proportionally.",
+    ] : []),
     "Place all objects naturally on the existing floor. Every piece of furniture must have correct perspective, scale, and cast realistic shadows consistent with the existing light direction. Match shadow hardness to the lighting type.",
-    "If the ceiling appears very high or the room is very large, scale up furniture proportionally.",
     "Respect the furniture density implied by the style. If minimalist, leave large empty floor areas. If the room is small, reduce accent pieces.",
+    // Room-type-specific fixture rules
     meta.roomType === "kitchen" || meta.roomType === "bathroom"
       ? "Add room-appropriate fixtures and freestanding accessories. Built-in cabinetry, vanity units, and countertops are expected for this room type. No curtains."
+      : meta.roomType === "wc"
+      ? "Wall-hung toilet and wall-mounted hand basin expected. Other items (shelf, brush holder) freestanding only. Very small space — do not overcrowd. No curtains."
+      : meta.roomType === "laundry"
+      ? "Washing machine and functional equipment expected. Storage cabinet, drying rack, laundry basket. No decorative objects, no luxury items. No curtains."
+      : meta.roomType === "cellar"
+      ? "Functional storage only — shelving, storage boxes, utility light. Wine rack if space allows. No luxury furniture, no decorative objects. No curtains."
+      : meta.roomType === "entryway"
+      ? "Small space — do not overcrowd. Freestanding items only: console, coat rack, small bench, runner rug. No wall-mounted art, no curtains."
       : "ONLY add freestanding objects. Do NOT attach anything to walls. No wall-mounted art, no built-in shelving, no curtains.",
     "Room structure is LOCKED — walls, floor, ceiling, paint, windows, doors must remain visually identical to the input. Same colors, same textures, same geometry. Shadows from furniture are expected and natural.",
     "Preserve all wall-mounted fixed equipment: radiators, heaters, vents, thermostats, switches. Do not place furniture in front of radiators.",
@@ -59,9 +71,23 @@ export function buildIterationFurnitureFluxPrompt(
   return [
     `CHANGES: ${modSummary}.`,
     `BASE STYLE (keep uncontradicted items): ${furniturePrompt}.`,
-    "Placed naturally across the full depth of this finished room. Primary group foreground, secondary group in back if space allows, lateral anchor if room is wide.",
+    // Distribution directives only for rooms large enough to benefit
+    ...(!["wc", "laundry", "cellar", "entryway"].includes(meta.roomType ?? "") ? [
+      "Placed naturally across the full depth of this finished room. Primary group foreground, secondary group in back if space allows, lateral anchor if room is wide.",
+    ] : [
+      "Placed naturally in this finished room.",
+    ]),
+    // Room-type-specific fixture rules
     meta.roomType === "kitchen" || meta.roomType === "bathroom"
       ? "Room-appropriate fixtures and accessories. Built-in cabinetry, vanity, countertops expected. No curtains."
+      : meta.roomType === "wc"
+      ? "Wall-hung toilet and hand basin expected. Very small space, do not overcrowd. No curtains."
+      : meta.roomType === "laundry"
+      ? "Washing machine and functional equipment expected. No decorative items. No curtains."
+      : meta.roomType === "cellar"
+      ? "Functional storage only — shelving, boxes, utility light. No luxury furniture. No curtains."
+      : meta.roomType === "entryway"
+      ? "Small space — console, coat rack, bench, runner. Freestanding only, no curtains."
       : "Freestanding furniture only. No wall-mounted objects, no built-in shelving, no curtains.",
     "Every wall, floor, and ceiling surface visually identical to input — same colors, textures. Room structure LOCKED. Shadows from furniture are natural.",
     "Keep all wall-mounted equipment: radiators, heaters, vents, switches visible. Do not place furniture in front of radiators.",

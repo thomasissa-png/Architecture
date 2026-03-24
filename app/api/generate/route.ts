@@ -238,6 +238,7 @@ function buildSurfacesFluxPrompt(surfacePrompt: string, roomTypeId?: string | nu
     return [
       `${surfacePrompt}, finished empty laundry room.`,
       "White or light grey ceramic floor tiles, matte finish. Washable matte white walls.",
+      "Preserve ceiling 3D geometry — vaults, beams, ribs keep shape. Clean plaster finish over raw concrete.",
       "Remove construction leftovers. Keep wall equipment in place.",
       "Empty room — no appliances, no objects. Same windows and doors.",
       "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, subtle grain.",
@@ -249,6 +250,7 @@ function buildSurfacesFluxPrompt(surfacePrompt: string, roomTypeId?: string | nu
     return [
       `${surfacePrompt}, finished empty cellar.`,
       "Concrete or stone floor as-is or with sealant. Clean matte white or grey paint over masonry.",
+      "Preserve ceiling 3D geometry — vaults, beams, ribs keep shape. Clean plaster finish over raw concrete.",
       "Remove construction leftovers. Keep wall equipment in place.",
       "Empty room — no shelving, no objects. Same windows and doors.",
       "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, subtle grain.",
@@ -1159,7 +1161,9 @@ export async function POST(request: NextRequest) {
       // Indoor mode: apply room type overrides
       // Rooms with dedicated builders absorb surface directives directly — skip surface concatenation
       // but still need furniture replacement and negative override from applyRoomTypeOverrides
-      const ROOMS_WITH_DEDICATED_BUILDERS = ["kitchen", "bathroom", "wc", "bedroom_adults", "bedroom_children", "entryway", "laundry", "cellar", "dining_room"];
+      // dining_room excluded: it has dedicated FURNITURE builders but no dedicated SURFACE builder,
+      // so it needs the standard surface concatenation path (roomSurfaceOverride appended to surfacePrompt).
+      const ROOMS_WITH_DEDICATED_BUILDERS = ["kitchen", "bathroom", "wc", "bedroom_adults", "bedroom_children", "entryway", "laundry", "cellar"];
       const hasDedicatedBuilder = roomType && ROOMS_WITH_DEDICATED_BUILDERS.includes(roomType);
 
       const { effectiveSurfacePrompt, effectiveFurniturePrompt, roomNegativeOverride } =
