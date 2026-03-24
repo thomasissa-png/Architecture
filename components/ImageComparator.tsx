@@ -82,8 +82,32 @@ export default function ImageComparator({
     }
   };
 
-  const handleWhatsApp = () => {
-    // WhatsApp only supports text links — download image first, then share
+  const handleWhatsApp = async () => {
+    const blob = dataUriToBlob(generatedUrl);
+    const file = new File([blob], "visirenov.png", { type: "image/png" });
+
+    // Mobile: navigator.share with files sends the image directly via WhatsApp
+    if (navigator.share && navigator.canShare?.({ files: [file] })) {
+      try {
+        await navigator.share({
+          text: "D\u00e9couvre ce visuel d\u2019int\u00e9rieur g\u00e9n\u00e9r\u00e9 par VisiR\u00e9nov \ud83c\udfe0",
+          files: [file],
+        });
+        return;
+      } catch {
+        // User cancelled — fall through to desktop fallback
+      }
+    }
+
+    // Desktop fallback: copy image to clipboard, then open WhatsApp Web
+    try {
+      const pngBlob = new Blob([blob], { type: "image/png" });
+      await navigator.clipboard.write([
+        new ClipboardItem({ "image/png": pngBlob }),
+      ]);
+    } catch {
+      // Clipboard not available — proceed anyway
+    }
     const text = encodeURIComponent(
       "D\u00e9couvre ce visuel d\u2019int\u00e9rieur g\u00e9n\u00e9r\u00e9 par VisiR\u00e9nov \ud83c\udfe0 \u2014 visirenov.fr"
     );

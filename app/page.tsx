@@ -51,11 +51,13 @@ export default function Home() {
   const [files, setFiles] = useState<File[]>([]);
   const [selectedStyle, setSelectedStyle] = useState<StyleOption | null>(null);
   const [customPrompt, setCustomPrompt] = useState("");
+  const [withFurniture, setWithFurniture] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [results, setResults] = useState<GenerationResult[]>([]);
   const [currentProcessing, setCurrentProcessing] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [generationElapsed, setGenerationElapsed] = useState(0);
+  const [preprocessWarnings, setPreprocessWarnings] = useState<string[]>([]);
 
   const heroRef = useReveal();
   const toolRef = useReveal();
@@ -98,8 +100,9 @@ export default function Home() {
 
   const handleGenerate = useCallback(async () => {
     if (files.length === 0) return;
-    const stylePrompt = selectedStyle?.prompt || customPrompt.trim();
-    if (!stylePrompt) return;
+    let surfacePrompt = selectedStyle?.surfacePrompt || customPrompt.trim();
+    let furniturePrompt = selectedStyle?.furniturePrompt || customPrompt.trim();
+    if (!surfacePrompt && !furniturePrompt) return;
 
     // Cancel any previous in-flight requests
     abortControllerRef.current?.abort();
@@ -109,6 +112,32 @@ export default function Home() {
     setIsGenerating(true);
     setError(null);
     setResults([]);
+    setPreprocessWarnings([]);
+
+    // Pre-process custom prompts via GPT-4.1-mini (translate, split, enrich)
+    if (!selectedStyle && customPrompt.trim()) {
+      try {
+        const ppResponse = await fetch("/api/preprocess-prompt", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: customPrompt.trim() }),
+          signal: controller.signal,
+        });
+        if (ppResponse.ok) {
+          const ppData = await ppResponse.json();
+          if (ppData.surfacePrompt) surfacePrompt = ppData.surfacePrompt;
+          if (ppData.furniturePrompt) furniturePrompt = ppData.furniturePrompt;
+          if (Array.isArray(ppData.warnings) && ppData.warnings.length > 0) {
+            setPreprocessWarnings(ppData.warnings);
+          }
+        }
+      } catch (e: unknown) {
+        // On abort, stop entirely
+        if (e instanceof Error && e.name === "AbortError") return;
+        // On any other error, proceed with the raw custom prompt (backward compatible)
+      }
+      if (controller.signal.aborted) return;
+    }
 
     // Step 1: Validate all images (fast, parallel)
     try {
@@ -157,7 +186,10 @@ export default function Home() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               image: img.base64,
-              stylePrompt,
+              surfacePrompt,
+              furniturePrompt,
+              styleId: selectedStyle?.id ?? "custom",
+              withFurniture,
               width: img.width,
               height: img.height,
             }),
@@ -201,7 +233,7 @@ export default function Home() {
         scrollToElement("step-results");
       }
     }
-  }, [files, selectedStyle, customPrompt, filePreviewUrls]);
+  }, [files, selectedStyle, customPrompt, withFurniture, filePreviewUrls]);
 
   const handleRetry = useCallback(() => {
     setResults([]);
@@ -214,6 +246,7 @@ export default function Home() {
   const handleReset = () => {
     setResults([]);
     setError(null);
+    setPreprocessWarnings([]);
   };
 
   const handleFullReset = () => {
@@ -224,6 +257,7 @@ export default function Home() {
     setResults([]);
     setError(null);
     setIsGenerating(false);
+    setPreprocessWarnings([]);
   };
 
   const handleDownloadAll = () => {
@@ -302,7 +336,7 @@ export default function Home() {
             <span className="font-light text-muted">meubl&eacute;s par l&apos;IA</span>
           </h2>
           <p className="text-base sm:text-lg text-muted font-light leading-relaxed max-w-2xl mx-auto mb-6 sm:mb-8">
-            Uploadez une photo de pi&egrave;ce vide, choisissez un style parmi 12 ambiances, et recevez un visuel meubl&eacute; en quelques secondes. Pour les pros comme pour les particuliers.
+            Uploadez une photo de pi&egrave;ce vide, choisissez un style parmi 11 ambiances, et recevez un visuel meubl&eacute; en quelques secondes. Pour les pros comme pour les particuliers.
           </p>
 
           {/* Hero before/after — richly illustrated mock */}
@@ -367,7 +401,7 @@ export default function Home() {
 
           {/* Social proof line */}
           <p className="text-xs text-muted/70 font-light mb-6">
-            12 styles disponibles &middot; R&eacute;sultat en 10-30 secondes &middot; T&eacute;l&eacute;chargement HD gratuit
+            11 styles disponibles &middot; R&eacute;sultat en 10-30 secondes &middot; T&eacute;l&eacute;chargement HD gratuit
           </p>
 
           <a
@@ -431,6 +465,39 @@ export default function Home() {
                 onStyleSelect={setSelectedStyle}
                 onCustomPromptChange={setCustomPrompt}
               />
+            </div>
+          )}
+
+          {/* Furniture toggle */}
+          {canGenerate && results.length === 0 && !isGenerating && (
+            <div className="mb-8 animate-fade-in-up">
+              <div className="flex items-center justify-center gap-3">
+                <button
+                  onClick={() => setWithFurniture(false)}
+                  className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all ${
+                    !withFurniture
+                      ? "bg-foreground text-background shadow-sm"
+                      : "bg-gray-100 text-muted hover:bg-gray-200"
+                  }`}
+                >
+                  Surfaces uniquement
+                </button>
+                <button
+                  onClick={() => setWithFurniture(true)}
+                  className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all ${
+                    withFurniture
+                      ? "bg-foreground text-background shadow-sm"
+                      : "bg-gray-100 text-muted hover:bg-gray-200"
+                  }`}
+                >
+                  Surfaces + Mobilier
+                </button>
+              </div>
+              <p className="text-center text-xs text-muted font-light mt-2">
+                {withFurniture
+                  ? "Finitions et mobilier complet"
+                  : "Pi\u00e8ce finie sans meuble \u2014 id\u00e9al pour voir les surfaces"}
+              </p>
             </div>
           )}
 
@@ -518,6 +585,23 @@ export default function Home() {
                     : `${generationElapsed}s — Presque termin\u00e9\u2026`}
                 </p>
               </div>
+            </div>
+          )}
+
+          {/* Preprocess warnings */}
+          {preprocessWarnings.length > 0 && (
+            <div className="mb-8 bg-amber-50/50 border border-amber-200/60 rounded-2xl p-5 text-left max-w-2xl mx-auto">
+              <p className="text-amber-700/90 text-xs font-medium mb-2">
+                Certains éléments ont été ajustés :
+              </p>
+              <ul className="space-y-1">
+                {preprocessWarnings.map((w, i) => (
+                  <li key={i} className="text-amber-600/80 text-xs font-light flex items-start gap-2">
+                    <span className="mt-0.5 shrink-0">⚠</span>
+                    <span>{w}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
 
@@ -610,7 +694,7 @@ export default function Home() {
                 </li>
                 <li className="flex items-start gap-2">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  12 styles disponibles
+                  11 styles disponibles
                 </li>
                 <li className="flex items-start gap-2">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
