@@ -74,10 +74,6 @@ const CEILING_PRESERVATION = "Preserve ceiling 3D geometry — vaults, beams, ri
 const LIGHT_PRESERVATION = "Preserve existing light direction, shadow positions, and relative intensity. Maintain wall color temperature from input. Do not artificially brighten darker areas.";
 const CAMERA_PRESERVATION = "Same camera angle, lens distortion, vanishing points, field of view, orientation.";
 
-// Room categories for conditional logic
-const SMALL_ROOMS = ["wc", "entryway", "laundry", "cellar"];
-const WET_ROOMS = ["kitchen", "bathroom"];
-
 // ── Pass 1: Surface finishing ────────────────────────────────────────
 function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string | null): string {
   // Kitchen: dedicated compact prompt (~100 words)
