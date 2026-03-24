@@ -44,7 +44,7 @@ export const OUTDOOR_SUBTYPES: Record<string, OutdoorSubtype> = {
     label: "Patio",
     emoji: "🏛️",
     subtypeSurfaceOverride:
-      "Enclosed outdoor patio space with partial shade — preserve any existing surrounding walls, arches, columns, and overhead beams.",
+      "Enclosed outdoor patio space, partially covered — preserve any existing surrounding walls, arches, columns, and overhead beams.",
     subtypeFurnitureOverride: "",
     subtypeNegativeOverride: "lawn, grass, open sky horizon",
   },

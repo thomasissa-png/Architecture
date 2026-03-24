@@ -125,9 +125,11 @@ export function buildIterationOutdoorFurnitureResponsesPrompt(
     "Distribute furniture naturally across the available floor space. If the space is large, place a primary seating group and a secondary accent further back.",
     "Place all objects naturally on the existing ground. Every piece of outdoor furniture must have correct perspective, scale, and cast realistic shadows consistent with the existing natural light direction.",
     "ONLY add freestanding outdoor objects. Do NOT attach anything to walls, guard rails, or facades.",
+    "Do not place opaque structures (screens, shelving, A-frames) directly in front of full-height windows or glass doors.",
     "Ground surface and vertical structures are LOCKED — guard rails, walls, facades, gates, fences must remain visually identical to the input. Same colors, same textures, same geometry. Shadows from furniture are expected and natural.",
     "Preserve existing vegetation in the background. Do not alter tree lines, hedges, or background plants.",
     "Open-air space — no ceiling. Sky preserved as-is.",
+    "Preserve the exact lighting conditions from the input — same shadow hardness, same direction, same color temperature.",
     "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation.",
     "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, subtle sensor grain (ISO 200), natural corner vignetting. Photo-realistic outdoor photograph. No text, watermarks, or logos.",
   ].join(" ");
@@ -149,9 +151,11 @@ export function buildIterationOutdoorFurnitureFluxPrompt(
     `BASE STYLE (keep uncontradicted items): ${furniturePrompt}.`,
     "Placed naturally across the available floor space. Primary seating group in foreground, secondary accent further back if space allows.",
     "Freestanding outdoor furniture only. No wall-mounted objects, no objects attached to guard rails.",
+    "No opaque structures (screens, shelving, A-frames) in front of full-height windows or glass doors.",
     "Ground surface and vertical structures LOCKED — guard rails, walls, facades same colors, textures, geometry. Shadows from furniture are natural.",
     "Preserve background vegetation. Open-air space, no ceiling, sky as-is.",
-    "Same camera angle, same lighting conditions.",
+    "Preserve exact lighting from input — same shadow hardness, direction, color temperature.",
+    "Same camera angle, same proportions.",
     "Photo-realistic outdoor photograph, DSLR full-frame 16-35mm f/8, deep DOF, sharp focus, subtle film grain.",
   ].join(" ");
 }

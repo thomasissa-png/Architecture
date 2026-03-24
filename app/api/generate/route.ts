@@ -532,7 +532,7 @@ const FLUX_NEGATIVE_PROMPT =
 
 // Outdoor negative prompt — prevents indoor artifacts in outdoor generations
 const OUTDOOR_NEGATIVE_PROMPT =
-  "indoor sofa, area rug, floor lamp, ceiling light, chandelier, curtains, drapes, wallpaper, baseboard, interior door, radiator, electrical outlet, kitchen appliances, ceiling, roof, indoor plant pot on parquet, distorted perspective, fisheye, stretched walls, cartoon, illustration, 3D render, CGI, watermark, text, blurry";
+  "indoor sofa, area rug, floor lamp, ceiling light, chandelier, curtains, drapes, wallpaper, baseboard, interior door, radiator, electrical outlet, kitchen appliances, ceiling, roof, indoor plant pot on parquet, distorted perspective, fisheye, stretched walls, cartoon, illustration, 3D render, CGI, watermark, text, blurry, color grading, warm color shift, cool color shift, golden hour filter";
 
 // ── Outdoor Pass 1: Ground surface finishing (no ceiling, no luminaire) ──
 function buildOutdoorSurfacesResponsesPrompt(
@@ -544,8 +544,12 @@ function buildOutdoorSurfacesResponsesPrompt(
     "Open-air space — no ceiling, sky preserved as-is. Preserve highlights — do not recover blown-out sky.",
     `Apply this ground surface finish: ${surfacePrompt}.`,
     subtypeOverride ? subtypeOverride : "",
+    "Preserve all fixed ground elements: metal access covers, drain grates, manholes, utility plates. Apply the new ground material AROUND these elements, not over them.",
     "Preserve all existing guard rails, exterior walls, facades, gates and fences. Do not add or remove any vertical structure.",
+    "Keep the existing wall color and texture — do not warm, smooth, or repaint walls unless the surface prompt explicitly names a wall finish.",
+    "Glass blocks and skylights keep their translucency — light passes through them in the output.",
     "Preserve existing vegetation in the background. Only modify ground surface in the foreground zone.",
+    "Preserve the exact lighting conditions from the input — same shadow hardness, same direction, same color temperature.",
     "No furniture in this pass — EMPTY outdoor space with finished ground only.",
     "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, subtle sensor grain (ISO 200), natural corner vignetting.",
   ]
@@ -561,10 +565,14 @@ function buildOutdoorSurfacesFluxPrompt(
     `${surfacePrompt}, finished empty outdoor space.`,
     "Open-air — no ceiling, sky preserved as-is. Preserve blown-out sky highlights.",
     subtypeOverride ? subtypeOverride : "",
+    "Preserve fixed ground elements (metal covers, drain grates, manholes) — apply new ground material around them.",
     "Preserve all guard rails, exterior walls, facades, gates, fences. No new vertical structures.",
+    "Keep existing wall color and texture — do not warm, smooth, or repaint walls.",
+    "Glass blocks and skylights keep their translucency.",
     "Preserve background vegetation. Only modify foreground ground surface.",
+    "Preserve exact lighting conditions from input — same shadow hardness, direction, color temperature.",
     "Empty outdoor space — no furniture, no rugs, no objects.",
-    "Same camera angle, same proportions, same lighting conditions.",
+    "Same camera angle, same proportions.",
     "Photo-realistic outdoor photograph, DSLR full-frame 16-35mm f/8, deep DOF, sharp focus, subtle film grain.",
   ]
     .filter(Boolean)
@@ -580,8 +588,11 @@ function buildOutdoorFurnitureResponsesPrompt(
     `Add outdoor furniture and decoration to this photo of a finished outdoor space: ${furniturePrompt}.`,
     subtypeOverride ? subtypeOverride : "",
     "Distribute furniture naturally across the available floor space. If space is large, create a primary seating group and a secondary accent further back.",
+    "Do not place opaque structures (screens, shelving, A-frames) directly in front of full-height windows or glass doors.",
+    "If the space has exposed overhead structure (beams, pergola, rafters), consider hanging one trailing plant or lantern from it to activate the vertical dimension — only if clearance allows.",
     "Ground surfaces are LOCKED — same material, color, texture. Guard rails, walls, facades unchanged.",
     "Every piece must cast realistic shadows consistent with the existing natural light direction.",
+    "Preserve the exact lighting conditions from the input — same shadow hardness, same direction, same color temperature.",
     "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation.",
     "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, subtle sensor grain (ISO 200), natural corner vignetting. Photo-realistic outdoor photograph. No text, watermarks, or logos.",
   ]
@@ -597,9 +608,12 @@ function buildOutdoorFurnitureFluxPrompt(
     `${furniturePrompt}, placed naturally across the available floor space of this finished outdoor area.`,
     subtypeOverride ? subtypeOverride : "",
     "Primary seating group in foreground, secondary accent further back if space allows.",
+    "No opaque structures (screens, shelving, A-frames) in front of full-height windows or glass doors.",
+    "If exposed overhead structure (beams, pergola), consider one hanging plant or lantern if clearance allows.",
     "Ground surfaces LOCKED — same material, color, texture. Guard rails, walls, facades unchanged.",
     "Every piece casts realistic shadows consistent with existing natural light.",
-    "Same camera angle, same proportions, same lighting conditions.",
+    "Preserve exact lighting from input — same shadow hardness, direction, color temperature.",
+    "Same camera angle, same proportions.",
     "Photo-realistic outdoor photograph, DSLR full-frame 16-35mm f/8, deep DOF, sharp focus, subtle film grain.",
   ]
     .filter(Boolean)
