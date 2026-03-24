@@ -68,25 +68,209 @@ function getOutputSize(
 // - surfacePrompt: color/finish of walls, floor, ceiling + ceiling fixture
 // - furniturePrompt: freestanding objects with precise silhouettes + scale
 
+// ── Shared prompt fragments (constants to avoid duplication) ─────────
+const DSLR_LINE = "DSLR full-frame 16-35mm f/8, deep DOF, sharp focus, subtle grain ISO 200, natural vignetting. No text or watermarks.";
+const CEILING_PRESERVATION = "Preserve ceiling 3D geometry — vaults, beams, ribs keep shape. Refinish ceiling surface: smooth plaster over raw concrete, formwork marks, seams. Beams keep 3D shape but receive clean painted finish.";
+const LIGHT_PRESERVATION = "Preserve existing light direction, shadow positions, and relative intensity. Maintain wall color temperature from input. Do not artificially brighten darker areas.";
+const CAMERA_PRESERVATION = "Same camera angle, lens distortion, vanishing points, field of view, orientation.";
+
+// Room categories for conditional logic
+const SMALL_ROOMS = ["wc", "entryway", "laundry", "cellar"];
+const WET_ROOMS = ["kitchen", "bathroom"];
+
 // ── Pass 1: Surface finishing ────────────────────────────────────────
-function buildSurfacesResponsesPrompt(surfacePrompt: string): string {
+function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string | null): string {
+  // Kitchen: dedicated compact prompt (~100 words)
+  if (roomTypeId === "kitchen") {
+    return [
+      `Edit this photo of a room. Apply this surface finish: ${surfacePrompt}.`,
+      "Ceramic or natural stone floor tiles — NOT wood, NOT parquet. Subway tile or smooth splashback behind work area.",
+      CEILING_PRESERVATION,
+      "For the ceiling light fixture, follow the style description above exactly.",
+      "Remove construction leftovers: dangling cables, junction boxes, exposed wiring. Keep all fixed wall equipment: radiators, switches, vents in exact position.",
+      "Room stays COMPLETELY EMPTY — no furniture, no appliances, no objects. Same number of windows and doors.",
+      `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
+      DSLR_LINE,
+    ].join(" ");
+  }
+
+  // Bathroom: dedicated compact prompt (~100 words)
+  if (roomTypeId === "bathroom") {
+    return [
+      `Edit this photo of a room. Apply this surface finish: ${surfacePrompt}.`,
+      "Floor-to-ceiling ceramic tiles in shower zone and behind vanity area. Water-resistant floor — ceramic or stone tiles, matte non-slip. No wood flooring. Recessed IP44 ceiling spotlights.",
+      CEILING_PRESERVATION,
+      "Remove construction leftovers: dangling cables, junction boxes, exposed wiring. Keep all fixed wall equipment in exact position.",
+      "Room stays COMPLETELY EMPTY — no fixtures, no objects. Same number of windows and doors.",
+      `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
+      DSLR_LINE,
+    ].join(" ");
+  }
+
+  // WC: dedicated compact prompt (~90 words)
+  if (roomTypeId === "wc") {
+    return [
+      `Edit this photo of a room. Apply this surface finish: ${surfacePrompt}.`,
+      "Waterproof floor — small ceramic tiles or vinyl in neutral tone. Washable matte paint or ceramic tiles on lower half of walls.",
+      CEILING_PRESERVATION,
+      "Remove construction leftovers. Keep all fixed wall equipment in exact position.",
+      "Room stays COMPLETELY EMPTY — no fixtures, no objects. Same number of windows and doors.",
+      `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
+      DSLR_LINE,
+    ].join(" ");
+  }
+
+  // Bedroom (adults/children): dedicated compact prompt (~105 words)
+  if (roomTypeId === "bedroom_adults" || roomTypeId === "bedroom_children") {
+    return [
+      `Edit this photo of a room. Apply this surface finish: ${surfacePrompt}.`,
+      "Warm-toned flooring suitable for bare feet. For the ceiling light fixture, follow the style description above exactly.",
+      "If the input has a colored accent wall or textured feature wall, preserve it as-is — apply style color only to plain walls.",
+      CEILING_PRESERVATION,
+      "Remove construction leftovers: dangling cables, junction boxes. Keep all fixed wall equipment in exact position.",
+      "Room stays COMPLETELY EMPTY — no furniture, no objects. Same number of windows and doors.",
+      `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
+      DSLR_LINE,
+    ].join(" ");
+  }
+
+  // Laundry: dedicated compact prompt (~90 words)
+  if (roomTypeId === "laundry") {
+    return [
+      `Edit this photo of a room. Apply this surface finish: ${surfacePrompt}.`,
+      "Waterproof easy-to-clean floor — white or light grey ceramic tiles matte finish. Walls in washable matte white paint.",
+      CEILING_PRESERVATION,
+      "Remove construction leftovers. Keep all fixed wall equipment in exact position.",
+      "Room stays COMPLETELY EMPTY — no appliances, no objects. Same number of windows and doors.",
+      `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
+      DSLR_LINE,
+    ].join(" ");
+  }
+
+  // Cellar: dedicated compact prompt (~90 words)
+  if (roomTypeId === "cellar") {
+    return [
+      `Edit this photo of a room. Apply this surface finish: ${surfacePrompt}.`,
+      "Concrete or stone floor kept as-is or with simple sealant. Clean matte white or light grey paint over existing masonry.",
+      CEILING_PRESERVATION,
+      "Remove construction leftovers. Keep all fixed wall equipment in exact position.",
+      "Room stays COMPLETELY EMPTY — no shelving, no objects. Same number of windows and doors.",
+      `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
+      DSLR_LINE,
+    ].join(" ");
+  }
+
+  // Entryway: dedicated compact prompt (~95 words)
+  if (roomTypeId === "entryway") {
+    return [
+      `Edit this photo of a room. Apply this surface finish: ${surfacePrompt}.`,
+      "Durable floor finish suitable for an entrance — ceramic tiles, natural stone, or hard-wearing wood.",
+      CEILING_PRESERVATION,
+      "For the ceiling light fixture, follow the style description above exactly.",
+      "Remove construction leftovers. Keep all fixed wall equipment in exact position.",
+      "Room stays COMPLETELY EMPTY — no furniture, no objects. Same number of windows and doors.",
+      `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
+      DSLR_LINE,
+    ].join(" ");
+  }
+
+  // ── FALLBACK: generic builder for living_room, dining_room, office, null ──
   return [
     "Edit this photo of a room.",
     `Apply this surface finish: ${surfacePrompt}.`,
     "Refinish the floor and repaint or replaster the walls. For the ceiling light fixture, follow the style description above exactly.",
     "If the input has a colored accent wall, dark wallpaper, or textured feature wall, preserve it as-is — apply the style's wall color only to the plain walls.",
-    "Preserve the ceiling 3D GEOMETRY exactly — the shape and volume of vaults, beams, ribs, and arches must remain unchanged. However, REFINISH the ceiling SURFACE: apply smooth plaster and paint over all raw concrete, formwork marks, plasterboard seams, and joint tape. Beams and arcs keep their 3D shape but receive a clean painted finish. The ceiling between structural elements must look fully finished — smooth, painted, no raw texture.",
-    "Remove all visible construction elements: dangling cables, exposed wiring, junction boxes without covers, cable conduits, and temporary fixtures. These are construction leftovers, not permanent equipment.",
+    CEILING_PRESERVATION,
+    "Remove all visible construction elements: dangling cables, exposed wiring, junction boxes without covers, cable conduits, and temporary fixtures.",
     "Preserve all wall-mounted fixed equipment visible in the input: radiators, heaters, vents, thermostats, electrical panels, and switches must remain in their exact position, size, and appearance.",
     "Keep the room COMPLETELY EMPTY — no furniture, no rugs, no textiles, no decoration, no objects.",
     "The number of windows and doors must be EXACTLY the same as in the input. If there are zero windows, there must be zero windows in the output.",
-    "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation.",
-    "Preserve the existing light direction, shadow angles, shadow intensity, and highlight/shadow distribution. Maintain the exact wall color temperature from the input — do not warm or cool the walls beyond what the style finish requires. Shadow patterns and light gradients must remain in the same positions and relative intensity. Keep the original light distribution — do not artificially brighten darker areas.",
-    "DSLR full-frame wide-angle 16-35mm f/8, deep depth of field, sharp focus throughout, subtle sensor grain (ISO 200), natural corner vignetting. No text, watermarks, or logos in the output.",
+    `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
+    DSLR_LINE,
   ].join(" ");
 }
 
-function buildSurfacesFluxPrompt(surfacePrompt: string): string {
+function buildSurfacesFluxPrompt(surfacePrompt: string, roomTypeId?: string | null): string {
+  // Kitchen: compact Flux surface prompt (~70 words)
+  if (roomTypeId === "kitchen") {
+    return [
+      `${surfacePrompt}, finished empty kitchen interior.`,
+      "Ceramic or stone floor tiles — no wood, no parquet. Subway tile or smooth splashback behind work area.",
+      "Preserve ceiling 3D geometry — vaults, beams, ribs keep shape. Ceiling light per style.",
+      "Remove construction leftovers. Keep wall-mounted equipment in place.",
+      "Empty room — no furniture, no appliances. Same windows and doors.",
+      "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, subtle grain.",
+    ].join(" ");
+  }
+
+  // Bathroom: compact Flux surface prompt (~70 words)
+  if (roomTypeId === "bathroom") {
+    return [
+      `${surfacePrompt}, finished empty bathroom interior.`,
+      "Floor-to-ceiling ceramic tiles in shower zone and behind vanity. Water-resistant stone or ceramic floor, matte non-slip. No wood. Recessed IP44 ceiling spotlights.",
+      "Preserve ceiling 3D geometry. Remove construction leftovers. Keep wall equipment in place.",
+      "Empty room — no fixtures, no objects. Same windows and doors.",
+      "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, subtle grain.",
+    ].join(" ");
+  }
+
+  // WC: compact Flux surface prompt (~60 words)
+  if (roomTypeId === "wc") {
+    return [
+      `${surfacePrompt}, finished empty WC interior.`,
+      "Small ceramic tiles or vinyl floor, neutral tone. Washable matte paint or ceramic tiles on lower walls.",
+      "Remove construction leftovers. Keep wall equipment in place.",
+      "Empty room — no fixtures, no objects. Same windows and doors.",
+      "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, subtle grain.",
+    ].join(" ");
+  }
+
+  // Bedroom: compact Flux surface prompt (~70 words)
+  if (roomTypeId === "bedroom_adults" || roomTypeId === "bedroom_children") {
+    return [
+      `${surfacePrompt}, finished empty bedroom interior.`,
+      "Warm-toned flooring for bare feet. Ceiling light per style.",
+      "If accent wall or textured feature wall exists, preserve it — restyle plain walls only.",
+      "Preserve ceiling 3D geometry. Remove construction leftovers. Keep wall equipment in place.",
+      "Empty room — no furniture, no objects. Same windows and doors.",
+      "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, subtle grain.",
+    ].join(" ");
+  }
+
+  // Laundry: compact Flux surface prompt (~60 words)
+  if (roomTypeId === "laundry") {
+    return [
+      `${surfacePrompt}, finished empty laundry room.`,
+      "White or light grey ceramic floor tiles, matte finish. Washable matte white walls.",
+      "Remove construction leftovers. Keep wall equipment in place.",
+      "Empty room — no appliances, no objects. Same windows and doors.",
+      "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, subtle grain.",
+    ].join(" ");
+  }
+
+  // Cellar: compact Flux surface prompt (~60 words)
+  if (roomTypeId === "cellar") {
+    return [
+      `${surfacePrompt}, finished empty cellar.`,
+      "Concrete or stone floor as-is or with sealant. Clean matte white or grey paint over masonry.",
+      "Remove construction leftovers. Keep wall equipment in place.",
+      "Empty room — no shelving, no objects. Same windows and doors.",
+      "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, subtle grain.",
+    ].join(" ");
+  }
+
+  // Entryway: compact Flux surface prompt (~65 words)
+  if (roomTypeId === "entryway") {
+    return [
+      `${surfacePrompt}, finished empty entryway interior.`,
+      "Durable floor — ceramic tiles, stone, or hard-wearing wood. Ceiling light per style.",
+      "Remove construction leftovers. Keep wall equipment in place.",
+      "Empty room — no furniture, no objects. Same windows and doors.",
+      "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, subtle grain.",
+    ].join(" ");
+  }
+
+  // ── FALLBACK: generic for living_room, dining_room, office, null ──
   return [
     `${surfacePrompt}, finished empty room interior.`,
     "Refinished floor, repainted walls. Ceiling light per style description.",
@@ -102,51 +286,243 @@ function buildSurfacesFluxPrompt(surfacePrompt: string): string {
 }
 
 // ── Pass 2: Furniture placement ──────────────────────────────────────
+
+// Shared compact fragments for pass 2
+const STRUCTURE_LOCKED = "Room structure is LOCKED: walls, floor, ceiling, windows visually identical to input. Shadows from furniture are natural. No new openings.";
+const EQUIPMENT_PRESERVATION = "Keep all wall-mounted equipment visible (radiators, vents, switches). Do not place furniture in front of radiators.";
+const CAMERA_AND_PHOTO = `${CAMERA_PRESERVATION} DSLR full-frame 16-35mm f/8, deep DOF, sharp focus, subtle grain ISO 200, natural vignetting. No text or watermarks.`;
+
 function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: string | null): string {
-  // F2: Kitchen and bathroom need built-in elements (cabinetry, vanity)
-  let freestandingRule: string;
+  // Kitchen: compact dedicated prompt (~95 words) — built-ins allowed, no depth distribution
   if (roomTypeId === "kitchen") {
-    freestandingRule = "Kitchen exception: built-in cabinetry, countertops, and integrated appliances are expected and should be placed realistically against walls. Other items (stools, pendant light, accessories) should be freestanding. No curtains.";
-  } else if (roomTypeId === "bathroom") {
-    freestandingRule = "Bathroom exception: wall-mounted vanity unit and mirror are expected. Other items (stool, basket, plant) should be freestanding. No curtains.";
-  } else {
-    freestandingRule = "ONLY add freestanding objects that rest on the floor or sit on existing surfaces. Do NOT attach anything to walls. No wall-mounted art, no built-in shelving, no curtains.";
+    return [
+      `Add the following kitchen elements to this photo of a finished room: ${furniturePrompt}.`,
+      "Built-in cabinetry and countertops against walls, island or peninsula with stools if space allows. Pendant light above work area.",
+      "Place all elements with correct perspective and scale on the existing floor. Cast realistic shadows matching existing light.",
+      STRUCTURE_LOCKED,
+      EQUIPMENT_PRESERVATION,
+      "No curtains.",
+      CAMERA_AND_PHOTO,
+    ].join(" ");
   }
 
+  // Bathroom: compact dedicated prompt (~90 words) — wall-mounted vanity allowed, no depth distribution
+  if (roomTypeId === "bathroom") {
+    return [
+      `Add the following bathroom fixtures and accessories to this photo of a finished room: ${furniturePrompt}.`,
+      "Wall-mounted vanity and mirror expected. Other items (stool, basket, plant) freestanding.",
+      "Place all elements with correct perspective and scale. Cast realistic shadows matching existing light.",
+      STRUCTURE_LOCKED,
+      EQUIPMENT_PRESERVATION,
+      "No curtains.",
+      CAMERA_AND_PHOTO,
+    ].join(" ");
+  }
+
+  // WC: compact dedicated prompt (~80 words) — very small space, minimal items
+  if (roomTypeId === "wc") {
+    return [
+      `Add the following WC fixtures to this photo of a finished room: ${furniturePrompt}.`,
+      "Very small space — minimal items only. Wall-hung or floor toilet, compact hand basin with mirror above.",
+      "Place all elements with correct perspective and scale. Cast realistic shadows matching existing light.",
+      STRUCTURE_LOCKED,
+      EQUIPMENT_PRESERVATION,
+      "No curtains.",
+      CAMERA_AND_PHOTO,
+    ].join(" ");
+  }
+
+  // Bedroom (adults/children): compact dedicated prompt (~100 words) — no depth distribution, no double-height scaling
+  if (roomTypeId === "bedroom_adults" || roomTypeId === "bedroom_children") {
+    return [
+      `Add the following bedroom furniture to this photo of a finished room: ${furniturePrompt}.`,
+      "Freestanding furniture only — bed, nightstands, rug beside bed, wardrobe or dresser as background anchor. No wall-mounted art, no built-in shelving, no curtains.",
+      "Place all objects naturally on the floor with correct perspective and scale. Cast realistic shadows matching existing light.",
+      "Calm atmosphere — respect furniture density implied by the style.",
+      STRUCTURE_LOCKED,
+      EQUIPMENT_PRESERVATION,
+      CAMERA_AND_PHOTO,
+    ].join(" ");
+  }
+
+  // Entryway: compact dedicated prompt (~85 words) — small space, minimal items
+  if (roomTypeId === "entryway") {
+    return [
+      `Add the following entryway furniture to this photo of a finished room: ${furniturePrompt}.`,
+      "Small space — do not overcrowd. Freestanding items only: console, mirror propped on console, coat rack, small bench, runner rug. No wall-mounted art, no curtains.",
+      "Place all objects with correct perspective and scale. Cast realistic shadows matching existing light.",
+      STRUCTURE_LOCKED,
+      EQUIPMENT_PRESERVATION,
+      CAMERA_AND_PHOTO,
+    ].join(" ");
+  }
+
+  // Laundry: compact dedicated prompt (~85 words) — functional, no decoration
+  if (roomTypeId === "laundry") {
+    return [
+      `Add the following laundry equipment to this photo of a finished room: ${furniturePrompt}.`,
+      "Functional layout — washing machine, storage cabinet, drying rack, laundry basket. No decorative objects, no luxury items.",
+      "Place all elements with correct perspective and scale. Cast realistic shadows matching existing light.",
+      STRUCTURE_LOCKED,
+      EQUIPMENT_PRESERVATION,
+      "No curtains.",
+      CAMERA_AND_PHOTO,
+    ].join(" ");
+  }
+
+  // Cellar: compact dedicated prompt (~85 words) — storage, no luxury
+  if (roomTypeId === "cellar") {
+    return [
+      `Add the following cellar furnishing to this photo of a finished room: ${furniturePrompt}.`,
+      "Functional storage — shelving unit, storage boxes, utility light. Wine rack if space allows. No luxury furniture, no decorative objects.",
+      "Place all elements with correct perspective and scale. Cast realistic shadows matching existing light.",
+      STRUCTURE_LOCKED,
+      EQUIPMENT_PRESERVATION,
+      CAMERA_AND_PHOTO,
+    ].join(" ");
+  }
+
+  // Dining room: compact dedicated prompt (~110 words) — depth distribution relevant
+  if (roomTypeId === "dining_room") {
+    return [
+      `Add the following furniture and decoration into this photo of a finished room: ${furniturePrompt}.`,
+      "Center the dining table with chairs. If room is deep or has multiple zones, add a sideboard or buffet as background anchor.",
+      "Place all objects naturally on the floor with correct perspective and scale. Cast realistic shadows matching existing light — soft for diffused, hard for direct sunlight.",
+      "Respect furniture density implied by the style. If room appears small, reduce accent pieces.",
+      "Freestanding objects only. No wall-mounted art, no built-in shelving, no curtains.",
+      STRUCTURE_LOCKED,
+      EQUIPMENT_PRESERVATION,
+      CAMERA_AND_PHOTO,
+    ].join(" ");
+  }
+
+  // ── FALLBACK: generic for living_room, office, null ── (full directives)
   return [
     `Add the following furniture and decoration into this photo of a finished room: ${furniturePrompt}.`,
-    "Distribute furniture across the FULL DEPTH and WIDTH of the room. If the room is deep or has multiple zones (e.g. under a mezzanine, an alcove, a back area), place a primary furniture group in the foreground AND a secondary group further back (reading nook, small desk, console table, side chair). If the room is also wide, add a lateral anchor (accent chair, floor lamp, or side table) on the opposite side to balance the composition. Do not leave the back or sides of the room empty.",
-    "Place all objects naturally on the existing floor. Every piece of furniture — including those in the back of the room — must have correct perspective, scale, and cast realistic shadows consistent with the existing light direction and intensity. Match shadow hardness to the lighting type: soft diffused shadows for overcast or indirect light, hard-edged shadows for direct sunlight.",
-    "If the ceiling appears very high (double height, >3m) or the room is very large, scale up furniture proportionally — use larger modular pieces, taller floor lamps, and more imposing accent furniture to match the volume.",
-    "Respect the furniture density implied by the style description. If the style is minimalist, leave large areas of empty floor visible. If the room appears small, reduce accent pieces — skip secondary items rather than cramming everything in.",
-    freestandingRule,
-    "Room structure is LOCKED: every wall, window, door, ceiling, and floor surface must remain visually identical to the input — same colors, same textures, same geometry. Shadows cast by new furniture on walls and floor are expected and natural. No new openings.",
-    "Preserve all wall-mounted fixed equipment visible in the input: radiators, heaters, vents, thermostats, and switches must remain visible. Do not place furniture in front of radiators.",
+    "Distribute furniture across the FULL DEPTH and WIDTH of the room. If the room is deep or has multiple zones, place a primary group in the foreground AND a secondary group further back. If the room is also wide, add a lateral anchor on the opposite side.",
+    "Place all objects naturally on the floor. Every piece must have correct perspective, scale, and cast realistic shadows matching the existing light. Match shadow hardness to lighting type.",
+    "If the ceiling appears very high (>3m) or room is very large, scale up furniture proportionally.",
+    "Respect furniture density implied by the style. If minimalist, leave large empty floor areas. If room appears small, reduce accent pieces.",
+    "Freestanding objects only. No wall-mounted art, no built-in shelving, no curtains.",
+    STRUCTURE_LOCKED,
+    EQUIPMENT_PRESERVATION,
     "If the input has zero windows, the output must have zero windows.",
-    "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation.",
-    "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, subtle sensor grain (ISO 200), natural corner vignetting. Photo-realistic interior photograph. No text, watermarks, or logos in the output.",
+    CAMERA_AND_PHOTO,
   ].join(" ");
 }
 
 function buildFurnitureFluxPrompt(furniturePrompt: string, roomTypeId?: string | null): string {
-  let freestandingRule: string;
+  const FLUX_STRUCTURE = "Walls, floor, ceiling identical to input. Shadows from furniture natural. No new openings.";
+  const FLUX_EQUIPMENT = "Keep radiators, vents, switches visible.";
+  const FLUX_PHOTO = "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, subtle grain.";
+
+  // Kitchen: compact Flux furniture (~60 words)
   if (roomTypeId === "kitchen") {
-    freestandingRule = "Kitchen: built-in cabinetry and countertops expected against walls. Stools and accessories freestanding. No curtains.";
-  } else if (roomTypeId === "bathroom") {
-    freestandingRule = "Bathroom: wall-mounted vanity and mirror expected. Other items freestanding. No curtains.";
-  } else {
-    freestandingRule = "Freestanding furniture only. No wall-mounted objects, no built-in shelving, no curtains.";
+    return [
+      `${furniturePrompt}, placed in this finished kitchen interior.`,
+      "Built-in cabinetry against walls, island with stools if space allows. Pendant above work area.",
+      "Correct perspective and scale. Realistic shadows matching existing light.",
+      FLUX_STRUCTURE,
+      FLUX_EQUIPMENT,
+      "No curtains.",
+      FLUX_PHOTO,
+    ].join(" ");
   }
 
+  // Bathroom: compact Flux furniture (~55 words)
+  if (roomTypeId === "bathroom") {
+    return [
+      `${furniturePrompt}, placed in this finished bathroom interior.`,
+      "Wall-mounted vanity and mirror expected. Other items freestanding.",
+      "Correct perspective and scale. Realistic shadows matching existing light.",
+      FLUX_STRUCTURE,
+      FLUX_EQUIPMENT,
+      "No curtains.",
+      FLUX_PHOTO,
+    ].join(" ");
+  }
+
+  // WC: compact Flux furniture (~50 words)
+  if (roomTypeId === "wc") {
+    return [
+      `${furniturePrompt}, placed in this finished small WC room.`,
+      "Minimal items — toilet, hand basin, mirror. Very small space, do not overcrowd.",
+      "Correct perspective and scale. Realistic shadows.",
+      FLUX_STRUCTURE,
+      FLUX_EQUIPMENT,
+      FLUX_PHOTO,
+    ].join(" ");
+  }
+
+  // Bedroom: compact Flux furniture (~60 words)
+  if (roomTypeId === "bedroom_adults" || roomTypeId === "bedroom_children") {
+    return [
+      `${furniturePrompt}, placed in this finished bedroom interior.`,
+      "Freestanding only — bed, nightstands, rug, wardrobe as background anchor. No wall art, no curtains.",
+      "Correct perspective and scale. Realistic shadows matching existing light. Calm atmosphere.",
+      FLUX_STRUCTURE,
+      FLUX_EQUIPMENT,
+      FLUX_PHOTO,
+    ].join(" ");
+  }
+
+  // Entryway: compact Flux furniture (~55 words)
+  if (roomTypeId === "entryway") {
+    return [
+      `${furniturePrompt}, placed in this finished entryway.`,
+      "Small space — do not overcrowd. Console, mirror on console, coat rack, bench, runner rug. Freestanding only, no curtains.",
+      "Correct perspective and scale. Realistic shadows.",
+      FLUX_STRUCTURE,
+      FLUX_EQUIPMENT,
+      FLUX_PHOTO,
+    ].join(" ");
+  }
+
+  // Laundry: compact Flux furniture (~50 words)
+  if (roomTypeId === "laundry") {
+    return [
+      `${furniturePrompt}, placed in this finished laundry room.`,
+      "Functional — washing machine, storage, drying rack. No decorative items.",
+      "Correct perspective and scale. Realistic shadows.",
+      FLUX_STRUCTURE,
+      FLUX_EQUIPMENT,
+      FLUX_PHOTO,
+    ].join(" ");
+  }
+
+  // Cellar: compact Flux furniture (~50 words)
+  if (roomTypeId === "cellar") {
+    return [
+      `${furniturePrompt}, placed in this finished cellar.`,
+      "Functional storage — shelving, boxes, utility light. No luxury furniture.",
+      "Correct perspective and scale. Realistic shadows.",
+      FLUX_STRUCTURE,
+      FLUX_EQUIPMENT,
+      FLUX_PHOTO,
+    ].join(" ");
+  }
+
+  // Dining room: compact Flux furniture (~65 words)
+  if (roomTypeId === "dining_room") {
+    return [
+      `${furniturePrompt}, placed in this finished dining room interior.`,
+      "Center table with chairs. Sideboard as background anchor if room is deep. Freestanding only, no curtains.",
+      "Correct perspective and scale. Realistic shadows matching existing light.",
+      FLUX_STRUCTURE,
+      FLUX_EQUIPMENT,
+      FLUX_PHOTO,
+    ].join(" ");
+  }
+
+  // ── FALLBACK: generic for living_room, office, null ──
   return [
     `${furniturePrompt}, placed naturally across the full depth of this finished room interior.`,
-    "Distribute furniture in depth and width: primary group in foreground, secondary group in the back if space allows, lateral anchor (accent chair, floor lamp) on the opposite side if room is wide. Do not leave rear or side areas empty.",
-    "Shadow hardness matches lighting: soft for diffused light, hard for direct sunlight. Scale furniture up if ceiling is very high.",
-    freestandingRule,
-    "Every wall, floor, and ceiling surface visually identical to input — same colors, same textures. Shadows from furniture are natural. No new openings.",
-    "Keep all wall-mounted equipment: radiators, heaters, vents, switches visible. Do not place furniture in front of radiators.",
-    "Same room geometry, same proportions, same camera angle, same lighting conditions.",
-    "Photo-realistic interior photograph, DSLR full-frame 16-35mm f/8, deep DOF, sharp focus, subtle film grain.",
+    "Distribute furniture in depth and width: primary group in foreground, secondary group in the back if space allows, lateral anchor on the opposite side if room is wide.",
+    "Shadow hardness matches lighting: soft for diffused, hard for direct sunlight. Scale furniture up if ceiling is very high.",
+    "Freestanding only. No wall-mounted objects, no built-in shelving, no curtains.",
+    "Walls, floor, ceiling identical to input. Shadows from furniture natural. No new openings.",
+    "Keep radiators, vents, switches visible. Do not block radiators.",
+    "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, subtle grain.",
   ].join(" ");
 }
 
@@ -251,7 +627,7 @@ async function tryOpenAIResponses(
   } else {
     prompt =
       pass === 1
-        ? buildSurfacesResponsesPrompt(surfacePrompt)
+        ? buildSurfacesResponsesPrompt(surfacePrompt, roomTypeId)
         : buildFurnitureResponsesPrompt(furniturePrompt, roomTypeId);
   }
 
@@ -327,7 +703,7 @@ async function tryFluxDepth(
   } else {
     prompt =
       pass === 1
-        ? buildSurfacesFluxPrompt(surfacePrompt)
+        ? buildSurfacesFluxPrompt(surfacePrompt, roomTypeId)
         : buildFurnitureFluxPrompt(furniturePrompt, roomTypeId);
     negativeBase = FLUX_NEGATIVE_PROMPT;
   }
@@ -785,9 +1161,17 @@ export async function POST(request: NextRequest) {
       };
     } else {
       // Indoor mode: apply room type overrides
+      // Rooms with dedicated builders absorb surface directives directly — skip surface concatenation
+      // but still need furniture replacement and negative override from applyRoomTypeOverrides
+      const ROOMS_WITH_DEDICATED_BUILDERS = ["kitchen", "bathroom", "wc", "bedroom_adults", "bedroom_children", "entryway", "laundry", "cellar", "dining_room"];
+      const hasDedicatedBuilder = roomType && ROOMS_WITH_DEDICATED_BUILDERS.includes(roomType);
+
       const { effectiveSurfacePrompt, effectiveFurniturePrompt, roomNegativeOverride } =
         applyRoomTypeOverrides(surfacePrompt.trim(), furniturePrompt.trim(), roomType ?? null);
-      trimmedSurface = effectiveSurfacePrompt;
+
+      // If dedicated builder exists: use raw style surfacePrompt (builder handles room specifics)
+      // Otherwise: use the concatenated effectiveSurfacePrompt (room override appended)
+      trimmedSurface = hasDedicatedBuilder ? surfacePrompt.trim() : effectiveSurfacePrompt;
       trimmedFurniture = effectiveFurniturePrompt;
       negativeOverride = roomNegativeOverride;
     }
@@ -801,7 +1185,7 @@ export async function POST(request: NextRequest) {
     // Build the final prompts for logging (what the model actually receives)
     const builtPromptPass1 = isOutdoor
       ? buildOutdoorSurfacesResponsesPrompt(trimmedSurface, outdoorParam?.subtypeSurfaceOverride ?? "")
-      : buildSurfacesResponsesPrompt(trimmedSurface);
+      : buildSurfacesResponsesPrompt(trimmedSurface, roomType);
     const builtPromptPass2 = isOutdoor
       ? buildOutdoorFurnitureResponsesPrompt(trimmedFurniture, outdoorParam?.subtypeFurnitureOverride ?? "")
       : buildFurnitureResponsesPrompt(trimmedFurniture, roomType);
