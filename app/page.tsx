@@ -65,6 +65,51 @@ function scrollToElement(id: string) {
   }, 150);
 }
 
+/** Fetch with 180s timeout + 1 automatic retry on network/timeout errors. */
+async function resilientFetch(
+  url: string,
+  init: RequestInit,
+  parentSignal?: AbortSignal
+): Promise<Response> {
+  const TIMEOUT_MS = 180_000; // 3 min — pipeline 2 passes can take 60-90s
+  const MAX_RETRIES = 1;
+
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    const timeoutController = new AbortController();
+    const timer = setTimeout(() => timeoutController.abort(), TIMEOUT_MS);
+
+    // Combine parent signal (user cancel) with timeout signal
+    const onParentAbort = () => timeoutController.abort();
+    parentSignal?.addEventListener("abort", onParentAbort);
+
+    try {
+      const response = await fetch(url, {
+        ...init,
+        signal: timeoutController.signal,
+      });
+      return response;
+    } catch (err) {
+      // If the user explicitly cancelled, don't retry
+      if (parentSignal?.aborted) throw err;
+      // If timeout or network error, retry once
+      if (attempt < MAX_RETRIES) {
+        console.warn(`Fetch attempt ${attempt + 1} failed, retrying...`, err instanceof Error ? err.message : err);
+        continue;
+      }
+      // Final failure — throw user-friendly error
+      if (err instanceof Error && err.name === "AbortError") {
+        throw new Error("La génération a pris trop de temps. Vérifiez votre connexion et réessayez.");
+      }
+      throw new Error("Connexion perdue pendant la génération. Vérifiez votre réseau et réessayez.");
+    } finally {
+      clearTimeout(timer);
+      parentSignal?.removeEventListener("abort", onParentAbort);
+    }
+  }
+  // Unreachable but TypeScript needs it
+  throw new Error("La génération a échoué après plusieurs tentatives.");
+}
+
 const USE_CASES = [
   { label: "Architectes", desc: "Partagez des pistes d\u2019inspiration" },
   { label: "Marchands de biens", desc: "Pr\u00e9commercialisez vos op\u00e9rations" },
@@ -267,7 +312,7 @@ export default function Home() {
 
       const batchResults = await Promise.allSettled(
         chunk.map(async (img) => {
-          const response = await fetch("/api/generate", {
+          const response = await resilientFetch("/api/generate", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -283,8 +328,7 @@ export default function Home() {
               isOutdoor,
               outdoorSubtype: isOutdoor ? outdoorSubtype : undefined,
             }),
-            signal: controller.signal,
-          });
+          }, controller.signal);
 
           if (!response.ok) {
             let errorMsg = "Erreur lors de la génération";
@@ -427,7 +471,7 @@ export default function Home() {
 
         if (controller.signal.aborted) return;
 
-        const response = await fetch("/api/generate", {
+        const response = await resilientFetch("/api/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -450,8 +494,7 @@ export default function Home() {
             isOutdoor,
             outdoorSubtype: isOutdoor ? outdoorSubtype : undefined,
           }),
-          signal: controller.signal,
-        });
+        }, controller.signal);
 
         if (!response.ok) {
           let errorMsg = "Erreur lors de l'ajustement";
@@ -546,7 +589,7 @@ export default function Home() {
   const prevFilesLength = useRef(0);
   useEffect(() => {
     if (files.length > 0 && prevFilesLength.current === 0) {
-      scrollToElement("step-style");
+      scrollToElement("step-space-type");
     }
     prevFilesLength.current = files.length;
   }, [files.length]);
