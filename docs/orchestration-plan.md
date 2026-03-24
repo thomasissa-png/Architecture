@@ -143,15 +143,48 @@ Moyenne — 5 agents (reviewer, Yann, Lucas, fullstack, reviewer), 2 features su
 
 ---
 
+## Sprint 21 — Audit production + fixes itération (2026-03-24)
+
+### Phase S21.1 — Fix backoffice vide
+- Agent : @orchestrator (correction directe)
+- Statut : TERMINE (2026-03-24)
+- Cause racine : CREATE TABLE IF NOT EXISTS ne vérifie pas les colonnes manquantes → logGeneration() échouait silencieusement → 0 logs → backoffice vide
+- Fix : 19 ALTER TABLE idempotents dans ensureTable() (lib/db.ts)
+- Commit : 82d1e38
+
+### Phase S21.2 — Audit croisé Yann + Lucas sur générations #29 et #30 (Maximalist)
+- Agents : Yann Duval + Lucas Moreau (en parallèle)
+- Statut : TERMINE (2026-03-24)
+- Résultats :
+  - #29 passe 1 : Yann 7.6/10, Lucas 8.1/10 — lustre Murano excellent, élimination chantier parfaite
+  - #30 itération "ajoute WC" : Yann 2.8/10, Lucas 3.8/10 — bug BASE STYLE + wall art hallucination
+- Recommandations convergentes : itérations toujours exclusives, no wall art explicite, no baseboards, filtre sanitaire
+
+### Phase S21.3 — Implémentation fixes audit
+- Agent : @orchestrator (corrections directes)
+- Statut : TERMINE (2026-03-24)
+- Fixes appliqués :
+  - P0 : Itérations TOUJOURS exclusives (suppression BASE STYLE des 4 builders iteration)
+  - P0 : "no wall art/paintings/prints/mirrors" dans tous builders passe 2 (regular + iteration, OpenAI + Flux)
+  - P1 : "no baseboards unless in input" dans builders passe 1 (generic OpenAI + Flux)
+  - P1 : Filtre sanitaire dans pre-processing itération (GPT-4.1-mini)
+- Commit : a0ccf01
+
+---
+
 ## Feedbacks remontants
 | # | Severite | Agent source | Agent cible | Probleme | Statut |
 |---|---|---|---|---|---|
 | 1 | P0 | utilisateur | @orchestrator | Images Object Storage disparaissent | RESOLU — withStorageRetry + reinit client |
 | 2 | P0 | utilisateur | @orchestrator | Iteration "fetch failed" init client | RESOLU — meme fix (cause racine partagee) |
 | 3 | P2 | utilisateur | @orchestrator | Type de piece apres style au lieu d'avant | RESOLU — RoomTypePicker avant StylePicker |
+| 4 | P0 | utilisateur | @orchestrator | Backoffice vide (aucun log) | RESOLU — 19 ALTER TABLE migrations |
+| 5 | P0 | Yann+Lucas | @orchestrator | Iteration injecte BASE STYLE complet | RESOLU — itérations toujours exclusives |
+| 6 | P0 | Yann+Lucas | @orchestrator | Wall art hallucination sur styles chargés | RESOLU — negative prompt explicite |
 
 ## Decisions d'arbitrage
 | # | Sujet | Decision | Justification | Agents impactes |
 |---|---|---|---|---|
 | 1 | Reserves F2 | Inclure fix H-01, H-02, M-01 dans Phase F3.2 | Corriger avant d'ajouter outdoor pour ne pas accumuler la dette | @fullstack |
 | 2 | Object Storage | Si le SDK ne fonctionne pas, migrer vers PostgreSQL bytea ou base64 stocke dans une table dediee | Replit Object Storage est le seul point de defaillance des 2 bugs P0 | @fullstack |
+| 3 | Itérations exclusives | Supprimer BASE STYLE des itérations (toujours exclusif) | Les modifications accumulées décrivent tout ce que l'utilisateur veut. Alt écartée : isExclusive conditionnel (trop fragile). | @fullstack, @ia |

@@ -154,6 +154,9 @@
 | @ia | 2026-03-24 | app/api/generate/route.ts (modifie) | Sprint 20 Option B : prompts modulaires par type de piece. 4 builders recrits avec branches dediees par piece (kitchen, bathroom, wc, bedroom, entryway, laundry, cellar, dining_room). Fallback generique pour salon/bureau/null. buildSurfacesFluxPrompt recoit roomTypeId. Surface overrides bypasses pour pieces a builder dedie (evite duplication tokens). Fix : roomTypeId passe en passe 1 OpenAI (etait manquant). Suppression SMALL_ROOMS/WET_ROOMS inutilises. | Option B choisie vs A (44 fonctions inmaintenable) et C (gains trop modestes). Les builders dedies absorbent les directives des room overrides directement, eliminant ~40% de tokens inutiles sur les petites pieces. Le remplacement furniturePrompt par applyRoomTypeOverrides est conserve (necessaire pour substituer canape par lit en chambre). |
 | @reviewer | 2026-03-24 | docs/reviews/option-b-prompt-review.md | VALIDE AVEC RESERVES. H-01 : builders iteration (iteration-prompt.ts) non alignes sur logique par piece (wc/laundry manquent built-in, distribution profondeur non conditionnee). H-02 : dining_room dans ROOMS_WITH_DEDICATED_BUILDERS mais pas de surface builder dedie (bombe a retardement si override ajoute). M-01 : roomSurfaceOverride redondants dans room-types.ts. M-02 : CEILING_PRESERVATION absent de laundry/cellar. | Pas de bloquant — H-01 impacte uniquement les iterations F1 sur wc/laundry (rare en alpha), H-02 impacte uniquement si roomSurfaceOverride dining_room modifie (vide actuellement). |
 | @reviewer | 2026-03-24 | docs/reviews/replay-system-review.md | GO AVEC RESERVES. H-01 : /api/replay sans auth (risque cout). H-02 : built_prompt_pass1/pass2 toujours null (generate ne les retourne pas). H-03 : rate limit bloque le batch interne. M-01 : builtPromptPass1 replay stocke comme marqueur pas comme vrai prompt. M-03 : duplication logGeneration/logGenerationReturningId. | Systeme fonctionnel pour audits agents en alpha. Les 3 HAUTE a corriger avant usage regulier. Aucun bloquant car URL Replit non publique. |
+| @orchestrator | 2026-03-24 | lib/db.ts (19 ALTER TABLE migrations) | Fix backoffice vide : CREATE TABLE IF NOT EXISTS ne vérifie pas les colonnes manquantes. 19 ALTER TABLE idempotents ajoutés dans ensureTable() pour toutes les colonnes post-création (Sprint 15b à F3). | Cause racine : la table a été créée par une version ancienne du code, les colonnes ajoutées après n'existaient pas → logGeneration() échouait silencieusement (fire-and-forget) → 0 logs → backoffice vide. Alt écartée : DROP+CREATE (perte des données existantes). |
+| Yann+Lucas | 2026-03-24 | Audit visuel générations #29 et #30 Maximalist | #29 passe 1 : Yann 7.6/10, Lucas 8.1/10 — lustre Murano excellent, élimination chantier parfaite. #30 itération "ajoute WC" : Yann 2.8/10, Lucas 3.8/10 — bug BASE STYLE injection + tableau mural hallucination. | Audit sur images de production via API /api/logs. Passe 1 Maximalist validée. L'itération #30 a révélé 2 problèmes : injection systématique du furniturePrompt complet en itération + absence de negative prompt explicite pour wall art. |
+| @orchestrator | 2026-03-24 | lib/iteration-prompt.ts, app/api/generate/route.ts, lib/custom-prompt.ts | P0 : Itérations TOUJOURS exclusives (suppression BASE STYLE). P0 : "no wall art/paintings/prints/mirrors" dans tous builders passe 2. P1 : "no baseboards unless in input" passe 1. P1 : filtre sanitaire dans pre-processing itération. | Décision architecturale : en itération, les modifications accumulées décrivent TOUT ce que l'utilisateur veut — le BASE STYLE n'a pas sa place. Alt écartée : garder isExclusive conditionnel (trop fragile, dépend de mots-clés). Wall art : les styles chargés (Maximaliste, Art Déco) ont un biais fort vers l'ajout de tableaux — il faut l'interdire explicitement. |
 
 ---
 
@@ -181,3 +184,29 @@
 - Les agents Yann Duval et Lucas Moreau sont définis dans agents/ (pas dans .claude/agents/) — ce sont des agents métier spécifiques au projet, pas des agents Gradient génériques.
 - Le pipeline 2 passes est la décision architecturale la plus critique : toutes les approches single-pass ont échoué (sprints 7-10).
 - 7/12 styles n'ont jamais été testés en pipeline 2 passes complet (Contemporain, Bohème, Méditerranéen, Cosy, Wabi-Sabi, Maximaliste, Haussmannien).
+- Maximaliste testé en passe 1 uniquement (#29, Yann 7.6 / Lucas 8.1) — reste à tester passe 2 complète.
+
+---
+
+## Mémo de reprise — dernière session
+
+- **Date et heure de clôture** : 2026-03-24 ~23h30
+- **Résumé de la session** :
+  - Fix backoffice vide (19 ALTER TABLE migrations — cause : colonnes manquantes en DB, logGeneration échouait silencieusement)
+  - Audit croisé Yann Duval + Lucas Moreau sur 2 générations Maximalist (#29 passe 1 : 7.6-8.1/10, #30 itération : 2.8-3.8/10)
+  - Refonte architecturale des itérations : suppression complète de l'injection BASE STYLE — les itérations sont désormais TOUJOURS exclusives (l'utilisateur obtient uniquement ce qu'il demande)
+  - Ajout "no wall art" explicite dans tous les builders passe 2, "no baseboards" dans builders passe 1, filtre sanitaire dans pre-processing
+- **Travaux en cours** :
+  - F3 Extérieur : Phase F3.1 (audit prompts outdoor Yann+Lucas) — EN COURS, livrables non reçus
+  - Réserves F2 non corrigées : H-01 (iteration ignore roomType), H-02 (roomType absent des logs) — prévues dans F3.2
+  - 6/12 styles jamais testés en passe 2 complète (Contemporain, Bohème, Méditerranéen, Cosy, Wabi-Sabi, Haussmannien)
+  - Maximaliste passe 2 (mobilier) jamais testée correctement — seule la passe 1 est validée
+- **Prochaines actions recommandées** :
+  1. **Tester les itérations post-fix** — lancer une génération complète (passe 1 + passe 2) puis une itération simple ("ajoute un fauteuil") et vérifier qu'AUCUN mobilier BASE STYLE n'est ajouté. Vérifier aussi que le filtre sanitaire fonctionne ("ajoute un WC" → warning FR).
+  2. **Continuer F3 Extérieur** — @orchestrator : relancer l'audit prompts outdoor (Yann+Lucas en parallèle), puis @fullstack pour l'implémentation, puis @reviewer.
+  3. **Tester les styles manquants** — Lancer des générations sur Contemporain, Bohème, Méditerranéen, Cosy, Wabi-Sabi, Haussmannien + Maximaliste passe 2 — auditer avec Yann+Lucas.
+- **Blockers éventuels** : Aucun bloqueur technique. Les corrections sont pushées et prêtes au redéploiement.
+- **Commande de reprise suggérée** :
+  ```
+  @orchestrator Les fixes itération (toujours exclusif, no wall art, no baseboards, filtre sanitaire) et le fix backoffice sont pushés. 1) Teste une génération + itération simple pour valider. 2) Relance F3 Extérieur (audit prompts Yann+Lucas → fullstack → reviewer). 3) Si le temps le permet, lance des générations de test sur les 6 styles manquants + Maximaliste passe 2 et fais auditer par Yann+Lucas.
+  ```
