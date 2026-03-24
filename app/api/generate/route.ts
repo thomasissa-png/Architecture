@@ -148,9 +148,85 @@ function buildFurnitureFluxPrompt(furniturePrompt: string, roomTypeId?: string |
   ].join(" ");
 }
 
-// Flux Depth Pro negative prompt — prevents common artifacts
+// Flux Depth Pro negative prompt — prevents common artifacts (indoor)
 const FLUX_NEGATIVE_PROMPT =
   "distorted perspective, fisheye, stretched walls, shallow depth of field, bokeh, cartoon, illustration, 3D render, CGI, plastic, watermark, text, blurry, overexposed windows, extra windows, extra doors, floating furniture, dangling cables, junction box, unfinished floor, overly clean, flat lighting, color grading, warm color shift, cool color shift";
+
+// Outdoor negative prompt — prevents indoor artifacts in outdoor generations
+const OUTDOOR_NEGATIVE_PROMPT =
+  "indoor sofa, area rug, floor lamp, ceiling light, chandelier, curtains, drapes, wallpaper, baseboard, interior door, radiator, electrical outlet, kitchen appliances, ceiling, roof, indoor plant pot on parquet, distorted perspective, fisheye, stretched walls, cartoon, illustration, 3D render, CGI, watermark, text, blurry";
+
+// ── Outdoor Pass 1: Ground surface finishing (no ceiling, no luminaire) ──
+function buildOutdoorSurfacesResponsesPrompt(
+  surfacePrompt: string,
+  subtypeOverride: string
+): string {
+  return [
+    "Edit this outdoor photo. Keep exact same camera angle, lens distortion, vanishing points.",
+    "Open-air space — no ceiling, sky preserved as-is. Preserve highlights — do not recover blown-out sky.",
+    `Apply this ground surface finish: ${surfacePrompt}.`,
+    subtypeOverride ? subtypeOverride : "",
+    "Preserve all existing guard rails, exterior walls, facades, gates and fences. Do not add or remove any vertical structure.",
+    "Preserve existing vegetation in the background. Only modify ground surface in the foreground zone.",
+    "No furniture in this pass — EMPTY outdoor space with finished ground only.",
+    "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, subtle sensor grain (ISO 200), natural corner vignetting.",
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+function buildOutdoorSurfacesFluxPrompt(
+  surfacePrompt: string,
+  subtypeOverride: string
+): string {
+  return [
+    `${surfacePrompt}, finished empty outdoor space.`,
+    "Open-air — no ceiling, sky preserved as-is. Preserve blown-out sky highlights.",
+    subtypeOverride ? subtypeOverride : "",
+    "Preserve all guard rails, exterior walls, facades, gates, fences. No new vertical structures.",
+    "Preserve background vegetation. Only modify foreground ground surface.",
+    "Empty outdoor space — no furniture, no rugs, no objects.",
+    "Same camera angle, same proportions, same lighting conditions.",
+    "Photo-realistic outdoor photograph, DSLR full-frame 16-35mm f/8, deep DOF, sharp focus, subtle film grain.",
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+// ── Outdoor Pass 2: Outdoor furniture placement ─────────────────────────
+function buildOutdoorFurnitureResponsesPrompt(
+  furniturePrompt: string,
+  subtypeOverride: string
+): string {
+  return [
+    `Add outdoor furniture and decoration to this photo of a finished outdoor space: ${furniturePrompt}.`,
+    subtypeOverride ? subtypeOverride : "",
+    "Distribute furniture naturally across the available floor space. If space is large, create a primary seating group and a secondary accent further back.",
+    "Ground surfaces are LOCKED — same material, color, texture. Guard rails, walls, facades unchanged.",
+    "Every piece must cast realistic shadows consistent with the existing natural light direction.",
+    "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation.",
+    "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, subtle sensor grain (ISO 200), natural corner vignetting. Photo-realistic outdoor photograph. No text, watermarks, or logos.",
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+function buildOutdoorFurnitureFluxPrompt(
+  furniturePrompt: string,
+  subtypeOverride: string
+): string {
+  return [
+    `${furniturePrompt}, placed naturally across the available floor space of this finished outdoor area.`,
+    subtypeOverride ? subtypeOverride : "",
+    "Primary seating group in foreground, secondary accent further back if space allows.",
+    "Ground surfaces LOCKED — same material, color, texture. Guard rails, walls, facades unchanged.",
+    "Every piece casts realistic shadows consistent with existing natural light.",
+    "Same camera angle, same proportions, same lighting conditions.",
+    "Photo-realistic outdoor photograph, DSLR full-frame 16-35mm f/8, deep DOF, sharp focus, subtle film grain.",
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
 
 // ─── OpenAI Responses API (PRIMARY) ─────────────────────────────────
 async function tryOpenAIResponses(
@@ -159,14 +235,23 @@ async function tryOpenAIResponses(
   furniturePrompt: string,
   pass: 1 | 2,
   size: string,
-  roomTypeId?: string | null
+  roomTypeId?: string | null,
+  outdoor?: { isOutdoor: boolean; subtypeSurfaceOverride?: string; subtypeFurnitureOverride?: string }
 ): Promise<{ image: string; model: string }> {
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-  const prompt =
-    pass === 1
-      ? buildSurfacesResponsesPrompt(surfacePrompt)
-      : buildFurnitureResponsesPrompt(furniturePrompt, roomTypeId);
+  let prompt: string;
+  if (outdoor?.isOutdoor) {
+    prompt =
+      pass === 1
+        ? buildOutdoorSurfacesResponsesPrompt(surfacePrompt, outdoor.subtypeSurfaceOverride ?? "")
+        : buildOutdoorFurnitureResponsesPrompt(furniturePrompt, outdoor.subtypeFurnitureOverride ?? "");
+  } else {
+    prompt =
+      pass === 1
+        ? buildSurfacesResponsesPrompt(surfacePrompt)
+        : buildFurnitureResponsesPrompt(furniturePrompt, roomTypeId);
+  }
 
   const response = await openai.responses.create({
     model: "gpt-4.1",
@@ -223,15 +308,27 @@ async function tryFluxDepth(
   width: number,
   height: number,
   additionalNegative: string = "",
-  roomTypeId?: string | null
+  roomTypeId?: string | null,
+  outdoor?: { isOutdoor: boolean; subtypeSurfaceOverride?: string; subtypeFurnitureOverride?: string }
 ): Promise<{ image: string; model: string }> {
   const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
 
   const dataUri = `data:image/jpeg;base64,${imageBase64}`;
-  const prompt =
-    pass === 1
-      ? buildSurfacesFluxPrompt(surfacePrompt)
-      : buildFurnitureFluxPrompt(furniturePrompt, roomTypeId);
+  let prompt: string;
+  let negativeBase: string;
+  if (outdoor?.isOutdoor) {
+    prompt =
+      pass === 1
+        ? buildOutdoorSurfacesFluxPrompt(surfacePrompt, outdoor.subtypeSurfaceOverride ?? "")
+        : buildOutdoorFurnitureFluxPrompt(furniturePrompt, outdoor.subtypeFurnitureOverride ?? "");
+    negativeBase = OUTDOOR_NEGATIVE_PROMPT;
+  } else {
+    prompt =
+      pass === 1
+        ? buildSurfacesFluxPrompt(surfacePrompt)
+        : buildFurnitureFluxPrompt(furniturePrompt, roomTypeId);
+    negativeBase = FLUX_NEGATIVE_PROMPT;
+  }
 
   // Pass 1 (surfaces): lower guidance to stay closer to input geometry
   // Pass 2 (furniture): slightly higher guidance to ensure furniture appears
@@ -243,8 +340,8 @@ async function tryFluxDepth(
       input: {
         prompt,
         negative_prompt: additionalNegative
-          ? `${FLUX_NEGATIVE_PROMPT}, ${additionalNegative}`
-          : FLUX_NEGATIVE_PROMPT,
+          ? `${negativeBase}, ${additionalNegative}`
+          : negativeBase,
         control_image: dataUri,
         width,
         height,
@@ -419,14 +516,15 @@ async function generatePass(
   pass: 1 | 2,
   outputSize: { openai: string; w: number; h: number },
   additionalNegative: string = "",
-  roomTypeId?: string | null
+  roomTypeId?: string | null,
+  outdoor?: { isOutdoor: boolean; subtypeSurfaceOverride?: string; subtypeFurnitureOverride?: string }
 ): Promise<{ image: string; model: string }> {
   let openaiError: Error | null = null;
   let replicateError: Error | null = null;
 
   if (process.env.OPENAI_API_KEY) {
     try {
-      return await tryOpenAIResponses(base64Image, surfacePrompt, furniturePrompt, pass, outputSize.openai, roomTypeId);
+      return await tryOpenAIResponses(base64Image, surfacePrompt, furniturePrompt, pass, outputSize.openai, roomTypeId, outdoor);
     } catch (err) {
       openaiError = err instanceof Error ? err : new Error(String(err));
       console.error(`OpenAI pass ${pass} failed:`, openaiError.message);
@@ -435,7 +533,7 @@ async function generatePass(
 
   if (process.env.REPLICATE_API_TOKEN) {
     try {
-      return await tryFluxDepth(base64Image, surfacePrompt, furniturePrompt, pass, outputSize.w, outputSize.h, additionalNegative, roomTypeId);
+      return await tryFluxDepth(base64Image, surfacePrompt, furniturePrompt, pass, outputSize.w, outputSize.h, additionalNegative, roomTypeId, outdoor);
     } catch (err) {
       replicateError = err instanceof Error ? err : new Error(String(err));
       console.error(`Flux Depth pass ${pass} failed:`, replicateError.message);
@@ -485,6 +583,9 @@ export async function POST(request: NextRequest) {
       sessionId,
       // F2 room type
       roomType = null,
+      // F3 outdoor
+      isOutdoor = false,
+      outdoorSubtype = null,
     } = body as {
       image?: string;
       surfacePrompt?: string;
@@ -498,6 +599,8 @@ export async function POST(request: NextRequest) {
       previousModifications?: string[];
       sessionId?: string;
       roomType?: string | null;
+      isOutdoor?: boolean;
+      outdoorSubtype?: string | null;
     };
 
     styleId = bodyStyleId;
@@ -551,18 +654,40 @@ export async function POST(request: NextRequest) {
       // Build all modifications: previous + current enriched
       const allModifications = [...previousModifications, preprocessResult.enrichedComment];
 
-      // Build iteration prompts (pass roomType for kitchen/bathroom exception)
-      const iterMeta = { width: cached.meta.width, height: cached.meta.height, roomType: cached.meta.roomType };
-      const responsesPrompt = buildIterationFurnitureResponsesPrompt(
-        originalFurniturePrompt,
-        allModifications,
-        iterMeta
-      );
-      const fluxPrompt = buildIterationFurnitureFluxPrompt(
-        originalFurniturePrompt,
-        allModifications,
-        iterMeta
-      );
+      // Build iteration prompts — use outdoor builders if the original generation was outdoor
+      const iterMeta = {
+        width: cached.meta.width,
+        height: cached.meta.height,
+        roomType: cached.meta.roomType,
+        isOutdoor: cached.meta.isOutdoor,
+      };
+
+      let responsesPrompt: string;
+      let fluxPrompt: string;
+
+      if (cached.meta.isOutdoor) {
+        responsesPrompt = buildIterationOutdoorFurnitureResponsesPrompt(
+          originalFurniturePrompt,
+          allModifications,
+          iterMeta
+        );
+        fluxPrompt = buildIterationOutdoorFurnitureFluxPrompt(
+          originalFurniturePrompt,
+          allModifications,
+          iterMeta
+        );
+      } else {
+        responsesPrompt = buildIterationFurnitureResponsesPrompt(
+          originalFurniturePrompt,
+          allModifications,
+          iterMeta
+        );
+        fluxPrompt = buildIterationFurnitureFluxPrompt(
+          originalFurniturePrompt,
+          allModifications,
+          iterMeta
+        );
+      }
 
       const t0 = Date.now();
       console.log(`Starting iteration pass 2... Output size: ${outputSize.openai}`);
@@ -638,21 +763,49 @@ export async function POST(request: NextRequest) {
     // Pass 1: Finish surfaces using surfacePrompt — room stays empty
     // Pass 2 (optional): Add furniture using furniturePrompt — surfaces untouched
 
-    // F2: Apply room type overrides to style prompts
-    const { effectiveSurfacePrompt, effectiveFurniturePrompt, roomNegativeOverride } =
-      applyRoomTypeOverrides(surfacePrompt.trim(), furniturePrompt.trim(), roomType ?? null);
-    const trimmedSurface = effectiveSurfacePrompt;
-    const trimmedFurniture = effectiveFurniturePrompt;
+    // F3: Apply outdoor subtype overrides OR F2 room type overrides (mutually exclusive)
+    let trimmedSurface: string;
+    let trimmedFurniture: string;
+    let negativeOverride: string;
+    let outdoorParam: { isOutdoor: boolean; subtypeSurfaceOverride?: string; subtypeFurnitureOverride?: string } | undefined;
+
+    if (isOutdoor) {
+      // Outdoor mode: apply subtype overrides, no room type
+      const { effectiveSurfacePrompt, effectiveFurniturePrompt, subtypeNegativeOverride } =
+        applyOutdoorSubtypeOverrides(surfacePrompt.trim(), furniturePrompt.trim(), outdoorSubtype ?? null);
+      trimmedSurface = effectiveSurfacePrompt;
+      trimmedFurniture = effectiveFurniturePrompt;
+      negativeOverride = subtypeNegativeOverride;
+
+      // Extract raw subtype overrides for injection into builders
+      const sub = outdoorSubtype ? (await import("@/lib/outdoor-subtypes")).OUTDOOR_SUBTYPES[outdoorSubtype] : null;
+      outdoorParam = {
+        isOutdoor: true,
+        subtypeSurfaceOverride: sub?.subtypeSurfaceOverride ?? "",
+        subtypeFurnitureOverride: sub?.subtypeFurnitureOverride ?? "",
+      };
+    } else {
+      // Indoor mode: apply room type overrides
+      const { effectiveSurfacePrompt, effectiveFurniturePrompt, roomNegativeOverride } =
+        applyRoomTypeOverrides(surfacePrompt.trim(), furniturePrompt.trim(), roomType ?? null);
+      trimmedSurface = effectiveSurfacePrompt;
+      trimmedFurniture = effectiveFurniturePrompt;
+      negativeOverride = roomNegativeOverride;
+    }
 
     const t0 = Date.now();
 
-    console.log(`Starting pass 1 (surfaces)... Output size: ${outputSize.openai}${roomType ? ` roomType: ${roomType}` : ""}`);
-    const pass1 = await generatePass(base64Image, trimmedSurface, trimmedFurniture, 1, outputSize, roomNegativeOverride, roomType);
+    console.log(`Starting pass 1 (surfaces)... Output size: ${outputSize.openai}${isOutdoor ? ` outdoor subtype: ${outdoorSubtype}` : roomType ? ` roomType: ${roomType}` : ""}`);
+    const pass1 = await generatePass(base64Image, trimmedSurface, trimmedFurniture, 1, outputSize, negativeOverride, isOutdoor ? null : roomType, outdoorParam);
     const t1 = Date.now();
 
     // Build the final prompts for logging (what the model actually receives)
-    const builtPromptPass1 = buildSurfacesResponsesPrompt(trimmedSurface);
-    const builtPromptPass2 = buildFurnitureResponsesPrompt(trimmedFurniture, roomType);
+    const builtPromptPass1 = isOutdoor
+      ? buildOutdoorSurfacesResponsesPrompt(trimmedSurface, outdoorParam?.subtypeSurfaceOverride ?? "")
+      : buildSurfacesResponsesPrompt(trimmedSurface);
+    const builtPromptPass2 = isOutdoor
+      ? buildOutdoorFurnitureResponsesPrompt(trimmedFurniture, outdoorParam?.subtypeFurnitureOverride ?? "")
+      : buildFurnitureResponsesPrompt(trimmedFurniture, roomType);
 
     const pass1Base64 = pass1.image.replace(/^data:image\/[\w+]+;base64,/, "");
 
@@ -668,7 +821,9 @@ export async function POST(request: NextRequest) {
       furniturePrompt: trimmedFurniture,
       surfacePrompt: trimmedSurface,
       createdAt: Date.now(),
-      roomType: roomType ?? null,
+      roomType: isOutdoor ? null : (roomType ?? null),
+      isOutdoor: isOutdoor || undefined,
+      outdoorSubtype: isOutdoor ? (outdoorSubtype ?? undefined) : undefined,
     }).catch((err) => console.error("Pass1 cache save failed:", err));
 
     // If surfaces-only mode, return pass 1 result directly
@@ -691,14 +846,16 @@ export async function POST(request: NextRequest) {
         inputBase64: base64Image, outputBase64,
         sessionId: sessionId ?? undefined,
         pass1CacheKey,
-        roomType: roomType ?? undefined,
+        roomType: isOutdoor ? undefined : (roomType ?? undefined),
+        isOutdoor: isOutdoor || undefined,
+        outdoorSubtype: isOutdoor ? (outdoorSubtype ?? undefined) : undefined,
       }).catch((err) => console.error("DB log failed:", err));
 
       return response;
     }
 
     console.log("Starting pass 2 (furniture)...");
-    const pass2 = await generatePass(pass1Base64, trimmedSurface, trimmedFurniture, 2, outputSize, roomNegativeOverride, roomType);
+    const pass2 = await generatePass(pass1Base64, trimmedSurface, trimmedFurniture, 2, outputSize, negativeOverride, isOutdoor ? null : roomType, outdoorParam);
     const t2 = Date.now();
 
     const outputBase64 = pass2.image.replace(/^data:image\/[\w+]+;base64,/, "");
@@ -720,7 +877,9 @@ export async function POST(request: NextRequest) {
       inputBase64: base64Image, pass1Base64, outputBase64,
       sessionId: sessionId ?? undefined,
       pass1CacheKey,
-      roomType: roomType ?? undefined,
+      roomType: isOutdoor ? undefined : (roomType ?? undefined),
+      isOutdoor: isOutdoor || undefined,
+      outdoorSubtype: isOutdoor ? (outdoorSubtype ?? undefined) : undefined,
     }).catch((err) => console.error("DB log failed:", err));
 
     return response;
