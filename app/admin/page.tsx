@@ -443,7 +443,7 @@ Demande type : "Fais appel a l'agent Architecte d'Interieur et a l'agent Expert 
 
                   {/* Replay button */}
                   {log.success && log.input_image_path && !log.is_replay && (
-                    <ReplayButton logId={log.id} styleId={log.style_id} onReplayDone={() => {
+                    <ReplayButton logId={log.id} styleId={log.style_id} adminPassword={password} onReplayDone={() => {
                       // Refresh logs
                       fetch("/api/logs").then(r => r.json()).then(data => { if (data.logs) setLogs(data.logs); });
                     }} />
@@ -458,7 +458,7 @@ Demande type : "Fais appel a l'agent Architecte d'Interieur et a l'agent Expert 
   );
 }
 
-function ReplayButton({ logId, styleId, onReplayDone }: { logId: number; styleId: string; onReplayDone: () => void }) {
+function ReplayButton({ logId, styleId, adminPassword, onReplayDone }: { logId: number; styleId: string; adminPassword: string; onReplayDone: () => void }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [label, setLabel] = useState("");
@@ -472,6 +472,7 @@ function ReplayButton({ logId, styleId, onReplayDone }: { logId: number; styleId
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          password: adminPassword,
           sourceGenerationId: logId,
           replayPass: "both",
           replayLabel: label || `replay-${styleId}-${Date.now()}`,

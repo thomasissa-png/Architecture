@@ -5,10 +5,14 @@ import { compareImages } from "@/lib/image-metrics";
 export const dynamic = "force-dynamic";
 export const maxDuration = 300; // 5 min — pipeline 2 passes can be slow
 
+// H-03: Internal replay calls bypass rate limiting via this header
+export const REPLAY_INTERNAL_HEADER = "x-replay-internal";
+
 /**
  * POST /api/replay — Replay a generation with current prompts on the same input image.
  *
  * Body: {
+ *   password: string,                // ADMIN_PASSWORD (required unless internal call)
  *   sourceGenerationId: number,
  *   replayPass?: 1 | 2 | "both",    // default "both"
  *   surfacePrompt?: string,          // override (else reuse source)
@@ -21,8 +25,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "DATABASE_URL not configured" }, { status: 500 });
   }
 
+  const body = await request.json();
+
+  // H-01: Auth — require ADMIN_PASSWORD unless internal batch call
+  const isInternalCall = request.headers.get(REPLAY_INTERNAL_HEADER) === process.env.ADMIN_PASSWORD;
+  if (!isInternalCall) {
+    if (!process.env.ADMIN_PASSWORD || body.password !== process.env.ADMIN_PASSWORD) {
+      return NextResponse.json({ error: "Authentification requise" }, { status: 401 });
+    }
+  }
+
   try {
-    const body = await request.json();
     const {
       sourceGenerationId,
       replayPass = "both",
@@ -53,7 +66,6 @@ export async function POST(request: NextRequest) {
     let pass1Base64ForReplay: string | null = null;
 
     if (replayPass === 2 && src.pass1_image_path) {
-      // For pass-2-only replay, load the pass1 image instead
       const pass1Bytes = await getImage(src.pass1_image_path);
       if (!pass1Bytes) {
         return NextResponse.json({ error: "Image pass1 introuvable dans le storage" }, { status: 404 });
@@ -62,7 +74,6 @@ export async function POST(request: NextRequest) {
     }
 
     if (replayPass !== 2) {
-      // Need the original input for pass 1
       if (!src.input_image_path) {
         return NextResponse.json({ error: "Pas d'image input stockee pour cette generation" }, { status: 404 });
       }
@@ -74,10 +85,11 @@ export async function POST(request: NextRequest) {
     }
 
     // 3. Resolve prompts (override or reuse source)
-    const surfacePrompt = overrideSurface || src.surface_prompt;
-    const furniturePrompt = overrideFurniture || src.furniture_prompt;
+    const surfacePrompt = (overrideSurface as string) || src.surface_prompt;
+    const furniturePrompt = (overrideFurniture as string) || src.furniture_prompt;
 
     // 4. Call /api/generate via internal fetch
+    // H-03: Use a dedicated replay IP so rate limiter doesn't block batch runs
     const origin = request.nextUrl.origin;
     const imageToSend = replayPass === 2
       ? `data:image/jpeg;base64,${pass1Base64ForReplay}`
@@ -96,18 +108,13 @@ export async function POST(request: NextRequest) {
       outdoorSubtype: src.outdoor_subtype || undefined,
     };
 
-    // For pass-2-only, we send it as a full generation with withFurniture=true
-    // but using the pass1 image as input. The generate endpoint will run pass1
-    // (which will be a no-op style change on already-finished surfaces) + pass2.
-    // This is simpler than trying to skip pass1 internally.
-
     const t0 = Date.now();
     const generateResponse = await fetch(`${origin}/api/generate`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        // Forward IP for rate limiting
-        "x-forwarded-for": request.headers.get("x-forwarded-for") || "127.0.0.1",
+        // H-03: Use a unique IP per replay to avoid rate limit collision with real users
+        "x-forwarded-for": `replay-${sourceGenerationId}-${Date.now()}`,
       },
       body: JSON.stringify(generateBody),
     });
@@ -141,7 +148,7 @@ export async function POST(request: NextRequest) {
 
     // 6. Log replay to DB
     const replayId = await logGenerationReturningId({
-      ip: request.headers.get("x-forwarded-for") || "replay",
+      ip: "replay",
       styleId: src.style_id || "custom",
       surfacePrompt,
       furniturePrompt,
@@ -151,12 +158,14 @@ export async function POST(request: NextRequest) {
       modelUsed: genData.model || "unknown",
       durationMs: t1 - t0,
       success: true,
-      builtPromptPass1: `[REPLAY of #${sourceGenerationId}]`,
+      // M-01: Store the actual surfacePrompt/furniturePrompt used (not just a label)
+      builtPromptPass1: `[REPLAY of #${sourceGenerationId}] surface: ${surfacePrompt}`,
+      builtPromptPass2: `[REPLAY of #${sourceGenerationId}] furniture: ${furniturePrompt}`,
       inputBase64: inputBase64 || pass1Base64ForReplay || undefined,
       outputBase64,
       isReplay: true,
       replaySourceId: sourceGenerationId,
-      replayLabel: replayLabel || undefined,
+      replayLabel: (replayLabel as string) || undefined,
       pixelDiffPct: metrics?.pixelDiffPct ?? undefined,
       colorShiftScore: metrics?.colorShiftScore ?? undefined,
       roomType: src.room_type || undefined,
@@ -168,11 +177,9 @@ export async function POST(request: NextRequest) {
       image: genData.image,
       model: genData.model,
       replayId,
-      sourceGenerationId,
+      sourceGenerationId: sourceGenerationId as number,
       durationMs: t1 - t0,
       metrics,
-      builtPromptPass1: genData.built_prompt_pass1 || null,
-      builtPromptPass2: genData.built_prompt_pass2 || null,
     });
   } catch (error) {
     console.error("Replay error:", error);

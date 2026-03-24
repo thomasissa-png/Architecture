@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getPool, ensureTable } from "@/lib/db";
+import { ensureTable } from "@/lib/db";
+import { REPLAY_INTERNAL_HEADER } from "@/app/api/replay/route";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
@@ -8,6 +9,7 @@ export const maxDuration = 300;
  * POST /api/replay/batch — Replay multiple generations sequentially.
  *
  * Body: {
+ *   password: string,                 // ADMIN_PASSWORD (required)
  *   sourceGenerationIds: number[],
  *   replayPass?: 1 | 2 | "both",
  *   surfacePrompt?: string,
@@ -20,8 +22,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "DATABASE_URL not configured" }, { status: 500 });
   }
 
+  // H-01: Auth
+  const body = await request.json();
+  if (!process.env.ADMIN_PASSWORD || body.password !== process.env.ADMIN_PASSWORD) {
+    return NextResponse.json({ error: "Authentification requise" }, { status: 401 });
+  }
+
   try {
-    const body = await request.json();
     const {
       sourceGenerationIds,
       replayPass = "both",
@@ -61,7 +68,8 @@ export async function POST(request: NextRequest) {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "x-forwarded-for": request.headers.get("x-forwarded-for") || "127.0.0.1",
+            // H-03: Internal call — bypass auth check in /api/replay
+            [REPLAY_INTERNAL_HEADER]: process.env.ADMIN_PASSWORD!,
           },
           body: JSON.stringify({
             sourceGenerationId: sourceId,
@@ -110,10 +118,10 @@ export async function POST(request: NextRequest) {
     const avgDuration = succeeded.length > 0
       ? Math.round(succeeded.reduce((sum, r) => sum + r.durationMs, 0) / succeeded.length)
       : 0;
-    const avgPixelDiff = succeeded.filter((r) => r.pixelDiffPct != null).length > 0
+    const validDiffs = succeeded.filter((r) => r.pixelDiffPct != null);
+    const avgPixelDiff = validDiffs.length > 0
       ? Math.round(
-          (succeeded.reduce((sum, r) => sum + (r.pixelDiffPct || 0), 0) /
-            succeeded.filter((r) => r.pixelDiffPct != null).length) * 100
+          (validDiffs.reduce((sum, r) => sum + (r.pixelDiffPct || 0), 0) / validDiffs.length) * 100
         ) / 100
       : null;
 
