@@ -8,6 +8,7 @@ import ImageComparator from "@/components/ImageComparator";
 import RefineModal from "@/components/RefineModal";
 import VersionSelector from "@/components/VersionSelector";
 import RoomTypePicker from "@/components/RoomTypePicker";
+import OutdoorSubtypePicker from "@/components/OutdoorSubtypePicker";
 import { processImage, isLikelyInterior } from "@/lib/image-utils";
 import { OUTDOOR_STYLES } from "@/lib/outdoor-styles";
 
@@ -161,9 +162,9 @@ export default function Home() {
 
   const currentStep =
     results.length > 0
-      ? 3
+      ? 4
       : selectedStyle || customPrompt || selectedOutdoorStyle
-      ? 2
+      ? 3
       : files.length > 0
       ? 2
       : 1;
@@ -711,21 +712,55 @@ export default function Home() {
           {/* Step 1: Upload */}
           <div className="mb-16">
             <h4 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
-              01 — Upload
+              Upload
             </h4>
             <UploadZone files={files} onFilesChange={setFiles} />
           </div>
 
-          {/* Step 2: Style (+ Room type for interior, before style picker) */}
+          {/* Step 2a: Type d'espace (intérieur/extérieur + sous-type) */}
           {files.length > 0 && (
-            <div id="step-style" className="mb-16 animate-fade-in-up scroll-mt-20">
+            <div id="step-space-type" className="mb-16 animate-fade-in-up scroll-mt-20">
               <h4 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
-                02 — Style
+                01 — Type d&apos;espace
               </h4>
 
-              {/* F2: Room type selector — BEFORE style in indoor mode (Sprint 19: uniformise with outdoor subtype flow) */}
+              {/* Indoor / Outdoor toggle */}
+              <div className="mb-6">
+                <div
+                  role="radiogroup"
+                  aria-label="Choix entre interieur et exterieur"
+                  className="inline-flex rounded-full bg-gray-100 p-0.5"
+                >
+                  <button
+                    role="radio"
+                    aria-checked={!isOutdoor}
+                    onClick={() => handleToggleOutdoor(false)}
+                    className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
+                      !isOutdoor
+                        ? "bg-foreground text-background shadow-sm"
+                        : "text-muted hover:text-foreground"
+                    }`}
+                  >
+                    Int&eacute;rieur
+                  </button>
+                  <button
+                    role="radio"
+                    aria-checked={isOutdoor}
+                    onClick={() => handleToggleOutdoor(true)}
+                    className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
+                      isOutdoor
+                        ? "bg-foreground text-background shadow-sm"
+                        : "text-muted hover:text-foreground"
+                    }`}
+                  >
+                    Ext&eacute;rieur
+                  </button>
+                </div>
+              </div>
+
+              {/* Indoor: room type picker */}
               {!isOutdoor && (
-                <div className="mb-6 pb-5 border-b border-gray-100">
+                <div className="animate-fade-in-up">
                   <RoomTypePicker
                     selectedRoomType={selectedRoomType}
                     onSelect={setSelectedRoomType}
@@ -738,24 +773,43 @@ export default function Home() {
                 </div>
               )}
 
+              {/* Outdoor: subtype picker */}
+              {isOutdoor && (
+                <div className="animate-fade-in-up">
+                  <OutdoorSubtypePicker
+                    selectedSubtype={outdoorSubtype}
+                    onSelect={setOutdoorSubtype}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Step 2b: Style */}
+          {files.length > 0 && (
+            <div id="step-style" className="mb-16 animate-fade-in-up scroll-mt-20">
+              <h4 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
+                02 — Style
+              </h4>
+
               <StylePicker
                 selectedStyle={selectedStyle}
                 customPrompt={customPrompt}
                 onStyleSelect={setSelectedStyle}
                 onCustomPromptChange={setCustomPrompt}
                 isOutdoor={isOutdoor}
-                onToggleOutdoor={handleToggleOutdoor}
                 selectedOutdoorStyle={selectedOutdoorStyle}
                 onSelectOutdoorStyle={setSelectedOutdoorStyle}
-                selectedSubtype={outdoorSubtype}
-                onSelectSubtype={setOutdoorSubtype}
               />
             </div>
           )}
 
-          {/* Furniture toggle */}
+          {/* Step 2c: Options (furniture toggle) */}
           {canGenerate && results.length === 0 && !isGenerating && (
             <div className="mb-8 animate-fade-in-up">
+              <h4 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
+                03 — Options
+              </h4>
               <div className="flex items-center justify-center gap-3">
                 <button
                   onClick={() => setWithFurniture(false)}
