@@ -1,6 +1,6 @@
 "use client";
 
-import { OUTDOOR_STYLE_LIST, type OutdoorStyle } from "@/lib/outdoor-styles";
+import { OUTDOOR_STYLE_LIST } from "@/lib/outdoor-styles";
 
 interface OutdoorStylePickerProps {
   selectedStyle: string | null;

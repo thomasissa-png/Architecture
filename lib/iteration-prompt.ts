@@ -82,8 +82,7 @@ export const FLUX_ITERATION_NEGATIVE_PROMPT =
 
 export function buildIterationOutdoorFurnitureResponsesPrompt(
   furniturePrompt: string,
-  modifications: string[],
-  meta: { width?: number; height?: number; isOutdoor?: boolean }
+  modifications: string[]
 ): string {
   const modBlock = modifications
     .map((m, i) => {
@@ -110,8 +109,7 @@ export function buildIterationOutdoorFurnitureResponsesPrompt(
 
 export function buildIterationOutdoorFurnitureFluxPrompt(
   furniturePrompt: string,
-  modifications: string[],
-  meta: { width?: number; height?: number; isOutdoor?: boolean }
+  modifications: string[]
 ): string {
   const modSummary = modifications
     .map((m, i) => {

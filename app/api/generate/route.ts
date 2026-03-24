@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import Replicate from "replicate";
-import { logGeneration, savePass1Cache, getPass1Cache, type Pass1Meta } from "@/lib/db";
+import { logGeneration, savePass1Cache, getPass1Cache } from "@/lib/db";
 import { preprocessIterationComment } from "@/lib/custom-prompt";
 import {
   buildIterationFurnitureResponsesPrompt,
@@ -668,13 +668,11 @@ export async function POST(request: NextRequest) {
       if (cached.meta.isOutdoor) {
         responsesPrompt = buildIterationOutdoorFurnitureResponsesPrompt(
           originalFurniturePrompt,
-          allModifications,
-          iterMeta
+          allModifications
         );
         fluxPrompt = buildIterationOutdoorFurnitureFluxPrompt(
           originalFurniturePrompt,
-          allModifications,
-          iterMeta
+          allModifications
         );
       } else {
         responsesPrompt = buildIterationFurnitureResponsesPrompt(
@@ -698,9 +696,6 @@ export async function POST(request: NextRequest) {
       const iterationNumber = previousModifications.length + 1;
 
       // Save iteration result to Object Storage
-      const iterationKey = pass1Key
-        .replace("pass1.jpg", `iteration_${iterationNumber}.jpg`);
-
       const response = NextResponse.json({
         image: result.image,
         model: result.model,
