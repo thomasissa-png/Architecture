@@ -532,6 +532,31 @@ agents/
     - Les images persistent desormais a travers les redeploys
     - Les anciens chemins (input_image_path, pass1_image_path, output_image_path) stockent maintenant "logs/xxx.jpg" (cle Object Storage)
 
+### Sprint 18 — Audit croise Japandi #1 (cheminee) + #2 (estrade mur accent) — Yann 7.3, Lucas 7.35
+147. CRITIQUE : Preservation equipements fixes muraux dans builders passe 1 + passe 2
+    - "Preserve all wall-mounted fixed equipment (radiators, heaters, vents, thermostats, switches)"
+    - Passe 2 ajoute : "Do not place furniture in front of radiators"
+    - Cause : les 2 generations Japandi supprimaient systematiquement les radiateurs
+148. CRITIQUE : Renforcement preservation texture poutres dans builder passe 1
+    - Ancien : "must remain visible and unchanged"
+    - Nouveau : "must remain visible with their original rough texture, irregular edges, and surface patina intact. Do NOT smooth, flatten, or clean up beams"
+    - Cause : Japandi #1 avait les poutres massives lissees (5/10 preservation)
+149. HAUTE : Preservation murs accent existants dans builder passe 1
+    - "If the input has a colored accent wall, dark wallpaper, or textured feature wall, preserve it as-is — apply the style's wall color only to the plain walls"
+    - Directive conditionnelle : neutre si pas de mur accent
+    - Cause : Japandi #2 avait le papier peint geometrique noir completement efface
+150. HAUTE : Ancrage temperature couleur murs dans builder passe 1
+    - "Maintain the exact wall color temperature from the input — do not warm or cool the walls beyond what the style finish requires"
+    - Remplace l'ancien "preserve exposure exactly" trop vague
+    - Cause : les 2 generations avaient un color shift warm (blanc froid → beige)
+151. Builders Flux (passe 1 + 2) alignes avec les memes corrections (condense)
+152. Apprentissages consolides :
+    - Les equipements muraux (radiateurs, chauffages) sont systematiquement supprimes par le modele — il faut les nommer explicitement
+    - Les poutres massives blanchies sont traitees comme du "bruit" a lisser — "visible" ne suffit pas, il faut specifier "rough texture, irregular edges, patina"
+    - Les murs accent sont ecrases par "warm white walls" du surfacePrompt — la directive conditionnelle dans le builder est prioritaire
+    - Le color shift warm est cause par les surfacePrompts ("warm white", "warm tint") qui ecrasent la temperature d'origine
+    - Toutes les corrections sont CONDITIONNELLES — neutres sur les pieces sans ces elements, ne cassent pas les generations existantes
+
 ## Regles de Developpement
 
 - Design minimaliste, pas de surcharge visuelle
