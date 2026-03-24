@@ -66,11 +66,11 @@ export const ROOM_TYPES: Record<string, RoomType> = {
     emoji: "🚿",
     description: "Mobilier adapté : vasque, miroir, rangements",
     roomSurfaceOverride:
-      "Additionally for this bathroom: waterproof wall finish — ceramic wall tiles on the wet zone behind the vanity area. Water-resistant floor — ceramic or stone floor tiles with matte non-slip finish.",
+      "Additionally for this bathroom: floor-to-ceiling ceramic wall tiles in the shower zone and behind the vanity area — waterproof and seamless. Water-resistant floor — ceramic or stone floor tiles with matte non-slip finish. No wood flooring in wet areas. Recessed IP44-rated ceiling spotlights for even bathroom illumination.",
     roomFurnitureOverride:
-      "Bathroom fixtures and accessories: wall-mounted vanity unit 80cm wide with integrated basin and framed mirror above, fluffy folded towels in neutral tones on open shelving or towel ladder, a small stool or side table with soap dispenser and candle, potted humidity-loving plant (fern or pothos) in ceramic pot, woven basket for storage on the floor. No freestanding bathtub unless room is large. Clean and spa-like atmosphere.",
+      "Bathroom fixtures and accessories: frameless glass walk-in shower enclosure with chrome rain showerhead and handheld fixture mounted on the wall, wall-mounted vanity unit 80cm wide with integrated basin and large backlit rectangular mirror above, fluffy folded towels in neutral tones on open shelving or towel ladder, a small stool or side table with soap dispenser and candle, potted humidity-loving plant (fern or pothos) in ceramic pot, woven basket for storage on the floor. No freestanding bathtub unless room is large. Clean and spa-like atmosphere. No armchairs, no floor lamps.",
     roomNegativeOverride:
-      "sofa, coffee table, TV unit, dining table, bed, wardrobe, office desk, floor lamp",
+      "sofa, coffee table, TV unit, dining table, bed, wardrobe, office desk, floor lamp, armchair, lounge chair, bouclé chair, tripod lamp, arc lamp",
   },
 
   kitchen: {
@@ -79,11 +79,11 @@ export const ROOM_TYPES: Record<string, RoomType> = {
     emoji: "🍳",
     description: "Mobilier adapté : plan de travail, caissons, tabourets",
     roomSurfaceOverride:
-      "Additionally for this kitchen: ceramic or natural stone floor tiles suited for a kitchen. Subway tile or smooth splashback on the wall behind the work area.",
+      "Additionally for this kitchen: ceramic or natural stone floor tiles suited for a kitchen. IMPORTANT OVERRIDE: the floor MUST be ceramic tiles or natural stone — NOT wood, NOT parquet, NOT herringbone wood. Subway tile or smooth splashback on the wall behind the work area.",
     roomFurnitureOverride:
-      "Kitchen furnishing: countertop work surface 60cm deep with integrated sink, upper and lower cabinetry in neutral finish, built-in oven and cooktop, two or three bar stools at an island or peninsula if space allows, pendant light above the work area, cutting board and ceramic jar with utensils on the counter, small herb pots (basil, rosemary) on a shelf or windowsill, fruit bowl on the counter. Functional and organized layout.",
+      "Kitchen furnishing: countertop work surface 60cm deep with integrated sink, upper and lower cabinetry in neutral finish, built-in oven and cooktop, two or three bar stools at an island or peninsula if space allows, pendant light above the work area, cutting board and ceramic jar with utensils on the counter, small herb pots (basil, rosemary) on a shelf or windowsill, fruit bowl on the counter. Functional and organized layout. No armchairs, no lounge chairs, no floor lamps.",
     roomNegativeOverride:
-      "sofa, coffee table, TV unit, bed, wardrobe, floor lamp, area rug",
+      "sofa, coffee table, TV unit, bed, wardrobe, floor lamp, arc lamp, area rug, armchair, lounge chair",
   },
 
   office: {
