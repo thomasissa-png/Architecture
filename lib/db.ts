@@ -62,6 +62,24 @@ export async function ensureTable(): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_gen_logs_created ON generation_logs (created_at DESC);
     CREATE INDEX IF NOT EXISTS idx_gen_logs_style ON generation_logs (style_id);
   `);
+
+  // Add replay columns (Sprint 20) — safe ALTER TABLE with IF NOT EXISTS pattern
+  const replayColumns = [
+    { name: "is_replay", type: "BOOLEAN DEFAULT FALSE" },
+    { name: "replay_source_id", type: "INT" },
+    { name: "replay_label", type: "VARCHAR(200)" },
+    { name: "pixel_diff_pct", type: "FLOAT" },
+    { name: "color_shift_score", type: "FLOAT" },
+  ];
+  for (const col of replayColumns) {
+    await db.query(`
+      DO $$ BEGIN
+        ALTER TABLE generation_logs ADD COLUMN ${col.name} ${col.type};
+      EXCEPTION WHEN duplicate_column THEN NULL;
+      END $$;
+    `);
+  }
+
   tableEnsured = true;
 }
 
@@ -126,7 +144,7 @@ export async function checkStorageHealth(): Promise<{ ok: boolean; error?: strin
   }
 }
 
-async function saveImage(base64: string, name: string): Promise<string> {
+export async function saveImage(base64: string, name: string): Promise<string> {
   const key = `logs/${name}.jpg`;
   const buffer = Buffer.from(base64, "base64");
   const { ok, error } = await withStorageRetry(
@@ -279,6 +297,12 @@ export interface GenerationLogParams {
   // F3 outdoor fields
   isOutdoor?: boolean;
   outdoorSubtype?: string | null;
+  // Replay fields (Sprint 20)
+  isReplay?: boolean;
+  replaySourceId?: number | null;
+  replayLabel?: string | null;
+  pixelDiffPct?: number | null;
+  colorShiftScore?: number | null;
 }
 
 export async function logGeneration(params: GenerationLogParams): Promise<void> {
@@ -323,8 +347,10 @@ export async function logGeneration(params: GenerationLogParams): Promise<void> 
       input_image_path, pass1_image_path, output_image_path,
       is_iteration, iteration_number, session_id,
       user_comment_raw, user_comment_enriched, pass1_cache_key,
-      room_type, is_outdoor, outdoor_subtype
-    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29)`,
+      room_type, is_outdoor, outdoor_subtype,
+      is_replay, replay_source_id, replay_label,
+      pixel_diff_pct, color_shift_score
+    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34)`,
     [
       params.ip,
       params.styleId,
@@ -355,6 +381,98 @@ export async function logGeneration(params: GenerationLogParams): Promise<void> 
       params.roomType ?? null,
       params.isOutdoor ?? false,
       params.outdoorSubtype ?? null,
+      params.isReplay ?? false,
+      params.replaySourceId ?? null,
+      params.replayLabel ?? null,
+      params.pixelDiffPct ?? null,
+      params.colorShiftScore ?? null,
     ]
   );
+}
+
+/** Same as logGeneration but returns the inserted row ID. Used by replay endpoints. */
+export async function logGenerationReturningId(params: GenerationLogParams): Promise<number | null> {
+  if (!process.env.DATABASE_URL) return null;
+
+  await ensureTable();
+
+  const ts = Date.now();
+  const prefix = `${ts}_${params.styleId}`;
+
+  const [inputPath, pass1Path, outputPath] = await Promise.all([
+    params.inputBase64
+      ? saveImage(params.inputBase64, `${prefix}_input`).catch((e) => {
+          console.error("saveImage input failed:", e);
+          return null;
+        })
+      : null,
+    params.pass1Base64
+      ? saveImage(params.pass1Base64, `${prefix}_pass1`).catch((e) => {
+          console.error("saveImage pass1 failed:", e);
+          return null;
+        })
+      : null,
+    params.outputBase64
+      ? saveImage(params.outputBase64, `${prefix}_output`).catch((e) => {
+          console.error("saveImage output failed:", e);
+          return null;
+        })
+      : null,
+  ]);
+
+  const db = getPool();
+  const result = await db.query(
+    `INSERT INTO generation_logs (
+      ip, style_id, surface_prompt, furniture_prompt, with_furniture,
+      input_width, input_height, model_used, pass1_model, pass2_model,
+      duration_ms, pass1_duration_ms, pass2_duration_ms,
+      success, error_message,
+      built_prompt_pass1, built_prompt_pass2,
+      input_image_path, pass1_image_path, output_image_path,
+      is_iteration, iteration_number, session_id,
+      user_comment_raw, user_comment_enriched, pass1_cache_key,
+      room_type, is_outdoor, outdoor_subtype,
+      is_replay, replay_source_id, replay_label,
+      pixel_diff_pct, color_shift_score
+    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34)
+    RETURNING id`,
+    [
+      params.ip,
+      params.styleId,
+      params.surfacePrompt,
+      params.furniturePrompt,
+      params.withFurniture,
+      params.inputWidth ?? null,
+      params.inputHeight ?? null,
+      params.modelUsed ?? null,
+      params.pass1Model ?? null,
+      params.pass2Model ?? null,
+      params.durationMs ?? null,
+      params.pass1DurationMs ?? null,
+      params.pass2DurationMs ?? null,
+      params.success,
+      params.errorMessage ?? null,
+      params.builtPromptPass1 ?? null,
+      params.builtPromptPass2 ?? null,
+      inputPath,
+      pass1Path,
+      outputPath,
+      params.isIteration ?? false,
+      params.iterationNumber ?? null,
+      params.sessionId ?? null,
+      params.userCommentRaw ?? null,
+      params.userCommentEnriched ?? null,
+      params.pass1CacheKey ?? null,
+      params.roomType ?? null,
+      params.isOutdoor ?? false,
+      params.outdoorSubtype ?? null,
+      params.isReplay ?? false,
+      params.replaySourceId ?? null,
+      params.replayLabel ?? null,
+      params.pixelDiffPct ?? null,
+      params.colorShiftScore ?? null,
+    ]
+  );
+
+  return result.rows[0]?.id ?? null;
 }
