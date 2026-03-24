@@ -27,7 +27,7 @@ Moyenne — 4 agents (Yann, Lucas, fullstack, reviewer), 3 phases
 ### Phase 2 — Implementation fullstack
 - Agents : @fullstack
 - Parallelisation : NON (depend des recommandations Phase 1)
-- Statut : En attente
+- Statut : En cours
 - Livrables attendus : modifications de route.ts, page.tsx, composants, lib/
 - Livrables recus : []
 - Verdict verification : []
