@@ -132,6 +132,7 @@ Your job:
    - Wall-mounted items (art, shelving, curtains, drapes, blinds) → cannot attach to walls
    - Surface changes (repaint walls, change floor) → surfaces are locked
    - Radical changes requesting removal of ALL furniture → not supported in refinement
+   - Sanitary/plumbing equipment (WC, toilet, bathtub, shower, sink, bidet) → not supported in home staging mode, warn "VisiRenov est conçu pour le home staging mobilier. Les équipements sanitaires ne sont pas supportés dans ce mode."
 5. Keep the enriched comment under 50 words — it will be prepended to the existing furniture prompt
 6. Do NOT repeat what's already in the base style furniture prompt — only describe CHANGES
 

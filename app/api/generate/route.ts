@@ -178,6 +178,7 @@ function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string
     "If the input has ONE accent wall (different color or texture from the other walls), preserve that accent wall as-is — apply the style's wall color to the remaining walls. If ALL walls share the same color, apply the style's wall color to ALL walls uniformly.",
     CEILING_PRESERVATION,
     "Remove all visible construction elements: dangling cables, exposed wiring, junction boxes without covers, cable conduits, and temporary fixtures.",
+    "Do not add baseboards or moldings unless clearly present in the input photo.",
     "Preserve all wall-mounted fixed equipment visible in the input: radiators, heaters, vents, thermostats, electrical panels, switches, and outlets must remain in their exact position, size, and appearance.",
     "Keep the room COMPLETELY EMPTY — no furniture, no rugs, no textiles, no decoration, no objects.",
     "The number of windows and doors must be EXACTLY the same as in the input. If there are zero windows, there must be zero windows in the output.",
@@ -275,6 +276,7 @@ function buildSurfacesFluxPrompt(surfacePrompt: string, roomTypeId?: string | nu
     "If ONE accent wall differs in color or texture, preserve it as-is — restyle plain walls only. If ALL walls share the same color, restyle ALL walls uniformly.",
     "Preserve ceiling 3D geometry — vaults, beams, ribs, arches keep their shape and volume. Refinish ceiling surface: smooth plaster and paint over raw concrete, formwork marks, plasterboard seams. Beams keep 3D shape but receive clean painted finish. Ceiling between structural elements must look fully finished and smooth.",
     "Remove all construction leftovers: dangling cables, exposed wiring, junction boxes, cable conduits, temporary fixtures.",
+    "Do not add baseboards or moldings unless clearly present in the input photo.",
     "Keep all wall-mounted equipment: radiators, heaters, vents, thermostats, switches, outlets in exact position.",
     "Completely empty room — no furniture, no rugs, no textiles, no objects.",
     "Exact same number of windows and doors as the original. Same room geometry, same proportions.",
@@ -388,7 +390,7 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: str
       "Center the dining table with chairs. If room is deep or has multiple zones, add a sideboard or buffet as background anchor.",
       "Place all objects naturally on the floor with correct perspective and scale. Cast realistic shadows matching existing light — soft for diffused, hard for direct sunlight.",
       "Respect furniture density implied by the style. If room appears small, reduce accent pieces.",
-      "Freestanding objects only. No wall-mounted art, no built-in shelving, no curtains.",
+      "Freestanding objects only. Do not add any wall-mounted art, framed paintings, prints, mirrors, or wall-mounted decorations. No built-in shelving, no curtains.",
       STRUCTURE_LOCKED,
       EQUIPMENT_PRESERVATION,
       CAMERA_AND_PHOTO,
@@ -402,7 +404,7 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: str
     "Place all objects naturally on the floor. Every piece must have correct perspective, scale, and cast realistic shadows matching the existing light. Match shadow hardness to lighting type.",
     "If the ceiling appears very high (>3m) or room is very large, scale up furniture proportionally.",
     "Respect furniture density implied by the style. If minimalist, leave large empty floor areas. If room appears small, reduce accent pieces.",
-    "Freestanding objects only. No wall-mounted art, no built-in shelving, no curtains.",
+    "Freestanding objects only. Do not add any wall-mounted art, framed paintings, prints, mirrors, or wall-mounted decorations of any kind. No built-in shelving, no curtains.",
     STRUCTURE_LOCKED,
     EQUIPMENT_PRESERVATION,
     "If the input has zero windows, the output must have zero windows.",
@@ -506,7 +508,7 @@ function buildFurnitureFluxPrompt(furniturePrompt: string, roomTypeId?: string |
   if (roomTypeId === "dining_room") {
     return [
       `${furniturePrompt}, placed in this finished dining room interior.`,
-      "Center table with chairs. Sideboard as background anchor if room is deep. Freestanding only, no curtains.",
+      "Center table with chairs. Sideboard as background anchor if room is deep. Freestanding only, no wall art, no framed paintings, no curtains.",
       "Correct perspective and scale. Realistic shadows matching existing light.",
       FLUX_STRUCTURE,
       FLUX_EQUIPMENT,
@@ -519,7 +521,7 @@ function buildFurnitureFluxPrompt(furniturePrompt: string, roomTypeId?: string |
     `${furniturePrompt}, placed naturally across the full depth of this finished room interior.`,
     "Distribute furniture in depth and width: primary group in foreground, secondary group in the back if space allows, lateral anchor on the opposite side if room is wide.",
     "Shadow hardness matches lighting: soft for diffused, hard for direct sunlight. Scale furniture up if ceiling is very high.",
-    "Freestanding only. No wall-mounted objects, no built-in shelving, no curtains.",
+    "Freestanding only. No wall-mounted art, no framed paintings, no prints, no mirrors, no built-in shelving, no curtains.",
     "Walls, floor, ceiling identical to input. Shadows from furniture natural. No new openings.",
     "Keep radiators, vents, switches visible. Do not block radiators.",
     "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, subtle grain.",
@@ -1057,31 +1059,25 @@ export async function POST(request: NextRequest) {
       let responsesPrompt: string;
       let fluxPrompt: string;
 
-      const isExclusive = preprocessResult.isExclusive;
-
       if (cached.meta.isOutdoor) {
         responsesPrompt = buildIterationOutdoorFurnitureResponsesPrompt(
           originalFurniturePrompt,
           allModifications,
-          isExclusive
         );
         fluxPrompt = buildIterationOutdoorFurnitureFluxPrompt(
           originalFurniturePrompt,
           allModifications,
-          isExclusive
         );
       } else {
         responsesPrompt = buildIterationFurnitureResponsesPrompt(
           originalFurniturePrompt,
           allModifications,
           iterMeta,
-          isExclusive
         );
         fluxPrompt = buildIterationFurnitureFluxPrompt(
           originalFurniturePrompt,
           allModifications,
           iterMeta,
-          isExclusive
         );
       }
 
