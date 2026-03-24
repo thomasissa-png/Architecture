@@ -222,3 +222,255 @@ Le rendu est inacceptable pour un listing immobilier. Un acheteur potentiel qui 
 - Cable electrique bleu au plafond
 - Bandes murales artefacts
 C'est le pire resultat audite sur les 2 generations.
+
+---
+
+## 4. Problemes critiques et corrections
+
+### P0 — SDB : Absence totale de douche/baignoire
+
+**Impact** : La salle de bains n'est pas une salle de bains. Disqualifiant.
+**Cause racine** : Le `roomFurnitureOverride` de bathroom dans `lib/room-types.ts` ne contient AUCUNE instruction positive pour ajouter une douche. La seule mention est negative : "No freestanding bathtub unless room is large."
+**Correction** :
+
+Fichier : `lib/room-types.ts`, cle `bathroom.roomFurnitureOverride`
+
+Ancien :
+```
+"Bathroom fixtures and accessories: wall-mounted vanity unit 80cm wide with integrated basin and framed mirror above, fluffy folded towels in neutral tones on open shelving or towel ladder, a small stool or side table with soap dispenser and candle, potted humidity-loving plant (fern or pothos) in ceramic pot, woven basket for storage on the floor. No freestanding bathtub unless room is large. Clean and spa-like atmosphere."
+```
+
+Nouveau :
+```
+"Bathroom fixtures and accessories: glass-enclosed walk-in shower with rainfall showerhead and chrome fixtures against one wall, wall-mounted vanity unit 80cm wide with integrated basin, chrome mixer tap, and rectangular backlit mirror above, fluffy folded towels in neutral tones on a wall-mounted towel ladder, small teak stool with soap dispenser and candle, potted humidity-loving fern in ceramic pot, woven basket for storage on the floor. If room is very large, add a freestanding soaking tub as well. Clean and spa-like atmosphere — no armchairs, no floor lamps, no decorative furniture."
+```
+
+Changements cles :
+- Ajout douche walk-in avec paroi vitree et robinetterie comme PREMIER element
+- Robinetterie explicite (chrome mixer tap) sur la vasque
+- Miroir "backlit" au lieu de "framed" (fonctionnel en SDB)
+- Tabouret "teak" (bois resistant a l'humidite au lieu du generique)
+- Reformulation positive : "If room is very large, add a freestanding soaking tub AS WELL" (en plus de la douche, pas a la place)
+- Ajout negative explicite : "no armchairs, no floor lamps, no decorative furniture"
+
+---
+
+### P0 — Cables electriques de chantier non supprimes (Cuisine + SDB)
+
+**Impact** : Cable bleu visible au plafond dans les 2 rendus. Artefact de chantier immediat qui casse le photorealisme.
+**Cause racine** : Le builder passe 1 (`buildSurfacesResponsesPrompt`) dit "Preserve all wall-mounted fixed equipment" — les cables de chantier sont traites comme des "equipements fixes" alors qu'ils sont temporaires. De plus, il n'y a aucune directive explicite pour nettoyer les elements de chantier.
+**Correction** :
+
+Fichier : `app/api/generate/route.ts`, fonctions `buildSurfacesResponsesPrompt` et `buildSurfacesFluxPrompt`
+
+Ajouter AVANT la directive "Preserve all wall-mounted fixed equipment" :
+
+```
+"Remove all visible construction elements: dangling electrical cables, exposed wiring, junction boxes without covers, open conduit, temporary lighting, construction debris. These are temporary elements that will not exist in the finished room."
+```
+
+Et modifier la directive d'equipements fixes :
+
+Ancien :
+```
+"Preserve all wall-mounted fixed equipment visible in the input: radiators, heaters, vents, thermostats, electrical panels, and switches must remain in their exact position, size, and appearance."
+```
+
+Nouveau :
+```
+"Preserve all PERMANENT wall-mounted equipment visible in the input: radiators, heaters, vents, thermostats, finished electrical panels with covers, and light switches. Remove anything that looks temporary or unfinished (bare wires, open junction boxes, dangling cables)."
+```
+
+Meme correction dans `buildSurfacesFluxPrompt` (version condensee) :
+
+Ajouter :
+```
+"Remove all construction elements: dangling cables, exposed wiring, open junction boxes, temporary lighting."
+```
+
+Modifier :
+```
+"Keep all PERMANENT wall-mounted equipment: radiators, heaters, vents, thermostats, finished switches."
+```
+
+---
+
+### P1 — SDB : roomSurfaceOverride incomplet pour zone humide
+
+**Impact** : Les murs montrent des bandes verticales (artefacts placo) au lieu d'un carrelage mural propre en zone humide.
+**Cause racine** : Le `roomSurfaceOverride` de bathroom dit "ceramic wall tiles on the wet zone behind the vanity area" mais ne definit pas la zone de douche (puisque la douche n'est pas dans le prompt).
+**Correction** :
+
+Fichier : `lib/room-types.ts`, cle `bathroom.roomSurfaceOverride`
+
+Ancien :
+```
+"Additionally for this bathroom: waterproof wall finish — ceramic wall tiles on the wet zone behind the vanity area. Water-resistant floor — ceramic or stone floor tiles with matte non-slip finish."
+```
+
+Nouveau :
+```
+"Additionally for this bathroom: waterproof wall finish — large-format ceramic or porcelain wall tiles from floor to ceiling on all walls of the shower zone AND behind the vanity area. Remaining walls in waterproof matte paint. Water-resistant floor — ceramic or stone floor tiles with matte non-slip finish throughout, no wood flooring. Recessed ceiling downlights suitable for wet zones (IP44 rated)."
+```
+
+Changements cles :
+- Carrelage mural "floor to ceiling" dans la zone douche ET derriere la vasque
+- "No wood flooring" explicite (le rendu montre du parquet chene dans une SDB)
+- Ajout spots encastres IP44 (eclairage fonctionnel SDB)
+
+---
+
+### P1 — Cuisine : fauteuil et lampadaire salon dans la cuisine
+
+**Impact** : Elements de salon incoherents dans une cuisine fonctionnelle.
+**Cause racine** : Le `roomNegativeOverride` de kitchen est "sofa, coffee table, TV unit, bed, wardrobe, floor lamp, area rug" — il contient "floor lamp" mais le modele ajoute quand meme un lampadaire. Et le fauteuil ocre n'est pas bloque car "armchair" n'est pas dans le negative.
+**Correction** :
+
+Fichier : `lib/room-types.ts`, cle `kitchen.roomFurnitureOverride`
+
+Ajouter a la fin :
+```
+" No armchairs, no lounge chairs, no floor lamps, no area rugs — this is a working kitchen, not a living room."
+```
+
+Et modifier `kitchen.roomNegativeOverride` :
+
+Ancien :
+```
+"sofa, coffee table, TV unit, bed, wardrobe, floor lamp, area rug"
+```
+
+Nouveau :
+```
+"sofa, armchair, lounge chair, coffee table, TV unit, bed, wardrobe, floor lamp, arc lamp, tripod lamp, area rug, throw blanket"
+```
+
+---
+
+### P1 — Cuisine : sol herringbone au lieu du carrelage demande
+
+**Impact** : Le `roomSurfaceOverride` demande "ceramic or natural stone floor tiles" mais le rendu montre un parquet chevrons fonce.
+**Cause racine** : Probable conflit entre le surfacePrompt du style (qui mentionne un type de sol) et le roomSurfaceOverride qui est concatene a la fin. Le surfacePrompt est lu en premier par le modele et a plus de poids dans les tokens d'attention.
+**Correction** :
+
+Fichier : `lib/room-types.ts`, cle `kitchen.roomSurfaceOverride`
+
+Ancien :
+```
+"Additionally for this kitchen: ceramic or natural stone floor tiles suited for a kitchen. Subway tile or smooth splashback on the wall behind the work area."
+```
+
+Nouveau :
+```
+"IMPORTANT OVERRIDE for this kitchen: the floor MUST be ceramic or natural stone tiles suited for a kitchen — NOT wood, NOT parquet, NOT herringbone wood. Subway tile or smooth ceramic splashback on the wall behind the work area."
+```
+
+Le mot "OVERRIDE" et la negation explicite des alternatives (NOT wood, NOT parquet) renforcent la priorite de cette directive face au surfacePrompt du style.
+
+---
+
+### P2 — Passe 1 : joints placo et finitions plafond incompletes
+
+**Impact** : Bandes de joint placo legèrement visibles au plafond dans les 2 rendus.
+**Cause racine** : Le builder dit "white ceiling finish applied over existing ceiling geometry" mais ne specifie pas que le plafond brut (placo avec bandes de joint) doit etre ENTIEREMENT recouvert par une finition lisse.
+**Correction** :
+
+Fichier : `app/api/generate/route.ts`, dans `buildSurfacesResponsesPrompt`
+
+La directive sur le plafond (dans le surfacePrompt du style) dit deja "white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs". Mais il faut renforcer dans le builder :
+
+Ajouter apres "Apply the finish OVER the existing geometry" :
+
+```
+"The finished ceiling must look fully plastered and painted — no visible joint tape, no screw dimples, no raw plasterboard texture. Only preserve structural features (beams, vaults, ribs), not construction artifacts."
+```
+
+---
+
+### P2 — SDB : roomNegativeOverride insuffisant
+
+**Impact** : Fauteuil bouclette et lampadaire trepied presents malgre le negative prompt.
+**Cause racine** : Le roomNegativeOverride contient "floor lamp" mais le modele ajoute un "lampadaire trepied" — semantiquement c'est la meme chose mais le modele ne fait pas forcement l'association.
+**Correction** :
+
+Fichier : `lib/room-types.ts`, cle `bathroom.roomNegativeOverride`
+
+Ancien :
+```
+"sofa, coffee table, TV unit, dining table, bed, wardrobe, office desk, floor lamp"
+```
+
+Nouveau :
+```
+"sofa, armchair, lounge chair, accent chair, bouclé chair, coffee table, TV unit, dining table, bed, wardrobe, office desk, floor lamp, tripod lamp, arc lamp, table lamp on floor, area rug, wooden side table"
+```
+
+Note : le negative prompt n'est efficace que pour Flux. Pour OpenAI, il faut aussi renforcer la contrainte DANS le furnitureOverride (fait en P0 ci-dessus avec "no armchairs, no floor lamps, no decorative furniture").
+
+---
+
+### P3 — SDB : parquet chene dans une piece d'eau
+
+**Impact** : Le rendu montre du parquet chene clair — incoherent dans une SDB sauf teck/bambou.
+**Cause racine** : Le `roomSurfaceOverride` dit "ceramic or stone floor tiles with matte non-slip finish" mais le surfacePrompt du style impose un autre type de sol. Meme probleme que le herringbone en cuisine.
+**Correction** : Deja adressee dans P1 (roomSurfaceOverride SDB). Le renforcement "no wood flooring" et "ceramic or stone floor tiles throughout" dans le nouveau roomSurfaceOverride couvre ce cas.
+
+---
+
+## 5. Points positifs
+
+### Ce qui fonctionne bien
+
+1. **Geometrie preservee** : la forme en L de la piece est correctement maintenue dans les 2 rendus. Les murs, les angles et les proportions sont fideles a l'input.
+
+2. **Pas d'invention de fenetre** : sur une piece sans fenetre, aucune fenetre n'est inventee. C'est le resultat direct de la directive "If the input has zero windows, the output must have zero windows" et de l'absence de mentions de rideaux dans les prompts (Sprint 12/13).
+
+3. **Pas d'invention de lumiere naturelle** : l'eclairage reste artificiel et diffus comme dans l'input. Les corrections du Sprint 17 ("original light distribution" au lieu de "light falloff from windows") fonctionnent.
+
+4. **Angle camera preserve** : le point de vue est coherent entre input et output. Les vanishing points sont maintenus.
+
+5. **Cuisine : elements fonctionnels presents** : caissons, ilot, electromenager, credence — les elements essentiels d'une cuisine sont la. Le roomFurnitureOverride de kitchen fonctionne pour les elements de base.
+
+6. **Vocabulaire photo** : les descripteurs DSLR (full-frame, 16-35mm, f/8, deep DOF) sont bien appliques dans les 2 rendus. Nettete globale, pas de bokeh, cadrage grand-angle coherent.
+
+7. **Pipeline 2 passes** : la structure du pipeline fonctionne — les surfaces sont traitees en passe 1 et le mobilier en passe 2. Le probleme n'est pas le pipeline mais le CONTENU des prompts de chaque passe.
+
+8. **Room type overrides** : l'architecture du systeme (roomSurfaceOverride concatene, roomFurnitureOverride qui remplace) est saine. Les bugs viennent du contenu des overrides, pas de la mecanique.
+
+---
+
+## 6. Priorites d'implementation
+
+| Priorite | Correction | Fichier | Impact attendu |
+|---|---|---|---|
+| **P0** | Ajout douche walk-in dans bathroom furnitureOverride | lib/room-types.ts | SDB reconnaissable comme SDB |
+| **P0** | Suppression cables chantier dans builder passe 1 | app/api/generate/route.ts | Elimination artefacts chantier |
+| **P1** | SDB roomSurfaceOverride complet (carrelage zone humide, spots IP44) | lib/room-types.ts | Finitions SDB credibles |
+| **P1** | Cuisine negative : armchair, lounge chair + fin furnitureOverride | lib/room-types.ts | Pas de mobilier salon en cuisine |
+| **P1** | Cuisine sol OVERRIDE prioritaire (NOT wood, NOT parquet) | lib/room-types.ts | Sol carrelage conforme |
+| **P2** | Plafond fini sans joints/vis visibles dans builder | app/api/generate/route.ts | Plafond credible |
+| **P2** | SDB roomNegativeOverride enrichi | lib/room-types.ts | Meilleur blocking Flux |
+| **P3** | SDB sol sans bois (deja couvert par P1) | lib/room-types.ts | Sol SDB coherent |
+
+---
+
+## Apprentissages consolides
+
+1. **Les roomFurnitureOverride doivent lister TOUS les elements fonctionnels obligatoires de la piece** — une salle de bains sans douche est un contresens. Ne jamais assumer que le modele "sait" qu'une SDB a besoin d'une douche.
+
+2. **Les negations seules ne suffisent pas** — "No freestanding bathtub unless room is large" ne remplace pas "add a walk-in shower". Le modele supprime la baignoire mais n'invente pas de douche a la place.
+
+3. **Les cables de chantier sont un cas frequent et non gere** — la directive "preserve equipment" est trop large et protege aussi les elements temporaires de construction. Il faut distinguer explicitement PERMANENT (radiateur, prise finie) de TEMPORAIRE (cable pendant, boitier ouvert).
+
+4. **Le conflit surfacePrompt vs roomSurfaceOverride est reel** — quand le surfacePrompt du style dit "herringbone parquet" et le roomSurfaceOverride dit "ceramic tiles", c'est le premier qui gagne (position plus precoce dans le prompt = plus de poids). Il faut utiliser un langage de priorite explicite ("OVERRIDE", "MUST", "NOT") dans le roomSurfaceOverride.
+
+5. **Le freestandingRule du builder passe 2 autorise correctement les built-ins pour cuisine/SDB** — la mecanique est bonne, mais le contenu des roomFurnitureOverride est insuffisant pour les pieces techniques.
+
+6. **Les negative prompts OpenAI n'existent pas** — toute contrainte negative doit etre formulee POSITIVEMENT dans le prompt principal pour le modele OpenAI. Le negative prompt ne fonctionne que pour Flux.
+
+---
+
+**Handoff -> @fullstack**
+- Fichiers a modifier : `lib/room-types.ts` (P0, P1, P2, P3), `app/api/generate/route.ts` (P0, P2)
+- Decisions prises : ajout douche explicite en SDB, suppression cables chantier dans builder passe 1, renforcement overrides de sol cuisine/SDB, enrichissement negative prompts
+- Points d'attention : le conflit surfacePrompt vs roomSurfaceOverride necessite un langage de priorite ("OVERRIDE", "MUST") pour que le roomSurfaceOverride l'emporte sur le style. Tester en regenerant les 2 pieces apres corrections.
