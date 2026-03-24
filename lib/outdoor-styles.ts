@@ -32,7 +32,7 @@ export const OUTDOOR_STYLES: Record<string, OutdoorStyle> = {
     surfacePrompt:
       "Contemporary outdoor: large-format smooth grey concrete pavers 60x60cm with narrow joints, preserve all existing guard rails and exterior walls unchanged, no ceiling — open sky preserved as-is",
     furniturePrompt:
-      "Contemporary outdoor furniture: modular L-shaped outdoor sofa 240cm in charcoal weather-resistant fabric with aluminium frame, rectangular tempered glass coffee table 100x60cm on black steel legs, two LED ground lanterns 30cm tall flanking the seating area, single tall architectural planter 80cm with clipped boxwood sphere, neutral outdoor cushions in graphite and off-white. Clean geometric layout, no clutter.",
+      "Contemporary outdoor furniture: modular L-shaped outdoor sofa 240cm in charcoal weather-resistant fabric with aluminium frame, rectangular tempered glass coffee table 100x60cm on black steel legs, two unlit ground lanterns 30cm tall in dark metal flanking the seating area, single tall architectural planter 80cm with clipped boxwood sphere, neutral outdoor cushions in graphite and off-white. Clean geometric layout, no clutter.",
   },
 
   mediterraneen_outdoor: {
