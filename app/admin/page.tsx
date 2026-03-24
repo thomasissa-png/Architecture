@@ -114,6 +114,8 @@ export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [authError, setAuthError] = useState(false);
   const [showAuditPrompt, setShowAuditPrompt] = useState(false);
+  const [storageStatus, setStorageStatus] = useState<{ checked: boolean; ok: boolean; detail?: string }>({ checked: false, ok: false });
+  const [storageChecking, setStorageChecking] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -245,6 +247,37 @@ Demande type : "Fais appel a l'agent Architecte d'Interieur et a l'agent Expert 
               Copier dans le presse-papier
             </button>
           </div>
+        )}
+      </div>
+
+      {/* Storage diagnostic */}
+      <div style={{ marginBottom: 20, display: "flex", alignItems: "center", gap: 12 }}>
+        <button
+          onClick={async () => {
+            setStorageChecking(true);
+            try {
+              const res = await fetch("/api/logs/storage-check");
+              const data = await res.json();
+              setStorageStatus({ checked: true, ok: data.status === "ok", detail: data.detail || data.message });
+            } catch (err) {
+              setStorageStatus({ checked: true, ok: false, detail: err instanceof Error ? err.message : "Fetch failed" });
+            } finally {
+              setStorageChecking(false);
+            }
+          }}
+          disabled={storageChecking}
+          style={{
+            padding: "6px 16px", background: "#1C1C1E", color: "#fff", border: "none",
+            borderRadius: 6, fontSize: 12, fontWeight: 500, cursor: storageChecking ? "wait" : "pointer",
+            opacity: storageChecking ? 0.6 : 1,
+          }}
+        >
+          {storageChecking ? "Test en cours..." : "Tester Object Storage"}
+        </button>
+        {storageStatus.checked && (
+          <span style={{ fontSize: 12, color: storageStatus.ok ? "#3d5a38" : "#c00" }}>
+            {storageStatus.ok ? "OK" : `Erreur : ${storageStatus.detail}`}
+          </span>
         )}
       </div>
 
