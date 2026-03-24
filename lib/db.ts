@@ -4,7 +4,7 @@ import { Client as StorageClient } from "@replit/object-storage";
 // ─── Singleton Pool ──────────────────────────────────────────────────
 let pool: Pool | null = null;
 
-function getPool(): Pool {
+export function getPool(): Pool {
   if (!pool) {
     if (!process.env.DATABASE_URL) {
       throw new Error("DATABASE_URL is not set");
@@ -22,7 +22,7 @@ function getPool(): Pool {
 // ─── Auto-create table on first use ──────────────────────────────────
 let tableEnsured = false;
 
-async function ensureTable(): Promise<void> {
+export async function ensureTable(): Promise<void> {
   if (tableEnsured) return;
   const db = getPool();
   await db.query(`
