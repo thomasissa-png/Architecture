@@ -9,6 +9,7 @@ import RefineModal from "@/components/RefineModal";
 import VersionSelector from "@/components/VersionSelector";
 import RoomTypePicker from "@/components/RoomTypePicker";
 import { processImage, isLikelyInterior } from "@/lib/image-utils";
+import { OUTDOOR_STYLES } from "@/lib/outdoor-styles";
 
 interface GenerationResult {
   originalUrl: string;
@@ -82,6 +83,11 @@ export default function Home() {
   const [generationElapsed, setGenerationElapsed] = useState(0);
   const [preprocessWarnings, setPreprocessWarnings] = useState<string[]>([]);
 
+  // F3 — Outdoor state
+  const [isOutdoor, setIsOutdoor] = useState(false);
+  const [outdoorSubtype, setOutdoorSubtype] = useState<string | null>("terrasse");
+  const [selectedOutdoorStyle, setSelectedOutdoorStyle] = useState<string | null>(null);
+
   // F1 — Iteration state
   const [iterationsRemaining, setIterationsRemaining] = useState(MAX_ITERATIONS);
   const [versions, setVersions] = useState<VersionEntry[][]>([]); // per-result versions
@@ -97,6 +103,23 @@ export default function Home() {
   const heroRef = useReveal();
   const toolRef = useReveal();
   const pricingRef = useReveal();
+
+  // F3 — Toggle handler: reset cross-states when switching modes
+  const handleToggleOutdoor = useCallback((outdoor: boolean) => {
+    setIsOutdoor(outdoor);
+    if (outdoor) {
+      // Switching to outdoor: reset indoor selections
+      setSelectedStyle(null);
+      setCustomPrompt("");
+      setSelectedRoomType(null);
+      // Default subtype if none set
+      if (!outdoorSubtype) setOutdoorSubtype("terrasse");
+    } else {
+      // Switching to indoor: reset outdoor selections
+      setSelectedOutdoorStyle(null);
+      setOutdoorSubtype("terrasse");
+    }
+  }, [outdoorSubtype]);
 
   // Timer for generation elapsed time
   useEffect(() => {
@@ -139,7 +162,7 @@ export default function Home() {
   const currentStep =
     results.length > 0
       ? 3
-      : selectedStyle || customPrompt
+      : selectedStyle || customPrompt || selectedOutdoorStyle
       ? 2
       : files.length > 0
       ? 2
@@ -147,8 +170,23 @@ export default function Home() {
 
   const handleGenerate = useCallback(async () => {
     if (files.length === 0) return;
-    let surfacePrompt = selectedStyle?.surfacePrompt || customPrompt.trim();
-    let furniturePrompt = selectedStyle?.furniturePrompt || customPrompt.trim();
+
+    // Resolve prompts based on mode (indoor vs outdoor)
+    let surfacePrompt: string;
+    let furniturePrompt: string;
+    let effectiveStyleId: string;
+
+    if (isOutdoor && selectedOutdoorStyle) {
+      const oStyle = OUTDOOR_STYLES[selectedOutdoorStyle];
+      surfacePrompt = oStyle?.surfacePrompt || "";
+      furniturePrompt = oStyle?.furniturePrompt || "";
+      effectiveStyleId = selectedOutdoorStyle;
+    } else {
+      surfacePrompt = selectedStyle?.surfacePrompt || customPrompt.trim();
+      furniturePrompt = selectedStyle?.furniturePrompt || customPrompt.trim();
+      effectiveStyleId = selectedStyle?.id ?? "custom";
+    }
+
     if (!surfacePrompt && !furniturePrompt) return;
 
     // Cancel any previous in-flight requests
@@ -235,12 +273,14 @@ export default function Home() {
               image: img.base64,
               surfacePrompt,
               furniturePrompt,
-              styleId: selectedStyle?.id ?? "custom",
+              styleId: effectiveStyleId,
               withFurniture,
               width: img.width,
               height: img.height,
               sessionId: getSessionId(),
               roomType: selectedRoomType,
+              isOutdoor,
+              outdoorSubtype: isOutdoor ? outdoorSubtype : undefined,
             }),
             signal: controller.signal,
           });
@@ -291,7 +331,7 @@ export default function Home() {
         scrollToElement("step-results");
       }
     }
-  }, [files, selectedStyle, customPrompt, withFurniture, filePreviewUrls]);
+  }, [files, selectedStyle, customPrompt, withFurniture, filePreviewUrls, isOutdoor, selectedOutdoorStyle, outdoorSubtype]);
 
   const handleRetry = useCallback(() => {
     setResults([]);
@@ -334,6 +374,10 @@ export default function Home() {
     setRefineError(null);
     setLastRefineComment("");
     setRefineWarnings([]);
+    // Reset F3 state
+    setIsOutdoor(false);
+    setOutdoorSubtype("terrasse");
+    setSelectedOutdoorStyle(null);
   };
 
   const handleOpenRefineModal = useCallback((resultIndex: number) => {
@@ -384,12 +428,20 @@ export default function Home() {
             iterationComment: enrichedComment,
             previousModifications,
             sessionId: getSessionId(),
-            surfacePrompt: selectedStyle?.surfacePrompt || customPrompt.trim(),
-            furniturePrompt: selectedStyle?.furniturePrompt || customPrompt.trim(),
-            styleId: selectedStyle?.id ?? "custom",
+            surfacePrompt: isOutdoor && selectedOutdoorStyle
+              ? (OUTDOOR_STYLES[selectedOutdoorStyle]?.surfacePrompt || "")
+              : (selectedStyle?.surfacePrompt || customPrompt.trim()),
+            furniturePrompt: isOutdoor && selectedOutdoorStyle
+              ? (OUTDOOR_STYLES[selectedOutdoorStyle]?.furniturePrompt || "")
+              : (selectedStyle?.furniturePrompt || customPrompt.trim()),
+            styleId: isOutdoor && selectedOutdoorStyle
+              ? selectedOutdoorStyle
+              : (selectedStyle?.id ?? "custom"),
             withFurniture: true,
             width: 0, // Server uses pass1 dimensions
             height: 0,
+            isOutdoor,
+            outdoorSubtype: isOutdoor ? outdoorSubtype : undefined,
           }),
           signal: controller.signal,
         });
@@ -441,7 +493,7 @@ export default function Home() {
         }
       }
     },
-    [results, refineTargetIndex, versions, selectedStyle, customPrompt]
+    [results, refineTargetIndex, versions, selectedStyle, customPrompt, isOutdoor, selectedOutdoorStyle, outdoorSubtype]
   );
 
   const handleRefineRetry = useCallback(() => {
@@ -486,7 +538,10 @@ export default function Home() {
   }, [files.length]);
 
   const canGenerate =
-    files.length > 0 && (selectedStyle !== null || customPrompt.trim().length > 0);
+    files.length > 0 &&
+    (isOutdoor
+      ? selectedOutdoorStyle !== null
+      : selectedStyle !== null || customPrompt.trim().length > 0);
 
   return (
     <div className="min-h-screen bg-background">
@@ -659,15 +714,23 @@ export default function Home() {
                 customPrompt={customPrompt}
                 onStyleSelect={setSelectedStyle}
                 onCustomPromptChange={setCustomPrompt}
+                isOutdoor={isOutdoor}
+                onToggleOutdoor={handleToggleOutdoor}
+                selectedOutdoorStyle={selectedOutdoorStyle}
+                onSelectOutdoorStyle={setSelectedOutdoorStyle}
+                selectedSubtype={outdoorSubtype}
+                onSelectSubtype={setOutdoorSubtype}
               />
 
-              {/* F2: Room type selector (optional) */}
-              <div className="mt-6 pt-5 border-t border-gray-100">
-                <RoomTypePicker
-                  selectedRoomType={selectedRoomType}
-                  onSelect={setSelectedRoomType}
-                />
-              </div>
+              {/* F2: Room type selector (optional) — hidden in outdoor mode */}
+              {!isOutdoor && (
+                <div className="mt-6 pt-5 border-t border-gray-100">
+                  <RoomTypePicker
+                    selectedRoomType={selectedRoomType}
+                    onSelect={setSelectedRoomType}
+                  />
+                </div>
+              )}
             </div>
           )}
 
