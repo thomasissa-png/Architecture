@@ -16,17 +16,17 @@ export function buildIterationFurnitureResponsesPrompt(
   meta: { width?: number; height?: number }
 ): string {
   const modBlock = modifications
-    .map((m, i) => `- v${i + 2}: ${m}`)
+    .map((m, i) => {
+      const label = i === modifications.length - 1 ? `v${i + 2} (current)` : `v${i + 2}`;
+      return `- ${label}: ${m}`;
+    })
     .join("\n");
 
   return [
     "This is a REFINEMENT of a previous generation. The room surfaces in this photo are FINAL and PERFECT. They must not change in any way — not even subtle color shifts, lighting changes, or texture smoothing.",
     "Focus ONLY on adjusting the furniture and decoration as described below.",
-    "",
     `APPLY THESE CHANGES:\n${modBlock}`,
-    "",
     `BASE STYLE (keep everything not contradicted by the changes above): ${furniturePrompt}.`,
-    "",
     "Distribute furniture across the FULL DEPTH and WIDTH of the room. If the room is deep or has multiple zones, place a primary group in the foreground AND a secondary group further back. If the room is also wide, add a lateral anchor on the opposite side.",
     "Place all objects naturally on the existing floor. Every piece of furniture must have correct perspective, scale, and cast realistic shadows consistent with the existing light direction. Match shadow hardness to the lighting type.",
     "If the ceiling appears very high or the room is very large, scale up furniture proportionally.",
@@ -48,7 +48,10 @@ export function buildIterationFurnitureFluxPrompt(
 ): string {
   // Flux: modifications FIRST (first tokens = most weight), then condensed style
   const modSummary = modifications
-    .map((m, i) => `v${i + 2}: ${m}`)
+    .map((m, i) => {
+      const label = i === modifications.length - 1 ? `v${i + 2} (current)` : `v${i + 2}`;
+      return `${label}: ${m}`;
+    })
     .join("; ");
 
   return [
