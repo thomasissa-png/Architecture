@@ -124,6 +124,7 @@
 | Yann + Lucas | Sprint 7-9 | Fix images identiques à input | Abandon images.edit/SDXL, stratégie action-dominante | images.edit = inpainting inadapté, SDXL prompt_strength trop binaire |
 | Yann + Lucas | Sprint 10 | Migration Responses API + Flux | OpenAI Responses API primary, Flux Depth Pro fallback | Vision contextuelle > inpainting pixel, depth map > prompt_strength |
 | Yann + Lucas | Sprint 11-18 | Pipeline 2 passes, split prompts, 18+ sprints d'itération | Surfaces séparées du mobilier, prompts conditionnels, logging PG | Single-pass échouait systématiquement — le modèle régénère au lieu d'éditer quand trop de changements |
+| @product-manager | 2026-03-24 | docs/product/functional-specs.md — section F1 complète | Pipeline itération = re-passe 2 uniquement sur pass1 caché ; 0/1/3/5 itérations par package Gratuit/Starter/Pro/Business ; sessionId sans auth ; crédit non consommé si erreur serveur ou validation GPT-4.1-mini | Passe 1 non relancée = économie coût serveur + préserve cohérence surfaces ; pas d'auth complète pour réduire friction MVP |
 
 ---
 
