@@ -1,4 +1,5 @@
 import { Pool } from "pg";
+import { Client as StorageClient } from "@replit/object-storage";
 
 // ─── Singleton Pool ──────────────────────────────────────────────────
 let pool: Pool | null = null;
@@ -18,7 +19,7 @@ export function getPool(): Pool {
   return pool;
 }
 
-// ─── Auto-create tables on first use ─────────────────────────────────
+// ─── Auto-create table on first use ──────────────────────────────────
 let tableEnsured = false;
 
 export async function ensureTable(): Promise<void> {
@@ -60,47 +61,102 @@ export async function ensureTable(): Promise<void> {
     );
     CREATE INDEX IF NOT EXISTS idx_gen_logs_created ON generation_logs (created_at DESC);
     CREATE INDEX IF NOT EXISTS idx_gen_logs_style ON generation_logs (style_id);
-
-    CREATE TABLE IF NOT EXISTS pass1_cache (
-      key TEXT PRIMARY KEY,
-      image BYTEA NOT NULL,
-      meta JSONB NOT NULL,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    );
-    CREATE INDEX IF NOT EXISTS idx_pass1_cache_created ON pass1_cache (created_at DESC);
-
-    CREATE TABLE IF NOT EXISTS log_images (
-      key TEXT PRIMARY KEY,
-      image BYTEA NOT NULL,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    );
   `);
   tableEnsured = true;
 }
 
-// ─── Save image to PostgreSQL (replaces Object Storage) ──────────────
+// ─── Save image to Replit Object Storage (persistent across deploys) ─
+// Sprint 19: Resilient StorageClient with retry/reinit.
+// The SDK talks to a local sidecar (127.0.0.1:1106). If the sidecar is
+// unavailable at init time, the client enters a permanent "error" state
+// and never recovers. Fix: detect error state and create a fresh client.
+let storageClient: StorageClient | null = null;
+
+function getStorage(): StorageClient {
+  if (storageClient) {
+    // Check if client is stuck in error state (internal SDK state)
+    const state = (storageClient as unknown as { state?: { status?: string } }).state;
+    if (state?.status === "error") {
+      console.warn("Object Storage client in error state — reinitializing...");
+      storageClient = null;
+    }
+  }
+  if (!storageClient) {
+    storageClient = new StorageClient();
+  }
+  return storageClient;
+}
+
+/** Run a storage operation with 1 automatic retry (reinit client on failure). */
+async function withStorageRetry<T>(
+  operation: (client: StorageClient) => Promise<T>,
+  label: string
+): Promise<T> {
+  try {
+    return await operation(getStorage());
+  } catch (err) {
+    console.warn(`Object Storage "${label}" failed, retrying with fresh client...`, err instanceof Error ? err.message : err);
+    storageClient = null; // Force reinit
+    return await operation(getStorage());
+  }
+}
+
+/** Health-check: upload + download a tiny test blob via withStorageRetry. */
+export async function checkStorageHealth(): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const testKey = "logs/__storage_test";
+    const testBuffer = Buffer.from("ok", "utf-8");
+    const upload = await withStorageRetry(
+      (client) => client.uploadFromBytes(testKey, testBuffer),
+      "checkStorageHealth:upload"
+    );
+    if (!upload.ok) {
+      return { ok: false, error: `Upload failed: ${upload.error}` };
+    }
+    const download = await withStorageRetry(
+      (client) => client.downloadAsBytes(testKey),
+      "checkStorageHealth:download"
+    );
+    if (!download.ok) {
+      return { ok: false, error: "Download failed" };
+    }
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Unknown error" };
+  }
+}
 
 async function saveImage(base64: string, name: string): Promise<string> {
   const key = `logs/${name}.jpg`;
-  if (!process.env.DATABASE_URL) return key;
-  await ensureTable();
-  const db = getPool();
   const buffer = Buffer.from(base64, "base64");
-  await db.query(
-    `INSERT INTO log_images (key, image) VALUES ($1, $2) ON CONFLICT (key) DO NOTHING`,
-    [key, buffer]
+  const { ok, error } = await withStorageRetry(
+    (client) => client.uploadFromBytes(key, buffer),
+    `saveImage(${key})`
   );
+  if (!ok) {
+    console.error("Object Storage upload failed:", error);
+    throw new Error(`Failed to upload ${key}: ${error}`);
+  }
   return key;
 }
 
 export async function getImage(key: string): Promise<Uint8Array | null> {
-  if (!process.env.DATABASE_URL) return null;
   try {
-    await ensureTable();
-    const db = getPool();
-    const result = await db.query(`SELECT image FROM log_images WHERE key = $1`, [key]);
-    if (result.rows.length === 0) return null;
-    const buf = result.rows[0].image;
+    const result = await withStorageRetry(
+      (client) => client.downloadAsBytes(key),
+      `getImage(${key})`
+    );
+    const { ok, value } = result;
+    if (!ok || !value) {
+      console.warn(`getImage: key "${key}" not found in Object Storage`);
+      return null;
+    }
+    // SDK returns [Buffer] tuple
+    const buf = value[0];
+    if (!buf) {
+      console.warn(`getImage: key "${key}" returned empty buffer`);
+      return null;
+    }
     return new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength);
   } catch (err) {
     console.error(`getImage: exception for key "${key}":`, err instanceof Error ? err.message : err);
@@ -108,23 +164,8 @@ export async function getImage(key: string): Promise<Uint8Array | null> {
   }
 }
 
-// ─── Storage health check (PostgreSQL) ───────────────────────────────
-
-export async function checkStorageHealth(): Promise<{ ok: boolean; error?: string }> {
-  try {
-    if (!process.env.DATABASE_URL) {
-      return { ok: false, error: "DATABASE_URL not configured" };
-    }
-    await ensureTable();
-    const db = getPool();
-    await db.query(`SELECT 1`);
-    return { ok: true };
-  } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "Unknown error" };
-  }
-}
-
-// ─── Pass 1 cache for F1 iterations (PostgreSQL) ─────────────────────
+// ─── Pass 1 cache for F1 iterations ─────────────────────────────────
+// Stores pass 1 image + metadata in Object Storage for re-pass 2.
 
 export interface Pass1Meta {
   width: number;
@@ -143,50 +184,66 @@ export async function savePass1Cache(
   imageBase64: string,
   meta: Pass1Meta
 ): Promise<void> {
-  if (!process.env.DATABASE_URL) return;
-  await ensureTable();
-  const db = getPool();
+  // Save image (with retry)
   const imgBuffer = Buffer.from(imageBase64, "base64");
-  await db.query(
-    `INSERT INTO pass1_cache (key, image, meta, created_at) VALUES ($1, $2, $3, NOW())
-     ON CONFLICT (key) DO UPDATE SET image = $2, meta = $3, created_at = NOW()`,
-    [key, imgBuffer, JSON.stringify(meta)]
+  const imgResult = await withStorageRetry(
+    (client) => client.uploadFromBytes(key, imgBuffer),
+    `savePass1Cache-img(${key})`
   );
+  if (!imgResult.ok) {
+    throw new Error(`Failed to cache pass1 image: ${imgResult.error}`);
+  }
+
+  // Save meta alongside (with retry)
+  const metaKey = key.replace(".jpg", "_meta.json");
+  const metaBuffer = Buffer.from(JSON.stringify(meta), "utf-8");
+  const metaResult = await withStorageRetry(
+    (client) => client.uploadFromBytes(metaKey, metaBuffer),
+    `savePass1Cache-meta(${metaKey})`
+  );
+  if (!metaResult.ok) {
+    throw new Error(`Failed to cache pass1 meta: ${metaResult.error}`);
+  }
 }
 
 export async function getPass1Cache(
   key: string
 ): Promise<{ imageBase64: string; meta: Pass1Meta } | null> {
-  if (!process.env.DATABASE_URL) return null;
-  await ensureTable();
-  const db = getPool();
-  const result = await db.query(`SELECT image, meta FROM pass1_cache WHERE key = $1`, [key]);
-  if (result.rows.length === 0) return null;
-  const row = result.rows[0];
-  const imageBase64 = Buffer.from(row.image).toString("base64");
-  const meta: Pass1Meta = typeof row.meta === "string" ? JSON.parse(row.meta) : row.meta;
+  // Read image (with retry)
+  const imgResult = await withStorageRetry(
+    (client) => client.downloadAsBytes(key),
+    `getPass1Cache-img(${key})`
+  );
+  if (!imgResult.ok || !imgResult.value) return null;
+  const imgBuf = imgResult.value[0];
+  const imageBase64 = Buffer.from(imgBuf.buffer, imgBuf.byteOffset, imgBuf.byteLength).toString("base64");
+
+  // Read meta (with retry)
+  const metaKey = key.replace(".jpg", "_meta.json");
+  const metaResult = await withStorageRetry(
+    (client) => client.downloadAsBytes(metaKey),
+    `getPass1Cache-meta(${metaKey})`
+  );
+  if (!metaResult.ok || !metaResult.value) return null;
+  const metaBuf = metaResult.value[0];
+  const meta: Pass1Meta = JSON.parse(
+    Buffer.from(metaBuf.buffer, metaBuf.byteOffset, metaBuf.byteLength).toString("utf-8")
+  );
+
   return { imageBase64, meta };
 }
 
 export async function getPass1Meta(key: string): Promise<Pass1Meta | null> {
-  if (!process.env.DATABASE_URL) return null;
-  await ensureTable();
-  const db = getPool();
-  const result = await db.query(`SELECT meta FROM pass1_cache WHERE key = $1`, [key]);
-  if (result.rows.length === 0) return null;
-  return typeof result.rows[0].meta === "string" ? JSON.parse(result.rows[0].meta) : result.rows[0].meta;
-}
-
-// ─── Cleanup old pass1 cache entries (TTL: 24h) ─────────────────────
-
-async function cleanupOldPass1Cache(): Promise<void> {
-  if (!process.env.DATABASE_URL) return;
-  try {
-    const db = getPool();
-    await db.query(`DELETE FROM pass1_cache WHERE created_at < NOW() - INTERVAL '24 hours'`);
-  } catch (e) {
-    console.error("pass1_cache cleanup failed:", e);
-  }
+  const metaKey = key.replace(".jpg", "_meta.json");
+  const result = await withStorageRetry(
+    (client) => client.downloadAsBytes(metaKey),
+    `getPass1Meta(${metaKey})`
+  );
+  if (!result.ok || !result.value) return null;
+  const buf = result.value[0];
+  return JSON.parse(
+    Buffer.from(buf.buffer, buf.byteOffset, buf.byteLength).toString("utf-8")
+  );
 }
 
 // ─── Log a generation (fire-and-forget) ──────────────────────────────
@@ -229,7 +286,7 @@ export async function logGeneration(params: GenerationLogParams): Promise<void> 
 
   await ensureTable();
 
-  // Save full-size images to PostgreSQL — each wrapped in try/catch so one
+  // Save full-size images to Object Storage — each wrapped in .catch() so one
   // failure does not prevent the DB log INSERT from executing.
   const ts = Date.now();
   const prefix = `${ts}_${params.styleId}`;
@@ -300,9 +357,4 @@ export async function logGeneration(params: GenerationLogParams): Promise<void> 
       params.outdoorSubtype ?? null,
     ]
   );
-
-  // Probabilistic cleanup (~10% of calls)
-  if (Math.random() < 0.1) {
-    cleanupOldPass1Cache().catch(() => {});
-  }
 }

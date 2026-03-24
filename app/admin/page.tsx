@@ -285,7 +285,7 @@ Demande type : "Fais appel a l'agent Architecte d'Interieur et a l'agent Expert 
             opacity: storageChecking ? 0.6 : 1,
           }}
         >
-          {storageChecking ? "Test en cours..." : "Tester Stockage DB"}
+          {storageChecking ? "Test en cours..." : "Tester Object Storage"}
         </button>
         {storageStatus.checked && (
           <span style={{ fontSize: 12, color: storageStatus.ok ? "#3d5a38" : "#c00" }}>
