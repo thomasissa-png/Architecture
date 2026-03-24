@@ -82,7 +82,7 @@ function getStorage(): StorageClient {
     }
   }
   if (!storageClient) {
-    storageClient = new StorageClient();
+    storageClient = new StorageClient({ bucketId: process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID });
   }
   return storageClient;
 }
