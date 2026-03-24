@@ -546,16 +546,17 @@ export async function POST(request: NextRequest) {
       // Build all modifications: previous + current enriched
       const allModifications = [...previousModifications, preprocessResult.enrichedComment];
 
-      // Build iteration prompts
+      // Build iteration prompts (pass roomType for kitchen/bathroom exception)
+      const iterMeta = { width: cached.meta.width, height: cached.meta.height, roomType: cached.meta.roomType };
       const responsesPrompt = buildIterationFurnitureResponsesPrompt(
         originalFurniturePrompt,
         allModifications,
-        { width: cached.meta.width, height: cached.meta.height }
+        iterMeta
       );
       const fluxPrompt = buildIterationFurnitureFluxPrompt(
         originalFurniturePrompt,
         allModifications,
-        { width: cached.meta.width, height: cached.meta.height }
+        iterMeta
       );
 
       const t0 = Date.now();
@@ -601,6 +602,7 @@ export async function POST(request: NextRequest) {
         userCommentRaw: iterationComment.trim(),
         userCommentEnriched: preprocessResult.enrichedComment,
         pass1CacheKey: pass1Key,
+        roomType: cached.meta.roomType,
       }).catch((err) => console.error("DB log (iteration) failed:", err));
 
       return response;
@@ -684,6 +686,7 @@ export async function POST(request: NextRequest) {
         inputBase64: base64Image, outputBase64,
         sessionId: sessionId ?? undefined,
         pass1CacheKey,
+        roomType: roomType ?? undefined,
       }).catch((err) => console.error("DB log failed:", err));
 
       return response;
@@ -712,6 +715,7 @@ export async function POST(request: NextRequest) {
       inputBase64: base64Image, pass1Base64, outputBase64,
       sessionId: sessionId ?? undefined,
       pass1CacheKey,
+      roomType: roomType ?? undefined,
     }).catch((err) => console.error("DB log failed:", err));
 
     return response;

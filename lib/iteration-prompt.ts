@@ -13,7 +13,7 @@ const PASS1_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 export function buildIterationFurnitureResponsesPrompt(
   furniturePrompt: string,
   modifications: string[],
-  meta: { width?: number; height?: number }
+  meta: { width?: number; height?: number; roomType?: string | null }
 ): string {
   const modBlock = modifications
     .map((m, i) => {
@@ -31,7 +31,9 @@ export function buildIterationFurnitureResponsesPrompt(
     "Place all objects naturally on the existing floor. Every piece of furniture must have correct perspective, scale, and cast realistic shadows consistent with the existing light direction. Match shadow hardness to the lighting type.",
     "If the ceiling appears very high or the room is very large, scale up furniture proportionally.",
     "Respect the furniture density implied by the style. If minimalist, leave large empty floor areas. If the room is small, reduce accent pieces.",
-    "ONLY add freestanding objects. Do NOT attach anything to walls. No wall-mounted art, no built-in shelving, no curtains.",
+    meta.roomType === "kitchen" || meta.roomType === "bathroom"
+      ? "Add room-appropriate fixtures and freestanding accessories. Built-in cabinetry, vanity units, and countertops are expected for this room type. No curtains."
+      : "ONLY add freestanding objects. Do NOT attach anything to walls. No wall-mounted art, no built-in shelving, no curtains.",
     "Room structure is LOCKED — walls, floor, ceiling, paint, windows, doors must remain visually identical to the input. Same colors, same textures, same geometry. Shadows from furniture are expected and natural.",
     "Preserve all wall-mounted fixed equipment: radiators, heaters, vents, thermostats, switches. Do not place furniture in front of radiators.",
     "If the input has zero windows, the output must have zero windows.",
@@ -44,7 +46,7 @@ export function buildIterationFurnitureResponsesPrompt(
 export function buildIterationFurnitureFluxPrompt(
   furniturePrompt: string,
   modifications: string[],
-  meta: { width?: number; height?: number }
+  meta: { width?: number; height?: number; roomType?: string | null }
 ): string {
   // Flux: modifications FIRST (first tokens = most weight), then condensed style
   const modSummary = modifications
@@ -58,7 +60,9 @@ export function buildIterationFurnitureFluxPrompt(
     `CHANGES: ${modSummary}.`,
     `BASE STYLE (keep uncontradicted items): ${furniturePrompt}.`,
     "Placed naturally across the full depth of this finished room. Primary group foreground, secondary group in back if space allows, lateral anchor if room is wide.",
-    "Freestanding furniture only. No wall-mounted objects, no built-in shelving, no curtains.",
+    meta.roomType === "kitchen" || meta.roomType === "bathroom"
+      ? "Room-appropriate fixtures and accessories. Built-in cabinetry, vanity, countertops expected. No curtains."
+      : "Freestanding furniture only. No wall-mounted objects, no built-in shelving, no curtains.",
     "Every wall, floor, and ceiling surface visually identical to input — same colors, textures. Room structure LOCKED. Shadows from furniture are natural.",
     "Keep all wall-mounted equipment: radiators, heaters, vents, switches visible. Do not place furniture in front of radiators.",
     "Same room geometry, same camera angle, same lighting conditions.",
