@@ -72,11 +72,11 @@ Moyenne — 5 agents (reviewer, Yann, Lucas, fullstack, reviewer), 2 features su
 - Livrables attendus : docs/reviews/f2-review.md
 - Livrables recus : [docs/reviews/f2-review.md]
 - Verdict verification : VALIDE AVEC RESERVES
-- Reserves ouvertes :
-  - H-01 : Iteration F1 ignore roomType (freestanding-only hardcode dans iteration-prompt.ts)
-  - H-02 : roomType absent des generation_logs
-  - M-01 : Directive lumiere dans bedroom surfaceOverride
-  - M-03 : Pre-processing custom ne recoit pas roomType
+- Reserves initialement ouvertes :
+  - H-01 : Iteration F1 ignore roomType — **RESOLU** (iteration-prompt.ts a desormais des branches par piece : kitchen, bathroom, wc, laundry, cellar, entryway)
+  - H-02 : roomType absent des generation_logs — **RESOLU** (colonne room_type dans schema + migration + logGeneration dans route.ts)
+  - M-01 : Directive lumiere dans bedroom surfaceOverride — **RESOLU** (Sprint 20 Option B, builders dedies par piece)
+  - M-03 : Pre-processing custom ne recoit pas roomType — reste ouvert (impact faible)
 
 ---
 
@@ -85,29 +85,22 @@ Moyenne — 5 agents (reviewer, Yann, Lucas, fullstack, reviewer), 2 features su
 ### Phase F3.1 — Audit prompts outdoor (Yann + Lucas en parallele)
 - Agents : Yann Duval (interior-architect), Lucas Moreau (ai-image-expert)
 - Parallelisation : OUI
-- Statut : EN COURS
+- Statut : TERMINE (2026-03-24)
 - Livrables attendus : docs/ia/f3-outdoor-prompts.md
-- Livrables recus : []
-- Verdict verification : []
+- Livrables recus : [docs/ia/f3-outdoor-prompts.md]
+- Verdict verification : OK
 
 ### Phase F3.2 — Implementation fullstack
 - Agents : @fullstack
-- Statut : En attente (depend Phase F3.1)
-- Livrables attendus :
-  - lib/outdoor-styles.ts (nouveau — 6 styles outdoor)
-  - lib/outdoor-types.ts (nouveau — 5 sous-types)
-  - components/StylePicker.tsx ou OutdoorStylePicker.tsx (toggle indoor/outdoor + styles outdoor)
-  - components/RoomTypePicker.tsx (masque en mode outdoor)
-  - app/api/generate/route.ts (builders outdoor dedies)
-  - app/page.tsx (integration mode exterieur)
-  - lib/custom-prompt.ts (isOutdoor dans pre-processing)
-  - lib/db.ts (is_outdoor + outdoor_subtype dans logs)
-  - + Fix reserves F2 : H-01, H-02, M-01
+- Statut : TERMINE (2026-03-24)
+- Livrables recus : lib/outdoor-styles.ts, lib/outdoor-subtypes.ts, app/api/generate/route.ts, app/page.tsx, lib/db.ts, lib/iteration-prompt.ts (builders outdoor)
+- Reserves F2 H-01, H-02, M-01 resolues dans Sprint 20 Option B (builders modulaires par piece)
 
 ### Phase F3.3 — Review croisee F3
 - Agents : @reviewer
-- Statut : En attente (depend Phase F3.2)
-- Livrables attendus : docs/reviews/f3-review.md
+- Statut : TERMINE (2026-03-24)
+- Livrables recus : [docs/reviews/f3-review.md]
+- Verdict : VALIDE AVEC RESERVES (M-02 US-F3-04 non implementee, M-03 custom prompt sans isOutdoor)
 
 ---
 
