@@ -727,10 +727,106 @@ Produits réels (IKEA, Leroy Merlin). Shopping list avec prix/liens. Export PDF/
 
 ## 6. Matrice des dépendances
 
-Tableau F1-F5 × composants techniques.
+| Composant | F1 Itération | F2 Type pièce | F3 Extérieur | F4 Mode marchand | F5 Décorateur |
+|---|---|---|---|---|---|
+| Pipeline 2 passes (existant) | Requis | Requis | Requis (modifié) | Requis | Requis |
+| `/api/generate` (existant) | Modifié (+pass1_key) | Modifié (+roomType) | Modifié (+isOutdoor) | Modifié (batch) | Inchangé |
+| `/api/preprocess-prompt` (existant) | Réutilisé | Modifié (+roomType) | Inchangé | Inchangé | Non |
+| Object Storage (existant) | Requis (TTL 24h) | Non | Non | Requis | Non |
+| PostgreSQL (existant) | Modifié (+iterations) | Modifié (+room_type) | Modifié (+is_outdoor) | Nouvelle table dossiers | Nouvelle table shopping_lists |
+| `lib/room-types.ts` (nouveau) | Non | Créé | Étendu (sous-types ext.) | Requis | Requis (isOutdoor) |
+| `lib/outdoor-styles.ts` (nouveau) | Non | Non | Créé | Optionnel | Requis si outdoor |
+| `/api/shopping-list` (nouveau) | Non | Non | Non | Non | Créé |
+| Génération PDF (nouveau) | Non | Non | Non | Créé | Réutilisé |
+| Route `/dossier/[uuid]` (nouveau) | Non | Non | Non | Créé | Non |
+| Route `/shopping/[uuid]` (nouveau) | Non | Non | Non | Non | Créé |
+| Auth légère / sessionId | Requis (itérations) | Non | Non | Fortement recommandé | Non |
+| StylePicker.tsx | Non | Modifié | Modifié (toggle) | Modifié | Non |
+
+**Ordre de livraison recommandé (RICE implicite) :**
+
+1. **F2** (type de pièce) — Impact fort, effort minimal, pas de dépendance. Doit précéder F4/F5.
+2. **F1** (itération) — Impact fort sur rétention, effort moyen, dépend de Object Storage (déjà en place).
+3. **F3** (extérieur) — Impact fort pour Thomas et Léa, effort moyen, dépend de F2.
+4. **F4** (mode marchand) — Impact fort sur panier moyen, effort élevé (PDF + auth), dépend de F2, F3.
+5. **F5** (décorateur) — Impact fort sur différenciation, effort élevé (GPT + PDF), dépend de F2, F3.
 
 ---
 
 ## 7. Packages crédits
 
-4 tiers. Simulation 3 000€/mois marge nette.
+### 7.1 Hypothèses de coût API
+
+| Composant | Coût unitaire |
+|---|---|
+| Passe 1 OpenAI Responses API (gpt-4.1) | ~0,04€ |
+| Passe 2 OpenAI Responses API (gpt-4.1) | ~0,04€ |
+| Passe 1 + 2 total (chemin nominal) | ~0,08€ |
+| Fallback Flux Depth Pro (Replicate) | ~0,03€/passe |
+| Passe 1 + 2 avec fallback | ~0,06€ |
+| Pre-processing GPT-4.1-mini | ~0,001€ |
+| Shopping list GPT-4.1 | ~0,02€ |
+| Génération PDF (serverless) | ~0,01€ |
+| **Coût moyen par génération standard** | **~0,10€** |
+| **Coût moyen par génération avec shopping list + PDF** | **~0,13€** |
+
+### 7.2 Grille des packages
+
+| Pack | Prix TTC | Crédits | Prix/crédit | Coût API/crédit | Marge brute/crédit | Marge brute totale | % marge |
+|---|---|---|---|---|---|---|---|
+| **Découverte** | 4,90€ | 5 | 0,98€ | 0,10€ | 0,88€ | 4,40€ | 90% |
+| **Starter** | 14,90€ | 20 | 0,745€ | 0,10€ | 0,645€ | 12,90€ | 87% |
+| **Pro** | 29€ | 50 | 0,58€ | 0,10€ | 0,48€ | 24,00€ | 83% |
+| **Studio** | 69€ | 150 | 0,46€ | 0,10€ | 0,36€ | 54,00€ | 78% |
+
+> Les prix sont HT. TVA 20% à ajouter pour les particuliers. Les pros (Claire, Thomas) récupèrent la TVA.
+
+### 7.3 Feature gating par package
+
+| Feature | Découverte | Starter | Pro | Studio |
+|---|---|---|---|---|
+| Génération standard (12 styles) | 5 crédits | 20 crédits | 50 crédits | 150 crédits |
+| Itérations par photo (F1) | 0 | 1 | 3 | 5 |
+| Type de pièce (F2) | Oui | Oui | Oui | Oui |
+| Mode Extérieur (F3) | Oui | Oui | Oui | Oui |
+| Mode Marchand (F4) | Non | Non | Oui (max 10 photos/dossier) | Oui (max 15 photos) |
+| Shopping list (F5) | Non | Non | Oui (+1 crédit/liste) | Oui (+1 crédit/liste) |
+| Export PDF | Non | Non | Oui | Oui |
+| Lien partageable | Non | Oui (7j) | Oui (30j) | Oui (90j) |
+| Téléchargement HD | Oui | Oui | Oui | Oui |
+
+### 7.4 Simulation atteinte KPI North Star (3 000€/mois marge nette)
+
+**Hypothèses :**
+- Coût infra mensuel (Replit + PG) : 50€
+- Coût acquisition (SEO + contenu, pas de paid en phase 1) : 0€
+- Marge nette = marge brute - infra
+
+**Mix de ventes nécessaire pour 3 000€ marge nette :**
+
+| Mix scénario | Packs vendus/mois | Recettes brutes | Marge brute | Marge nette |
+|---|---|---|---|---|
+| **Conservateur** (Starter × 60 + Pro × 30 + Studio × 10) | 100 | 60×14,90 + 30×29 + 10×69 = 2 464€ | ~2 130€ | 2 080€ |
+| **Cible** (Starter × 50 + Pro × 60 + Studio × 25) | 135 | 50×14,90 + 60×29 + 25×69 = 3 420€ | ~2 880€ | 2 830€ |
+| **Objectif** (Starter × 60 + Pro × 80 + Studio × 30) | 170 | 60×14,90 + 80×29 + 30×69 = 5 204€ | ~4 360€ | 4 310€ |
+
+> L'objectif 3 000€/mois de marge nette est atteint entre le scénario "Cible" et "Objectif" : environ **140-150 packs vendus/mois**.
+
+**Volume en crédits correspondant :**
+- 150 packs vendus/mois (mix Starter 60 + Pro 80 + Studio 10) = 60×20 + 80×50 + 10×150 = 6 700 crédits/mois = ~1 675 générations/semaine (≈ cible KPI secondaire 1 000 photos/semaine).
+
+**Break-even :**
+- Coût infra fixe 50€/mois. Couvert dès la vente de 6 packs Découverte ou 4 packs Starter.
+
+### 7.5 Justification du pricing vs concurrents
+
+| | VisiRénov Pro | REimagineHome Optimal | Virtual Staging AI |
+|---|---|---|---|
+| Prix | 29€ one-shot | 29$/mois | 16$/mois |
+| Crédits | 50 | Variable (~200) | 6 |
+| Prix/image | 0,58€ | ~0,15$ | ~2,67$ |
+| Engagement | Aucun | Mensuel | Mensuel |
+| Pipeline 2 passes | Oui | Non | Non |
+| Styles marché FR | Oui | Non | Non |
+
+> VisiRénov est plus cher par crédit que REimagineHome (0,58€ vs 0,15$) mais sans engagement mensuel et avec un pipeline de qualité supérieure (2 passes, styles français, cohérence architecturale). Le prix se justifie par la valeur perçue, pas le volume. Thomas dépense 200-500€/planche en home staging humain — 0,58€/image est une réduction de 99,9%.
