@@ -60,11 +60,13 @@ function buildSurfacesResponsesPrompt(surfacePrompt: string): string {
     "Edit this photo of a room.",
     `Apply this surface finish: ${surfacePrompt}.`,
     "Refinish the floor and repaint or replaster the walls. For the ceiling light fixture, follow the style description above exactly.",
-    "Preserve the ceiling geometry exactly — vaults, beams, ribs, arches, and structural elements must remain visible and unchanged. Apply the finish (paint or plaster) OVER the existing geometry, do not smooth or flatten any structural features.",
+    "If the input has a colored accent wall, dark wallpaper, or textured feature wall, preserve it as-is — apply the style's wall color only to the plain walls.",
+    "Preserve the ceiling geometry exactly — vaults, beams, ribs, arches, and exposed structural elements must remain visible with their original rough texture, irregular edges, and surface patina intact. Apply the finish OVER the existing geometry. Do NOT smooth, flatten, or clean up beams or structural features.",
+    "Preserve all wall-mounted fixed equipment visible in the input: radiators, heaters, vents, thermostats, electrical panels, and switches must remain in their exact position, size, and appearance.",
     "Keep the room COMPLETELY EMPTY — no furniture, no rugs, no textiles, no decoration, no objects.",
     "The number of windows and doors must be EXACTLY the same as in the input. If there are zero windows, there must be zero windows in the output.",
     "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation.",
-    "Preserve the existing light direction, shadow angles, shadow intensity, color temperature, and highlight/shadow distribution. The overall room may appear slightly brighter due to lighter surfaces — this is acceptable — but shadow patterns and light gradients must remain in the same positions and relative intensity. Keep the original light distribution — do not artificially brighten darker areas.",
+    "Preserve the existing light direction, shadow angles, shadow intensity, and highlight/shadow distribution. Maintain the exact wall color temperature from the input — do not warm or cool the walls beyond what the style finish requires. Shadow patterns and light gradients must remain in the same positions and relative intensity. Keep the original light distribution — do not artificially brighten darker areas.",
     "DSLR full-frame wide-angle 16-35mm f/8, deep depth of field, sharp focus throughout, subtle sensor grain (ISO 200), natural corner vignetting. No text, watermarks, or logos in the output.",
   ].join(" ");
 }
@@ -73,10 +75,12 @@ function buildSurfacesFluxPrompt(surfacePrompt: string): string {
   return [
     `${surfacePrompt}, finished empty room interior.`,
     "Refinished floor, repainted walls. Ceiling light per style description.",
-    "Preserve ceiling geometry — vaults, beams, ribs, arches remain visible. Apply finish over existing structure.",
+    "If a colored accent wall or dark wallpaper exists, preserve it — restyle plain walls only.",
+    "Preserve ceiling geometry — vaults, beams, ribs, arches remain visible with original rough texture and edges. Apply finish over existing structure, do not smooth or flatten.",
+    "Keep all wall-mounted equipment: radiators, heaters, vents, thermostats, switches in exact position.",
     "Completely empty room — no furniture, no rugs, no textiles, no objects.",
     "Exact same number of windows and doors as the original. Same room geometry, same proportions.",
-    "Preserve existing light direction, shadow patterns, light falloff, and camera angle.",
+    "Preserve existing light direction, shadow patterns, wall color temperature, light falloff, and camera angle.",
     "Photo-realistic interior photograph, DSLR full-frame 16-35mm f/8, deep DOF, sharp focus, subtle film grain.",
   ].join(" ");
 }
@@ -91,6 +95,7 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string): string {
     "Respect the furniture density implied by the style description. If the style is minimalist, leave large areas of empty floor visible. If the room appears small, reduce accent pieces — skip secondary items rather than cramming everything in.",
     "ONLY add freestanding objects that rest on the floor or sit on existing surfaces. Do NOT attach anything to walls. No wall-mounted art, no built-in shelving, no curtains.",
     "Room structure is LOCKED: every wall, window, door, ceiling, and floor surface must remain visually identical to the input — same colors, same textures, same geometry. Shadows cast by new furniture on walls and floor are expected and natural. No new openings.",
+    "Preserve all wall-mounted fixed equipment visible in the input: radiators, heaters, vents, thermostats, and switches must remain visible. Do not place furniture in front of radiators.",
     "If the input has zero windows, the output must have zero windows.",
     "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation.",
     "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, subtle sensor grain (ISO 200), natural corner vignetting. Photo-realistic interior photograph. No text, watermarks, or logos in the output.",
@@ -104,6 +109,7 @@ function buildFurnitureFluxPrompt(furniturePrompt: string): string {
     "Shadow hardness matches lighting: soft for diffused light, hard for direct sunlight. Scale furniture up if ceiling is very high.",
     "Freestanding furniture only. No wall-mounted objects, no built-in shelving, no curtains.",
     "Every wall, floor, and ceiling surface visually identical to input — same colors, same textures. Shadows from furniture are natural. No new openings.",
+    "Keep all wall-mounted equipment: radiators, heaters, vents, switches visible. Do not place furniture in front of radiators.",
     "Same room geometry, same proportions, same camera angle, same lighting conditions.",
     "Photo-realistic interior photograph, DSLR full-frame 16-35mm f/8, deep DOF, sharp focus, subtle film grain.",
   ].join(" ");
