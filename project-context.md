@@ -3,7 +3,7 @@
 > Ce fichier est lu par tous les agents avant toute action.
 > Remplis chaque champ. Les champs vides bloquent les agents.
 > **ATTENTION** : ce fichier peut contenir des informations stratégiques (budget, pricing, concurrents). S'assurer que le repo est **privé** si des données confidentielles y sont renseignées.
-> Dernière mise à jour : 2026-03-24
+> Dernière mise à jour : 2026-03-24 (v2 — ajout KPI marge, packages, anti-mots, timeline)
 
 ---
 
@@ -31,17 +31,18 @@
 - **Promesse unique** : Un visuel meublé de qualité architecte d'intérieur en 90 secondes, à partir d'une simple photo.
 - **Ton de marque** : Premium et sobre
 - **3 mots qui DÉFINISSENT la marque** : Qualité, Efficacité, Valeur ajoutée
-- **3 mots qui ne DÉFINISSENT PAS la marque** : ⚠️ À COMPLÉTER — [Ex : cheap, gadget, complexe]
-- **Concurrent principal** : ⚠️ À COMPLÉTER — [Ex : HomeDesigns AI, REimagineHome, Virtual Staging AI, DecorMatters]
-- **Notre différence clé vs lui** : ⚠️ À COMPLÉTER — [À remplir après identification du concurrent principal]
+- **3 mots qui ne DÉFINISSENT PAS la marque** : Cheap, Fake, Gadget
+- **Concurrent principal** : ⚠️ À COMPLÉTER PAR AGENTS — Benchmark concurrentiel à réaliser par @creative-strategy (HomeDesigns AI, REimagineHome, Virtual Staging AI, DecorMatters, etc.)
+- **Notre différence clé vs lui** : ⚠️ À COMPLÉTER PAR AGENTS — Dépend du benchmark ci-dessus
 
 ---
 
 ## Objectifs
 - **Objectif principal à 6 mois** : 500 utilisateurs actifs payants, MRR 5K€
-- **KPI North Star** : 1 000 photos générées par semaine
-- **Objectif secondaire** : ⚠️ À COMPLÉTER — [Ex : taux de conversion free→paid, NPS, rétention M1]
-- **Ce que le succès ressemble à 12 mois** : ⚠️ À COMPLÉTER — [Ex : 2000 payants, 20K€ MRR, partenariats agences]
+- **KPI North Star** : 3 000€/mois de marge nette (revenus - coûts IA/infra/acquisition)
+- **KPI secondaire** : 1 000 photos générées par semaine (indicateur de volume/adoption)
+- **Objectif secondaire** : Devenir le leader du marché français du home staging virtuel par IA
+- **Ce que le succès ressemble à 12 mois** : N°1 du marché FR, rentabilité prouvée, expansion des use cases (extérieur, dossiers marchands, catalogue produits réels)
 
 ---
 
@@ -49,7 +50,7 @@
 - **Frontend** : [x] Next.js 14, [x] React, TypeScript, Tailwind CSS, App Router
 - **Backend** : Next.js API Routes (App Router) — ⚠️ À CONFIRMER si évolution prévue
 - **Base de données** : PostgreSQL + Replit Object Storage (images persistantes)
-- **Authentification** : ⚠️ À DÉFINIR — [Aucune en place actuellement]
+- **Authentification** : À implémenter (aucune en place) — requis pour le système de packages/crédits
 - **Hébergement** : Replit
 - **Outils IA utilisés** :
   - **Primary** : OpenAI Responses API (gpt-4.1) avec tool image_generation + input_fidelity "high"
@@ -65,10 +66,9 @@
 ---
 
 ## Modèle économique et juridique
-- **Modèle économique** : Vente de packages (crédits de génération)
-  - Gratuit : générations limitées (découverte)
-  - Pro : 29€/mois
-  - Business : 79€/mois
+- **Modèle économique** : Vente de packages (crédits de génération) — PAS d'abonnement mensuel pour le lancement
+  - Pricing actuel sur le site (tiers SaaS mensuel) à REMPLACER par un système de packages unitaires
+  - Grille de packages : ⚠️ À DÉFINIR PAR AGENTS — @product-manager doit concevoir les tiers (nombre de crédits, prix, itérations incluses)
 - **Pays de commercialisation** : France
 - **Données sensibles collectées** : [x] Non — Photos de pièces vides uniquement, pas de données personnelles sensibles
 - **Utilisation d'IA générative** : [x] Oui — Génération d'images meublées à partir de photos de pièces vides (OpenAI gpt-4.1 image generation + Flux Depth Pro)
@@ -76,10 +76,10 @@
 ---
 
 ## Contraintes
-- **Budget mensuel infrastructure** : ⚠️ À DÉFINIR
-- **Budget mensuel acquisition** : ⚠️ À DÉFINIR
-- **Budget analytics** : ⚠️ À DÉFINIR
-- **Timeline de lancement** : ⚠️ À DÉFINIR
+- **Budget mensuel infrastructure** : Pas de limite fixe — choix doivent être raisonnables et ROI positif
+- **Budget mensuel acquisition** : Pas de limite fixe — choix doivent être raisonnables et ROI positif
+- **Budget analytics** : Pas de limite fixe — choix doivent être raisonnables et ROI positif
+- **Timeline de lancement** : ASAP — le plus tôt possible, prioriser la vitesse de mise en marché
 - **Contraintes légales ou sectorielles** : Aucune identifiée à ce stade (voir section implications juridiques ci-dessous)
 - **Ressources disponibles** : [x] Solo + agents IA
 
