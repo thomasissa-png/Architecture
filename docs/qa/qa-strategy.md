@@ -1,5 +1,13 @@
 # Strategie QA -- VisiRenov
 
+> Produit par @qa | Date : 2026-03-24
+> Source : docs/product/functional-specs.md v1.0 (F1-F5, sections 6-7)
+> Stack cible tests : Vitest (unitaires/integration) + Playwright (E2E)
+> Contexte equipe : solo dev + agents IA -- CI legere, focus tests critiques
+> Deploiement : Replit (CI/CD geree par Replit, pas par GitHub Actions)
+
+---
+
 ## Audit des criteres d'acceptation
 
 ### F1 -- Iteration commentaire
@@ -515,6 +523,99 @@ test('E2E-06: parcours gratuit avec limites et upsell', async ({ page }) => {
 });
 ```
 
+### E2E-07 : Feature gating par package
+
+Parcours : Verifier que les limites par package (Decouverte/Starter/Pro/Studio) sont respectees dans l'UI
+
+```typescript
+test('E2E-07: feature gating par package Decouverte', async ({ page }) => {
+  // Simuler un utilisateur avec pack Decouverte (5 credits, 0 iteration, pas de marchand, pas de shopping)
+  await page.addInitScript(() => {
+    localStorage.setItem('session_package', JSON.stringify({
+      type: 'decouverte',
+      credits: 5,
+      iterations_per_photo: 0,
+      features: { merchant: false, shopping: false, pdf_export: false, shareable_link: false },
+    }));
+  });
+
+  await page.route('**/api/generate', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        results: [{ imageUrl: '/fixtures/result-scandinave.jpg', pass1Key: 'sessions/test/0/pass1.jpg' }],
+      }),
+    });
+  });
+
+  await page.goto('/');
+
+  // Upload + Style + Generer
+  const fileInput = page.locator('[data-testid="upload-zone"] input[type="file"]');
+  await fileInput.setInputFiles('tests/fixtures/photo-salon.jpg');
+  await page.click('[data-testid="style-scandinave"]');
+  await page.click('[data-testid="btn-generate"]');
+  await expect(page.locator('[data-testid="image-comparator"]')).toBeVisible({ timeout: 15000 });
+
+  // Decouverte : Affiner = desactive (0 iteration)
+  await expect(page.locator('[data-testid="btn-refine"]')).toBeDisabled();
+
+  // Decouverte : Shopping list = non visible ou desactive
+  const shoppingBtn = page.locator('[data-testid="btn-shopping-list"]');
+  if (await shoppingBtn.isVisible()) {
+    await expect(shoppingBtn).toBeDisabled();
+  }
+
+  // Decouverte : Mode Marchand = non visible
+  await expect(page.locator('[data-testid="toggle-marchand"]')).not.toBeVisible();
+
+  // Decouverte : Telechargement HD = actif (disponible sur tous les packs)
+  await expect(page.locator('[data-testid="btn-download-hd"]')).toBeEnabled();
+});
+
+test('E2E-07b: feature gating par package Pro', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('session_package', JSON.stringify({
+      type: 'pro',
+      credits: 50,
+      iterations_per_photo: 3,
+      features: { merchant: true, shopping: true, pdf_export: true, shareable_link: true },
+    }));
+  });
+
+  await page.route('**/api/generate', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        results: [{ imageUrl: '/fixtures/result-scandinave.jpg', pass1Key: 'sessions/test/0/pass1.jpg' }],
+      }),
+    });
+  });
+
+  await page.goto('/');
+
+  const fileInput = page.locator('[data-testid="upload-zone"] input[type="file"]');
+  await fileInput.setInputFiles('tests/fixtures/photo-salon.jpg');
+  await page.click('[data-testid="style-scandinave"]');
+  await page.click('[data-testid="btn-generate"]');
+  await expect(page.locator('[data-testid="image-comparator"]')).toBeVisible({ timeout: 15000 });
+
+  // Pro : Affiner = actif (3 iterations)
+  await expect(page.locator('[data-testid="btn-refine"]')).toBeEnabled();
+  await expect(page.locator('[data-testid="iterations-badge"]')).toContainText('3');
+
+  // Pro : Shopping list = actif
+  await expect(page.locator('[data-testid="btn-shopping-list"]')).toBeEnabled();
+
+  // Pro : Mode Marchand = visible (max 10 photos)
+  await expect(page.locator('[data-testid="toggle-marchand"]')).toBeVisible();
+});
+```
+
+---
+
 ## Tests unitaires prioritaires (Vitest)
 
 ### P0 — Critique (bloque le deploy si rouge)
@@ -639,3 +740,96 @@ tests/fixtures/
 3. **Les mocks E2E (page.route) sont preferes a MSW** — plus simple, pas de setup global, visible dans le test
 4. **Les mocks Vitest (vi.mock) sont preferes pour les tests unitaires** — isolation complete du module
 5. **Les fixtures images sont des fichiers reels** (pas des buffers vides) — necessaire pour tester resize/compression
+
+---
+
+## Seuils de performance (Lighthouse CI)
+
+| Metrique | Seuil bloquant | Justification |
+|---|---|---|
+| LCP | < 2,5s | Page principale = Hero + outil, doit charger vite sur mobile |
+| INP | < 200ms | Interactions tactiles (upload, style picker, slider comparateur) |
+| CLS | < 0,1 | Pas de layout shift lors du chargement des images/resultats |
+| Bundle JS total | < 500 Ko (gzip) | Replit = hebergement partage, bande passante limitee |
+
+Note : Lighthouse CI n'est pas dans le pipeline CI Replit. A integrer si migration vers GitHub Actions.
+
+---
+
+## Pipeline CI recommandee
+
+Contexte : solo dev sur Replit. Le CI/CD est gere par Replit (auto-deploy sur push). Le pipeline ci-dessous est une cible pour quand le projet migrera vers un CI plus structure.
+
+```
+Pre-commit (Husky + lint-staged) :
+  - ESLint sur fichiers modifies
+  - Prettier check
+  - Vitest --run --changed (tests unitaires des fichiers modifies)
+
+CI (GitHub Actions ou equivalent) :
+  1. lint          (~30s)
+  2. vitest --run  (~2min) — tous les tests unitaires + integration
+  3. playwright    (~5min) — E2E-01 a E2E-07 sur Chromium uniquement en CI
+  4. build         (~1min) — next build
+  Total cible : < 10 minutes
+```
+
+Pour le moment (solo dev, Replit) : executer `npm run test` manuellement avant chaque deploy significatif.
+
+---
+
+## Accessibilite (axe-core)
+
+Integrer dans chaque test E2E Playwright :
+
+```typescript
+import AxeBuilder from '@axe-core/playwright';
+
+// A la fin de chaque test E2E, apres le dernier expect :
+const results = await new AxeBuilder({ page }).analyze();
+expect(results.violations).toEqual([]);
+```
+
+Regles axe prioritaires pour VisiRenov :
+- `color-contrast` : palette Sage #7D9B76 sur fond #FAFAF8 = ratio 3.5:1 (echoue AA pour texte < 18px). ESCALADE @product-manager : ajuster la teinte Sage ou limiter son usage au texte > 18px.
+- `button-name` : tous les boutons icone (supprimer photo, fermer modale) doivent avoir un aria-label
+- `image-alt` : les images generees dans le comparateur doivent avoir un alt descriptif ("Resultat {style} — {type de piece}")
+
+---
+
+## Tracking plan — Couverture
+
+Les specs definissent des events tracking pour chaque feature (F1.5, F2.5, F3.5, F4.5, F5.5).
+Aucun code n'implemente ces events pour le moment (les features F1-F5 ne sont pas encore developpees).
+
+**Action** : a la livraison de chaque feature par @fullstack, verifier via Grep que chaque event du tracking plan est implemente dans le code source. Produire un rapport de couverture tracking dans ce fichier.
+
+| Feature | Events definis | Events implementes | Couverture |
+|---|---|---|---|
+| F1 | 7 events | 0 (F1 non implemente) | 0% |
+| F2 | 6 events | 0 (F2 non implemente) | 0% |
+| F3 | 11 events | 0 (F3 non implemente) | 0% |
+| F4 | 7 events | 0 (F4 non implemente) | 0% |
+| F5 | 7 events | 0 (F5 non implemente) | 0% |
+
+---
+
+## Auto-evaluation
+
+- [x] Chaque chemin critique du persona principal est-il couvert par un test E2E ? -- Oui : Claire (E2E-01 generation+iteration, E2E-02 type piece, E2E-05 shopping), Thomas (E2E-04 marchand, E2E-03 exterieur), Lea (E2E-06 gratuit)
+- [x] Un developpeur peut-il comprendre pourquoi chaque test existe sans lire le code ? -- Oui : chaque E2E a un titre descriptif + commentaires inline
+- [x] Le pipeline complet tourne-t-il en moins de 10 minutes ? -- Oui : cible < 10 min (lint 30s + vitest 2min + playwright 5min + build 1min)
+- [ ] Les events du tracking-plan sont-ils tous implementes ? -- Non : F1-F5 non encore developpees. A verifier apres livraison @fullstack.
+- [ ] Les tests d'accessibilite (axe-core) sont-ils integres aux tests E2E Playwright ? -- Defini dans la strategie. A implementer dans les fichiers de tests reels.
+
+---
+
+## Escalades identifiees
+
+| Destinataire | Sujet | Detail |
+|---|---|---|
+| @product-manager | Critere F2 US-F2-02 AC "notablement different" | Non testable automatiquement. Reformuler en critere sur le contenu des prompts ou ajouter un critere visuel audite manuellement. |
+| @product-manager | Critere F3 US-F3-01 AC "garde-corps non modifie" | Verification visuelle uniquement. Proposer un audit humain periodique (agents Yann/Lucas) plutot qu'un test automatise. |
+| @product-manager | Palette Sage #7D9B76 et contraste AA | Ratio 3.5:1 sur fond #FAFAF8 echoue WCAG AA pour texte < 18px. Ajuster la teinte ou limiter l'usage. |
+| @infrastructure | Variables d'env pour tests E2E en CI | DATABASE_URL_TEST, OPENAI_API_KEY (mock), REPLICATE_API_TOKEN (mock) doivent etre configurees comme secrets CI. |
+| @fullstack | data-testid manquants | Les scenarios E2E utilisent des data-testid specifiques (upload-zone, style-scandinave, btn-generate, etc.). Ils doivent etre ajoutes aux composants lors de l'implementation de F1-F5. |
