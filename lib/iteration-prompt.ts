@@ -74,4 +74,62 @@ export function buildIterationFurnitureFluxPrompt(
 export const FLUX_ITERATION_NEGATIVE_PROMPT =
   "distorted perspective, fisheye, stretched walls, shallow depth of field, bokeh, cartoon, illustration, 3D render, CGI, plastic, watermark, text, blurry, overexposed windows, extra windows, extra doors, floating furniture, dangling cables, junction box, unfinished floor, overly clean, flat lighting, color grading, warm color shift, cool color shift, mismatched furniture style, inconsistent color palette";
 
+// ─── Outdoor Iteration Builders ─────────────────────────────────────
+// Same logic as indoor but:
+// - No "walls, floor, ceiling" → "Ground surface and vertical structures are LOCKED"
+// - No ceiling/luminaire directives
+// - No indoor-specific rules (radiators, zero windows check)
+
+export function buildIterationOutdoorFurnitureResponsesPrompt(
+  furniturePrompt: string,
+  modifications: string[],
+  meta: { width?: number; height?: number; isOutdoor?: boolean }
+): string {
+  const modBlock = modifications
+    .map((m, i) => {
+      const label = i === modifications.length - 1 ? `v${i + 2} (current)` : `v${i + 2}`;
+      return `- ${label}: ${m}`;
+    })
+    .join("\n");
+
+  return [
+    "This is a REFINEMENT of a previous outdoor generation. The ground surface and vertical structures in this photo are FINAL and PERFECT. They must not change in any way — not even subtle color shifts or texture changes.",
+    "Focus ONLY on adjusting the outdoor furniture and decoration as described below.",
+    `APPLY THESE CHANGES:\n${modBlock}`,
+    `BASE STYLE (keep everything not contradicted by the changes above): ${furniturePrompt}.`,
+    "Distribute furniture naturally across the available floor space. If the space is large, place a primary seating group and a secondary accent further back.",
+    "Place all objects naturally on the existing ground. Every piece of outdoor furniture must have correct perspective, scale, and cast realistic shadows consistent with the existing natural light direction.",
+    "ONLY add freestanding outdoor objects. Do NOT attach anything to walls, guard rails, or facades.",
+    "Ground surface and vertical structures are LOCKED — guard rails, walls, facades, gates, fences must remain visually identical to the input. Same colors, same textures, same geometry. Shadows from furniture are expected and natural.",
+    "Preserve existing vegetation in the background. Do not alter tree lines, hedges, or background plants.",
+    "Open-air space — no ceiling. Sky preserved as-is.",
+    "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation.",
+    "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, subtle sensor grain (ISO 200), natural corner vignetting. Photo-realistic outdoor photograph. No text, watermarks, or logos.",
+  ].join(" ");
+}
+
+export function buildIterationOutdoorFurnitureFluxPrompt(
+  furniturePrompt: string,
+  modifications: string[],
+  meta: { width?: number; height?: number; isOutdoor?: boolean }
+): string {
+  const modSummary = modifications
+    .map((m, i) => {
+      const label = i === modifications.length - 1 ? `v${i + 2} (current)` : `v${i + 2}`;
+      return `${label}: ${m}`;
+    })
+    .join("; ");
+
+  return [
+    `CHANGES: ${modSummary}.`,
+    `BASE STYLE (keep uncontradicted items): ${furniturePrompt}.`,
+    "Placed naturally across the available floor space. Primary seating group in foreground, secondary accent further back if space allows.",
+    "Freestanding outdoor furniture only. No wall-mounted objects, no objects attached to guard rails.",
+    "Ground surface and vertical structures LOCKED — guard rails, walls, facades same colors, textures, geometry. Shadows from furniture are natural.",
+    "Preserve background vegetation. Open-air space, no ceiling, sky as-is.",
+    "Same camera angle, same lighting conditions.",
+    "Photo-realistic outdoor photograph, DSLR full-frame 16-35mm f/8, deep DOF, sharp focus, subtle film grain.",
+  ].join(" ");
+}
+
 export { MAX_ITERATIONS, PASS1_TTL_MS };
