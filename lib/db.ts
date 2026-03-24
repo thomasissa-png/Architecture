@@ -101,6 +101,31 @@ async function withStorageRetry<T>(
   }
 }
 
+/** Health-check: upload + download a tiny test blob via withStorageRetry. */
+export async function checkStorageHealth(): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const testKey = "logs/__storage_test";
+    const testBuffer = Buffer.from("ok", "utf-8");
+    const upload = await withStorageRetry(
+      (client) => client.uploadFromBytes(testKey, testBuffer),
+      "checkStorageHealth:upload"
+    );
+    if (!upload.ok) {
+      return { ok: false, error: `Upload failed: ${upload.error}` };
+    }
+    const download = await withStorageRetry(
+      (client) => client.downloadAsBytes(testKey),
+      "checkStorageHealth:download"
+    );
+    if (!download.ok) {
+      return { ok: false, error: "Download failed" };
+    }
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Unknown error" };
+  }
+}
+
 async function saveImage(base64: string, name: string): Promise<string> {
   const key = `logs/${name}.jpg`;
   const buffer = Buffer.from(base64, "base64");
