@@ -277,6 +277,14 @@ export default function Home() {
     if (!controller.signal.aborted) {
       setIsGenerating(false);
       if (allResults.length > 0) {
+        // Initialize versions array: one entry per result (v1 = original generation)
+        setVersions(
+          allResults.map((r) => [
+            { imageUrl: r.generatedUrl, comment: undefined, model: r.model },
+          ])
+        );
+        setActiveVersions(allResults.map(() => 0));
+        setIterationsRemaining(MAX_ITERATIONS);
         scrollToElement("step-results");
       }
     }
@@ -294,6 +302,13 @@ export default function Home() {
     setResults([]);
     setError(null);
     setPreprocessWarnings([]);
+    // Reset F1 state
+    setVersions([]);
+    setActiveVersions([]);
+    setIterationsRemaining(MAX_ITERATIONS);
+    setRefineError(null);
+    setRefineWarnings([]);
+    setLastRefineComment("");
   };
 
   const handleFullReset = () => {
@@ -305,7 +320,152 @@ export default function Home() {
     setError(null);
     setIsGenerating(false);
     setPreprocessWarnings([]);
+    // Reset F1 state
+    setVersions([]);
+    setActiveVersions([]);
+    setIterationsRemaining(MAX_ITERATIONS);
+    setIsRefineModalOpen(false);
+    setRefineTargetIndex(0);
+    setIsRefining(false);
+    setRefineError(null);
+    setLastRefineComment("");
+    setRefineWarnings([]);
   };
+
+  const handleOpenRefineModal = useCallback((resultIndex: number) => {
+    setRefineTargetIndex(resultIndex);
+    setRefineError(null);
+    setRefineWarnings([]);
+    setIsRefineModalOpen(true);
+  }, []);
+
+  const handleRefine = useCallback(
+    async (comment: string) => {
+      const targetResult = results[refineTargetIndex];
+      if (!targetResult?.pass1Key) {
+        setRefineError("Les surfaces de cette generation ont expire. Regenerez depuis l'image originale.");
+        return;
+      }
+
+      setIsRefineModalOpen(false);
+      setIsRefining(true);
+      setRefineError(null);
+      setRefineWarnings([]);
+      setLastRefineComment(comment);
+
+      // Build previousModifications from existing versions
+      const targetVersions = versions[refineTargetIndex] || [];
+      const previousModifications = targetVersions
+        .filter((v) => v.comment)
+        .map((v) => v.comment as string);
+
+      // Cancel previous in-flight
+      abortControllerRef.current?.abort();
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
+      try {
+        // Pre-process comment via GPT-4.1-mini
+        let enrichedComment = comment;
+        try {
+          const ppResponse = await fetch("/api/preprocess-prompt", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ prompt: comment }),
+            signal: controller.signal,
+          });
+          if (ppResponse.ok) {
+            const ppData = await ppResponse.json();
+            if (ppData.furniturePrompt) enrichedComment = ppData.furniturePrompt;
+            if (Array.isArray(ppData.warnings) && ppData.warnings.length > 0) {
+              setRefineWarnings(ppData.warnings);
+            }
+          }
+        } catch (e: unknown) {
+          if (e instanceof Error && e.name === "AbortError") return;
+          // Fallback: use raw comment
+        }
+
+        if (controller.signal.aborted) return;
+
+        const response = await fetch("/api/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            pass1Key: targetResult.pass1Key,
+            iterationComment: enrichedComment,
+            previousModifications,
+            sessionId: getSessionId(),
+            surfacePrompt: selectedStyle?.surfacePrompt || customPrompt.trim(),
+            furniturePrompt: selectedStyle?.furniturePrompt || customPrompt.trim(),
+            styleId: selectedStyle?.id ?? "custom",
+            withFurniture: true,
+            width: 0, // Server uses pass1 dimensions
+            height: 0,
+          }),
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || "Erreur lors de l'ajustement");
+        }
+
+        const data = await response.json();
+
+        // Success: add new version, decrement iterations
+        setVersions((prev) => {
+          const updated = [...prev];
+          const existing = updated[refineTargetIndex] || [];
+          updated[refineTargetIndex] = [
+            ...existing,
+            { imageUrl: data.image, comment, model: data.model },
+          ];
+          return updated;
+        });
+        setActiveVersions((prev) => {
+          const updated = [...prev];
+          updated[refineTargetIndex] = (versions[refineTargetIndex]?.length || 1);
+          return updated;
+        });
+        setIterationsRemaining((prev) => Math.max(0, prev - 1));
+        setRefineError(null);
+
+        // Update the result's generatedUrl for the comparator
+        setResults((prev) => {
+          const updated = [...prev];
+          updated[refineTargetIndex] = {
+            ...updated[refineTargetIndex],
+            generatedUrl: data.image,
+            model: data.model,
+          };
+          return updated;
+        });
+      } catch (e: unknown) {
+        if (e instanceof Error && e.name === "AbortError") return;
+        // Do NOT decrement iterations on error
+        setRefineError(
+          e instanceof Error ? e.message : "Erreur lors de l'ajustement. Votre iteration a ete conservee."
+        );
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsRefining(false);
+        }
+      }
+    },
+    [results, refineTargetIndex, versions, selectedStyle, customPrompt]
+  );
+
+  const handleRefineRetry = useCallback(() => {
+    if (lastRefineComment) {
+      handleRefine(lastRefineComment);
+    }
+  }, [lastRefineComment, handleRefine]);
+
+  const handleRefineModify = useCallback(() => {
+    setRefineError(null);
+    setIsRefineModalOpen(true);
+  }, []);
 
   const handleDownloadAll = () => {
     results.forEach((result, index) => {
@@ -672,14 +832,173 @@ export default function Home() {
                 03 — R&eacute;sultat
               </h4>
               <div className="space-y-10">
-                {results.map((result, index) => (
-                  <ImageComparator
-                    key={index}
-                    originalUrl={result.originalUrl}
-                    generatedUrl={result.generatedUrl}
-                    model={result.model}
-                  />
-                ))}
+                {results.map((result, index) => {
+                  const resultVersions = versions[index] || [];
+                  const activeIdx = activeVersions[index] || 0;
+                  const displayUrl =
+                    resultVersions[activeIdx]?.imageUrl || result.generatedUrl;
+                  const isRefineTarget = refineTargetIndex === index;
+
+                  return (
+                    <div key={index} className="space-y-5">
+                      {/* Refine loading state */}
+                      {isRefining && isRefineTarget && (
+                        <div className="relative rounded-2xl overflow-hidden border border-gray-200/60">
+                          <div className="aspect-[4/3] sm:aspect-[16/10] relative">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={displayUrl}
+                              alt=""
+                              className="w-full h-full object-cover blur-sm brightness-95 transition-all duration-700"
+                            />
+                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                              <div className="bg-white/90 backdrop-blur-sm rounded-xl px-5 py-4 shadow-sm text-center max-w-xs">
+                                <div className="flex justify-center gap-1 mb-3">
+                                  <div className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                                  <div className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                                  <div className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                                </div>
+                                <p className="text-sm text-foreground font-medium mb-1">
+                                  Ajustement en cours&hellip; ~25 secondes
+                                </p>
+                                <p className="text-xs text-muted/70 font-light">
+                                  {refineElapsed}s
+                                </p>
+                                <p className="text-xs text-muted font-light mt-2 italic">
+                                  &laquo; {lastRefineComment} &raquo;
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Comparator (hidden during refine loading for this target) */}
+                      {!(isRefining && isRefineTarget) && (
+                        <ImageComparator
+                          originalUrl={result.originalUrl}
+                          generatedUrl={displayUrl}
+                          model={resultVersions[activeIdx]?.model || result.model}
+                        />
+                      )}
+
+                      {/* Version selector */}
+                      {!isRefining && (
+                        <VersionSelector
+                          versions={resultVersions}
+                          activeVersion={activeIdx}
+                          onSelect={(vIdx) => {
+                            setActiveVersions((prev) => {
+                              const updated = [...prev];
+                              updated[index] = vIdx;
+                              return updated;
+                            });
+                            // Update the comparator display
+                            const selectedVersion = resultVersions[vIdx];
+                            if (selectedVersion) {
+                              setResults((prev) => {
+                                const updated = [...prev];
+                                updated[index] = {
+                                  ...updated[index],
+                                  generatedUrl: selectedVersion.imageUrl,
+                                  model: selectedVersion.model,
+                                };
+                                return updated;
+                              });
+                            }
+                          }}
+                        />
+                      )}
+
+                      {/* Refine error */}
+                      {refineError && isRefineTarget && !isRefining && (
+                        <div className="bg-red-50/50 border border-red-200/60 rounded-2xl p-5 text-center">
+                          <p className="text-red-600/80 text-sm mb-1">{refineError}</p>
+                          <p className="text-red-400/70 text-xs font-light mb-3">
+                            Votre iteration n&apos;a pas ete consommee.
+                          </p>
+                          <div className="flex items-center justify-center gap-3">
+                            <button
+                              onClick={handleRefineRetry}
+                              className="text-xs text-red-500 underline underline-offset-4 hover:text-red-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded"
+                            >
+                              Reessayer
+                            </button>
+                            <button
+                              onClick={handleRefineModify}
+                              className="text-xs text-muted underline underline-offset-4 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded"
+                            >
+                              Modifier le commentaire
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Refine warnings (shown after successful refine) */}
+                      {refineWarnings.length > 0 && isRefineTarget && !isRefining && !refineError && (
+                        <div className="bg-amber-50/50 border border-amber-200/60 rounded-xl p-4 text-left max-w-lg mx-auto">
+                          <ul className="space-y-1">
+                            {refineWarnings.map((w, wi) => (
+                              <li key={wi} className="text-amber-600/80 text-xs font-light flex items-start gap-1.5">
+                                <span className="mt-0.5 shrink-0">!</span>
+                                <span>{w}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Refine button */}
+                      {!isRefining && (
+                        <div className="text-center space-y-1.5">
+                          {iterationsRemaining > 0 ? (
+                            <>
+                              <button
+                                onClick={() => handleOpenRefineModal(index)}
+                                className="inline-flex items-center gap-2 border border-sage/40 text-sage px-5 min-h-[44px] py-2.5 rounded-full text-sm font-medium hover:bg-sage/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+                              >
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                                </svg>
+                                Affiner ce resultat
+                              </button>
+                              <p className="text-[11px] text-muted/60 font-light">
+                                {iterationsRemaining} iteration{iterationsRemaining > 1 ? "s" : ""} restante{iterationsRemaining > 1 ? "s" : ""} sur cette photo
+                              </p>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                disabled
+                                title="Iterations epuisees — rechargez un pack"
+                                className="inline-flex items-center gap-2 border border-gray-200 text-muted/50 px-5 min-h-[44px] py-2.5 rounded-full text-sm font-medium cursor-not-allowed"
+                              >
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                                </svg>
+                                Affiner ce resultat
+                              </button>
+                              <p className="text-[11px] text-muted/60 font-light">
+                                0 iteration restante
+                              </p>
+                              <div className="mt-2 bg-gray-50/80 border border-gray-200/60 rounded-xl p-4 max-w-sm mx-auto">
+                                <p className="text-xs text-muted font-light mb-2">
+                                  Pour continuer a affiner, rechargez un pack de credits.
+                                </p>
+                                <a
+                                  href="#pricing"
+                                  className="text-xs text-sage font-medium hover:text-sage/80 transition-colors underline underline-offset-4"
+                                >
+                                  Voir les offres
+                                </a>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
 
               {/* Batch download */}
@@ -713,6 +1032,16 @@ export default function Home() {
               </div>
             </div>
           )}
+
+          {/* Refine Modal */}
+          <RefineModal
+            isOpen={isRefineModalOpen}
+            onClose={() => setIsRefineModalOpen(false)}
+            onSubmit={handleRefine}
+            iterationsRemaining={iterationsRemaining}
+            isLoading={isRefining}
+            warnings={refineWarnings}
+          />
         </div>
       </section>
 
