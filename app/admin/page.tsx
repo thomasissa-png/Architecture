@@ -139,7 +139,20 @@ export default function AdminPage() {
   useEffect(() => {
     if (!authenticated) return;
     fetch("/api/logs")
-      .then((r) => r.json())
+      .then(async (r) => {
+        if (!r.ok) {
+          const text = await r.text().catch(() => "");
+          let detail = `HTTP ${r.status}`;
+          try {
+            const json = JSON.parse(text);
+            if (json.error) detail += ` — ${json.error}`;
+          } catch {
+            if (text.length > 0 && text.length < 200) detail += ` — ${text}`;
+          }
+          throw new Error(detail);
+        }
+        return r.json();
+      })
       .then((data) => {
         if (data.error) setError(data.error);
         else setLogs(data.logs || []);

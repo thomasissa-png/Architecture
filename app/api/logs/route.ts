@@ -1,29 +1,16 @@
 import { NextResponse } from "next/server";
-import { Pool } from "pg";
+import { getPool, ensureTable } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
-
-function getPool(): Pool {
-  if (!process.env.DATABASE_URL) {
-    throw new Error("DATABASE_URL is not set");
-  }
-  return new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: process.env.DATABASE_URL.includes("sslmode=disable")
-      ? false
-      : { rejectUnauthorized: false },
-    max: 2,
-    idleTimeoutMillis: 10_000,
-  });
-}
 
 export async function GET() {
   if (!process.env.DATABASE_URL) {
     return NextResponse.json({ error: "DATABASE_URL not configured" }, { status: 500 });
   }
 
-  const pool = getPool();
   try {
+    await ensureTable();
+    const pool = getPool();
     const result = await pool.query(`
       SELECT id, created_at, style_id, model_used, pass1_model, pass2_model,
              duration_ms, pass1_duration_ms, pass2_duration_ms,
@@ -38,8 +25,7 @@ export async function GET() {
     return NextResponse.json({ logs: result.rows });
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "Unknown error";
+    console.error("GET /api/logs failed:", msg);
     return NextResponse.json({ error: msg }, { status: 500 });
-  } finally {
-    await pool.end();
   }
 }
