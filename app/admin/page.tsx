@@ -143,7 +143,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (!authenticated) return;
-    fetch("/api/logs")
+    fetch(`/api/logs?token=${encodeURIComponent(password)}`)
       .then(async (r) => {
         if (!r.ok) {
           const text = await r.text().catch(() => "");
@@ -445,7 +445,7 @@ Demande type : "Fais appel a l'agent Architecte d'Interieur et a l'agent Expert 
                   {log.success && log.input_image_path && !log.is_replay && (
                     <ReplayButton logId={log.id} styleId={log.style_id} adminPassword={password} onReplayDone={() => {
                       // Refresh logs
-                      fetch("/api/logs").then(r => r.json()).then(data => { if (data.logs) setLogs(data.logs); });
+                      fetch(`/api/logs?token=${encodeURIComponent(password)}`).then(r => r.json()).then(data => { if (data.logs) setLogs(data.logs); });
                     }} />
                   )}
                 </div>

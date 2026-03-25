@@ -693,23 +693,42 @@ export default function Home() {
             Versiroom pr&eacute;serve votre espace &mdash; il ne le r&eacute;invente pas.
           </p>
 
-          {/* Hero before/after — SVG default, real images overlay if available */}
+          {/* Hero before/after — architectural illustration */}
           <div className="max-w-3xl mx-auto mb-8">
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              {/* AVANT — Pi&egrave;ce vide */}
               <div className="relative group">
-                <div className="aspect-[4/3] rounded-2xl overflow-hidden hero-before-scene">
-                  {/* SVG visible by default */}
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <svg className="w-24 h-24 sm:w-32 sm:h-32 text-gray-400/50" viewBox="0 0 120 100" fill="none" stroke="currentColor" strokeWidth={0.8}>
-                      <line x1="10" y1="80" x2="110" y2="80" />
-                      <rect x="15" y="20" width="90" height="60" rx="1" strokeDasharray="3 3" />
-                      <rect x="40" y="28" width="40" height="30" rx="1" />
-                      <line x1="60" y1="28" x2="60" y2="58" />
-                      <line x1="40" y1="43" x2="80" y2="43" />
-                    </svg>
-                    <span className="text-xs text-muted font-light mt-2">Pi&egrave;ce vide</span>
-                  </div>
-                  {/* Real image overlays on top if available */}
+                <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-[#f0ede8]">
+                  {/* Architectural SVG — empty room with window light */}
+                  <svg className="w-full h-full" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    {/* Back wall */}
+                    <rect x="40" y="30" width="320" height="220" fill="#e8e4de" />
+                    {/* Floor */}
+                    <path d="M0 250 L40 250 L40 300 L400 300 L400 250 L360 250 L360 250 L0 250Z" fill="#d4cdc2" />
+                    <path d="M40 250 L0 300 L400 300 L360 250Z" fill="#cec6ba" />
+                    {/* Floor planks */}
+                    <line x1="80" y1="258" x2="40" y2="300" stroke="#c4bbb0" strokeWidth="0.5" />
+                    <line x1="160" y1="254" x2="100" y2="300" stroke="#c4bbb0" strokeWidth="0.5" />
+                    <line x1="240" y1="254" x2="200" y2="300" stroke="#c4bbb0" strokeWidth="0.5" />
+                    <line x1="320" y1="258" x2="300" y2="300" stroke="#c4bbb0" strokeWidth="0.5" />
+                    {/* Window */}
+                    <rect x="140" y="60" width="120" height="140" rx="2" fill="#dce8f0" stroke="#c8c0b4" strokeWidth="1.5" />
+                    <line x1="200" y1="60" x2="200" y2="200" stroke="#c8c0b4" strokeWidth="1" />
+                    <line x1="140" y1="130" x2="260" y2="130" stroke="#c8c0b4" strokeWidth="1" />
+                    {/* Window light on floor */}
+                    <path d="M140 250 L120 300 L280 300 L260 250Z" fill="#e8e4de" fillOpacity="0.4" />
+                    {/* Left wall perspective */}
+                    <path d="M0 0 L40 30 L40 250 L0 300Z" fill="#ddd8d0" />
+                    {/* Right wall perspective */}
+                    <path d="M400 0 L360 30 L360 250 L400 300Z" fill="#ddd8d0" />
+                    {/* Ceiling */}
+                    <path d="M0 0 L40 30 L360 30 L400 0Z" fill="#f0ede8" />
+                    {/* Baseboard */}
+                    <line x1="40" y1="248" x2="360" y2="248" stroke="#c8c0b4" strokeWidth="2" />
+                    {/* Outlet on wall */}
+                    <rect x="310" y="200" width="8" height="12" rx="1" fill="none" stroke="#c8c0b4" strokeWidth="0.8" />
+                  </svg>
+                  {/* Real image overlay if DB available */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src="/api/demo?type=hero&image=before"
@@ -722,27 +741,86 @@ export default function Home() {
                   AVANT
                 </span>
               </div>
+              {/* APR&Egrave;S — Scandinave meubl&eacute; */}
               <div className="relative group">
-                <div className="aspect-[4/3] rounded-2xl overflow-hidden hero-after-scene">
-                  {/* SVG visible by default */}
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <svg className="w-24 h-24 sm:w-32 sm:h-32 text-sage/50" viewBox="0 0 120 100" fill="none" stroke="currentColor" strokeWidth={0.8}>
-                      <line x1="10" y1="80" x2="110" y2="80" />
-                      <rect x="15" y="20" width="90" height="60" rx="1" />
-                      <rect x="40" y="28" width="40" height="30" rx="1" />
-                      <line x1="60" y1="28" x2="60" y2="58" />
-                      <rect x="22" y="62" width="36" height="12" rx="3" fill="currentColor" fillOpacity="0.15" />
-                      <rect x="22" y="56" width="36" height="8" rx="2" fill="currentColor" fillOpacity="0.1" />
-                      <rect x="62" y="68" width="16" height="8" rx="1" fill="currentColor" fillOpacity="0.12" />
-                      <ellipse cx="55" cy="78" rx="25" ry="4" fill="currentColor" fillOpacity="0.08" />
-                    </svg>
-                    <span className="text-xs text-sage/60 font-light mt-2">Visualisation meubl&eacute;e</span>
-                  </div>
-                  {/* Real image overlays on top if available */}
+                <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-[#f5f2ed]">
+                  {/* Architectural SVG — scandinavian furnished room */}
+                  <svg className="w-full h-full" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    {/* Back wall — warm white */}
+                    <rect x="40" y="30" width="320" height="220" fill="#f0ebe4" />
+                    {/* Floor — light oak */}
+                    <path d="M40 250 L0 300 L400 300 L360 250Z" fill="#d8c9ae" />
+                    <rect x="40" y="246" width="320" height="4" fill="#d8c9ae" />
+                    {/* Floor planks */}
+                    <line x1="80" y1="258" x2="40" y2="300" stroke="#cebfa3" strokeWidth="0.6" />
+                    <line x1="160" y1="254" x2="100" y2="300" stroke="#cebfa3" strokeWidth="0.6" />
+                    <line x1="240" y1="254" x2="200" y2="300" stroke="#cebfa3" strokeWidth="0.6" />
+                    <line x1="320" y1="258" x2="300" y2="300" stroke="#cebfa3" strokeWidth="0.6" />
+                    {/* Window */}
+                    <rect x="140" y="60" width="120" height="140" rx="2" fill="#e4eef5" stroke="#c8c0b4" strokeWidth="1.5" />
+                    <line x1="200" y1="60" x2="200" y2="200" stroke="#c8c0b4" strokeWidth="1" />
+                    <line x1="140" y1="130" x2="260" y2="130" stroke="#c8c0b4" strokeWidth="1" />
+                    {/* Window light on floor */}
+                    <path d="M140 250 L120 300 L280 300 L260 250Z" fill="white" fillOpacity="0.15" />
+                    {/* Left wall perspective */}
+                    <path d="M0 0 L40 30 L40 250 L0 300Z" fill="#ebe6de" />
+                    {/* Right wall perspective */}
+                    <path d="M400 0 L360 30 L360 250 L400 300Z" fill="#ebe6de" />
+                    {/* Ceiling */}
+                    <path d="M0 0 L40 30 L360 30 L400 0Z" fill="#f5f2ed" />
+                    {/* PH5-style pendant lamp */}
+                    <line x1="200" y1="0" x2="200" y2="55" stroke="#444" strokeWidth="0.5" />
+                    <ellipse cx="200" cy="62" rx="22" ry="8" fill="#f0f0f0" stroke="#ddd" strokeWidth="0.5" />
+                    <ellipse cx="200" cy="58" rx="18" ry="5" fill="#fff" stroke="#e8e8e8" strokeWidth="0.5" />
+                    <ellipse cx="200" cy="55" rx="13" ry="4" fill="#f8f8f8" stroke="#eee" strokeWidth="0.5" />
+                    {/* Sofa — light grey linen, 230cm */}
+                    <rect x="55" y="175" width="160" height="55" rx="6" fill="#d5d0c8" />
+                    <rect x="55" y="170" width="160" height="20" rx="5" fill="#ddd8d0" />
+                    {/* Sofa back */}
+                    <rect x="55" y="148" width="160" height="28" rx="4" fill="#ccc7bf" />
+                    {/* Sofa legs — tapered wood */}
+                    <line x1="65" y1="230" x2="62" y2="245" stroke="#a08860" strokeWidth="2.5" strokeLinecap="round" />
+                    <line x1="205" y1="230" x2="208" y2="245" stroke="#a08860" strokeWidth="2.5" strokeLinecap="round" />
+                    {/* Cushions — Nordic pattern blue/grey */}
+                    <rect x="80" y="160" width="28" height="24" rx="4" fill="#8fa8b8" />
+                    <rect x="118" y="162" width="26" height="22" rx="4" fill="#b8c4c8" />
+                    <rect x="155" y="160" width="28" height="24" rx="4" fill="#95a5a0" />
+                    {/* Coffee table — light oak round */}
+                    <ellipse cx="200" cy="262" rx="35" ry="10" fill="#c8b48e" />
+                    <ellipse cx="200" cy="258" rx="35" ry="10" fill="#d4c4a0" />
+                    {/* Table legs */}
+                    <line x1="180" y1="260" x2="178" y2="278" stroke="#a08860" strokeWidth="2" />
+                    <line x1="220" y1="260" x2="222" y2="278" stroke="#a08860" strokeWidth="2" />
+                    {/* Book stack on table */}
+                    <rect x="190" y="250" width="20" height="4" rx="0.5" fill="#c4a882" />
+                    <rect x="192" y="246" width="16" height="4" rx="0.5" fill="#a8b8b0" />
+                    {/* Floor lamp — AJ-style */}
+                    <line x1="290" y1="118" x2="290" y2="244" stroke="#333" strokeWidth="2" />
+                    <line x1="280" y1="244" x2="300" y2="244" stroke="#333" strokeWidth="2.5" />
+                    <path d="M280 118 L290 110 L300 118 L296 120 L284 120Z" fill="#333" />
+                    {/* Rug — 200x300cm wool */}
+                    <ellipse cx="180" cy="270" rx="100" ry="22" fill="#e0d8cc" fillOpacity="0.5" />
+                    {/* Wegner-style accent chair */}
+                    <rect x="290" y="186" width="40" height="34" rx="4" fill="#d4c4a0" />
+                    <path d="M288 185 C288 170 332 170 332 185" stroke="#b8a47c" strokeWidth="2" fill="none" />
+                    <line x1="294" y1="220" x2="292" y2="242" stroke="#a08860" strokeWidth="2" strokeLinecap="round" />
+                    <line x1="326" y1="220" x2="328" y2="242" stroke="#a08860" strokeWidth="2" strokeLinecap="round" />
+                    {/* Plant — fiddle leaf in white pot */}
+                    <rect x="52" y="210" width="18" height="22" rx="2" fill="#f0ebe4" stroke="#ddd" strokeWidth="0.5" />
+                    <circle cx="61" cy="200" r="12" fill="#6b8f5e" fillOpacity="0.7" />
+                    <circle cx="55" cy="194" r="8" fill="#7da06e" fillOpacity="0.6" />
+                    <circle cx="67" cy="192" r="9" fill="#5a7e4c" fillOpacity="0.5" />
+                    <line x1="61" y1="210" x2="61" y2="196" stroke="#6b7a50" strokeWidth="1.5" />
+                    {/* Sofa shadow */}
+                    <ellipse cx="135" cy="244" rx="85" ry="4" fill="#000" fillOpacity="0.04" />
+                    {/* Baseboard */}
+                    <line x1="40" y1="248" x2="360" y2="248" stroke="#d8d0c6" strokeWidth="2" />
+                  </svg>
+                  {/* Real image overlay if DB available */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src="/api/demo?type=hero&image=after"
-                    alt="Pi&egrave;ce meubl&eacute;e par Versiroom"
+                    alt="Salon scandinave meubl&eacute; par Versiroom"
                     className="absolute inset-0 w-full h-full object-cover"
                     onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                   />
