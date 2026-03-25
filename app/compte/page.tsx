@@ -49,6 +49,16 @@ export default function ComptePage() {
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [saveMessage, setSaveMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [siretError, setSiretError] = useState<string | null>(null);
+  const [companySearch, setCompanySearch] = useState("");
+  const [companyResults, setCompanyResults] = useState<Array<{
+    raisonSociale: string;
+    adresse: string;
+    formeJuridique: string;
+    siret: string;
+  }>>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   const logoInputRef = useRef<HTMLInputElement>(null);
 
@@ -121,6 +131,60 @@ export default function ComptePage() {
       setIsLookingUp(false);
     }
   }, [siret]);
+
+  // ── Company name search ──
+  const handleCompanySearch = useCallback(async () => {
+    const q = companySearch.trim();
+    if (q.length < 2) return;
+
+    setIsSearching(true);
+    setSiretError(null);
+
+    try {
+      const res = await fetch("/api/merchant/lookup-siret", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: q }),
+      });
+
+      const data = await res.json();
+      if (data.results && data.results.length > 0) {
+        setCompanyResults(data.results);
+        setShowResults(true);
+      } else {
+        setCompanyResults([]);
+        setShowResults(true);
+        setSiretError(data.error || "Aucune entreprise trouvée.");
+      }
+    } catch {
+      setSiretError("Erreur de connexion. Réessayez.");
+    } finally {
+      setIsSearching(false);
+    }
+  }, [companySearch]);
+
+  const selectCompany = useCallback((company: { raisonSociale: string; adresse: string; formeJuridique: string; siret: string }) => {
+    setSiret(company.siret);
+    setRaisonSociale(company.raisonSociale);
+    setAdresse(company.adresse);
+    setFormeJuridique(company.formeJuridique);
+    setCompanySearch("");
+    setShowResults(false);
+    setCompanyResults([]);
+    setSiretError(null);
+  }, []);
+
+  // Close results on outside click
+  useEffect(() => {
+    if (!showResults) return;
+    function handleClick(e: MouseEvent) {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setShowResults(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [showResults]);
 
   // ── Logo upload ──
   const handleLogoChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -289,6 +353,76 @@ export default function ComptePage() {
                     Entreprise
                   </h2>
 
+                  {/* Company name search */}
+                  <div ref={searchRef} className="relative">
+                    <label className="text-xs font-medium text-[var(--foreground)] mb-1.5 block">
+                      Rechercher par nom d&apos;entreprise
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={companySearch}
+                        onChange={(e) => {
+                          setCompanySearch(e.target.value);
+                          setSiretError(null);
+                        }}
+                        onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleCompanySearch(); } }}
+                        placeholder="Ex : Dupont Immobilier, SCI Martin..."
+                        className="flex-1 px-4 py-3 border border-[var(--border)] rounded-xl text-sm font-light focus:border-[var(--foreground)] focus:outline-none transition-colors placeholder:text-[var(--foreground)]/30"
+                        data-testid="merchant-company-search"
+                      />
+                      <button
+                        onClick={handleCompanySearch}
+                        disabled={isSearching || companySearch.trim().length < 2}
+                        className="px-4 py-3 bg-[var(--foreground)] text-[var(--background)] rounded-xl text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/50 focus-visible:ring-offset-2 whitespace-nowrap"
+                      >
+                        {isSearching ? (
+                          <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                          </svg>
+                        ) : (
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+
+                    {/* Search results dropdown */}
+                    {showResults && companyResults.length > 0 && (
+                      <div className="absolute z-50 left-0 right-0 mt-2 bg-[var(--background)] border border-[var(--border)] rounded-xl shadow-lg overflow-hidden">
+                        {companyResults.map((company, i) => (
+                          <button
+                            key={`${company.siret}-${i}`}
+                            onClick={() => selectCompany(company)}
+                            className="w-full text-left px-4 py-3 hover:bg-[var(--foreground)]/[0.03] transition-colors border-b border-[var(--border)] last:border-b-0"
+                          >
+                            <p className="text-sm font-medium text-[var(--foreground)]">{company.raisonSociale}</p>
+                            <p className="text-xs text-[var(--muted)] font-light mt-0.5">
+                              {company.siret && <span className="font-mono">{company.siret.replace(/(\d{3})(\d{3})(\d{3})(\d{5})/, "$1 $2 $3 $4")}</span>}
+                              {company.adresse && <span> &middot; {company.adresse}</span>}
+                            </p>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {showResults && companyResults.length === 0 && !isSearching && (
+                      <div className="absolute z-50 left-0 right-0 mt-2 bg-[var(--background)] border border-[var(--border)] rounded-xl shadow-lg p-4 text-center">
+                        <p className="text-sm text-[var(--muted)] font-light">Aucune entreprise trouvée</p>
+                        <p className="text-xs text-[var(--muted)]/60 font-light mt-1">Essayez un autre nom ou entrez le SIRET ci-dessous</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Divider */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 h-px bg-[var(--border)]" />
+                    <span className="text-xs text-[var(--muted)]/60 font-light">ou par SIRET</span>
+                    <div className="flex-1 h-px bg-[var(--border)]" />
+                  </div>
+
+                  {/* SIRET direct lookup */}
                   <div className="flex gap-2">
                     <div className="flex-1">
                       <label className="text-xs font-medium text-[var(--foreground)] mb-1.5 block">

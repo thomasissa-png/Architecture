@@ -1,11 +1,13 @@
 /**
- * F4.A — SIRET Lookup API.
+ * F4.A — Company Lookup API.
  *
  * POST /api/merchant/lookup-siret
- * Body: { siret: "12345678901234" }
+ * Body: { siret: "12345678901234" }        → lookup by SIRET
+ * Body: { query: "Dupont Immobilier" }      → search by company name
  *
- * Primary: Pappers API (requires PAPPERS_API_KEY, 100 req/day free).
- * Fallback: API INSEE SIRENE (free, no key required for basic info).
+ * Primary: Pappers API (requires PAPPERS_API_KEY).
+ * Fallback: API INSEE SIRENE (free, no key required for SIRET lookup).
+ * Name search only works with Pappers API.
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -20,11 +22,23 @@ function isValidSiret(siret: string): boolean {
   return /^\d{14}$/.test(siret);
 }
 
-// ─── Pappers API ─────────────────────────────────────────────────────
+// ─── Types ───────────────────────────────────────────────────────────
+
+interface CompanyResult {
+  raisonSociale: string;
+  adresse: string;
+  formeJuridique: string;
+  dirigeant: string | null;
+  codeNaf: string | null;
+  siret?: string;
+}
+
+// ─── Pappers API — SIRET lookup ──────────────────────────────────────
 
 interface PappersResponse {
   nom_entreprise?: string;
   siege?: {
+    siret?: string;
     adresse_ligne_1?: string;
     code_postal?: string;
     ville?: string;
@@ -38,13 +52,7 @@ interface PappersResponse {
   code_naf?: string;
 }
 
-async function lookupViaPappers(siret: string): Promise<{
-  raisonSociale: string;
-  adresse: string;
-  formeJuridique: string;
-  dirigeant: string | null;
-  codeNaf: string | null;
-} | null> {
+async function lookupViaPappers(siret: string): Promise<CompanyResult | null> {
   const apiKey = process.env.PAPPERS_API_KEY;
   if (!apiKey) return null;
 
@@ -74,13 +82,75 @@ async function lookupViaPappers(siret: string): Promise<{
       formeJuridique: data.forme_juridique || "",
       dirigeant,
       codeNaf: data.code_naf || null,
+      siret,
     };
   } catch {
     return null;
   }
 }
 
-// ─── INSEE SIRENE Fallback ───────────────────────────────────────────
+// ─── Pappers API — Name search ───────────────────────────────────────
+
+interface PappersSearchResult {
+  resultats?: Array<{
+    nom_entreprise?: string;
+    siren?: string;
+    siege?: {
+      siret?: string;
+      adresse_ligne_1?: string;
+      code_postal?: string;
+      ville?: string;
+    };
+    forme_juridique?: string;
+    dirigeants?: Array<{
+      nom?: string;
+      prenom?: string;
+    }>;
+    code_naf?: string;
+  }>;
+}
+
+async function searchByName(query: string): Promise<CompanyResult[]> {
+  const apiKey = process.env.PAPPERS_API_KEY;
+  if (!apiKey) return [];
+
+  try {
+    const res = await fetch(
+      `https://api.pappers.fr/v2/recherche?q=${encodeURIComponent(query)}&api_token=${apiKey}&par_page=5`,
+      { signal: AbortSignal.timeout(8000) }
+    );
+
+    if (!res.ok) return [];
+
+    const data: PappersSearchResult = await res.json();
+    if (!data.resultats?.length) return [];
+
+    return data.resultats.map((r) => {
+      const adresseParts = [
+        r.siege?.adresse_ligne_1,
+        r.siege?.code_postal,
+        r.siege?.ville,
+      ].filter(Boolean);
+
+      const dirigeant = r.dirigeants?.[0]
+        ? `${r.dirigeants[0].prenom || ""} ${r.dirigeants[0].nom || ""}`.trim()
+        : null;
+
+      return {
+        raisonSociale: r.nom_entreprise || "",
+        adresse: adresseParts.join(", "),
+        formeJuridique: r.forme_juridique || "",
+        dirigeant,
+        codeNaf: r.code_naf || null,
+        siret: r.siege?.siret || "",
+      };
+    });
+  } catch {
+    return [];
+  }
+}
+
+// ─── INSEE SIRENE Fallback (SIRET only) ──────────────────────────────
 
 interface InseeResponse {
   etablissement?: {
@@ -99,13 +169,7 @@ interface InseeResponse {
   };
 }
 
-async function lookupViaInsee(siret: string): Promise<{
-  raisonSociale: string;
-  adresse: string;
-  formeJuridique: string;
-  dirigeant: string | null;
-  codeNaf: string | null;
-} | null> {
+async function lookupViaInsee(siret: string): Promise<CompanyResult | null> {
   try {
     const res = await fetch(
       `https://api.insee.fr/entreprises/sirene/V3.11/siret/${siret}`,
@@ -136,6 +200,7 @@ async function lookupViaInsee(siret: string): Promise<{
       formeJuridique: etab.uniteLegale?.categorieJuridiqueUniteLegale || "",
       dirigeant: null,
       codeNaf: etab.activitePrincipaleEtablissement || null,
+      siret,
     };
   } catch {
     return null;
@@ -153,7 +218,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  let body: { siret?: string };
+  let body: { siret?: string; query?: string };
   try {
     body = await request.json();
   } catch {
@@ -163,6 +228,21 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // ── Search by company name ──
+  if (body.query && body.query.trim().length >= 2) {
+    const results = await searchByName(body.query.trim());
+
+    if (results.length === 0) {
+      return NextResponse.json(
+        { error: "Aucune entreprise trouvée. Essayez un autre nom ou entrez le SIRET directement.", results: [] },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ results });
+  }
+
+  // ── Lookup by SIRET ──
   const siret = body.siret?.replace(/\s/g, "");
   if (!siret || !isValidSiret(siret)) {
     return NextResponse.json(
