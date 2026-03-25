@@ -25,7 +25,7 @@ import {
  * Used by audit agents (Yann Duval, Lucas Moreau) to correlate generation quality with prompt version.
  * History: v1-v5 (Sprints 1-7), v6-v10 (Sprints 8-12), v11-v15 (Sprints 13-16), v16-v17 (Sprint 17),
  * v18 (current — Sprint 18+, post all fixes) */
-export const PROMPT_VERSION = "v19";
+export const PROMPT_VERSION = "v20";
 
 // ─── Timeout wrapper for external API calls ─────────────────────────
 const API_TIMEOUT_MS = 120_000;
@@ -578,6 +578,7 @@ function buildOutdoorSurfacesResponsesPrompt(
     "Keep the existing wall color and texture — do not warm, smooth, or repaint walls unless the surface prompt explicitly names a wall finish.",
     "Glass blocks and skylights keep their translucency — light passes through them in the output.",
     "Preserve existing vegetation in the background. Only modify ground surface in the foreground zone.",
+    "Maintain the exact wall and facade color temperature from the input — do not warm or cool the surfaces.",
     "Preserve the exact lighting conditions from the input — same shadow hardness, same direction, same color temperature.",
     "No furniture in this pass — EMPTY outdoor space with finished ground only.",
     "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, subtle sensor grain (ISO 200), natural corner vignetting.",
@@ -600,6 +601,7 @@ function buildOutdoorSurfacesFluxPrompt(
     "Keep existing wall color and texture — do not warm, smooth, or repaint walls.",
     "Glass blocks and skylights keep their translucency.",
     "Preserve background vegetation. Only modify foreground ground surface.",
+    "Maintain the exact wall and facade color temperature from the input — do not warm or cool the surfaces.",
     "Preserve exact lighting conditions from input — same shadow hardness, direction, color temperature.",
     "Empty outdoor space — no furniture, no rugs, no objects.",
     "Same camera angle, same proportions.",

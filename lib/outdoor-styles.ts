@@ -58,7 +58,7 @@ export const OUTDOOR_STYLES: Record<string, OutdoorStyle> = {
     surfacePrompt:
       "Bohemian garden outdoor: reclaimed irregular sandstone pavers 20-40cm variable size with moss-filled joints and raked white marble gravel borders 30cm wide, preserve all existing fences hedges and background trees unchanged, open sky preserved as-is.",
     furniturePrompt:
-      "Bohemian garden furniture: two round weatherproof floor cushions 55cm in terracotta and mustard outdoor polyester fabric, low reclaimed-wood pallet coffee table 90x60cm aged grey finish, outdoor flat-weave cotton rug 160x230cm in warm earthy tones, freestanding bamboo rack 180cm with three hanging macrame plant holders, potted Heuchera 'Palace Purple' 40cm tall in woven sea-grass basket, potted Nephrolepis (Boston fern) and Rudbeckia mix in terracotta pots 30cm, battery string lights 2200K warm white draped loosely on the bamboo rack (unlit daytime). Layered informal atmosphere.",
+      "Bohemian garden furniture: two round weatherproof floor cushions 55cm in terracotta and mustard outdoor polyester fabric, low reclaimed-wood pallet coffee table 90x60cm aged grey finish, outdoor flat-weave polypropylene rug 160x230cm in warm earthy tones, freestanding bamboo rack 180cm with three hanging macrame plant holders, potted Heuchera 'Palace Purple' 40cm tall in woven sea-grass basket, potted Dryopteris filix-mas (male fern) and Rudbeckia mix in terracotta pots 30cm, battery string lights 2200K warm white draped loosely on the bamboo rack (unlit daytime). Layered informal atmosphere.",
   },
 
   minimaliste_urbain: {
