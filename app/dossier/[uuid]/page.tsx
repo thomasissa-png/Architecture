@@ -15,6 +15,7 @@ import {
   formatPrice,
   formatSurface,
 } from "@/lib/dossier";
+import { getMerchantProfile } from "@/lib/merchant";
 import DossierPublicView from "@/components/DossierPublicView";
 
 interface PageProps {
@@ -95,9 +96,13 @@ export default async function DossierPage({ params }: PageProps) {
     );
   }
 
-  // Load photos
-  const photos = await getDossierPhotos(params.uuid);
+  // Load photos + merchant profile
+  const [photos, profile] = await Promise.all([
+    getDossierPhotos(params.uuid),
+    getMerchantProfile(dossier.user_id),
+  ]);
   const completedPhotos = photos.filter((p) => p.status === "completed");
+  const hasMerchant = profile?.is_merchant === true;
 
   const title = getDossierTitle(dossier);
 
@@ -106,11 +111,20 @@ export default async function DossierPage({ params }: PageProps) {
       {/* Header */}
       <header className="border-b border-foreground/5 bg-background/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 py-3 sm:py-4 flex items-center justify-between">
-          <span className="text-xl font-semibold text-foreground tracking-tighter">
-            Versiroom
-          </span>
+          {hasMerchant && profile?.logo_storage_key ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={`/api/logs/image?path=${encodeURIComponent(profile.logo_storage_key)}`}
+              alt={profile.raison_sociale || "Logo"}
+              className="h-8 w-auto object-contain"
+            />
+          ) : (
+            <span className="text-xl font-semibold text-foreground tracking-tighter">
+              Versiroom
+            </span>
+          )}
           <span className="text-xs text-muted font-light">
-            Dossier partagé
+            {hasMerchant && profile?.raison_sociale ? profile.raison_sociale : "Dossier partage"}
           </span>
         </div>
       </header>
@@ -123,6 +137,13 @@ export default async function DossierPage({ params }: PageProps) {
             {title}
           </h1>
 
+          {/* Description commerciale */}
+          {dossier.description_commerciale && (
+            <p className="text-sm text-muted font-light mb-3 max-w-2xl">
+              {dossier.description_commerciale}
+            </p>
+          )}
+
           {/* Property details */}
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted font-light">
             {dossier.bien_adresse && (
@@ -134,15 +155,35 @@ export default async function DossierPage({ params }: PageProps) {
             {dossier.bien_surface && (
               <span>{formatSurface(dossier.bien_surface)}</span>
             )}
+            {dossier.nb_pieces && (
+              <span>{dossier.nb_pieces} pi{"\u00E8"}ces</span>
+            )}
             {dossier.bien_prix && (
               <span>{formatPrice(dossier.bien_prix)}</span>
+            )}
+            {dossier.prix_moyen_m2 && (
+              <span className="text-[var(--sage)]">
+                {dossier.prix_moyen_m2.toLocaleString("fr-FR")} {"\u20AC"}/m{"\u00B2"} (quartier)
+              </span>
             )}
           </div>
 
           <p className="text-xs text-muted/50 mt-2">
-            Généré le {new Date(dossier.created_at).toLocaleDateString("fr-FR")} — Disponible jusqu&apos;au {new Date(dossier.expires_at).toLocaleDateString("fr-FR")}
+            Genere le {new Date(dossier.created_at).toLocaleDateString("fr-FR")} — Disponible jusqu&apos;au {new Date(dossier.expires_at).toLocaleDateString("fr-FR")}
           </p>
         </div>
+
+        {/* Map preview */}
+        {dossier.carte_image_key && (
+          <div className="mb-8 rounded-2xl border border-foreground/5 overflow-hidden max-w-lg">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`/api/logs/image?path=${encodeURIComponent(dossier.carte_image_key)}`}
+              alt="Carte du quartier"
+              className="w-full h-auto"
+            />
+          </div>
+        )}
 
         {/* Photos grid */}
         {completedPhotos.length === 0 ? (
@@ -181,10 +222,15 @@ export default async function DossierPage({ params }: PageProps) {
           </div>
         )}
 
-        {/* AI Disclaimer */}
-        <div className="mt-12 pt-6 border-t border-foreground/5 text-center">
+        {/* Merchant contact + AI Disclaimer */}
+        <div className="mt-12 pt-6 border-t border-foreground/5 text-center space-y-2">
+          {hasMerchant && (profile?.raison_sociale || profile?.telephone || profile?.email_pro) && (
+            <p className="text-xs text-muted font-light">
+              {[profile?.raison_sociale, profile?.telephone, profile?.email_pro].filter(Boolean).join(" — ")}
+            </p>
+          )}
           <p className="text-xs text-muted/40 font-light">
-            Visuels générés par intelligence artificielle à titre de simulation. Versiroom — versiroom.fr
+            Visuels generes par intelligence artificielle a titre de simulation. Versiroom — versiroom.fr
           </p>
         </div>
       </main>

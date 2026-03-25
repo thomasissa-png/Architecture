@@ -52,6 +52,14 @@ export async function POST(request: NextRequest) {
       bienPrix,
       bienType,
       globalStyleId,
+      latitude,
+      longitude,
+      ville,
+      codePostal,
+      descriptionCommerciale,
+      carteImageKey,
+      prixMoyenM2,
+      nbPieces,
     } = body;
 
     const dossier = await createDossier({
@@ -62,6 +70,14 @@ export async function POST(request: NextRequest) {
       bienPrix: bienPrix ? Number(bienPrix) : undefined,
       bienType: bienType || undefined,
       globalStyleId: globalStyleId || undefined,
+      latitude: latitude ? Number(latitude) : undefined,
+      longitude: longitude ? Number(longitude) : undefined,
+      ville: ville || undefined,
+      codePostal: codePostal || undefined,
+      descriptionCommerciale: descriptionCommerciale || undefined,
+      carteImageKey: carteImageKey || undefined,
+      prixMoyenM2: prixMoyenM2 ? Number(prixMoyenM2) : undefined,
+      nbPieces: nbPieces ? Number(nbPieces) : undefined,
     });
 
     return NextResponse.json({ dossier }, { status: 201 });

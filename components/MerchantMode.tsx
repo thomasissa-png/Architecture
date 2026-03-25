@@ -68,6 +68,20 @@ export default function MerchantMode() {
   const [bienSurface, setBienSurface] = useState("");
   const [bienPrix, setBienPrix] = useState("");
   const [bienType, setBienType] = useState("");
+  const [bienNbPieces, setBienNbPieces] = useState("");
+
+  // Enrichment data (F4.B)
+  const [addressSuggestions, setAddressSuggestions] = useState<Array<{ label: string; postcode: string; city: string; lat: number; lon: number }>>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isEnriching, setIsEnriching] = useState(false);
+  const [enrichedLat, setEnrichedLat] = useState<number | null>(null);
+  const [enrichedLon, setEnrichedLon] = useState<number | null>(null);
+  const [enrichedCity, setEnrichedCity] = useState("");
+  const [enrichedPostcode, setEnrichedPostcode] = useState("");
+  const [enrichedPrixM2, setEnrichedPrixM2] = useState<number | null>(null);
+  const [enrichedDescription, setEnrichedDescription] = useState("");
+  const [enrichedCarteKey, setEnrichedCarteKey] = useState<string | null>(null);
+  const addressDebounceRef = useRef<NodeJS.Timeout | null>(null);
 
   // Photos
   const [files, setFiles] = useState<File[]>([]);
@@ -207,6 +221,14 @@ export default function MerchantMode() {
           bienPrix: bienPrix ? Number(bienPrix) : null,
           bienType: bienType || null,
           globalStyleId: globalStyle?.id || "custom",
+          latitude: enrichedLat,
+          longitude: enrichedLon,
+          ville: enrichedCity || null,
+          codePostal: enrichedPostcode || null,
+          descriptionCommerciale: enrichedDescription.trim() || null,
+          carteImageKey: enrichedCarteKey,
+          prixMoyenM2: enrichedPrixM2,
+          nbPieces: bienNbPieces ? Number(bienNbPieces) : null,
         }),
       });
 
@@ -269,7 +291,7 @@ export default function MerchantMode() {
       setIsGenerating(false);
       setCurrentStep("review");
     }
-  }, [session, files, photoEntries, globalStyle, customPrompt, bienNom, bienAdresse, bienSurface, bienPrix, bienType, startPolling]);
+  }, [session, files, photoEntries, globalStyle, customPrompt, bienNom, bienAdresse, bienSurface, bienPrix, bienType, bienNbPieces, enrichedLat, enrichedLon, enrichedCity, enrichedPostcode, enrichedPrixM2, enrichedDescription, enrichedCarteKey, startPolling]);
 
   // ── Regenerate single photo ──
   const handleRegenerate = useCallback(async (photoId: number) => {
@@ -342,8 +364,70 @@ export default function MerchantMode() {
     });
   }, []);
 
+  // ── Address autocomplete (F4.B) ──
+  const handleAddressInput = useCallback((value: string) => {
+    setBienAdresse(value);
+    setShowSuggestions(true);
+
+    if (addressDebounceRef.current) clearTimeout(addressDebounceRef.current);
+
+    if (value.length < 3) {
+      setAddressSuggestions([]);
+      return;
+    }
+
+    addressDebounceRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/merchant/enrich-property?q=${encodeURIComponent(value)}`);
+        if (!res.ok) return;
+        const { suggestions } = await res.json();
+        setAddressSuggestions(suggestions || []);
+      } catch {
+        setAddressSuggestions([]);
+      }
+    }, 300);
+  }, []);
+
+  const handleSelectAddress = useCallback(async (suggestion: { label: string; postcode: string; city: string; lat: number; lon: number }) => {
+    setBienAdresse(suggestion.label);
+    setShowSuggestions(false);
+    setAddressSuggestions([]);
+    setEnrichedLat(suggestion.lat);
+    setEnrichedLon(suggestion.lon);
+    setEnrichedCity(suggestion.city);
+    setEnrichedPostcode(suggestion.postcode);
+
+    // Trigger enrichment
+    setIsEnriching(true);
+    try {
+      const res = await fetch("/api/merchant/enrich-property", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          adresse: suggestion.label,
+          surface: bienSurface ? Number(bienSurface) : undefined,
+          type: bienType || undefined,
+          nbPieces: bienNbPieces ? Number(bienNbPieces) : undefined,
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.prixMoyenM2) setEnrichedPrixM2(data.prixMoyenM2);
+        if (data.description) setEnrichedDescription(data.description);
+        if (data.carteImageKey) setEnrichedCarteKey(data.carteImageKey);
+        if (data.city) setEnrichedCity(data.city);
+        if (data.postcode) setEnrichedPostcode(data.postcode);
+      }
+    } catch {
+      // Non-blocking — enrichment is optional
+    } finally {
+      setIsEnriching(false);
+    }
+  }, [bienSurface, bienType, bienNbPieces]);
+
   // ── Derived ──
-  const bienTitle = bienNom.trim() || `Dossier de présentation — ${new Date().toLocaleDateString("fr-FR")}`;
+  const bienTitle = bienNom.trim() || `Dossier de presentation — ${new Date().toLocaleDateString("fr-FR")}`;
   const creditsNeeded = files.length;
 
   // ─── RENDER ────────────────────────────────────────────────────────
@@ -372,16 +456,78 @@ export default function MerchantMode() {
                 Informations du bien
               </h3>
               <p className="text-xs text-[var(--muted)]/60 font-light mb-6">
-                Facultatif — ces informations figureront sur le PDF et le lien de partage destiné aux acquéreurs.
+                Saisissez l&apos;adresse du bien pour enrichir automatiquement le dossier.
               </p>
             </div>
             <button
               onClick={() => setCurrentStep("photos")}
-              className="text-xs text-[var(--muted)] font-light hover:text-[var(--foreground)] transition-colors"
+              className="text-xs text-[var(--muted)] font-light hover:text-[var(--foreground)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/50 focus-visible:ring-offset-2 rounded"
             >
               Retour
             </button>
           </div>
+
+          {/* Address autocomplete */}
+          <div className="relative">
+            <label className="text-xs font-medium text-[var(--foreground)] mb-1.5 block">
+              Adresse du bien
+            </label>
+            <input
+              type="text"
+              value={bienAdresse}
+              onChange={(e) => handleAddressInput(e.target.value)}
+              onFocus={() => addressSuggestions.length > 0 && setShowSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+              placeholder="Commencez a taper : 45 rue de la Paix, 75002 Paris"
+              className="w-full px-4 py-3 border border-[var(--border)] rounded-xl text-sm font-light focus:border-[var(--foreground)] focus:outline-none transition-colors placeholder:text-[var(--foreground)]/30"
+              data-testid="merchant-bien-adresse"
+            />
+            {isEnriching && (
+              <div className="absolute right-3 top-[38px]">
+                <div className="w-4 h-4 border-2 border-[var(--foreground)]/20 border-t-[var(--sage)] rounded-full animate-spin" />
+              </div>
+            )}
+
+            {/* Suggestions dropdown */}
+            {showSuggestions && addressSuggestions.length > 0 && (
+              <div className="absolute z-20 left-0 right-0 mt-1 bg-white border border-[var(--border)] rounded-xl shadow-lg overflow-hidden" data-testid="merchant-address-suggestions">
+                {addressSuggestions.map((s, i) => (
+                  <button
+                    key={i}
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => handleSelectAddress(s)}
+                    className="w-full text-left px-4 py-3 text-sm font-light hover:bg-[var(--foreground)]/5 transition-colors border-b last:border-b-0 border-[var(--border)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/50 focus-visible:ring-inset"
+                    data-testid={`merchant-address-suggestion-${i}`}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Auto-filled location info */}
+          {(enrichedCity || enrichedPostcode) && (
+            <div className="flex flex-wrap gap-2 -mt-2">
+              {enrichedPostcode && (
+                <span className="text-xs px-3 py-1 rounded-full bg-[var(--foreground)]/5 text-[var(--muted)] font-light">
+                  {enrichedPostcode}
+                </span>
+              )}
+              {enrichedCity && (
+                <span className="text-xs px-3 py-1 rounded-full bg-[var(--foreground)]/5 text-[var(--muted)] font-light">
+                  {enrichedCity}
+                </span>
+              )}
+              {enrichedPrixM2 && (
+                <span className="text-xs px-3 py-1 rounded-full bg-[var(--sage)]/10 text-[var(--sage)] font-medium">
+                  Prix moyen : {enrichedPrixM2.toLocaleString("fr-FR")} {"\u20AC"}/m{"\u00B2"}
+                </span>
+              )}
+            </div>
+          )}
+
+          <div className="border-b border-[var(--border)]" />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -392,7 +538,7 @@ export default function MerchantMode() {
                 type="text"
                 value={bienNom}
                 onChange={(e) => setBienNom(e.target.value)}
-                placeholder="Ex : 45 rue de la Paix — T3 rénové"
+                placeholder="Ex : T3 renove avec vue"
                 className="w-full px-4 py-3 border border-[var(--border)] rounded-xl text-sm font-light focus:border-[var(--foreground)] focus:outline-none transition-colors placeholder:text-[var(--foreground)]/30"
                 data-testid="merchant-bien-nom"
               />
@@ -400,21 +546,7 @@ export default function MerchantMode() {
 
             <div>
               <label className="text-xs font-medium text-[var(--foreground)] mb-1.5 block">
-                Adresse
-              </label>
-              <input
-                type="text"
-                value={bienAdresse}
-                onChange={(e) => setBienAdresse(e.target.value)}
-                placeholder="Ex : 45 rue de la Paix, 75002 Paris"
-                className="w-full px-4 py-3 border border-[var(--border)] rounded-xl text-sm font-light focus:border-[var(--foreground)] focus:outline-none transition-colors placeholder:text-[var(--foreground)]/30"
-                data-testid="merchant-bien-adresse"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs font-medium text-[var(--foreground)] mb-1.5 block">
-                Surface (m²)
+                Surface (m{"\u00B2"})
               </label>
               <input
                 type="number"
@@ -428,7 +560,21 @@ export default function MerchantMode() {
 
             <div>
               <label className="text-xs font-medium text-[var(--foreground)] mb-1.5 block">
-                Prix (EUR)
+                Nombre de pieces
+              </label>
+              <input
+                type="number"
+                value={bienNbPieces}
+                onChange={(e) => setBienNbPieces(e.target.value)}
+                placeholder="3"
+                className="w-full px-4 py-3 border border-[var(--border)] rounded-xl text-sm font-light focus:border-[var(--foreground)] focus:outline-none transition-colors placeholder:text-[var(--foreground)]/30"
+                data-testid="merchant-bien-nb-pieces"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-medium text-[var(--foreground)] mb-1.5 block">
+                Prix ({"\u20AC"})
               </label>
               <input
                 type="number"
@@ -439,7 +585,7 @@ export default function MerchantMode() {
                 data-testid="merchant-bien-prix"
               />
               <p className="text-[10px] text-[var(--muted)]/50 font-light mt-1">
-                Prix de commercialisation en euros (ex : 350000 pour 350 000 EUR)
+                Prix de commercialisation en euros (ex : 350000 pour 350 000 {"\u20AC"})
               </p>
             </div>
           </div>
@@ -466,6 +612,43 @@ export default function MerchantMode() {
               ))}
             </div>
           </div>
+
+          {/* Description commerciale (enriched) */}
+          {enrichedDescription && (
+            <div>
+              <label className="text-xs font-medium text-[var(--foreground)] mb-1.5 block">
+                Description commerciale
+              </label>
+              <textarea
+                value={enrichedDescription}
+                onChange={(e) => setEnrichedDescription(e.target.value)}
+                rows={3}
+                className="w-full px-4 py-3 border border-[var(--border)] rounded-xl text-sm font-light focus:border-[var(--foreground)] focus:outline-none transition-colors resize-none placeholder:text-[var(--foreground)]/30"
+                data-testid="merchant-description"
+              />
+              <p className="text-[10px] text-[var(--muted)]/50 font-light mt-1">
+                Generee automatiquement — vous pouvez la modifier.
+              </p>
+            </div>
+          )}
+
+          {/* Carte du quartier (enriched) */}
+          {enrichedCarteKey && (
+            <div>
+              <label className="text-xs font-medium text-[var(--foreground)] mb-1.5 block">
+                Carte du quartier
+              </label>
+              <div className="rounded-xl border border-[var(--border)] overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`/api/logs/image?path=${encodeURIComponent(enrichedCarteKey)}`}
+                  alt="Carte du quartier"
+                  className="w-full h-auto"
+                  data-testid="merchant-carte-preview"
+                />
+              </div>
+            </div>
+          )}
 
           {/* Next button */}
           <div className="pt-4">
@@ -571,7 +754,7 @@ export default function MerchantMode() {
             </div>
             <button
               onClick={() => setCurrentStep("info")}
-              className="text-xs text-[var(--muted)] font-light hover:text-[var(--foreground)] transition-colors"
+              className="text-xs text-[var(--muted)] font-light hover:text-[var(--foreground)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/50 focus-visible:ring-offset-2 rounded"
             >
               Retour
             </button>
@@ -611,7 +794,7 @@ export default function MerchantMode() {
             </h3>
             <button
               onClick={() => setCurrentStep("style")}
-              className="text-xs text-[var(--muted)] font-light hover:text-[var(--foreground)] transition-colors"
+              className="text-xs text-[var(--muted)] font-light hover:text-[var(--foreground)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/50 focus-visible:ring-offset-2 rounded"
             >
               Retour
             </button>
@@ -626,8 +809,8 @@ export default function MerchantMode() {
               <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-[var(--muted)] font-light mt-1">
                 {bienAdresse && <span>{bienAdresse}</span>}
                 {bienType && <span className="capitalize">{bienType}</span>}
-                {bienSurface && <span>{bienSurface} m2</span>}
-                {bienPrix && <span>{Number(bienPrix).toLocaleString("fr-FR")} EUR</span>}
+                {bienSurface && <span>{bienSurface} m{"\u00B2"}</span>}
+                {bienPrix && <span>{Number(bienPrix).toLocaleString("fr-FR")} {"\u20AC"}</span>}
               </div>
             </div>
 
@@ -726,6 +909,7 @@ export default function MerchantMode() {
           <DossierResult
             photos={dossierPhotos}
             bienNom={bienTitle}
+            dossierUuid={dossierUuid}
             onDownloadPdf={handleDownloadPdf}
             onShareLink={handleShareLink}
             onRegenerate={handleRegenerate}

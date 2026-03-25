@@ -28,6 +28,14 @@ export interface Dossier {
   fail_count: number;
   total_duration_ms: number | null;
   pdf_storage_key: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  ville: string | null;
+  code_postal: string | null;
+  description_commerciale: string | null;
+  carte_image_key: string | null;
+  prix_moyen_m2: number | null;
+  nb_pieces: number | null;
   created_at: string;
   expires_at: string;
 }
@@ -57,6 +65,14 @@ export interface CreateDossierInput {
   bienPrix?: number;
   bienType?: string;
   globalStyleId?: string;
+  latitude?: number;
+  longitude?: number;
+  ville?: string;
+  codePostal?: string;
+  descriptionCommerciale?: string;
+  carteImageKey?: string;
+  prixMoyenM2?: number;
+  nbPieces?: number;
 }
 
 export interface DossierPhotoInput {
@@ -127,6 +143,25 @@ export async function ensureDossierTables(): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_dossier_photos_uuid ON dossier_photos (dossier_uuid);
   `);
 
+  // ── F4.B: Enrichment columns (address geocoding, DVF, description, map) ──
+  const enrichColumns = [
+    { name: "latitude", type: "DECIMAL(10,7)" },
+    { name: "longitude", type: "DECIMAL(10,7)" },
+    { name: "ville", type: "VARCHAR(100)" },
+    { name: "code_postal", type: "VARCHAR(10)" },
+    { name: "description_commerciale", type: "TEXT" },
+    { name: "carte_image_key", type: "VARCHAR(255)" },
+    { name: "prix_moyen_m2", type: "INTEGER" },
+    { name: "nb_pieces", type: "INTEGER" },
+  ];
+  const enrichSql = enrichColumns
+    .map(
+      (col) =>
+        `DO $$ BEGIN ALTER TABLE dossiers ADD COLUMN ${col.name} ${col.type}; EXCEPTION WHEN duplicate_column THEN NULL; END $$`
+    )
+    .join("; ");
+  await db.query(enrichSql);
+
   dossierTablesEnsured = true;
 }
 
@@ -144,8 +179,9 @@ export async function createDossier(input: CreateDossierInput): Promise<Dossier>
   const uuid = generateUUID();
 
   const result = await db.query(
-    `INSERT INTO dossiers (uuid, user_id, bien_nom, bien_adresse, bien_surface, bien_prix, bien_type, global_style_id)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    `INSERT INTO dossiers (uuid, user_id, bien_nom, bien_adresse, bien_surface, bien_prix, bien_type, global_style_id,
+       latitude, longitude, ville, code_postal, description_commerciale, carte_image_key, prix_moyen_m2, nb_pieces)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
      RETURNING *`,
     [
       uuid,
@@ -156,6 +192,14 @@ export async function createDossier(input: CreateDossierInput): Promise<Dossier>
       input.bienPrix || null,
       input.bienType || null,
       input.globalStyleId || null,
+      input.latitude || null,
+      input.longitude || null,
+      input.ville || null,
+      input.codePostal || null,
+      input.descriptionCommerciale || null,
+      input.carteImageKey || null,
+      input.prixMoyenM2 || null,
+      input.nbPieces || null,
     ]
   );
 
