@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@replit/object-storage": "1.0.0",
@@ -15,6 +16,7 @@
     "next": "14.2.35",
     "next-auth": "^4.24.13",
     "openai": "^6.32.0",
+    "pdf-lib": "^1.17.1",
     "pg": "^8.20.0",
     "react": "^18",
     "react-compare-slider": "^4.0.0",
@@ -25,6 +27,7 @@
     "stripe": "^20.4.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@types/node": "20.19.37",
     "@types/pg": "^8.20.0",
     "@types/react": "18.3.28",
