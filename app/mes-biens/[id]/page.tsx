@@ -92,6 +92,15 @@ export default function PropertyDetailPage() {
   const [isCreatingDossier, setIsCreatingDossier] = useState(false);
   const [dossierResult, setDossierResult] = useState<{ uuid: string; pdfUrl: string } | null>(null);
 
+  // Inline toast (replaces alert())
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+  useEffect(() => {
+    if (toastMsg) {
+      const t = setTimeout(() => setToastMsg(null), 4000);
+      return () => clearTimeout(t);
+    }
+  }, [toastMsg]);
+
   // Redirect if not authenticated
   useEffect(() => {
     if (authStatus === "unauthenticated") {
@@ -213,10 +222,10 @@ export default function PropertyDetailPage() {
         setDossierResult(data.dossier);
       } else {
         const data = await res.json();
-        alert(data.error || "Erreur lors de la creation du dossier.");
+        setToastMsg(data.error || "Erreur lors de la cr\u00e9ation du dossier.");
       }
     } catch {
-      alert("Erreur reseau.");
+      setToastMsg("Erreur r\u00e9seau.");
     } finally {
       setIsCreatingDossier(false);
     }
@@ -250,7 +259,7 @@ export default function PropertyDetailPage() {
         <div className="text-center">
           <p className="text-muted font-light text-sm">{error || "Bien introuvable."}</p>
           <a href="/mes-biens" className="inline-block mt-4 text-xs text-sage font-medium hover:underline">
-            Retour a mes biens
+            Retour \u00e0 mes biens
           </a>
         </div>
       </div>
@@ -309,22 +318,22 @@ export default function PropertyDetailPage() {
               )}
               {property.surface_m2 && (
                 <span className="text-xs bg-foreground/5 text-foreground px-3 py-1 rounded-xl font-light">
-                  {property.surface_m2} m2
+                  {property.surface_m2} m&#178;
                 </span>
               )}
               {property.room_count && (
                 <span className="text-xs bg-foreground/5 text-foreground px-3 py-1 rounded-xl font-light">
-                  {property.room_count} pieces
+                  {property.room_count} pi&#232;ces
                 </span>
               )}
               {property.dvf_median_price_m2 && (
                 <span className="text-xs bg-sage/10 text-sage px-3 py-1 rounded-xl font-light">
-                  {property.dvf_median_price_m2.toLocaleString("fr-FR")} EUR/m2
+                  {property.dvf_median_price_m2.toLocaleString("fr-FR")} &#8364;/m&#178;
                 </span>
               )}
               {property.sale_price && (
                 <span className="text-xs bg-foreground text-background px-3 py-1 rounded-xl font-medium">
-                  {property.sale_price.toLocaleString("fr-FR")} EUR
+                  {property.sale_price.toLocaleString("fr-FR")} &#8364;
                 </span>
               )}
             </div>
@@ -417,7 +426,7 @@ export default function PropertyDetailPage() {
 
           {photos.length === 0 ? (
             <div className="text-center py-12 bg-foreground/[0.02] rounded-2xl border border-foreground/5">
-              <p className="text-muted font-light text-sm">Aucune photo associee a ce bien.</p>
+              <p className="text-muted font-light text-sm">Aucune photo associ&#233;e &#224; ce bien.</p>
               <p className="text-xs text-muted/50 font-light mt-1">
                 Associez des photos depuis votre galerie ou generez-en de nouvelles.
               </p>
@@ -449,7 +458,7 @@ export default function PropertyDetailPage() {
                     </div>
                     <button
                       onClick={() => handleDissociate(photo.id)}
-                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-500/80 text-white text-[10px] px-2 py-1 rounded-lg font-medium hover:bg-red-500 focus-visible:outline-none"
+                      className="absolute top-2 right-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity bg-red-500/80 text-white text-[10px] px-2 py-1 rounded-lg font-medium hover:bg-red-500 focus-visible:outline-none"
                     >
                       Retirer
                     </button>
@@ -468,7 +477,7 @@ export default function PropertyDetailPage() {
                   }}
                   className="text-xs bg-foreground text-background px-4 py-2 rounded-full font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                 >
-                  Creer un dossier
+                  Cr&#233;er un dossier
                 </button>
               </div>
             </>
@@ -486,7 +495,7 @@ export default function PropertyDetailPage() {
                     setShowAssociateModal(false);
                     setSelectedForAssoc(new Set());
                   }}
-                  className="text-muted hover:text-foreground text-lg font-light w-8 h-8 flex items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                  className="text-muted hover:text-foreground text-lg font-light w-10 h-10 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                 >
                   x
                 </button>
@@ -494,12 +503,12 @@ export default function PropertyDetailPage() {
 
               {unassociatedPhotos.length === 0 ? (
                 <p className="text-sm text-muted font-light py-8 text-center">
-                  Aucune photo non classee disponible.
+                  Aucune photo non class&#233;e disponible.
                 </p>
               ) : (
                 <>
                   <p className="text-xs text-muted font-light mb-3">
-                    {selectedForAssoc.size} photo{selectedForAssoc.size !== 1 ? "s" : ""} selectionnee{selectedForAssoc.size !== 1 ? "s" : ""}
+                    {selectedForAssoc.size} photo{selectedForAssoc.size !== 1 ? "s" : ""} s&#233;lectionn&#233;e{selectedForAssoc.size !== 1 ? "s" : ""}
                   </p>
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-4">
                     {unassociatedPhotos.map((photo) => (
@@ -558,10 +567,10 @@ export default function PropertyDetailPage() {
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
             <div className="bg-background rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-foreground">Creer un dossier</h2>
+                <h2 className="text-lg font-semibold text-foreground">Cr&#233;er un dossier</h2>
                 <button
                   onClick={() => setShowDossierModal(false)}
-                  className="text-muted hover:text-foreground text-lg font-light w-8 h-8 flex items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                  className="text-muted hover:text-foreground text-lg font-light w-10 h-10 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                 >
                   x
                 </button>
@@ -569,25 +578,25 @@ export default function PropertyDetailPage() {
 
               {dossierResult ? (
                 <div className="text-center py-8">
-                  <p className="text-sm text-sage font-medium mb-4">Dossier cree avec succes.</p>
+                  <p className="text-sm text-sage font-medium mb-4">Dossier cr&#233;&#233; avec succ&#232;s.</p>
                   <a
                     href={dossierResult.pdfUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-block text-xs bg-foreground text-background px-4 py-2 rounded-full font-medium hover:bg-foreground/85 transition-colors"
                   >
-                    Telecharger le PDF
+                    T&#233;l&#233;charger le PDF
                   </a>
                 </div>
               ) : (
                 <>
                   <p className="text-xs text-muted font-light mb-3">
-                    Selectionnez les photos a inclure dans le dossier. Cliquez sur la couverture souhaitee.
+                    S&#233;lectionnez les photos &#224; inclure dans le dossier. Cliquez sur la couverture souhait&#233;e.
                   </p>
 
                   {photos.length === 0 ? (
                     <p className="text-sm text-muted font-light py-8 text-center">
-                      Associez d'abord des photos a ce bien.
+                      Associez d&#8217;abord des photos &#224; ce bien.
                     </p>
                   ) : (
                     <>
@@ -622,7 +631,7 @@ export default function PropertyDetailPage() {
                                 className={`absolute bottom-1 left-1 text-[9px] px-1.5 py-0.5 rounded-md font-medium ${
                                   coverPhotoId === photo.id
                                     ? "bg-sage text-white"
-                                    : "bg-white/80 text-foreground hover:bg-sage/20"
+                                    : "bg-[var(--background)]/80 text-foreground hover:bg-sage/20"
                                 }`}
                               >
                                 {coverPhotoId === photo.id ? "Couverture" : "Couverture ?"}
@@ -638,14 +647,21 @@ export default function PropertyDetailPage() {
                         className="text-xs bg-foreground text-background px-4 py-2 rounded-full font-medium hover:bg-foreground/85 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {isCreatingDossier
-                          ? "Creation en cours..."
-                          : `Creer le dossier (${selectedForDossier.size} photo${selectedForDossier.size !== 1 ? "s" : ""})`}
+                          ? "Cr\u00e9ation en cours..."
+                          : `Cr\u00e9er le dossier (${selectedForDossier.size} photo${selectedForDossier.size !== 1 ? "s" : ""})`}
                       </button>
                     </>
                   )}
                 </>
               )}
             </div>
+          </div>
+        )}
+
+        {/* Inline toast */}
+        {toastMsg && (
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-red-500/90 text-white text-xs font-medium px-4 py-2.5 rounded-full shadow-lg animate-fade-in">
+            {toastMsg}
           </div>
         )}
       </main>

@@ -147,7 +147,7 @@ export default function MesBiensPage() {
 
       if (!res.ok) {
         const data = await res.json();
-        setCreateError(data.error || "Erreur lors de la creation.");
+        setCreateError(data.error || "Erreur lors de la cr\u00e9ation.");
         return;
       }
 
@@ -155,7 +155,7 @@ export default function MesBiensPage() {
       // Redirect to the new property page
       window.location.href = `/mes-biens/${data.property.id}`;
     } catch {
-      setCreateError("Erreur reseau.");
+      setCreateError("Erreur r\u00e9seau.");
     } finally {
       setIsCreating(false);
     }
@@ -197,7 +197,7 @@ export default function MesBiensPage() {
           <div>
             <h1 className="text-2xl font-semibold text-foreground tracking-tight">Mes biens</h1>
             <p className="text-sm text-muted font-light mt-1">
-              {properties.length} bien{properties.length !== 1 ? "s" : ""} enregistre{properties.length !== 1 ? "s" : ""}
+              {properties.length} bien{properties.length !== 1 ? "s" : ""} enregistr&#233;{properties.length !== 1 ? "s" : ""}
             </p>
           </div>
 
@@ -249,7 +249,7 @@ export default function MesBiensPage() {
                   onChange={(e) => setNewType(e.target.value)}
                   className="w-full text-sm font-light bg-background border border-foreground/10 rounded-xl px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                 >
-                  <option value="">Selectionner</option>
+                  <option value="">S&#233;lectionner</option>
                   {Object.entries(TYPE_LABELS).map(([key, label]) => (
                     <option key={key} value={key}>{label}</option>
                   ))}
@@ -257,7 +257,7 @@ export default function MesBiensPage() {
               </div>
 
               <div>
-                <label className="block text-[10px] text-muted font-light mb-1">Surface (m2)</label>
+                <label className="block text-[10px] text-muted font-light mb-1">Surface (m&#178;)</label>
                 <input
                   type="number"
                   value={newSurface}
@@ -268,7 +268,7 @@ export default function MesBiensPage() {
               </div>
 
               <div>
-                <label className="block text-[10px] text-muted font-light mb-1">Nombre de pieces</label>
+                <label className="block text-[10px] text-muted font-light mb-1">Nombre de pi&#232;ces</label>
                 <input
                   type="number"
                   value={newRooms}
@@ -279,7 +279,7 @@ export default function MesBiensPage() {
               </div>
 
               <div>
-                <label className="block text-[10px] text-muted font-light mb-1">Prix de vente (EUR)</label>
+                <label className="block text-[10px] text-muted font-light mb-1">Prix de vente (&#8364;)</label>
                 <input
                   type="number"
                   value={newPrice}
@@ -300,7 +300,7 @@ export default function MesBiensPage() {
                 disabled={isCreating || !newAddress.trim()}
                 className="text-xs bg-sage text-white px-4 py-2 rounded-full font-medium hover:bg-sage/85 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
               >
-                {isCreating ? "Creation..." : "Creer le bien"}
+                {isCreating ? "Cr\u00e9ation..." : "Cr\u00e9er le bien"}
               </button>
               <button
                 onClick={() => setShowCreateForm(false)}
@@ -315,7 +315,7 @@ export default function MesBiensPage() {
         {/* Property list */}
         {properties.length === 0 && !showCreateForm ? (
           <div className="text-center py-16">
-            <p className="text-muted font-light text-sm">Aucun bien enregistre.</p>
+            <p className="text-muted font-light text-sm">Aucun bien enregistr&#233;.</p>
             <button
               onClick={() => setShowCreateForm(true)}
               className="inline-block mt-4 text-xs bg-foreground text-background px-4 py-2 rounded-full font-medium hover:bg-foreground/85 transition-colors"
@@ -349,12 +349,12 @@ export default function MesBiensPage() {
                   )}
                   {property.surface_m2 && (
                     <span className="text-[10px] bg-foreground/5 text-muted px-2 py-0.5 rounded-lg">
-                      {property.surface_m2} m2
+                      {property.surface_m2} m&#178;
                     </span>
                   )}
                   {property.room_count && (
                     <span className="text-[10px] bg-foreground/5 text-muted px-2 py-0.5 rounded-lg">
-                      {property.room_count} pieces
+                      {property.room_count} pi&#232;ces
                     </span>
                   )}
                 </div>
@@ -366,7 +366,7 @@ export default function MesBiensPage() {
 
                 {property.dvf_median_price_m2 && (
                   <p className="text-[10px] text-sage font-light mt-2">
-                    {property.dvf_median_price_m2.toLocaleString("fr-FR")} EUR/m2 (quartier)
+                    {property.dvf_median_price_m2.toLocaleString("fr-FR")} &#8364;/m&#178; (quartier)
                   </p>
                 )}
               </a>

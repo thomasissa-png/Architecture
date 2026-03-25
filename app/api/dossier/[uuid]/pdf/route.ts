@@ -292,7 +292,7 @@ export async function GET(
     const infoParts: string[] = [];
     if (dossier.bien_type) infoParts.push(typeLabels[dossier.bien_type] || dossier.bien_type);
     if (dossier.bien_surface) infoParts.push(formatSurface(dossier.bien_surface));
-    if (dossier.nb_pieces) infoParts.push(`${dossier.nb_pieces} pieces`);
+    if (dossier.nb_pieces) infoParts.push(`${dossier.nb_pieces} pi\u00e8ces`);
     if (dossier.ville) infoParts.push(dossier.ville);
     if (dossier.prix_moyen_m2) infoParts.push(`${dossier.prix_moyen_m2.toLocaleString("fr-FR")} \u20AC/m\u00B2 (quartier)`);
 
@@ -431,7 +431,7 @@ export async function GET(
 
       // "Apres home staging" label
       const afterLabelColor = rgb(secondaryColor.r, secondaryColor.g, secondaryColor.b);
-      page.drawText("Apres home staging", {
+      page.drawText("Apr\u00e8s home staging", {
         x: MARGIN * 2 + imgAreaWidth + imgAreaWidth / 2 - 40,
         y: imgY - 5,
         size: 8,

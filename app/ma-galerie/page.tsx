@@ -157,7 +157,7 @@ export default function GaleriePage() {
           <div>
             <h1 className="text-2xl font-semibold text-foreground tracking-tight">Ma galerie</h1>
             <p className="text-sm text-muted font-light mt-1">
-              {photos.length} photo{photos.length !== 1 ? "s" : ""} generee{photos.length !== 1 ? "s" : ""}
+              {photos.length} photo{photos.length !== 1 ? "s" : ""} g&#233;n&#233;r&#233;e{photos.length !== 1 ? "s" : ""}
             </p>
           </div>
 
@@ -181,7 +181,7 @@ export default function GaleriePage() {
             >
               <option value="">Toutes</option>
               <option value="true">Associees</option>
-              <option value="false">Non classees</option>
+              <option value="false">Non class&#233;es</option>
             </select>
           </div>
         </div>
@@ -193,7 +193,7 @@ export default function GaleriePage() {
               href="/#outil"
               className="inline-block mt-4 text-xs bg-foreground text-background px-4 py-2 rounded-full font-medium hover:bg-foreground/85 transition-colors"
             >
-              Generer ma premiere photo
+              G&#233;n&#233;rer ma premi&#232;re photo
             </a>
           </div>
         ) : (
@@ -208,7 +208,7 @@ export default function GaleriePage() {
                 {photo.output_image_key ? (
                   <img
                     src={`/api/logs/image?path=${encodeURIComponent(photo.output_image_key)}`}
-                    alt={photo.style_id || "Photo generee"}
+                    alt={photo.style_id || "Photo g\u00e9n\u00e9r\u00e9e"}
                     className="w-full aspect-[4/3] object-cover"
                     loading="lazy"
                   />
@@ -230,7 +230,7 @@ export default function GaleriePage() {
                       </span>
                     ) : (
                       <span className="text-[9px] bg-foreground/40 text-white px-2 py-0.5 rounded-full">
-                        Non classee
+                        Non class&#233;e
                       </span>
                     )}
                   </div>
@@ -243,7 +243,7 @@ export default function GaleriePage() {
                       e.stopPropagation();
                       setAssociatingPhotoId(associatingPhotoId === photo.id ? null : photo.id);
                     }}
-                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 text-foreground text-[10px] px-2 py-1 rounded-lg font-medium hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                    className="absolute top-2 right-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity bg-white/90 text-foreground text-[10px] px-2 py-1 rounded-lg font-medium hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                   >
                     Associer
                   </button>
@@ -252,10 +252,10 @@ export default function GaleriePage() {
                 {/* Association dropdown */}
                 {associatingPhotoId === photo.id && (
                   <div
-                    className="absolute top-10 right-2 bg-white border border-foreground/10 rounded-xl shadow-lg p-2 z-10 min-w-[200px]"
+                    className="absolute top-10 right-2 bg-[var(--background)] border border-foreground/10 rounded-xl shadow-lg p-2 z-10 min-w-[200px]"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <p className="text-[10px] text-muted font-light px-2 pb-1 border-b border-foreground/5">Associer a un bien :</p>
+                    <p className="text-[10px] text-muted font-light px-2 pb-1 border-b border-foreground/5">Associer &#224; un bien :</p>
                     {properties.map((p) => (
                       <button
                         key={p.id}
@@ -288,7 +288,7 @@ export default function GaleriePage() {
                 </h2>
                 <button
                   onClick={() => setSelectedPhoto(null)}
-                  className="text-muted hover:text-foreground text-lg font-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded-full w-8 h-8 flex items-center justify-center"
+                  className="text-muted hover:text-foreground text-lg font-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded-full w-10 h-10 min-h-[44px] min-w-[44px] flex items-center justify-center"
                 >
                   x
                 </button>
@@ -308,10 +308,10 @@ export default function GaleriePage() {
                 )}
                 {selectedPhoto.output_image_key && (
                   <div>
-                    <p className="text-[10px] text-sage font-medium mb-1">Apres</p>
+                    <p className="text-[10px] text-sage font-medium mb-1">Apr&#232;s</p>
                     <img
                       src={`/api/logs/image?path=${encodeURIComponent(selectedPhoto.output_image_key)}`}
-                      alt="Apres"
+                      alt="Apr\u00e8s"
                       className="w-full rounded-xl"
                     />
                   </div>
@@ -324,7 +324,7 @@ export default function GaleriePage() {
                   <span className="bg-foreground/5 px-2 py-1 rounded-lg">{selectedPhoto.room_type}</span>
                 )}
                 {selectedPhoto.is_outdoor && (
-                  <span className="bg-foreground/5 px-2 py-1 rounded-lg">Exterieur</span>
+                  <span className="bg-foreground/5 px-2 py-1 rounded-lg">Ext&#233;rieur</span>
                 )}
                 <span className="bg-foreground/5 px-2 py-1 rounded-lg">
                   {new Date(selectedPhoto.created_at).toLocaleDateString("fr-FR")}
@@ -334,11 +334,11 @@ export default function GaleriePage() {
               {/* Association */}
               {selectedPhoto.property_id ? (
                 <p className="mt-4 text-xs text-sage font-light">
-                  Associee a : {getPropertyLabel(selectedPhoto.property_id)}
+                  Associ&#233;e &#224; : {getPropertyLabel(selectedPhoto.property_id)}
                 </p>
               ) : properties.length > 0 ? (
                 <div className="mt-4">
-                  <p className="text-xs text-muted font-light mb-2">Associer a un bien :</p>
+                  <p className="text-xs text-muted font-light mb-2">Associer &#224; un bien :</p>
                   <div className="flex flex-wrap gap-2">
                     {properties.map((p) => (
                       <button

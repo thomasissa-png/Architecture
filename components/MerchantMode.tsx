@@ -455,9 +455,10 @@ export default function MerchantMode() {
               <h3 className="text-sm font-medium text-[var(--muted)] uppercase tracking-widest mb-4">
                 Informations du bien
               </h3>
-              <p className="text-xs text-[var(--muted)]/60 font-light mb-6">
+              <p className="text-xs text-[var(--muted)]/60 font-light mb-1">
                 Saisissez l&apos;adresse du bien pour enrichir automatiquement le dossier.
               </p>
+              <p className="text-xs text-[var(--muted)] mt-1 mb-6">Facultatif — vous pourrez compl&#233;ter ces informations plus tard depuis la fiche du bien.</p>
             </div>
             <button
               onClick={() => setCurrentStep("photos")}
