@@ -731,7 +731,7 @@ export default function Home() {
                   {/* Real photo overlay — scandinavian style from DB */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src="/api/demo?style=scandinavian&image=before"
+                    src="/api/demo?type=hero&image=before"
                     alt="Pi&egrave;ce vide avant home staging"
                     className="absolute inset-0 w-full h-full object-cover"
                     onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
