@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ensureTable } from "@/lib/db";
-import { REPLAY_INTERNAL_HEADER } from "@/app/api/replay/route";
+const REPLAY_INTERNAL_HEADER = "x-replay-internal";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;

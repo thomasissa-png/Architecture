@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPool, ensureTable, getImage, logGenerationReturningId } from "@/lib/db";
 import { compareImages } from "@/lib/image-metrics";
+import { PROMPT_VERSION } from "@/app/api/generate/route";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300; // 5 min — pipeline 2 passes can be slow
 
 // H-03: Internal replay calls bypass rate limiting via this header
-export const REPLAY_INTERNAL_HEADER = "x-replay-internal";
+const REPLAY_INTERNAL_HEADER = "x-replay-internal";
 
 /**
  * POST /api/replay — Replay a generation with current prompts on the same input image.
@@ -171,6 +172,7 @@ export async function POST(request: NextRequest) {
       roomType: src.room_type || undefined,
       isOutdoor: src.is_outdoor || undefined,
       outdoorSubtype: src.outdoor_subtype || undefined,
+      promptVersion: PROMPT_VERSION,
     });
 
     return NextResponse.json({

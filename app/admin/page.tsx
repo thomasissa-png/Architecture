@@ -26,6 +26,7 @@ interface LogEntry {
   replay_label: string | null;
   pixel_diff_pct: number | null;
   color_shift_score: number | null;
+  prompt_version: string | null;
 }
 
 function extractFilename(path: string): string {
@@ -121,6 +122,8 @@ export default function AdminPage() {
   const [showAuditPrompt, setShowAuditPrompt] = useState(false);
   const [storageStatus, setStorageStatus] = useState<{ checked: boolean; ok: boolean; detail?: string }>({ checked: false, ok: false });
   const [storageChecking, setStorageChecking] = useState(false);
+  const [versionFilter, setVersionFilter] = useState<string>("");
+  const [availableVersions, setAvailableVersions] = useState<string[]>([]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,7 +146,10 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (!authenticated) return;
-    fetch(`/api/logs?token=${encodeURIComponent(password)}`)
+    setLoading(true);
+    const params = new URLSearchParams({ token: password });
+    if (versionFilter) params.set("version", versionFilter);
+    fetch(`/api/logs?${params.toString()}`)
       .then(async (r) => {
         if (!r.ok) {
           const text = await r.text().catch(() => "");
@@ -160,11 +166,14 @@ export default function AdminPage() {
       })
       .then((data) => {
         if (data.error) setError(data.error);
-        else setLogs(data.logs || []);
+        else {
+          setLogs(data.logs || []);
+          if (data.versions) setAvailableVersions(data.versions);
+        }
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [authenticated]);
+  }, [authenticated, versionFilter]);
 
   if (!authenticated) {
     return (
@@ -299,6 +308,31 @@ Demande type : "Fais appel a l'agent Architecte d'Interieur et a l'agent Expert 
         )}
       </div>
 
+      {/* Version filter */}
+      {availableVersions.length > 0 && (
+        <div style={{ marginBottom: 20, display: "flex", alignItems: "center", gap: 12 }}>
+          <label style={{ fontSize: 13, fontWeight: 500, color: "#555" }}>Filtrer par version de prompt :</label>
+          <select
+            value={versionFilter}
+            onChange={(e) => setVersionFilter(e.target.value)}
+            style={{
+              padding: "6px 12px", border: "1px solid #ddd", borderRadius: 6,
+              fontSize: 13, color: "#1C1C1E", background: "#fff", cursor: "pointer",
+            }}
+          >
+            <option value="">Toutes les versions</option>
+            {availableVersions.map((v) => (
+              <option key={v} value={v}>{v}</option>
+            ))}
+          </select>
+          {versionFilter && (
+            <span style={{ fontSize: 12, color: "#888" }}>
+              {logs.length} generation{logs.length > 1 ? "s" : ""}
+            </span>
+          )}
+        </div>
+      )}
+
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         {logs.map((log) => {
           const expanded = expandedId === log.id;
@@ -339,6 +373,18 @@ Demande type : "Fais appel a l'agent Architecte d'Interieur et a l'agent Expert 
                   }}
                 >
                   {log.style_id || "custom"}
+                </span>
+                <span
+                  style={{
+                    background: log.prompt_version ? "#4a6fa5" : "#ccc",
+                    color: "#fff",
+                    padding: "2px 8px",
+                    borderRadius: 6,
+                    fontSize: 11,
+                    fontWeight: 600,
+                  }}
+                >
+                  {log.prompt_version || "—"}
                 </span>
                 <span style={{ fontSize: 13, color: "#555" }}>
                   {log.duration_ms ? `${(log.duration_ms / 1000).toFixed(1)}s` : "—"}

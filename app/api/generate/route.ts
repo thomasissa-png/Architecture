@@ -21,6 +21,12 @@ import {
   buildIterationOutdoorFurnitureFluxPrompt,
 } from "@/lib/iteration-prompt";
 
+/** Prompt version — increment when modifying any prompt builder or style prompt.
+ * Used by audit agents (Yann Duval, Lucas Moreau) to correlate generation quality with prompt version.
+ * History: v1-v5 (Sprints 1-7), v6-v10 (Sprints 8-12), v11-v15 (Sprints 13-16), v16-v17 (Sprint 17),
+ * v18 (current — Sprint 18+, post all fixes) */
+export const PROMPT_VERSION = "v18";
+
 // ─── Timeout wrapper for external API calls ─────────────────────────
 const API_TIMEOUT_MS = 120_000;
 
@@ -1187,6 +1193,7 @@ export async function POST(request: NextRequest) {
         roomType: cached.meta.roomType,
         isOutdoor: cached.meta.isOutdoor || undefined,
         outdoorSubtype: cached.meta.outdoorSubtype ?? undefined,
+        promptVersion: PROMPT_VERSION,
       }).catch((err) => console.error("DB log (iteration) failed:", err));
 
       // Fire-and-forget: save iteration as a NEW user_photos entry (Bug 4 fix)
@@ -1348,6 +1355,7 @@ export async function POST(request: NextRequest) {
         roomType: isOutdoor ? undefined : (roomType ?? undefined),
         isOutdoor: isOutdoor || undefined,
         outdoorSubtype: isOutdoor ? (outdoorSubtype ?? undefined) : undefined,
+        promptVersion: PROMPT_VERSION,
       }).catch((err) => console.error("DB log failed:", err));
 
       // Generation succeeded — credit was already decremented optimistically
@@ -1419,6 +1427,7 @@ export async function POST(request: NextRequest) {
       roomType: isOutdoor ? undefined : (roomType ?? undefined),
       isOutdoor: isOutdoor || undefined,
       outdoorSubtype: isOutdoor ? (outdoorSubtype ?? undefined) : undefined,
+      promptVersion: PROMPT_VERSION,
     }).catch((err) => console.error("DB log failed:", err));
 
     // Generation succeeded — credit was already decremented optimistically
@@ -1446,7 +1455,7 @@ export async function POST(request: NextRequest) {
     logGeneration({
       ip, styleId,
       surfacePrompt: "error", furniturePrompt: "error",
-      withFurniture: true, success: false, errorMessage: message,
+      withFurniture: true, success: false, errorMessage: message, promptVersion: PROMPT_VERSION,
     }).catch((err) => console.error("DB log failed:", err));
 
     return NextResponse.json({ error: message }, { status: 503 });

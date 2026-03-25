@@ -17,6 +17,12 @@ export async function GET(request: Request) {
   try {
     await ensureTable();
     const pool = getPool();
+
+    // Optional version filter: ?version=v18
+    const version = url.searchParams.get("version");
+    const whereClause = version ? "WHERE prompt_version = $1" : "";
+    const queryParams = version ? [version] : [];
+
     const result = await pool.query(`
       SELECT id, created_at, style_id, model_used, pass1_model, pass2_model,
              duration_ms, pass1_duration_ms, pass2_duration_ms,
@@ -25,12 +31,22 @@ export async function GET(request: Request) {
              built_prompt_pass1, built_prompt_pass2,
              input_image_path, pass1_image_path, output_image_path,
              is_replay, replay_source_id, replay_label,
-             pixel_diff_pct, color_shift_score
+             pixel_diff_pct, color_shift_score, prompt_version
       FROM generation_logs
+      ${whereClause}
       ORDER BY created_at DESC
       LIMIT 50
+    `, queryParams);
+
+    // Also return distinct versions for the filter dropdown
+    const versionsResult = await pool.query(`
+      SELECT DISTINCT prompt_version FROM generation_logs
+      WHERE prompt_version IS NOT NULL
+      ORDER BY prompt_version
     `);
-    return NextResponse.json({ logs: result.rows });
+    const versions: string[] = versionsResult.rows.map((r: { prompt_version: string }) => r.prompt_version);
+
+    return NextResponse.json({ logs: result.rows, versions });
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "Unknown error";
     console.error("GET /api/logs failed:", msg);
