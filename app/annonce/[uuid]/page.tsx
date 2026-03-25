@@ -12,6 +12,7 @@ import { getPropertyById } from "@/lib/properties";
 import { getUserPhotos } from "@/lib/user-photos";
 import { getMerchantProfile } from "@/lib/merchant";
 import AnnoncePublicView from "@/components/AnnoncePublicView";
+import ContactSticky from "@/components/ContactSticky";
 
 interface PageProps {
   params: { uuid: string };
@@ -207,6 +208,23 @@ export default async function AnnoncePage({ params }: PageProps) {
         </div>
       </header>
 
+      {/* Hero photo — first completed photo, full-width above the fold */}
+      {completedPhotos.length > 0 && (() => {
+        // Prefer first photo from living_room group, fallback to first overall
+        const heroPhoto = (photosByRoom["living_room"]?.[0]) || completedPhotos[0];
+        return (
+          <div className="w-full">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`/api/logs/image?path=${encodeURIComponent(heroPhoto.output_image_key!)}`}
+              alt={heroPhoto.room_label || "Photo principale"}
+              className="w-full aspect-[16/9] object-cover rounded-b-2xl"
+              data-testid="annonce-hero-photo"
+            />
+          </div>
+        );
+      })()}
+
       {/* Content */}
       <main className="max-w-5xl mx-auto px-5 sm:px-8 py-8 sm:py-12">
         {/* Title + key info */}
@@ -360,9 +378,16 @@ export default async function AnnoncePage({ params }: PageProps) {
         )}
 
         {/* Footer */}
-        <div className="mt-12 pt-6 border-t border-foreground/5 text-center">
-          <p className="text-xs text-muted/40 font-light">
-            Annonce generee par{" "}
+        <div className="mt-12 pt-6 border-t border-foreground/5 text-center pb-20">
+          {hasMerchant && (merchant?.raison_sociale || merchant?.telephone || merchant?.email_pro) && (
+            <p className="text-xs text-muted font-light mb-2">
+              {[merchant?.raison_sociale, merchant?.telephone, merchant?.email_pro].filter(Boolean).join(" — ")}
+            </p>
+          )}
+          <p className="text-sm text-muted/60 font-light">
+            Les visuels meubl{"\u00E9"}s sont g{"\u00E9"}n{"\u00E9"}r{"\u00E9"}s par intelligence artificielle {"\u00E0"} des fins de projection. Ils ne sont pas contractuels.
+          </p>
+          <p className="text-xs text-muted/40 font-light mt-1">
             <a
               href="https://architecture-toum92.replit.app/"
               className="hover:text-muted/60 transition-colors underline"
@@ -371,10 +396,17 @@ export default async function AnnoncePage({ params }: PageProps) {
             >
               Versiroom
             </a>
-            {" "}&mdash; Visuels generes par intelligence artificielle a titre de simulation.
+            {" "}&mdash; {"\u00A9"} {new Date().getFullYear()}
           </p>
         </div>
       </main>
+
+      {/* Sticky contact CTA */}
+      <ContactSticky
+        telephone={hasMerchant ? merchant?.telephone : null}
+        email={hasMerchant ? merchant?.email_pro : null}
+        raisonSociale={hasMerchant ? merchant?.raison_sociale : null}
+      />
     </div>
   );
 }

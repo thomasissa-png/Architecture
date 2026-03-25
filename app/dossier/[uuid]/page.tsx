@@ -17,6 +17,9 @@ import {
 } from "@/lib/dossier";
 import { getMerchantProfile } from "@/lib/merchant";
 import DossierPublicView from "@/components/DossierPublicView";
+import ContactSticky from "@/components/ContactSticky";
+import ShareButtons from "@/components/ShareButtons";
+import RoomNav from "@/components/RoomNav";
 
 interface PageProps {
   params: { uuid: string };
@@ -185,6 +188,22 @@ export default async function DossierPage({ params }: PageProps) {
           </div>
         )}
 
+        {/* Share buttons + Room navigation */}
+        {completedPhotos.length > 0 && (
+          <div className="mb-6 space-y-4">
+            <ShareButtons
+              sharePath={`/dossier/${params.uuid}`}
+              shareTitle={title}
+            />
+            <RoomNav
+              rooms={completedPhotos.map((p) => ({
+                id: `piece-${p.id}`,
+                label: p.room_label || `Photo ${p.photo_index + 1}`,
+              }))}
+            />
+          </div>
+        )}
+
         {/* Photos grid */}
         {completedPhotos.length === 0 ? (
           <div className="text-center py-16">
@@ -229,18 +248,36 @@ export default async function DossierPage({ params }: PageProps) {
           </div>
         )}
 
-        {/* Merchant contact + AI Disclaimer */}
-        <div className="mt-12 pt-6 border-t border-foreground/5 text-center space-y-2">
+        {/* Footer */}
+        <div className="mt-12 pt-6 border-t border-foreground/5 text-center space-y-2 pb-20">
           {hasMerchant && (profile?.raison_sociale || profile?.telephone || profile?.email_pro) && (
             <p className="text-xs text-muted font-light">
               {[profile?.raison_sociale, profile?.telephone, profile?.email_pro].filter(Boolean).join(" — ")}
             </p>
           )}
-          <p className="text-xs text-muted/40 font-light">
-            Visuels générés par intelligence artificielle à titre de simulation. Versiroom — versiroom.fr
+          <p className="text-sm text-muted/60 font-light">
+            Les visuels meubl{"\u00E9"}s sont g{"\u00E9"}n{"\u00E9"}r{"\u00E9"}s par intelligence artificielle {"\u00E0"} des fins de projection. Ils ne sont pas contractuels.
+          </p>
+          <p className="text-xs text-muted/40 font-light mt-1">
+            <a
+              href="https://architecture-toum92.replit.app/"
+              className="hover:text-muted/60 transition-colors underline"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Versiroom
+            </a>
+            {" "}&mdash; {"\u00A9"} {new Date().getFullYear()}
           </p>
         </div>
       </main>
+
+      {/* Sticky contact CTA */}
+      <ContactSticky
+        telephone={hasMerchant ? profile?.telephone : null}
+        email={hasMerchant ? profile?.email_pro : null}
+        raisonSociale={hasMerchant ? profile?.raison_sociale : null}
+      />
     </div>
   );
 }

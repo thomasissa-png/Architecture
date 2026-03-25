@@ -27,7 +27,8 @@ export default function DossierPublicView({
       {photos.map((photo) => (
         <div
           key={photo.id}
-          className="border border-foreground/5 rounded-2xl overflow-hidden bg-foreground/[0.02]"
+          id={`piece-${photo.id}`}
+          className="border border-foreground/5 rounded-2xl overflow-hidden bg-foreground/[0.02] scroll-mt-28"
           data-testid={`dossier-photo-${photo.id}`}
         >
           {/* Room label */}
