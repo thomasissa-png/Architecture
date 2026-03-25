@@ -168,7 +168,7 @@ export async function GET(
     const coverPage = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
 
     // -- Top bar: logo left + merchant info right --
-    let headerY = PAGE_HEIGHT - 50;
+    const headerY = PAGE_HEIGHT - 50;
 
     // Merchant logo (if available)
     if (hasMerchant && profile?.logo_storage_key) {

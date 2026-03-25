@@ -188,6 +188,7 @@ async function generateDescription(
     parts.push(`Bien : ${type || "bien immobilier"}`);
     if (surface) parts.push(`${surface} m\u00B2`);
     parts.push(`a ${adresse}`);
+    if (city) parts.push(`ville : ${city}`);
     if (nbPieces) parts.push(`${nbPieces} pieces`);
 
     const response = await openai.chat.completions.create({

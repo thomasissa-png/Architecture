@@ -15,20 +15,6 @@ import AuthButton from "@/components/AuthButton";
 
 // ─── Types ───────────────────────────────────────────────────────────
 
-interface MerchantProfile {
-  is_merchant: boolean;
-  siret: string | null;
-  raison_sociale: string | null;
-  adresse: string | null;
-  telephone: string | null;
-  email_pro: string | null;
-  forme_juridique: string | null;
-  logo_storage_key: string | null;
-  couleur_principale: string;
-  couleur_secondaire: string;
-  police: string;
-}
-
 const FONT_OPTIONS = [
   { value: "Inter", label: "Inter" },
   { value: "Playfair Display", label: "Playfair Display" },
@@ -54,7 +40,7 @@ export default function ComptePage() {
   const [couleurSecondaire, setCouleurSecondaire] = useState("#7D9B76");
   const [police, setPolice] = useState("Inter");
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
-  const [logoStorageKey, setLogoStorageKey] = useState<string | null>(null);
+  const [, setLogoStorageKey] = useState<string | null>(null);
 
   // UI state
   const [isLoading, setIsLoading] = useState(true);

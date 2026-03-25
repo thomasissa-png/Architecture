@@ -377,7 +377,7 @@ export default function PropertyDetailPage() {
               </div>
             ) : (
               <p className="text-xs text-muted/50 font-light mb-4">
-                Description en cours d'enrichissement...
+                Description en cours d&apos;enrichissement...
               </p>
             )}
           </div>

@@ -12,7 +12,7 @@ import { authOptions } from "@/lib/auth";
 import { hasProAccess, getUserCredits } from "@/lib/credits";
 import { getPropertyById } from "@/lib/properties";
 import { getUserPhotoById } from "@/lib/user-photos";
-import { createDossier, addDossierPhoto, updateDossierStatus, getDossierByUuid } from "@/lib/dossier";
+import { createDossier, addDossierPhoto, updateDossierStatus } from "@/lib/dossier";
 
 export const dynamic = "force-dynamic";
 
