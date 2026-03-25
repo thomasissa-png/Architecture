@@ -51,6 +51,7 @@ export default function GaleriePage() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filterStyle, setFilterStyle] = useState<string>("");
+  const [filterRoomType, setFilterRoomType] = useState<string>("");
   const [filterAssociated, setFilterAssociated] = useState<string>("");
   const [selectedPhoto, setSelectedPhoto] = useState<UserPhoto | null>(null);
   const [associatingPhotoId, setAssociatingPhotoId] = useState<string | null>(null);
@@ -66,6 +67,7 @@ export default function GaleriePage() {
     try {
       const params = new URLSearchParams();
       if (filterStyle) params.set("styleId", filterStyle);
+      if (filterRoomType) params.set("roomType", filterRoomType);
       if (filterAssociated) params.set("associated", filterAssociated);
 
       const res = await fetch(`/api/user/photos?${params.toString()}`);
@@ -78,7 +80,7 @@ export default function GaleriePage() {
     } finally {
       setIsLoading(false);
     }
-  }, [filterStyle, filterAssociated]);
+  }, [filterStyle, filterRoomType, filterAssociated]);
 
   const fetchProperties = useCallback(async () => {
     try {
@@ -172,6 +174,22 @@ export default function GaleriePage() {
               {Object.entries(STYLE_LABELS).map(([key, label]) => (
                 <option key={key} value={key}>{label}</option>
               ))}
+            </select>
+
+            <select
+              value={filterRoomType}
+              onChange={(e) => { setFilterRoomType(e.target.value); setIsLoading(true); }}
+              className="text-xs font-light bg-foreground/5 border-0 rounded-xl px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+            >
+              <option value="">Toutes les pi{"\u00E8"}ces</option>
+              <option value="living_room">Salon</option>
+              <option value="bedroom">Chambre</option>
+              <option value="kitchen">Cuisine</option>
+              <option value="bathroom">Salle de bain</option>
+              <option value="office">Bureau</option>
+              <option value="dining_room">Salle {"\u00E0"} manger</option>
+              <option value="entryway">Entr{"\u00E9"}e</option>
+              <option value="laundry">Buanderie</option>
             </select>
 
             <select
