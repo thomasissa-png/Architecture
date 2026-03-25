@@ -4,7 +4,8 @@ import { getImage } from "@/lib/db";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  const file = req.nextUrl.searchParams.get("file");
+  // Accept both ?file= (admin page) and ?path= (galerie, biens, annonces, dossiers, compte)
+  const file = req.nextUrl.searchParams.get("file") || req.nextUrl.searchParams.get("path");
   if (!file || file.includes("..")) {
     return NextResponse.json({ error: "Invalid file parameter" }, { status: 400 });
   }
