@@ -644,7 +644,7 @@ export default function Home() {
       </header>
 
       {/* Hero */}
-      <section className="pt-24 sm:pt-28 pb-12 sm:pb-16 px-5 sm:px-8">
+      <section className="pt-24 sm:pt-28 pb-8 sm:pb-10 px-5 sm:px-8">
         <div ref={heroRef} className="reveal max-w-4xl mx-auto text-center">
           {/* Multi-audience pills */}
           <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
@@ -748,7 +748,7 @@ export default function Home() {
       </section>
 
       {/* Use cases */}
-      <section className="pb-16 px-5 sm:px-8">
+      <section className="pb-10 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {USE_CASES.map((uc, i) => (
             <div key={uc.label} className={`text-center p-6 rounded-2xl border border-foreground/10 bg-white/40 ${i === 0 ? "animate-fade-in-up" : i === 1 ? "animate-fade-in-up animate-delay-100" : "animate-fade-in-up animate-delay-200"}`}>
@@ -763,9 +763,9 @@ export default function Home() {
       <div className="max-w-24 mx-auto border-t border-foreground/10" />
 
       {/* Tool Section */}
-      <section id="outil" className="pt-16 sm:pt-24 pb-20 sm:pb-32 px-5 sm:px-8 scroll-mt-16">
+      <section id="outil" className="pt-12 sm:pt-16 pb-12 sm:pb-16 px-5 sm:px-8 scroll-mt-16">
         <div ref={toolRef} className="reveal max-w-5xl mx-auto">
-          <div className="text-center mb-16">
+          <div className="text-center mb-10">
             <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight mb-3">
               Mettez en sc&egrave;ne votre espace
             </h2>
@@ -777,7 +777,7 @@ export default function Home() {
           <StepIndicator currentStep={currentStep} />
 
           {/* Step 1: Upload */}
-          <div className="mb-16">
+          <div className={files.length > 0 ? "mb-10" : "mb-0"}>
             <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
               Upload
             </h3>
@@ -785,7 +785,7 @@ export default function Home() {
           </div>
 
           {/* Step 2a: Type d'espace (intérieur/extérieur + sous-type) — revealed after upload */}
-          <div id="step-space-type" className={`mb-16 scroll-mt-20 transition-all duration-700 ${files.length === 0 ? "hidden" : "animate-fade-in-up"}`}>
+          <div id="step-space-type" className={`mb-10 scroll-mt-20 transition-all duration-700 ${files.length === 0 ? "hidden" : "animate-fade-in-up"}`}>
             <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
               01 — Type d&apos;espace
             </h3>
@@ -851,7 +851,7 @@ export default function Home() {
           </div>
 
           {/* Step 2b: Style — revealed after upload */}
-          <div id="step-style" className={`mb-16 scroll-mt-20 transition-all duration-700 ${files.length === 0 ? "hidden" : "animate-fade-in-up animate-delay-300"}`}>
+          <div id="step-style" className={`mb-10 scroll-mt-20 transition-all duration-700 ${files.length === 0 ? "hidden" : "animate-fade-in-up animate-delay-300"}`}>
             <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
               02 — Style
             </h3>
@@ -905,7 +905,7 @@ export default function Home() {
 
           {/* Generate Button */}
           {canGenerate && results.length === 0 && (
-            <div id="step-generate" className="text-center mb-16 animate-fade-in-up sticky bottom-6 z-40">
+            <div id="step-generate" className="text-center mb-8 animate-fade-in-up sticky bottom-6 z-40">
               <button
                 onClick={handleGenerate}
                 disabled={isGenerating || (!isOutdoor && selectedStyle !== null && !selectedRoomType)}

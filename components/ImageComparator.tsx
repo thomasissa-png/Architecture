@@ -167,17 +167,24 @@ export default function ImageComparator({
           className="aspect-[4/3] sm:aspect-[16/10]"
           style={{ width: "100%" }}
           handle={
-            <div className="flex flex-col items-center h-full" role="slider" aria-label="Comparer avant et apr\u00e8s" aria-valuemin={0} aria-valuemax={100} aria-valuenow={50}>
-              <div className="w-px h-full bg-white/80" />
-              <div className="absolute top-1/2 -translate-y-1/2 w-11 h-11 sm:w-9 sm:h-9 bg-white rounded-full shadow-md flex items-center justify-center">
-                <svg className="w-4 h-4 text-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
+            <div className="flex flex-col items-center h-full" role="slider" aria-label="Comparer avant et apr\u00e8s \u2014 glissez horizontalement" aria-valuemin={0} aria-valuemax={100} aria-valuenow={50}>
+              <div className="w-0.5 h-full bg-white/90 shadow-sm" />
+              <div className="absolute top-1/2 -translate-y-1/2 w-12 h-12 sm:w-10 sm:h-10 bg-white rounded-full shadow-lg flex items-center justify-center cursor-grab active:cursor-grabbing">
+                {/* Left/right arrows — explicit horizontal drag affordance */}
+                <svg className="w-5 h-5 sm:w-4 sm:h-4 text-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                </svg>
+                <svg className="w-5 h-5 sm:w-4 sm:h-4 text-foreground -ml-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                 </svg>
               </div>
             </div>
           }
         />
-        <div className="flex justify-between px-5 py-2.5 bg-gray-50/50">
+        <p className="text-center text-[10px] text-muted font-light py-1.5 sm:hidden">
+          Glissez pour comparer
+        </p>
+        <div className="flex justify-between px-5 py-2.5 bg-foreground/5">
           <span className="text-[10px] font-medium text-muted uppercase tracking-widest">
             Avant
           </span>

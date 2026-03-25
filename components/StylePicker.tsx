@@ -227,15 +227,6 @@ export default function StylePicker({
                   : "border-foreground/10 hover:border-foreground/15"
               }`}
             >
-              {style.preview && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={style.preview}
-                  alt={`Aperçu style ${style.name}`}
-                  className="w-full aspect-[4/3] object-cover rounded-xl mb-2 sm:mb-3 bg-foreground/5"
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                />
-              )}
               <span className="flex gap-1.5 mb-2 sm:mb-3" aria-hidden="true">
                 {style.palette.map((color, i) => (
                   <span
