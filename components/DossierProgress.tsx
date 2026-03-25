@@ -36,11 +36,11 @@ export default function DossierProgress({
       <div className="space-y-2">
         <div className="flex items-center justify-between text-sm">
           <span className="text-[var(--foreground)] font-medium">
-            {isGenerating ? "Generation en cours..." : "Termine"}
+            {isGenerating ? "Génération en cours..." : "Terminé"}
           </span>
           <span className="text-[var(--muted)] font-light">
             {completed}/{total} photos
-            {failed > 0 && ` (${failed} echec${failed > 1 ? "s" : ""})`}
+            {failed > 0 && ` (${failed} échec${failed > 1 ? "s" : ""})`}
           </span>
         </div>
 
@@ -115,9 +115,9 @@ export default function DossierProgress({
               photo.status === "generating" ? "text-[var(--sage)]" :
               "text-[var(--muted)]/60"
             }`}>
-              {photo.status === "completed" && "Termine"}
+              {photo.status === "completed" && "Prêt"}
               {photo.status === "generating" && "En cours..."}
-              {photo.status === "failed" && "Echec"}
+              {photo.status === "failed" && "Échec"}
               {photo.status === "pending" && "En attente"}
             </span>
           </div>

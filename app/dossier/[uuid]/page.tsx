@@ -27,8 +27,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!dossier || isDossierExpired(dossier)) {
     return {
-      title: "Dossier expire — Versiroom",
-      description: "Ce dossier de pre-commercialisation a expire.",
+      title: "Dossier expiré — Versiroom",
+      description: "Ce dossier de pré-commercialisation a expiré.",
     };
   }
 
@@ -39,8 +39,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (dossier.bien_prix) details.push(formatPrice(dossier.bien_prix));
 
   const description = details.length > 0
-    ? `${title} — ${details.join(", ")}. Visualisation par Versiroom.`
-    : `${title} — Visualisation par Versiroom.`;
+    ? `${title} — ${details.join(", ")}. Visuels meublés par Versiroom.`
+    : `${title} — Visuels meublés par Versiroom.`;
 
   return {
     title: `${title} — Versiroom`,
@@ -67,7 +67,7 @@ export default async function DossierPage({ params }: PageProps) {
             Dossier introuvable
           </h1>
           <p className="text-muted font-light text-sm">
-            Ce dossier n&apos;existe pas ou a ete supprime.
+            Ce dossier n&apos;existe pas ou a été supprimé.
           </p>
         </div>
       </div>
@@ -80,15 +80,15 @@ export default async function DossierPage({ params }: PageProps) {
       <div className="min-h-screen bg-background flex items-center justify-center px-5">
         <div className="text-center max-w-md">
           <h1 className="text-2xl font-semibold text-foreground mb-3">
-            Dossier expire
+            Dossier expiré
           </h1>
           <p className="text-muted font-light text-sm">
-            Ce dossier de pre-commercialisation a expire.
+            Ce dossier de pré-commercialisation a expiré.
             <br />
-            Les dossiers sont disponibles pendant 30 jours apres leur creation.
+            Les dossiers sont disponibles pendant 30 jours après leur création.
           </p>
           <p className="text-xs text-muted/50 mt-4">
-            Cree le {new Date(dossier.created_at).toLocaleDateString("fr-FR")}
+            Généré le {new Date(dossier.created_at).toLocaleDateString("fr-FR")}
           </p>
         </div>
       </div>
@@ -110,7 +110,7 @@ export default async function DossierPage({ params }: PageProps) {
             Versiroom
           </span>
           <span className="text-xs text-muted font-light">
-            Dossier partage
+            Dossier partagé
           </span>
         </div>
       </header>
@@ -140,7 +140,7 @@ export default async function DossierPage({ params }: PageProps) {
           </div>
 
           <p className="text-xs text-muted/50 mt-2">
-            Cree le {new Date(dossier.created_at).toLocaleDateString("fr-FR")} — Expire le {new Date(dossier.expires_at).toLocaleDateString("fr-FR")}
+            Généré le {new Date(dossier.created_at).toLocaleDateString("fr-FR")} — Disponible jusqu&apos;au {new Date(dossier.expires_at).toLocaleDateString("fr-FR")}
           </p>
         </div>
 
@@ -149,8 +149,8 @@ export default async function DossierPage({ params }: PageProps) {
           <div className="text-center py-16">
             <p className="text-muted font-light">
               {dossier.status === "generating"
-                ? "Generation en cours..."
-                : "Aucune visualisation disponible."}
+                ? "Génération en cours, revenez dans quelques instants."
+                : "Aucun visuel disponible pour ce dossier."}
             </p>
           </div>
         ) : (
@@ -176,7 +176,7 @@ export default async function DossierPage({ params }: PageProps) {
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              Telecharger le PDF
+              Télécharger le PDF
             </a>
           </div>
         )}
@@ -184,7 +184,7 @@ export default async function DossierPage({ params }: PageProps) {
         {/* AI Disclaimer */}
         <div className="mt-12 pt-6 border-t border-foreground/5 text-center">
           <p className="text-xs text-muted/40 font-light">
-            Simulation generee par intelligence artificielle — Versiroom
+            Visuels générés par intelligence artificielle à titre de simulation. Versiroom — versiroom.fr
           </p>
         </div>
       </main>

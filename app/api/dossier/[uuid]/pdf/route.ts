@@ -5,7 +5,7 @@
  *
  * Uses pdf-lib (lightweight, no binary dependencies).
  * Content: cover page + 1 page per photo (before/after side by side).
- * EU AI Act Art. 50: "Simulation — genere par Versiroom" on every page.
+ * EU AI Act Art. 50: AI disclaimer on every page.
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -26,7 +26,7 @@ export const dynamic = "force-dynamic";
 const PAGE_WIDTH = 842; // A4 landscape width in points
 const PAGE_HEIGHT = 595; // A4 landscape height in points
 const MARGIN = 40;
-const AI_DISCLAIMER = "Simulation — genere par Versiroom";
+const AI_DISCLAIMER = "Visuels générés par intelligence artificielle à titre indicatif — Versiroom";
 
 // ─── Helpers ─────────────────────────────────────────────────────────
 
@@ -68,7 +68,7 @@ export async function GET(
 
   if (isDossierExpired(dossier)) {
     return NextResponse.json(
-      { error: "Ce dossier a expire." },
+      { error: "Ce dossier a expiré." },
       { status: 410 }
     );
   }
@@ -78,7 +78,7 @@ export async function GET(
 
   if (completedPhotos.length === 0) {
     return NextResponse.json(
-      { error: "Aucune photo generee dans ce dossier." },
+      { error: "Aucun visuel meublé dans ce dossier." },
       { status: 400 }
     );
   }
@@ -154,7 +154,7 @@ export async function GET(
 
     // Photo count
     coverPage.drawText(
-      `${completedPhotos.length} visualisation${completedPhotos.length > 1 ? "s" : ""}`,
+      `${completedPhotos.length} visuel${completedPhotos.length > 1 ? "s" : ""} meublé${completedPhotos.length > 1 ? "s" : ""}`,
       {
         x: MARGIN,
         y: yPos - 35,
@@ -217,9 +217,9 @@ export async function GET(
         }
       }
 
-      // "AVANT" label
-      page.drawText("AVANT", {
-        x: MARGIN + imgAreaWidth / 2 - 15,
+      // "Avant home staging" label
+      page.drawText("Avant home staging", {
+        x: MARGIN + imgAreaWidth / 2 - 40,
         y: imgY - 5,
         size: 8,
         font: fontBold,
@@ -242,9 +242,9 @@ export async function GET(
         }
       }
 
-      // "APRES" label
-      page.drawText("APRES", {
-        x: MARGIN * 2 + imgAreaWidth + imgAreaWidth / 2 - 15,
+      // "Après home staging" label
+      page.drawText("Après home staging", {
+        x: MARGIN * 2 + imgAreaWidth + imgAreaWidth / 2 - 40,
         y: imgY - 5,
         size: 8,
         font: fontBold,
@@ -317,7 +317,7 @@ export async function GET(
   } catch (err) {
     console.error("Error generating PDF:", err);
     return NextResponse.json(
-      { error: "Erreur lors de la generation du PDF." },
+      { error: "Erreur lors de la génération du PDF." },
       { status: 500 }
     );
   }

@@ -59,8 +59,8 @@ const MAX_PHOTOS = 15;
 export default function MerchantMode() {
   const { data: session } = useSession();
 
-  // Step state
-  const [currentStep, setCurrentStep] = useState<MerchantStep>("info");
+  // Step state — photos first (Thomas flow: arrive avec ses photos)
+  const [currentStep, setCurrentStep] = useState<MerchantStep>("photos");
 
   // Property info
   const [bienNom, setBienNom] = useState("");
@@ -177,7 +177,7 @@ export default function MerchantMode() {
   // ── Create dossier + upload + generate ──
   const handleGenerate = useCallback(async () => {
     if (!session?.user?.id) {
-      setError("Connexion requise pour utiliser le Mode Marchand.");
+      setError("Connectez-vous pour accéder au Mode Marchand.");
       return;
     }
 
@@ -187,7 +187,7 @@ export default function MerchantMode() {
     }
 
     if (!globalStyle && !customPrompt.trim()) {
-      setError("Selectionnez un style.");
+      setError("Choisissez une ambiance pour continuer.");
       return;
     }
 
@@ -212,7 +212,7 @@ export default function MerchantMode() {
 
       if (!createRes.ok) {
         const data = await createRes.json();
-        throw new Error(data.error || "Erreur lors de la creation du dossier.");
+        throw new Error(data.error || "La création du dossier a échoué. Vérifiez votre connexion et réessayez.");
       }
 
       const { dossier } = await createRes.json();
@@ -265,7 +265,7 @@ export default function MerchantMode() {
       // Step 4: Poll for progress
       startPolling(dossier.uuid);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur inattendue.");
+      setError(err instanceof Error ? err.message : "Une erreur est survenue. Réessayez — vos crédits n'ont pas été consommés.");
       setIsGenerating(false);
       setCurrentStep("review");
     }
@@ -288,7 +288,7 @@ export default function MerchantMode() {
 
       if (!res.ok) {
         const data = await res.json();
-        setError(data.error || "Erreur lors de la regeneration.");
+        setError(data.error || "Une erreur est survenue. Réessayez — vos crédits n'ont pas été consommés.");
         return;
       }
 
@@ -299,7 +299,7 @@ export default function MerchantMode() {
         setDossierPhotos(photos);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur lors de la regeneration.");
+      setError(err instanceof Error ? err.message : "Une erreur est survenue. Réessayez — vos crédits n'ont pas été consommés.");
     } finally {
       setIsRegenerating(null);
     }
@@ -343,7 +343,7 @@ export default function MerchantMode() {
   }, []);
 
   // ── Derived ──
-  const bienTitle = bienNom.trim() || `Bien sans titre — ${new Date().toLocaleDateString("fr-FR")}`;
+  const bienTitle = bienNom.trim() || `Dossier de présentation — ${new Date().toLocaleDateString("fr-FR")}`;
   const creditsNeeded = files.length;
 
   // ─── RENDER ────────────────────────────────────────────────────────
@@ -356,23 +356,31 @@ export default function MerchantMode() {
           {error}
           <button
             onClick={() => setError(null)}
-            className="ml-3 text-red-400 hover:text-red-600"
+            className="ml-3 text-red-400 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/50 focus-visible:ring-offset-2 rounded"
           >
             Fermer
           </button>
         </div>
       )}
 
-      {/* ── Step: Property Info ── */}
+      {/* ── Step: Property Info (step 2 — after photos) ── */}
       {currentStep === "info" && (
         <div className="space-y-6 animate-fade-in-up" data-testid="merchant-step-info">
-          <div>
-            <h3 className="text-sm font-medium text-[var(--muted)] uppercase tracking-widest mb-4">
-              Informations du bien
-            </h3>
-            <p className="text-xs text-[var(--muted)]/60 font-light mb-6">
-              Optionnel — ces informations apparaitront sur le PDF et la page partageable.
-            </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-medium text-[var(--muted)] uppercase tracking-widest mb-4">
+                Informations du bien
+              </h3>
+              <p className="text-xs text-[var(--muted)]/60 font-light mb-6">
+                Facultatif — ces informations figureront sur le PDF et le lien de partage destiné aux acquéreurs.
+              </p>
+            </div>
+            <button
+              onClick={() => setCurrentStep("photos")}
+              className="text-xs text-[var(--muted)] font-light hover:text-[var(--foreground)] transition-colors"
+            >
+              Retour
+            </button>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -384,7 +392,7 @@ export default function MerchantMode() {
                 type="text"
                 value={bienNom}
                 onChange={(e) => setBienNom(e.target.value)}
-                placeholder="Ex : 45 rue de la Paix — T3 renove"
+                placeholder="Ex : 45 rue de la Paix — T3 rénové"
                 className="w-full px-4 py-3 border border-[var(--border)] rounded-xl text-sm font-light focus:border-[var(--foreground)] focus:outline-none transition-colors placeholder:text-[var(--foreground)]/30"
                 data-testid="merchant-bien-nom"
               />
@@ -406,7 +414,7 @@ export default function MerchantMode() {
 
             <div>
               <label className="text-xs font-medium text-[var(--foreground)] mb-1.5 block">
-                Surface (m2)
+                Surface (m²)
               </label>
               <input
                 type="number"
@@ -430,6 +438,9 @@ export default function MerchantMode() {
                 className="w-full px-4 py-3 border border-[var(--border)] rounded-xl text-sm font-light focus:border-[var(--foreground)] focus:outline-none transition-colors placeholder:text-[var(--foreground)]/30"
                 data-testid="merchant-bien-prix"
               />
+              <p className="text-[10px] text-[var(--muted)]/50 font-light mt-1">
+                Prix de commercialisation en euros (ex : 350000 pour 350 000 EUR)
+              </p>
             </div>
           </div>
 
@@ -443,10 +454,10 @@ export default function MerchantMode() {
                 <button
                   key={type.id}
                   onClick={() => setBienType(bienType === type.id ? "" : type.id)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all min-h-[44px] ${
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/50 focus-visible:ring-offset-2 ${
                     bienType === type.id
                       ? "bg-[var(--sage)] text-white"
-                      : "bg-gray-100 text-[var(--muted)] hover:bg-gray-200"
+                      : "bg-[var(--foreground)]/5 text-[var(--muted)] hover:bg-[var(--foreground)]/10"
                   }`}
                   data-testid={`merchant-bien-type-${type.id}`}
                 >
@@ -459,17 +470,17 @@ export default function MerchantMode() {
           {/* Next button */}
           <div className="pt-4">
             <button
-              onClick={() => setCurrentStep("photos")}
-              className="w-full sm:w-auto px-8 py-3 bg-[var(--foreground)] text-[var(--background)] rounded-xl font-medium text-sm hover:opacity-90 transition-opacity"
-              data-testid="merchant-next-photos"
+              onClick={() => setCurrentStep("style")}
+              className="w-full sm:w-auto px-8 py-3 bg-[var(--foreground)] text-[var(--background)] rounded-xl font-medium text-sm hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/50 focus-visible:ring-offset-2"
+              data-testid="merchant-next-style"
             >
-              Continuer
+              Choisir le style
             </button>
           </div>
         </div>
       )}
 
-      {/* ── Step: Photos ── */}
+      {/* ── Step: Photos (step 1 — first visible) ── */}
       {currentStep === "photos" && (
         <div className="space-y-6 animate-fade-in-up" data-testid="merchant-step-photos">
           <div className="flex items-center justify-between">
@@ -478,16 +489,14 @@ export default function MerchantMode() {
                 Photos du bien
               </h3>
               <p className="text-xs text-[var(--muted)]/60 font-light">
-                Jusqu&apos;a {MAX_PHOTOS} photos — 1 credit par photo
+                Jusqu&apos;à {MAX_PHOTOS} photos — 1 crédit par photo
               </p>
             </div>
-            <button
-              onClick={() => setCurrentStep("info")}
-              className="text-xs text-[var(--muted)] font-light hover:text-[var(--foreground)] transition-colors"
-            >
-              Retour
-            </button>
           </div>
+
+          <p className="text-xs text-[var(--muted)]/60 font-light -mt-2">
+            Photographiez chaque pièce du bien. Les photos sont traitées une par une.
+          </p>
 
           <UploadZone
             files={files}
@@ -499,7 +508,7 @@ export default function MerchantMode() {
           {files.length > 0 && (
             <div className="space-y-3">
               <p className="text-xs text-[var(--muted)] font-medium">
-                Nommez vos pieces (optionnel)
+                Nommez chaque pièce (facultatif)
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {files.map((file, index) => (
@@ -534,14 +543,14 @@ export default function MerchantMode() {
           {files.length > 0 && (
             <div className="flex items-center gap-3 pt-4">
               <button
-                onClick={() => setCurrentStep("style")}
-                className="px-8 py-3 bg-[var(--foreground)] text-[var(--background)] rounded-xl font-medium text-sm hover:opacity-90 transition-opacity"
-                data-testid="merchant-next-style"
+                onClick={() => setCurrentStep("info")}
+                className="px-8 py-3 bg-[var(--foreground)] text-[var(--background)] rounded-xl font-medium text-sm hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/50 focus-visible:ring-offset-2"
+                data-testid="merchant-next-photos"
               >
-                Choisir le style
+                Ajouter les photos
               </button>
               <span className="text-xs text-[var(--muted)] font-light">
-                {files.length} photo{files.length > 1 ? "s" : ""} — {files.length} credit{files.length > 1 ? "s" : ""}
+                {files.length} photo{files.length > 1 ? "s" : ""} — {files.length} crédit{files.length > 1 ? "s" : ""}
               </span>
             </div>
           )}
@@ -557,11 +566,11 @@ export default function MerchantMode() {
                 Style global
               </h3>
               <p className="text-xs text-[var(--muted)]/60 font-light">
-                Applique a toutes les photos. Vous pourrez personnaliser par piece ensuite.
+                Appliqué à toutes les photos. Vous pourrez personnaliser par pièce ensuite.
               </p>
             </div>
             <button
-              onClick={() => setCurrentStep("photos")}
+              onClick={() => setCurrentStep("info")}
               className="text-xs text-[var(--muted)] font-light hover:text-[var(--foreground)] transition-colors"
             >
               Retour
@@ -583,10 +592,10 @@ export default function MerchantMode() {
             <div className="flex items-center gap-3 pt-4">
               <button
                 onClick={() => setCurrentStep("review")}
-                className="px-8 py-3 bg-[var(--foreground)] text-[var(--background)] rounded-xl font-medium text-sm hover:opacity-90 transition-opacity"
+                className="px-8 py-3 bg-[var(--foreground)] text-[var(--background)] rounded-xl font-medium text-sm hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/50 focus-visible:ring-offset-2"
                 data-testid="merchant-next-review"
               >
-                Voir le recapitulatif
+                Vérifier avant de générer
               </button>
             </div>
           )}
@@ -598,7 +607,7 @@ export default function MerchantMode() {
         <div className="space-y-6 animate-fade-in-up" data-testid="merchant-step-review">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-medium text-[var(--muted)] uppercase tracking-widest">
-              Recapitulatif
+              Récapitulatif
             </h3>
             <button
               onClick={() => setCurrentStep("style")}
@@ -629,7 +638,7 @@ export default function MerchantMode() {
                   {files.length} photo{files.length > 1 ? "s" : ""}
                 </span>
                 <span className="text-sm text-[var(--sage)] font-medium">
-                  {creditsNeeded} credit{creditsNeeded > 1 ? "s" : ""}
+                  {creditsNeeded} crédit{creditsNeeded > 1 ? "s" : ""}
                 </span>
               </div>
 
@@ -650,7 +659,7 @@ export default function MerchantMode() {
             {/* Style summary */}
             <div className="border-t border-[var(--border)] pt-4">
               <span className="text-sm text-[var(--foreground)] font-medium">
-                Style : {globalStyle?.name || "Personnalise"}
+                Style : {globalStyle?.name || "Personnalisé"}
               </span>
             </div>
           </div>
@@ -659,14 +668,14 @@ export default function MerchantMode() {
           <button
             onClick={handleGenerate}
             disabled={isGenerating}
-            className="w-full py-4 bg-[var(--sage)] text-white rounded-xl font-medium text-base hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-full py-4 bg-[var(--sage)] text-white rounded-xl font-medium text-base hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/50 focus-visible:ring-offset-2"
             data-testid="merchant-generate"
           >
-            {isGenerating ? "Generation en cours..." : `Generer le dossier (${creditsNeeded} credits)`}
+            {isGenerating ? "Génération en cours..." : `Générer le dossier (${creditsNeeded} crédit${creditsNeeded > 1 ? "s" : ""})`}
           </button>
 
           <p className="text-center text-xs text-[var(--muted)]/60 font-light">
-            Les photos en echec seront remboursees automatiquement.
+            Si une photo échoue, le crédit correspondant est automatiquement restitué.
           </p>
         </div>
       )}
@@ -675,7 +684,7 @@ export default function MerchantMode() {
       {currentStep === "generating" && (
         <div className="space-y-6 animate-fade-in-up" data-testid="merchant-step-generating">
           <h3 className="text-sm font-medium text-[var(--muted)] uppercase tracking-widest">
-            Generation en cours
+            Génération en cours
           </h3>
 
           <DossierProgress
@@ -705,11 +714,11 @@ export default function MerchantMode() {
         <div className="space-y-6 animate-fade-in-up" data-testid="merchant-step-results">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-medium text-[var(--muted)] uppercase tracking-widest">
-              Dossier termine
+              Dossier prêt
             </h3>
             {linkCopied && (
               <span className="text-xs text-[var(--sage)] font-medium animate-fade-in-up">
-                Lien copie
+                Lien copié · Valable 30 jours
               </span>
             )}
           </div>

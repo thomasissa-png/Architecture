@@ -50,7 +50,7 @@ export default function DossierPublicView({
                   loading="lazy"
                 />
               </div>
-              <span className="absolute bottom-2.5 left-2.5 text-xs font-medium text-gray-400 bg-white/80 backdrop-blur-sm px-2.5 py-1 rounded-full">
+              <span className="absolute bottom-2.5 left-2.5 text-[11px] font-medium tracking-widest uppercase text-white/70">
                 AVANT
               </span>
             </div>
@@ -66,8 +66,8 @@ export default function DossierPublicView({
                   loading="lazy"
                 />
               </div>
-              <span className="absolute bottom-2.5 left-2.5 text-xs font-medium text-[var(--sage)] bg-white/80 backdrop-blur-sm px-2.5 py-1 rounded-full">
-                APRES
+              <span className="absolute bottom-2.5 left-2.5 text-[11px] font-medium tracking-widest uppercase text-[var(--sage)]">
+                APRÈS
               </span>
             </div>
           </div>
