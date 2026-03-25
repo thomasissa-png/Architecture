@@ -25,6 +25,17 @@ interface Property {
   map_image_key: string | null;
   description_generated: string | null;
   description_final: string | null;
+  dpe_classe: string | null;
+  ges_classe: string | null;
+  etage: number | null;
+  ascenseur: boolean | null;
+  parking: boolean | null;
+  cave: boolean | null;
+  charges_copro_annuelles: number | null;
+  annee_construction: number | null;
+  exposition: string | null;
+  taxe_fonciere: number | null;
+  nb_lots_copro: number | null;
   photo_count?: number;
   dossier_count?: number;
   created_at: string;
@@ -61,6 +72,23 @@ export default function PropertyDetailPage() {
   // Association modal
   const [showAssociateModal, setShowAssociateModal] = useState(false);
   const [selectedForAssoc, setSelectedForAssoc] = useState<Set<string>>(new Set());
+
+  // Complementary info form
+  const [compInfo, setCompInfo] = useState({
+    dpeClasse: "" as string,
+    gesClasse: "" as string,
+    etage: "" as string,
+    ascenseur: false,
+    parking: false,
+    cave: false,
+    chargesCoproAnnuelles: "" as string,
+    anneeConstruction: "" as string,
+    exposition: "" as string,
+    taxeFonciere: "" as string,
+    nbLotsCopro: "" as string,
+  });
+  const [isSavingCompInfo, setIsSavingCompInfo] = useState(false);
+  const [compInfoSaved, setCompInfoSaved] = useState(false);
 
   // Annonce creation + archiving
   const [isCreatingAnnonce, setIsCreatingAnnonce] = useState(false);
@@ -190,6 +218,25 @@ export default function PropertyDetailPage() {
     }
   }, [session, fetchProperty, fetchPhotos, fetchActiveAnnonce]);
 
+  // Sync compInfo when property loads
+  useEffect(() => {
+    if (property) {
+      setCompInfo({
+        dpeClasse: property.dpe_classe || "",
+        gesClasse: property.ges_classe || "",
+        etage: property.etage != null ? String(property.etage) : "",
+        ascenseur: property.ascenseur === true,
+        parking: property.parking === true,
+        cave: property.cave === true,
+        chargesCoproAnnuelles: property.charges_copro_annuelles != null ? String(property.charges_copro_annuelles) : "",
+        anneeConstruction: property.annee_construction != null ? String(property.annee_construction) : "",
+        exposition: property.exposition || "",
+        taxeFonciere: property.taxe_fonciere != null ? String(property.taxe_fonciere) : "",
+        nbLotsCopro: property.nb_lots_copro != null ? String(property.nb_lots_copro) : "",
+      });
+    }
+  }, [property]);
+
   const handleSaveDescription = async () => {
     try {
       const res = await fetch(`/api/properties/${propertyId}`, {
@@ -204,6 +251,42 @@ export default function PropertyDetailPage() {
       }
     } catch (err) {
       console.error("Erreur sauvegarde description:", err);
+    }
+  };
+
+  const handleSaveCompInfo = async () => {
+    setIsSavingCompInfo(true);
+    setCompInfoSaved(false);
+    try {
+      const body: Record<string, string | number | boolean | null> = {
+        dpeClasse: compInfo.dpeClasse || null,
+        gesClasse: compInfo.gesClasse || null,
+        etage: compInfo.etage ? parseInt(compInfo.etage, 10) : null,
+        ascenseur: compInfo.ascenseur,
+        parking: compInfo.parking,
+        cave: compInfo.cave,
+        chargesCoproAnnuelles: compInfo.chargesCoproAnnuelles ? parseInt(compInfo.chargesCoproAnnuelles, 10) : null,
+        anneeConstruction: compInfo.anneeConstruction ? parseInt(compInfo.anneeConstruction, 10) : null,
+        exposition: compInfo.exposition || null,
+        taxeFonciere: compInfo.taxeFonciere ? parseInt(compInfo.taxeFonciere, 10) : null,
+        nbLotsCopro: compInfo.nbLotsCopro ? parseInt(compInfo.nbLotsCopro, 10) : null,
+      };
+
+      const res = await fetch(`/api/properties/${propertyId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setProperty(data.property);
+        setCompInfoSaved(true);
+        setTimeout(() => setCompInfoSaved(false), 3000);
+      }
+    } catch (err) {
+      console.error("Erreur sauvegarde infos complementaires:", err);
+    } finally {
+      setIsSavingCompInfo(false);
     }
   };
 
@@ -487,6 +570,213 @@ export default function PropertyDetailPage() {
             )}
           </div>
         </div>
+
+        {/* Informations complementaires */}
+        <section className="mb-10 p-5 bg-foreground/[0.02] rounded-2xl border border-foreground/5" data-testid="comp-info-section">
+          <h2 className="text-lg font-semibold text-foreground mb-1">
+            Informations compl{"\u00E9"}mentaires
+          </h2>
+          <p className="text-xs text-muted font-light mb-4">
+            Ces informations seront affich{"\u00E9"}es automatiquement sur l&apos;annonce et le dossier.
+          </p>
+
+          {/* DPE + GES row */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+            <div>
+              <label htmlFor="dpe-classe" className="block text-xs font-medium text-foreground mb-1">
+                DPE
+              </label>
+              <select
+                id="dpe-classe"
+                data-testid="dpe-classe-select"
+                value={compInfo.dpeClasse}
+                onChange={(e) => setCompInfo((p) => ({ ...p, dpeClasse: e.target.value }))}
+                className="w-full text-sm font-light bg-background border border-foreground/10 rounded-xl px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+              >
+                <option value="">--</option>
+                {["A", "B", "C", "D", "E", "F", "G"].map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+              {!compInfo.dpeClasse && (
+                <p className="text-[11px] text-red-500/80 font-light mt-0.5" data-testid="dpe-warning">
+                  Requis par la loi
+                </p>
+              )}
+            </div>
+            <div>
+              <label htmlFor="ges-classe" className="block text-xs font-medium text-foreground mb-1">
+                GES
+              </label>
+              <select
+                id="ges-classe"
+                data-testid="ges-classe-select"
+                value={compInfo.gesClasse}
+                onChange={(e) => setCompInfo((p) => ({ ...p, gesClasse: e.target.value }))}
+                className="w-full text-sm font-light bg-background border border-foreground/10 rounded-xl px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+              >
+                <option value="">--</option>
+                {["A", "B", "C", "D", "E", "F", "G"].map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="etage" className="block text-xs font-medium text-foreground mb-1">
+                {"\u00C9"}tage
+              </label>
+              <input
+                id="etage"
+                type="number"
+                min="0"
+                data-testid="etage-input"
+                value={compInfo.etage}
+                onChange={(e) => setCompInfo((p) => ({ ...p, etage: e.target.value }))}
+                placeholder="ex: 3"
+                className="w-full text-sm font-light bg-background border border-foreground/10 rounded-xl px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+              />
+            </div>
+            <div className="flex items-end pb-2">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  data-testid="ascenseur-checkbox"
+                  checked={compInfo.ascenseur}
+                  onChange={(e) => setCompInfo((p) => ({ ...p, ascenseur: e.target.checked }))}
+                  className="w-4 h-4 rounded border-foreground/20 text-sage focus:ring-sage/50"
+                />
+                <span className="text-xs font-light text-foreground">Ascenseur</span>
+              </label>
+            </div>
+          </div>
+
+          {/* Parking + Cave + Exposition */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+            <div className="flex items-center">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  data-testid="parking-checkbox"
+                  checked={compInfo.parking}
+                  onChange={(e) => setCompInfo((p) => ({ ...p, parking: e.target.checked }))}
+                  className="w-4 h-4 rounded border-foreground/20 text-sage focus:ring-sage/50"
+                />
+                <span className="text-xs font-light text-foreground">Parking</span>
+              </label>
+            </div>
+            <div className="flex items-center">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  data-testid="cave-checkbox"
+                  checked={compInfo.cave}
+                  onChange={(e) => setCompInfo((p) => ({ ...p, cave: e.target.checked }))}
+                  className="w-4 h-4 rounded border-foreground/20 text-sage focus:ring-sage/50"
+                />
+                <span className="text-xs font-light text-foreground">Cave</span>
+              </label>
+            </div>
+            <div>
+              <label htmlFor="exposition" className="block text-xs font-medium text-foreground mb-1">
+                Exposition
+              </label>
+              <select
+                id="exposition"
+                data-testid="exposition-select"
+                value={compInfo.exposition}
+                onChange={(e) => setCompInfo((p) => ({ ...p, exposition: e.target.value }))}
+                className="w-full text-sm font-light bg-background border border-foreground/10 rounded-xl px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+              >
+                <option value="">--</option>
+                {["Nord", "Sud", "Est", "Ouest", "Nord-Est", "Nord-Ouest", "Sud-Est", "Sud-Ouest"].map((e) => (
+                  <option key={e} value={e}>{e}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="annee-construction" className="block text-xs font-medium text-foreground mb-1">
+                Ann{"\u00E9"}e construction
+              </label>
+              <input
+                id="annee-construction"
+                type="number"
+                min="1800"
+                max="2030"
+                data-testid="annee-construction-input"
+                value={compInfo.anneeConstruction}
+                onChange={(e) => setCompInfo((p) => ({ ...p, anneeConstruction: e.target.value }))}
+                placeholder="ex: 1975"
+                className="w-full text-sm font-light bg-background border border-foreground/10 rounded-xl px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+              />
+            </div>
+          </div>
+
+          {/* Charges + Taxe + Lots */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+            <div>
+              <label htmlFor="charges-copro" className="block text-xs font-medium text-foreground mb-1">
+                Charges copro ({"\u20AC"}/an)
+              </label>
+              <input
+                id="charges-copro"
+                type="number"
+                min="0"
+                data-testid="charges-copro-input"
+                value={compInfo.chargesCoproAnnuelles}
+                onChange={(e) => setCompInfo((p) => ({ ...p, chargesCoproAnnuelles: e.target.value }))}
+                placeholder="ex: 2400"
+                className="w-full text-sm font-light bg-background border border-foreground/10 rounded-xl px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+              />
+            </div>
+            <div>
+              <label htmlFor="taxe-fonciere" className="block text-xs font-medium text-foreground mb-1">
+                Taxe fonci{"\u00E8"}re ({"\u20AC"}/an)
+              </label>
+              <input
+                id="taxe-fonciere"
+                type="number"
+                min="0"
+                data-testid="taxe-fonciere-input"
+                value={compInfo.taxeFonciere}
+                onChange={(e) => setCompInfo((p) => ({ ...p, taxeFonciere: e.target.value }))}
+                placeholder="ex: 800"
+                className="w-full text-sm font-light bg-background border border-foreground/10 rounded-xl px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+              />
+            </div>
+            <div>
+              <label htmlFor="nb-lots" className="block text-xs font-medium text-foreground mb-1">
+                Nb lots copro
+              </label>
+              <input
+                id="nb-lots"
+                type="number"
+                min="1"
+                data-testid="nb-lots-copro-input"
+                value={compInfo.nbLotsCopro}
+                onChange={(e) => setCompInfo((p) => ({ ...p, nbLotsCopro: e.target.value }))}
+                placeholder="ex: 24"
+                className="w-full text-sm font-light bg-background border border-foreground/10 rounded-xl px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+              />
+            </div>
+          </div>
+
+          {/* Save button */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleSaveCompInfo}
+              disabled={isSavingCompInfo}
+              data-testid="save-comp-info-btn"
+              className="text-xs bg-sage text-white px-4 py-2 rounded-full font-medium hover:bg-sage/85 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+            >
+              {isSavingCompInfo ? "Enregistrement..." : "Enregistrer"}
+            </button>
+            {compInfoSaved && (
+              <span className="text-xs text-sage font-medium" data-testid="comp-info-saved">
+                Enregistr{"\u00E9"}
+              </span>
+            )}
+          </div>
+        </section>
 
         {/* Photos section */}
         <section className="mb-10">

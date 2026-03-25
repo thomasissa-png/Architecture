@@ -63,9 +63,20 @@ export async function PATCH(
       "floorNumber",
       "salePrice",
       "descriptionFinal",
+      "dpeClasse",
+      "gesClasse",
+      "etage",
+      "ascenseur",
+      "parking",
+      "cave",
+      "chargesCoproAnnuelles",
+      "anneeConstruction",
+      "exposition",
+      "taxeFonciere",
+      "nbLotsCopro",
     ] as const;
 
-    const updates: Record<string, string | number | undefined> = {};
+    const updates: Record<string, string | number | boolean | undefined> = {};
     for (const field of allowedFields) {
       if (body[field] !== undefined) {
         updates[field] = body[field];

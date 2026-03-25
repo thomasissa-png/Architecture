@@ -16,7 +16,9 @@ import {
   formatSurface,
 } from "@/lib/dossier";
 import { getMerchantProfile } from "@/lib/merchant";
+import { getPropertyByUserAndAddress } from "@/lib/properties";
 import DossierPublicView from "@/components/DossierPublicView";
+import DossierCaracteristiques from "@/components/DossierCaracteristiques";
 import ContactSticky from "@/components/ContactSticky";
 import ShareButtons from "@/components/ShareButtons";
 import RoomNav from "@/components/RoomNav";
@@ -99,10 +101,13 @@ export default async function DossierPage({ params }: PageProps) {
     );
   }
 
-  // Load photos + merchant profile
-  const [photos, profile] = await Promise.all([
+  // Load photos + merchant profile + property (for characteristics)
+  const [photos, profile, linkedProperty] = await Promise.all([
     getDossierPhotos(params.uuid),
     getMerchantProfile(dossier.user_id),
+    dossier.bien_adresse
+      ? getPropertyByUserAndAddress(dossier.user_id, dossier.bien_adresse)
+      : null,
   ]);
   const completedPhotos = photos.filter((p) => p.status === "completed");
   const hasMerchant = profile?.is_merchant === true;
@@ -198,6 +203,11 @@ export default async function DossierPage({ params }: PageProps) {
               className="w-full h-auto"
             />
           </div>
+        )}
+
+        {/* Caracteristiques from property */}
+        {linkedProperty && (
+          <DossierCaracteristiques property={linkedProperty} />
         )}
 
         {/* Share buttons + Room navigation */}

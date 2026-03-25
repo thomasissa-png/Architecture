@@ -67,6 +67,17 @@ export async function GET(
       address_normalized: property.address_normalized,
       description: property.description_final || property.description_generated,
       dvf_median_price_m2: property.dvf_median_price_m2,
+      dpe_classe: property.dpe_classe,
+      ges_classe: property.ges_classe,
+      etage: property.etage,
+      ascenseur: property.ascenseur,
+      parking: property.parking,
+      cave: property.cave,
+      charges_copro_annuelles: property.charges_copro_annuelles,
+      annee_construction: property.annee_construction,
+      exposition: property.exposition,
+      taxe_fonciere: property.taxe_fonciere,
+      nb_lots_copro: property.nb_lots_copro,
     },
     photos: photos
       .filter((p) => p.output_image_key)

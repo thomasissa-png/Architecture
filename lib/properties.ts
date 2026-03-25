@@ -30,6 +30,17 @@ export interface Property {
   description_generated: string | null;
   description_final: string | null;
   sale_price: number | null;
+  dpe_classe: string | null;
+  ges_classe: string | null;
+  etage: number | null;
+  ascenseur: boolean | null;
+  parking: boolean | null;
+  cave: boolean | null;
+  charges_copro_annuelles: number | null;
+  annee_construction: number | null;
+  exposition: string | null;
+  taxe_fonciere: number | null;
+  nb_lots_copro: number | null;
   photo_count?: number;
   dossier_count?: number;
   created_at: string;
@@ -64,6 +75,17 @@ export interface UpdatePropertyInput {
   descriptionGenerated?: string;
   descriptionFinal?: string;
   salePrice?: number;
+  dpeClasse?: string;
+  gesClasse?: string;
+  etage?: number;
+  ascenseur?: boolean;
+  parking?: boolean;
+  cave?: boolean;
+  chargesCoproAnnuelles?: number;
+  anneeConstruction?: number;
+  exposition?: string;
+  taxeFonciere?: number;
+  nbLotsCopro?: number;
 }
 
 // ─── DB Schema Migration ────────────────────────────────────────────
@@ -101,6 +123,28 @@ export async function ensurePropertiesTable(): Promise<void> {
     );
     CREATE INDEX IF NOT EXISTS idx_properties_user ON properties (user_id);
   `);
+
+  // ─── Migrate: add property detail columns (Sprint Benchmark Marc) ───
+  const migratePropertyColumns = [
+    { name: "dpe_classe", type: "VARCHAR(1)" },
+    { name: "ges_classe", type: "VARCHAR(1)" },
+    { name: "etage", type: "INTEGER" },
+    { name: "ascenseur", type: "BOOLEAN" },
+    { name: "parking", type: "BOOLEAN" },
+    { name: "cave", type: "BOOLEAN" },
+    { name: "charges_copro_annuelles", type: "INTEGER" },
+    { name: "annee_construction", type: "INTEGER" },
+    { name: "exposition", type: "VARCHAR(10)" },
+    { name: "taxe_fonciere", type: "INTEGER" },
+    { name: "nb_lots_copro", type: "INTEGER" },
+  ];
+  const migrateSql = migratePropertyColumns
+    .map(
+      (col) =>
+        `DO $$ BEGIN ALTER TABLE properties ADD COLUMN ${col.name} ${col.type}; EXCEPTION WHEN duplicate_column THEN NULL; END $$`
+    )
+    .join("; ");
+  await db.query(migrateSql);
 
   propertiesTableEnsured = true;
 }
@@ -182,7 +226,7 @@ export async function updateProperty(
   const db = getPool();
 
   const setClauses: string[] = ["updated_at = NOW()"];
-  const values: (string | number | null)[] = [propertyId, userId];
+  const values: (string | number | boolean | null)[] = [propertyId, userId];
   let paramIdx = 3;
 
   const fieldMap: Record<string, keyof UpdatePropertyInput> = {
@@ -203,6 +247,17 @@ export async function updateProperty(
     description_generated: "descriptionGenerated",
     description_final: "descriptionFinal",
     sale_price: "salePrice",
+    dpe_classe: "dpeClasse",
+    ges_classe: "gesClasse",
+    etage: "etage",
+    ascenseur: "ascenseur",
+    parking: "parking",
+    cave: "cave",
+    charges_copro_annuelles: "chargesCoproAnnuelles",
+    annee_construction: "anneeConstruction",
+    exposition: "exposition",
+    taxe_fonciere: "taxeFonciere",
+    nb_lots_copro: "nbLotsCopro",
   };
 
   for (const [col, key] of Object.entries(fieldMap)) {
@@ -220,6 +275,18 @@ export async function updateProperty(
      WHERE id = $1 AND user_id = $2
      RETURNING *`,
     values
+  );
+
+  return (result.rows[0] as Property) ?? null;
+}
+
+export async function getPropertyByUserAndAddress(userId: string, addressRaw: string): Promise<Property | null> {
+  await ensurePropertiesTable();
+  const db = getPool();
+
+  const result = await db.query(
+    `SELECT * FROM properties WHERE user_id = $1 AND address_raw = $2 ORDER BY updated_at DESC LIMIT 1`,
+    [userId, addressRaw]
   );
 
   return (result.rows[0] as Property) ?? null;
