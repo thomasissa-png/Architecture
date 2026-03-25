@@ -1,5 +1,5 @@
 /**
- * F6 — Annonce immobiliere publique.
+ * F6 — Annonce immobili\u00E8re publique.
  *
  * /annonce/[uuid] — SSR, no auth required, mobile-friendly.
  * OpenGraph metadata for link preview in messaging apps.
@@ -24,8 +24,8 @@ const ROOM_TYPE_LABELS: Record<string, string> = {
   kitchen: "Cuisine",
   bathroom: "Salle de bain",
   office: "Bureau",
-  dining_room: "Salle a manger",
-  hallway: "Entree",
+  dining_room: "Salle \u00E0 manger",
+  hallway: "Entr\u00E9e",
   terrace: "Terrasse",
   balcony: "Balcon",
   garden: "Jardin",
@@ -47,7 +47,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!annonce || !isAnnonceActive(annonce)) {
     return {
       title: "Annonce introuvable - Versiroom",
-      description: "Cette annonce n'existe pas ou a ete supprimee.",
+      description: "Cette annonce n'existe pas ou a \u00E9t\u00E9 supprim\u00E9e.",
       robots: "noindex, nofollow",
     };
   }
@@ -56,7 +56,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     getPropertyById(annonce.property_id, annonce.user_id),
     getUserPhotos(annonce.user_id, { propertyId: annonce.property_id }),
   ]);
-  const title = annonce.title || "Annonce immobiliere";
+  const title = annonce.title || "Annonce immobili\u00E8re";
 
   const details: string[] = [];
   if (property?.surface_m2) details.push(`${property.surface_m2}m\u00B2`);
@@ -99,7 +99,7 @@ export default async function AnnoncePage({ params }: PageProps) {
             Annonce introuvable
           </h1>
           <p className="text-muted font-light text-sm">
-            Cette annonce n&apos;existe pas ou a ete supprimee.
+            Cette annonce n&apos;existe pas ou a \u00E9t\u00E9 supprim\u00E9e.
           </p>
         </div>
       </div>
@@ -115,7 +115,7 @@ export default async function AnnoncePage({ params }: PageProps) {
             Annonce introuvable
           </h1>
           <p className="text-muted font-light text-sm">
-            Cette annonce n&apos;existe pas ou a ete supprimee.
+            Cette annonce n&apos;existe pas ou a \u00E9t\u00E9 supprim\u00E9e.
           </p>
         </div>
       </div>
@@ -145,7 +145,7 @@ export default async function AnnoncePage({ params }: PageProps) {
   }
 
   const completedPhotos = photos.filter((p) => p.output_image_key);
-  const title = annonce.title || "Annonce immobiliere";
+  const title = annonce.title || "Annonce immobili\u00E8re";
   const description = property.description_final || property.description_generated;
   const hasMerchant = merchant?.is_merchant === true;
 
@@ -203,7 +203,7 @@ export default async function AnnoncePage({ params }: PageProps) {
           <span className="text-xs text-muted font-light">
             {hasMerchant && merchant?.raison_sociale
               ? merchant.raison_sociale
-              : "Annonce immobiliere"}
+              : "Annonce immobili\u00E8re"}
           </span>
         </div>
       </header>
@@ -260,6 +260,11 @@ export default async function AnnoncePage({ params }: PageProps) {
             >
               {property.sale_price ? formatPrice(property.sale_price) : "Prix sur demande"}
             </span>
+            {property.dvf_median_price_m2 && (
+              <span className="text-xs bg-sage/10 text-sage px-3 py-1.5 rounded-xl font-medium">
+                Prix moyen quartier : {property.dvf_median_price_m2.toLocaleString("fr-FR")} {"\u20AC"}/m{"\u00B2"}
+              </span>
+            )}
           </div>
 
           {/* Address */}
@@ -323,13 +328,7 @@ export default async function AnnoncePage({ params }: PageProps) {
             </p>
           ) : (
             <p className="text-sm text-muted font-light">
-              Description {"\u00E0"} venir.{" "}
-              <a
-                href={`/mes-biens/${annonce.property_id}`}
-                className="text-sage hover:underline"
-              >
-                Voir la fiche bien
-              </a>
+              Description en cours de r{"\u00E9"}daction
             </p>
           )}
         </div>
@@ -385,7 +384,7 @@ export default async function AnnoncePage({ params }: PageProps) {
             </p>
           )}
           <p className="text-sm text-muted/60 font-light">
-            Les visuels meubl{"\u00E9"}s sont g{"\u00E9"}n{"\u00E9"}r{"\u00E9"}s par intelligence artificielle {"\u00E0"} des fins de projection. Ils ne sont pas contractuels.
+            Projection d&apos;am{"\u00E9"}nagement r{"\u00E9"}alis{"\u00E9"}e par Versiroom — le bien est livr{"\u00E9"} brut. Visuels non contractuels.
           </p>
           <p className="text-xs text-muted/40 font-light mt-1">
             <a

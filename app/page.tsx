@@ -879,7 +879,8 @@ export default function Home() {
             </p>
           </div>
 
-          {/* F4 — Mode toggle: Standard / Marchand */}
+          {/* F4 — Mode toggle: Standard / Marchand (visible only when authenticated) */}
+          {session && (
           <div className="flex justify-center mb-8" data-testid="mode-toggle">
             <div className="inline-flex rounded-full bg-foreground/5 p-0.5">
               <button
@@ -906,6 +907,7 @@ export default function Home() {
               </button>
             </div>
           </div>
+          )}
 
           {/* F4 — Merchant Mode */}
           {isMerchantMode && (

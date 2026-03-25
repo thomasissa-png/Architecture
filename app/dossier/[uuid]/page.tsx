@@ -121,6 +121,18 @@ export default async function DossierPage({ params }: PageProps) {
               alt={profile.raison_sociale || "Logo"}
               className="h-8 w-auto object-contain"
             />
+          ) : hasMerchant && profile?.raison_sociale ? (
+            <span
+              className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-xs font-semibold text-white"
+              style={{ backgroundColor: profile.couleur_principale || "#7D9B76" }}
+            >
+              {profile.raison_sociale
+                .split(" ")
+                .filter(Boolean)
+                .slice(0, 2)
+                .map((w) => w[0].toUpperCase())
+                .join("")}
+            </span>
           ) : (
             <span className="text-xl font-semibold text-foreground tracking-tighter">
               Versiroom
@@ -256,7 +268,7 @@ export default async function DossierPage({ params }: PageProps) {
             </p>
           )}
           <p className="text-sm text-muted/60 font-light">
-            Les visuels meubl{"\u00E9"}s sont g{"\u00E9"}n{"\u00E9"}r{"\u00E9"}s par intelligence artificielle {"\u00E0"} des fins de projection. Ils ne sont pas contractuels.
+            Projection d&apos;am{"\u00E9"}nagement r{"\u00E9"}alis{"\u00E9"}e par Versiroom — le bien est livr{"\u00E9"} brut. Visuels non contractuels.
           </p>
           <p className="text-xs text-muted/40 font-light mt-1">
             <a

@@ -66,6 +66,7 @@ export async function GET(
       postal_code: property.postal_code,
       address_normalized: property.address_normalized,
       description: property.description_final || property.description_generated,
+      dvf_median_price_m2: property.dvf_median_price_m2,
     },
     photos: photos
       .filter((p) => p.output_image_key)
