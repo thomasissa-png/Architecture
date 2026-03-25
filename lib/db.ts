@@ -126,6 +126,11 @@ export async function ensureTable(): Promise<void> {
     );
   `);
 
+  // Add password_hash column for email/password auth (idempotent)
+  await db.query(`
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash TEXT;
+  `);
+
   tableEnsured = true;
 }
 

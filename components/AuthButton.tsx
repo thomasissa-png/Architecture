@@ -1,12 +1,14 @@
 "use client";
 
-import { useSession, signIn, signOut } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { useState, useEffect, useRef } from "react";
+import AuthModal from "@/components/AuthModal";
 
 export default function AuthButton() {
   const { data: session, status } = useSession();
   const [credits, setCredits] = useState<number | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   async function fetchCredits() {
@@ -56,12 +58,19 @@ export default function AuthButton() {
   // Not authenticated
   if (!session) {
     return (
-      <button
-        onClick={() => signIn("google")}
-        className="text-xs bg-foreground/5 text-foreground px-4 py-2 rounded-full font-medium hover:bg-foreground/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
-      >
-        Se connecter
-      </button>
+      <>
+        <button
+          onClick={() => setAuthModalOpen(true)}
+          className="text-xs bg-foreground/5 text-foreground px-4 py-2 rounded-full font-medium hover:bg-foreground/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+          data-testid="auth-login-btn"
+        >
+          Se connecter
+        </button>
+        <AuthModal
+          isOpen={authModalOpen}
+          onClose={() => setAuthModalOpen(false)}
+        />
+      </>
     );
   }
 
@@ -133,8 +142,15 @@ export default function AuthButton() {
             )}
           </div>
 
-          {/* Navigation marchand (visible on mobile) */}
-          <div className="px-2 py-1 sm:hidden border-b border-foreground/5">
+          {/* Navigation links */}
+          <div className="px-2 py-1 border-b border-foreground/5">
+            <a
+              href="/compte"
+              className="block px-3 py-2 text-sm text-muted font-light hover:text-foreground hover:bg-foreground/5 rounded-xl transition-colors"
+              onClick={() => setMenuOpen(false)}
+            >
+              Mon compte
+            </a>
             <a
               href="/mes-biens"
               className="block px-3 py-2 text-sm text-muted font-light hover:text-foreground hover:bg-foreground/5 rounded-xl transition-colors"

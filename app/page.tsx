@@ -1392,7 +1392,7 @@ export default function Home() {
                 </li>
                 <li className="flex items-start gap-2">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  Export PDF
+                  <span><strong className="font-medium text-foreground">Mode Marchand</strong> &mdash; dossiers PDF</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
@@ -1417,11 +1417,11 @@ export default function Home() {
                 </li>
                 <li className="flex items-start gap-2">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  Lien partageable 90 jours
+                  <span><strong className="font-medium text-foreground">Mode Marchand</strong> &mdash; 15 photos/dossier</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  Support d&eacute;di&eacute;
+                  Lien partageable 90 jours + support d&eacute;di&eacute;
                 </li>
               </ul>
               <a href="mailto:contact@versiroom.fr" className="block w-full text-center border border-foreground/15 text-foreground px-4 py-2.5 rounded-full text-sm font-medium hover:bg-foreground/5 transition-colors">

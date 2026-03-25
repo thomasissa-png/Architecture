@@ -1,9 +1,10 @@
 "use client";
 
-import { useSession, signIn } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import AuthButton from "@/components/AuthButton";
+import AuthModal from "@/components/AuthModal";
 
 const PACKS = [
   {
@@ -34,7 +35,7 @@ const PACKS = [
     perPhoto: "0,58",
     features: [
       "3 iterations par photo",
-      "Export PDF",
+      "Mode Marchand — dossiers PDF",
       "Lien partageable 30 jours",
     ],
     cta: "Acheter",
@@ -48,8 +49,8 @@ const PACKS = [
     perPhoto: "0,46",
     features: [
       "5 iterations par photo",
-      "Lien partageable 90 jours",
-      "Support dedie",
+      "Mode Marchand — 15 photos/dossier",
+      "Lien partageable 90 jours + support dedie",
     ],
     cta: "Acheter",
     highlight: false,
@@ -70,6 +71,8 @@ function PricingContent() {
   const [loadingPack, setLoadingPack] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [retractationAccepted, setRetractationAccepted] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [pendingPackId, setPendingPackId] = useState<string | null>(null);
 
   const checkoutCancelled = searchParams.get("checkout") === "cancelled";
 
@@ -84,7 +87,8 @@ function PricingContent() {
 
   async function handleBuy(packId: string) {
     if (!session?.user?.id) {
-      signIn("google", { callbackUrl: `/pricing?buy=${packId}` });
+      setPendingPackId(packId);
+      setAuthModalOpen(true);
       return;
     }
 
@@ -326,6 +330,13 @@ function PricingContent() {
           </div>
         </div>
       </footer>
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => { setAuthModalOpen(false); setPendingPackId(null); }}
+        callbackUrl={pendingPackId ? `/pricing?buy=${pendingPackId}` : "/pricing"}
+      />
     </div>
   );
 }
