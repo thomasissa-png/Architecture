@@ -8,7 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { hasProAccess } from "@/lib/credits";
-import { createAnnonce } from "@/lib/annonce";
+import { createAnnonce, getActiveAnnonceForProperty } from "@/lib/annonce";
 import { getPropertyById } from "@/lib/properties";
 import { getUserPhotos } from "@/lib/user-photos";
 
@@ -65,6 +65,12 @@ export async function POST(request: NextRequest) {
       { error: "Aucune photo associee a ce bien." },
       { status: 400 }
     );
+  }
+
+  // Idempotence: return existing active annonce if one exists
+  const existing = await getActiveAnnonceForProperty(session.user.id, propertyId);
+  if (existing) {
+    return NextResponse.json({ uuid: existing.uuid }, { status: 200 });
   }
 
   // Build auto-generated title: "{Type} {surface}m2 -- {ville}"

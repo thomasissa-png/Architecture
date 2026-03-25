@@ -245,7 +245,7 @@ export default function PropertyDetailPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        window.open(`/annonce/${data.uuid}`, "_blank");
+        window.location.href = `/annonce/${data.uuid}`;
       } else {
         const data = await res.json();
         setToastMsg(data.error || "Erreur lors de la cr\u00e9ation de l\u2019annonce.");
@@ -501,7 +501,7 @@ export default function PropertyDetailPage() {
                     setCoverPhotoId(null);
                     setDossierResult(null);
                   }}
-                  className="text-xs bg-foreground text-background px-4 py-2 rounded-full font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                  className="text-xs bg-foreground text-background px-4 py-2.5 rounded-full font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                   data-testid="create-dossier-btn"
                 >
                   Cr&#233;er un dossier
@@ -509,10 +509,10 @@ export default function PropertyDetailPage() {
                 <button
                   onClick={handleCreateAnnonce}
                   disabled={isCreatingAnnonce || photos.length === 0}
-                  className="text-xs bg-sage text-white px-4 py-2 rounded-full font-medium hover:bg-sage/85 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                  className="text-xs bg-sage text-white px-4 py-2.5 rounded-full font-medium hover:bg-sage/85 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                   data-testid="create-annonce-btn"
                 >
-                  {isCreatingAnnonce ? "Cr\u00e9ation..." : "Cr\u00e9er une annonce"}
+                  {isCreatingAnnonce ? "Cr\u00e9ation..." : "Cr\u00e9er une annonce (inclus Pack Pro)"}
                 </button>
               </div>
             </>

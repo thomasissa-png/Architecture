@@ -108,6 +108,21 @@ export async function archiveAnnonce(uuid: string, userId: string): Promise<bool
   return (result.rowCount ?? 0) > 0;
 }
 
+export async function getActiveAnnonceForProperty(
+  userId: string,
+  propertyId: string
+): Promise<Annonce | null> {
+  await ensureAnnonceTable();
+  const db = getPool();
+  const result = await db.query(
+    `SELECT * FROM annonces
+     WHERE user_id = $1 AND property_id = $2 AND status = 'active' AND expires_at > NOW()
+     ORDER BY created_at DESC LIMIT 1`,
+    [userId, propertyId]
+  );
+  return (result.rows[0] as Annonce) ?? null;
+}
+
 // ─── Helpers ─────────────────────────────────────────────────────────
 
 export function isAnnonceExpired(annonce: Annonce): boolean {

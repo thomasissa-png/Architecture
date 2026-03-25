@@ -65,6 +65,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: `${title} - Versiroom`,
     description,
+    robots: "noindex, nofollow",
     openGraph: {
       title,
       description,
@@ -148,6 +149,20 @@ export default async function AnnoncePage({ params }: PageProps) {
     photosByRoom[key].push(photo);
   }
 
+  // Sort room groups in a logical visit order
+  const ROOM_ORDER = [
+    "living_room", "bedroom", "kitchen", "bathroom",
+    "dining_room", "office", "hallway", "terrace",
+    "balcony", "garden", "other",
+  ];
+  const sortedRoomEntries = Object.entries(photosByRoom).sort(
+    ([a], [b]) => {
+      const ia = ROOM_ORDER.indexOf(a);
+      const ib = ROOM_ORDER.indexOf(b);
+      return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+    }
+  );
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -229,7 +244,7 @@ export default async function AnnoncePage({ params }: PageProps) {
           </div>
         ) : (
           <div className="space-y-8 mb-10" data-testid="annonce-gallery">
-            {Object.entries(photosByRoom).map(([roomType, roomPhotos]) => (
+            {sortedRoomEntries.map(([roomType, roomPhotos]) => (
               <div key={roomType}>
                 <h2 className="text-sm font-medium text-foreground mb-3">
                   {ROOM_TYPE_LABELS[roomType] || roomType === "other"
@@ -293,15 +308,7 @@ export default async function AnnoncePage({ params }: PageProps) {
                   {merchant.telephone}
                 </a>
               )}
-              {merchant?.email_pro && (
-                <a
-                  href={`mailto:${merchant.email_pro}`}
-                  className="block text-sm text-muted font-light hover:text-foreground transition-colors"
-                  data-testid="annonce-email"
-                >
-                  {merchant.email_pro}
-                </a>
-              )}
+              {/* Email is revealed client-side via AnnoncePublicView for anti-scraping */}
             </div>
           </div>
         )}
@@ -311,6 +318,9 @@ export default async function AnnoncePage({ params }: PageProps) {
           <AnnoncePublicView
             annonceUuid={params.uuid}
             description={description || ""}
+            city={property.city}
+            surfaceM2={property.surface_m2}
+            contactEmail={hasMerchant ? merchant?.email_pro : null}
             photos={completedPhotos.map((p) => ({
               id: p.id,
               outputImageKey: p.output_image_key!,

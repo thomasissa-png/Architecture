@@ -17,16 +17,33 @@ interface AnnoncePublicViewProps {
   annonceUuid: string;
   description: string;
   photos: AnnoncePhoto[];
+  city?: string | null;
+  surfaceM2?: number | null;
+  contactEmail?: string | null;
+}
+
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
 export default function AnnoncePublicView({
   annonceUuid,
   description,
   photos,
+  city,
+  surfaceM2,
+  contactEmail,
 }: AnnoncePublicViewProps) {
   const [copied, setCopied] = useState<string | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [canShare, setCanShare] = useState(false);
+  const [zipError, setZipError] = useState<string | null>(null);
+  const [emailRevealed, setEmailRevealed] = useState(false);
 
   useEffect(() => {
     setCanShare(typeof navigator !== "undefined" && !!navigator.share);
@@ -59,13 +76,14 @@ export default function AnnoncePublicView({
 
   const handleCopyDescription = async () => {
     if (!description) return;
+    const textWithDisclaimer = `${description}\n\n— Visuels generés par intelligence artificielle a des fins de projection, non contractuels.`;
     try {
-      await navigator.clipboard.writeText(description);
+      await navigator.clipboard.writeText(textWithDisclaimer);
       showCopied("desc");
     } catch {
       // Fallback
       const textarea = document.createElement("textarea");
-      textarea.value = description;
+      textarea.value = textWithDisclaimer;
       document.body.appendChild(textarea);
       textarea.select();
       document.execCommand("copy");
@@ -129,13 +147,18 @@ export default function AnnoncePublicView({
       const url = URL.createObjectURL(content);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `annonce-${annonceUuid.slice(0, 8)}-photos.zip`;
+      const zipName = city && surfaceM2
+        ? `annonce-${slugify(city)}-${surfaceM2}m2-photos.zip`
+        : `annonce-${annonceUuid.slice(0, 8)}-photos.zip`;
+      a.download = zipName;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (err) {
       console.error("ZIP download failed:", err);
+      setZipError("Erreur lors du telechargement. Veuillez reessayer.");
+      setTimeout(() => setZipError(null), 4000);
     } finally {
       setIsDownloading(false);
     }
@@ -146,7 +169,7 @@ export default function AnnoncePublicView({
       {/* Copy link */}
       <button
         onClick={handleCopyLink}
-        className="inline-flex items-center gap-2 text-xs bg-foreground text-background px-4 py-2.5 rounded-full font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+        className="inline-flex items-center gap-2 text-xs bg-foreground text-background px-4 py-3 rounded-full font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
         data-testid="annonce-copy-link"
       >
         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -159,7 +182,7 @@ export default function AnnoncePublicView({
       {description && (
         <button
           onClick={handleCopyDescription}
-          className="inline-flex items-center gap-2 text-xs bg-foreground/5 text-foreground px-4 py-2.5 rounded-full font-light hover:bg-foreground/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+          className="inline-flex items-center gap-2 text-xs bg-foreground/5 text-foreground px-4 py-3 rounded-full font-light hover:bg-foreground/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
           data-testid="annonce-copy-desc"
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -172,7 +195,7 @@ export default function AnnoncePublicView({
       {/* WhatsApp / Share */}
       <button
         onClick={handleWhatsApp}
-        className="inline-flex items-center gap-2 text-xs bg-[#25D366]/10 text-[#25D366] px-4 py-2.5 rounded-full font-medium hover:bg-[#25D366]/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+        className="inline-flex items-center gap-2 text-xs bg-[#25D366]/10 text-[#25D366] px-4 py-3 rounded-full font-medium hover:bg-[#25D366]/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
         data-testid="annonce-whatsapp"
       >
         <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
@@ -186,7 +209,7 @@ export default function AnnoncePublicView({
       <button
         onClick={handleDownloadZip}
         disabled={isDownloading}
-        className="inline-flex items-center gap-2 text-xs bg-foreground/5 text-foreground px-4 py-2.5 rounded-full font-light hover:bg-foreground/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+        className="inline-flex items-center gap-2 text-xs bg-foreground/5 text-foreground px-4 py-3 rounded-full font-light hover:bg-foreground/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
         data-testid="annonce-download-zip"
       >
         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -194,6 +217,39 @@ export default function AnnoncePublicView({
         </svg>
         {isDownloading ? "Telechargement..." : `Telecharger les photos (${photos.length})`}
       </button>
+
+      {/* ZIP error feedback */}
+      {zipError && (
+        <p className="w-full text-xs text-red-500 font-medium mt-1" role="alert">
+          {zipError}
+        </p>
+      )}
+
+      {/* Email click-to-reveal */}
+      {contactEmail && (
+        <div className="w-full mt-2">
+          {emailRevealed ? (
+            <a
+              href={`mailto:${contactEmail}`}
+              className="text-sm text-muted font-light hover:text-foreground transition-colors"
+              data-testid="annonce-email-revealed"
+            >
+              {contactEmail}
+            </a>
+          ) : (
+            <button
+              onClick={() => setEmailRevealed(true)}
+              className="inline-flex items-center gap-2 text-xs bg-foreground/5 text-foreground px-4 py-3 rounded-full font-light hover:bg-foreground/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+              data-testid="annonce-reveal-email"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+              </svg>
+              Afficher l&apos;email
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
