@@ -130,6 +130,55 @@ Vous avez les clés. Vous avez des photos. Vous n'avez pas encore les meubles �
 
 ---
 
+## Section 4 — Formulations validées par contexte
+
+> Produit par @copywriter — 2026-03-25
+> Basé sur messaging-matrix.md + value-proposition.md. Ces formulations sont calibrées par persona et étape de funnel. Ne pas croiser les registres.
+
+### A. Titres hero landing page — retenus par persona
+
+**Claire (Architecte)**
+> "3 ambiances sur la même photo de chantier, avant le premier RDV."
+> "Votre prochaine réunion client aura un visuel."
+
+**Thomas (Marchand de biens)**
+> "Vos photos brutes valent déjà une plaquette."
+> "Arrêtez de payer le home stager pour chaque opération."
+
+**Léa (Particulière)**
+> "Votre salon en japandi — le vôtre, pas celui de Pinterest."
+> "Décidez de votre déco avant d'acheter quoi que ce soit."
+
+---
+
+### B. Objets email onboarding — retenus par persona
+
+**Claire :** `Votre prochain premier RDV aura un support visuel` / `90 secondes pour une direction esthétique — avant même de rentrer sur chantier`
+**Thomas :** `Vos photos brutes valent déjà une plaquette` / `Ce bien brut devient un dossier de pré-commercialisation en 10 minutes`
+**Léa :** `Votre salon en scandinave — le vôtre, pas celui de Pinterest` / `Vous avez les photos. Choisissez l'ambiance.`
+
+---
+
+### C. Accroches social — retenus par canal
+
+**LinkedIn Claire (ouverture)** : "J'arrive au premier RDV avec des visuels. Pas des mots, des visuels."
+**LinkedIn Thomas (ouverture)** : "J'ai arrêté de payer le home stager."
+**Instagram Léa (ouverture)** : "Mon salon, en japandi. Pas celui de quelqu'un d'autre sur Pinterest — le mien."
+
+---
+
+### D. CTAs validés par étape funnel
+
+| Étape | Claire | Thomas | Léa |
+|---|---|---|---|
+| Découverte | "Tester sur une photo de chantier" | "Tester sur une photo de mon prochain bien" | "Essayer gratuitement — sans CB" |
+| Considération | "Générer 3 ambiances sur ma photo" | "Calculer mon économie vs home stager" | "Voir ma pièce autrement" |
+| Décision | "Choisir le plan Pro" | "Voir le plan Business" | "Débloquer plus de générations" |
+
+**Règle CTA** : verbe d'action + ancrage persona. Moins de 8 mots. Jamais "cliquez ici", jamais de point d'exclamation.
+
+---
+
 **Handoff → @design**
 
 - Fichiers produits : `docs/copy/brand-voice.md`
