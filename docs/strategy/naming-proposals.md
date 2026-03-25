@@ -250,3 +250,157 @@ Nom forgé, sans dénotation sectorielle immédiate — ce qui laisse toute la l
 **Score de différenciation vs concurrents :** Moyen (trop abstrait pour un positionnement premium)
 
 ---
+
+## 4. Tableau comparatif
+
+> Chaque nom est noté sur 5 critères. La notation est relative aux 8 noms proposés, pas à une échelle absolue.
+> **Mémorabilité** : le nom reste en tête après une seule occurrence
+> **Premium** : le nom est cohérent avec un positionnement architecture-grade, non SaaS grand public
+> **International** : prononçable sans ambiguïté en FR et EN, sans accent bloquant
+> **Simplicité** : court, direct, sans surcharge sémantique
+> **Cohérence Versi** : exploite ou est compatible avec la filiation Versi Immobilier
+> **Disponibilité domaine probable** : estimation basée sur les recherches WebSearch (1 = probablement pris, 5 = probablement libre)
+
+| Nom | Mémorabilité | Premium | International | Simplicité | Cohérence Versi | Domaine probable | **Total /30** |
+|---|---|---|---|---|---|---|---|
+| VisiRénov (actuel) | 3 | 2 | 2 | 3 | 1 | 5 | **16** |
+| Versiroom | 4 | 3 | 4 | 4 | 5 | 4 | **24** |
+| Versiscène | 4 | 5 | 2 | 3 | 5 | 4 | **23** |
+| Versivue | 3 | 3 | 3 | 4 | 5 | 3 | **21** |
+| VersiSpace | 3 | 4 | 5 | 4 | 5 | 3 | **24** |
+| **Stagira** | **5** | **5** | **4** | **4** | **2** | **5** | **25** |
+| **Planora** | 4 | 4 | 4 | 4 | 2 | 4 | **22** |
+| **Cadra** | **5** | **5** | **4** | **5** | **2** | **4** | **25** |
+| Placim | 3 | 2 | 3 | 5 | 1 | 5 | **19** |
+
+### Notes de scoring détaillées
+
+**VisiRénov (actuel) — 16/30**
+- Mémorabilité 3/5 : mémorisable car descriptif, mais sans aspérité distinctive
+- Premium 2/5 : "Rénov" positionne dans la rénovation grand public, pas l'architecture premium
+- International 2/5 : l'accent "é" et la construction FR-only bloquent l'usage anglophone
+- Simplicité 3/5 : 4 syllabes, deux mots soudés, accent — pas le plus simple à l'écrit
+
+**Versiroom — 24/30**
+- Mémorabilité 4/5 : la filiation Versi + le mot concret "room" ancrent le sens immédiatement
+- Premium 3/5 : "room" est omniprésent dans les apps déco — légèrement générique
+- International 4/5 : "room" est universel en anglais
+- Cohérence Versi 5/5 : filiation directe et visible
+
+**Versiscène — 23/30**
+- Premium 5/5 : "scène" est le vocabulaire du home staging au sens littéral — vocabulaire d'architecte
+- International 2/5 : l'accent sur "è" et la construction entièrement française bloquent l'usage anglophone
+
+**VersiSpace — 24/30**
+- International 5/5 : "space" est le mot des architectes (l'espace, the space) dans les deux langues
+- Premium 4/5 : "space" est utilisé chez les agences d'architecture de premier plan
+- Disponibilité 3/5 : "space" est très utilisé — versispace.com a une probabilité raisonnable d'être pris
+
+**Stagira — 25/30**
+- Mémorabilité 5/5 : nom forgé avec une sonorité distinctive — on ne l'oublie pas après l'avoir entendu
+- Premium 5/5 : consonance architecturale, suffix élégant, aucune association SaaS générique
+- Cohérence Versi 2/5 : nom totalement indépendant — la filiation doit être construite visuellement
+
+**Cadra — 25/30**
+- Mémorabilité 5/5 : 2 syllabes, sonorité forte, vocabulaire de l'image et de l'espace
+- Premium 5/5 : "cadrer" est le vocabulaire de l'architecte, du photographe, du réalisateur
+- Simplicité 5/5 : le plus court des 8 propositions — avantage URL, avantage mémorisation
+
+### Recommandation Top 3
+
+**Recommandation n°1 : Cadra**
+
+Cadra est le nom qui satisfait le mieux les trois exigences simultanées : premium, simple, mémorisable. Son ancrage dans le vocabulaire du cadrage (photo, architecture, composition) est directement cohérent avec le positionnement "crédibilité architecturale". Il est court — avantage décisif pour les domaines, le bouche-à-oreille et la mémorisation mobile. La franchise Cadréa (encadrement décoratif) existe mais dans un secteur trop éloigné pour créer confusion réelle. À vérifier : cadra.fr et cadra.com.
+
+Pourquoi c'est le bon choix pour les 3 personas :
+- Claire : "cadrer" est le vocabulaire du photographe d'architecture et de l'architecte d'intérieur — elle reconnaît immédiatement
+- Thomas : "ça cadre" (ça correspond, ça s'ajuste) — résonance pragmatique directe
+- Léa : court, prononçable, shareable comme nom — pas de lourdeur
+
+Pourquoi c'est le bon choix pour Versi Immobilier : un nom de produit indépendant permet de construire deux marques distinctes. La filiation "Cadra, par Versi Immobilier" ou "un produit Versi" en footer donne le meilleur des deux mondes — légitimité de la maison mère sans l'enfermer dans la seule catégorie immobilière.
+
+**Recommandation n°2 : Stagira**
+
+Stagira est le choix le plus audacieux et le plus différenciant. Le nom est unique sur le marché — aucun concurrent n'en est proche. La sonorité évoque le staging sans le nommer explicitement, ce qui est plus premium que "StagingAI" ou "InterieurAI". La référence culturelle (ville natale d'Aristote) est anecdotique mais positive pour un positionnement intellectuel et premium.
+
+Réserve principale : la prononciation [sta-ʒi-ʁa] vs [stæ-dʒɪ-rə] demande une décision ferme dès le lancement pour éviter les variantes. Préférer la prononciation française.
+
+**Recommandation n°3 : Versiroom**
+
+Si la filiation avec Versi Immobilier est une priorité non-négociable pour des raisons commerciales ou de financement, Versiroom est le meilleur compromis dans l'axe famille. Le nom est immédiatement compréhensible, la filiation est visible, et "room" ancre précisément dans l'usage produit.
+
+Réserve principale : "room" est le mot des apps déco grand public — à compenser par une direction artistique très premium et un positionnement copy soigné.
+
+---
+
+## 5. Impact sur les livrables existants
+
+### En cas de renommage, les fichiers suivants doivent être mis à jour
+
+| Fichier | Type de mise à jour | Priorité | Effort estimé |
+|---|---|---|---|
+| `project-context.md` | Remplacement "VisiRénov" → nouveau nom partout | P0 | 15 min |
+| `docs/strategy/brand-platform.md` | Remplacement nom dans titre et sections — le positionnement reste identique | P0 | 30 min |
+| `docs/strategy/value-proposition.md` | Remplacement nom dans titre et sections 3/7 | P0 | 20 min |
+| `docs/strategy/creative-brief.md` | Remplacement nom dans titre et toutes les références | P0 | 20 min |
+| `docs/copy/brand-voice.md` | Remplacement nom + reformuler le manifeste avec le nouveau nom | P1 | 45 min |
+| `docs/strategy/personas.md` | Remplacement des références au nom produit dans les objections | P1 | 15 min |
+| `docs/strategy/competitive-benchmark.md` | Mise à jour de la colonne "VisiRénov" dans le tableau comparatif | P1 | 10 min |
+| `app/layout.tsx` | Metadata SEO (title, description, OpenGraph) — refaire avec le nouveau nom | P0 | 20 min |
+| `app/page.tsx` | Toutes les occurrences du nom dans le Hero, les pills, le footer | P0 | 30 min |
+| `components/*.tsx` | Références textuelles au nom dans les composants | P1 | 20 min |
+| Domaine | Enregistrer nouveau-nom.fr et nouveau-nom.com | P0 | 10 min (achat) |
+| INPI | Dépôt de marque du nouveau nom (classe 42 — services informatiques) | P1 | À déléguer à @legal |
+
+### Livrables non impactés
+
+| Fichier | Raison |
+|---|---|
+| Prompts IA (StylePicker.tsx) | Indépendants du nom de marque |
+| Pipeline route.ts | Indépendant du nom de marque |
+| Agents qualité (Yann Duval, Lucas Moreau) | Indépendants du nom de marque |
+
+### Estimation totale de l'effort de renommage
+
+Effort technique (dev + fichiers) : 2 à 3 heures pour un fondateur solo avec les agents IA.
+Effort légal : dépôt INPI classe 42 — à déléguer à @legal.
+Effort SEO : le produit est sur un sous-domaine Replit non indexé avec aucun domaine propre enregistré. Le coût SEO du renommage est quasi nul à ce stade. C'est maintenant ou jamais.
+
+---
+
+## 6. Recommandation finale
+
+Changer le nom maintenant, avant toute acquisition et tout référencement.
+
+Le produit est en alpha sur un sous-domaine Replit non indexé. C'est la fenêtre où le coût du renommage est le plus bas possible — quelques heures de travail, pas une migration de base d'utilisateurs, pas un problème SEO.
+
+Le nom recommandé est **Cadra**.
+
+Cadra respecte toutes les contraintes stratégiques : premium, court, international, ancré dans le vocabulaire de l'image et de l'espace, sans association à un concurrent ou à un secteur adjacent indésirable. La filiation "Cadra, par Versi Immobilier" peut être ajoutée discrètement en footer.
+
+Si la filiation Versi est une priorité non-négociable, le second choix est **Versiroom**.
+
+Ce que le fondateur doit décider avant que @copywriter, @seo et @design reprennent leurs livrables :
+1. Garder VisiRénov ou changer le nom ?
+2. Si changement : Cadra, Stagira, ou Versiroom ?
+3. La filiation "Versi Immobilier" doit-elle être visible dans le nom du produit ou uniquement en footer ?
+
+---
+
+## Hypothèses à valider
+
+- [HYPOTHÈSE] Versi Immobilier a une notoriété établie dans son marché local — si ce n'est pas le cas, l'axe famille Versi perd son principal argument (transfert de légitimité)
+- [HYPOTHÈSE] La disponibilité des domaines cadra.fr, cadra.com, stagira.fr, stagira.com, versiroom.fr est supposée probable d'après les recherches WebSearch — à vérifier sur un registrar avant toute décision
+- [HYPOTHÈSE] Aucun dépôt de marque INPI ne bloque ces noms dans les classes 42 (services informatiques) et 37 (construction/rénovation) — à vérifier sur data.inpi.fr
+
+---
+
+**Handoff → @orchestrator**
+- Fichier produit : `/home/user/Architecture/docs/strategy/naming-proposals.md`
+- Décisions prises : analyse complète de 8 noms (4 axe Versi + 4 indépendants), recommandation Top 3 avec justification, tableau comparatif noté sur 6 critères
+- Décision pendante (fondateur) : choix du nom final parmi Cadra / Stagira / Versiroom / maintien VisiRénov
+- Points d'attention pour la suite :
+  - Si Cadra ou Stagira retenu → tous les livrables stratégiques (brand-platform, value-proposition, creative-brief, brand-voice) doivent être mis à jour — effort estimé 2-3h avec agents IA
+  - Si Versiroom retenu → @copywriter doit adapter le manifeste de marque pour intégrer la filiation Versi Immobilier
+  - @legal doit être invoqué pour le dépôt INPI dès que le nom est choisi (classe 42 obligatoire)
+  - L'enregistrement du domaine doit précéder toute communication publique sur le nouveau nom
