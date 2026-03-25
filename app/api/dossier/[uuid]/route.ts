@@ -236,7 +236,7 @@ export async function PATCH(
           durationMs: Date.now() - startTime,
         });
         return NextResponse.json(
-          { error: "Echec de la regeneration." },
+          { error: "Échec de la régénération." },
           { status: 500 }
         );
       }

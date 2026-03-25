@@ -47,7 +47,7 @@ export default function ComptePage() {
   const [siret, setSiret] = useState("");
   const [raisonSociale, setRaisonSociale] = useState("");
   const [adresse, setAdresse] = useState("");
-  const [telephone, setTelephone] = useState("");
+  const [telephone, setTéléphone] = useState("");
   const [emailPro, setEmailPro] = useState("");
   const [formeJuridique, setFormeJuridique] = useState("");
   const [couleurPrincipale, setCouleurPrincipale] = useState("#1C1C1E");
@@ -81,7 +81,7 @@ export default function ComptePage() {
         setSiret(profile.siret || "");
         setRaisonSociale(profile.raison_sociale || "");
         setAdresse(profile.adresse || "");
-        setTelephone(profile.telephone || "");
+        setTéléphone(profile.telephone || "");
         setEmailPro(profile.email_pro || "");
         setFormeJuridique(profile.forme_juridique || "");
         setCouleurPrincipale(profile.couleur_principale || "#1C1C1E");
@@ -130,7 +130,7 @@ export default function ComptePage() {
       if (data.adresse) setAdresse(data.adresse);
       if (data.formeJuridique) setFormeJuridique(data.formeJuridique);
     } catch {
-      setSiretError("Erreur de connexion. Reessayez.");
+      setSiretError("Erreur de connexion. Réessayez.");
     } finally {
       setIsLookingUp(false);
     }
@@ -142,12 +142,12 @@ export default function ComptePage() {
     if (!file) return;
 
     if (!["image/png", "image/jpeg", "image/jpg"].includes(file.type)) {
-      setSaveMessage({ type: "error", text: "Format invalide. Seuls PNG et JPG sont acceptes." });
+      setSaveMessage({ type: "error", text: "Format invalide. Seuls PNG et JPG sont acceptés." });
       return;
     }
 
     if (file.size > 2 * 1024 * 1024) {
-      setSaveMessage({ type: "error", text: "Le logo ne doit pas depasser 2 Mo." });
+      setSaveMessage({ type: "error", text: "Le logo ne doit pas dépasser 2 Mo." });
       return;
     }
 
@@ -175,7 +175,7 @@ export default function ComptePage() {
 
       const { logoStorageKey: key } = await res.json();
       setLogoStorageKey(key);
-      setSaveMessage({ type: "success", text: "Logo enregistre." });
+      setSaveMessage({ type: "success", text: "Logo enregistré." });
     } catch {
       setSaveMessage({ type: "error", text: "Erreur de connexion." });
     } finally {
@@ -212,7 +212,7 @@ export default function ComptePage() {
         return;
       }
 
-      setSaveMessage({ type: "success", text: "Profil enregistre." });
+      setSaveMessage({ type: "success", text: "Profil enregistré." });
       setTimeout(() => setSaveMessage(null), 3000);
     } catch {
       setSaveMessage({ type: "error", text: "Erreur de connexion." });
@@ -236,7 +236,7 @@ export default function ComptePage() {
         <div className="text-center max-w-md space-y-4">
           <h1 className="text-2xl font-semibold text-[var(--foreground)]">Mon compte</h1>
           <p className="text-sm text-[var(--muted)] font-light">
-            Connectez-vous pour acceder a votre profil marchand.
+            Connectez-vous pour accéder à votre profil marchand.
           </p>
           <AuthButton />
         </div>
@@ -248,7 +248,7 @@ export default function ComptePage() {
     <div className="min-h-screen bg-[var(--background)]">
       {/* Header */}
       <header className="border-b border-[var(--foreground)]/5 bg-[var(--background)]/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-3xl mx-auto px-5 sm:px-8 py-3 sm:py-4 flex items-center justify-between">
+        <div className="max-w-4xl mx-auto px-5 sm:px-8 py-3 sm:py-4 flex items-center justify-between">
           <a href="/" className="text-xl font-semibold text-[var(--foreground)] tracking-tighter">
             Versiroom
           </a>
@@ -262,7 +262,7 @@ export default function ComptePage() {
       </header>
 
       {/* Content */}
-      <main className="max-w-3xl mx-auto px-5 sm:px-8 py-8 sm:py-12">
+      <main className="max-w-4xl mx-auto px-5 sm:px-8 py-8 sm:py-12">
         <h1 className="text-2xl font-semibold text-[var(--foreground)] tracking-tight mb-8">
           Mon compte
         </h1>
@@ -288,7 +288,7 @@ export default function ComptePage() {
                     Je suis marchand de biens
                   </span>
                   <p className="text-xs text-[var(--muted)] font-light mt-0.5">
-                    Active le branding personnalise sur vos dossiers et PDF.
+                    Active le branding personnalisé sur vos dossiers et PDF.
                   </p>
                 </div>
               </label>
@@ -382,12 +382,12 @@ export default function ComptePage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="text-xs font-medium text-[var(--foreground)] mb-1.5 block">
-                        Telephone
+                        Téléphone
                       </label>
                       <input
                         type="tel"
                         value={telephone}
-                        onChange={(e) => setTelephone(e.target.value)}
+                        onChange={(e) => setTéléphone(e.target.value)}
                         placeholder="06 12 34 56 78"
                         className="w-full px-4 py-3 border border-[var(--border)] rounded-xl text-sm font-light focus:border-[var(--foreground)] focus:outline-none transition-colors placeholder:text-[var(--foreground)]/30"
                         data-testid="merchant-telephone"
@@ -412,7 +412,7 @@ export default function ComptePage() {
                 {/* ── Branding ── */}
                 <div className="border border-[var(--border)] rounded-2xl p-5 space-y-4">
                   <h2 className="text-sm font-medium text-[var(--muted)] uppercase tracking-widest">
-                    Identite visuelle
+                    Identité visuelle
                   </h2>
 
                   {/* Logo */}
@@ -521,7 +521,7 @@ export default function ComptePage() {
                     <select
                       value={police}
                       onChange={(e) => setPolice(e.target.value)}
-                      className="w-full px-4 py-3 border border-[var(--border)] rounded-xl text-sm font-light focus:border-[var(--foreground)] focus:outline-none transition-colors bg-transparent"
+                      className="w-full px-4 py-3 border border-[var(--border)] rounded-xl text-sm font-light focus:border-[var(--foreground)] focus:outline-none transition-colors bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/50"
                       data-testid="merchant-police"
                     >
                       {FONT_OPTIONS.map((opt) => (
@@ -534,7 +534,7 @@ export default function ComptePage() {
 
                   {/* Preview swatch */}
                   <div className="p-4 rounded-xl border border-[var(--border)]">
-                    <p className="text-xs text-[var(--muted)] font-light mb-2">Apercu</p>
+                    <p className="text-xs text-[var(--muted)] font-light mb-2">Aperçu</p>
                     <div className="flex items-center gap-3">
                       <div
                         className="w-8 h-8 rounded-lg"

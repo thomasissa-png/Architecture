@@ -31,7 +31,7 @@ const STATUS_LABELS: Record<string, { label: string; className: string }> = {
     className: "bg-[var(--sage)]/10 text-[var(--sage)]",
   },
   completed: {
-    label: "Termine",
+    label: "Terminé",
     className: "bg-[var(--sage)]/15 text-[var(--sage)]",
   },
   partial: {
@@ -45,6 +45,7 @@ export default function MesDossiersPage() {
   const [dossiers, setDossiers] = useState<Dossier[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [copiedUuid, setCopiedUuid] = useState<string | null>(null);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -155,13 +156,13 @@ export default function MesDossiersPage() {
           {!isLoading && !error && dossiers.length === 0 && (
             <div className="text-center py-20">
               <p className="text-sm text-[var(--muted)] font-light mb-4">
-                Aucun dossier. Creez votre premier dossier en Mode Marchand.
+                Aucun dossier. Créez votre premier dossier en Mode Marchand.
               </p>
               <a
                 href="/"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--foreground)] text-[var(--background)] rounded-xl text-sm font-medium hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/50 focus-visible:ring-offset-2"
               >
-                Creer un dossier
+                Créer un dossier
               </a>
             </div>
           )}
@@ -208,20 +209,37 @@ export default function MesDossiersPage() {
                         </div>
                       </div>
 
-                      {/* Right: arrow */}
-                      <svg
-                        className="w-4 h-4 text-[var(--muted)] group-hover:text-[var(--foreground)] transition-colors shrink-0 mt-1"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={1.5}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M8.25 4.5l7.5 7.5-7.5 7.5"
-                        />
-                      </svg>
+                      {/* Right: copy + arrow */}
+                      <div className="flex items-center gap-2 shrink-0 mt-1">
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const url = `${window.location.origin}/dossier/${dossier.uuid}`;
+                            navigator.clipboard.writeText(url).then(() => {
+                              setCopiedUuid(dossier.uuid);
+                              setTimeout(() => setCopiedUuid(null), 2000);
+                            });
+                          }}
+                          className="text-[11px] text-[var(--muted)] hover:text-[var(--foreground)] font-light transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/50 rounded px-1.5 py-1"
+                          title="Copier le lien de partage"
+                        >
+                          {copiedUuid === dossier.uuid ? "Copié" : "Copier le lien"}
+                        </button>
+                        <svg
+                          className="w-4 h-4 text-[var(--muted)] group-hover:text-[var(--foreground)] transition-colors"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={1.5}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M8.25 4.5l7.5 7.5-7.5 7.5"
+                          />
+                        </svg>
+                      </div>
                     </div>
                   </a>
                 );

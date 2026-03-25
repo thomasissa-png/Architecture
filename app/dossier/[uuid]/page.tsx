@@ -169,7 +169,7 @@ export default async function DossierPage({ params }: PageProps) {
           </div>
 
           <p className="text-xs text-muted/50 mt-2">
-            Genere le {new Date(dossier.created_at).toLocaleDateString("fr-FR")} — Disponible jusqu&apos;au {new Date(dossier.expires_at).toLocaleDateString("fr-FR")}
+            Généré le {new Date(dossier.created_at).toLocaleDateString("fr-FR")} — Disponible jusqu&apos;au {new Date(dossier.expires_at).toLocaleDateString("fr-FR")}
           </p>
         </div>
 
@@ -195,15 +195,22 @@ export default async function DossierPage({ params }: PageProps) {
             </p>
           </div>
         ) : (
-          <DossierPublicView
-            photos={completedPhotos.map((p) => ({
-              id: p.id,
-              roomLabel: p.room_label || `Photo ${p.photo_index + 1}`,
-              inputImageKey: p.input_image_key || "",
-              outputImageKey: p.output_image_key || "",
-            }))}
-            dossierUuid={params.uuid}
-          />
+          <>
+            <DossierPublicView
+              photos={completedPhotos.map((p) => ({
+                id: p.id,
+                roomLabel: p.room_label || `Photo ${p.photo_index + 1}`,
+                inputImageKey: p.input_image_key || "",
+                outputImageKey: p.output_image_key || "",
+              }))}
+              dossierUuid={params.uuid}
+            />
+            {dossier.status === "partial" && (
+              <p className="text-sm text-[var(--muted)] mt-2">
+                Ce dossier présente {completedPhotos.length} visuel{completedPhotos.length > 1 ? "s" : ""} sur {photos.length} — certaines pièces n&apos;ont pas pu être générées.
+              </p>
+            )}
+          </>
         )}
 
         {/* PDF download link */}
@@ -230,7 +237,7 @@ export default async function DossierPage({ params }: PageProps) {
             </p>
           )}
           <p className="text-xs text-muted/40 font-light">
-            Visuels generes par intelligence artificielle a titre de simulation. Versiroom — versiroom.fr
+            Visuels générés par intelligence artificielle à titre de simulation. Versiroom — versiroom.fr
           </p>
         </div>
       </main>

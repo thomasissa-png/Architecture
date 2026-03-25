@@ -38,7 +38,7 @@ export default function DossierPublicView({
           </div>
 
           {/* Before/After grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-0 sm:gap-px bg-[var(--border)]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-[var(--border)]">
             {/* Before */}
             <div className="relative bg-[var(--background)]">
               <div className="aspect-[4/3]">

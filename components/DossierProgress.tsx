@@ -53,7 +53,7 @@ export default function DossierProgress({
 
         {isGenerating && elapsed > 0 && (
           <p className="text-xs text-[var(--muted)] font-light">
-            {elapsed}s — estimation : ~{Math.ceil(total * 30)}s total
+            {elapsed}s · ~{Math.max(0, Math.ceil((total - completed - failed) * 30))}s restant
           </p>
         )}
       </div>
@@ -116,9 +116,9 @@ export default function DossierProgress({
                 photo.status === "generating" ? "text-[var(--sage)]" :
                 "text-[var(--muted)]/60"
               }`}>
-                {photo.status === "completed" && "Pret"}
+                {photo.status === "completed" && "Prêt"}
                 {photo.status === "generating" && "En cours..."}
-                {photo.status === "failed" && "Echec"}
+                {photo.status === "failed" && "Échec"}
                 {photo.status === "pending" && "En attente"}
               </span>
               {photo.status === "failed" && photo.errorMessage && (

@@ -383,7 +383,7 @@ export function isDossierExpired(dossier: Dossier): boolean {
 export function getDossierTitle(dossier: Dossier): string {
   if (dossier.bien_nom) return dossier.bien_nom;
   const date = new Date(dossier.created_at);
-  return `Bien sans titre — ${date.toLocaleDateString("fr-FR")}`;
+  return `Dossier de présentation — ${date.toLocaleDateString("fr-FR")}`;
 }
 
 export function formatPrice(priceCents: number): string {

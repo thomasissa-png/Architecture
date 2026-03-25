@@ -147,7 +147,7 @@ export default function DossierResult({
                 <button
                   onClick={() => onRegenerate(photo.id)}
                   disabled={isRegenerating === photo.id}
-                  className="text-xs text-[var(--muted)] font-light hover:text-[var(--foreground)] transition-colors disabled:opacity-40"
+                  className="text-xs text-[var(--muted)] font-light hover:text-[var(--foreground)] transition-colors disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/50 min-h-[44px] inline-flex items-center"
                   data-testid={`dossier-regenerate-${photo.id}`}
                 >
                   {isRegenerating === photo.id ? "En cours..." : "Regénérer"}
@@ -179,7 +179,7 @@ export default function DossierResult({
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={`/api/logs/image?path=${encodeURIComponent(photo.outputImageKey || "")}`}
-                    alt={`${photo.roomLabel || "Photo"} — apres`}
+                    alt={`${photo.roomLabel || "Photo"} — après`}
                     className="w-full h-full object-cover"
                     loading="lazy"
                   />
@@ -189,6 +189,19 @@ export default function DossierResult({
                 </span>
               </div>
             </div>
+
+            {/* Download HD link */}
+            {photo.outputImageKey && (
+              <div className="px-4 py-2 border-t border-[var(--border)]">
+                <a
+                  href={`/api/logs/image?path=${encodeURIComponent(photo.outputImageKey)}`}
+                  download={`${photo.roomLabel || 'photo'}-apres.jpg`}
+                  className="text-xs text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+                >
+                  Télécharger HD
+                </a>
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -216,7 +229,7 @@ export default function DossierResult({
                 <button
                   onClick={() => onRegenerate(photo.id)}
                   disabled={isRegenerating === photo.id}
-                  className="text-xs text-red-500 font-medium hover:text-red-700 transition-colors disabled:opacity-40"
+                  className="text-xs text-red-500 font-medium hover:text-red-700 transition-colors disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/50"
                 >
                   {isRegenerating === photo.id ? "..." : "Relancer (1 crédit)"}
                 </button>

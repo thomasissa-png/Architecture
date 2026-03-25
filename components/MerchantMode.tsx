@@ -478,7 +478,7 @@ export default function MerchantMode() {
               onChange={(e) => handleAddressInput(e.target.value)}
               onFocus={() => addressSuggestions.length > 0 && setShowSuggestions(true)}
               onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-              placeholder="Commencez a taper : 45 rue de la Paix, 75002 Paris"
+              placeholder="Commencez à taper : 45 rue de la Paix, 75002 Paris"
               className="w-full px-4 py-3 border border-[var(--border)] rounded-xl text-sm font-light focus:border-[var(--foreground)] focus:outline-none transition-colors placeholder:text-[var(--foreground)]/30"
               data-testid="merchant-bien-adresse"
             />
@@ -490,7 +490,7 @@ export default function MerchantMode() {
 
             {/* Suggestions dropdown */}
             {showSuggestions && addressSuggestions.length > 0 && (
-              <div className="absolute z-20 left-0 right-0 mt-1 bg-white border border-[var(--border)] rounded-xl shadow-lg overflow-hidden" data-testid="merchant-address-suggestions">
+              <div className="absolute z-20 left-0 right-0 mt-1 bg-[var(--background)] border border-[var(--border)] rounded-xl shadow-lg overflow-hidden" data-testid="merchant-address-suggestions">
                 {addressSuggestions.map((s, i) => (
                   <button
                     key={i}

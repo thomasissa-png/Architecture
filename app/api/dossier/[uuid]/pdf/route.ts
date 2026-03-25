@@ -31,7 +31,7 @@ const PAGE_WIDTH = 842; // A4 landscape width in points
 const PAGE_HEIGHT = 595; // A4 landscape height in points
 const MARGIN = 40;
 const FOOTER_HEIGHT = 35;
-const AI_DISCLAIMER = "Visuels generes par IA a titre indicatif — Powered by Versiroom";
+const AI_DISCLAIMER = "Visuels générés par IA à titre indicatif — Powered by Versiroom";
 
 // ─── Helpers ─────────────────────────────────────────────────────────
 
