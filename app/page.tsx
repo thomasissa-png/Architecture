@@ -1371,7 +1371,10 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t border-foreground/5 py-10 px-5 sm:px-8">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted font-light">
-          <p>Pour les architectes, marchands de biens et particuliers</p>
+          <div>
+            <p>Pour les architectes, marchands de biens et particuliers</p>
+            <p className="text-[11px] text-muted mt-1">Un produit <a href="https://versi-immobilier.fr" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Versi Immobilier</a></p>
+          </div>
           <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
             <a href="#pricing" className="hover:text-foreground transition-colors py-2">
               Tarifs
