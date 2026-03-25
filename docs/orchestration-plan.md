@@ -1,4 +1,4 @@
-# Plan d'orchestration — Versiroom F1 Review + F2 Type de piece
+# Plan d'orchestration — Versiroom
 
 ## Demande utilisateur
 Phase 3 : Review croisee de l'implementation F1 (iteration commentaire). Puis lancement F2 (type de piece) : audit prompts Yann+Lucas, implementation fullstack, review.
@@ -181,3 +181,55 @@ Moyenne — 5 agents (reviewer, Yann, Lucas, fullstack, reviewer), 2 features su
 | 1 | Reserves F2 | Inclure fix H-01, H-02, M-01 dans Phase F3.2 | Corriger avant d'ajouter outdoor pour ne pas accumuler la dette | @fullstack |
 | 2 | Object Storage | Si le SDK ne fonctionne pas, migrer vers PostgreSQL bytea ou base64 stocke dans une table dediee | Replit Object Storage est le seul point de defaillance des 2 bugs P0 | @fullstack |
 | 3 | Itérations exclusives | Supprimer BASE STYLE des itérations (toujours exclusif) | Les modifications accumulées décrivent tout ce que l'utilisateur veut. Alt écartée : isExclusive conditionnel (trop fragile). | @fullstack, @ia |
+
+---
+
+## Session 2026-03-25 — Audits site + Implementation + Auth/Stripe + Naming
+
+### Phase A — Audits complets du site (6 agents en parallele)
+- Statut : TERMINE
+- Agents : @ux (7.5/10), @design (7.4/10), @seo (38/100), @copywriter, @infrastructure (5.3/10), @legal
+- Synthese : docs/reviews/site-audit-synthesis.md — GO AVEC RESERVES, 7 bloqueurs
+
+### Phase B — Implementation tous les retours audits
+- Statut : TERMINE
+- Legal : 3 pages legales, footer liens, disclaimer IA, prix TTC
+- SEO : sitemap, robots, JSON-LD, metadata, H1/H2
+- Design : tokens CSS, pastilles couleur, shadow-sm, WCAG
+- UX : revelation progressive, bouton Annuler, espaces reduits
+- Copy : hero brand-voice, CTAs, accents corriges
+- Infra : health check, timeout API, .env.local.example complet
+
+### Phase C — Iteration 9/10 (re-audits + corrections)
+- Statut : TERMINE
+- UX : 7.5→8.2→~9/10
+- Design : 7.4→7.75→~9/10
+- SEO : 38→61→~76/100
+- Copy : →7.5→~9/10
+- Infra : 5.3→5.6→~6.3/10
+
+### Phase D — Naming + Rename
+- Statut : TERMINE
+- Decision fondateur : Versiroom (filiation Versi Immobilier)
+- 46 fichiers renommes VisiRenov→Versiroom
+- Footer : "Un produit Versi Immobilier"
+
+### Phase E — Auth + Stripe + Credits
+- Statut : TERMINE (code pret, cles non configurees)
+- NextAuth Google + Stripe one-time payments + systeme credits DB
+- Reviewer : 4.5→6.5→7.5/10 (corrections critiques appliquees)
+
+### Phase F — Monitoring + Demo + UX polish
+- Statut : TERMINE
+- Sentry installe (conditionnel sur DSN)
+- CI/CD GitHub Actions
+- Watermark IA EU AI Act
+- Demo API auto-populee depuis DB
+- Espaces vides corriges (9 points)
+- Comparateur mobile ameliore (icone horizontale + hint)
+
+### Phases NON commencees
+- F4 Mode Marchand (NEXT dans roadmap)
+- F5 Mode Decorateur (LATER)
+- Domaine propre versiroom.fr (action fondateur)
+- Tests E2E Playwright

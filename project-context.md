@@ -180,6 +180,14 @@
 | @copywriter | 2026-03-25 | docs/legal/mentions-legales.md, docs/legal/privacy-policy.md, docs/legal/cgu-draft.md | 3 pages légales complètes. Mentions légales LCEN Art. 6 III avec placeholders SIRET/adresse/directeur publication + crédits technologies. Politique confidentialité RGPD : 6 types de données avec base légale et durée, sous-traitants (OpenAI DPF, Replicate DPF à vérifier, Replit DPF, Stripe), droits utilisateurs complets, contact privacy@. CGU/CGV : packages 4 tiers TTC, exception rétractation contenu numérique Art. L221-28 13° avec case à cocher, licence large sur images générées, médiation consommateur obligatoire. Ton accessible, juridiquement complet, aligné brand-voice.md (sobre, précis, sans jargon inutile). | Mentions légales : placeholders explicites avec note d'avertissement sur l'obligation LCEN avant mise en ligne. Politique de confidentialité : structurée par type de donnée (plus lisible pour Léa/Thomas que par base légale) — l'article 6 RGPD est mentionné mais subordonné à l'explication pratique. CGU/CGV : exception rétractation présentée dans le vocabulaire utilisateur ("Ce que cela signifie pour vous") avant la référence légale — approche brand-voice first. Médiation consommateur marquée [A DESIGNER] car obligation légale avant première vente B2C. 5 hypothèses à valider regroupées en fin de chaque document. Réutilise la grille tarifaire HT/TTC issue de legal-audit.md (cohérence). |
 | @creative-strategy | 2026-03-25 | docs/strategy/naming-proposals.md | Analyse Versiroom (forces/faiblesses/risques). 4 propositions axe Versi (Versiroom, Versiscène, Versivue, VersiSpace). 4 propositions indépendantes (Stagira, Planora, Cadra, Placim). Tableau comparatif 6 critères. Recommandation Top 3 : Cadra (n°1), Stagira (n°2), Versiroom (n°3). Impact sur 12 livrables existants avec effort estimé. Décision finale au fondateur. | Versiroom écarté car "Rénov" positionne dans la rénovation grand public — décalage avec l'usage réel (meubler des pièces, pas rénover). Cadra recommandé vs Stagira : même score 25/30 mais Cadra est plus court (2 syllabes vs 3), plus immédiatement lisible par les 3 personas, et n'a aucune marque concurrente proche. Axe indépendant recommandé vs axe Versi : les 3 personas (Claire architecte, Léa particulière) ne sont pas des profils "clients d'une agence immobilière" — un nom trop lié à Versi Immobilier ferme ces personas. La filiation peut être discrète en footer sans être dans le nom. 3 hypothèses explicitement marquées (notoriété Versi, disponibilité domaines, absence de dépôt INPI). |
 
+| @fullstack | 2026-03-25 | page.tsx, layout.tsx, globals.css, StylePicker.tsx, 3 pages legales, sitemap.ts, robots.ts, api/health, .env.local.example, ImageComparator.tsx, .github/workflows/ci.yml | Implementation complete de tous les retours audits : pricing 4 packs one-shot TTC, footer liens legaux, disclaimer IA, hero H1/H2, SEO (sitemap, robots, JSON-LD, metadataBase, OG, Twitter Cards), tokens CSS (--muted, --border), revelation progressive, bouton Annuler, pastilles couleur (emojis retires), badge AVANT/APRES text-xs, Haussmannien 12e style, CI/CD GitHub Actions, watermark IA EU AI Act Art. 50. | Pricing packages choisis vs abonnement (decision fondateur). Emojis remplaces par pastilles hex (coherence brief premium). Tokens foreground/N au lieu de gray Tailwind (WCAG verifiable). JSON-LD en body (pas head) pour eviter conflit hydratation Sentry. |
+| @fullstack | 2026-03-25 | lib/auth.ts, lib/credits.ts, lib/stripe.ts, api/auth, api/stripe/checkout, api/stripe/webhook, api/user/credits, api/demo, pricing/page.tsx, AuthButton.tsx, Providers.tsx | Auth NextAuth Google + Stripe one-time payments + systeme de credits (users + purchases tables) + API demo auto-populee. Retractation checkbox obligatoire. SessionProvider wrapper. 4 packs Stripe definis. | NextAuth choisi (vs Clerk recommande par PM) pour rester dans l'ecosisteme Next.js sans dependance externe. Stripe mode payment (pas subscription). Demo API sert depuis la DB existante (pas de fichiers statiques a dropper). |
+| @reviewer | 2026-03-25 | (3 audits successifs, pas de fichier) | Audit Auth+Stripe : 4.5→6.5→7.5/10. Bloquant corrige : generate ouvert sans auth. Critiques corriges : idempotence webhook, page signin 404, secret dev, validation credits. Hauts corriges : boutons pricing, race condition credits, retractation serveur. | Decrement optimiste (avant generation) choisi vs apres : elimine la race condition 30-120s. Refund automatique en cas d'echec. Auth obligatoire pour generer retenu puis reverte (anonymous OK avec rate limit IP). |
+| @creative-strategy | 2026-03-25 | docs/strategy/naming-proposals.md (enrichi) | 6 propositions supplementaires orientees pro : Dossira (23/30), Planchi (23/30), Ambio (21/30), Plancia (21/30), Planche (20/30), Rendia (19/30). Recommandation finale : Cadra ou Versiroom. | Noms orientes "livrable professionnel" (dossier, planche, rendu) vs noms precedents orientes "action visuelle" (cadrer, staging). Dossira et Planchi nouveaux candidats serieux mais Cadra reste n.1 sur la grille. |
+| @orchestrator | 2026-03-25 | 46 fichiers renommes VisiRenov→Versiroom | Renommage complet : code (13 fichiers), docs (36 fichiers). Emails contact@versiroom.fr, Twitter @versiroom, session storage, watermark, filenames. | Versiroom choisi par fondateur (filiation Versi Immobilier). Renommage fait AVANT acquisition — cout quasi nul a ce stade. |
+| @fullstack | 2026-03-25 | Sentry (3 configs + global-error.tsx + next.config.mjs), route.ts (timeout API + auth), db.ts (migrations groupees), api/logs (auth) | Sentry error tracking installe (client/server/edge). Timeout 120s sur OpenAI/Replicate. Auth sur /api/logs. Migrations ALTER TABLE groupees (1 query vs 17). Global error boundary. | Sentry conditionnel (NEXT_PUBLIC_SENTRY_DSN) : pas d'init si pas de DSN. Source maps desactivees pour eviter le cout Sentry. Timeout wrapper generique reutilise dans health check (5s PG, 10s storage). |
+| @ux | 2026-03-25 | (audit espaces vides, pas de fichier) | 9 corrections d'espacement : pb-16→pb-10, pt-24→pt-16, mb-16→mb-10, margin conditionnel upload. Comparateur mobile : icone fleches horizontales, handle 48px, hint "Glissez pour comparer". | Les mb-16 entre etapes creaient ~300px de scroll vide. Margin upload conditionnel (mb-0 quand etapes cachees) elimine le trou principal. Comparateur : fleches haut/bas remplacees par chevrons gauche/droite (affordance horizontale explicite). |
+
 ---
 
 ## Performance des agents
@@ -200,9 +208,42 @@
 
 ---
 
+## Memo de reprise — derniere session
+
+**Date de cloture :** 2026-03-25
+**Branch :** claude/setup-project-context-6Nuho
+
+### Resume de la session
+Session massive (~15 commits) couvrant : audits complets du site (6 agents), implementation de tous les retours (legal, SEO, copy, UX, design, infra), iterations 9/10, naming (VisiRenov→Versiroom), Auth+Stripe+Credits (code complet sans cles), Sentry, CI/CD, watermark IA, demo API auto-populee, corrections espaces vides et comparateur mobile. Le produit est passe de "alpha fonctionnel" a "pret pour la configuration et le lancement".
+
+### Travaux en cours
+- **Generations de demo** : l'API `/api/demo` est prete mais aucune generation n'existe encore en base. Le fondateur doit generer 1 visuel par style sur le site pour que les previews hero apparaissent automatiquement.
+- **Cles API** : toutes les variables Stripe/NextAuth/Sentry sont dans .env.local.example mais aucune n'est configuree. A faire dans les Replit Secrets au moment du lancement.
+- **Domaine versiroom.fr** : non enregistre. Action fondateur.
+- **SIRET / mediateur** : champs [A COMPLETER] dans les pages legales. Action fondateur.
+
+### Prochaines actions recommandees
+1. **@fullstack — F4 Mode Marchand** : feature prioritaire NEXT dans la roadmap RICE. Specs dans docs/product/functional-specs.md §F4. Impact : debloquer Thomas (marchand de biens), persona a plus forte LTV.
+2. **@qa — Tests E2E** : aucun test dans le projet. Le pipeline CI (ci.yml) fait build+typecheck mais pas de tests. Specs dans docs/qa/qa-strategy.md.
+3. **@fullstack — Configuration lancement** : quand le dev est termine, configurer toutes les cles (Google OAuth, Stripe, Sentry) dans Replit Secrets + enregistrer domaine versiroom.fr.
+
+### Blockers
+- Aucun blocker technique. Tous les blockers sont des actions fondateur (SIRET, domaine, cles API, mediateur).
+- Le comparateur avant/apres sur mobile est ameliore (icone horizontale + hint) mais reste dependant de react-compare-slider — a tester sur iPhone reel.
+
+### Commande de reprise suggeree
+```
+@orchestrator Reprends le projet Versiroom. Lis project-context.md et docs/orchestration-plan.md. La derniere session a implemente tous les audits, le renommage, Auth+Stripe+Credits, Sentry, et le polish UX. Les 3 priorites sont : (1) F4 Mode Marchand, (2) Tests E2E Playwright, (3) Configuration lancement. Le fondateur veut que toutes les cles soient configurees APRES le dev termine, pas avant.
+```
+
+---
+
 ## Notes libres
 
-- Le CLAUDE.md contient l'historique complet des 18 sprints d'itération (155+ points) — c'est la mémoire technique du projet.
+- Le CLAUDE.md contient l'historique complet des 19 sprints d'iteration (155+ points) — c'est la memoire technique du projet.
+- Versiroom (ex-VisiRenov) renomme le 2026-03-25. Maison mere : Versi Immobilier.
+- Auth+Stripe code pret mais aucune cle configuree — tout est dans .env.local.example.
+- Les generations anonymes sont autorisees (rate limit IP) — les utilisateurs connectes utilisent le systeme de credits.
 - Les agents Yann Duval et Lucas Moreau sont définis dans agents/ (pas dans .claude/agents/) — ce sont des agents métier spécifiques au projet, pas des agents Gradient génériques.
 - Le pipeline 2 passes est la décision architecturale la plus critique : toutes les approches single-pass ont échoué (sprints 7-10).
 - 7/12 styles n'ont jamais été testés en pipeline 2 passes complet (Contemporain, Bohème, Méditerranéen, Cosy, Wabi-Sabi, Maximaliste, Haussmannien).
