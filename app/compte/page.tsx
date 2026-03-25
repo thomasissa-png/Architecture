@@ -704,12 +704,9 @@ export default function ComptePage() {
                 {saveMessage?.type === "success" && (
                   <a
                     href="/mes-biens"
-                    className="inline-flex items-center gap-2 text-sm font-medium text-foreground hover:text-sage transition-colors animate-fade-in-up"
+                    className="block w-full text-center bg-foreground text-background px-4 py-3 rounded-full text-sm font-medium hover:bg-foreground/85 active:scale-[0.99] transition-all duration-200 animate-fade-in-up"
                   >
                     Voir mes biens
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                    </svg>
                   </a>
                 )}
               </div>

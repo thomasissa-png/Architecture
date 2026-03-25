@@ -877,11 +877,6 @@ export default function PropertyDetailPage() {
                 >
                   {isCreatingAnnonce ? "Cr\u00e9ation..." : "Cr\u00e9er une annonce (inclus Pack Pro)"}
                 </button>
-                {!compInfo.dpeClasse && (
-                  <p className="text-[11px] text-amber-600 font-light mt-1" data-testid="dpe-annonce-warning">
-                    Pensez {"\u00E0"} renseigner le DPE avant de publier votre annonce.
-                  </p>
-                )}
                 {activeAnnonceUuid && (
                   <button
                     onClick={handleArchiveAnnonce}
@@ -893,6 +888,11 @@ export default function PropertyDetailPage() {
                   </button>
                 )}
               </div>
+              {!compInfo.dpeClasse && (
+                <p className="text-xs text-amber-600 font-light mt-2" data-testid="dpe-annonce-warning">
+                  Pensez {"\u00E0"} renseigner le DPE avant de publier votre annonce.
+                </p>
+              )}
             </>
           )}
         </section>
