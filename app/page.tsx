@@ -113,7 +113,7 @@ async function resilientFetch(
 const USE_CASES = [
   { label: "Architectes", desc: "Partagez des pistes d\u2019inspiration" },
   { label: "Marchands de biens", desc: "Pr\u00e9commercialisez vos op\u00e9rations" },
-  { label: "Particuliers", desc: "D\u00e9corez votre futur chez-vous" },
+  { label: "Particuliers", desc: "Visualisez votre espace avant d\u2019acheter" },
 ];
 
 export default function Home() {
@@ -405,6 +405,13 @@ export default function Home() {
     setLastRefineComment("");
   };
 
+  const handleCancelGeneration = () => {
+    abortControllerRef.current?.abort();
+    setIsGenerating(false);
+    setError(null);
+    setPreprocessWarnings([]);
+  };
+
   const handleFullReset = () => {
     abortControllerRef.current?.abort();
     setFiles([]);
@@ -605,9 +612,9 @@ export default function Home() {
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-gray-200/40">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 py-3 sm:py-4 flex items-center justify-between">
-          <h1 className="text-xl font-semibold text-foreground tracking-tighter">
+          <span className="text-xl font-semibold text-foreground tracking-tighter">
             VisiR&eacute;nov
-          </h1>
+          </span>
           <nav className="flex items-center gap-4 sm:gap-6">
             <a href="#pricing" className="text-xs text-muted font-light hover:text-foreground transition-colors">
               Tarifs
@@ -616,7 +623,7 @@ export default function Home() {
               href="#outil"
               className="text-xs bg-foreground text-background px-4 py-2 rounded-full font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
             >
-              Essayer
+              Essayer gratuitement
             </a>
           </nav>
         </div>
@@ -637,13 +644,15 @@ export default function Home() {
             ))}
           </div>
 
-          <h2 className="text-3xl sm:text-5xl lg:text-7xl font-bold text-foreground leading-[1.08] tracking-tighter mb-5 sm:mb-6">
-            Visualisez vos espaces
+          <h1 className="text-3xl sm:text-5xl lg:text-7xl font-bold text-foreground leading-[1.08] tracking-tighter mb-5 sm:mb-6">
+            Votre pi&egrave;ce meubl&eacute;e,
             <br />
-            <span className="font-light text-muted">meubl&eacute;s par l&apos;IA</span>
-          </h2>
+            <span className="font-light text-muted">en 90 secondes.</span>
+          </h1>
           <p className="text-base sm:text-lg text-muted font-light leading-relaxed max-w-2xl mx-auto mb-6 sm:mb-8">
-            Uploadez une photo de pi&egrave;ce vide, choisissez un style parmi 11 ambiances, et recevez un visuel meubl&eacute; en quelques minutes. Pour les pros comme pour les particuliers.
+            Uploadez une photo, choisissez un style parmi 12 ambiances curat&eacute;es par des experts.
+            <br className="hidden sm:inline" />
+            VisiR&eacute;nov pr&eacute;serve votre espace &mdash; il ne le r&eacute;invente pas.
           </p>
 
           {/* Hero before/after — richly illustrated mock */}
@@ -666,7 +675,7 @@ export default function Home() {
                     <span className="text-xs text-gray-400/70 font-light mt-2">Pi&egrave;ce vide</span>
                   </div>
                 </div>
-                <span className="absolute bottom-2.5 left-2.5 text-[10px] font-medium text-gray-400 bg-white/80 backdrop-blur-sm px-2.5 py-1 rounded-full">
+                <span className="absolute bottom-2.5 left-2.5 text-xs font-medium text-gray-400 bg-white/80 backdrop-blur-sm px-2.5 py-1 rounded-full">
                   AVANT
                 </span>
               </div>
@@ -699,7 +708,7 @@ export default function Home() {
                     <span className="text-xs text-sage/60 font-light mt-2">Meubl&eacute; par l&apos;IA</span>
                   </div>
                 </div>
-                <span className="absolute bottom-2.5 left-2.5 text-[10px] font-medium text-sage bg-white/80 backdrop-blur-sm px-2.5 py-1 rounded-full">
+                <span className="absolute bottom-2.5 left-2.5 text-xs font-medium text-sage bg-white/80 backdrop-blur-sm px-2.5 py-1 rounded-full">
                   APR&Egrave;S
                 </span>
               </div>
@@ -708,7 +717,7 @@ export default function Home() {
 
           {/* Social proof line */}
           <p className="text-xs text-muted/70 font-light mb-6">
-            11 styles disponibles &middot; R&eacute;sultat en ~2 minutes &middot; T&eacute;l&eacute;chargement HD gratuit
+            12 styles disponibles &middot; R&eacute;sultat en 90 secondes &middot; T&eacute;l&eacute;chargement HD gratuit
           </p>
 
           <a
@@ -725,7 +734,7 @@ export default function Home() {
 
       {/* Use cases */}
       <section className="pb-16 px-5 sm:px-8">
-        <div className="max-w-3xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="max-w-3xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {USE_CASES.map((uc, i) => (
             <div key={uc.label} className={`text-center p-6 rounded-2xl border border-gray-200/60 bg-white/40 ${i === 0 ? "animate-fade-in-up" : i === 1 ? "animate-fade-in-up animate-delay-100" : "animate-fade-in-up animate-delay-200"}`}>
               <p className="text-sm font-semibold text-foreground mb-1">{uc.label}</p>
@@ -742,9 +751,9 @@ export default function Home() {
       <section id="outil" className="pt-16 sm:pt-24 pb-20 sm:pb-32 px-5 sm:px-8 scroll-mt-16">
         <div ref={toolRef} className="reveal max-w-5xl mx-auto">
           <div className="text-center mb-16">
-            <h3 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight mb-3">
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight mb-3">
               Transformez vos photos
-            </h3>
+            </h2>
             <p className="text-muted font-light">
               En trois &eacute;tapes simples
             </p>
@@ -760,8 +769,8 @@ export default function Home() {
             <UploadZone files={files} onFilesChange={setFiles} />
           </div>
 
-          {/* Step 2a: Type d'espace (intérieur/extérieur + sous-type) — always visible */}
-          <div id="step-space-type" className="mb-16 scroll-mt-20">
+          {/* Step 2a: Type d'espace (intérieur/extérieur + sous-type) — revealed after upload */}
+          <div id="step-space-type" className={`mb-16 scroll-mt-20 transition-all duration-700 ${files.length === 0 ? "hidden" : "animate-fade-in-up"}`}>
             <h4 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
               01 — Type d&apos;espace
             </h4>
@@ -826,8 +835,8 @@ export default function Home() {
             )}
           </div>
 
-          {/* Step 2b: Style — always visible */}
-          <div id="step-style" className="mb-16 scroll-mt-20">
+          {/* Step 2b: Style — revealed after upload */}
+          <div id="step-style" className={`mb-16 scroll-mt-20 transition-all duration-700 ${files.length === 0 ? "hidden" : "animate-fade-in-up animate-delay-100"}`}>
             <h4 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
               02 — Style
             </h4>
@@ -885,7 +894,7 @@ export default function Home() {
               <button
                 onClick={handleGenerate}
                 disabled={isGenerating || (!isOutdoor && selectedStyle !== null && !selectedRoomType)}
-                className="inline-flex items-center gap-3 bg-foreground text-background px-10 py-4 rounded-full font-medium text-base hover:bg-foreground/85 transition-all disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 shadow-lg"
+                className="inline-flex items-center gap-3 bg-foreground text-background px-10 py-4 rounded-full font-medium text-base hover:bg-foreground/85 transition-all disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 shadow-sm"
               >
                 {isGenerating ? (
                   <>
@@ -953,8 +962,8 @@ export default function Home() {
                 })}
               </div>
 
-              {/* Timer */}
-              <div className="text-center">
+              {/* Timer + Cancel */}
+              <div className="text-center space-y-2">
                 <p className="text-xs text-muted/70 font-light">
                   {generationElapsed < 30
                     ? `${generationElapsed}s — Estimation : jusqu\u2019\u00e0 2 minutes par image`
@@ -962,6 +971,12 @@ export default function Home() {
                     ? `${generationElapsed}s — G\u00e9n\u00e9ration en cours\u2026`
                     : `${generationElapsed}s — Presque termin\u00e9\u2026`}
                 </p>
+                <button
+                  onClick={handleCancelGeneration}
+                  className="text-xs text-muted/60 hover:text-foreground transition-colors underline underline-offset-4 font-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded"
+                >
+                  Annuler
+                </button>
               </div>
             </div>
           )}
@@ -1086,7 +1101,7 @@ export default function Home() {
                         <div className="bg-red-50/50 border border-red-200/60 rounded-2xl p-5 text-center">
                           <p className="text-red-600/80 text-sm mb-1">{refineError}</p>
                           <p className="text-red-400/70 text-xs font-light mb-3">
-                            Votre iteration n&apos;a pas ete consommee.
+                            Votre it&eacute;ration n&apos;a pas &eacute;t&eacute; consomm&eacute;e.
                           </p>
                           <div className="flex items-center justify-center gap-3">
                             <button
@@ -1160,7 +1175,7 @@ export default function Home() {
                                   href="#pricing"
                                   className="text-xs text-sage font-medium hover:text-sage/80 transition-colors underline underline-offset-4"
                                 >
-                                  Voir les offres
+                                  Recharger mes cr&eacute;dits
                                 </a>
                               </div>
                             </>
@@ -1220,28 +1235,29 @@ export default function Home() {
       <section id="pricing" className="py-16 sm:py-24 px-5 sm:px-8 bg-white/40">
         <div ref={pricingRef} className="reveal max-w-4xl mx-auto">
           <div className="text-center mb-14">
-            <h3 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight mb-3">
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight mb-3">
               Tarifs simples et transparents
-            </h3>
+            </h2>
             <p className="text-muted font-light">
               Commencez gratuitement, &eacute;voluez selon vos besoins
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto">
-            {/* Free */}
+          <p className="text-center text-sm text-muted font-light mb-10">
+            Payez uniquement ce que vous utilisez &mdash; sans abonnement.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
+            {/* Découverte */}
             <div className="border border-gray-200 rounded-2xl p-6 text-center bg-background">
               <p className="text-xs text-muted font-medium uppercase tracking-widest mb-3">D&eacute;couverte</p>
-              <p className="text-3xl font-bold text-foreground mb-1">Gratuit</p>
-              <p className="text-xs text-muted font-light mb-6">Pour tester l&apos;outil</p>
-              <ul className="text-sm text-muted font-light space-y-2.5 text-left mb-6">
+              <p className="text-3xl font-bold text-foreground mb-0.5">4,90&euro;</p>
+              <p className="text-xs text-muted/70 font-light mb-1">5 cr&eacute;dits &middot; 0,98&euro;/photo</p>
+              <p className="text-[11px] text-muted/50 font-light mb-5">TTC &middot; TVA 20% incluse</p>
+              <ul className="text-sm text-muted font-light space-y-2 text-left mb-6">
                 <li className="flex items-start gap-2">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  3 g&eacute;n&eacute;rations / jour
-                </li>
-                <li className="flex items-start gap-2">
-                  <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  11 styles disponibles
+                  12 styles disponibles
                 </li>
                 <li className="flex items-start gap-2">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
@@ -1249,32 +1265,25 @@ export default function Home() {
                 </li>
               </ul>
               <a href="#outil" className="block w-full text-center border border-gray-300 text-foreground px-4 py-2.5 rounded-full text-sm font-medium hover:bg-gray-50 transition-colors">
-                Commencer
+                Essayer gratuitement
               </a>
+              <p className="text-[11px] text-muted/50 font-light mt-2">3 g&eacute;n&eacute;rations offertes sans CB</p>
             </div>
 
-            {/* Pro */}
-            <div className="border-2 border-foreground rounded-2xl p-6 text-center bg-background relative">
-              <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-foreground text-background text-[10px] font-medium px-3 py-1 rounded-full uppercase tracking-wider">Populaire</span>
-              <p className="text-xs text-muted font-medium uppercase tracking-widest mb-3">Pro</p>
-              <p className="text-3xl font-bold text-foreground mb-1">29&euro;<span className="text-base font-light text-muted">/mois</span></p>
-              <p className="text-xs text-muted font-light mb-6">Pour les professionnels</p>
-              <ul className="text-sm text-muted font-light space-y-2.5 text-left mb-6">
+            {/* Starter */}
+            <div className="border border-gray-200 rounded-2xl p-6 text-center bg-background">
+              <p className="text-xs text-muted font-medium uppercase tracking-widest mb-3">Starter</p>
+              <p className="text-3xl font-bold text-foreground mb-0.5">14,90&euro;</p>
+              <p className="text-xs text-muted/70 font-light mb-1">20 cr&eacute;dits &middot; 0,75&euro;/photo</p>
+              <p className="text-[11px] text-muted/50 font-light mb-5">TTC &middot; TVA 20% incluse</p>
+              <ul className="text-sm text-muted font-light space-y-2 text-left mb-6">
                 <li className="flex items-start gap-2">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  50 g&eacute;n&eacute;rations / mois
+                  1 it&eacute;ration par photo
                 </li>
                 <li className="flex items-start gap-2">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  Style personnalis&eacute; illimit&eacute;
-                </li>
-                <li className="flex items-start gap-2">
-                  <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  R&eacute;solution maximale
-                </li>
-                <li className="flex items-start gap-2">
-                  <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  Priorit&eacute; de traitement
+                  Lien partageable 7 jours
                 </li>
               </ul>
               <button className="w-full bg-foreground text-background px-4 py-2.5 rounded-full text-sm font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2">
@@ -1282,23 +1291,46 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Business */}
+            {/* Pro — recommended */}
+            <div className="border-2 border-foreground rounded-2xl p-6 text-center bg-background relative">
+              <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-foreground text-background text-[11px] font-medium px-3 py-1 rounded-full uppercase tracking-wider">Recommand&eacute;</span>
+              <p className="text-xs text-muted font-medium uppercase tracking-widest mb-3">Pro</p>
+              <p className="text-3xl font-bold text-foreground mb-0.5">29&euro;</p>
+              <p className="text-xs text-muted/70 font-light mb-1">50 cr&eacute;dits &middot; 0,58&euro;/photo</p>
+              <p className="text-[11px] text-muted/50 font-light mb-5">TTC &middot; TVA 20% incluse</p>
+              <ul className="text-sm text-muted font-light space-y-2 text-left mb-6">
+                <li className="flex items-start gap-2">
+                  <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  3 it&eacute;rations par photo
+                </li>
+                <li className="flex items-start gap-2">
+                  <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  Export PDF
+                </li>
+                <li className="flex items-start gap-2">
+                  <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  Lien partageable 30 jours
+                </li>
+              </ul>
+              <button className="w-full bg-foreground text-background px-4 py-2.5 rounded-full text-sm font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2">
+                Bient&ocirc;t disponible
+              </button>
+            </div>
+
+            {/* Studio */}
             <div className="border border-gray-200 rounded-2xl p-6 text-center bg-background">
-              <p className="text-xs text-muted font-medium uppercase tracking-widest mb-3">Business</p>
-              <p className="text-3xl font-bold text-foreground mb-1">79&euro;<span className="text-base font-light text-muted">/mois</span></p>
-              <p className="text-xs text-muted font-light mb-6">Pour les agences &amp; MDB</p>
-              <ul className="text-sm text-muted font-light space-y-2.5 text-left mb-6">
+              <p className="text-xs text-muted font-medium uppercase tracking-widest mb-3">Studio</p>
+              <p className="text-3xl font-bold text-foreground mb-0.5">69&euro;</p>
+              <p className="text-xs text-muted/70 font-light mb-1">150 cr&eacute;dits &middot; 0,46&euro;/photo</p>
+              <p className="text-[11px] text-muted/50 font-light mb-5">TTC &middot; TVA 20% incluse</p>
+              <ul className="text-sm text-muted font-light space-y-2 text-left mb-6">
                 <li className="flex items-start gap-2">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  G&eacute;n&eacute;rations illimit&eacute;es
+                  5 it&eacute;rations par photo
                 </li>
                 <li className="flex items-start gap-2">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  API &amp; int&eacute;grations
-                </li>
-                <li className="flex items-start gap-2">
-                  <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  Marque blanche
+                  Lien partageable 90 jours
                 </li>
                 <li className="flex items-start gap-2">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
@@ -1310,13 +1342,17 @@ export default function Home() {
               </a>
             </div>
           </div>
+
+          <p className="text-center text-[11px] text-muted/50 font-light mt-6">
+            TVA r&eacute;cup&eacute;rable pour les professionnels assujettis.
+          </p>
         </div>
       </section>
 
       {/* Disclaimer */}
       <div className="text-center px-5 sm:px-8 pb-6 pt-8">
         <p className="text-[11px] text-muted/70 font-light">
-          Les visuels g&eacute;n&eacute;r&eacute;s sont des projections indicatives &agrave; des fins d&apos;inspiration et de pr&eacute;commercialisation.
+          Visuels g&eacute;n&eacute;r&eacute;s par intelligence artificielle &mdash; repr&eacute;sentations indicatives non contractuelles.
         </p>
       </div>
 
@@ -1324,9 +1360,18 @@ export default function Home() {
       <footer className="border-t border-gray-200/40 py-10 px-5 sm:px-8">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted/70 font-light">
           <p>Pour les architectes, marchands de biens et particuliers</p>
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
             <a href="#pricing" className="hover:text-foreground transition-colors py-2">
               Tarifs
+            </a>
+            <a href="/mentions-legales" className="hover:text-foreground transition-colors py-2">
+              Mentions l&eacute;gales
+            </a>
+            <a href="/cgv" className="hover:text-foreground transition-colors py-2">
+              CGV
+            </a>
+            <a href="/confidentialite" className="hover:text-foreground transition-colors py-2">
+              Confidentialit&eacute;
             </a>
             <a
               href="mailto:contact@visirenov.fr"

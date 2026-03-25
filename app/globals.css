@@ -8,6 +8,8 @@
   --background: #FAFAF8;
   --foreground: #1C1C1E;
   --sage: #7D9B76;
+  --muted: #6B6B6E;
+  --border: rgba(28, 28, 30, 0.08);
 }
 
 body {

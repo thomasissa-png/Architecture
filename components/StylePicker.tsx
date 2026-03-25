@@ -9,7 +9,7 @@ export interface StyleOption {
   description: string;
   surfacePrompt: string;
   furniturePrompt: string;
-  emoji: string;
+  palette: string[];
 }
 
 const STYLES: StyleOption[] = [
@@ -17,7 +17,7 @@ const STYLES: StyleOption[] = [
     id: "scandinavian",
     name: "Scandinave",
     description: "Bois clair, tons neutres, épure absolue",
-    emoji: "🪵",
+    palette: ["#F5F0E8", "#D4C9B0", "#8B7355"],
     surfacePrompt:
       "Scandinavian minimalist: soft white walls keeping the same overall brightness as the input photo, wide-plank whitewashed ash flooring with visible natural grain and knots matte finish, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs, matte white tiered pendant light with soft diffused glow 45cm diameter (PH5-style layered shade)",
     furniturePrompt:
@@ -27,7 +27,7 @@ const STYLES: StyleOption[] = [
     id: "contemporary",
     name: "Contemporain",
     description: "Lignes nettes, palette sobre, modernité",
-    emoji: "◻️",
+    palette: ["#E8E8E8", "#4A4A4A", "#C0B283"],
     surfacePrompt:
       "Contemporary modern: very light warm grey walls barely tinted from the original keeping the same overall brightness as the input photo, light grey engineered stone flooring with matte finish, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs, minimal recessed or flush-mount ceiling light in brushed chrome",
     furniturePrompt:
@@ -37,7 +37,7 @@ const STYLES: StyleOption[] = [
     id: "industrial",
     name: "Industriel",
     description: "Métal, béton, volumes bruts sublimés",
-    emoji: "⚙️",
+    palette: ["#8B8680", "#3D3D3D", "#A0522D"],
     surfacePrompt:
       "Industrial loft: preserve existing wall finish and texture, keep the same overall brightness as the input photo, smooth grey concrete floor with matte waxed finish, ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs, matte black industrial pendant light with metal shade and visible Edison filament bulb",
     furniturePrompt:
@@ -47,7 +47,7 @@ const STYLES: StyleOption[] = [
     id: "japandi",
     name: "Japandi",
     description: "Minimalisme japonais, chaleur scandinave",
-    emoji: "🎋",
+    palette: ["#F0EDE5", "#C4B99A", "#6B705C"],
     surfacePrompt:
       "Japandi: soft warm white walls with very subtle sand undertone keeping the same overall brightness as the input photo, light ash wide-plank flooring with matte finish, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs, round washi paper pendant light in natural off-white",
     furniturePrompt:
@@ -57,7 +57,7 @@ const STYLES: StyleOption[] = [
     id: "art-deco",
     name: "Art Déco",
     description: "Géométrie dorée, velours, luxe années 20",
-    emoji: "✨",
+    palette: ["#1C1C1E", "#C5A55A", "#2D5A3D"],
     surfacePrompt:
       "Art Deco: slightly warm white walls with smooth finish keeping the same overall brightness as the input photo, dark stained herringbone parquet flooring, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs, brass and frosted glass geometric pendant chandelier",
     furniturePrompt:
@@ -67,7 +67,7 @@ const STYLES: StyleOption[] = [
     id: "mid-century",
     name: "Mid-Century",
     description: "Lignes organiques, bois chaud, vintage chic",
-    emoji: "🪑",
+    palette: ["#D4A03C", "#5B3A29", "#2E8B8B"],
     surfacePrompt:
       "Mid-Century Modern: soft white walls with barely visible warm tint keeping the same overall brightness as the input photo, warm walnut-toned wood plank flooring with satin finish, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs, Sputnik-style brass and black multi-arm ceiling pendant",
     furniturePrompt:
@@ -77,7 +77,7 @@ const STYLES: StyleOption[] = [
     id: "bohemian",
     name: "Bohème",
     description: "Textiles ethniques, plantes, chaleur nomade",
-    emoji: "🌿",
+    palette: ["#C17F59", "#6B705C", "#E8D5B7"],
     surfacePrompt:
       "Bohemian: soft warm off-white walls keeping the same overall brightness as the input photo, warm honey-toned wood plank flooring with matte finish, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs, woven rattan pendant light in natural tone",
     furniturePrompt:
@@ -87,7 +87,7 @@ const STYLES: StyleOption[] = [
     id: "mediterranean",
     name: "Méditerranéen",
     description: "Terre cuite, lin blanc, lumière du sud",
-    emoji: "☀️",
+    palette: ["#F5F0E0", "#C17F59", "#2B5B84"],
     surfacePrompt:
       "Mediterranean: white lime-plaster walls with subtle hand-troweled texture keeping the same overall brightness as the input photo, walls must stay close to input brightness and not darken or shift to ochre, pale terracotta or warm travertine floor tiles with natural veining, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs — if beams are visible whitewash them, wrought iron pendant lantern with aged patina",
     furniturePrompt:
@@ -97,7 +97,7 @@ const STYLES: StyleOption[] = [
     id: "cosy",
     name: "Cosy Moderne",
     description: "Textures douces, tons chauds, cocooning",
-    emoji: "🛋️",
+    palette: ["#F5EDE0", "#C9B99A", "#A0522D"],
     surfacePrompt:
       "Modern cozy: soft white walls with barely visible warm tint keeping the same overall brightness as the input photo, light oak wide-plank flooring with matte finish, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs, warm fabric drum pendant light in cream tone",
     furniturePrompt:
@@ -107,7 +107,7 @@ const STYLES: StyleOption[] = [
     id: "wabi-sabi",
     name: "Wabi-Sabi",
     description: "Imperfection noble, matières brutes, sérénité",
-    emoji: "🏺",
+    palette: ["#B8AFA0", "#8B8680", "#5C5550"],
     surfacePrompt:
       "Wabi-sabi: soft matte warm grey walls keeping the same overall brightness as the input photo, natural stone or aged concrete flooring with subtle worn texture, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs, simple ceramic pendant in natural unglazed finish",
     furniturePrompt:
@@ -117,11 +117,21 @@ const STYLES: StyleOption[] = [
     id: "maximalist",
     name: "Maximaliste",
     description: "Couleurs vives, motifs audacieux, personnalité",
-    emoji: "🎨",
+    palette: ["#1B4D6E", "#C5533B", "#C5A55A"],
     surfacePrompt:
       "Maximalist eclectic: rich deep teal accent on the largest visible surface with remaining areas in warm white keeping the same overall brightness as the input photo, polished dark wood flooring, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs, dramatic sculptural pendant light in brass with colored glass elements",
     furniturePrompt:
       "Maximalist furniture: bold jewel-toned velvet sofa in deep cobalt blue with curved sculptural back and brass legs 230cm wide, round lacquered coral coffee table on brass circular frame 100cm, layered rugs mixing faded vintage Persian and contemporary bold graphic patterns 200x300cm, two framed art prints propped on the floor against the baseboard, sculptural brass floor lamp with oversized colored shade, one cushion in animal print velvet and one in bold geometric stripe, large potted monstera in colorful glazed ceramic pot, brass and marble side table with stacked art books and two curated objects, vintage brass tray with pillar candles on the coffee table, ornate vintage brass candlestick holder on the side table",
+  },
+  {
+    id: "haussmannian",
+    name: "Haussmannien",
+    description: "Moulures, parquet, élégance parisienne",
+    palette: ["#F0EBE0", "#8B7355", "#C5A55A"],
+    surfacePrompt:
+      "Haussmannian Parisian: soft warm white walls keeping the same overall brightness as the input photo, classic light oak herringbone parquet flooring with satin finish, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs preserving existing crown moldings and cornices, classic brass and white glass pendant chandelier with understated elegance",
+    furniturePrompt:
+      "Haussmannian Parisian furniture: elegant three-seat sofa in soft dove grey linen with low rolled arms and dark walnut turned legs 230cm wide, round marble-top gueridon side table with dark patinated brass legs 50cm, classic French bergere armchair in cream linen with dark walnut frame as accent piece, warm-toned Persian-inspired area rug in muted rose ivory and navy 200x300cm, tall dark walnut bookcase with brass gallery rail 180cm as background anchor with leather-bound books and small brass objects, classic brass pharmacy floor lamp with cream shade, white marble mantel clock and brass candlesticks on the bookcase, potted white orchid in aged brass cachepot, two cushions in dusty rose and soft sage velvet",
   },
 ];
 
@@ -204,8 +214,14 @@ export default function StylePicker({
                   : "border-gray-200 hover:border-gray-300"
               }`}
             >
-              <span className="text-lg sm:text-xl mb-2 sm:mb-3 block" aria-hidden="true">
-                {style.emoji}
+              <span className="flex gap-1.5 mb-2 sm:mb-3" aria-hidden="true">
+                {style.palette.map((color, i) => (
+                  <span
+                    key={i}
+                    className="w-4 h-4 sm:w-5 sm:h-5 rounded-full border border-gray-200/60"
+                    style={{ backgroundColor: color }}
+                  />
+                ))}
               </span>
               <h4 className="text-sm font-semibold text-foreground mb-0.5 sm:mb-1 tracking-tight">
                 {style.name}
