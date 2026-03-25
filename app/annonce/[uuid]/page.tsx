@@ -283,7 +283,7 @@ export default async function AnnoncePage({ params }: PageProps) {
                       />
                       {photo.room_label && (
                         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/40 to-transparent p-2">
-                          <span className="text-[10px] text-white/90 font-medium">
+                          <span className="text-xs text-white/90 font-medium">
                             {photo.room_label}
                           </span>
                         </div>

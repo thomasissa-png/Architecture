@@ -27,20 +27,20 @@ export default function DossierPublicView({
       {photos.map((photo) => (
         <div
           key={photo.id}
-          className="border border-[var(--border)] rounded-2xl overflow-hidden bg-[var(--foreground)]/[0.02]"
+          className="border border-foreground/5 rounded-2xl overflow-hidden bg-foreground/[0.02]"
           data-testid={`dossier-photo-${photo.id}`}
         >
           {/* Room label */}
-          <div className="px-5 py-3 border-b border-[var(--border)]">
-            <h3 className="text-sm font-semibold text-[var(--foreground)]">
+          <div className="px-5 py-3 border-b border-foreground/5">
+            <h3 className="text-sm font-semibold text-foreground">
               {photo.roomLabel}
             </h3>
           </div>
 
           {/* Before/After grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-[var(--border)]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-foreground/5">
             {/* Before */}
-            <div className="relative bg-[var(--background)]">
+            <div className="relative bg-background">
               <div className="aspect-[4/3]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -56,7 +56,7 @@ export default function DossierPublicView({
             </div>
 
             {/* After */}
-            <div className="relative bg-[var(--background)]">
+            <div className="relative bg-background">
               <div className="aspect-[4/3]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -66,7 +66,7 @@ export default function DossierPublicView({
                   loading="lazy"
                 />
               </div>
-              <span className="absolute bottom-2.5 left-2.5 text-[11px] font-medium tracking-widest uppercase text-[var(--sage)]">
+              <span className="absolute bottom-2.5 left-2.5 text-[11px] font-medium tracking-widest uppercase text-sage">
                 APRÈS
               </span>
             </div>

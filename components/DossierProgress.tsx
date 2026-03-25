@@ -35,24 +35,24 @@ export default function DossierProgress({
       {/* Progress bar */}
       <div className="space-y-2">
         <div className="flex items-center justify-between text-sm">
-          <span className="text-[var(--foreground)] font-medium">
+          <span className="text-foreground font-medium">
             {isGenerating ? "Génération en cours..." : "Terminé"}
           </span>
-          <span className="text-[var(--muted)] font-light">
+          <span className="text-muted font-light">
             {completed}/{total} photos
             {failed > 0 && ` (${failed} échec${failed > 1 ? "s" : ""})`}
           </span>
         </div>
 
-        <div className="h-2 bg-[var(--foreground)]/5 rounded-full overflow-hidden">
+        <div className="h-2 bg-foreground/5 rounded-full overflow-hidden">
           <div
-            className="h-full bg-[var(--sage)] rounded-full transition-all duration-500"
+            className="h-full bg-sage rounded-full transition-all duration-500"
             style={{ width: `${progress}%` }}
           />
         </div>
 
         {isGenerating && elapsed > 0 && (
-          <p className="text-xs text-[var(--muted)] font-light">
+          <p className="text-xs text-muted font-light">
             {elapsed}s · ~{Math.max(0, Math.ceil((total - completed - failed) * 30))}s restant
           </p>
         )}
@@ -63,13 +63,13 @@ export default function DossierProgress({
         {photos.map((photo) => (
           <div
             key={photo.id}
-            className="flex items-center gap-3 px-3 py-2 rounded-xl bg-[var(--foreground)]/[0.02]"
+            className="flex items-center gap-3 px-3 py-2 rounded-xl bg-foreground/[0.02]"
             data-testid={`dossier-photo-status-${photo.id}`}
           >
             {/* Status icon */}
             {photo.status === "completed" && (
               <svg
-                className="w-4 h-4 text-[var(--sage)] shrink-0"
+                className="w-4 h-4 text-sage shrink-0"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -80,7 +80,7 @@ export default function DossierProgress({
             )}
             {photo.status === "generating" && (
               <svg
-                className="w-4 h-4 text-[var(--sage)] shrink-0 animate-spin"
+                className="w-4 h-4 text-sage shrink-0 animate-spin"
                 fill="none"
                 viewBox="0 0 24 24"
               >
@@ -100,21 +100,21 @@ export default function DossierProgress({
               </svg>
             )}
             {photo.status === "pending" && (
-              <div className="w-4 h-4 rounded-full border-2 border-[var(--foreground)]/10 shrink-0" />
+              <div className="w-4 h-4 rounded-full border-2 border-foreground/10 shrink-0" />
             )}
 
             {/* Label */}
-            <span className="text-sm text-[var(--foreground)] font-light flex-1 truncate">
+            <span className="text-sm text-foreground font-light flex-1 truncate">
               {photo.roomLabel || `Photo ${photo.photoIndex + 1}`}
             </span>
 
             {/* Status text */}
             <div className="shrink-0 text-right">
               <span className={`text-xs font-light ${
-                photo.status === "completed" ? "text-[var(--sage)]" :
+                photo.status === "completed" ? "text-sage" :
                 photo.status === "failed" ? "text-red-400" :
-                photo.status === "generating" ? "text-[var(--sage)]" :
-                "text-[var(--muted)]/60"
+                photo.status === "generating" ? "text-sage" :
+                "text-muted/60"
               }`}>
                 {photo.status === "completed" && "Prêt"}
                 {photo.status === "generating" && "En cours..."}
@@ -122,7 +122,7 @@ export default function DossierProgress({
                 {photo.status === "pending" && "En attente"}
               </span>
               {photo.status === "failed" && photo.errorMessage && (
-                <p className="text-[11px] text-[var(--muted)] font-light mt-0.5 max-w-[200px]">{photo.errorMessage}</p>
+                <p className="text-[11px] text-muted font-light mt-0.5 max-w-[200px]">{photo.errorMessage}</p>
               )}
             </div>
           </div>

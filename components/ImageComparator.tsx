@@ -181,14 +181,14 @@ export default function ImageComparator({
             </div>
           }
         />
-        <p className="text-center text-[10px] text-muted font-light py-1.5 sm:hidden">
+        <p className="text-center text-xs text-muted font-light py-1.5 sm:hidden">
           Glissez pour comparer
         </p>
         <div className="flex justify-between px-5 py-2.5 bg-foreground/5">
-          <span className="text-[10px] font-medium text-muted uppercase tracking-widest">
+          <span className="text-xs font-medium text-muted uppercase tracking-widest">
             Avant
           </span>
-          <span className="text-[10px] font-medium text-muted uppercase tracking-widest">
+          <span className="text-xs font-medium text-muted uppercase tracking-widest">
             Apr\u00e8s
           </span>
         </div>
@@ -259,7 +259,7 @@ export default function ImageComparator({
       </div>
 
       {model && (
-        <p className="text-center text-[10px] text-muted/70 font-light">
+        <p className="text-center text-xs text-muted/70 font-light">
           G&eacute;n&eacute;r&eacute; avec {model}
         </p>
       )}

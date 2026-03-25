@@ -329,9 +329,12 @@ export default function GaleriePage() {
                 </h2>
                 <button
                   onClick={() => setSelectedPhoto(null)}
-                  className="text-muted hover:text-foreground text-lg font-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded-full w-10 h-10 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                  className="text-muted hover:text-foreground hover:bg-foreground/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded-full w-10 h-10 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                  aria-label="Fermer"
                 >
-                  x
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                 </button>
               </div>
 

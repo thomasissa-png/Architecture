@@ -433,7 +433,7 @@ export default function MerchantMode() {
           {error}
           <button
             onClick={() => setError(null)}
-            className="ml-3 text-red-400 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/50 focus-visible:ring-offset-2 rounded"
+            className="ml-3 text-red-400 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded"
           >
             Fermer
           </button>
@@ -455,7 +455,7 @@ export default function MerchantMode() {
             </div>
             <button
               onClick={() => setCurrentStep("photos")}
-              className="text-xs text-muted font-light hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/50 focus-visible:ring-offset-2 rounded"
+              className="text-xs text-muted font-light hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded"
             >
               Retour
             </button>
@@ -473,24 +473,24 @@ export default function MerchantMode() {
               onFocus={() => addressSuggestions.length > 0 && setShowSuggestions(true)}
               onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
               placeholder="Commencez à taper : 45 rue de la Paix, 75002 Paris"
-              className="w-full px-4 py-3 border border-[var(--border)] rounded-xl text-sm font-light focus:border-[var(--foreground)] focus:outline-none transition-colors placeholder:text-foreground/30"
+              className="w-full px-4 py-3 border border-foreground/5 rounded-xl text-sm font-light focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
               data-testid="merchant-bien-adresse"
             />
             {isEnriching && (
               <div className="absolute right-3 top-[38px]">
-                <div className="w-4 h-4 border-2 border-[var(--foreground)]/20 border-t-[var(--sage)] rounded-full animate-spin" />
+                <div className="w-4 h-4 border-2 border-foreground/20 border-t-sage rounded-full animate-spin" />
               </div>
             )}
 
             {/* Suggestions dropdown */}
             {showSuggestions && addressSuggestions.length > 0 && (
-              <div className="absolute z-20 left-0 right-0 mt-1 bg-[var(--background)] border border-[var(--border)] rounded-xl shadow-lg overflow-hidden" data-testid="merchant-address-suggestions">
+              <div className="absolute z-20 left-0 right-0 mt-1 bg-background border border-foreground/5 rounded-xl shadow-lg overflow-hidden" data-testid="merchant-address-suggestions">
                 {addressSuggestions.map((s, i) => (
                   <button
                     key={i}
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => handleSelectAddress(s)}
-                    className="w-full text-left px-4 py-3 text-sm font-light hover:bg-[var(--foreground)]/5 transition-colors border-b last:border-b-0 border-[var(--border)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/50 focus-visible:ring-inset"
+                    className="w-full text-left px-4 py-3 text-sm font-light hover:bg-foreground/5 transition-colors border-b last:border-b-0 border-foreground/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-inset"
                     data-testid={`merchant-address-suggestion-${i}`}
                   >
                     {s.label}
@@ -504,24 +504,24 @@ export default function MerchantMode() {
           {(enrichedCity || enrichedPostcode) && (
             <div className="flex flex-wrap gap-2 -mt-2">
               {enrichedPostcode && (
-                <span className="text-xs px-3 py-1 rounded-full bg-[var(--foreground)]/5 text-muted font-light">
+                <span className="text-xs px-3 py-1 rounded-full bg-foreground/5 text-muted font-light">
                   {enrichedPostcode}
                 </span>
               )}
               {enrichedCity && (
-                <span className="text-xs px-3 py-1 rounded-full bg-[var(--foreground)]/5 text-muted font-light">
+                <span className="text-xs px-3 py-1 rounded-full bg-foreground/5 text-muted font-light">
                   {enrichedCity}
                 </span>
               )}
               {enrichedPrixM2 && (
-                <span className="text-xs px-3 py-1 rounded-full bg-[var(--sage)]/10 text-[var(--sage)] font-medium">
+                <span className="text-xs px-3 py-1 rounded-full bg-sage/10 text-sage font-medium">
                   Prix moyen : {enrichedPrixM2.toLocaleString("fr-FR")} {"\u20AC"}/m{"\u00B2"}
                 </span>
               )}
             </div>
           )}
 
-          <div className="border-b border-[var(--border)]" />
+          <div className="border-b border-foreground/5" />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -533,7 +533,7 @@ export default function MerchantMode() {
                 value={bienNom}
                 onChange={(e) => setBienNom(e.target.value)}
                 placeholder="Ex : T3 renove avec vue"
-                className="w-full px-4 py-3 border border-[var(--border)] rounded-xl text-sm font-light focus:border-[var(--foreground)] focus:outline-none transition-colors placeholder:text-foreground/30"
+                className="w-full px-4 py-3 border border-foreground/5 rounded-xl text-sm font-light focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
                 data-testid="merchant-bien-nom"
               />
             </div>
@@ -547,7 +547,7 @@ export default function MerchantMode() {
                 value={bienSurface}
                 onChange={(e) => setBienSurface(e.target.value)}
                 placeholder="65"
-                className="w-full px-4 py-3 border border-[var(--border)] rounded-xl text-sm font-light focus:border-[var(--foreground)] focus:outline-none transition-colors placeholder:text-foreground/30"
+                className="w-full px-4 py-3 border border-foreground/5 rounded-xl text-sm font-light focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
                 data-testid="merchant-bien-surface"
               />
             </div>
@@ -561,7 +561,7 @@ export default function MerchantMode() {
                 value={bienNbPieces}
                 onChange={(e) => setBienNbPieces(e.target.value)}
                 placeholder="3"
-                className="w-full px-4 py-3 border border-[var(--border)] rounded-xl text-sm font-light focus:border-[var(--foreground)] focus:outline-none transition-colors placeholder:text-foreground/30"
+                className="w-full px-4 py-3 border border-foreground/5 rounded-xl text-sm font-light focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
                 data-testid="merchant-bien-nb-pieces"
               />
             </div>
@@ -575,10 +575,10 @@ export default function MerchantMode() {
                 value={bienPrix}
                 onChange={(e) => setBienPrix(e.target.value)}
                 placeholder="350000"
-                className="w-full px-4 py-3 border border-[var(--border)] rounded-xl text-sm font-light focus:border-[var(--foreground)] focus:outline-none transition-colors placeholder:text-foreground/30"
+                className="w-full px-4 py-3 border border-foreground/5 rounded-xl text-sm font-light focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
                 data-testid="merchant-bien-prix"
               />
-              <p className="text-[10px] text-muted/50 font-light mt-1">
+              <p className="text-xs text-muted/50 font-light mt-1">
                 Prix de commercialisation en euros (ex : 350000 pour 350 000 {"\u20AC"})
               </p>
             </div>
@@ -594,10 +594,10 @@ export default function MerchantMode() {
                 <button
                   key={type.id}
                   onClick={() => setBienType(bienType === type.id ? "" : type.id)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/50 focus-visible:ring-offset-2 ${
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
                     bienType === type.id
-                      ? "bg-[var(--sage)] text-white"
-                      : "bg-[var(--foreground)]/5 text-muted hover:bg-[var(--foreground)]/10"
+                      ? "bg-sage text-white"
+                      : "bg-foreground/5 text-muted hover:bg-foreground/10"
                   }`}
                   data-testid={`merchant-bien-type-${type.id}`}
                 >
@@ -617,10 +617,10 @@ export default function MerchantMode() {
                 value={enrichedDescription}
                 onChange={(e) => setEnrichedDescription(e.target.value)}
                 rows={3}
-                className="w-full px-4 py-3 border border-[var(--border)] rounded-xl text-sm font-light focus:border-[var(--foreground)] focus:outline-none transition-colors resize-none placeholder:text-foreground/30"
+                className="w-full px-4 py-3 border border-foreground/5 rounded-xl text-sm font-light focus:border-foreground focus:outline-none transition-colors resize-none placeholder:text-foreground/30"
                 data-testid="merchant-description"
               />
-              <p className="text-[10px] text-muted/50 font-light mt-1">
+              <p className="text-xs text-muted/50 font-light mt-1">
                 Generee automatiquement — vous pouvez la modifier.
               </p>
             </div>
@@ -632,7 +632,7 @@ export default function MerchantMode() {
               <label className="text-xs font-medium text-foreground mb-1.5 block">
                 Carte du quartier
               </label>
-              <div className="rounded-xl border border-[var(--border)] overflow-hidden">
+              <div className="rounded-xl border border-foreground/5 overflow-hidden">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={`/api/logs/image?path=${encodeURIComponent(enrichedCarteKey)}`}
@@ -648,7 +648,7 @@ export default function MerchantMode() {
           <div className="pt-4">
             <button
               onClick={() => setCurrentStep("style")}
-              className="w-full sm:w-auto px-8 py-3 bg-[var(--foreground)] text-background rounded-xl font-medium text-sm hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/50 focus-visible:ring-offset-2"
+              className="w-full sm:w-auto px-8 py-3 bg-foreground text-background rounded-xl font-medium text-sm hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
               data-testid="merchant-next-style"
             >
               Choisir le style
@@ -689,7 +689,7 @@ export default function MerchantMode() {
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {files.map((file, index) => (
-                  <div key={index} className="flex items-center gap-3 p-3 rounded-xl border border-[var(--border)]">
+                  <div key={index} className="flex items-center gap-3 p-3 rounded-xl border border-foreground/5">
                     {/* Thumbnail */}
                     <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -707,7 +707,7 @@ export default function MerchantMode() {
                         updatePhotoEntry(index, { roomLabel: e.target.value })
                       }
                       placeholder={`Photo ${index + 1} — ex: Salon, Chambre 1`}
-                      className="flex-1 text-sm font-light border-0 bg-transparent focus:outline-none placeholder:text-foreground/25"
+                      className="flex-1 text-sm font-light border-0 bg-transparent focus:outline-none placeholder:text-foreground/30"
                       data-testid={`merchant-photo-label-${index}`}
                     />
                   </div>
@@ -721,7 +721,7 @@ export default function MerchantMode() {
             <div className="flex items-center gap-3 pt-4">
               <button
                 onClick={() => setCurrentStep("info")}
-                className="px-8 py-3 bg-[var(--foreground)] text-background rounded-xl font-medium text-sm hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/50 focus-visible:ring-offset-2"
+                className="px-8 py-3 bg-foreground text-background rounded-xl font-medium text-sm hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
                 data-testid="merchant-next-photos"
               >
                 {"\u00C9"}tape suivante
@@ -748,7 +748,7 @@ export default function MerchantMode() {
             </div>
             <button
               onClick={() => setCurrentStep("info")}
-              className="text-xs text-muted font-light hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/50 focus-visible:ring-offset-2 rounded"
+              className="text-xs text-muted font-light hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded"
             >
               Retour
             </button>
@@ -769,7 +769,7 @@ export default function MerchantMode() {
             <div className="flex items-center gap-3 pt-4">
               <button
                 onClick={() => setCurrentStep("review")}
-                className="px-8 py-3 bg-[var(--foreground)] text-background rounded-xl font-medium text-sm hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/50 focus-visible:ring-offset-2"
+                className="px-8 py-3 bg-foreground text-background rounded-xl font-medium text-sm hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
                 data-testid="merchant-next-review"
               >
                 Vérifier avant de générer
@@ -788,13 +788,13 @@ export default function MerchantMode() {
             </h3>
             <button
               onClick={() => setCurrentStep("style")}
-              className="text-xs text-muted font-light hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/50 focus-visible:ring-offset-2 rounded"
+              className="text-xs text-muted font-light hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded"
             >
               Retour
             </button>
           </div>
 
-          <div className="border border-[var(--border)] rounded-2xl p-5 space-y-4">
+          <div className="border border-foreground/5 rounded-2xl p-5 space-y-4">
             {/* Property summary */}
             <div>
               <h4 className="text-base font-semibold text-foreground">
@@ -809,19 +809,19 @@ export default function MerchantMode() {
             </div>
 
             {/* Photos summary */}
-            <div className="border-t border-[var(--border)] pt-4">
+            <div className="border-t border-foreground/5 pt-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-foreground font-medium">
                   {files.length} photo{files.length > 1 ? "s" : ""}
                 </span>
-                <span className="text-sm text-[var(--sage)] font-medium">
+                <span className="text-sm text-sage font-medium">
                   {creditsNeeded} crédit{creditsNeeded > 1 ? "s" : ""}
                 </span>
               </div>
 
               <div className="flex flex-wrap gap-2">
                 {files.map((file, i) => (
-                  <div key={i} className="w-16 h-12 rounded-lg overflow-hidden border border-[var(--border)]">
+                  <div key={i} className="w-16 h-12 rounded-lg overflow-hidden border border-foreground/5">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={previewUrls[i]}
@@ -834,7 +834,7 @@ export default function MerchantMode() {
             </div>
 
             {/* Style summary */}
-            <div className="border-t border-[var(--border)] pt-4">
+            <div className="border-t border-foreground/5 pt-4">
               <span className="text-sm text-foreground font-medium">
                 Style : {globalStyle?.name || "Personnalisé"}
               </span>
@@ -845,7 +845,7 @@ export default function MerchantMode() {
           <button
             onClick={handleGenerate}
             disabled={isGenerating}
-            className="w-full py-4 bg-[var(--sage)] text-white rounded-xl font-medium text-base hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/50 focus-visible:ring-offset-2"
+            className="w-full py-4 bg-sage text-white rounded-xl font-medium text-base hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
             data-testid="merchant-generate"
           >
             {isGenerating ? "Génération en cours..." : `Générer le dossier (${creditsNeeded} crédit${creditsNeeded > 1 ? "s" : ""})`}
@@ -894,7 +894,7 @@ export default function MerchantMode() {
               Dossier prêt
             </h3>
             {linkCopied && (
-              <span className="text-xs text-[var(--sage)] font-medium animate-fade-in-up">
+              <span className="text-xs text-sage font-medium animate-fade-in-up">
                 Lien copié · Valable 30 jours
               </span>
             )}

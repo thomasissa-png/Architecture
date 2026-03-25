@@ -181,7 +181,7 @@ export default function MesDossiersPage() {
                   <a
                     key={dossier.uuid}
                     href={`/dossier/${dossier.uuid}`}
-                    className="block p-5 rounded-2xl border border-foreground/5 hover:border-foreground/15 bg-foreground/[0.01] hover:bg-foreground/[0.03] transition-all group"
+                    className="block p-5 rounded-2xl border border-foreground/5 hover:border-foreground/10 bg-foreground/[0.01] hover:bg-foreground/[0.03] transition-all group"
                     data-testid="dossier-card"
                   >
                     <div className="flex items-start justify-between gap-4">

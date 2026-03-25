@@ -162,7 +162,7 @@ export default async function DossierPage({ params }: PageProps) {
               <span>{formatPrice(dossier.bien_prix)}</span>
             )}
             {dossier.prix_moyen_m2 && (
-              <span className="text-[var(--sage)]">
+              <span className="text-sage">
                 {dossier.prix_moyen_m2.toLocaleString("fr-FR")} {"\u20AC"}/m{"\u00B2"} (quartier)
               </span>
             )}
@@ -206,7 +206,7 @@ export default async function DossierPage({ params }: PageProps) {
               dossierUuid={params.uuid}
             />
             {dossier.status === "partial" && (
-              <p className="text-sm text-[var(--muted)] mt-2">
+              <p className="text-sm text-muted mt-2">
                 Ce dossier présente {completedPhotos.length} visuel{completedPhotos.length > 1 ? "s" : ""} sur {photos.length} — certaines pièces n&apos;ont pas pu être générées.
               </p>
             )}
@@ -218,7 +218,7 @@ export default async function DossierPage({ params }: PageProps) {
           <div className="text-center mt-8 sm:mt-12">
             <a
               href={`/api/dossier/${params.uuid}/pdf`}
-              className="inline-flex items-center gap-2 bg-[var(--foreground)] text-[var(--background)] px-6 py-3 rounded-xl font-medium text-sm hover:opacity-90 transition-opacity"
+              className="inline-flex items-center gap-2 bg-foreground text-background px-6 py-3 rounded-xl font-medium text-sm hover:opacity-90 transition-opacity"
               data-testid="dossier-download-pdf"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>

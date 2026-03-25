@@ -74,12 +74,12 @@ export default function DossierResult({
   return (
     <div className="space-y-6" data-testid="dossier-result">
       {/* Summary bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl border border-[var(--border)] bg-[var(--foreground)]/[0.02]">
+      <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl border border-foreground/5 bg-foreground/[0.02]">
         <div>
-          <h3 className="text-sm font-semibold text-[var(--foreground)]">
+          <h3 className="text-sm font-semibold text-foreground">
             {bienNom}
           </h3>
-          <p className="text-xs text-[var(--muted)] font-light mt-0.5">
+          <p className="text-xs text-muted font-light mt-0.5">
             {completedPhotos.length} visuel{completedPhotos.length > 1 ? "s" : ""} meublé{completedPhotos.length > 1 ? "s" : ""}
             {failedPhotos.length > 0 && ` — ${failedPhotos.length} échec${failedPhotos.length > 1 ? "s" : ""}`}
           </p>
@@ -105,7 +105,7 @@ export default function DossierResult({
           <button
             onClick={onShareLink}
             aria-label="Partager avec un acquereur"
-            className="inline-flex items-center gap-1.5 px-2 sm:px-4 py-2 rounded-xl text-xs font-medium bg-[var(--foreground)]/5 text-[var(--foreground)] hover:bg-[var(--foreground)]/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/50 focus-visible:ring-offset-2"
+            className="inline-flex items-center gap-1.5 px-2 sm:px-4 py-2 rounded-xl text-xs font-medium bg-foreground/5 text-foreground hover:bg-foreground/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
             data-testid="dossier-share-link"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -119,7 +119,7 @@ export default function DossierResult({
           <button
             onClick={onDownloadPdf}
             aria-label="Télécharger le PDF du dossier"
-            className="inline-flex items-center gap-1.5 px-2 sm:px-4 py-2 rounded-xl text-xs font-medium bg-[var(--sage)] text-white hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/50 focus-visible:ring-offset-2"
+            className="inline-flex items-center gap-1.5 px-2 sm:px-4 py-2 rounded-xl text-xs font-medium bg-sage text-white hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
             data-testid="dossier-download-pdf"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -135,19 +135,19 @@ export default function DossierResult({
         {completedPhotos.map((photo) => (
           <div
             key={photo.id}
-            className="border border-[var(--border)] rounded-2xl overflow-hidden"
+            className="border border-foreground/5 rounded-2xl overflow-hidden"
             data-testid={`dossier-result-photo-${photo.id}`}
           >
             {/* Room label header */}
-            <div className="px-4 py-2.5 border-b border-[var(--border)] flex items-center justify-between">
-              <span className="text-sm font-medium text-[var(--foreground)]">
+            <div className="px-4 py-2.5 border-b border-foreground/5 flex items-center justify-between">
+              <span className="text-sm font-medium text-foreground">
                 {photo.roomLabel || `Photo ${photo.photoIndex + 1}`}
               </span>
               {onRegenerate && (
                 <button
                   onClick={() => onRegenerate(photo.id)}
                   disabled={isRegenerating === photo.id}
-                  className="text-xs text-[var(--muted)] font-light hover:text-[var(--foreground)] transition-colors disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/50 min-h-[44px] inline-flex items-center"
+                  className="text-xs text-muted font-light hover:text-foreground transition-colors disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 min-h-[44px] inline-flex items-center"
                   data-testid={`dossier-regenerate-${photo.id}`}
                 >
                   {isRegenerating === photo.id ? "En cours..." : "Regénérer"}
@@ -184,7 +184,7 @@ export default function DossierResult({
                     loading="lazy"
                   />
                 </div>
-                <span className="absolute bottom-2 left-2 text-[11px] font-medium tracking-widest uppercase text-[var(--sage)]">
+                <span className="absolute bottom-2 left-2 text-[11px] font-medium tracking-widest uppercase text-sage">
                   APRÈS
                 </span>
               </div>
@@ -192,11 +192,11 @@ export default function DossierResult({
 
             {/* Download HD link */}
             {photo.outputImageKey && (
-              <div className="px-4 py-2 border-t border-[var(--border)]">
+              <div className="px-4 py-2 border-t border-foreground/5">
                 <a
                   href={`/api/logs/image?path=${encodeURIComponent(photo.outputImageKey)}`}
                   download={`${photo.roomLabel || 'photo'}-apres.jpg`}
-                  className="min-h-[44px] inline-flex items-center text-xs text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+                  className="min-h-[44px] inline-flex items-center text-xs text-muted hover:text-foreground transition-colors"
                 >
                   Télécharger HD
                 </a>
@@ -222,7 +222,7 @@ export default function DossierResult({
                   {photo.roomLabel || `Photo ${photo.photoIndex + 1}`}
                 </span>
                 {photo.errorMessage && (
-                  <p className="text-xs text-[var(--muted)] mt-1 font-light">{photo.errorMessage}</p>
+                  <p className="text-xs text-muted mt-1 font-light">{photo.errorMessage}</p>
                 )}
               </div>
               {onRegenerate && (
