@@ -13,7 +13,7 @@ export interface StyleOption {
   preview?: string; // API path or static path to preview image
 }
 
-const STYLES: StyleOption[] = [
+export const STYLES: StyleOption[] = [
   {
     id: "scandinavian",
     name: "Scandinave",

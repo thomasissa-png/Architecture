@@ -21,7 +21,6 @@ export const PACKS = [
   { id: "decouverte", name: "Decouverte", credits: 5, priceCents: 490 },
   { id: "starter", name: "Starter", credits: 20, priceCents: 1490 },
   { id: "pro", name: "Pro", credits: 50, priceCents: 2900 },
-  { id: "studio", name: "Studio", credits: 150, priceCents: 6900 },
 ] as const;
 
 export type PackId = (typeof PACKS)[number]["id"];

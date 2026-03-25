@@ -42,21 +42,6 @@ const PACKS = [
     cta: "Acheter",
     highlight: true,
   },
-  {
-    id: "studio",
-    name: "Studio",
-    credits: 150,
-    price: "69",
-    perPhoto: "0,46",
-    features: [
-      "5 iterations par photo",
-      "Mode Marchand — 15 photos/dossier",
-      "Annonces immobilieres illimitees",
-      "Lien partageable 90 jours + support dedie",
-    ],
-    cta: "Acheter",
-    highlight: false,
-  },
 ];
 
 export default function PricingPage() {
@@ -185,7 +170,7 @@ function PricingContent() {
           )}
 
           {/* Packs grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
             {PACKS.map((pack) => (
               <div
                 key={pack.id}

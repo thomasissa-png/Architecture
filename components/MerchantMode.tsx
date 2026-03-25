@@ -14,7 +14,8 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import UploadZone from "@/components/UploadZone";
-import StylePicker, { StyleOption } from "@/components/StylePicker";
+import StylePicker, { StyleOption, STYLES } from "@/components/StylePicker";
+import { ROOM_TYPE_LIST } from "@/lib/room-types";
 import DossierProgress from "@/components/DossierProgress";
 import DossierResult from "@/components/DossierResult";
 import { processImage } from "@/lib/image-utils";
@@ -41,7 +42,7 @@ interface DossierPhotoStatus {
   styleId: string | null;
 }
 
-type MerchantStep = "info" | "photos" | "style" | "review" | "generating" | "results";
+type MerchantStep = "info" | "photos" | "annotate" | "style" | "review" | "generating" | "results";
 
 const BIEN_TYPES = [
   { id: "appartement", label: "Appartement" },
@@ -200,8 +201,9 @@ export default function MerchantMode() {
       return;
     }
 
-    if (!globalStyle && !customPrompt.trim()) {
-      setError("Choisissez une ambiance pour continuer.");
+    const allHaveOverride = photoEntries.every((e) => e.styleOverride !== null);
+    if (!allHaveOverride && !globalStyle && !customPrompt.trim()) {
+      setError("Choisissez un style global ou un style pour chaque photo.");
       return;
     }
 
@@ -647,11 +649,125 @@ export default function MerchantMode() {
           {/* Next button */}
           <div className="pt-4">
             <button
-              onClick={() => setCurrentStep("style")}
+              onClick={() => setCurrentStep("annotate")}
               className="w-full sm:w-auto px-8 py-3 bg-foreground text-background rounded-xl font-medium text-sm hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
-              data-testid="merchant-next-style"
+              data-testid="merchant-next-annotate"
             >
-              Choisir le style
+              Annoter les photos
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Step: Annotate (per-photo room type + style override) ── */}
+      {currentStep === "annotate" && (
+        <div className="space-y-6 animate-fade-in-up" data-testid="merchant-step-annotate">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-1">
+                Pi{"\u00E8"}ce et style par photo
+              </h3>
+              <p className="text-xs text-muted/60 font-light">
+                Assignez un type de pi{"\u00E8"}ce et un style {"\u00E0"} chaque photo. Par d{"\u00E9"}faut, toutes utilisent le style global.
+              </p>
+            </div>
+            <button
+              onClick={() => setCurrentStep("info")}
+              className="text-xs text-muted font-light hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded"
+            >
+              Retour
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            {files.map((file, index) => {
+              const entry = photoEntries[index];
+              if (!entry) return null;
+              return (
+                <div key={index} className="border border-foreground/5 rounded-xl p-3 space-y-3" data-testid={`merchant-annotate-card-${index}`}>
+                  {/* Thumbnail */}
+                  <div className="aspect-[4/3] rounded-lg overflow-hidden bg-foreground/5">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={previewUrls[index]}
+                      alt={entry.roomLabel || `Photo ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <p className="text-xs text-foreground font-medium truncate">
+                    {entry.roomLabel || `Photo ${index + 1}`}
+                  </p>
+
+                  {/* Room type dropdown */}
+                  <div>
+                    <label className="text-[11px] text-muted font-light block mb-1">
+                      Pi{"\u00E8"}ce
+                    </label>
+                    <select
+                      value={entry.roomTypeId || ""}
+                      onChange={(e) => updatePhotoEntry(index, { roomTypeId: e.target.value || null })}
+                      className="w-full text-sm font-light border border-foreground/10 rounded-lg px-3 py-2 bg-background focus:border-foreground focus:outline-none transition-colors"
+                      data-testid={`merchant-annotate-room-${index}`}
+                    >
+                      <option value="">Non sp{"\u00E9"}cifi{"\u00E9"}</option>
+                      {ROOM_TYPE_LIST.map((rt) => (
+                        <option key={rt.id} value={rt.id}>
+                          {rt.emoji} {rt.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Style override dropdown */}
+                  <div>
+                    <label className="text-[11px] text-muted font-light block mb-1">
+                      Style
+                    </label>
+                    <select
+                      value={entry.styleOverride?.id || ""}
+                      onChange={(e) => {
+                        const styleId = e.target.value;
+                        if (!styleId) {
+                          updatePhotoEntry(index, { styleOverride: null });
+                        } else {
+                          const style = STYLES.find((s) => s.id === styleId) || null;
+                          updatePhotoEntry(index, { styleOverride: style });
+                        }
+                      }}
+                      className="w-full text-sm font-light border border-foreground/10 rounded-lg px-3 py-2 bg-background focus:border-foreground focus:outline-none transition-colors"
+                      data-testid={`merchant-annotate-style-${index}`}
+                    >
+                      <option value="">Style global</option>
+                      {STYLES.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Navigation */}
+          <div className="flex items-center gap-3 pt-4">
+            <button
+              onClick={() => {
+                // Check if all photos have a style override (none needs global)
+                const allHaveOverride = photoEntries.every((e) => e.styleOverride !== null);
+                if (allHaveOverride) {
+                  // Skip global style step, go straight to review
+                  setCurrentStep("review");
+                } else {
+                  // Need global style for photos without override
+                  setCurrentStep("style");
+                }
+              }}
+              className="px-8 py-3 bg-foreground text-background rounded-xl font-medium text-sm hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+              data-testid="merchant-next-annotate-continue"
+            >
+              Continuer
             </button>
           </div>
         </div>
@@ -743,16 +859,20 @@ export default function MerchantMode() {
                 Style global
               </h3>
               <p className="text-xs text-muted/60 font-light">
-                Appliqué à toutes les photos. Vous pourrez personnaliser par pièce ensuite.
+                Appliqu{"\u00E9"} aux photos sans style individuel.
               </p>
             </div>
             <button
-              onClick={() => setCurrentStep("info")}
+              onClick={() => setCurrentStep("annotate")}
               className="text-xs text-muted font-light hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded"
             >
               Retour
             </button>
           </div>
+
+          <p className="text-xs text-muted/60 font-light -mt-2">
+            Ce style sera appliqu{"\u00E9"} aux photos sans style individuel.
+          </p>
 
           <StylePicker
             selectedStyle={globalStyle}
@@ -787,7 +907,10 @@ export default function MerchantMode() {
               Récapitulatif
             </h3>
             <button
-              onClick={() => setCurrentStep("style")}
+              onClick={() => {
+                const allHaveOverride = photoEntries.every((e) => e.styleOverride !== null);
+                setCurrentStep(allHaveOverride ? "annotate" : "style");
+              }}
               className="text-xs text-muted font-light hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded"
             >
               Retour

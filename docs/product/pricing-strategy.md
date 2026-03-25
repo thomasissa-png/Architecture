@@ -38,7 +38,7 @@
 | **Découverte** | 4,90€ | 5 | 0,98€ | 0,10€ | 4,40€ | 90% | Léa — test ponctuel, 1 appartement |
 | **Starter** | 14,90€ | 20 | 0,745€ | 0,10€ | 12,90€ | 87% | Léa régulière / Claire découverte |
 | **Pro** | 29€ | 50 | 0,58€ | 0,10€ | 24,00€ | 83% | **Claire — volume mensuel normal** |
-| **Studio** | 69€ | 150 | 0,46€ | 0,10€ | 54,00€ | 78% | Thomas / agences — gros volumes |
+| ~~**Studio**~~ | ~~69€~~ | ~~150~~ | ~~0,46€~~ | ~~0,10€~~ | ~~54,00€~~ | ~~78%~~ | ~~Thomas / agences — gros volumes~~ — **SUPPRIMÉ (2026-03-25)** |
 
 > Prix HT. TVA 20% applicable pour les particuliers. Claire et Thomas récupèrent la TVA (usage professionnel).
 
@@ -51,22 +51,24 @@
 
 #### Feature gating par pack
 
-| Feature | Gratuit | Découverte | Starter | Pro | Studio |
-|---|---|---|---|---|---|
-| Générations standard (12 styles) | 3 | 5 | 20 | 50 | 150 |
-| Itérations par photo (F1) | 0 | 0 | 1 | 3 | 5 |
-| Type de pièce (F2) | Oui | Oui | Oui | Oui | Oui |
-| Mode Extérieur (F3) | Oui | Oui | Oui | Oui | Oui |
-| Mode Marchand (F4) | Non | Non | Non | Oui (max 10 photos/dossier) | Oui (max 15 photos) |
-| Mode Décorateur — Shopping list (F5) | Non | Non | Non | Oui (+1 crédit/liste) | Oui (+1 crédit/liste) |
-| **Annonce publique (F6)** | **Non** | **Non** | **Non** | **Oui (illimité)** | **Oui (illimité)** |
-| Export PDF | Non | Non | Non | Oui | Oui |
-| Lien partageable | Non | Non | Oui (7j) | Oui (30j) | Oui (90j) |
-| Téléchargement HD | Oui | Oui | Oui | Oui | Oui |
+| Feature | Gratuit | Découverte | Starter | Pro |
+|---|---|---|---|---|
+| Générations standard (12 styles) | 3 | 5 | 20 | 50 |
+| Itérations par photo (F1) | 0 | 0 | 1 | 3 |
+| Type de pièce (F2) | Oui | Oui | Oui | Oui |
+| Mode Extérieur (F3) | Oui | Oui | Oui | Oui |
+| Mode Marchand (F4) | Non | Non | Non | Oui (max 15 photos/dossier) |
+| Mode Décorateur — Shopping list (F5) | Non | Non | Non | Oui (+1 crédit/liste) |
+| **Annonce publique (F6)** | **Non** | **Non** | **Non** | **Oui (illimité)** |
+| Export PDF | Non | Non | Non | Oui |
+| Lien partageable | Non | Non | Oui (7j) | Oui (30j) |
+| Téléchargement HD | Oui | Oui | Oui | Oui |
 
-**Justification du gating F4/F5 sur Pro+ uniquement :** F4 (Mode Marchand) et F5 (Décorateur) ont un coût marginal plus élevé (génération PDF, shopping list GPT-4.1 ~0,13€ vs 0,10€). Réserver ces features aux packs Pro et Studio crée un incitatif clair à monter en gamme pour Thomas et les agences. Le Starter couvre le besoin de Léa et de Claire en phase découverte.
+> **Note (2026-03-25) :** Le pack Studio (69€/150 crédits) a été supprimé. Les features anciennement réservées Studio (15 photos/dossier, 5 itérations, lien 90j, support dédié) sont soit absorbées par Pro (15 photos/dossier), soit abandonnées (support dédié, 5 itérations). La grille passe de 4 à 3 packs.
 
-**Justification du gating F6 (Annonce publique) sur Pro+ uniquement :** F6 a un coût API nul (aucune génération IA, juste affichage de données existantes + ZIP client-side). Son gating sur Pro+ est justifié non pas par le coût marginal, mais par la cohérence du positionnement : F6 est une feature pro immobilier (Thomas, agences) qui n'a pas de sens pour Léa (pas de bien à vendre) ni pour Claire dans sa phase découverte. Inclure F6 dans Pro/Studio renforce la valeur perçue de ces packs sans friction supplémentaire. C'est un argument de vente : "Pro inclut vos dossiers PDF + vos pages d'annonce publique + le partage 30j."
+**Justification du gating F4/F5 sur Pro uniquement :** F4 (Mode Marchand) et F5 (Décorateur) ont un coût marginal plus élevé (génération PDF, shopping list GPT-4.1 ~0,13€ vs 0,10€). Réserver ces features au pack Pro crée un incitatif clair à monter en gamme pour Thomas et les agences. Le Starter couvre le besoin de Léa et de Claire en phase découverte.
+
+**Justification du gating F6 (Annonce publique) sur Pro uniquement :** F6 a un coût API nul (aucune génération IA, juste affichage de données existantes + ZIP client-side). Son gating sur Pro est justifié non pas par le coût marginal, mais par la cohérence du positionnement : F6 est une feature pro immobilier (Thomas, agences) qui n'a pas de sens pour Léa (pas de bien à vendre) ni pour Claire dans sa phase découverte. Inclure F6 dans Pro renforce la valeur perçue du pack sans friction supplémentaire. C'est un argument de vente : "Pro inclut vos dossiers PDF + vos pages d'annonce publique + le partage 30j."
 
 ---
 
@@ -130,16 +132,16 @@ Le volume discount cible les agences immobilières (persona secondaire) qui trai
 - Coût infra fixe mensuel : 50€ (Replit + PostgreSQL)
 - Coût acquisition phase 1 : 0€ (SEO organique + bouche-à-oreille)
 - Taux de conversion gratuit → payant : [HYPOTHÈSE : 8-12% — benchmark SaaS B2C similaires]
-- ARPU cible (mix de packs) : [HYPOTHÈSE : 22-28€ par transaction — mix Starter 40% + Pro 45% + Studio 15%]
+- ARPU cible (mix de packs) : [HYPOTHÈSE : 18-24€ par transaction — mix Découverte 15% + Starter 45% + Pro 40%]
 - Croissance mensuelle base d'utilisateurs : [HYPOTHÈSE : +30% par mois en phase de lancement, décroissant à +15% au mois 4-6]
 
 ### 4.2 ARPU estimé
 
 | Mix de ventes | Calcul | ARPU |
 |---|---|---|
-| Starter 40% + Pro 45% + Studio 15% | (14,90×0,40) + (29×0,45) + (69×0,15) | 5,96 + 13,05 + 10,35 = **29,36€** |
+| Découverte 15% + Starter 45% + Pro 40% | (4,90×0,15) + (14,90×0,45) + (29×0,40) | 0,74 + 6,71 + 11,60 = **19,04€** |
 
-[HYPOTHÈSE : mix basé sur le comportement habituel des utilisateurs SaaS B2B/B2C — les pros tendent vers Pro et Studio, les particuliers vers Starter]
+[HYPOTHÈSE : mix basé sur le comportement habituel des utilisateurs SaaS B2B/B2C — les pros tendent vers Pro, les particuliers vers Starter. Pack Studio supprimé le 2026-03-25.]
 
 ### 4.3 Projections MRR — 3 scénarios
 
@@ -154,7 +156,7 @@ Le volume discount cible les agences immobilières (persona secondaire) qui trai
 ### 4.4 Hypothèses à valider
 
 1. [HYPOTHÈSE] Taux de conversion gratuit → payant : 8-12%. Source : benchmarks SaaS B2C. À mesurer dès le premier mois post-lancement.
-2. [HYPOTHÈSE] ARPU 22-29€. Dépend fortement du ratio Starter/Pro/Studio réel — à ajuster après 30 premiers achats.
+2. [HYPOTHÈSE] ARPU ~19€. Dépend fortement du ratio Découverte/Starter/Pro réel — à ajuster après 30 premiers achats.
 3. [HYPOTHÈSE] Croissance +30%/mois. Fragile sans donnée de référence. À revoir si le SEO prend plus de 3 mois à indexer.
 4. [HYPOTHÈSE] Volume discount F4 (-17%/-24%). Aucune validation terrain avec Thomas. À ne pas implémenter avant 3 entretiens marchands de biens.
 5. [HYPOTHÈSE] Coût infra 50€/mois. À reconfirmer avec @infrastructure sur la configuration Replit actuelle.
@@ -170,19 +172,19 @@ Le volume discount cible les agences immobilières (persona secondaire) qui trai
 | Pack mis en avant | Pro 29€ / 50 crédits | Ancrage psychologique, profil Claire (usage mensuel normal) |
 | F4 Mode Marchand | 29€/dossier fixe | ROI vs home stager humain (200-500€), marge 94% |
 | F5 Mode Décorateur | 9€/dossier fixe | Micro-transaction, marge >99%, add-on post-génération |
-| Feature gating F4/F5 | Pro et Studio uniquement | Coût marginal supérieur, incitatif montée en gamme |
-| F6 Annonce publique | Inclus Pro/Studio (0€ supplémentaire) | Coût API nul, extension naturelle du dossier PDF, canal d'acquisition organique (footer "Généré par Versiroom"), renforce la valeur Pro |
+| Feature gating F4/F5 | Pro uniquement | Coût marginal supérieur, incitatif montée en gamme |
+| F6 Annonce publique | Inclus Pro (0€ supplémentaire) | Coût API nul, extension naturelle du dossier PDF, canal d'acquisition organique (footer "Généré par Versiroom"), renforce la valeur Pro |
+| ~~Pack Studio~~ | ~~69€ / 150 crédits~~ | **SUPPRIMÉ (2026-03-25)** — simplifie la grille, Pro absorbe les features clés |
 | Volume discount F4 | [HYPOTHÈSE] À valider avant implémentation | Risque de complexité pricing sans validation terrain |
 
 ---
 
 **Handoff → @growth**
 - Fichiers produits : `/home/user/Architecture/docs/product/pricing-strategy.md`
-- Décisions prises : packages one-shot (4 tiers), 3 générations gratuites sans CB, F4 à 29€/dossier, F5 à 9€/dossier, Pack Pro mis en avant comme ancrage
+- Décisions prises : packages one-shot (3 tiers — Studio supprimé 2026-03-25), 3 générations gratuites sans CB, F4 à 29€/dossier, F5 à 9€/dossier, Pack Pro mis en avant comme ancrage
 - Points d'attention pour @growth :
   - Le taux de conversion gratuit → payant (8-12%) est une hypothèse critique — instrumenter dès J1 post-lancement auth
   - Thomas est le profil le plus sensible au ROI (200-500€ → 29€) — l'argument dossier marchand est à traiter dans les séquences d'activation et les ads si paid activé
-  - Le Pack Studio (69€) cible les agences immobilières (persona secondaire) — identifier un canal B2B dédié (LinkedIn, partenariats portails immo)
   - Aucun concurrent français ne propose de dossier PDF automatisé — à exploiter dans les contenus SEO et les démos
 - Hypothèses à valider en priorité : taux de conversion, ARPU réel post 30 premiers achats, volume discount F4
 

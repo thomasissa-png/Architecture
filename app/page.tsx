@@ -1442,7 +1442,7 @@ export default function Home() {
             Payez uniquement ce que vous utilisez &mdash; sans abonnement.
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
             {/* Découverte */}
             <div className="border border-foreground/10 rounded-2xl p-6 text-center bg-background">
               <p className="text-xs text-muted font-medium uppercase tracking-widest mb-3">D&eacute;couverte</p>
@@ -1516,34 +1516,6 @@ export default function Home() {
               </a>
             </div>
 
-            {/* Studio */}
-            <div className="border border-foreground/10 rounded-2xl p-6 text-center bg-background">
-              <p className="text-xs text-muted font-medium uppercase tracking-widest mb-3">Studio</p>
-              <p className="text-3xl font-bold text-foreground mb-0.5">69&euro;</p>
-              <p className="text-xs text-muted font-light mb-1">150 cr&eacute;dits &middot; 0,46&euro;/photo</p>
-              <p className="text-[11px] text-muted font-light mb-5">TTC &middot; TVA 20% incluse</p>
-              <ul className="text-sm text-muted font-light space-y-2 text-left mb-6">
-                <li className="flex items-start gap-2">
-                  <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  5 it&eacute;rations par photo
-                </li>
-                <li className="flex items-start gap-2">
-                  <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  <span><strong className="font-medium text-foreground">Mode Marchand</strong> &mdash; 15 photos/dossier</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  Annonces immobili&egrave;res illimit&eacute;es
-                </li>
-                <li className="flex items-start gap-2">
-                  <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  Lien partageable 90 jours + support d&eacute;di&eacute;
-                </li>
-              </ul>
-              <a href="mailto:contact@versiroom.fr" className="block w-full text-center border border-foreground/10 text-foreground px-4 py-2.5 rounded-full text-sm font-medium hover:bg-foreground/5 transition-colors">
-                Nous contacter
-              </a>
-            </div>
           </div>
 
           <p className="text-center text-[11px] text-muted font-light mt-6">
