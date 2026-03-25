@@ -119,16 +119,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr">
-      <head>
+      <body className="antialiased">
+        {/* JSON-LD schemas — placed in body to avoid hydration mismatch with Sentry */}
         {jsonLd.map((schema, i) => (
           <script
-            key={i}
+            key={`jsonld-${i}`}
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
           />
         ))}
-      </head>
-      <body className="antialiased">
         <Providers>{children}</Providers>
       </body>
     </html>
