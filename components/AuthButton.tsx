@@ -7,6 +7,7 @@ import AuthModal from "@/components/AuthModal";
 export default function AuthButton() {
   const { data: session, status } = useSession();
   const [credits, setCredits] = useState<number | null>(null);
+  const [hasPro, setHasPro] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -17,6 +18,7 @@ export default function AuthButton() {
       if (res.ok) {
         const data = await res.json();
         setCredits(data.credits);
+        setHasPro(data.hasPro === true);
       }
     } catch {
       // Silently fail — credits will show as loading
@@ -125,8 +127,21 @@ export default function AuthButton() {
           </div>
 
           <div className="px-4 py-3 border-b border-foreground/5">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-xs text-muted font-light">Compte</span>
+              <span
+                className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                  hasPro
+                    ? "bg-sage/15 text-sage"
+                    : "bg-foreground/5 text-muted"
+                }`}
+                data-testid="account-level"
+              >
+                {hasPro ? "Pro" : "Gratuit"}
+              </span>
+            </div>
             <div className="flex items-center justify-between">
-              <span className="text-xs text-muted font-light">Credits</span>
+              <span className="text-xs text-muted font-light">Cr{"\u00E9"}dits</span>
               <span className="text-sm font-medium text-foreground">
                 {credits !== null ? credits : "..."}
               </span>

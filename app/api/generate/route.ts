@@ -1189,6 +1189,33 @@ export async function POST(request: NextRequest) {
         outdoorSubtype: cached.meta.outdoorSubtype ?? undefined,
       }).catch((err) => console.error("DB log (iteration) failed:", err));
 
+      // Fire-and-forget: save iteration as a NEW user_photos entry (Bug 4 fix)
+      if (session?.user?.id) {
+        (async () => {
+          try {
+            const { saveImage: saveImg } = await import("@/lib/db");
+            const ts = Date.now();
+            const [outputKey, pass1ImageKey] = await Promise.all([
+              saveImg(outputBase64, `user_photo_iter${iterationNumber}_${ts}_output`).catch(() => null),
+              cached.imageBase64 ? saveImg(cached.imageBase64, `user_photo_iter${iterationNumber}_${ts}_pass1`).catch(() => null) : null,
+            ]);
+            await saveUserPhoto({
+              userId: session.user.id,
+              inputImageKey: null, // original input not available in iteration cache
+              outputImageKey: outputKey,
+              pass1ImageKey: pass1ImageKey,
+              styleId: cached.meta.styleId || null,
+              roomType: cached.meta.isOutdoor ? null : (cached.meta.roomType || null),
+              roomLabel: null,
+              isOutdoor: cached.meta.isOutdoor || false,
+              propertyId: null,
+            });
+          } catch (err) {
+            console.error("saveUserPhoto (iteration) failed:", err);
+          }
+        })();
+      }
+
       // Generation succeeded — credit was already decremented optimistically
 
       return response;
