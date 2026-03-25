@@ -211,7 +211,7 @@ export default function MesBiensPage() {
 
         {/* Create form */}
         {showCreateForm && (
-          <div className="mb-8 bg-foreground/[0.02] border border-foreground/5 rounded-2xl p-5">
+          <div className="mb-8 bg-foreground/[0.02] border border-foreground/5 rounded-2xl p-5" data-testid="new-bien-form">
             <h2 className="text-sm font-medium text-foreground mb-4">Ajouter un bien</h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -324,12 +324,13 @@ export default function MesBiensPage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" data-testid="biens-list">
             {properties.map((property) => (
               <a
                 key={property.id}
                 href={`/mes-biens/${property.id}`}
                 className="block bg-foreground/[0.02] border border-foreground/5 rounded-2xl p-5 hover:border-sage/30 transition-all group"
+                data-testid="bien-card"
               >
                 <h3 className="text-sm font-medium text-foreground group-hover:text-sage transition-colors truncate">
                   {property.address_normalized || property.address_raw || "Bien sans adresse"}

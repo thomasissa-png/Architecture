@@ -133,13 +133,38 @@ export default function AuthButton() {
             )}
           </div>
 
+          {/* Navigation marchand (visible on mobile) */}
+          <div className="px-2 py-1 sm:hidden border-b border-foreground/5">
+            <a
+              href="/mes-biens"
+              className="block px-3 py-2 text-sm text-muted font-light hover:text-foreground hover:bg-foreground/5 rounded-xl transition-colors"
+              onClick={() => setMenuOpen(false)}
+            >
+              Mes biens
+            </a>
+            <a
+              href="/ma-galerie"
+              className="block px-3 py-2 text-sm text-muted font-light hover:text-foreground hover:bg-foreground/5 rounded-xl transition-colors"
+              onClick={() => setMenuOpen(false)}
+            >
+              Ma galerie
+            </a>
+            <a
+              href="/mes-dossiers"
+              className="block px-3 py-2 text-sm text-muted font-light hover:text-foreground hover:bg-foreground/5 rounded-xl transition-colors"
+              onClick={() => setMenuOpen(false)}
+            >
+              Mes dossiers
+            </a>
+          </div>
+
           <div className="px-2 py-1">
             <a
               href="/pricing"
               className="block px-3 py-2 text-sm text-muted font-light hover:text-foreground hover:bg-foreground/5 rounded-xl transition-colors"
               onClick={() => setMenuOpen(false)}
             >
-              Acheter des credits
+              Acheter des crédits
             </a>
             <button
               onClick={() => {
@@ -148,7 +173,7 @@ export default function AuthButton() {
               }}
               className="w-full text-left px-3 py-2 text-sm text-muted font-light hover:text-foreground hover:bg-foreground/5 rounded-xl transition-colors"
             >
-              Se deconnecter
+              Se déconnecter
             </button>
           </div>
         </div>

@@ -169,7 +169,7 @@ export default function MesDossiersPage() {
 
           {/* Dossier list */}
           {!isLoading && dossiers.length > 0 && (
-            <div className="space-y-3">
+            <div className="space-y-3" data-testid="dossiers-list">
               {dossiers.map((dossier) => {
                 const statusInfo = STATUS_LABELS[dossier.status] || STATUS_LABELS.draft;
 
@@ -178,6 +178,7 @@ export default function MesDossiersPage() {
                     key={dossier.uuid}
                     href={`/dossier/${dossier.uuid}`}
                     className="block p-5 rounded-2xl border border-[var(--border)] hover:border-[var(--foreground)]/15 bg-[var(--foreground)]/[0.01] hover:bg-[var(--foreground)]/[0.03] transition-all group"
+                    data-testid="dossier-card"
                   >
                     <div className="flex items-start justify-between gap-4">
                       {/* Left: info */}

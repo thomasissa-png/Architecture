@@ -124,7 +124,7 @@ export default async function DossierPage({ params }: PageProps) {
             </span>
           )}
           <span className="text-xs text-muted font-light">
-            {hasMerchant && profile?.raison_sociale ? profile.raison_sociale : "Dossier partage"}
+            {hasMerchant && profile?.raison_sociale ? profile.raison_sociale : "Dossier partagé"}
           </span>
         </div>
       </header>

@@ -169,6 +169,7 @@ export default function GaleriePage() {
               value={filterStyle}
               onChange={(e) => { setFilterStyle(e.target.value); setIsLoading(true); }}
               className="text-xs font-light bg-foreground/5 border-0 rounded-xl px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+              data-testid="filter-style"
             >
               <option value="">Tous les styles</option>
               {Object.entries(STYLE_LABELS).map(([key, label]) => (
@@ -180,6 +181,7 @@ export default function GaleriePage() {
               value={filterRoomType}
               onChange={(e) => { setFilterRoomType(e.target.value); setIsLoading(true); }}
               className="text-xs font-light bg-foreground/5 border-0 rounded-xl px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+              data-testid="filter-room-type"
             >
               <option value="">Toutes les pi{"\u00E8"}ces</option>
               <option value="living_room">Salon</option>
@@ -215,11 +217,12 @@ export default function GaleriePage() {
             </a>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4" data-testid="galerie-grid">
             {photos.map((photo) => (
               <div
                 key={photo.id}
                 className="group relative bg-foreground/[0.02] rounded-2xl overflow-hidden border border-foreground/5 hover:border-sage/30 transition-all cursor-pointer"
+                data-testid="photo-card"
                 onClick={() => setSelectedPhoto(photo)}
               >
                 {/* Thumbnail */}
@@ -313,7 +316,7 @@ export default function GaleriePage() {
               </div>
 
               {/* Before / After */}
-              <div className="grid grid-cols-2 gap-3 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                 {selectedPhoto.input_image_key && (
                   <div>
                     <p className="text-[10px] text-muted font-light mb-1">Avant</p>

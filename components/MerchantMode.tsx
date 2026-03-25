@@ -731,7 +731,7 @@ export default function MerchantMode() {
                 className="px-8 py-3 bg-[var(--foreground)] text-[var(--background)] rounded-xl font-medium text-sm hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/50 focus-visible:ring-offset-2"
                 data-testid="merchant-next-photos"
               >
-                Etape suivante
+                {"\u00C9"}tape suivante
               </button>
               <span className="text-xs text-[var(--muted)] font-light">
                 {files.length} photo{files.length > 1 ? "s" : ""} — {files.length} crédit{files.length > 1 ? "s" : ""}

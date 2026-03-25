@@ -292,7 +292,7 @@ export default function PropertyDetailPage() {
         </div>
       </header>
 
-      <main className="pt-24 pb-16 px-5 sm:px-8 max-w-6xl mx-auto">
+      <main className="pt-24 pb-16 px-5 sm:px-8 max-w-6xl mx-auto" data-testid="bien-detail">
         {/* Breadcrumb */}
         <div className="mb-6">
           <a href="/mes-biens" className="text-xs text-muted font-light hover:text-foreground transition-colors">
@@ -419,7 +419,7 @@ export default function PropertyDetailPage() {
                 href={`/?propertyId=${propertyId}`}
                 className="text-xs bg-sage text-white px-3 py-1.5 rounded-full font-medium hover:bg-sage/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
               >
-                + Generer pour ce bien
+                + Générer pour ce bien
               </a>
             </div>
           </div>
@@ -428,12 +428,12 @@ export default function PropertyDetailPage() {
             <div className="text-center py-12 bg-foreground/[0.02] rounded-2xl border border-foreground/5">
               <p className="text-muted font-light text-sm">Aucune photo associ&#233;e &#224; ce bien.</p>
               <p className="text-xs text-muted/50 font-light mt-1">
-                Associez des photos depuis votre galerie ou generez-en de nouvelles.
+                Associez des photos depuis votre galerie ou générez-en de nouvelles.
               </p>
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3" data-testid="bien-photos">
                 {photos.map((photo) => (
                   <div
                     key={photo.id}
@@ -476,6 +476,7 @@ export default function PropertyDetailPage() {
                     setDossierResult(null);
                   }}
                   className="text-xs bg-foreground text-background px-4 py-2 rounded-full font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                  data-testid="create-dossier-btn"
                 >
                   Cr&#233;er un dossier
                 </button>

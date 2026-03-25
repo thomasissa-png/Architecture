@@ -85,13 +85,13 @@ export default function DossierResult({
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {/* WhatsApp share */}
           {dossierUuid && (
             <button
               onClick={handleWhatsAppShare}
               aria-label="Partager via WhatsApp"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-medium bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#25D366]/50 focus-visible:ring-offset-2"
+              className="inline-flex items-center gap-1.5 px-2 sm:px-4 py-2 rounded-xl text-xs font-medium bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#25D366]/50 focus-visible:ring-offset-2"
               data-testid="dossier-share-whatsapp"
             >
               <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
@@ -105,7 +105,7 @@ export default function DossierResult({
           <button
             onClick={onShareLink}
             aria-label="Partager avec un acquereur"
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-medium bg-[var(--foreground)]/5 text-[var(--foreground)] hover:bg-[var(--foreground)]/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/50 focus-visible:ring-offset-2"
+            className="inline-flex items-center gap-1.5 px-2 sm:px-4 py-2 rounded-xl text-xs font-medium bg-[var(--foreground)]/5 text-[var(--foreground)] hover:bg-[var(--foreground)]/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/50 focus-visible:ring-offset-2"
             data-testid="dossier-share-link"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -119,7 +119,7 @@ export default function DossierResult({
           <button
             onClick={onDownloadPdf}
             aria-label="Télécharger le PDF du dossier"
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-medium bg-[var(--sage)] text-white hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/50 focus-visible:ring-offset-2"
+            className="inline-flex items-center gap-1.5 px-2 sm:px-4 py-2 rounded-xl text-xs font-medium bg-[var(--sage)] text-white hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/50 focus-visible:ring-offset-2"
             data-testid="dossier-download-pdf"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -196,7 +196,7 @@ export default function DossierResult({
                 <a
                   href={`/api/logs/image?path=${encodeURIComponent(photo.outputImageKey)}`}
                   download={`${photo.roomLabel || 'photo'}-apres.jpg`}
-                  className="text-xs text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+                  className="min-h-[44px] inline-flex items-center text-xs text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
                 >
                   Télécharger HD
                 </a>

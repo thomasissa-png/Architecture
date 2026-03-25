@@ -4,7 +4,7 @@
  * PhotoAssociator — Composant discret affiche apres une generation reussie
  * pour permettre au marchand d'associer la photo a un bien existant.
  *
- * Affiche un popover leger "Associer a un bien ?" avec la liste des biens
+ * Affiche un popover leger "Associer à un bien ?" avec la liste des biens
  * et un bouton "+ Nouveau bien" + "Ignorer".
  */
 
@@ -68,27 +68,27 @@ export default function PhotoAssociator({ photoId, onDismiss }: PhotoAssociatorP
 
   return (
     <div className="mt-3 bg-foreground/[0.03] border border-foreground/5 rounded-2xl p-3">
-      <p className="text-xs text-muted font-light mb-2">Associer a un bien ?</p>
+      <p className="text-xs text-muted font-light mb-2">Associer à un bien ?</p>
       <div className="flex flex-wrap gap-2">
         {properties.map((p) => (
           <button
             key={p.id}
             onClick={() => handleAssociate(p.id)}
             disabled={isAssociating}
-            className="text-[11px] font-light bg-foreground/5 text-foreground px-3 py-1.5 rounded-xl hover:bg-sage/10 hover:text-sage transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+            className="min-h-[44px] text-[11px] font-light bg-foreground/5 text-foreground px-3 py-1.5 rounded-xl hover:bg-sage/10 hover:text-sage transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
           >
             {(p.address_normalized || p.address_raw || p.city || "Bien sans adresse").substring(0, 30)}
           </button>
         ))}
         <a
           href="/mes-biens?create=true"
-          className="text-[11px] font-light bg-sage/10 text-sage px-3 py-1.5 rounded-xl hover:bg-sage/20 transition-colors"
+          className="min-h-[44px] inline-flex items-center text-[11px] font-light bg-sage/10 text-sage px-3 py-1.5 rounded-xl hover:bg-sage/20 transition-colors"
         >
           + Nouveau bien
         </a>
         <button
           onClick={onDismiss}
-          className="text-[11px] font-light text-muted px-3 py-1.5 rounded-xl hover:text-foreground transition-colors"
+          className="min-h-[44px] inline-flex items-center text-[11px] font-light text-muted px-3 py-1.5 rounded-xl hover:text-foreground transition-colors"
         >
           Ignorer
         </button>
