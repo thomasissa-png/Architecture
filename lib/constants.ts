@@ -19,6 +19,19 @@ export const STYLE_LABELS: Record<string, string> = {
   custom: "Personnalisé",
 };
 
+export const ROOM_TYPE_LABELS: Record<string, string> = {
+  living_room: "Salon",
+  bedroom: "Chambre",
+  kitchen: "Cuisine",
+  bathroom: "Salle de bain",
+  office: "Bureau",
+  dining_room: "Salle \u00E0 manger",
+  hallway: "Entr\u00E9e",
+  terrace: "Terrasse",
+  balcony: "Balcon",
+  garden: "Jardin",
+};
+
 export const TYPE_LABELS: Record<string, string> = {
   appartement: "Appartement",
   maison: "Maison",

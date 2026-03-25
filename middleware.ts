@@ -13,6 +13,11 @@ export async function middleware(request: NextRequest) {
 
   if (!isProtected) return NextResponse.next();
 
+  // Guard: warn if NEXTAUTH_SECRET is missing in production (deny-all instead of silent fail)
+  if (process.env.NODE_ENV === "production" && !process.env.NEXTAUTH_SECRET) {
+    console.error("[middleware] NEXTAUTH_SECRET is not defined in production — all protected routes will deny access.");
+  }
+
   const token = await getToken({
     req: request,
     secret: process.env.NEXTAUTH_SECRET || (process.env.NODE_ENV === "production" ? undefined : "dev-secret-change-me"),

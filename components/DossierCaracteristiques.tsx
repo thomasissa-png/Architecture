@@ -82,7 +82,7 @@ export default function DossierCaracteristiques({ property }: DossierCaracterist
         {/* Etage + ascenseur */}
         {property.etage != null && (
           <span className="text-xs bg-foreground/5 text-foreground px-3 py-1.5 rounded-xl font-light" data-testid="dossier-etage">
-            {property.etage === 0 ? "RDC" : `${property.etage}e {"\u00E9"}tage`}
+            {property.etage === 0 ? "RDC" : `${property.etage}e \u00E9tage`}
             {property.ascenseur ? " \u2014 ascenseur" : ""}
           </span>
         )}

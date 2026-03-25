@@ -4,6 +4,7 @@
  * Fiche d'un bien — detail, photos associees, creation de dossier.
  */
 
+import React from "react";
 import { useSession } from "next-auth/react";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams } from "next/navigation";
@@ -107,7 +108,7 @@ export default function PropertyDetailPage() {
   const dossierModalRef = useRef<HTMLDivElement>(null);
 
   // Inline toast (replaces alert())
-  const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [toastMsg, setToastMsg] = useState<React.ReactNode | null>(null);
   useEffect(() => {
     if (toastMsg) {
       const t = setTimeout(() => setToastMsg(null), 4000);
@@ -385,6 +386,13 @@ export default function PropertyDetailPage() {
       if (res.ok) {
         const data = await res.json();
         window.location.href = `/annonce/${data.uuid}`;
+      } else if (res.status === 403) {
+        setToastMsg(
+          <span>
+            Cette fonctionnalit{"\u00e9"} est r{"\u00e9"}serv{"\u00e9"}e au Pack Pro.{" "}
+            <a href="/pricing" className="underline font-semibold">Voir les tarifs</a>
+          </span>
+        );
       } else {
         const data = await res.json();
         setToastMsg(data.error || "Erreur lors de la cr\u00e9ation de l\u2019annonce.");
@@ -599,8 +607,9 @@ export default function PropertyDetailPage() {
                 ))}
               </select>
               {!compInfo.dpeClasse && (
-                <p className="text-[11px] text-red-500/80 font-light mt-0.5" data-testid="dpe-warning">
-                  Requis par la loi
+                <p className="text-[11px] text-red-500/80 font-light mt-0.5 flex items-center gap-1" data-testid="dpe-warning">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />
+                  DPE requis par la loi
                 </p>
               )}
             </div>
@@ -868,6 +877,11 @@ export default function PropertyDetailPage() {
                 >
                   {isCreatingAnnonce ? "Cr\u00e9ation..." : "Cr\u00e9er une annonce (inclus Pack Pro)"}
                 </button>
+                {!compInfo.dpeClasse && (
+                  <p className="text-[11px] text-amber-600 font-light mt-1" data-testid="dpe-annonce-warning">
+                    Pensez {"\u00E0"} renseigner le DPE avant de publier votre annonce.
+                  </p>
+                )}
                 {activeAnnonceUuid && (
                   <button
                     onClick={handleArchiveAnnonce}

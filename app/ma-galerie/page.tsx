@@ -333,7 +333,7 @@ export default function GaleriePage() {
                 {/* Association dropdown */}
                 {associatingPhotoId === photo.id && (
                   <div
-                    className="absolute top-10 right-2 bg-background border border-foreground/10 rounded-xl shadow-lg p-2 z-10 min-w-[200px]"
+                    className="absolute top-10 right-0 sm:right-2 bg-background border border-foreground/10 rounded-xl shadow-lg p-2 z-10 min-w-[200px] max-w-[calc(100vw-2rem)]"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <p className="text-xs text-muted font-light px-2 pb-1 border-b border-foreground/5">Associer &#224; un bien :</p>

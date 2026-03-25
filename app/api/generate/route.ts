@@ -25,7 +25,7 @@ import {
  * Used by audit agents (Yann Duval, Lucas Moreau) to correlate generation quality with prompt version.
  * History: v1-v5 (Sprints 1-7), v6-v10 (Sprints 8-12), v11-v15 (Sprints 13-16), v16-v17 (Sprint 17),
  * v18 (current — Sprint 18+, post all fixes) */
-export const PROMPT_VERSION = "v18";
+export const PROMPT_VERSION = "v19";
 
 // ─── Timeout wrapper for external API calls ─────────────────────────
 const API_TIMEOUT_MS = 120_000;
@@ -558,9 +558,9 @@ function buildFurnitureFluxPrompt(furniturePrompt: string, roomTypeId?: string |
 const FLUX_NEGATIVE_PROMPT =
   "distorted perspective, fisheye, stretched walls, shallow depth of field, bokeh, cartoon, illustration, 3D render, CGI, plastic, watermark, text, blurry, overexposed windows, extra windows, extra doors, floating furniture, dangling cables, junction box, unfinished floor, overly clean, flat lighting, color grading, warm color shift, cool color shift";
 
-// Outdoor negative prompt — prevents indoor artifacts in outdoor generations
+// Outdoor negative prompt — prevents indoor artifacts + indoor plants in outdoor generations
 const OUTDOOR_NEGATIVE_PROMPT =
-  "indoor sofa, area rug, floor lamp, ceiling light, chandelier, curtains, drapes, wallpaper, baseboard, interior door, radiator, electrical outlet, kitchen appliances, ceiling, roof, indoor plant pot on parquet, distorted perspective, fisheye, stretched walls, cartoon, illustration, 3D render, CGI, watermark, text, blurry, color grading, warm color shift, cool color shift, golden hour filter";
+  "indoor sofa, area rug, floor lamp, ceiling light, chandelier, curtains, drapes, wallpaper, baseboard, interior door, radiator, electrical outlet, kitchen appliances, ceiling, roof, indoor plant pot on parquet, monstera outdoors, fiddle-leaf fig outdoors, snake plant outdoors, string of pearls outdoors, distorted perspective, fisheye, stretched walls, cartoon, illustration, 3D render, CGI, watermark, text, blurry, color grading, warm color shift, cool color shift, golden hour filter";
 
 // ── Outdoor Pass 1: Ground surface finishing (no ceiling, no luminaire) ──
 function buildOutdoorSurfacesResponsesPrompt(
@@ -573,6 +573,7 @@ function buildOutdoorSurfacesResponsesPrompt(
     `Apply this ground surface finish: ${surfacePrompt}.`,
     subtypeOverride ? subtypeOverride : "",
     "Preserve all fixed ground elements: metal access covers, drain grates, manholes, utility plates. Apply the new ground material AROUND these elements, not over them.",
+    "Preserve all expansion joints, step nosings, level changes, and threshold transitions in the ground surface.",
     "Preserve all existing guard rails, exterior walls, facades, gates and fences. Do not add or remove any vertical structure.",
     "Keep the existing wall color and texture — do not warm, smooth, or repaint walls unless the surface prompt explicitly names a wall finish.",
     "Glass blocks and skylights keep their translucency — light passes through them in the output.",
@@ -594,6 +595,7 @@ function buildOutdoorSurfacesFluxPrompt(
     "Open-air — no ceiling, sky preserved as-is. Preserve blown-out sky highlights.",
     subtypeOverride ? subtypeOverride : "",
     "Preserve fixed ground elements (metal covers, drain grates, manholes) — apply new ground material around them.",
+    "Preserve all expansion joints, step nosings, level changes, threshold transitions.",
     "Preserve all guard rails, exterior walls, facades, gates, fences. No new vertical structures.",
     "Keep existing wall color and texture — do not warm, smooth, or repaint walls.",
     "Glass blocks and skylights keep their translucency.",
@@ -616,6 +618,9 @@ function buildOutdoorFurnitureResponsesPrompt(
     `Add outdoor furniture and decoration to this photo of a finished outdoor space: ${furniturePrompt}.`,
     subtypeOverride ? subtypeOverride : "",
     "Distribute furniture naturally across the available floor space. If space is large, create a primary seating group and a secondary accent further back.",
+    "All lighting fixtures must be OFF if the scene is in daylight — unlit lanterns, unlit string lights, no glowing bulbs, no visible flames.",
+    "All cushions, rugs, and textiles must be outdoor-rated weather-resistant (Sunbrella-type acrylic or waterproof polyester). No indoor fabric textures.",
+    "Scale all plants to match the space: on a balcony or small terrace (under 15m2) no plant exceeds 120cm total height. On a garden or large terrace, potted trees must not exceed 200cm.",
     "Do not place opaque structures (screens, shelving, A-frames) directly in front of full-height windows or glass doors.",
     "If the space has exposed overhead structure (beams, pergola, rafters), consider hanging one trailing plant or lantern from it to activate the vertical dimension — only if clearance allows.",
     "Ground surfaces are LOCKED — same material, color, texture. Guard rails, walls, facades unchanged.",
@@ -636,6 +641,9 @@ function buildOutdoorFurnitureFluxPrompt(
     `${furniturePrompt}, placed naturally across the available floor space of this finished outdoor area.`,
     subtypeOverride ? subtypeOverride : "",
     "Primary seating group in foreground, secondary accent further back if space allows.",
+    "All lighting fixtures OFF in daylight — unlit lanterns, unlit string lights, no glowing bulbs.",
+    "All textiles outdoor-rated: Sunbrella or waterproof polyester, no indoor fabrics.",
+    "Scale plants to space: balcony max 120cm, garden max 200cm potted tree height.",
     "No opaque structures (screens, shelving, A-frames) in front of full-height windows or glass doors.",
     "If exposed overhead structure (beams, pergola), consider one hanging plant or lantern if clearance allows.",
     "Ground surfaces LOCKED — same material, color, texture. Guard rails, walls, facades unchanged.",

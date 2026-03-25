@@ -15,23 +15,11 @@ import AnnoncePublicView from "@/components/AnnoncePublicView";
 import AnnonceGallery from "@/components/AnnonceGallery";
 import ContactSticky from "@/components/ContactSticky";
 import RoomNav from "@/components/RoomNav";
+import { ROOM_TYPE_LABELS } from "@/lib/constants";
 
 interface PageProps {
   params: { uuid: string };
 }
-
-const ROOM_TYPE_LABELS: Record<string, string> = {
-  living_room: "Salon",
-  bedroom: "Chambre",
-  kitchen: "Cuisine",
-  bathroom: "Salle de bain",
-  office: "Bureau",
-  dining_room: "Salle \u00E0 manger",
-  hallway: "Entr\u00E9e",
-  terrace: "Terrasse",
-  balcony: "Balcon",
-  garden: "Jardin",
-};
 
 function formatPrice(price: number): string {
   return new Intl.NumberFormat("fr-FR", {
