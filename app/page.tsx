@@ -667,24 +667,27 @@ export default function Home() {
             Versiroom pr&eacute;serve votre espace &mdash; il ne le r&eacute;invente pas.
           </p>
 
-          {/* Hero before/after — richly illustrated mock */}
+          {/* Hero before/after — real images if available, SVG fallback */}
           <div className="max-w-3xl mx-auto mb-8">
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div className="relative group">
                 <div className="aspect-[4/3] rounded-2xl overflow-hidden hero-before-scene">
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    {/* Architectural room outline */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/demo/hero-before.jpg"
+                    alt="Pi&egrave;ce vide avant home staging"
+                    className="w-full h-full object-cover"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; (e.target as HTMLImageElement).nextElementSibling?.classList.remove("hidden"); }}
+                  />
+                  <div className="hidden absolute inset-0 flex flex-col items-center justify-center">
                     <svg className="w-24 h-24 sm:w-32 sm:h-32 text-gray-400/50" viewBox="0 0 120 100" fill="none" stroke="currentColor" strokeWidth={0.8}>
-                      {/* Floor */}
                       <line x1="10" y1="80" x2="110" y2="80" />
-                      {/* Back wall */}
                       <rect x="15" y="20" width="90" height="60" rx="1" strokeDasharray="3 3" />
-                      {/* Window */}
                       <rect x="40" y="28" width="40" height="30" rx="1" />
                       <line x1="60" y1="28" x2="60" y2="58" />
                       <line x1="40" y1="43" x2="80" y2="43" />
                     </svg>
-                    <span className="text-xs text-gray-400/70 font-light mt-2">Pi&egrave;ce vide</span>
+                    <span className="text-xs text-muted font-light mt-2">Pi&egrave;ce vide</span>
                   </div>
                 </div>
                 <span className="absolute bottom-2.5 left-2.5 text-xs font-medium text-gray-400 bg-white/80 backdrop-blur-sm px-2.5 py-1 rounded-full">
@@ -693,28 +696,22 @@ export default function Home() {
               </div>
               <div className="relative group">
                 <div className="aspect-[4/3] rounded-2xl overflow-hidden hero-after-scene">
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    {/* Furnished room illustration */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/demo/hero-after.jpg"
+                    alt="Pi&egrave;ce meubl&eacute;e par Versiroom"
+                    className="w-full h-full object-cover"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; (e.target as HTMLImageElement).nextElementSibling?.classList.remove("hidden"); }}
+                  />
+                  <div className="hidden absolute inset-0 flex flex-col items-center justify-center">
                     <svg className="w-24 h-24 sm:w-32 sm:h-32 text-sage/50" viewBox="0 0 120 100" fill="none" stroke="currentColor" strokeWidth={0.8}>
-                      {/* Floor */}
                       <line x1="10" y1="80" x2="110" y2="80" />
-                      {/* Back wall */}
                       <rect x="15" y="20" width="90" height="60" rx="1" />
-                      {/* Window */}
                       <rect x="40" y="28" width="40" height="30" rx="1" />
                       <line x1="60" y1="28" x2="60" y2="58" />
-                      {/* Sofa */}
                       <rect x="22" y="62" width="36" height="12" rx="3" fill="currentColor" fillOpacity="0.15" />
                       <rect x="22" y="56" width="36" height="8" rx="2" fill="currentColor" fillOpacity="0.1" />
-                      {/* Coffee table */}
                       <rect x="62" y="68" width="16" height="8" rx="1" fill="currentColor" fillOpacity="0.12" />
-                      {/* Plant */}
-                      <circle cx="90" cy="62" r="6" fill="currentColor" fillOpacity="0.15" />
-                      <line x1="90" y1="68" x2="90" y2="76" />
-                      {/* Lamp */}
-                      <line x1="25" y1="40" x2="25" y2="56" />
-                      <path d="M20 40 L30 40 L27 35 L23 35 Z" fill="currentColor" fillOpacity="0.1" />
-                      {/* Rug */}
                       <ellipse cx="55" cy="78" rx="25" ry="4" fill="currentColor" fillOpacity="0.08" />
                     </svg>
                     <span className="text-xs text-sage/60 font-light mt-2">Visualisation meubl&eacute;e</span>
