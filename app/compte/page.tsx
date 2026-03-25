@@ -279,7 +279,7 @@ export default function ComptePage() {
   if (status === "loading") {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-foreground/20 border-t-foreground rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-foreground/20 border-t-sage rounded-full animate-spin" />
       </div>
     );
   }
@@ -323,7 +323,7 @@ export default function ComptePage() {
 
         {isLoading ? (
           <div className="flex items-center justify-center py-16">
-            <div className="w-6 h-6 border-2 border-foreground/20 border-t-foreground rounded-full animate-spin" />
+            <div className="w-6 h-6 border-2 border-foreground/20 border-t-sage rounded-full animate-spin" />
           </div>
         ) : (
           <div className="space-y-8">
@@ -372,7 +372,7 @@ export default function ComptePage() {
                         }}
                         onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleCompanySearch(); } }}
                         placeholder="Ex : Dupont Immobilier, SCI Martin..."
-                        className="flex-1 px-4 py-3 border border-foreground/5 rounded-xl text-sm font-light focus-visible:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
+                        className="flex-1 px-4 py-3 border border-foreground/10 rounded-xl text-sm font-light focus-visible:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
                         data-testid="merchant-company-search"
                       />
                       <button
@@ -442,7 +442,7 @@ export default function ComptePage() {
                         placeholder="123 456 789 01234"
                         inputMode="numeric"
                         maxLength={17}
-                        className="w-full px-4 py-3 border border-foreground/5 rounded-xl text-sm font-light focus-visible:border-foreground focus-visible:ring-2 focus-visible:ring-sage/50 focus:outline-none transition-colors placeholder:text-foreground/30"
+                        className="w-full px-4 py-3 border border-foreground/10 rounded-xl text-sm font-light focus-visible:border-foreground focus-visible:ring-2 focus-visible:ring-sage/50 focus:outline-none transition-colors placeholder:text-foreground/30"
                         data-testid="merchant-siret-input"
                       />
                       {siretError && (
@@ -471,7 +471,7 @@ export default function ComptePage() {
                         value={raisonSociale}
                         onChange={(e) => setRaisonSociale(e.target.value)}
                         placeholder="SCI Dupont Immobilier"
-                        className="w-full px-4 py-3 border border-foreground/5 rounded-xl text-sm font-light focus-visible:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
+                        className="w-full px-4 py-3 border border-foreground/10 rounded-xl text-sm font-light focus-visible:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
                         data-testid="merchant-raison-sociale"
                       />
                     </div>
@@ -484,7 +484,7 @@ export default function ComptePage() {
                         value={formeJuridique}
                         onChange={(e) => setFormeJuridique(e.target.value)}
                         placeholder="SCI"
-                        className="w-full px-4 py-3 border border-foreground/5 rounded-xl text-sm font-light focus-visible:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
+                        className="w-full px-4 py-3 border border-foreground/10 rounded-xl text-sm font-light focus-visible:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
                         data-testid="merchant-forme-juridique"
                       />
                     </div>
@@ -499,7 +499,7 @@ export default function ComptePage() {
                       value={adresse}
                       onChange={(e) => setAdresse(e.target.value)}
                       placeholder="12 rue du Commerce, 33000 Bordeaux"
-                      className="w-full px-4 py-3 border border-foreground/5 rounded-xl text-sm font-light focus-visible:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
+                      className="w-full px-4 py-3 border border-foreground/10 rounded-xl text-sm font-light focus-visible:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
                       data-testid="merchant-adresse"
                     />
                   </div>
@@ -514,7 +514,7 @@ export default function ComptePage() {
                         value={telephone}
                         onChange={(e) => setTéléphone(e.target.value)}
                         placeholder="06 12 34 56 78"
-                        className="w-full px-4 py-3 border border-foreground/5 rounded-xl text-sm font-light focus-visible:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
+                        className="w-full px-4 py-3 border border-foreground/10 rounded-xl text-sm font-light focus-visible:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
                         data-testid="merchant-telephone"
                       />
                     </div>
@@ -527,7 +527,7 @@ export default function ComptePage() {
                         value={emailPro}
                         onChange={(e) => setEmailPro(e.target.value)}
                         placeholder="contact@dupont-immo.fr"
-                        className="w-full px-4 py-3 border border-foreground/5 rounded-xl text-sm font-light focus-visible:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
+                        className="w-full px-4 py-3 border border-foreground/10 rounded-xl text-sm font-light focus-visible:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
                         data-testid="merchant-email-pro"
                       />
                     </div>
@@ -608,7 +608,7 @@ export default function ComptePage() {
                               setCouleurPrincipale(e.target.value);
                             }
                           }}
-                          className="flex-1 px-3 py-2 border border-foreground/5 rounded-xl text-sm font-mono font-light focus-visible:border-foreground focus:outline-none"
+                          className="flex-1 px-3 py-2 border border-foreground/10 rounded-xl text-sm font-mono font-light focus-visible:border-foreground focus:outline-none"
                         />
                       </div>
                     </div>
@@ -632,7 +632,7 @@ export default function ComptePage() {
                               setCouleurSecondaire(e.target.value);
                             }
                           }}
-                          className="flex-1 px-3 py-2 border border-foreground/5 rounded-xl text-sm font-mono font-light focus-visible:border-foreground focus:outline-none"
+                          className="flex-1 px-3 py-2 border border-foreground/10 rounded-xl text-sm font-mono font-light focus-visible:border-foreground focus:outline-none"
                         />
                       </div>
                     </div>
@@ -646,7 +646,7 @@ export default function ComptePage() {
                     <select
                       value={police}
                       onChange={(e) => setPolice(e.target.value)}
-                      className="w-full px-4 py-3 border border-foreground/5 rounded-xl text-sm font-light focus-visible:border-foreground focus:outline-none transition-colors bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                      className="w-full px-4 py-3 border border-foreground/10 rounded-xl text-sm font-light focus-visible:border-foreground focus:outline-none transition-colors bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                       data-testid="merchant-police"
                     >
                       {FONT_OPTIONS.map((opt) => (

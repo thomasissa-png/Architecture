@@ -1314,7 +1314,7 @@ export default function Home() {
                                 </svg>
                                 Affiner ce r&eacute;sultat
                               </button>
-                              <p className="text-[11px] text-muted font-light">
+                              <p className="text-xs text-muted font-light">
                                 {iterationsRemaining} it&eacute;ration{iterationsRemaining > 1 ? "s" : ""} restante{iterationsRemaining > 1 ? "s" : ""} &mdash; affinez le mobilier, les couleurs ou la composition
                               </p>
                             </>
@@ -1330,7 +1330,7 @@ export default function Home() {
                                 </svg>
                                 Affiner ce r&eacute;sultat
                               </button>
-                              <p className="text-[11px] text-muted font-light">
+                              <p className="text-xs text-muted font-light">
                                 0 it&eacute;ration restante
                               </p>
                               <div className="mt-2 bg-foreground/5 border border-foreground/10 rounded-xl p-4 max-w-sm mx-auto">

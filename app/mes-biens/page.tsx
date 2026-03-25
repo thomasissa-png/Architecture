@@ -56,13 +56,6 @@ export default function MesBiensPage() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
-  // Redirect if not authenticated
-  useEffect(() => {
-    if (authStatus === "unauthenticated") {
-      window.location.href = "/";
-    }
-  }, [authStatus]);
-
   const fetchProperties = useCallback(async () => {
     try {
       const res = await fetch("/api/properties");
@@ -156,8 +149,27 @@ export default function MesBiensPage() {
 
   if (authStatus === "loading" || isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-muted font-light text-sm">Chargement...</div>
+      <div className="min-h-screen bg-background">
+        <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-foreground/5">
+          <div className="max-w-6xl mx-auto px-5 sm:px-8 py-3 sm:py-4 flex items-center justify-between">
+            <div className="h-5 w-24 bg-foreground/5 rounded-lg animate-pulse" />
+            <div className="flex items-center gap-4">
+              <div className="h-4 w-16 bg-foreground/5 rounded-lg animate-pulse" />
+              <div className="h-8 w-20 bg-foreground/5 rounded-full animate-pulse" />
+            </div>
+          </div>
+        </header>
+        <main className="pt-24 pb-16 px-5 sm:px-8 max-w-6xl mx-auto">
+          <div className="mb-8">
+            <div className="h-7 w-36 bg-foreground/5 rounded-lg animate-pulse mb-2" />
+            <div className="h-4 w-28 bg-foreground/5 rounded-lg animate-pulse" />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="h-40 bg-foreground/5 rounded-2xl animate-pulse" />
+            ))}
+          </div>
+        </main>
       </div>
     );
   }

@@ -273,9 +273,9 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
 
           {/* Divider */}
           <div className="my-6 flex items-center gap-3">
-            <div className="flex-1 h-px bg-foreground/8" />
+            <div className="flex-1 h-px bg-foreground/10" />
             <span className="text-xs text-muted font-light">ou par email</span>
-            <div className="flex-1 h-px bg-foreground/8" />
+            <div className="flex-1 h-px bg-foreground/10" />
           </div>
 
           {/* Email/Password form */}
@@ -286,7 +286,7 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
                 placeholder="Prénom (optionnel)"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full border border-foreground/10 rounded-xl px-4 py-3 text-sm bg-transparent placeholder:text-muted/40 focus:outline-none focus:ring-2 focus:ring-sage/60 focus:border-sage/50 focus:bg-background transition-all duration-150"
+                className="w-full border border-foreground/10 rounded-xl px-4 py-3 text-sm bg-transparent placeholder:text-muted/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-sage/60 focus-visible:border-sage/50 focus:bg-background transition-all duration-150"
                 autoComplete="given-name"
                 data-testid="auth-name-input"
               />
@@ -297,7 +297,7 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full border border-foreground/10 rounded-xl px-4 py-3 text-sm bg-transparent placeholder:text-muted/40 focus:outline-none focus:ring-2 focus:ring-sage/60 focus:border-sage/50 focus:bg-background transition-all duration-150"
+              className="w-full border border-foreground/10 rounded-xl px-4 py-3 text-sm bg-transparent placeholder:text-muted/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-sage/60 focus-visible:border-sage/50 focus:bg-background transition-all duration-150"
               autoComplete="email"
               data-testid="auth-email-input"
             />
@@ -310,7 +310,7 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={mode === "register" ? 8 : undefined}
-                className="w-full border border-foreground/10 rounded-xl px-4 py-3 pr-12 text-sm bg-transparent placeholder:text-muted/40 focus:outline-none focus:ring-2 focus:ring-sage/60 focus:border-sage/50 focus:bg-background transition-all duration-150"
+                className="w-full border border-foreground/10 rounded-xl px-4 py-3 pr-12 text-sm bg-transparent placeholder:text-muted/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-sage/60 focus-visible:border-sage/50 focus:bg-background transition-all duration-150"
                 autoComplete={mode === "register" ? "new-password" : "current-password"}
                 data-testid="auth-password-input"
               />
@@ -353,7 +353,7 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-foreground text-background rounded-xl px-4 py-3.5 text-sm font-medium tracking-wide hover:bg-foreground/85 active:scale-[0.99] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-foreground text-background rounded-xl px-4 py-3.5 text-sm font-medium tracking-wide hover:bg-foreground/105 active:scale-[0.99] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
               data-testid="auth-submit-btn"
             >
               {isLoading ? (
