@@ -92,6 +92,8 @@ export default function AuthButton() {
         onClick={() => setMenuOpen((prev) => !prev)}
         className="flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded-full"
         aria-label="Menu utilisateur"
+        aria-expanded={menuOpen}
+        aria-haspopup="true"
       >
         <span className="w-11 h-11 flex items-center justify-center">
           {session.user.image ? (

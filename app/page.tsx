@@ -698,7 +698,7 @@ export default function Home() {
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               {/* AVANT — Pi&egrave;ce vide */}
               <div className="relative group">
-                <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-[#f0ede8]">
+                <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-foreground/[0.05]">
                   {/* Architectural SVG — empty room with window light */}
                   <svg className="w-full h-full" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
                     {/* Back wall */}
@@ -743,7 +743,7 @@ export default function Home() {
               </div>
               {/* APR&Egrave;S — Scandinave meubl&eacute; */}
               <div className="relative group">
-                <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-[#f5f2ed]">
+                <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-foreground/[0.03]">
                   {/* Architectural SVG — scandinavian furnished room */}
                   <svg className="w-full h-full" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
                     {/* Back wall — warm white */}
@@ -839,13 +839,16 @@ export default function Home() {
 
           <a
             href="#outil"
-            className="inline-flex items-center gap-3 bg-foreground text-background px-8 py-4 rounded-full font-medium hover:bg-foreground/85 transition-all text-sm tracking-wide focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+            className="inline-flex items-center gap-3 bg-foreground text-background px-8 py-4 rounded-full font-medium hover:bg-foreground/85 active:scale-[0.99] transition-all duration-200 text-sm tracking-wide focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
           >
             Essayer gratuitement
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
             </svg>
           </a>
+          <p className="text-xs text-muted font-light mt-3">
+            3 g&eacute;n&eacute;rations offertes &middot; Sans carte bancaire
+          </p>
         </div>
       </section>
 
@@ -1374,7 +1377,7 @@ export default function Home() {
                 </button>
                 <button
                   onClick={handleFullReset}
-                  className="inline-flex items-center justify-center gap-2 border border-foreground/15 text-muted px-7 py-3.5 rounded-full text-sm font-medium hover:bg-foreground/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+                  className="inline-flex items-center justify-center gap-2 border border-foreground/10 text-muted px-7 py-3.5 rounded-full text-sm font-medium hover:bg-foreground/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
                 >
                   Nouvelle session
                 </button>
@@ -1430,7 +1433,7 @@ export default function Home() {
                 </li>
               </ul>
               <p className="text-[11px] text-muted font-light mb-4">3 g&eacute;n&eacute;rations offertes sans CB</p>
-              <a href="#outil" className="block w-full text-center border border-foreground/15 text-foreground px-4 py-2.5 rounded-full text-sm font-medium hover:bg-foreground/5 transition-colors">
+              <a href="#outil" className="block w-full text-center border border-foreground/10 text-foreground px-4 py-2.5 rounded-full text-sm font-medium hover:bg-foreground/5 transition-colors">
                 Essayer l&apos;outil
               </a>
             </div>
@@ -1510,7 +1513,7 @@ export default function Home() {
                   Lien partageable 90 jours + support d&eacute;di&eacute;
                 </li>
               </ul>
-              <a href="mailto:contact@versiroom.fr" className="block w-full text-center border border-foreground/15 text-foreground px-4 py-2.5 rounded-full text-sm font-medium hover:bg-foreground/5 transition-colors">
+              <a href="mailto:contact@versiroom.fr" className="block w-full text-center border border-foreground/10 text-foreground px-4 py-2.5 rounded-full text-sm font-medium hover:bg-foreground/5 transition-colors">
                 Nous contacter
               </a>
             </div>

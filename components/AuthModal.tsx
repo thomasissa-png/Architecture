@@ -259,7 +259,7 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
           <button
             onClick={handleGoogleSignIn}
             disabled={isLoading}
-            className="w-full flex items-center justify-center gap-3 bg-background border border-foreground/12 rounded-xl px-5 py-3.5 text-sm font-medium text-foreground hover:bg-foreground/[0.03] hover:border-foreground/20 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+            className="w-full flex items-center justify-center gap-3 bg-background border border-foreground/10 rounded-xl px-5 py-3.5 text-sm font-medium text-foreground hover:bg-foreground/[0.03] hover:border-foreground/20 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
             data-testid="auth-google-signin"
           >
             <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
@@ -353,7 +353,7 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-foreground text-background rounded-xl px-4 py-3.5 text-sm font-medium tracking-wide hover:bg-foreground/75 active:scale-[0.99] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-foreground text-background rounded-xl px-4 py-3.5 text-sm font-medium tracking-wide hover:bg-foreground/85 active:scale-[0.99] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
               data-testid="auth-submit-btn"
             >
               {isLoading ? (

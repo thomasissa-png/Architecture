@@ -10,6 +10,7 @@ import { useSession } from "next-auth/react";
 import { useState, useEffect, useCallback } from "react";
 import AuthButton from "@/components/AuthButton";
 import AuthModal from "@/components/AuthModal";
+import { STYLE_LABELS } from "@/lib/constants";
 
 interface UserPhoto {
   id: string;
@@ -29,22 +30,6 @@ interface Property {
   address_normalized: string | null;
   city: string | null;
 }
-
-const STYLE_LABELS: Record<string, string> = {
-  scandinavian: "Scandinave",
-  contemporary: "Contemporain",
-  industrial: "Industriel",
-  japandi: "Japandi",
-  art_deco: "Art Deco",
-  mid_century: "Mid-Century",
-  bohemian: "Boh\u00E8me",
-  mediterranean: "M\u00E9diterran\u00E9en",
-  cozy: "Cosy",
-  wabi_sabi: "Wabi-Sabi",
-  maximalist: "Maximaliste",
-  haussmannian: "Haussmannien",
-  custom: "Personnalis\u00E9",
-};
 
 export default function GaleriePage() {
   const { data: session, status: authStatus } = useSession();
@@ -277,15 +262,15 @@ export default function GaleriePage() {
                 {/* Overlay info */}
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent p-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-medium text-white/90">
+                    <span className="text-xs font-medium text-white/90">
                       {STYLE_LABELS[photo.style_id || ""] || photo.style_id || ""}
                     </span>
                     {photo.property_id ? (
-                      <span className="text-[9px] bg-sage/80 text-white px-2 py-0.5 rounded-full">
+                      <span className="text-xs bg-sage/80 text-white px-2 py-0.5 rounded-full">
                         {getPropertyLabel(photo.property_id).substring(0, 20)}
                       </span>
                     ) : (
-                      <span className="text-[9px] bg-foreground/40 text-white px-2 py-0.5 rounded-full">
+                      <span className="text-xs bg-foreground/40 text-white px-2 py-0.5 rounded-full">
                         Non class&#233;e
                       </span>
                     )}
@@ -299,7 +284,7 @@ export default function GaleriePage() {
                       e.stopPropagation();
                       setAssociatingPhotoId(associatingPhotoId === photo.id ? null : photo.id);
                     }}
-                    className="absolute top-2 right-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity bg-white/90 text-foreground text-[10px] px-2 py-1 rounded-lg font-medium hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                    className="absolute top-2 right-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity bg-background/90 text-foreground text-xs px-2 py-1 rounded-lg font-medium hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                   >
                     Associer
                   </button>
@@ -308,10 +293,10 @@ export default function GaleriePage() {
                 {/* Association dropdown */}
                 {associatingPhotoId === photo.id && (
                   <div
-                    className="absolute top-10 right-2 bg-[var(--background)] border border-foreground/10 rounded-xl shadow-lg p-2 z-10 min-w-[200px]"
+                    className="absolute top-10 right-2 bg-background border border-foreground/10 rounded-xl shadow-lg p-2 z-10 min-w-[200px]"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <p className="text-[10px] text-muted font-light px-2 pb-1 border-b border-foreground/5">Associer &#224; un bien :</p>
+                    <p className="text-xs text-muted font-light px-2 pb-1 border-b border-foreground/5">Associer &#224; un bien :</p>
                     {properties.map((p) => (
                       <button
                         key={p.id}
@@ -354,7 +339,7 @@ export default function GaleriePage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                 {selectedPhoto.input_image_key && (
                   <div>
-                    <p className="text-[10px] text-muted font-light mb-1">Avant</p>
+                    <p className="text-xs text-muted font-light mb-1">Avant</p>
                     <img
                       src={`/api/logs/image?path=${encodeURIComponent(selectedPhoto.input_image_key)}`}
                       alt="Avant"
@@ -367,7 +352,7 @@ export default function GaleriePage() {
                 )}
                 {selectedPhoto.output_image_key && (
                   <div>
-                    <p className="text-[10px] text-sage font-medium mb-1">Apr&#232;s</p>
+                    <p className="text-xs text-sage font-medium mb-1">Apr&#232;s</p>
                     <img
                       src={`/api/logs/image?path=${encodeURIComponent(selectedPhoto.output_image_key)}`}
                       alt="Apr\u00e8s"

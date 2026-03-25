@@ -184,10 +184,6 @@ function PricingContent() {
             </div>
           )}
 
-          <p className="text-center text-sm text-muted font-light mb-10">
-            Payez uniquement ce que vous utilisez &mdash; sans abonnement.
-          </p>
-
           {/* Packs grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
             {PACKS.map((pack) => (
@@ -239,10 +235,10 @@ function PricingContent() {
                 <button
                   onClick={() => handleBuy(pack.id)}
                   disabled={loadingPack !== null}
-                  className={`w-full px-4 py-2.5 rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 disabled:opacity-40 disabled:cursor-not-allowed ${
+                  className={`w-full px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-200 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 disabled:opacity-40 disabled:cursor-not-allowed ${
                     pack.highlight
                       ? "bg-foreground text-background hover:bg-foreground/85"
-                      : "border border-foreground/15 text-foreground hover:bg-foreground/5"
+                      : "border border-foreground/10 text-foreground hover:bg-foreground/5"
                   }`}
                 >
                   {loadingPack === pack.id ? (
@@ -312,24 +308,24 @@ function PricingContent() {
             <p>Pour les architectes, marchands de biens et particuliers</p>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
-            <a href="/" className="hover:text-foreground transition-colors py-2">
+            <a href="/" className="hover:text-foreground transition-colors py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded">
               Accueil
             </a>
             <a
               href="/mentions-legales"
-              className="hover:text-foreground transition-colors py-2"
+              className="hover:text-foreground transition-colors py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded"
             >
               Mentions legales
             </a>
             <a
               href="/cgv"
-              className="hover:text-foreground transition-colors py-2"
+              className="hover:text-foreground transition-colors py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded"
             >
               CGV
             </a>
             <a
               href="/confidentialite"
-              className="hover:text-foreground transition-colors py-2"
+              className="hover:text-foreground transition-colors py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded"
             >
               Confidentialite
             </a>

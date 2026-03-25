@@ -58,38 +58,26 @@ export default function AnnoncePublicView({
     setTimeout(() => setCopied(null), 2000);
   }, []);
 
-  const handleCopyLink = async () => {
+  const copyToClipboard = async (text: string): Promise<boolean> => {
     try {
-      await navigator.clipboard.writeText(annonceUrl);
-      showCopied("link");
+      await navigator.clipboard.writeText(text);
+      return true;
     } catch {
-      // Fallback
-      const input = document.createElement("input");
-      input.value = annonceUrl;
-      document.body.appendChild(input);
-      input.select();
-      document.execCommand("copy");
-      document.body.removeChild(input);
-      showCopied("link");
+      // Clipboard API unavailable (e.g. non-HTTPS or iframe) — no fallback since execCommand is deprecated
+      return false;
     }
+  };
+
+  const handleCopyLink = async () => {
+    const ok = await copyToClipboard(annonceUrl);
+    showCopied(ok ? "link" : "link-fail");
   };
 
   const handleCopyDescription = async () => {
     if (!description) return;
     const textWithDisclaimer = `${description}\n\n— Visuels generés par intelligence artificielle a des fins de projection, non contractuels.`;
-    try {
-      await navigator.clipboard.writeText(textWithDisclaimer);
-      showCopied("desc");
-    } catch {
-      // Fallback
-      const textarea = document.createElement("textarea");
-      textarea.value = textWithDisclaimer;
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textarea);
-      showCopied("desc");
-    }
+    const ok = await copyToClipboard(textWithDisclaimer);
+    showCopied(ok ? "desc" : "desc-fail");
   };
 
   const handleWhatsApp = () => {
@@ -175,7 +163,7 @@ export default function AnnoncePublicView({
         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m9.86-2.06a4.5 4.5 0 00-1.242-7.244l-4.5-4.5a4.5 4.5 0 00-6.364 6.364L4.34 8.374" />
         </svg>
-        {copied === "link" ? "Copie !" : "Copier le lien"}
+        {copied === "link" ? "Copie !" : copied === "link-fail" ? "Copie impossible" : "Copier le lien"}
       </button>
 
       {/* Copy description */}
@@ -188,7 +176,7 @@ export default function AnnoncePublicView({
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9.75a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184" />
           </svg>
-          {copied === "desc" ? "Copie !" : "Copier la description"}
+          {copied === "desc" ? "Copie !" : copied === "desc-fail" ? "Copie impossible" : "Copier la description"}
         </button>
       )}
 

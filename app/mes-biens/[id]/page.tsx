@@ -5,9 +5,10 @@
  */
 
 import { useSession } from "next-auth/react";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams } from "next/navigation";
 import AuthButton from "@/components/AuthButton";
+import { STYLE_LABELS, TYPE_LABELS } from "@/lib/constants";
 
 interface Property {
   id: string;
@@ -41,30 +42,6 @@ interface UserPhoto {
   created_at: string;
 }
 
-const TYPE_LABELS: Record<string, string> = {
-  appartement: "Appartement",
-  maison: "Maison",
-  loft: "Loft",
-  studio: "Studio",
-  duplex: "Duplex",
-  bureau: "Bureau commercial",
-};
-
-const STYLE_LABELS: Record<string, string> = {
-  scandinavian: "Scandinave",
-  contemporary: "Contemporain",
-  industrial: "Industriel",
-  japandi: "Japandi",
-  art_deco: "Art Deco",
-  mid_century: "Mid-Century",
-  bohemian: "Boh\u00E8me",
-  mediterranean: "M\u00E9diterran\u00E9en",
-  cozy: "Cosy",
-  wabi_sabi: "Wabi-Sabi",
-  maximalist: "Maximaliste",
-  haussmannian: "Haussmannien",
-  custom: "Personnalis\u00E9",
-};
 
 export default function PropertyDetailPage() {
   const { data: session, status: authStatus } = useSession();
@@ -97,6 +74,10 @@ export default function PropertyDetailPage() {
   const [isCreatingDossier, setIsCreatingDossier] = useState(false);
   const [dossierResult, setDossierResult] = useState<{ uuid: string; pdfUrl: string } | null>(null);
 
+  // Modal refs for focus trap
+  const associateModalRef = useRef<HTMLDivElement>(null);
+  const dossierModalRef = useRef<HTMLDivElement>(null);
+
   // Inline toast (replaces alert())
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   useEffect(() => {
@@ -105,6 +86,46 @@ export default function PropertyDetailPage() {
       return () => clearTimeout(t);
     }
   }, [toastMsg]);
+
+  // Focus trap + Escape + scroll lock for modals
+  useEffect(() => {
+    const isOpen = showAssociateModal || showDossierModal;
+    if (!isOpen) return;
+    document.body.style.overflow = "hidden";
+
+    const modalRef = showAssociateModal ? associateModalRef : dossierModalRef;
+    const closeModal = () => {
+      if (showAssociateModal) { setShowAssociateModal(false); setSelectedForAssoc(new Set()); }
+      if (showDossierModal) setShowDossierModal(false);
+    };
+
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") { closeModal(); return; }
+      if (e.key !== "Tab" || !modalRef.current) return;
+      const focusable = modalRef.current.querySelectorAll<HTMLElement>(
+        'button, input, a[href], [tabindex]:not([tabindex="-1"])'
+      );
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last?.focus(); }
+      } else {
+        if (document.activeElement === last) { e.preventDefault(); first?.focus(); }
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    // Focus first element
+    setTimeout(() => {
+      const firstFocusable = modalRef.current?.querySelector<HTMLElement>('button, input, a[href]');
+      firstFocusable?.focus();
+    }, 100);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
+    };
+  }, [showAssociateModal, showDossierModal]);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -439,7 +460,7 @@ export default function PropertyDetailPage() {
                     setEditDesc(description);
                     setIsEditingDesc(true);
                   }}
-                  className="text-[10px] text-sage font-light mt-1 hover:underline"
+                  className="text-xs text-sage font-light mt-1 hover:underline"
                 >
                   Modifier la description
                 </button>
@@ -521,13 +542,13 @@ export default function PropertyDetailPage() {
                       </div>
                     )}
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent p-2">
-                      <span className="text-[10px] text-white/90 font-medium">
+                      <span className="text-xs text-white/90 font-medium">
                         {STYLE_LABELS[photo.style_id || ""] || photo.style_id || ""}
                       </span>
                     </div>
                     <button
                       onClick={() => handleDissociate(photo.id)}
-                      className="absolute top-2 right-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity bg-red-500/80 text-white text-[10px] px-2 py-1 rounded-lg font-medium hover:bg-red-500 focus-visible:outline-none"
+                      className="absolute top-2 right-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity bg-red-500/80 text-white text-xs px-2 py-1 rounded-lg font-medium hover:bg-red-500 focus-visible:outline-none"
                     >
                       Retirer
                     </button>
@@ -575,7 +596,7 @@ export default function PropertyDetailPage() {
         {/* Associate modal */}
         {showAssociateModal && (
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-background rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto p-6">
+            <div ref={associateModalRef} role="dialog" aria-modal="true" aria-label="Associer des photos" className="bg-background rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold text-foreground">Associer des photos</h2>
                 <button
@@ -583,9 +604,12 @@ export default function PropertyDetailPage() {
                     setShowAssociateModal(false);
                     setSelectedForAssoc(new Set());
                   }}
-                  className="text-muted hover:text-foreground text-lg font-light w-10 h-10 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                  className="text-muted hover:text-foreground w-10 h-10 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full hover:bg-foreground/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                  aria-label="Fermer"
                 >
-                  x
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                 </button>
               </div>
 
@@ -629,7 +653,7 @@ export default function PropertyDetailPage() {
                         {selectedForAssoc.has(photo.id) && (
                           <div className="absolute inset-0 bg-sage/20 flex items-center justify-center">
                             <div className="w-5 h-5 bg-sage rounded-full flex items-center justify-center">
-                              <span className="text-white text-[10px] font-bold">v</span>
+                              <span className="text-white text-xs font-bold">v</span>
                             </div>
                           </div>
                         )}
@@ -653,14 +677,17 @@ export default function PropertyDetailPage() {
         {/* Dossier creation modal */}
         {showDossierModal && (
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-background rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto p-6">
+            <div ref={dossierModalRef} role="dialog" aria-modal="true" aria-label="Créer un dossier" className="bg-background rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold text-foreground">Cr&#233;er un dossier</h2>
                 <button
                   onClick={() => setShowDossierModal(false)}
-                  className="text-muted hover:text-foreground text-lg font-light w-10 h-10 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                  className="text-muted hover:text-foreground w-10 h-10 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full hover:bg-foreground/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                  aria-label="Fermer"
                 >
-                  x
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                 </button>
               </div>
 
@@ -716,10 +743,10 @@ export default function PropertyDetailPage() {
                             {selectedForDossier.has(photo.id) && (
                               <button
                                 onClick={() => setCoverPhotoId(photo.id)}
-                                className={`absolute bottom-1 left-1 text-[9px] px-1.5 py-0.5 rounded-md font-medium ${
+                                className={`absolute bottom-1 left-1 text-xs px-1.5 py-0.5 rounded-md font-medium ${
                                   coverPhotoId === photo.id
                                     ? "bg-sage text-white"
-                                    : "bg-[var(--background)]/80 text-foreground hover:bg-sage/20"
+                                    : "bg-background/80 text-foreground hover:bg-sage/20"
                                 }`}
                               >
                                 {coverPhotoId === photo.id ? "Couverture" : "Couverture ?"}

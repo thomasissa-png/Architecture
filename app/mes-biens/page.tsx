@@ -9,6 +9,7 @@
 import { useSession } from "next-auth/react";
 import { useState, useEffect, useCallback, useRef } from "react";
 import AuthButton from "@/components/AuthButton";
+import { TYPE_LABELS } from "@/lib/constants";
 
 interface Property {
   id: string;
@@ -34,14 +35,6 @@ interface AddressSuggestion {
   lon: number;
 }
 
-const TYPE_LABELS: Record<string, string> = {
-  appartement: "Appartement",
-  maison: "Maison",
-  loft: "Loft",
-  studio: "Studio",
-  duplex: "Duplex",
-  bureau: "Bureau commercial",
-};
 
 export default function MesBiensPage() {
   const { data: session, status: authStatus } = useSession();
@@ -217,7 +210,7 @@ export default function MesBiensPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {/* Address with autocomplete */}
               <div className="sm:col-span-2 relative">
-                <label className="block text-[10px] text-muted font-light mb-1">Adresse</label>
+                <label className="block text-xs text-muted font-light mb-1">Adresse</label>
                 <input
                   type="text"
                   value={newAddress}
@@ -243,7 +236,7 @@ export default function MesBiensPage() {
               </div>
 
               <div>
-                <label className="block text-[10px] text-muted font-light mb-1">Type de bien</label>
+                <label className="block text-xs text-muted font-light mb-1">Type de bien</label>
                 <select
                   value={newType}
                   onChange={(e) => setNewType(e.target.value)}
@@ -257,7 +250,7 @@ export default function MesBiensPage() {
               </div>
 
               <div>
-                <label className="block text-[10px] text-muted font-light mb-1">Surface (m&#178;)</label>
+                <label className="block text-xs text-muted font-light mb-1">Surface (m&#178;)</label>
                 <input
                   type="number"
                   value={newSurface}
@@ -268,7 +261,7 @@ export default function MesBiensPage() {
               </div>
 
               <div>
-                <label className="block text-[10px] text-muted font-light mb-1">Nombre de pi&#232;ces</label>
+                <label className="block text-xs text-muted font-light mb-1">Nombre de pi&#232;ces</label>
                 <input
                   type="number"
                   value={newRooms}
@@ -279,7 +272,7 @@ export default function MesBiensPage() {
               </div>
 
               <div>
-                <label className="block text-[10px] text-muted font-light mb-1">Prix de vente (&#8364;)</label>
+                <label className="block text-xs text-muted font-light mb-1">Prix de vente (&#8364;)</label>
                 <input
                   type="number"
                   value={newPrice}
@@ -337,36 +330,36 @@ export default function MesBiensPage() {
                 </h3>
 
                 {(property.city || property.postal_code) && (
-                  <p className="text-[10px] text-muted font-light mt-1">
+                  <p className="text-xs text-muted font-light mt-1">
                     {[property.postal_code, property.city].filter(Boolean).join(" ")}
                   </p>
                 )}
 
                 <div className="flex flex-wrap gap-2 mt-3">
                   {property.property_type && (
-                    <span className="text-[10px] bg-foreground/5 text-muted px-2 py-0.5 rounded-lg">
+                    <span className="text-xs bg-foreground/5 text-muted px-2 py-0.5 rounded-lg">
                       {TYPE_LABELS[property.property_type] || property.property_type}
                     </span>
                   )}
                   {property.surface_m2 && (
-                    <span className="text-[10px] bg-foreground/5 text-muted px-2 py-0.5 rounded-lg">
+                    <span className="text-xs bg-foreground/5 text-muted px-2 py-0.5 rounded-lg">
                       {property.surface_m2} m&#178;
                     </span>
                   )}
                   {property.room_count && (
-                    <span className="text-[10px] bg-foreground/5 text-muted px-2 py-0.5 rounded-lg">
+                    <span className="text-xs bg-foreground/5 text-muted px-2 py-0.5 rounded-lg">
                       {property.room_count} pi&#232;ces
                     </span>
                   )}
                 </div>
 
-                <div className="flex items-center gap-3 mt-3 text-[10px] text-muted font-light">
+                <div className="flex items-center gap-3 mt-3 text-xs text-muted font-light">
                   <span>{property.photo_count || 0} photo{(property.photo_count || 0) !== 1 ? "s" : ""}</span>
                   <span>{property.dossier_count || 0} dossier{(property.dossier_count || 0) !== 1 ? "s" : ""}</span>
                 </div>
 
                 {property.dvf_median_price_m2 && (
-                  <p className="text-[10px] text-sage font-light mt-2">
+                  <p className="text-xs text-sage font-light mt-2">
                     {property.dvf_median_price_m2.toLocaleString("fr-FR")} &#8364;/m&#178; (quartier)
                   </p>
                 )}

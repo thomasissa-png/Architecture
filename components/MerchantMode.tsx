@@ -343,15 +343,8 @@ export default function MerchantMode() {
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 2000);
     } catch {
-      // Fallback
-      const input = document.createElement("input");
-      input.value = shareUrl;
-      document.body.appendChild(input);
-      input.select();
-      document.execCommand("copy");
-      document.body.removeChild(input);
-      setLinkCopied(true);
-      setTimeout(() => setLinkCopied(false), 2000);
+      // Clipboard API unavailable — no deprecated execCommand fallback
+      console.warn("Clipboard API not available");
     }
   }, [dossierUuid]);
 

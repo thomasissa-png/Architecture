@@ -75,6 +75,24 @@ html {
   transform: translateY(0);
 }
 
+/* Accessibility: reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in-up,
+  .reveal {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .animate-delay-100,
+  .animate-delay-200,
+  .animate-delay-300,
+  .animate-delay-400 {
+    animation-delay: 0ms !important;
+  }
+}
+
 /* Hero before scene — empty room feel */
 .hero-before-scene {
   background:
