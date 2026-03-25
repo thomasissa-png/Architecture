@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     }
 
     // Server-side validation of retractation acceptance (Art. L221-28)
-    if (!retractationAccepted) {
+    if (retractationAccepted !== true) {
       return NextResponse.json(
         { error: "Vous devez accepter la clause de rétractation avant de procéder au paiement." },
         { status: 400 }

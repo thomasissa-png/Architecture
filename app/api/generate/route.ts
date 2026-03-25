@@ -4,7 +4,7 @@ import Replicate from "replicate";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { decrementCredit, addCredits } from "@/lib/credits";
-import { logGeneration, savePass1Cache, getPass1Cache } from "@/lib/db";
+import { logGeneration, savePass1Cache, getPass1Cache, getPool } from "@/lib/db";
 import { preprocessIterationComment } from "@/lib/custom-prompt";
 import {
   buildIterationFurnitureResponsesPrompt,
@@ -1010,7 +1010,7 @@ export async function POST(request: NextRequest) {
       { status: 402 }
     );
   }
-  let creditRefunded = false;
+  // Track if generation succeeded — if not, credit is refunded in the catch block
 
   let styleId = "unknown";
 
@@ -1180,7 +1180,7 @@ export async function POST(request: NextRequest) {
         outdoorSubtype: cached.meta.outdoorSubtype ?? undefined,
       }).catch((err) => console.error("DB log (iteration) failed:", err));
 
-      // Credit was decremented optimistically at the start — generation succeeded
+      // Generation succeeded — credit was already decremented optimistically
 
       return response;
     }
@@ -1314,7 +1314,7 @@ export async function POST(request: NextRequest) {
         outdoorSubtype: isOutdoor ? (outdoorSubtype ?? undefined) : undefined,
       }).catch((err) => console.error("DB log failed:", err));
 
-      // Credit was decremented optimistically at the start — generation succeeded
+      // Generation succeeded — credit was already decremented optimistically
 
       return response;
     }
@@ -1347,8 +1347,7 @@ export async function POST(request: NextRequest) {
       outdoorSubtype: isOutdoor ? (outdoorSubtype ?? undefined) : undefined,
     }).catch((err) => console.error("DB log failed:", err));
 
-    // Credit already decremented optimistically — mark as consumed
-    creditRefunded = false;
+    // Generation succeeded — credit was already decremented optimistically
 
     return response;
   } catch (error) {
@@ -1356,11 +1355,17 @@ export async function POST(request: NextRequest) {
     const message =
       error instanceof Error ? error.message : "Erreur interne du serveur";
 
-    // Refund credit on generation failure (optimistic decrement)
-    if (session?.user?.id && !creditRefunded) {
-      addCredits(session.user.id, 1).catch((err) =>
-        console.error("Credit refund failed:", err)
-      );
+    // Refund credit on generation failure (optimistic decrement pattern)
+    if (session?.user?.id) {
+      addCredits(session.user.id, 1).catch((refundErr) => {
+        console.error("CRITICAL: Credit refund failed for user", session.user.id, refundErr);
+        // Log to DB for manual reconciliation
+        getPool().query(
+          `INSERT INTO generation_logs (ip, style_id, success, error_message)
+           VALUES ($1, $2, false, $3)`,
+          [ip, "refund_failed", `Refund failed for user ${session.user.id}: ${refundErr instanceof Error ? refundErr.message : "unknown"}`]
+        ).catch(() => {});
+      });
     }
 
     // Log failures too
