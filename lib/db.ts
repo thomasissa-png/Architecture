@@ -133,6 +133,11 @@ export async function ensureTable(): Promise<void> {
     ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash TEXT;
   `);
 
+  // Add role column for admin/pro/user management (idempotent)
+  await db.query(`
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20) DEFAULT 'user';
+  `);
+
   tableEnsured = true;
 }
 
