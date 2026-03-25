@@ -10,7 +10,7 @@ export interface StyleOption {
   surfacePrompt: string;
   furniturePrompt: string;
   palette: string[];
-  preview?: string; // Path to preview image (e.g. "/demo/scandinavian.jpg")
+  preview?: string; // API path or static path to preview image
 }
 
 const STYLES: StyleOption[] = [
@@ -19,7 +19,7 @@ const STYLES: StyleOption[] = [
     name: "Scandinave",
     description: "Bois clair, tons neutres, épure absolue",
     palette: ["#F5F0E8", "#D4C9B0", "#8B7355"],
-    preview: "/demo/scandinavian.jpg",
+    preview: "/api/demo?style=scandinavian&image=after",
     surfacePrompt:
       "Scandinavian minimalist: soft white walls keeping the same overall brightness as the input photo, wide-plank whitewashed ash flooring with visible natural grain and knots matte finish, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs, matte white tiered pendant light with soft diffused glow 45cm diameter (PH5-style layered shade)",
     furniturePrompt:
@@ -30,7 +30,7 @@ const STYLES: StyleOption[] = [
     name: "Contemporain",
     description: "Lignes nettes, palette sobre, modernité",
     palette: ["#E8E8E8", "#4A4A4A", "#C0B283"],
-    preview: "/demo/contemporary.jpg",
+    preview: "/api/demo?style=contemporary&image=after",
     surfacePrompt:
       "Contemporary modern: very light warm grey walls barely tinted from the original keeping the same overall brightness as the input photo, light grey engineered stone flooring with matte finish, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs, minimal recessed or flush-mount ceiling light in brushed chrome",
     furniturePrompt:
@@ -41,7 +41,7 @@ const STYLES: StyleOption[] = [
     name: "Industriel",
     description: "Métal, béton, volumes bruts sublimés",
     palette: ["#8B8680", "#3D3D3D", "#A0522D"],
-    preview: "/demo/industrial.jpg",
+    preview: "/api/demo?style=industrial&image=after",
     surfacePrompt:
       "Industrial loft: preserve existing wall finish and texture, keep the same overall brightness as the input photo, smooth grey concrete floor with matte waxed finish, ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs, matte black industrial pendant light with metal shade and visible Edison filament bulb",
     furniturePrompt:
@@ -52,7 +52,7 @@ const STYLES: StyleOption[] = [
     name: "Japandi",
     description: "Minimalisme japonais, chaleur scandinave",
     palette: ["#F0EDE5", "#C4B99A", "#6B705C"],
-    preview: "/demo/japandi.jpg",
+    preview: "/api/demo?style=japandi&image=after",
     surfacePrompt:
       "Japandi: soft warm white walls with very subtle sand undertone keeping the same overall brightness as the input photo, light ash wide-plank flooring with matte finish, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs, round washi paper pendant light in natural off-white",
     furniturePrompt:
@@ -63,7 +63,7 @@ const STYLES: StyleOption[] = [
     name: "Art Déco",
     description: "Géométrie dorée, velours, luxe années 20",
     palette: ["#1C1C1E", "#C5A55A", "#2D5A3D"],
-    preview: "/demo/art-deco.jpg",
+    preview: "/api/demo?style=art-deco&image=after",
     surfacePrompt:
       "Art Deco: slightly warm white walls with smooth finish keeping the same overall brightness as the input photo, dark stained herringbone parquet flooring, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs, brass and frosted glass geometric pendant chandelier",
     furniturePrompt:
@@ -74,7 +74,7 @@ const STYLES: StyleOption[] = [
     name: "Mid-Century",
     description: "Lignes organiques, bois chaud, vintage chic",
     palette: ["#D4A03C", "#5B3A29", "#2E8B8B"],
-    preview: "/demo/mid-century.jpg",
+    preview: "/api/demo?style=mid-century&image=after",
     surfacePrompt:
       "Mid-Century Modern: soft white walls with barely visible warm tint keeping the same overall brightness as the input photo, warm walnut-toned wood plank flooring with satin finish, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs, Sputnik-style brass and black multi-arm ceiling pendant",
     furniturePrompt:
@@ -85,7 +85,7 @@ const STYLES: StyleOption[] = [
     name: "Bohème",
     description: "Textiles ethniques, plantes, chaleur nomade",
     palette: ["#C17F59", "#6B705C", "#E8D5B7"],
-    preview: "/demo/bohemian.jpg",
+    preview: "/api/demo?style=bohemian&image=after",
     surfacePrompt:
       "Bohemian: soft warm off-white walls keeping the same overall brightness as the input photo, warm honey-toned wood plank flooring with matte finish, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs, woven rattan pendant light in natural tone",
     furniturePrompt:
@@ -96,7 +96,7 @@ const STYLES: StyleOption[] = [
     name: "Méditerranéen",
     description: "Terre cuite, lin blanc, lumière du sud",
     palette: ["#F5F0E0", "#C17F59", "#2B5B84"],
-    preview: "/demo/mediterranean.jpg",
+    preview: "/api/demo?style=mediterranean&image=after",
     surfacePrompt:
       "Mediterranean: white lime-plaster walls with subtle hand-troweled texture keeping the same overall brightness as the input photo, walls must stay close to input brightness and not darken or shift to ochre, pale terracotta or warm travertine floor tiles with natural veining, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs — if beams are visible whitewash them, wrought iron pendant lantern with aged patina",
     furniturePrompt:
@@ -107,7 +107,7 @@ const STYLES: StyleOption[] = [
     name: "Cosy Moderne",
     description: "Textures douces, tons chauds, cocooning",
     palette: ["#F5EDE0", "#C9B99A", "#A0522D"],
-    preview: "/demo/cosy.jpg",
+    preview: "/api/demo?style=cosy&image=after",
     surfacePrompt:
       "Modern cozy: soft white walls with barely visible warm tint keeping the same overall brightness as the input photo, light oak wide-plank flooring with matte finish, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs, warm fabric drum pendant light in cream tone",
     furniturePrompt:
@@ -118,7 +118,7 @@ const STYLES: StyleOption[] = [
     name: "Wabi-Sabi",
     description: "Imperfection noble, matières brutes, sérénité",
     palette: ["#B8AFA0", "#8B8680", "#5C5550"],
-    preview: "/demo/wabi-sabi.jpg",
+    preview: "/api/demo?style=wabi-sabi&image=after",
     surfacePrompt:
       "Wabi-sabi: soft matte warm grey walls keeping the same overall brightness as the input photo, natural stone or aged concrete flooring with subtle worn texture, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs, simple ceramic pendant in natural unglazed finish",
     furniturePrompt:
@@ -129,7 +129,7 @@ const STYLES: StyleOption[] = [
     name: "Maximaliste",
     description: "Couleurs vives, motifs audacieux, personnalité",
     palette: ["#1B4D6E", "#C5533B", "#C5A55A"],
-    preview: "/demo/maximalist.jpg",
+    preview: "/api/demo?style=maximalist&image=after",
     surfacePrompt:
       "Maximalist eclectic: rich deep teal accent on the largest visible surface with remaining areas in warm white keeping the same overall brightness as the input photo, polished dark wood flooring, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs, dramatic sculptural pendant light in brass with colored glass elements",
     furniturePrompt:
@@ -140,7 +140,7 @@ const STYLES: StyleOption[] = [
     name: "Haussmannien",
     description: "Moulures, parquet, élégance parisienne",
     palette: ["#F0EBE0", "#8B7355", "#C5A55A"],
-    preview: "/demo/haussmannian.jpg",
+    preview: "/api/demo?style=haussmannian&image=after",
     surfacePrompt:
       "Haussmannian Parisian: soft warm white walls keeping the same overall brightness as the input photo, classic light oak herringbone parquet flooring with satin finish, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs preserving existing crown moldings and cornices, classic brass and white glass pendant chandelier with understated elegance",
     furniturePrompt:

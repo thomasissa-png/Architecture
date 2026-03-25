@@ -11,6 +11,7 @@ import RoomTypePicker from "@/components/RoomTypePicker";
 import OutdoorSubtypePicker from "@/components/OutdoorSubtypePicker";
 import { processImage, isLikelyInterior } from "@/lib/image-utils";
 import { OUTDOOR_STYLES } from "@/lib/outdoor-styles";
+import AuthButton from "@/components/AuthButton";
 
 interface GenerationResult {
   originalUrl: string;
@@ -637,6 +638,7 @@ export default function Home() {
             >
               Essayer gratuitement
             </a>
+            <AuthButton />
           </nav>
         </div>
       </header>
@@ -674,7 +676,7 @@ export default function Home() {
                 <div className="aspect-[4/3] rounded-2xl overflow-hidden hero-before-scene">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src="/demo/hero-before.jpg"
+                    src="/api/demo?type=hero&image=before"
                     alt="Pi&egrave;ce vide avant home staging"
                     className="w-full h-full object-cover"
                     onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; (e.target as HTMLImageElement).nextElementSibling?.classList.remove("hidden"); }}
@@ -698,7 +700,7 @@ export default function Home() {
                 <div className="aspect-[4/3] rounded-2xl overflow-hidden hero-after-scene">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src="/demo/hero-after.jpg"
+                    src="/api/demo?type=hero&image=after"
                     alt="Pi&egrave;ce meubl&eacute;e par Versiroom"
                     className="w-full h-full object-cover"
                     onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; (e.target as HTMLImageElement).nextElementSibling?.classList.remove("hidden"); }}

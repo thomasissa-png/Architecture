@@ -104,6 +104,28 @@ export async function ensureTable(): Promise<void> {
     .join("; ");
   await db.query(migrateSql);
 
+  // ─── Auth + Credits tables ──────────────────────────────────────────
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY,
+      email TEXT UNIQUE NOT NULL,
+      name TEXT,
+      image TEXT,
+      credits_remaining INTEGER DEFAULT 3,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    );
+    CREATE TABLE IF NOT EXISTS purchases (
+      id SERIAL PRIMARY KEY,
+      user_id TEXT REFERENCES users(id),
+      stripe_session_id TEXT UNIQUE,
+      pack_id TEXT NOT NULL,
+      credits_purchased INTEGER NOT NULL,
+      amount_cents INTEGER NOT NULL,
+      status TEXT DEFAULT 'pending',
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    );
+  `);
+
   tableEnsured = true;
 }
 
