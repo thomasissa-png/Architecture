@@ -11,6 +11,7 @@ import RoomTypePicker from "@/components/RoomTypePicker";
 import OutdoorSubtypePicker from "@/components/OutdoorSubtypePicker";
 import { processImage, isLikelyInterior } from "@/lib/image-utils";
 import { OUTDOOR_STYLES } from "@/lib/outdoor-styles";
+import { useSession } from "next-auth/react";
 import AuthButton from "@/components/AuthButton";
 import MerchantMode from "@/components/MerchantMode";
 
@@ -119,6 +120,7 @@ const USE_CASES = [
 ];
 
 export default function Home() {
+  const { data: session } = useSession();
   const [files, setFiles] = useState<File[]>([]);
   const [selectedStyle, setSelectedStyle] = useState<StyleOption | null>(null);
   const [customPrompt, setCustomPrompt] = useState("");
@@ -633,6 +635,11 @@ export default function Home() {
             Versiroom
           </span>
           <nav className="flex items-center gap-2 sm:gap-6">
+            {session && (
+              <a href="/mes-dossiers" className="hidden sm:inline text-xs text-muted font-light hover:text-foreground transition-colors">
+                Mes dossiers
+              </a>
+            )}
             <a href="#pricing" className="hidden sm:inline text-xs text-muted font-light hover:text-foreground transition-colors">
               Tarifs
             </a>

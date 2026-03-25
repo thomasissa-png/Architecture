@@ -109,17 +109,22 @@ export default function DossierProgress({
             </span>
 
             {/* Status text */}
-            <span className={`text-xs font-light shrink-0 ${
-              photo.status === "completed" ? "text-[var(--sage)]" :
-              photo.status === "failed" ? "text-red-400" :
-              photo.status === "generating" ? "text-[var(--sage)]" :
-              "text-[var(--muted)]/60"
-            }`}>
-              {photo.status === "completed" && "Prêt"}
-              {photo.status === "generating" && "En cours..."}
-              {photo.status === "failed" && "Échec"}
-              {photo.status === "pending" && "En attente"}
-            </span>
+            <div className="shrink-0 text-right">
+              <span className={`text-xs font-light ${
+                photo.status === "completed" ? "text-[var(--sage)]" :
+                photo.status === "failed" ? "text-red-400" :
+                photo.status === "generating" ? "text-[var(--sage)]" :
+                "text-[var(--muted)]/60"
+              }`}>
+                {photo.status === "completed" && "Pret"}
+                {photo.status === "generating" && "En cours..."}
+                {photo.status === "failed" && "Echec"}
+                {photo.status === "pending" && "En attente"}
+              </span>
+              {photo.status === "failed" && photo.errorMessage && (
+                <p className="text-[11px] text-[var(--muted)] font-light mt-0.5 max-w-[200px]">{photo.errorMessage}</p>
+              )}
+            </div>
           </div>
         ))}
       </div>
