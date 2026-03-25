@@ -993,24 +993,22 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Auth + credit check — authentication required for all generations
+  // Auth + credit check
+  // - Connected users: use credit system (optimistic decrement)
+  // - Anonymous users: allowed with IP rate limit only (3 free generations enforced by rate limit)
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    return NextResponse.json(
-      { error: "Connexion requise pour générer. Connectez-vous pour profiter de vos 3 générations gratuites." },
-      { status: 401 }
-    );
-  }
 
-  // Optimistic decrement — reserve the credit BEFORE generation to prevent race conditions
-  const decremented = await decrementCredit(session.user.id);
-  if (!decremented) {
-    return NextResponse.json(
-      { error: "Crédits insuffisants. Rechargez un pack pour continuer." },
-      { status: 402 }
-    );
+  if (session?.user?.id) {
+    // Connected user — decrement credit optimistically
+    const decremented = await decrementCredit(session.user.id);
+    if (!decremented) {
+      return NextResponse.json(
+        { error: "Crédits insuffisants. Rechargez un pack pour continuer." },
+        { status: 402 }
+      );
+    }
   }
-  // Track if generation succeeded — if not, credit is refunded in the catch block
+  // Anonymous users pass through — protected by IP rate limit (10 req/min)
 
   let styleId = "unknown";
 

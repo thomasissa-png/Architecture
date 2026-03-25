@@ -669,19 +669,13 @@ export default function Home() {
             Versiroom pr&eacute;serve votre espace &mdash; il ne le r&eacute;invente pas.
           </p>
 
-          {/* Hero before/after — real images if available, SVG fallback */}
+          {/* Hero before/after — SVG default, real images overlay if available */}
           <div className="max-w-3xl mx-auto mb-8">
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div className="relative group">
                 <div className="aspect-[4/3] rounded-2xl overflow-hidden hero-before-scene">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src="/api/demo?type=hero&image=before"
-                    alt="Pi&egrave;ce vide avant home staging"
-                    className="w-full h-full object-cover"
-                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; (e.target as HTMLImageElement).nextElementSibling?.classList.remove("hidden"); }}
-                  />
-                  <div className="hidden absolute inset-0 flex flex-col items-center justify-center">
+                  {/* SVG visible by default */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <svg className="w-24 h-24 sm:w-32 sm:h-32 text-gray-400/50" viewBox="0 0 120 100" fill="none" stroke="currentColor" strokeWidth={0.8}>
                       <line x1="10" y1="80" x2="110" y2="80" />
                       <rect x="15" y="20" width="90" height="60" rx="1" strokeDasharray="3 3" />
@@ -691,6 +685,14 @@ export default function Home() {
                     </svg>
                     <span className="text-xs text-muted font-light mt-2">Pi&egrave;ce vide</span>
                   </div>
+                  {/* Real image overlays on top if available */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/api/demo?type=hero&image=before"
+                    alt="Pi&egrave;ce vide avant home staging"
+                    className="absolute inset-0 w-full h-full object-cover"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                  />
                 </div>
                 <span className="absolute bottom-2.5 left-2.5 text-xs font-medium text-gray-400 bg-white/80 backdrop-blur-sm px-2.5 py-1 rounded-full">
                   AVANT
@@ -698,14 +700,8 @@ export default function Home() {
               </div>
               <div className="relative group">
                 <div className="aspect-[4/3] rounded-2xl overflow-hidden hero-after-scene">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src="/api/demo?type=hero&image=after"
-                    alt="Pi&egrave;ce meubl&eacute;e par Versiroom"
-                    className="w-full h-full object-cover"
-                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; (e.target as HTMLImageElement).nextElementSibling?.classList.remove("hidden"); }}
-                  />
-                  <div className="hidden absolute inset-0 flex flex-col items-center justify-center">
+                  {/* SVG visible by default */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <svg className="w-24 h-24 sm:w-32 sm:h-32 text-sage/50" viewBox="0 0 120 100" fill="none" stroke="currentColor" strokeWidth={0.8}>
                       <line x1="10" y1="80" x2="110" y2="80" />
                       <rect x="15" y="20" width="90" height="60" rx="1" />
@@ -718,6 +714,14 @@ export default function Home() {
                     </svg>
                     <span className="text-xs text-sage/60 font-light mt-2">Visualisation meubl&eacute;e</span>
                   </div>
+                  {/* Real image overlays on top if available */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/api/demo?type=hero&image=after"
+                    alt="Pi&egrave;ce meubl&eacute;e par Versiroom"
+                    className="absolute inset-0 w-full h-full object-cover"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                  />
                 </div>
                 <span className="absolute bottom-2.5 left-2.5 text-xs font-medium text-sage bg-white/80 backdrop-blur-sm px-2.5 py-1 rounded-full">
                   APR&Egrave;S
