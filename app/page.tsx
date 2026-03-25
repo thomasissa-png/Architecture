@@ -1540,21 +1540,21 @@ export default function Home() {
             <p className="text-[11px] text-muted mt-1">Un produit <a href="https://versi-immobilier.fr" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Versi Immobilier</a></p>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
-            <a href="#pricing" className="hover:text-foreground transition-colors py-2">
+            <a href="#pricing" className="hover:text-foreground transition-colors py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded">
               Tarifs
             </a>
-            <a href="/mentions-legales" className="hover:text-foreground transition-colors py-2">
+            <a href="/mentions-legales" className="hover:text-foreground transition-colors py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded">
               Mentions l&eacute;gales
             </a>
-            <a href="/cgv" className="hover:text-foreground transition-colors py-2">
+            <a href="/cgv" className="hover:text-foreground transition-colors py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded">
               CGV
             </a>
-            <a href="/confidentialite" className="hover:text-foreground transition-colors py-2">
+            <a href="/confidentialite" className="hover:text-foreground transition-colors py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded">
               Confidentialit&eacute;
             </a>
             <a
               href="mailto:contact@versiroom.fr"
-              className="hover:text-foreground transition-colors py-2"
+              className="hover:text-foreground transition-colors py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded"
             >
               Contact
             </a>

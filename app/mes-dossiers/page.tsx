@@ -24,15 +24,15 @@ interface Dossier {
 const STATUS_LABELS: Record<string, { label: string; className: string }> = {
   draft: {
     label: "Brouillon",
-    className: "bg-[var(--foreground)]/5 text-[var(--muted)]",
+    className: "bg-foreground/5 text-muted",
   },
   generating: {
     label: "En cours",
-    className: "bg-[var(--sage)]/10 text-[var(--sage)]",
+    className: "bg-sage/10 text-sage",
   },
   completed: {
     label: "Terminé",
-    className: "bg-[var(--sage)]/15 text-[var(--sage)]",
+    className: "bg-sage/15 text-sage",
   },
   partial: {
     label: "Partiel",
@@ -97,8 +97,8 @@ export default function MesDossiersPage() {
   // Loading auth
   if (authStatus === "loading") {
     return (
-      <div className="min-h-screen bg-[var(--background)] flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-[var(--foreground)]/10 border-t-[var(--sage)] rounded-full animate-spin" />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-foreground/10 border-t-sage rounded-full animate-spin" />
       </div>
     );
   }
@@ -109,19 +109,19 @@ export default function MesDossiersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)]">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[var(--background)]/80 backdrop-blur-md border-b border-[var(--foreground)]/5">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-foreground/5">
         <div className="max-w-4xl mx-auto px-5 sm:px-8 py-3 sm:py-4 flex items-center justify-between">
           <a
             href="/"
-            className="text-xl font-semibold text-[var(--foreground)] tracking-tighter hover:opacity-80 transition-opacity"
+            className="text-xl font-semibold text-foreground tracking-tighter hover:opacity-80 transition-opacity"
           >
             Versiroom
           </a>
           <a
             href="/"
-            className="text-xs text-[var(--muted)] font-light hover:text-[var(--foreground)] transition-colors"
+            className="text-xs text-muted font-light hover:text-foreground transition-colors"
           >
             Retour
           </a>
@@ -131,17 +131,17 @@ export default function MesDossiersPage() {
       {/* Content */}
       <main className="pt-24 sm:pt-28 pb-16 px-5 sm:px-8">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-2xl font-light text-[var(--foreground)] tracking-tight mb-1">
+          <h1 className="text-2xl font-light text-foreground tracking-tight mb-1">
             Mes dossiers
           </h1>
-          <p className="text-sm text-[var(--muted)] font-light mb-8">
+          <p className="text-sm text-muted font-light mb-8">
             Retrouvez tous vos dossiers Mode Marchand.
           </p>
 
           {/* Loading */}
           {isLoading && (
             <div className="flex items-center justify-center py-20">
-              <div className="w-6 h-6 border-2 border-[var(--foreground)]/10 border-t-[var(--sage)] rounded-full animate-spin" />
+              <div className="w-6 h-6 border-2 border-foreground/10 border-t-sage rounded-full animate-spin" />
             </div>
           )}
 
@@ -155,12 +155,12 @@ export default function MesDossiersPage() {
           {/* Empty state */}
           {!isLoading && !error && dossiers.length === 0 && (
             <div className="text-center py-20">
-              <p className="text-sm text-[var(--muted)] font-light mb-4">
+              <p className="text-sm text-muted font-light mb-4">
                 Aucun dossier. Créez votre premier dossier en Mode Marchand.
               </p>
               <a
                 href="/"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--foreground)] text-[var(--background)] rounded-xl text-sm font-medium hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/50 focus-visible:ring-offset-2"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-foreground text-background rounded-xl text-sm font-medium hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
               >
                 Créer un dossier
               </a>
@@ -177,14 +177,14 @@ export default function MesDossiersPage() {
                   <a
                     key={dossier.uuid}
                     href={`/dossier/${dossier.uuid}`}
-                    className="block p-5 rounded-2xl border border-[var(--border)] hover:border-[var(--foreground)]/15 bg-[var(--foreground)]/[0.01] hover:bg-[var(--foreground)]/[0.03] transition-all group"
+                    className="block p-5 rounded-2xl border border-foreground/5 hover:border-foreground/15 bg-foreground/[0.01] hover:bg-foreground/[0.03] transition-all group"
                     data-testid="dossier-card"
                   >
                     <div className="flex items-start justify-between gap-4">
                       {/* Left: info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-3 mb-1.5">
-                          <h2 className="text-sm font-medium text-[var(--foreground)] truncate">
+                          <h2 className="text-sm font-medium text-foreground truncate">
                             {dossier.bien_nom || "Sans titre"}
                           </h2>
                           <span
@@ -194,7 +194,7 @@ export default function MesDossiersPage() {
                           </span>
                         </div>
 
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[var(--muted)] font-light">
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted font-light">
                           <span>{formatDate(dossier.created_at)}</span>
                           <span>
                             {dossier.photo_count} photo{dossier.photo_count > 1 ? "s" : ""}
@@ -222,13 +222,13 @@ export default function MesDossiersPage() {
                               setTimeout(() => setCopiedUuid(null), 2000);
                             });
                           }}
-                          className="text-[11px] text-[var(--muted)] hover:text-[var(--foreground)] font-light transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/50 rounded px-1.5 py-1"
+                          className="text-[11px] text-muted hover:text-foreground font-light transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded px-1.5 py-1"
                           title="Copier le lien de partage"
                         >
                           {copiedUuid === dossier.uuid ? "Copié" : "Copier le lien"}
                         </button>
                         <svg
-                          className="w-4 h-4 text-[var(--muted)] group-hover:text-[var(--foreground)] transition-colors"
+                          className="w-4 h-4 text-muted group-hover:text-foreground transition-colors"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
