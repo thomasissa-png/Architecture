@@ -23,7 +23,7 @@ export default function ContactSticky({
   const fallbackSubject = title || (raisonSociale ? `Annonce ${raisonSociale}` : "Annonce Versiroom");
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-[60] p-4 pointer-events-none">
+    <div className="fixed bottom-0 left-0 right-0 z-[95] p-4 pointer-events-none">
       <div className="max-w-5xl mx-auto flex justify-center">
         {telephone ? (
           <a

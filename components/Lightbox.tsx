@@ -63,7 +63,7 @@ export default function Lightbox({ photos, startIndex, onClose }: LightboxProps)
 
   return (
     <div
-      className="fixed inset-0 z-[90] bg-black/95 flex items-center justify-center"
+      className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
@@ -72,7 +72,7 @@ export default function Lightbox({ photos, startIndex, onClose }: LightboxProps)
       {/* Close button */}
       <button
         onClick={onClose}
-        className="absolute top-4 right-4 z-[91] w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+        className="absolute top-4 right-4 z-[101] w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
         aria-label="Fermer"
       >
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -81,7 +81,7 @@ export default function Lightbox({ photos, startIndex, onClose }: LightboxProps)
       </button>
 
       {/* Counter */}
-      <span className="absolute top-4 left-4 z-[91] text-xs text-white/60 font-light">
+      <span className="absolute top-4 left-4 z-[101] text-xs text-white/60 font-light">
         {index + 1} / {photos.length}
       </span>
 
@@ -89,7 +89,7 @@ export default function Lightbox({ photos, startIndex, onClose }: LightboxProps)
       {photos.length > 1 && (
         <button
           onClick={(e) => { e.stopPropagation(); goPrev(); }}
-          className="absolute left-3 top-1/2 -translate-y-1/2 z-[91] w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+          className="absolute left-3 top-1/2 -translate-y-1/2 z-[101] w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
           aria-label="Photo précédente"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -102,7 +102,7 @@ export default function Lightbox({ photos, startIndex, onClose }: LightboxProps)
       {photos.length > 1 && (
         <button
           onClick={(e) => { e.stopPropagation(); goNext(); }}
-          className="absolute right-3 top-1/2 -translate-y-1/2 z-[91] w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+          className="absolute right-3 top-1/2 -translate-y-1/2 z-[101] w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
           aria-label="Photo suivante"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

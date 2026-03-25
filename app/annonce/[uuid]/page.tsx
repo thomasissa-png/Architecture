@@ -331,39 +331,29 @@ export default async function AnnoncePage({ params }: PageProps) {
           )}
         </div>
 
-        {/* Contact */}
-        <div className="mb-10 p-5 bg-foreground/[0.02] rounded-2xl border border-foreground/5" data-testid="annonce-contact">
-          <h2 className="text-sm font-medium text-foreground mb-3">Contact</h2>
-          <div className="space-y-2">
-            {hasMerchant && merchant?.raison_sociale && (
-              <p className="text-sm font-medium text-foreground">
-                {merchant.raison_sociale}
-              </p>
-            )}
-            {hasMerchant && merchant?.telephone ? (
-              <a
-                href={`tel:${merchant.telephone}`}
-                className="block text-sm text-muted font-light hover:text-foreground transition-colors"
-                data-testid="annonce-telephone"
-              >
-                {merchant.telephone}
-              </a>
-            ) : null}
-            {/* Email is revealed client-side via AnnoncePublicView for anti-scraping */}
-            {(!hasMerchant || (!merchant?.telephone && !merchant?.email_pro)) && (
-              <p className="text-sm text-muted font-light">
-                Pour contacter le vendeur, envoyez un message {"\u00E0"}{" "}
+        {/* Contact — only shown if merchant has phone or email, otherwise ContactSticky handles fallback */}
+        {hasMerchant && (merchant?.telephone || merchant?.email_pro) && (
+          <div className="mb-10 p-5 bg-foreground/[0.02] rounded-2xl border border-foreground/5" data-testid="annonce-contact">
+            <h2 className="text-sm font-medium text-foreground mb-3">Contact</h2>
+            <div className="space-y-2">
+              {merchant?.raison_sociale && (
+                <p className="text-sm font-medium text-foreground">
+                  {merchant.raison_sociale}
+                </p>
+              )}
+              {merchant?.telephone && (
                 <a
-                  href={`mailto:contact@versiroom.fr?subject=${encodeURIComponent(`Annonce : ${title}`)}`}
-                  className="text-sage hover:underline"
+                  href={`tel:${merchant.telephone}`}
+                  className="block text-sm text-muted font-light hover:text-foreground transition-colors"
+                  data-testid="annonce-telephone"
                 >
-                  contact@versiroom.fr
-                </a>{" "}
-                en mentionnant la r{"\u00E9"}f{"\u00E9"}rence de cette annonce.
-              </p>
-            )}
+                  {merchant.telephone}
+                </a>
+              )}
+              {/* Email is revealed client-side via AnnoncePublicView for anti-scraping */}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Action buttons — client component */}
         {completedPhotos.length > 0 && (
