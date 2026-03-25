@@ -26,6 +26,8 @@ export async function middleware(request: NextRequest) {
   if (!token) {
     const url = request.nextUrl.clone();
     url.pathname = "/";
+    // Preserve the intended destination so the auth modal can redirect back after login
+    url.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(url);
   }
 

@@ -13,6 +13,7 @@ import { processImage, isLikelyInterior } from "@/lib/image-utils";
 import { OUTDOOR_STYLES } from "@/lib/outdoor-styles";
 import { useSession } from "next-auth/react";
 import AuthButton from "@/components/AuthButton";
+import AuthModal from "@/components/AuthModal";
 import MerchantMode from "@/components/MerchantMode";
 import PhotoAssociator from "@/components/PhotoAssociator";
 
@@ -122,7 +123,7 @@ const USE_CASES = [
 ];
 
 export default function Home() {
-  const { data: session } = useSession();
+  const { data: session, status: authStatus } = useSession();
   const [files, setFiles] = useState<File[]>([]);
   const [selectedStyle, setSelectedStyle] = useState<StyleOption | null>(null);
   const [customPrompt, setCustomPrompt] = useState("");
@@ -134,6 +135,21 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [generationElapsed, setGenerationElapsed] = useState(0);
   const [preprocessWarnings, setPreprocessWarnings] = useState<string[]>([]);
+
+  // Auto-open auth modal when redirected from a protected route (middleware adds ?callbackUrl=)
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authCallbackUrl, setAuthCallbackUrl] = useState<string | undefined>(undefined);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const cb = params.get("callbackUrl");
+    if (cb) {
+      setAuthCallbackUrl(cb);
+      if (authStatus === "unauthenticated") {
+        setAuthModalOpen(true);
+      }
+    }
+  }, [authStatus]);
 
   // F4 — Merchant mode state
   const [isMerchantMode, setIsMerchantMode] = useState(false);
@@ -655,13 +671,22 @@ export default function Home() {
             <a href="#pricing" className="hidden sm:inline text-xs text-muted font-light hover:text-foreground transition-colors">
               Tarifs
             </a>
-            <a
-              href="#outil"
-              className="text-xs bg-foreground text-background px-3 sm:px-4 py-2 rounded-full font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
-            >
-              <span className="sm:hidden">Essayer</span>
-              <span className="hidden sm:inline">Essayer gratuitement</span>
-            </a>
+            {session ? (
+              <a
+                href="/mes-biens"
+                className="sm:hidden text-xs bg-foreground text-background px-3 py-2 rounded-full font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+              >
+                Mes biens
+              </a>
+            ) : (
+              <a
+                href="#outil"
+                className="text-xs bg-foreground text-background px-3 sm:px-4 py-2 rounded-full font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+              >
+                <span className="sm:hidden">Essayer</span>
+                <span className="hidden sm:inline">Essayer gratuitement</span>
+              </a>
+            )}
             <AuthButton />
           </nav>
         </div>
@@ -1564,6 +1589,13 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* Auth modal — auto-opened when redirected from protected route */}
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        callbackUrl={authCallbackUrl}
+      />
     </div>
   );
 }

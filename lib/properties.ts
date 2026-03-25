@@ -7,6 +7,8 @@
  */
 
 import { getPool, ensureTable } from "@/lib/db";
+import { ensureUserPhotosTable } from "@/lib/user-photos";
+import { ensureDossierTables } from "@/lib/dossier";
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -95,6 +97,9 @@ let propertiesTableEnsured = false;
 export async function ensurePropertiesTable(): Promise<void> {
   if (propertiesTableEnsured) return;
   await ensureTable();
+  // Ensure dependent tables exist — subqueries in getPropertiesByUser/getPropertyById
+  // reference user_photos and dossiers tables.
+  await Promise.all([ensureUserPhotosTable(), ensureDossierTables()]);
 
   const db = getPool();
   await db.query(`

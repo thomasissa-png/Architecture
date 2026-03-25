@@ -163,16 +163,30 @@ export default function PropertyDetailPage() {
     }
   }, [authStatus]);
 
-  const fetchProperty = useCallback(async () => {
+  const fetchProperty = useCallback(async (retryCount = 0) => {
     try {
       const res = await fetch(`/api/properties/${propertyId}`);
       if (!res.ok) {
-        setError("Bien introuvable.");
+        // On first attempt, retry once after a short delay — handles race condition
+        // where the redirect from creation arrives before the DB write is visible.
+        if (retryCount === 0) {
+          await new Promise((r) => setTimeout(r, 800));
+          return fetchProperty(1);
+        }
+        if (res.status === 404) {
+          setError("Bien introuvable.");
+        } else {
+          setError("Erreur de chargement. Veuillez rafra\u00eechir la page.");
+        }
         return;
       }
       const data = await res.json();
       setProperty(data.property);
     } catch {
+      if (retryCount === 0) {
+        await new Promise((r) => setTimeout(r, 800));
+        return fetchProperty(1);
+      }
       setError("Erreur de chargement.");
     }
   }, [propertyId]);
