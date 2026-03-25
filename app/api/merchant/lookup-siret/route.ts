@@ -207,6 +207,25 @@ async function lookupViaInsee(siret: string): Promise<CompanyResult | null> {
   }
 }
 
+// ─── INSEE Reachability Check ─────────────────────────────────────────
+
+async function checkInseeReachable(): Promise<boolean> {
+  try {
+    // Use a known SIRET (La Poste HQ) to test if INSEE API responds at all
+    const res = await fetch(
+      "https://api.insee.fr/entreprises/sirene/V3.11/siret/35600000000048",
+      {
+        method: "HEAD",
+        signal: AbortSignal.timeout(4000),
+      }
+    );
+    // Any HTTP response (even 403/404) means the service is reachable
+    return res.status < 500;
+  } catch {
+    return false;
+  }
+}
+
 // ─── POST Handler ────────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
@@ -252,14 +271,36 @@ export async function POST(request: NextRequest) {
   }
 
   // Try Pappers first, then INSEE
-  const result = await lookupViaPappers(siret) || await lookupViaInsee(siret);
+  const pappersApiKey = process.env.PAPPERS_API_KEY;
+  let pappersReachable = false;
+  let inseeReachable = false;
 
-  if (!result) {
+  const pappersResult = await lookupViaPappers(siret);
+  if (pappersResult) {
+    return NextResponse.json(pappersResult);
+  }
+  // Pappers returned null — either no API key, network error, or SIRET not found
+  // We consider Pappers "reachable" only if the key is configured (actual 404 vs no key)
+  pappersReachable = !!pappersApiKey;
+
+  const inseeResult = await lookupViaInsee(siret);
+  if (inseeResult) {
+    return NextResponse.json(inseeResult);
+  }
+  // INSEE returned null — either network error or SIRET not found
+  // We test reachability with a lightweight check: if Pappers was reachable, we trust
+  // the SIRET doesn't exist. If neither was reachable, it's a service issue.
+  inseeReachable = await checkInseeReachable();
+
+  if (!pappersReachable && !inseeReachable) {
     return NextResponse.json(
-      { error: "SIRET introuvable. Verifiez le numero et reessayez." },
-      { status: 404 }
+      { error: "Service de verification indisponible. Reessayez dans quelques instants.", serviceDown: true },
+      { status: 503 }
     );
   }
 
-  return NextResponse.json(result);
+  return NextResponse.json(
+    { error: "SIRET introuvable. Verifiez le numero et reessayez." },
+    { status: 404 }
+  );
 }

@@ -89,7 +89,7 @@ export async function POST(request: Request) {
   } catch (err) {
     console.error("Checkout error:", err);
     return NextResponse.json(
-      { error: "Erreur lors de la creation du paiement." },
+      { error: "Erreur lors de la cr\u00E9ation du paiement." },
       { status: 500 }
     );
   }

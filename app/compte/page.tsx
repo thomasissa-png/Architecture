@@ -116,8 +116,12 @@ export default function ComptePage() {
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        setSiretError(data.error || "SIRET introuvable.");
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 503) {
+          setSiretError(data.error || "Service de verification indisponible. Reessayez dans quelques instants.");
+        } else {
+          setSiretError(data.error || "SIRET introuvable.");
+        }
         return;
       }
 

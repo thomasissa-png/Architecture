@@ -129,7 +129,7 @@ export default async function AnnoncePage({ params }: PageProps) {
             Bien introuvable
           </h1>
           <p className="text-muted font-light text-sm">
-            Le bien associe a cette annonce n&apos;existe plus.
+            Le bien associ{"\u00E9"} {"\u00E0"} cette annonce n&apos;existe plus.
           </p>
         </div>
       </div>

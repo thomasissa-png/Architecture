@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
   } catch (err) {
     console.error("Error creating dossier:", err);
     return NextResponse.json(
-      { error: "Erreur lors de la creation du dossier." },
+      { error: "Erreur lors de la cr\u00E9ation du dossier." },
       { status: 500 }
     );
   }
@@ -106,7 +106,7 @@ export async function GET() {
   } catch (err) {
     console.error("Error listing dossiers:", err);
     return NextResponse.json(
-      { error: "Erreur lors de la recuperation des dossiers." },
+      { error: "Erreur lors de la r\u00E9cup\u00E9ration des dossiers." },
       { status: 500 }
     );
   }

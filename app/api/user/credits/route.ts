@@ -10,7 +10,7 @@ export async function GET() {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json(
-        { error: "Non authentifie." },
+        { error: "Non authentifi\u00E9." },
         { status: 401 }
       );
     }

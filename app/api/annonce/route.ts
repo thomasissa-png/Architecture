@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
   const photos = await getUserPhotos(session.user.id, { propertyId });
   if (photos.length === 0) {
     return NextResponse.json(
-      { error: "Aucune photo associee a ce bien." },
+      { error: "Aucune photo associ\u00E9e \u00E0 ce bien." },
       { status: 400 }
     );
   }

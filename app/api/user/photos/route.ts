@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
   } catch (err) {
     console.error("Error listing user photos:", err);
     return NextResponse.json(
-      { error: "Erreur lors de la recuperation des photos." },
+      { error: "Erreur lors de la r\u00E9cup\u00E9ration des photos." },
       { status: 500 }
     );
   }

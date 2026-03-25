@@ -36,13 +36,13 @@ const STYLE_LABELS: Record<string, string> = {
   japandi: "Japandi",
   art_deco: "Art Deco",
   mid_century: "Mid-Century",
-  bohemian: "Boheme",
-  mediterranean: "Mediterraneen",
+  bohemian: "Boh\u00E8me",
+  mediterranean: "M\u00E9diterran\u00E9en",
   cozy: "Cosy",
   wabi_sabi: "Wabi-Sabi",
   maximalist: "Maximaliste",
   haussmannian: "Haussmannien",
-  custom: "Personnalise",
+  custom: "Personnalis\u00E9",
 };
 
 export default function GaleriePage() {
@@ -200,7 +200,7 @@ export default function GaleriePage() {
               className="text-xs font-light bg-foreground/5 border-0 rounded-xl px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
             >
               <option value="">Toutes</option>
-              <option value="true">Associees</option>
+              <option value="true">Associ{"\u00E9"}es</option>
               <option value="false">Non class&#233;es</option>
             </select>
           </div>
@@ -232,12 +232,20 @@ export default function GaleriePage() {
                     alt={photo.style_id || "Photo g\u00e9n\u00e9r\u00e9e"}
                     className="w-full aspect-[4/3] object-cover"
                     loading="lazy"
+                    onError={(e) => {
+                      const target = e.currentTarget;
+                      target.style.display = "none";
+                      const fallback = target.nextElementSibling as HTMLElement | null;
+                      if (fallback) fallback.style.display = "flex";
+                    }}
                   />
-                ) : (
-                  <div className="w-full aspect-[4/3] bg-foreground/5 flex items-center justify-center">
-                    <span className="text-xs text-muted font-light">Image non disponible</span>
-                  </div>
-                )}
+                ) : null}
+                <div
+                  className="w-full aspect-[4/3] bg-foreground/5 items-center justify-center"
+                  style={{ display: photo.output_image_key ? "none" : "flex" }}
+                >
+                  <span className="text-xs text-muted font-light">Image non disponible</span>
+                </div>
 
                 {/* Overlay info */}
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent p-3">
@@ -324,6 +332,9 @@ export default function GaleriePage() {
                       src={`/api/logs/image?path=${encodeURIComponent(selectedPhoto.input_image_key)}`}
                       alt="Avant"
                       className="w-full rounded-xl"
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none";
+                      }}
                     />
                   </div>
                 )}
@@ -334,6 +345,11 @@ export default function GaleriePage() {
                       src={`/api/logs/image?path=${encodeURIComponent(selectedPhoto.output_image_key)}`}
                       alt="Apr\u00e8s"
                       className="w-full rounded-xl"
+                      onError={(e) => {
+                        e.currentTarget.src = "";
+                        e.currentTarget.alt = "Image indisponible";
+                        e.currentTarget.className = "w-full rounded-xl bg-foreground/5 aspect-[4/3] flex items-center justify-center text-xs text-muted font-light";
+                      }}
                     />
                   </div>
                 )}

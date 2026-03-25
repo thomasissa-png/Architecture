@@ -57,13 +57,13 @@ const STYLE_LABELS: Record<string, string> = {
   japandi: "Japandi",
   art_deco: "Art Deco",
   mid_century: "Mid-Century",
-  bohemian: "Boheme",
-  mediterranean: "Mediterraneen",
+  bohemian: "Boh\u00E8me",
+  mediterranean: "M\u00E9diterran\u00E9en",
   cozy: "Cosy",
   wabi_sabi: "Wabi-Sabi",
   maximalist: "Maximaliste",
   haussmannian: "Haussmannien",
-  custom: "Personnalise",
+  custom: "Personnalis\u00E9",
 };
 
 export default function PropertyDetailPage() {
@@ -279,15 +279,23 @@ export default function PropertyDetailPage() {
     );
   }
 
-  if (error || !property) {
+  if (error) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <p className="text-muted font-light text-sm">{error || "Bien introuvable."}</p>
+          <p className="text-muted font-light text-sm">{error}</p>
           <a href="/mes-biens" className="inline-block mt-4 text-xs text-sage font-medium hover:underline">
-            Retour \u00e0 mes biens
+            Retour {"\u00E0"} mes biens
           </a>
         </div>
+      </div>
+    );
+  }
+
+  if (!property) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-pulse text-muted font-light text-sm">Chargement...</div>
       </div>
     );
   }

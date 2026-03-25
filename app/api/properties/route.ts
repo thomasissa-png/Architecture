@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
   } catch (err) {
     console.error("Error creating property:", err);
     return NextResponse.json(
-      { error: "Erreur lors de la creation du bien." },
+      { error: "Erreur lors de la cr\u00E9ation du bien." },
       { status: 500 }
     );
   }
@@ -78,7 +78,7 @@ export async function GET() {
   } catch (err) {
     console.error("Error listing properties:", err);
     return NextResponse.json(
-      { error: "Erreur lors de la recuperation des biens." },
+      { error: "Erreur lors de la r\u00E9cup\u00E9ration des biens." },
       { status: 500 }
     );
   }

@@ -460,7 +460,7 @@ export default function Home() {
     async (comment: string) => {
       const targetResult = results[refineTargetIndex];
       if (!targetResult?.pass1Key) {
-        setRefineError("Les surfaces de cette generation ont expire. Regenerez depuis l'image originale.");
+        setRefineError("Les surfaces de cette g\u00E9n\u00E9ration ont expir\u00E9. Reg\u00E9n\u00E9rez depuis l'image originale.");
         return;
       }
 
