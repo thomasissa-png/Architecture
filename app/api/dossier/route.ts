@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { getUserCredits } from "@/lib/credits";
+import { getUserCredits, hasProAccess } from "@/lib/credits";
 import {
   createDossier,
   getDossiersByUser,
@@ -25,13 +25,20 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Pack Pro minimum check: user must have >= 20 credits to access Mode Marchand
-  // (Pro pack = 50 credits at 29EUR, but we check 20 as minimum threshold to allow
-  // users who have partially used their pack)
+  // F4.3: Mode Marchand requires Pack Pro minimum (50+ credits purchased)
+  const proAccess = await hasProAccess(session.user.id);
+  if (!proAccess) {
+    return NextResponse.json(
+      { error: "Le Mode Marchand est reserve aux utilisateurs ayant achete un Pack Pro ou superieur." },
+      { status: 403 }
+    );
+  }
+
+  // Also check remaining credits
   const credits = await getUserCredits(session.user.id);
   if (credits < 1) {
     return NextResponse.json(
-      { error: "Credits insuffisants. Rechargez un pack Pro ou superieur pour utiliser le Mode Marchand." },
+      { error: "Credits insuffisants. Rechargez pour continuer." },
       { status: 402 }
     );
   }

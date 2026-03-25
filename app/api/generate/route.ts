@@ -994,7 +994,13 @@ export async function POST(request: NextRequest) {
   }
 
   // F4: Internal dossier batch calls skip auth + credit (already handled by dossier API)
-  const isInternalDossierCall = request.headers.get("X-Internal-Dossier") === "true";
+  // Secured with a shared secret to prevent external clients from bypassing auth/credits
+  const internalSecret = request.headers.get("X-Internal-Secret");
+  const isInternalDossierCall =
+    request.headers.get("X-Internal-Dossier") === "true" &&
+    !!internalSecret &&
+    !!process.env.INTERNAL_API_SECRET &&
+    internalSecret === process.env.INTERNAL_API_SECRET;
 
   // Auth + credit check
   // - Connected users: use credit system (optimistic decrement)

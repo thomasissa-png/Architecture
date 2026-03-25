@@ -311,6 +311,37 @@ async function generateSinglePhoto(
 
   const inputBase64 = Buffer.from(inputImageData).toString("base64");
 
+  // Detect image dimensions from JPEG/PNG header for correct aspect ratio
+  let imgWidth = 1536;
+  let imgHeight = 1024;
+  try {
+    const buf = Buffer.from(inputImageData);
+    // JPEG: find SOF0 marker (0xFF 0xC0) — height at offset+5, width at offset+7
+    if (buf[0] === 0xFF && buf[1] === 0xD8) {
+      let offset = 2;
+      while (offset < buf.length - 8) {
+        if (buf[offset] === 0xFF && (buf[offset + 1] === 0xC0 || buf[offset + 1] === 0xC2)) {
+          imgHeight = buf.readUInt16BE(offset + 5);
+          imgWidth = buf.readUInt16BE(offset + 7);
+          break;
+        }
+        const segLen = buf.readUInt16BE(offset + 2);
+        offset += 2 + segLen;
+      }
+    }
+    // PNG: width at byte 16, height at byte 20
+    else if (buf[0] === 0x89 && buf[1] === 0x50) {
+      imgWidth = buf.readUInt32BE(16);
+      imgHeight = buf.readUInt32BE(20);
+    }
+  } catch {
+    // Fallback to landscape defaults
+  }
+  // Map to closest OpenAI-compatible size
+  const ratio = imgWidth / imgHeight;
+  const outputWidth = ratio > 1.3 ? 1536 : ratio < 0.77 ? 1024 : 1024;
+  const outputHeight = ratio > 1.3 ? 1024 : ratio < 0.77 ? 1536 : 1024;
+
   // Resolve style prompts
   const effectiveStyleId = photo.style_id || dossier.global_style_id || "scandinavian";
 
@@ -331,8 +362,8 @@ async function generateSinglePhoto(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      // Forward auth - use internal API key or skip auth for internal calls
       "X-Internal-Dossier": "true",
+      "X-Internal-Secret": process.env.INTERNAL_API_SECRET || "",
     },
     body: JSON.stringify({
       image: `data:image/jpeg;base64,${inputBase64}`,
@@ -340,8 +371,8 @@ async function generateSinglePhoto(
       furniturePrompt: style.furniturePrompt,
       styleId: effectiveStyleId,
       withFurniture: true,
-      width: 1536, // Default landscape
-      height: 1024,
+      width: outputWidth,
+      height: outputHeight,
       roomType: photo.room_type_id,
       isOutdoor: photo.is_outdoor,
       _skipCreditCheck: true, // Internal flag
