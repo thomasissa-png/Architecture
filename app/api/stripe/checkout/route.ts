@@ -25,6 +25,14 @@ export async function POST(request: Request) {
       );
     }
 
+    // Server-side validation of retractation acceptance (Art. L221-28)
+    if (!retractationAccepted) {
+      return NextResponse.json(
+        { error: "Vous devez accepter la clause de rétractation avant de procéder au paiement." },
+        { status: 400 }
+      );
+    }
+
     const baseUrl =
       process.env.NEXTAUTH_URL ||
       process.env.NEXT_PUBLIC_BASE_URL ||

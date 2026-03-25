@@ -3,7 +3,7 @@ import OpenAI from "openai";
 import Replicate from "replicate";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { getUserCredits, decrementCredit } from "@/lib/credits";
+import { decrementCredit, addCredits } from "@/lib/credits";
 import { logGeneration, savePass1Cache, getPass1Cache } from "@/lib/db";
 import { preprocessIterationComment } from "@/lib/custom-prompt";
 import {
@@ -993,17 +993,24 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Credit check — connected users must have credits
+  // Auth + credit check — authentication required for all generations
   const session = await getServerSession(authOptions);
-  if (session?.user?.id) {
-    const credits = await getUserCredits(session.user.id);
-    if (credits <= 0) {
-      return NextResponse.json(
-        { error: "Crédits insuffisants. Rechargez un pack pour continuer." },
-        { status: 402 }
-      );
-    }
+  if (!session?.user?.id) {
+    return NextResponse.json(
+      { error: "Connexion requise pour générer. Connectez-vous pour profiter de vos 3 générations gratuites." },
+      { status: 401 }
+    );
   }
+
+  // Optimistic decrement — reserve the credit BEFORE generation to prevent race conditions
+  const decremented = await decrementCredit(session.user.id);
+  if (!decremented) {
+    return NextResponse.json(
+      { error: "Crédits insuffisants. Rechargez un pack pour continuer." },
+      { status: 402 }
+    );
+  }
+  let creditRefunded = false;
 
   let styleId = "unknown";
 
@@ -1173,10 +1180,7 @@ export async function POST(request: NextRequest) {
         outdoorSubtype: cached.meta.outdoorSubtype ?? undefined,
       }).catch((err) => console.error("DB log (iteration) failed:", err));
 
-      // Decrement credit after successful generation
-      if (session?.user?.id) {
-        await decrementCredit(session.user.id);
-      }
+      // Credit was decremented optimistically at the start — generation succeeded
 
       return response;
     }
@@ -1310,10 +1314,7 @@ export async function POST(request: NextRequest) {
         outdoorSubtype: isOutdoor ? (outdoorSubtype ?? undefined) : undefined,
       }).catch((err) => console.error("DB log failed:", err));
 
-      // Decrement credit after successful generation
-      if (session?.user?.id) {
-        await decrementCredit(session.user.id);
-      }
+      // Credit was decremented optimistically at the start — generation succeeded
 
       return response;
     }
@@ -1346,16 +1347,21 @@ export async function POST(request: NextRequest) {
       outdoorSubtype: isOutdoor ? (outdoorSubtype ?? undefined) : undefined,
     }).catch((err) => console.error("DB log failed:", err));
 
-    // Decrement credit after successful generation
-    if (session?.user?.id) {
-      await decrementCredit(session.user.id);
-    }
+    // Credit already decremented optimistically — mark as consumed
+    creditRefunded = false;
 
     return response;
   } catch (error) {
     console.error("Generation error:", error);
     const message =
       error instanceof Error ? error.message : "Erreur interne du serveur";
+
+    // Refund credit on generation failure (optimistic decrement)
+    if (session?.user?.id && !creditRefunded) {
+      addCredits(session.user.id, 1).catch((err) =>
+        console.error("Credit refund failed:", err)
+      );
+    }
 
     // Log failures too
     logGeneration({
