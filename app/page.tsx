@@ -29,10 +29,10 @@ const MAX_ITERATIONS = 3;
 
 function getSessionId(): string {
   if (typeof window === "undefined") return "";
-  let sessionId = localStorage.getItem("visirenov_session_id");
+  let sessionId = localStorage.getItem("versiroom_session_id");
   if (!sessionId) {
     sessionId = crypto.randomUUID();
-    localStorage.setItem("visirenov_session_id", sessionId);
+    localStorage.setItem("versiroom_session_id", sessionId);
   }
   return sessionId;
 }
@@ -588,7 +588,7 @@ export default function Home() {
           ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
           ctx.textAlign = "right";
           const pad = Math.round(img.width * 0.015);
-          ctx.fillText("Généré par IA — VisiRénov", img.width - pad, img.height - pad);
+          ctx.fillText("Généré par IA — Versiroom", img.width - pad, img.height - pad);
           canvas.toBlob((b) => resolve(b!), "image/jpeg", 0.92);
         };
         img.src = result.generatedUrl;
@@ -596,7 +596,7 @@ export default function Home() {
       const blobUrl = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = blobUrl;
-      link.download = `visirenov-${index + 1}-${Date.now()}.jpg`;
+      link.download = `versiroom-${index + 1}-${Date.now()}.jpg`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -625,7 +625,7 @@ export default function Home() {
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-foreground/5">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 py-3 sm:py-4 flex items-center justify-between">
           <span className="text-xl font-semibold text-foreground tracking-tighter">
-            VisiR&eacute;nov
+            Versiroom
           </span>
           <nav className="flex items-center gap-4 sm:gap-6">
             <a href="#pricing" className="text-xs text-muted font-light hover:text-foreground transition-colors">
@@ -664,7 +664,7 @@ export default function Home() {
           <p className="text-base sm:text-lg text-muted font-light leading-relaxed max-w-2xl mx-auto mb-6 sm:mb-8">
             Uploadez une photo, choisissez un style parmi 12 ambiances curat&eacute;es par des experts.
             <br className="hidden sm:inline" />
-            VisiR&eacute;nov pr&eacute;serve votre espace &mdash; il ne le r&eacute;invente pas.
+            Versiroom pr&eacute;serve votre espace &mdash; il ne le r&eacute;invente pas.
           </p>
 
           {/* Hero before/after — richly illustrated mock */}
@@ -1349,7 +1349,7 @@ export default function Home() {
                   Support d&eacute;di&eacute;
                 </li>
               </ul>
-              <a href="mailto:contact@visirenov.fr" className="block w-full text-center border border-foreground/15 text-foreground px-4 py-2.5 rounded-full text-sm font-medium hover:bg-foreground/5 transition-colors">
+              <a href="mailto:contact@versiroom.fr" className="block w-full text-center border border-foreground/15 text-foreground px-4 py-2.5 rounded-full text-sm font-medium hover:bg-foreground/5 transition-colors">
                 Nous contacter
               </a>
             </div>
@@ -1386,12 +1386,12 @@ export default function Home() {
               Confidentialit&eacute;
             </a>
             <a
-              href="mailto:contact@visirenov.fr"
+              href="mailto:contact@versiroom.fr"
               className="hover:text-foreground transition-colors py-2"
             >
               Contact
             </a>
-            <span>&copy; VisiR&eacute;nov 2026</span>
+            <span>&copy; Versiroom 2026</span>
           </div>
         </div>
       </footer>

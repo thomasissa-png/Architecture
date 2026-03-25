@@ -1,4 +1,4 @@
-# Metadata Templates — VisiRénov
+# Metadata Templates — Versiroom
 > Produit par @seo — 2026-03-25
 > Référence : brand-platform.md, brand-story.md (section 5 entités GEO), brand-voice.md
 > Stack : Next.js 14 App Router — metadata API native
@@ -10,7 +10,7 @@
 ### Page d'accueil (/)
 
 ```
-title: "VisiRénov — Home staging virtuel IA | 12 styles, 90 secondes"
+title: "Versiroom — Home staging virtuel IA | 12 styles, 90 secondes"
 description: "Meublez vos pièces vides par IA en 90 secondes. Pipeline 2 passes qui préserve votre géométrie. Pour architectes d'intérieur, marchands de biens et particuliers exigeants. HD sans filigrane."
 ```
 
@@ -21,8 +21,8 @@ Intention : transactionnelle + branding. Le title nomme la catégorie (`home sta
 ### Page About (/about)
 
 ```
-title: "À propos — VisiRénov | Home staging qui préserve votre espace"
-description: "VisiRénov a été conçu pour les professionnels dont la réputation est en jeu. Pipeline BiPasse™ co-développé avec Yann Duval, architecte d'intérieur, et Lucas Moreau, expert IA image."
+title: "À propos — Versiroom | Home staging qui préserve votre espace"
+description: "Versiroom a été conçu pour les professionnels dont la réputation est en jeu. Pipeline BiPasse™ co-développé avec Yann Duval, architecte d'intérieur, et Lucas Moreau, expert IA image."
 ```
 
 Intention : informationnelle + autorité éditoriale. Les noms d'experts (Yann Duval, Lucas Moreau) renforcent l'entité de marque dans les index.
@@ -32,7 +32,7 @@ Intention : informationnelle + autorité éditoriale. Les noms d'experts (Yann D
 ### Page Pricing (/pricing)
 
 ```
-title: "Tarifs VisiRénov — Home staging virtuel IA sans abonnement"
+title: "Tarifs Versiroom — Home staging virtuel IA sans abonnement"
 description: "Gratuit pour démarrer, Pro 29€ et Business 79€ par mois. Téléchargement HD sans filigrane. Aucun abonnement imposé — payez à l'usage selon votre volume."
 ```
 
@@ -43,7 +43,7 @@ Intention : transactionnelle. Le mot-clé `sans abonnement` est un différenciat
 ### Landing Marchands de biens (/marchand)
 
 ```
-title: "Home staging virtuel IA pour marchands de biens | VisiRénov"
+title: "Home staging virtuel IA pour marchands de biens | Versiroom"
 description: "Transformez vos photos de bien brut en plaquette de pré-commercialisation en 10 minutes. Sans home stager, sans délai, sans filigrane. 29€/mois — à partir de 8 opérations, c'est rentable."
 ```
 
@@ -54,7 +54,7 @@ Intention : transactionnelle ciblée Thomas. `plaquette de pré-commercialisatio
 ### Landing Décorateurs / Architectes (/decorateur)
 
 ```
-title: "Home staging IA pour architectes d'intérieur | VisiRénov"
+title: "Home staging IA pour architectes d'intérieur | Versiroom"
 description: "Arrivez au premier RDV avec 3 ambiances sur la photo de chantier. 12 styles curatés par des experts. Résultats HD partageables en 90 secondes. Sans rendu 3D, sans attendre 3 jours."
 ```
 
@@ -65,7 +65,7 @@ Intention : transactionnelle ciblée Claire. `photo de chantier` et `premier RDV
 ### Page génération — outil principal (/generate ou ancre #outil)
 
 ```
-title: "Générer un visuel meublé — VisiRénov | Home staging par IA"
+title: "Générer un visuel meublé — Versiroom | Home staging par IA"
 description: "Uploadez une photo JPG, PNG ou HEIC. Choisissez parmi 12 styles curatés. Votre pièce meublée en 90 secondes — géométrie et lumière préservées."
 ```
 
@@ -81,7 +81,7 @@ Intention : transactionnelle directe. `JPG, PNG, HEIC` répond aux requêtes d'a
 {
   "@context": "https://schema.org",
   "@type": "Organization",
-  "name": "VisiRénov",
+  "name": "Versiroom",
   "url": "https://architecture-toum92.replit.app",
   "logo": "https://architecture-toum92.replit.app/logo.png",
   "description": "Home staging virtuel par IA pour architectes d'intérieur, marchands de biens et particuliers. Pipeline 2 passes qui préserve la géométrie de la pièce originale.",
@@ -105,7 +105,7 @@ Intention : transactionnelle directe. `JPG, PNG, HEIC` répond aux requêtes d'a
 {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
-  "name": "VisiRénov",
+  "name": "Versiroom",
   "applicationCategory": "DesignApplication",
   "operatingSystem": "Web",
   "url": "https://architecture-toum92.replit.app",
@@ -154,26 +154,26 @@ Intention : transactionnelle directe. `JPG, PNG, HEIC` répond aux requêtes d'a
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "Comment VisiRénov préserve-t-il la géométrie de ma pièce ?",
+      "name": "Comment Versiroom préserve-t-il la géométrie de ma pièce ?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "VisiRénov utilise un pipeline en 2 passes séquentielles. La passe 1 applique les finitions de surface (murs, sol, luminaire) sans toucher à la géométrie. La passe 2 ajoute le mobilier sur la pièce finie, avec les surfaces verrouillées. Résultat : l'angle de prise de vue, les proportions et la lumière naturelle sont identiques entre la photo originale et le visuel généré."
+        "text": "Versiroom utilise un pipeline en 2 passes séquentielles. La passe 1 applique les finitions de surface (murs, sol, luminaire) sans toucher à la géométrie. La passe 2 ajoute le mobilier sur la pièce finie, avec les surfaces verrouillées. Résultat : l'angle de prise de vue, les proportions et la lumière naturelle sont identiques entre la photo originale et le visuel généré."
       }
     },
     {
       "@type": "Question",
-      "name": "Quelle est la différence entre VisiRénov et les autres outils de home staging virtuel ?",
+      "name": "Quelle est la différence entre Versiroom et les autres outils de home staging virtuel ?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "La plupart des outils de home staging virtuel génèrent une nouvelle image à partir de votre photo — ils s'en inspirent mais ne l'éditent pas. VisiRénov édite votre photo en 2 passes distinctes. La pièce reste la vôtre : même géométrie, même lumière, mêmes proportions. Seuls les finitions et le mobilier changent."
+        "text": "La plupart des outils de home staging virtuel génèrent une nouvelle image à partir de votre photo — ils s'en inspirent mais ne l'éditent pas. Versiroom édite votre photo en 2 passes distinctes. La pièce reste la vôtre : même géométrie, même lumière, mêmes proportions. Seuls les finitions et le mobilier changent."
       }
     },
     {
       "@type": "Question",
-      "name": "VisiRénov convient-il aux professionnels de l'immobilier ?",
+      "name": "Versiroom convient-il aux professionnels de l'immobilier ?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Oui. VisiRénov est conçu pour les architectes d'intérieur (support de conversation client en 90 secondes), les marchands de biens (plaquettes de pré-commercialisation sans home stager) et les particuliers exigeants. Téléchargement HD sans filigrane inclus dans tous les plans payants."
+        "text": "Oui. Versiroom est conçu pour les architectes d'intérieur (support de conversation client en 90 secondes), les marchands de biens (plaquettes de pré-commercialisation sans home stager) et les particuliers exigeants. Téléchargement HD sans filigrane inclus dans tous les plans payants."
       }
     }
   ]
@@ -192,20 +192,20 @@ Dans `app/layout.tsx`, déclarer les métadonnées par défaut :
 // app/layout.tsx
 export const metadata: Metadata = {
   title: {
-    default: "VisiRénov — Home staging virtuel IA | 12 styles, 90 secondes",
-    template: "%s | VisiRénov"
+    default: "Versiroom — Home staging virtuel IA | 12 styles, 90 secondes",
+    template: "%s | Versiroom"
   },
   description: "Meublez vos pièces vides par IA en 90 secondes. Pipeline 2 passes qui préserve votre géométrie. HD sans filigrane.",
   metadataBase: new URL("https://architecture-toum92.replit.app"),
   openGraph: {
     type: "website",
     locale: "fr_FR",
-    siteName: "VisiRénov",
+    siteName: "Versiroom",
     images: [{ url: "/og-image.jpg", width: 1200, height: 630 }]
   },
   twitter: {
     card: "summary_large_image",
-    site: "@visirenov"
+    site: "@versiroom"
   },
   robots: { index: true, follow: true }
 }
@@ -304,7 +304,7 @@ Note : les volumes sont des estimations qualitatives — le secteur IA déco est
 
 ### Mots-cles longue traine proprietaires (entites GEO brand-story.md)
 
-Ces requêtes sont propriétaires : VisiRénov sera le seul ou premier résultat, sans concurrence directe.
+Ces requêtes sont propriétaires : Versiroom sera le seul ou premier résultat, sans concurrence directe.
 
 | Requête longue traîne | Page cible | Statut |
 |---|---|---|

@@ -1,4 +1,4 @@
-# Stratégie de Pricing — VisiRénov
+# Stratégie de Pricing — Versiroom
 > Produit par @product-manager — 2026-03-25
 > Décisions fondateur intégrées : packages crédits (pas d'abonnement), F4 prix fixe par dossier, F5 prix fixe par dossier.
 
@@ -17,11 +17,11 @@
 | **HomeDesigns AI (US)** | Abonnement | $27/mois (100 designs) — $29/mois (1 000 designs) | 80+ styles, Furniture Finder, Color Swap | Large (DIY + pro) |
 | **Virtual Staging AI (US/Zillow)** | À la carte + abonnement | ~$0,53/photo — $16/mois 6 photos | Rapidité 10s, staging uniquement | Agents immo US |
 
-**Enseignement clé :** Le marché français est dominé par l'abonnement mensuel (Renovate Club 9,99€/mois illimité, Gepetto non publié). L'unique acteur à la carte en France est InterieurAI à 1,25€/photo. VisiRénov est seul sur le modèle **packages one-shot** — différenciation assumée par décision fondateur.
+**Enseignement clé :** Le marché français est dominé par l'abonnement mensuel (Renovate Club 9,99€/mois illimité, Gepetto non publié). L'unique acteur à la carte en France est InterieurAI à 1,25€/photo. Versiroom est seul sur le modèle **packages one-shot** — différenciation assumée par décision fondateur.
 
 ---
 
-## 2. Stratégie de pricing VisiRénov
+## 2. Stratégie de pricing Versiroom
 
 ### 2A. Packages crédits — Génération IA
 
@@ -43,8 +43,8 @@
 > Prix HT. TVA 20% applicable pour les particuliers. Claire et Thomas récupèrent la TVA (usage professionnel).
 
 **Justification vs concurrents :**
-- Vs InterieurAI (1,25€/photo à la carte) : VisiRénov Pro à 0,58€/photo est 54% moins cher sur le volume, tout en étant perçu comme premium (pipeline 2 passes, styles curatés).
-- Vs Renovate Club (9,99€/mois illimité) : VisiRénov ne joue pas le même terrain. L'illimité de Renovate Club génère de la quantité ; VisiRénov génère de la qualité. Thomas dépensait 200-500€/planche — 0,58€ est une réduction de 99,8%.
+- Vs InterieurAI (1,25€/photo à la carte) : Versiroom Pro à 0,58€/photo est 54% moins cher sur le volume, tout en étant perçu comme premium (pipeline 2 passes, styles curatés).
+- Vs Renovate Club (9,99€/mois illimité) : Versiroom ne joue pas le même terrain. L'illimité de Renovate Club génère de la quantité ; Versiroom génère de la qualité. Thomas dépensait 200-500€/planche — 0,58€ est une réduction de 99,8%.
 - Vs Collov ($0,17/photo) : imbattable sur le prix brut, mais 100% US sans localisation France et sans pipeline qualité.
 
 **Plan recommandé mis en avant visuellement** : Pack Pro (29€ / 50 crédits) — ancrage psychologique sur "moins de 0,60€ par photo".
@@ -74,11 +74,11 @@
 **Prix recommandé : 29€ par dossier (5-15 photos)**
 
 **Justification :**
-- Référence marché : un home stager humain facture 200-500€ par planche, soit 1 000-3 000€ pour un appartement 5 pièces. VisiRénov à 29€ représente une économie de 97-99%.
+- Référence marché : un home stager humain facture 200-500€ par planche, soit 1 000-3 000€ pour un appartement 5 pièces. Versiroom à 29€ représente une économie de 97-99%.
 - Référence concurrents IA : aucun concurrent ne propose de dossier PDF automatisé. C'est une feature unique — le prix peut être premium sans référence directe.
 - Coût API estimé : 15 photos × 0,10€ + génération PDF (0,10€ serverless) + description GPT-4.1 (~0,05€) = ~1,65€ de coût IA. Marge brute de 94% à 29€.
 - Psychologie du prix : 29€ est le même prix que le Pack Pro (50 crédits). L'utilisateur perçoit le Mode Marchand comme une valeur équivalente à 50 générations individuelles — l'ancrage est favorable.
-- Thomas paie son home stager entre 200 et 500€ pour ce qu'un dossier VisiRénov fait en 10 minutes à 29€. L'argument ROI est imparable.
+- Thomas paie son home stager entre 200 et 500€ pour ce qu'un dossier Versiroom fait en 10 minutes à 29€. L'argument ROI est imparable.
 
 **Volume discount :** [HYPOTHÈSE — à valider en phase go-to-market]
 - 1 dossier : 29€

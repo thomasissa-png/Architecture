@@ -1,4 +1,4 @@
-# Politique de confidentialité — VisiRénov
+# Politique de confidentialité — Versiroom
 > Produit par @copywriter — 2026-03-25
 > Conforme RGPD (Règlement UE 2016/679) et loi Informatique et Libertés n°78-17 modifiée
 
@@ -6,25 +6,25 @@
 
 ## 1. Qui collecte vos données ?
 
-VisiRénov ([SIRET A COMPLETER], [ADRESSE A COMPLETER]) est responsable du traitement de vos données personnelles au sens de l'article 4 du RGPD.
+Versiroom ([SIRET A COMPLETER], [ADRESSE A COMPLETER]) est responsable du traitement de vos données personnelles au sens de l'article 4 du RGPD.
 
-Contact pour toute question relative à vos données : privacy@visirenov.fr [A CREER]
+Contact pour toute question relative à vos données : privacy@versiroom.fr [A CREER]
 
 ---
 
 ## 2. Quelles données collectons-nous — et pourquoi ?
 
-VisiRénov est conçu pour collecter le strict nécessaire au fonctionnement du service. Voici ce que nous traitons, pour quelle raison, et combien de temps.
+Versiroom est conçu pour collecter le strict nécessaire au fonctionnement du service. Voici ce que nous traitons, pour quelle raison, et combien de temps.
 
 ### 2.1 Photos uploadées (photos de pièces)
 
-**Ce que nous collectons** : les photos que vous importez dans VisiRénov pour générer des visuels meublés.
+**Ce que nous collectons** : les photos que vous importez dans Versiroom pour générer des visuels meublés.
 
 **Pourquoi** : exécuter le service de génération de visuels que vous avez demandé.
 
 **Base légale** : exécution du contrat (Art. 6.1.b RGPD) — sans ces photos, le service ne peut pas fonctionner.
 
-**Important** : les photos de pièces vides ne contiennent pas de données personnelles. Si vous uploadez une photo contenant des personnes, vous êtes responsable de disposer de leur consentement préalable. VisiRénov déconseille l'upload de photos contenant des visages.
+**Important** : les photos de pièces vides ne contiennent pas de données personnelles. Si vous uploadez une photo contenant des personnes, vous êtes responsable de disposer de leur consentement préalable. Versiroom déconseille l'upload de photos contenant des visages.
 
 **Durée de conservation** : 30 jours après la génération, puis suppression automatique.
 
@@ -74,13 +74,13 @@ Lors de la mise en place du système de comptes utilisateurs (prévu prochaineme
 
 ### 2.6 Données de paiement
 
-VisiRénov utilise Stripe pour le traitement des paiements. Vos coordonnées bancaires ne transitent jamais par nos serveurs — Stripe est responsable de leur traitement conformément à la réglementation PCI DSS. Pour en savoir plus : https://stripe.com/fr/privacy
+Versiroom utilise Stripe pour le traitement des paiements. Vos coordonnées bancaires ne transitent jamais par nos serveurs — Stripe est responsable de leur traitement conformément à la réglementation PCI DSS. Pour en savoir plus : https://stripe.com/fr/privacy
 
 ---
 
 ## 3. Cookies
 
-**VisiRénov n'utilise pas de cookies tiers** (publicité, analytics, réseaux sociaux). Seuls des cookies techniques strictement nécessaires au fonctionnement du service peuvent être posés — ils ne nécessitent pas de consentement conformément à la recommandation CNIL de 2020.
+**Versiroom n'utilise pas de cookies tiers** (publicité, analytics, réseaux sociaux). Seuls des cookies techniques strictement nécessaires au fonctionnement du service peuvent être posés — ils ne nécessitent pas de consentement conformément à la recommandation CNIL de 2020.
 
 Aucune bannière de consentement cookies n'est requise dans la configuration actuelle du service.
 
@@ -90,7 +90,7 @@ Aucune bannière de consentement cookies n'est requise dans la configuration act
 
 ## 4. Partage de vos données — Sous-traitants
 
-VisiRénov travaille avec les partenaires suivants. Chacun est lié contractuellement à nos obligations RGPD.
+Versiroom travaille avec les partenaires suivants. Chacun est lié contractuellement à nos obligations RGPD.
 
 ### 4.1 OpenAI Inc. (génération d'images — modèle principal)
 
@@ -148,7 +148,7 @@ Conformément aux articles 15 à 22 du RGPD, vous disposez des droits suivants s
 
 **Droit de limitation (Art. 18)** : demander la suspension temporaire d'un traitement en cas de contestation.
 
-**Comment exercer vos droits** : envoyez votre demande à privacy@visirenov.fr [A CREER] en précisant votre demande et, si possible, un élément permettant de vous identifier (ex. : adresse email de votre compte). Nous vous répondrons dans un délai de 30 jours.
+**Comment exercer vos droits** : envoyez votre demande à privacy@versiroom.fr [A CREER] en précisant votre demande et, si possible, un élément permettant de vous identifier (ex. : adresse email de votre compte). Nous vous répondrons dans un délai de 30 jours.
 
 **Droit de réclamation** : si vous estimez que vos droits ne sont pas respectés, vous pouvez déposer une réclamation auprès de la **CNIL** (Commission Nationale de l'Informatique et des Libertés) — www.cnil.fr — 3 place de Fontenoy, TSA 80715, 75334 Paris Cedex 07.
 
@@ -156,7 +156,7 @@ Conformément aux articles 15 à 22 du RGPD, vous disposez des droits suivants s
 
 ## 6. Sécurité
 
-VisiRénov met en œuvre les mesures techniques et organisationnelles appropriées pour protéger vos données contre tout accès non autorisé, perte ou altération. Les images sont stockées sur Replit Object Storage avec accès restreint. Les logs de la base de données sont accessibles uniquement aux administrateurs du service.
+Versiroom met en œuvre les mesures techniques et organisationnelles appropriées pour protéger vos données contre tout accès non autorisé, perte ou altération. Les images sont stockées sur Replit Object Storage avec accès restreint. Les logs de la base de données sont accessibles uniquement aux administrateurs du service.
 
 ---
 
@@ -172,6 +172,6 @@ Cette politique de confidentialité peut être mise à jour, notamment lors de l
 
 > **Hypothèses à valider avant mise en ligne**
 > - [HYPOTHÈSE] Certification DPF de Replicate : à vérifier sur https://www.dataprivacyframework.gov — si absent, contacter Replicate pour signer des SCCs avant toute mise en production
-> - [A CREER] Adresse email privacy@visirenov.fr — à créer avant la mise en ligne de cette page
-> - [A COMPLETER] SIRET et adresse juridique de VisiRénov dans la section 1
-> - [A VERIFIER AVEC JURISTE] La chaîne de titularité OpenAI API → VisiRénov → utilisateur final sur les images générées, à confirmer au regard des CGU OpenAI API en vigueur
+> - [A CREER] Adresse email privacy@versiroom.fr — à créer avant la mise en ligne de cette page
+> - [A COMPLETER] SIRET et adresse juridique de Versiroom dans la section 1
+> - [A VERIFIER AVEC JURISTE] La chaîne de titularité OpenAI API → Versiroom → utilisateur final sur les images générées, à confirmer au regard des CGU OpenAI API en vigueur

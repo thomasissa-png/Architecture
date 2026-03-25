@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Politique de confidentialité",
-  description: "Politique de confidentialité de VisiRénov — RGPD, données collectées, droits des utilisateurs.",
+  description: "Politique de confidentialité de Versiroom — RGPD, données collectées, droits des utilisateurs.",
   robots: { index: false, follow: false },
 };
 
@@ -12,7 +12,7 @@ export default function Confidentialite() {
       <header className="border-b border-gray-200/40 py-6 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
           <a href="/" className="text-xl font-semibold text-foreground tracking-tighter">
-            VisiRénov
+            Versiroom
           </a>
           <a href="/" className="text-xs text-muted font-light hover:text-foreground transition-colors">
             Retour
@@ -28,7 +28,7 @@ export default function Confidentialite() {
         <div className="space-y-8 text-sm text-muted font-light leading-relaxed">
           <section>
             <h2 className="text-base font-semibold text-foreground mb-3">1. Responsable du traitement</h2>
-            <p>VisiRénov — <a href="mailto:contact@visirenov.fr" className="text-sage hover:underline">contact@visirenov.fr</a></p>
+            <p>Versiroom — <a href="mailto:contact@versiroom.fr" className="text-sage hover:underline">contact@versiroom.fr</a></p>
           </section>
 
           <section>
@@ -89,13 +89,13 @@ export default function Confidentialite() {
               <li>Droit d&apos;introduire une réclamation auprès de la CNIL</li>
             </ul>
             <p className="mt-3">
-              Pour exercer ces droits : <a href="mailto:contact@visirenov.fr" className="text-sage hover:underline">contact@visirenov.fr</a>
+              Pour exercer ces droits : <a href="mailto:contact@versiroom.fr" className="text-sage hover:underline">contact@versiroom.fr</a>
             </p>
           </section>
 
           <section>
             <h2 className="text-base font-semibold text-foreground mb-3">7. Cookies</h2>
-            <p>VisiRénov utilise uniquement des cookies techniques strictement nécessaires au fonctionnement du service (identifiant de session anonyme). Aucun cookie tiers, aucun traceur publicitaire. Conformément aux recommandations de la CNIL, aucun bandeau de consentement n&apos;est requis pour les cookies techniques strictement nécessaires.</p>
+            <p>Versiroom utilise uniquement des cookies techniques strictement nécessaires au fonctionnement du service (identifiant de session anonyme). Aucun cookie tiers, aucun traceur publicitaire. Conformément aux recommandations de la CNIL, aucun bandeau de consentement n&apos;est requis pour les cookies techniques strictement nécessaires.</p>
           </section>
         </div>
 

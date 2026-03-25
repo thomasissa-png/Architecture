@@ -170,7 +170,7 @@ export default function AdminPage() {
     return (
       <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", fontFamily: "Inter, sans-serif", background: "#FAFAF8" }}>
         <form onSubmit={handleLogin} style={{ background: "#fff", padding: "40px 48px", borderRadius: 16, border: "1px solid #e0e0e0", textAlign: "center", maxWidth: 360, width: "100%" }}>
-          <h1 style={{ fontSize: 20, fontWeight: 600, color: "#1C1C1E", marginBottom: 8 }}>VisiRenov Admin</h1>
+          <h1 style={{ fontSize: 20, fontWeight: 600, color: "#1C1C1E", marginBottom: 8 }}>Versiroom Admin</h1>
           <p style={{ fontSize: 13, color: "#888", marginBottom: 24 }}>Acces restreint</p>
           <input
             type="password"
@@ -227,7 +227,7 @@ Demande type : "Fais appel a l'agent Architecte d'Interieur et a l'agent Expert 
   return (
     <div style={{ padding: "24px 32px", fontFamily: "Inter, sans-serif", maxWidth: 1400, margin: "0 auto" }}>
       <h1 style={{ fontSize: 24, fontWeight: 600, marginBottom: 16, color: "#1C1C1E" }}>
-        VisiRenov — Logs de generation ({logs.length})
+        Versiroom — Logs de generation ({logs.length})
       </h1>
 
       {/* Audit prompt banner */}

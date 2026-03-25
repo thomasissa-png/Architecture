@@ -1,4 +1,4 @@
-# Personas — VisiRénov
+# Personas — Versiroom
 > Produit par @creative-strategy — 2026-03-24
 > Source primaire : project-context.md + CLAUDE.md (agents/persona-claire-architecte.md, persona-thomas-marchand.md, persona-lea-acheteuse.md)
 > Document de référence pour @copywriter, @ux, @design, @growth, @social
@@ -7,7 +7,7 @@
 
 ## Préambule — Hiérarchie des personas
 
-VisiRénov adresse 3 personas distincts sur une seule plateforme. Tous sont valides, mais leur **poids dans les décisions produit et marketing** n'est pas identique.
+Versiroom adresse 3 personas distincts sur une seule plateforme. Tous sont valides, mais leur **poids dans les décisions produit et marketing** n'est pas identique.
 
 | Priorité | Persona | Rôle dans la croissance |
 |---|---|---|
@@ -32,7 +32,7 @@ VisiRénov adresse 3 personas distincts sur une seule plateforme. Tous sont vali
 | Devices | MacBook Pro 16" au bureau, iPad Pro sur chantier |
 | Niveau tech | Bon — utilise Figma, SketchUp, Pinterest, Keynote quotidiennement |
 | Revenus estimés | [À VÉRIFIER] — profil cabinet indépendant, honoraires au projet |
-| Fréquence d'usage VisiRénov (estimée) | 2 à 5 fois/semaine en phase de conception |
+| Fréquence d'usage Versiroom (estimée) | 2 à 5 fois/semaine en phase de conception |
 
 ### Jobs-to-be-done
 
@@ -61,13 +61,13 @@ VisiRénov adresse 3 personas distincts sur une seule plateforme. Tous sont vali
 
 ### Objections à l'achat
 
-| Objection | Réponse VisiRénov |
+| Objection | Réponse Versiroom |
 |---|---|
 | "Est-ce que ça ressemblera vraiment à ma pièce ?" | Pipeline 2 passes préserve la géométrie — la voûte reste une voûte, les poutres restent des poutres |
 | "Mes clients verront que c'est de l'IA" | 12 styles curatés par un architecte d'intérieur + expert IA image — pas de CGI générique |
-| "J'ai déjà SketchUp" | SketchUp prend 2-3 jours par rendu. VisiRénov prend 90 secondes pour un support de conversation, pas un rendu final |
+| "J'ai déjà SketchUp" | SketchUp prend 2-3 jours par rendu. Versiroom prend 90 secondes pour un support de conversation, pas un rendu final |
 | "Je veux pouvoir itérer sur le résultat" | Fonctionnalité d'itération par commentaire (F1) — "ajoute un fauteuil en coin lecture" |
-| "C'est trop cheap pour mon positionnement pro" | Pas de filigrane, pas de logo VisiRénov sur les exports — le visuel est présentable à un client |
+| "C'est trop cheap pour mon positionnement pro" | Pas de filigrane, pas de logo Versiroom sur les exports — le visuel est présentable à un client |
 
 ### Critères de décision
 
@@ -111,7 +111,7 @@ Mots qu'elle n'utilise PAS (et qui la feraient fuir) : "magique", "en quelques c
 | Devices | iPhone 15 Pro (photos sur site), laptop Windows au bureau |
 | Niveau tech | Moyen — utilise Canva, portails immo, WhatsApp pro, Notion |
 | Revenus estimés | [À VÉRIFIER] — marge sur opérations, profil TPE |
-| Fréquence d'usage VisiRénov (estimée) | 3 à 5 utilisations par opération (5-15 photos par bien) |
+| Fréquence d'usage Versiroom (estimée) | 3 à 5 utilisations par opération (5-15 photos par bien) |
 
 ### Jobs-to-be-done
 
@@ -141,7 +141,7 @@ Mots qu'elle n'utilise PAS (et qui la feraient fuir) : "magique", "en quelques c
 
 ### Objections à l'achat
 
-| Objection | Réponse VisiRénov |
+| Objection | Réponse Versiroom |
 |---|---|
 | "Est-ce que la qualité est suffisante pour des plaquettes pro ?" | Export HD sans filigrane — utilisable sur les portails immo et plaquettes imprimées |
 | "J'ai besoin de 10 photos par bien — ça va coûter combien ?" | Package Pro ou Business avec crédits par photo — coût à l'usage, pas d'abonnement mensuel à vide |
@@ -191,7 +191,7 @@ Mots qu'il n'utilise PAS : "design d'intérieur", "ambiance", "esthétique", "li
 | Devices | iPhone 14 (90% du temps), MacBook Air le soir |
 | Niveau tech | Très bon — digital native, apps au quotidien |
 | Budget déco estimé | [À VÉRIFIER] — primo-accédante, budget maîtrisé |
-| Fréquence d'usage VisiRénov (estimée) | 1 période intensive (2-3 semaines) au moment de la décoration |
+| Fréquence d'usage Versiroom (estimée) | 1 période intensive (2-3 semaines) au moment de la décoration |
 
 ### Jobs-to-be-done
 
@@ -220,7 +220,7 @@ Mots qu'il n'utilise PAS : "design d'intérieur", "ambiance", "esthétique", "li
 
 ### Objections à l'achat
 
-| Objection | Réponse VisiRénov |
+| Objection | Réponse Versiroom |
 |---|---|
 | "C'est payant ? Je cherche quelque chose de gratuit" | Plan Gratuit disponible (N générations gratuites) — montée en gamme naturelle |
 | "Est-ce que ça marche bien sur des photos de téléphone ?" | Optimisé mobile — upload direct depuis l'iPhone, support HEIC |

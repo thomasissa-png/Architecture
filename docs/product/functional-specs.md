@@ -1,4 +1,4 @@
-# Specs Fonctionnelles — VisiRénov
+# Specs Fonctionnelles — Versiroom
 ## Version 1.0 — 2026-03-24
 
 ---
@@ -14,7 +14,7 @@
 | AI HomeDesign | Abonnement | 19$/mois | 30 photos | ~0,63$/photo | Workflow listing complet | Pas de vrai staging meublé, outil retouche |
 | Virtual Staging AI | Abonnement | 16$/mois | 6 photos | ~2,67$/photo | Simplicité | Volume très limité, qualité moyenne |
 
-### Positionnement VisiRénov
+### Positionnement Versiroom
 
 - **Différence clé** : Pipeline 2 passes (surfaces → mobilier) = cohérence architecturale que les concurrents n'ont pas. Styles adaptés au marché français (Haussmannien, Méditerranéen, Wabi-Sabi).
 - **Modèle** : Packages crédits (one-shot, sans engagement) vs abonnements mensuels des concurrents. Adapté aux pros qui ont des pics de besoin (Thomas : 8-12 opérations/an) et aux particuliers (Léa : 1 appartement).
@@ -551,7 +551,7 @@ Upload bien complet → dossier pré-commercialisation PDF + lien partageable. M
 - Job-to-be-done : Quand je veux envoyer mon dossier à un acquéreur potentiel, je veux un lien propre, pas une pièce jointe de 50 Mo.
 - Given : Le dossier est généré.
 - When : L'utilisateur clique sur "Partager le dossier".
-- Then : Un lien unique est généré (ex. `visirenov.app/dossier/abc123`). Le lien affiche une page web légère avec les visuels avant/après et les infos du bien. Pas de login requis pour consulter.
+- Then : Un lien unique est généré (ex. `versiroom.app/dossier/abc123`). Le lien affiche une page web légère avec les visuels avant/après et les infos du bien. Pas de login requis pour consulter.
 - Critère d'acceptance : Le lien est valide 30 jours. La page est mobile-friendly. Un bouton "Télécharger le PDF" est présent.
 
 **US-F4-03 — Choisir le style pièce par pièce (Thomas avancé)**
@@ -755,7 +755,7 @@ Produits réels (IKEA, Leroy Merlin). Shopping list avec prix/liens. Export PDF/
 - **Accès** : Mode Décorateur disponible à partir du Pack Pro (29€). Le Pack Découverte ne donne pas accès.
 - **Coût** : La génération de shopping list consomme 1 crédit supplémentaire (appel GPT-4.1 dédié). L'export PDF consomme 0 crédit supplémentaire.
 - **Sources produits** : IKEA France (priorité), Leroy Merlin (pour accessoires déco/plantes), Made.com ou Maisons du Monde (pour pièces premium). Les liens sont des URLs de recherche générées dynamiquement, pas des liens produits hardcodés.
-- **Disclaimer obligatoire** : "Prix indicatifs à la date de génération. Les prix et disponibilités sont susceptibles de changer. VisiRénov ne garantit pas l'exactitude des prix."
+- **Disclaimer obligatoire** : "Prix indicatifs à la date de génération. Les prix et disponibilités sont susceptibles de changer. Versiroom ne garantit pas l'exactitude des prix."
 - **Contenu de la shopping list** : 5-8 produits par liste. Catégories : canapé/fauteuil, table basse, tapis, luminaire, plante, accessoires (max 2). Chaque produit : nom, enseigne, prix bas/haut (fourchette), lien de recherche.
 - **Export PDF** : Contient le visuel résultat (miniature 600px), le style, la date, la liste produits avec QR codes. Format A4 portrait.
 - **Lien partageable** : La shopping list peut être partagée via un lien (UUID, TTL 7 jours). Utile pour le partage client.
@@ -903,7 +903,7 @@ Produits réels (IKEA, Leroy Merlin). Shopping list avec prix/liens. Export PDF/
 
 ### 7.5 Justification du pricing vs concurrents
 
-| | VisiRénov Pro | REimagineHome Optimal | Virtual Staging AI |
+| | Versiroom Pro | REimagineHome Optimal | Virtual Staging AI |
 |---|---|---|---|
 | Prix | 29€ one-shot | 29$/mois | 16$/mois |
 | Crédits | 50 | Variable (~200) | 6 |
@@ -912,4 +912,4 @@ Produits réels (IKEA, Leroy Merlin). Shopping list avec prix/liens. Export PDF/
 | Pipeline 2 passes | Oui | Non | Non |
 | Styles marché FR | Oui | Non | Non |
 
-> VisiRénov est plus cher par crédit que REimagineHome (0,58€ vs 0,15$) mais sans engagement mensuel et avec un pipeline de qualité supérieure (2 passes, styles français, cohérence architecturale). Le prix se justifie par la valeur perçue, pas le volume. Thomas dépense 200-500€/planche en home staging humain — 0,58€/image est une réduction de 99,9%.
+> Versiroom est plus cher par crédit que REimagineHome (0,58€ vs 0,15$) mais sans engagement mensuel et avec un pipeline de qualité supérieure (2 passes, styles français, cohérence architecturale). Le prix se justifie par la valeur perçue, pas le volume. Thomas dépense 200-500€/planche en home staging humain — 0,58€/image est une réduction de 99,9%.

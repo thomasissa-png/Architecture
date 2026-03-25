@@ -1,4 +1,4 @@
-# Strategie QA -- VisiRenov
+# Strategie QA -- Versiroom
 
 > Produit par @qa | Date : 2026-03-24
 > Source : docs/product/functional-specs.md v1.0 (F1-F5, sections 6-7)
@@ -790,7 +790,7 @@ const results = await new AxeBuilder({ page }).analyze();
 expect(results.violations).toEqual([]);
 ```
 
-Regles axe prioritaires pour VisiRenov :
+Regles axe prioritaires pour Versiroom :
 - `color-contrast` : palette Sage #7D9B76 sur fond #FAFAF8 = ratio 3.5:1 (echoue AA pour texte < 18px). ESCALADE @product-manager : ajuster la teinte Sage ou limiter son usage au texte > 18px.
 - `button-name` : tous les boutons icone (supprimer photo, fermer modale) doivent avoir un aria-label
 - `image-alt` : les images generees dans le comparateur doivent avoir un alt descriptif ("Resultat {style} — {type de piece}")

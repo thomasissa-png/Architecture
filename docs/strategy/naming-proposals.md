@@ -1,6 +1,6 @@
-# Propositions de Naming — VisiRénov / Versi Immobilier
+# Propositions de Naming — Versiroom / Versi Immobilier
 > Produit par @creative-strategy — 2026-03-25
-> Commanditaire : fondateur VisiRénov (maison mère : Versi Immobilier)
+> Commanditaire : fondateur Versiroom (maison mère : Versi Immobilier)
 > Lecture préalable : brand-platform.md, value-proposition.md, creative-brief.md, brand-voice.md, personas.md
 
 ---
@@ -20,7 +20,7 @@ Ce document traite le naming comme une décision stratégique, pas esthétique. 
 
 ---
 
-## 1. Analyse du nom actuel "VisiRénov"
+## 1. Analyse du nom actuel "Versiroom"
 
 ### Forces
 
@@ -28,7 +28,7 @@ Ce document traite le naming comme une décision stratégique, pas esthétique. 
 |---|---|
 | **Descriptif immédiat** | "Visi" (voir / visualiser) + "Rénov" (rénovation) — le persona comprend ce que c'est sans explications |
 | **Ancrage francophone** | Le "é" et la construction du mot signalent clairement un produit français — pas un clone américain |
-| **Aucun concurrent portant ce nom** | La recherche WebSearch ne retourne aucune marque VisiRénov sur le marché home staging FR — le terrain est libre |
+| **Aucun concurrent portant ce nom** | La recherche WebSearch ne retourne aucune marque Versiroom sur le marché home staging FR — le terrain est libre |
 | **SEO potentiel** | Le nom contient des termes recherchés (visualiser + rénovation) — avantage sur les requêtes longue traîne |
 
 ### Faiblesses
@@ -37,19 +37,19 @@ Ce document traite le naming comme une décision stratégique, pas esthétique. 
 |---|---|
 | **Positionnement "rénovation"** | Le produit ne fait pas de rénovation — il meuble des espaces vides. Le suffixe "Rénov" crée une attente que le pipeline ne remplit pas. Thomas meuble des biens bruts, Claire présente des ambiances, Léa visualise sa déco — aucun des trois ne rénove. |
 | **Trop générique pour un positionnement premium** | "Visi" + "Rénov" est une construction syllabique identique à "RenovAI", "VirtualRenov", "StagingPro" — le nom ne différencie pas, il catégorise. |
-| **Difficile à l'oral en anglais** | "VisiRénov" se prononce [vi-zi-ʁe-nov] en français — l'accent et le "Rénov" sont inexistants en anglais, ce qui bloque l'expansion internationale |
+| **Difficile à l'oral en anglais** | "Versiroom" se prononce [vi-zi-ʁe-nov] en français — l'accent et le "Rénov" sont inexistants en anglais, ce qui bloque l'expansion internationale |
 | **Cohérence avec Versi Immobilier non exploitée** | La filiation avec la maison mère est invisible — zéro transfert de légitimité, zéro effet de famille de marque |
 | **Nom difficile à déposer distinctement** | "Visi" (voir) + "Rénov" (rénovation) sont des termes génériques — une marque fondée sur ces mots-valises est plus faible juridiquement qu'un nom forgé |
 
 ### Risques identifiés
 
-1. **Confusion avec le secteur de la rénovation** — un utilisateur cherchant un devis de rénovation peut atterrir sur VisiRénov, et en repartir déçu. Cela crée du rebond et dilue le positionnement.
-2. **Nom de travail persistant** — un nom de MVP reste souvent dans les bases de données, les comparatifs, les articles. Si VisiRénov s'installe dans les résultats Google avec le mauvais positionnement, un renommage tardif coûte plus cher.
+1. **Confusion avec le secteur de la rénovation** — un utilisateur cherchant un devis de rénovation peut atterrir sur Versiroom, et en repartir déçu. Cela crée du rebond et dilue le positionnement.
+2. **Nom de travail persistant** — un nom de MVP reste souvent dans les bases de données, les comparatifs, les articles. Si Versiroom s'installe dans les résultats Google avec le mauvais positionnement, un renommage tardif coûte plus cher.
 3. **Pas de défense sémantique forte** — les concurrents peuvent lancer "VisuRénov", "StagingRénov", "IArénov" sans risque de confusion de marque.
 
 ### Verdict
 
-VisiRénov est un bon nom de MVP — lisible, mémorisable, français. Ce n'est pas un bon nom de marque pour un positionnement premium architecture-grade. **Le renommer maintenant, avant toute acquisition, coûte quasi rien. Après 10 000 utilisateurs, ça coûte très cher.**
+Versiroom est un bon nom de MVP — lisible, mémorisable, français. Ce n'est pas un bon nom de marque pour un positionnement premium architecture-grade. **Le renommer maintenant, avant toute acquisition, coûte quasi rien. Après 10 000 utilisateurs, ça coûte très cher.**
 
 ---
 
@@ -117,7 +117,7 @@ Produit premium adossé à une marque immobilière connue. Le "room" ancre immé
 "Versi" + "vue" (vision / point de vue / view). "Versivue" = voir depuis Versi. Double sens : la vue de la pièce + le point de vue professionnel. "Vue" ancre dans le registre de la visualisation architecturale sans dire "rénovation".
 
 **Positionnement activé :**
-Très proche du territoire de VisiRénov (voir) mais avec la filiation Versi et sans le poids du mot "Rénov". Claire et Thomas reconnaissent immédiatement la promesse de visualisation.
+Très proche du territoire de Versiroom (voir) mais avec la filiation Versi et sans le poids du mot "Rénov". Claire et Thomas reconnaissent immédiatement la promesse de visualisation.
 
 **Risques :**
 - "Vue" seul est très utilisé (framework Vue.js, Vue Hotels, etc.) — risque de confusion dans des recherches génériques
@@ -263,7 +263,7 @@ Nom forgé, sans dénotation sectorielle immédiate — ce qui laisse toute la l
 
 | Nom | Mémorabilité | Premium | International | Simplicité | Cohérence Versi | Domaine probable | **Total /30** |
 |---|---|---|---|---|---|---|---|
-| VisiRénov (actuel) | 3 | 2 | 2 | 3 | 1 | 5 | **16** |
+| Versiroom (actuel) | 3 | 2 | 2 | 3 | 1 | 5 | **16** |
 | Versiroom | 4 | 3 | 4 | 4 | 5 | 4 | **24** |
 | Versiscène | 4 | 5 | 2 | 3 | 5 | 4 | **23** |
 | Versivue | 3 | 3 | 3 | 4 | 5 | 3 | **21** |
@@ -275,7 +275,7 @@ Nom forgé, sans dénotation sectorielle immédiate — ce qui laisse toute la l
 
 ### Notes de scoring détaillées
 
-**VisiRénov (actuel) — 16/30**
+**Versiroom (actuel) — 16/30**
 - Mémorabilité 3/5 : mémorisable car descriptif, mais sans aspérité distinctive
 - Premium 2/5 : "Rénov" positionne dans la rénovation grand public, pas l'architecture premium
 - International 2/5 : l'accent "é" et la construction FR-only bloquent l'usage anglophone
@@ -339,13 +339,13 @@ Réserve principale : "room" est le mot des apps déco grand public — à compe
 
 | Fichier | Type de mise à jour | Priorité | Effort estimé |
 |---|---|---|---|
-| `project-context.md` | Remplacement "VisiRénov" → nouveau nom partout | P0 | 15 min |
+| `project-context.md` | Remplacement "Versiroom" → nouveau nom partout | P0 | 15 min |
 | `docs/strategy/brand-platform.md` | Remplacement nom dans titre et sections — le positionnement reste identique | P0 | 30 min |
 | `docs/strategy/value-proposition.md` | Remplacement nom dans titre et sections 3/7 | P0 | 20 min |
 | `docs/strategy/creative-brief.md` | Remplacement nom dans titre et toutes les références | P0 | 20 min |
 | `docs/copy/brand-voice.md` | Remplacement nom + reformuler le manifeste avec le nouveau nom | P1 | 45 min |
 | `docs/strategy/personas.md` | Remplacement des références au nom produit dans les objections | P1 | 15 min |
-| `docs/strategy/competitive-benchmark.md` | Mise à jour de la colonne "VisiRénov" dans le tableau comparatif | P1 | 10 min |
+| `docs/strategy/competitive-benchmark.md` | Mise à jour de la colonne "Versiroom" dans le tableau comparatif | P1 | 10 min |
 | `app/layout.tsx` | Metadata SEO (title, description, OpenGraph) — refaire avec le nouveau nom | P0 | 20 min |
 | `app/page.tsx` | Toutes les occurrences du nom dans le Hero, les pills, le footer | P0 | 30 min |
 | `components/*.tsx` | Références textuelles au nom dans les composants | P1 | 20 min |
@@ -381,7 +381,7 @@ Cadra respecte toutes les contraintes stratégiques : premium, court, internatio
 Si la filiation Versi est une priorité non-négociable, le second choix est **Versiroom**.
 
 Ce que le fondateur doit décider avant que @copywriter, @seo et @design reprennent leurs livrables :
-1. Garder VisiRénov ou changer le nom ?
+1. Garder Versiroom ou changer le nom ?
 2. Si changement : Cadra, Stagira, ou Versiroom ?
 3. La filiation "Versi Immobilier" doit-elle être visible dans le nom du produit ou uniquement en footer ?
 
@@ -398,7 +398,7 @@ Ce que le fondateur doit décider avant que @copywriter, @seo et @design reprenn
 **Handoff → @orchestrator**
 - Fichier produit : `/home/user/Architecture/docs/strategy/naming-proposals.md`
 - Décisions prises : analyse complète de 8 noms (4 axe Versi + 4 indépendants), recommandation Top 3 avec justification, tableau comparatif noté sur 6 critères
-- Décision pendante (fondateur) : choix du nom final parmi Cadra / Stagira / Versiroom / maintien VisiRénov
+- Décision pendante (fondateur) : choix du nom final parmi Cadra / Stagira / Versiroom / maintien Versiroom
 - Points d'attention pour la suite :
   - Si Cadra ou Stagira retenu → tous les livrables stratégiques (brand-platform, value-proposition, creative-brief, brand-voice) doivent être mis à jour — effort estimé 2-3h avec agents IA
   - Si Versiroom retenu → @copywriter doit adapter le manifeste de marque pour intégrer la filiation Versi Immobilier

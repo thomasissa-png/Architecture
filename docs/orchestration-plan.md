@@ -1,4 +1,4 @@
-# Plan d'orchestration — VisiRenov F1 Review + F2 Type de piece
+# Plan d'orchestration — Versiroom F1 Review + F2 Type de piece
 
 ## Demande utilisateur
 Phase 3 : Review croisee de l'implementation F1 (iteration commentaire). Puis lancement F2 (type de piece) : audit prompts Yann+Lucas, implementation fullstack, review.

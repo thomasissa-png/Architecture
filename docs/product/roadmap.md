@@ -1,4 +1,4 @@
-# Roadmap — VisiRénov
+# Roadmap — Versiroom
 ## Version 1.0 — 2026-03-25
 
 ---
@@ -106,13 +106,13 @@ Reach = % des utilisateurs actifs touchés (1-10). Impact = 1 (faible) / 2 (moye
 ## 3. Question stratégique — Site unique ou sites séparés pour F4/F5
 
 ### Contexte
-F4 (Mode Marchand) et F5 (Mode Décorateur) sont des use cases distincts avec des personas différents (Thomas vs Léa). La question est : les intégrer dans VisiRénov ou créer des sous-domaines/sites séparés ?
+F4 (Mode Marchand) et F5 (Mode Décorateur) sont des use cases distincts avec des personas différents (Thomas vs Léa). La question est : les intégrer dans Versiroom ou créer des sous-domaines/sites séparés ?
 
 ### Arguments pour le site unique
 
 - **Effets réseau** : une seule base d'utilisateurs, un seul entonnoir d'acquisition, un seul SEO à construire.
 - **Complexité opérationnelle** : solo développeur — maintenir 2-3 codebases est hors de portée.
-- **Cohérence marque** : VisiRénov est positionné multi-cible depuis le début (pills Hero "Architectes / Marchands / Particuliers"). Pas de dissonance à intégrer les modes avancés dans le même outil.
+- **Cohérence marque** : Versiroom est positionné multi-cible depuis le début (pills Hero "Architectes / Marchands / Particuliers"). Pas de dissonance à intégrer les modes avancés dans le même outil.
 - **Packaging crédits** : un seul système de crédits couvre tous les modes — plus simple pour l'utilisateur et pour la comptabilité.
 - **Précédent concurrent** : Renovate Club et Gepetto proposent tous leurs modules dans un seul produit.
 
@@ -128,7 +128,7 @@ F4 (Mode Marchand) et F5 (Mode Décorateur) sont des use cases distincts avec de
 
 **Justification** : la contrainte solo développeur est déterminante. Le gain SEO d'un sous-domaine séparé ne compense pas le coût de maintenance de 2 codebases et de 2 systèmes Auth/Stripe. Les landing pages dédiées apportent 80% du bénéfice SEO pour 10% de l'effort.
 
-**Alternative écartée** : sous-domaine `marchand.visirenov.fr` — maintenir 2 déploiements Replit + 2 bases PG + 2 Stripe webhooks = risque opérationnel inacceptable en solo.
+**Alternative écartée** : sous-domaine `marchand.versiroom.fr` — maintenir 2 déploiements Replit + 2 bases PG + 2 Stripe webhooks = risque opérationnel inacceptable en solo.
 
 ---
 
@@ -184,19 +184,19 @@ F4 (Mode Marchand) et F5 (Mode Décorateur) sont des use cases distincts avec de
 
 ### Hypothèse 2 — [HYPOTHÈSE] F4 Mode Marchand justifie le prix Pro 29€
 
-**Risque** : Thomas compare VisiRénov à un home stager à 200-500€/planche. Mais il compare aussi à Renovate Club à 9,99€/mois illimité. Le pricing Pro 29€ one-shot doit justifier sa valeur par rapport à un abonnement mensuel concurrent.
+**Risque** : Thomas compare Versiroom à un home stager à 200-500€/planche. Mais il compare aussi à Renovate Club à 9,99€/mois illimité. Le pricing Pro 29€ one-shot doit justifier sa valeur par rapport à un abonnement mensuel concurrent.
 
-**Impact si faux** : F4 est la feature différenciante la plus avancée. Si Thomas choisit Renovate Club pour le volume et VisiRénov ne capte que les architectes, le potentiel de marché est réduit de moitié.
+**Impact si faux** : F4 est la feature différenciante la plus avancée. Si Thomas choisit Renovate Club pour le volume et Versiroom ne capte que les architectes, le potentiel de marché est réduit de moitié.
 
 **Validation** : interviews de 5 marchands de biens avant lancement F4. Question : "Combien payez-vous actuellement pour vos visuels de pré-commercialisation ?" + présentation du packaging. Seuil d'alarme : si <3/5 disent qu'ils paieraient 29€ pour le dossier complet.
 
 ### Hypothèse 3 — [HYPOTHÈSE] La qualité du pipeline 2 passes est perçue comme supérieure aux concurrents
 
-**Risque** : VisiRénov est meilleur techniquement (préservation géométrie, styles curatés par experts) mais les utilisateurs non-experts ne perçoivent pas forcément cette différence. Sur une annonce SeLoger, une image Renovate Club à 10€/mois peut paraître "suffisamment bonne".
+**Risque** : Versiroom est meilleur techniquement (préservation géométrie, styles curatés par experts) mais les utilisateurs non-experts ne perçoivent pas forcément cette différence. Sur une annonce SeLoger, une image Renovate Club à 10€/mois peut paraître "suffisamment bonne".
 
 **Impact si faux** : la différenciation qualité ne suffit pas à justifier le premium de prix. Il faut une différenciation fonctionnelle (F4 dossiers, F5 shopping list) plutôt que qualitative.
 
-**Validation** : A/B test qualitatif — montrer côte à côte 5 générations VisiRénov vs 5 générations Renovate Club à 10 non-experts (acheteurs immobilier, pas pros). Demander : "laquelle préféreriez-vous pour une annonce ?" + "combien paieriez-vous pour celle que vous préférez ?" Sans dévoiler les outils.
+**Validation** : A/B test qualitatif — montrer côte à côte 5 générations Versiroom vs 5 générations Renovate Club à 10 non-experts (acheteurs immobilier, pas pros). Demander : "laquelle préféreriez-vous pour une annonce ?" + "combien paieriez-vous pour celle que vous préférez ?" Sans dévoiler les outils.
 
 ---
 

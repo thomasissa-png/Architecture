@@ -1,4 +1,4 @@
-# Brand Voice — VisiRénov
+# Brand Voice — Versiroom
 > Produit par @copywriter — 2026-03-24
 > Référence : brand-platform.md, value-proposition.md, personas.md, creative-brief.md
 > Ce fichier est la référence pour tout contenu de marque. @design doit le lire avant toute direction artistique.
@@ -7,7 +7,7 @@
 
 ## Section 1 — Ton de marque
 
-VisiRénov parle comme un professionnel qui respecte ses interlocuteurs : précis, sobre, jamais condescendant.
+Versiroom parle comme un professionnel qui respecte ses interlocuteurs : précis, sobre, jamais condescendant.
 Le registre est celui de l'architecture et de l'immobilier français haut de gamme — pas celui du SaaS grand public.
 
 ### Les 3 axes de voix
@@ -41,7 +41,7 @@ Le registre est celui de l'architecture et de l'immobilier français haut de gam
 
 **Sous-titre**
 Uploadez une photo, choisissez un style parmi 12 ambiances curatées par des experts.
-VisiRénov préserve votre espace — il ne le réinvente pas.
+Versiroom préserve votre espace — il ne le réinvente pas.
 
 **3 pills personas**
 - Pour les architectes d'intérieur — un support de conversation dès le premier RDV
@@ -60,7 +60,7 @@ VisiRénov préserve votre espace — il ne le réinvente pas.
 Objet : `Votre prochain premier RDV aura un support visuel`
 
 Première phrase :
-Vous connaissez le moment : le client veut "voir à quoi ça va ressembler", et vous n'avez rien à lui montrer avant 3 jours et une planche à 300€. C'est pour ce moment-là que VisiRénov existe.
+Vous connaissez le moment : le client veut "voir à quoi ça va ressembler", et vous n'avez rien à lui montrer avant 3 jours et une planche à 300€. C'est pour ce moment-là que Versiroom existe.
 
 ---
 
@@ -69,7 +69,7 @@ Vous connaissez le moment : le client veut "voir à quoi ça va ressembler", et 
 Objet : `Vos photos brutes valent déjà une plaquette`
 
 Première phrase :
-Vous venez d'acquérir un bien. Les murs sont vides, l'acquéreur ne se projette pas. Avec VisiRénov, ces photos deviennent une plaquette de pré-commercialisation — en 10 minutes, sans prestataire.
+Vous venez d'acquérir un bien. Les murs sont vides, l'acquéreur ne se projette pas. Avec Versiroom, ces photos deviennent une plaquette de pré-commercialisation — en 10 minutes, sans prestataire.
 
 ---
 
@@ -97,7 +97,7 @@ Vous avez les clés. Vous avez des photos. Vous n'avez pas encore les meubles �
 
 ## Section 3 — Lexique de marque
 
-### Mots que VisiRénov utilise
+### Mots que Versiroom utilise
 
 | Mot / Expression | Contexte d'usage |
 |---|---|
@@ -114,7 +114,7 @@ Vous avez les clés. Vous avez des photos. Vous n'avez pas encore les meubles �
 | crédible / crédibilité | Valeur centrale — s'adresse aux pros |
 | home staging virtuel | Catégorie produit — toujours en entier, jamais "staging" seul |
 
-### Mots que VisiRénov n'utilise JAMAIS
+### Mots que Versiroom n'utilise JAMAIS
 
 | Mot interdit | Raison |
 |---|---|

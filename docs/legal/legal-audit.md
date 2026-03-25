@@ -1,4 +1,4 @@
-# Audit Juridique — VisiRénov
+# Audit Juridique — Versiroom
 > Produit par @legal — 2026-03-25
 > Périmètre : France, commercialisation B2C + B2B, modèle packages one-shot, IA générative images
 
@@ -26,7 +26,7 @@
 - **B2C (Léa, Thomas particulier)** : prix **TTC obligatoire** en grand, TVA 20% applicable sur services numériques. Le prix HT peut figurer en mention secondaire mais le TTC doit dominer visuellement.
 - **B2B (Claire, Thomas en société)** : afficher **HT + TVA séparément** est la norme. Pour un site mixte B2C/B2B, afficher le TTC avec mention "HT pour les professionnels récupérant la TVA".
 
-**Application au pricing VisiRénov :**
+**Application au pricing Versiroom :**
 - Pack Découverte 4,90€ TTC → HT : 4,08€
 - Pack Starter 14,90€ TTC → HT : 12,42€
 - Pack Pro 29€ TTC → HT : 24,17€
@@ -54,7 +54,7 @@ Mentions obligatoires avant achat :
 
 **Principe :** Le consommateur dispose de 14 jours de rétractation pour tout achat à distance.
 
-**Exception applicable à VisiRénov :** Art. L221-28, 13° — "contrats de fourniture de contenus numériques non fournis sur support matériel dont l'exécution a commencé avec l'accord préalable exprès du consommateur et renoncement exprès à son droit de rétractation."
+**Exception applicable à Versiroom :** Art. L221-28, 13° — "contrats de fourniture de contenus numériques non fournis sur support matériel dont l'exécution a commencé avec l'accord préalable exprès du consommateur et renoncement exprès à son droit de rétractation."
 
 **Ce que cela signifie concrètement :**
 - Si l'utilisateur achète un pack et génère immédiatement une image → le droit de rétractation s'éteint dès la première génération
@@ -67,7 +67,7 @@ Mentions obligatoires avant achat :
 
 **Texte applicable :** Art. L111-1, L221-5, L221-11 Code de la consommation.
 
-Clauses obligatoires pour VisiRénov :
+Clauses obligatoires pour Versiroom :
 1. Identification du vendeur (SIRET, adresse, email de contact)
 2. Description du service et des packs (crédits, usages inclus, gating F4/F5)
 3. Prix TTC + TVA + modalités de paiement (Stripe, CB)
@@ -133,7 +133,7 @@ Mentions obligatoires dans la politique de confidentialité :
 - Droit d'accès, rectification, effacement (Art. 15-17 RGPD)
 - Droit à la portabilité (Art. 20 RGPD)
 - Droit d'opposition au traitement sur base intérêt légitime (Art. 21 RGPD)
-- Contact DPO ou responsable données : email dédié à créer (ex. privacy@visirenov.fr)
+- Contact DPO ou responsable données : email dédié à créer (ex. privacy@versiroom.fr)
 - Droit de réclamation auprès de la CNIL (www.cnil.fr)
 
 ---
@@ -145,12 +145,12 @@ Mentions obligatoires dans la politique de confidentialité :
 **EU AI Act (Règlement UE 2024/1689, applicable depuis août 2024, obligations progressives 2025-2026) :**
 - Art. 50 EU AI Act : obligation de transparence pour les systèmes IA qui génèrent des contenus synthétiques (deepfakes, images, vidéos)
 - **Seuil applicable :** obligation de marquage des images générées par IA synthétique "de manière à indiquer clairement qu'il s'agit d'un contenu généré artificiellement"
-- **Application VisiRénov :** les visuels meublés sont des images modifiées par IA — le marquage est recommandé, son caractère obligatoire dépend de l'usage final
+- **Application Versiroom :** les visuels meublés sont des images modifiées par IA — le marquage est recommandé, son caractère obligatoire dépend de l'usage final
 
-**DSA (Digital Services Act, Règlement UE 2022/2065) :** applicable aux plateformes de taille intermédiaire et grande. VisiRénov en phase MVP est hors périmètre DSA mais le watermark "IA" est une bonne pratique préventive.
+**DSA (Digital Services Act, Règlement UE 2022/2065) :** applicable aux plateformes de taille intermédiaire et grande. Versiroom en phase MVP est hors périmètre DSA mais le watermark "IA" est une bonne pratique préventive.
 
 **Recommandation pratique :**
-- Ajouter un watermark discret "Visuel généré par IA — VisiRénov" dans les métadonnées EXIF des images téléchargées (invisible visuellement, lisible par les portails)
+- Ajouter un watermark discret "Visuel généré par IA — Versiroom" dans les métadonnées EXIF des images téléchargées (invisible visuellement, lisible par les portails)
 - Mentionner dans les CGU : "Les visuels générés sont des représentations artistiques produites par intelligence artificielle. Ils ne constituent pas une représentation exacte des travaux réalisés."
 
 ### 3.2 F4 Mode Marchand — Usage sur portails immobiliers
@@ -176,10 +176,10 @@ Mentions obligatoires dans la politique de confidentialité :
 - L'image input (photo de la pièce vide) appartient à l'utilisateur qui l'a prise — il conserve ses droits sur l'original
 
 **Conséquences pour les CGU :**
-- VisiRénov ne revendique aucun droit d'auteur sur les images générées
+- Versiroom ne revendique aucun droit d'auteur sur les images générées
 - L'utilisateur reçoit une **licence d'utilisation** large (y compris usage commercial) sur les images générées
-- VisiRénov se réserve le droit d'utiliser des exemples anonymisés pour la communication marketing (avec opt-out possible)
-- [A VERIFIER AVEC JURISTE] : les conditions d'utilisation d'OpenAI API attribuent les outputs à l'utilisateur de l'API — vérifier la chaîne de titularité OpenAI → VisiRénov → utilisateur final
+- Versiroom se réserve le droit d'utiliser des exemples anonymisés pour la communication marketing (avec opt-out possible)
+- [A VERIFIER AVEC JURISTE] : les conditions d'utilisation d'OpenAI API attribuent les outputs à l'utilisateur de l'API — vérifier la chaîne de titularité OpenAI → Versiroom → utilisateur final
 
 ---
 
@@ -197,7 +197,7 @@ Mentions obligatoires dans la politique de confidentialité :
 | Vérification certification DPF de Replicate | A faire | **P1** | Consulter https://www.dataprivacyframework.gov — si absent, signer SCCs |
 | Watermark "Visuel généré par IA" sur images téléchargées | A faire | **P1** | @fullstack ajoute watermark ou métadonnées EXIF au téléchargement |
 | Mention "Simulation" obligatoire sur visuels F4 Marchand | A faire | **P1** | À intégrer dans le PDF généré F4 avant lancement feature |
-| Clause propriété intellectuelle images dans CGU | A faire | **P1** | Licence utilisateur large + opt-out usage marketing VisiRénov |
+| Clause propriété intellectuelle images dans CGU | A faire | **P1** | Licence utilisateur large + opt-out usage marketing Versiroom |
 | Job de nettoyage automatique images Object Storage (30j/90j) | A faire | **P1** | @infrastructure ou @fullstack implémente le cron |
 | Durée de validité des crédits définie et affichée | A faire | **P1** | Décision fondateur requise (recommandation : 12 mois) |
 | Email de contact RGPD (privacy@...) | A faire | **P1** | Créer l'adresse avant lancement auth |
@@ -212,7 +212,7 @@ Mentions obligatoires dans la politique de confidentialité :
 
 - [HYPOTHÈSE] Durée de validité des crédits : 12 mois recommandés — décision fondateur requise
 - [HYPOTHÈSE] Replicate certifié DPF : à vérifier sur dataprivacyframework.gov avant mise en production
-- [HYPOTHÈSE] Chaîne de titularité OpenAI → VisiRénov → utilisateur : à confirmer avec les CGU OpenAI API en vigueur
+- [HYPOTHÈSE] Chaîne de titularité OpenAI → Versiroom → utilisateur : à confirmer avec les CGU OpenAI API en vigueur
 - [A VERIFIER AVEC JURISTE] : remboursement crédits non consommés (prorata ou non-remboursable)
 - [A VERIFIER AVEC JURISTE] : chartes spécifiques des portails immobiliers sur les visuels générés par IA (SeLoger, Bien'ici, LeBonCoin Immo)
 
@@ -225,7 +225,7 @@ Mentions obligatoires dans la politique de confidentialité :
   - **P0 — checkout Stripe** : ajouter case à cocher "Je comprends que l'exécution commence immédiatement et renonce à mon droit de rétractation" avant confirmation paiement
   - **P0 — pricing page** : afficher les prix TTC (4,90€ / 14,90€ / 29€ / 69€ TTC, mention HT pour pros)
   - **P0 — footer** : lien CGV + Mentions légales + Politique de confidentialité avant toute ouverture paiement
-  - **P1 — téléchargement images** : watermark discret ou métadonnées EXIF "Généré par IA — VisiRénov"
+  - **P1 — téléchargement images** : watermark discret ou métadonnées EXIF "Généré par IA — Versiroom"
   - **P1 — cron nettoyage** : supprimer images input après 30j, pass1+output après 90j dans Replit Object Storage
   - **P1 — PDF F4** : mention légale "Simulation — home staging virtuel, décoration non contractuelle" en pied de page
 

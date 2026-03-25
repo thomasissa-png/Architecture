@@ -1,8 +1,8 @@
-# VisiRenov — Memoire Projet
+# Versiroom — Memoire Projet
 
 ## Contexte Produit
 
-VisiRenov est un outil de home staging virtuel par IA pour architectes, marchands de biens et particuliers.
+Versiroom est un outil de home staging virtuel par IA pour architectes, marchands de biens et particuliers.
 L'utilisateur uploade des photos de pieces vides et l'IA genere des visuels meubles dans un style choisi parmi 12 ambiances.
 
 - **Stack** : Next.js 14, React, TypeScript, Tailwind CSS, App Router

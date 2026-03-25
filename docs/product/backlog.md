@@ -1,4 +1,4 @@
-# Backlog — VisiRénov
+# Backlog — Versiroom
 > Produit par @product-manager — 2026-03-25
 > Source : roadmap.md (RICE), kpi-framework.md, functional-specs.md, project-context.md
 > Destinataires : @fullstack (implémentation), @qa (couverture tests)
@@ -188,7 +188,7 @@
 **Persona** : Thomas
 **Story** : En tant que marchand de biens, je veux exporter mon dossier en PDF A4 prêt à envoyer, afin de le partager directement avec mes acquéreurs ou de l'attacher à mes annonces immobilières.
 **Critères d'acceptation** :
-- [ ] CA-1 : Le PDF contient : page de garde (adresse, photo principale meublée, logo VisiRénov), description du bien, visuels meublés (1 par page, format A4 paysage), mentions légales minimales.
+- [ ] CA-1 : Le PDF contient : page de garde (adresse, photo principale meublée, logo Versiroom), description du bien, visuels meublés (1 par page, format A4 paysage), mentions légales minimales.
 - [ ] CA-2 : La génération PDF utilise Puppeteer (HTML → PDF A4, résolution 150 DPI minimum).
 - [ ] CA-3 : Le PDF est disponible en téléchargement <30 secondes après la fin des générations visuelles.
 - [ ] CA-4 : La compatibilité Puppeteer avec l'environnement Replit est validée avant le commit (test manuel en staging).

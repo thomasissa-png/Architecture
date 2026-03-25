@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Mentions légales",
-  description: "Mentions légales de VisiRénov — éditeur, hébergeur, propriété intellectuelle.",
+  description: "Mentions légales de Versiroom — éditeur, hébergeur, propriété intellectuelle.",
   robots: { index: false, follow: false },
 };
 
@@ -12,7 +12,7 @@ export default function MentionsLegales() {
       <header className="border-b border-gray-200/40 py-6 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
           <a href="/" className="text-xl font-semibold text-foreground tracking-tighter">
-            VisiRénov
+            Versiroom
           </a>
           <a href="/" className="text-xs text-muted font-light hover:text-foreground transition-colors">
             Retour
@@ -28,19 +28,19 @@ export default function MentionsLegales() {
         <div className="space-y-8 text-sm text-muted font-light leading-relaxed">
           <section>
             <h2 className="text-base font-semibold text-foreground mb-3">1. Éditeur du site</h2>
-            <p>Le site VisiRénov est édité par :</p>
+            <p>Le site Versiroom est édité par :</p>
             <div className="mt-3 space-y-1">
-              <p><strong className="text-foreground font-medium">VisiRénov</strong></p>
+              <p><strong className="text-foreground font-medium">Versiroom</strong></p>
               <p>Forme juridique : [À compléter]</p>
               <p>SIRET : [À compléter]</p>
               <p>Adresse du siège social : [À compléter]</p>
-              <p>Email : <a href="mailto:contact@visirenov.fr" className="text-sage hover:underline">contact@visirenov.fr</a></p>
+              <p>Email : <a href="mailto:contact@versiroom.fr" className="text-sage hover:underline">contact@versiroom.fr</a></p>
             </div>
           </section>
 
           <section>
             <h2 className="text-base font-semibold text-foreground mb-3">2. Directeur de la publication</h2>
-            <p>[Nom à compléter], en qualité de représentant légal de VisiRénov.</p>
+            <p>[Nom à compléter], en qualité de représentant légal de Versiroom.</p>
           </section>
 
           <section>
@@ -55,10 +55,10 @@ export default function MentionsLegales() {
           <section>
             <h2 className="text-base font-semibold text-foreground mb-3">4. Propriété intellectuelle</h2>
             <p>
-              L&apos;ensemble des éléments du site VisiRénov — textes, interface, code source, logo — est la propriété exclusive de VisiRénov, sauf mention contraire.
+              L&apos;ensemble des éléments du site Versiroom — textes, interface, code source, logo — est la propriété exclusive de Versiroom, sauf mention contraire.
             </p>
             <p className="mt-3">
-              Les visuels générés par le service sont produits par intelligence artificielle. L&apos;utilisateur conserve tous les droits sur les photos qu&apos;il uploade. VisiRénov accorde une licence d&apos;utilisation large sur les images générées, y compris à des fins commerciales.
+              Les visuels générés par le service sont produits par intelligence artificielle. L&apos;utilisateur conserve tous les droits sur les photos qu&apos;il uploade. Versiroom accorde une licence d&apos;utilisation large sur les images générées, y compris à des fins commerciales.
             </p>
             <p className="mt-3 text-xs text-muted/60">
               Les visuels générés sont des représentations indicatives produites par IA. Ils ne constituent pas des représentations exactes de travaux ou de biens existants.
@@ -68,14 +68,14 @@ export default function MentionsLegales() {
           <section>
             <h2 className="text-base font-semibold text-foreground mb-3">5. Technologies utilisées</h2>
             <p>
-              VisiRénov utilise les technologies suivantes : Next.js (interface), OpenAI gpt-4.1 (génération d&apos;images IA), Flux Depth Pro via Replicate (modèle de secours), PostgreSQL (base de données).
+              Versiroom utilise les technologies suivantes : Next.js (interface), OpenAI gpt-4.1 (génération d&apos;images IA), Flux Depth Pro via Replicate (modèle de secours), PostgreSQL (base de données).
             </p>
           </section>
 
           <section>
             <h2 className="text-base font-semibold text-foreground mb-3">6. Contact</h2>
             <p>
-              Pour toute question : <a href="mailto:contact@visirenov.fr" className="text-sage hover:underline">contact@visirenov.fr</a>
+              Pour toute question : <a href="mailto:contact@versiroom.fr" className="text-sage hover:underline">contact@versiroom.fr</a>
             </p>
           </section>
         </div>

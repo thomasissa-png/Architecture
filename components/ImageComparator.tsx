@@ -44,7 +44,7 @@ function addWatermark(dataUri: string): Promise<Blob> {
       ctx.textAlign = "right";
       const padding = Math.round(img.width * 0.015);
       ctx.fillText(
-        "Généré par IA — VisiRénov",
+        "Généré par IA — Versiroom",
         img.width - padding,
         img.height - padding
       );
@@ -78,7 +78,7 @@ export default function ImageComparator({
     const blobUrl = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = blobUrl;
-    link.download = `visirenov-${Date.now()}.jpg`;
+    link.download = `versiroom-${Date.now()}.jpg`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -89,7 +89,7 @@ export default function ImageComparator({
     if (!navigator.share) return;
     try {
       const blob = dataUriToBlob(generatedUrl);
-      const file = new File([blob], "visirenov.png", { type: "image/png" });
+      const file = new File([blob], "versiroom.png", { type: "image/png" });
       await navigator.share({
         title: "Mon visuel VisiR\u00e9nov",
         text: "D\u00e9couvrez cette visualisation d\u2019int\u00e9rieur g\u00e9n\u00e9r\u00e9e par IA",
@@ -118,7 +118,7 @@ export default function ImageComparator({
 
   const handleWhatsApp = async () => {
     const blob = dataUriToBlob(generatedUrl);
-    const file = new File([blob], "visirenov.png", { type: "image/png" });
+    const file = new File([blob], "versiroom.png", { type: "image/png" });
 
     // Mobile: navigator.share with files sends the image directly via WhatsApp
     if (navigator.share && navigator.canShare?.({ files: [file] })) {
@@ -143,7 +143,7 @@ export default function ImageComparator({
       // Clipboard not available — proceed anyway
     }
     const text = encodeURIComponent(
-      "D\u00e9couvre ce visuel d\u2019int\u00e9rieur g\u00e9n\u00e9r\u00e9 par VisiR\u00e9nov \ud83c\udfe0 \u2014 visirenov.fr"
+      "D\u00e9couvre ce visuel d\u2019int\u00e9rieur g\u00e9n\u00e9r\u00e9 par VisiR\u00e9nov \ud83c\udfe0 \u2014 versiroom.fr"
     );
     window.open(`https://wa.me/?text=${text}`, "_blank", "noopener");
   };

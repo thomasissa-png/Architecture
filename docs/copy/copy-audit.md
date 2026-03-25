@@ -1,4 +1,4 @@
-# Audit Copy — VisiRénov
+# Audit Copy — Versiroom
 > Produit par @copywriter — 2026-03-25
 > Référence : brand-voice.md (2026-03-24), value-proposition.md, app/page.tsx, components/StylePicker.tsx
 
@@ -38,7 +38,7 @@
 ```
 Titre : Votre pièce meublée, en 90 secondes.
 Sous-titre : Uploadez une photo, choisissez un style parmi 11 ambiances curatées.
-VisiRénov préserve votre espace — il ne le réinvente pas.
+Versiroom préserve votre espace — il ne le réinvente pas.
 ```
 Note : ces formulations sont celles validées dans brand-voice.md section 2A. Le titre est l'ancrage "90 secondes" + "votre pièce". Le sous-titre introduit la différenciation "préserve" sans IA seule.
 
@@ -121,7 +121,7 @@ Scandinave, Contemporain, Industriel, Japandi, Art Déco, Mid-Century, Bohème, 
 ### 6. Footer (OK)
 
 Ligne 1326 : "Pour les architectes, marchands de biens et particuliers" — exact, sobre, conforme.
-Ligne 1337 : "© VisiRénov 2026" — correct.
+Ligne 1337 : "© Versiroom 2026" — correct.
 Liens : Tarifs + Contact — minimal, cohérent avec le positionnement premium (pas de surcharge).
 
 ---
