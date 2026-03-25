@@ -353,7 +353,7 @@ export default function ComptePage() {
               <div className="space-y-6 animate-fade-in-up">
                 {/* SIRET lookup */}
                 <div className="border border-foreground/5 rounded-2xl p-5 space-y-4">
-                  <h2 className="text-sm font-medium text-muted uppercase tracking-widest">
+                  <h2 className="text-xs font-medium text-foreground/40 uppercase tracking-widest">
                     Entreprise
                   </h2>
 
@@ -378,7 +378,7 @@ export default function ComptePage() {
                       <button
                         onClick={handleCompanySearch}
                         disabled={isSearching || companySearch.trim().length < 2}
-                        className="px-4 py-3 bg-foreground text-background rounded-xl text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 whitespace-nowrap"
+                        className="px-4 py-3 bg-foreground text-background rounded-full text-sm font-medium hover:bg-foreground/85 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 whitespace-nowrap"
                       >
                         {isSearching ? (
                           <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
@@ -453,7 +453,7 @@ export default function ComptePage() {
                       <button
                         onClick={handleSiretLookup}
                         disabled={isLookingUp || siret.replace(/\s/g, "").length < 14}
-                        className="px-4 py-3 bg-foreground text-background rounded-xl text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 whitespace-nowrap"
+                        className="px-4 py-3 bg-foreground text-background rounded-full text-sm font-medium hover:bg-foreground/85 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 whitespace-nowrap"
                         data-testid="merchant-siret-lookup"
                       >
                         {isLookingUp ? "Recherche..." : "Rechercher"}
@@ -536,7 +536,7 @@ export default function ComptePage() {
 
                 {/* ── Branding ── */}
                 <div className="border border-foreground/5 rounded-2xl p-5 space-y-4">
-                  <h2 className="text-sm font-medium text-muted uppercase tracking-widest">
+                  <h2 className="text-xs font-medium text-foreground/40 uppercase tracking-widest">
                     Identité visuelle
                   </h2>
 
@@ -571,7 +571,7 @@ export default function ComptePage() {
                         >
                           {isUploadingLogo ? "Upload en cours..." : logoPreview ? "Changer le logo" : "Ajouter un logo"}
                         </button>
-                        <p className="text-[10px] text-muted/50 font-light mt-0.5">
+                        <p className="text-xs text-muted/50 font-light mt-0.5">
                           PNG ou JPG, max 2 Mo
                         </p>
                       </div>

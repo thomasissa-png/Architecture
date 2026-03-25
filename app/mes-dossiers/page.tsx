@@ -7,6 +7,7 @@
 
 import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
+import AuthButton from "@/components/AuthButton";
 
 interface Dossier {
   id: number;
@@ -112,19 +113,22 @@ export default function MesDossiersPage() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-foreground/5">
-        <div className="max-w-4xl mx-auto px-5 sm:px-8 py-3 sm:py-4 flex items-center justify-between">
-          <a
-            href="/"
-            className="text-xl font-semibold text-foreground tracking-tighter hover:opacity-80 transition-opacity"
-          >
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 py-3 sm:py-4 flex items-center justify-between">
+          <a href="/" className="text-xl font-semibold text-foreground tracking-tighter">
             Versiroom
           </a>
-          <a
-            href="/"
-            className="text-xs text-muted font-light hover:text-foreground transition-colors"
-          >
-            Retour
-          </a>
+          <nav className="flex items-center gap-2 sm:gap-6">
+            <a href="/mes-biens" className="text-xs text-muted font-light hover:text-foreground transition-colors">
+              Mes biens
+            </a>
+            <a href="/ma-galerie" className="text-xs text-muted font-light hover:text-foreground transition-colors">
+              Ma galerie
+            </a>
+            <a href="/mes-dossiers" className="text-xs text-sage font-medium">
+              Mes dossiers
+            </a>
+            <AuthButton />
+          </nav>
         </div>
       </header>
 
@@ -160,7 +164,7 @@ export default function MesDossiersPage() {
               </p>
               <a
                 href="/"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-foreground text-background rounded-xl text-sm font-medium hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-foreground text-background rounded-full text-sm font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
               >
                 Créer un dossier
               </a>
