@@ -36,6 +36,7 @@ const PACKS = [
     features: [
       "3 iterations par photo",
       "Mode Marchand — dossiers PDF",
+      "Annonces immobilieres",
       "Lien partageable 30 jours",
     ],
     cta: "Acheter",
@@ -50,6 +51,7 @@ const PACKS = [
     features: [
       "5 iterations par photo",
       "Mode Marchand — 15 photos/dossier",
+      "Annonces immobilieres illimitees",
       "Lien partageable 90 jours + support dedie",
     ],
     cta: "Acheter",

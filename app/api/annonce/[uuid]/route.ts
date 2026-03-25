@@ -27,8 +27,8 @@ export async function GET(
 
   if (!isAnnonceActive(annonce)) {
     return NextResponse.json(
-      { error: "Annonce expiree ou archivee." },
-      { status: 410 }
+      { error: "Annonce introuvable." },
+      { status: 404 }
     );
   }
 

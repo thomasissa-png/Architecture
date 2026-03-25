@@ -7,7 +7,7 @@
  */
 
 import { Metadata } from "next";
-import { getAnnonceByUuid, isAnnonceExpired, isAnnonceActive } from "@/lib/annonce";
+import { getAnnonceByUuid, isAnnonceActive } from "@/lib/annonce";
 import { getPropertyById } from "@/lib/properties";
 import { getUserPhotos } from "@/lib/user-photos";
 import { getMerchantProfile } from "@/lib/merchant";
@@ -43,14 +43,18 @@ function formatPrice(price: number): string {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const annonce = await getAnnonceByUuid(params.uuid);
 
-  if (!annonce || isAnnonceExpired(annonce)) {
+  if (!annonce || !isAnnonceActive(annonce)) {
     return {
-      title: "Annonce expiree - Versiroom",
-      description: "Cette annonce a expire.",
+      title: "Annonce introuvable - Versiroom",
+      description: "Cette annonce n'existe pas ou a ete supprimee.",
+      robots: "noindex, nofollow",
     };
   }
 
-  const property = await getPropertyById(annonce.property_id, annonce.user_id);
+  const [property, photos] = await Promise.all([
+    getPropertyById(annonce.property_id, annonce.user_id),
+    getUserPhotos(annonce.user_id, { propertyId: annonce.property_id }),
+  ]);
   const title = annonce.title || "Annonce immobiliere";
 
   const details: string[] = [];
@@ -62,6 +66,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     ? `${title} - ${details.join(", ")}. Visuels par Versiroom.`
     : `${title} - Visuels par Versiroom.`;
 
+  const firstPhoto = photos.find((p) => p.output_image_key);
+  const ogImages = firstPhoto?.output_image_key
+    ? [{ url: `/api/logs/image?path=${encodeURIComponent(firstPhoto.output_image_key)}` }]
+    : undefined;
+
   return {
     title: `${title} - Versiroom`,
     description,
@@ -71,6 +80,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description,
       type: "website",
       siteName: "Versiroom",
+      ...(ogImages ? { images: ogImages } : {}),
     },
   };
 }
@@ -95,19 +105,16 @@ export default async function AnnoncePage({ params }: PageProps) {
     );
   }
 
-  // Expired or archived
+  // Expired or archived — same message as "not found" to avoid revealing existence
   if (!isAnnonceActive(annonce)) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-5">
         <div className="text-center max-w-md">
           <h1 className="text-2xl font-semibold text-foreground mb-3">
-            Annonce expiree
+            Annonce introuvable
           </h1>
           <p className="text-muted font-light text-sm">
-            Cette annonce n&apos;est plus disponible.
-          </p>
-          <p className="text-xs text-muted/50 mt-4">
-            Publiee le {new Date(annonce.created_at).toLocaleDateString("fr-FR")}
+            Cette annonce n&apos;existe pas ou a ete supprimee.
           </p>
         </div>
       </div>
@@ -175,6 +182,18 @@ export default async function AnnoncePage({ params }: PageProps) {
               alt={merchant.raison_sociale || "Logo"}
               className="h-8 w-auto object-contain"
             />
+          ) : hasMerchant && merchant?.raison_sociale ? (
+            <span
+              className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-xs font-semibold text-white"
+              style={{ backgroundColor: merchant.couleur_principale || "#7D9B76" }}
+            >
+              {merchant.raison_sociale
+                .split(" ")
+                .filter(Boolean)
+                .slice(0, 2)
+                .map((w) => w[0].toUpperCase())
+                .join("")}
+            </span>
           ) : (
             <span className="text-xl font-semibold text-foreground tracking-tighter">
               Versiroom
@@ -217,14 +236,12 @@ export default async function AnnoncePage({ params }: PageProps) {
                 {property.postal_code ? ` (${property.postal_code})` : ""}
               </span>
             )}
-            {property.sale_price && (
-              <span
-                className="text-xs bg-foreground text-background px-3 py-1.5 rounded-xl font-medium"
-                data-testid="annonce-price"
-              >
-                {formatPrice(property.sale_price)}
-              </span>
-            )}
+            <span
+              className="text-xs bg-foreground text-background px-3 py-1.5 rounded-xl font-medium"
+              data-testid="annonce-price"
+            >
+              {property.sale_price ? formatPrice(property.sale_price) : "Prix sur demande"}
+            </span>
           </div>
 
           {/* Address */}
@@ -280,38 +297,51 @@ export default async function AnnoncePage({ params }: PageProps) {
         )}
 
         {/* Description */}
-        {description && (
-          <div className="mb-10" data-testid="annonce-description">
-            <h2 className="text-sm font-medium text-foreground mb-3">Description</h2>
+        <div className="mb-10" data-testid="annonce-description">
+          <h2 className="text-sm font-medium text-foreground mb-3">Description</h2>
+          {description ? (
             <p className="text-sm text-muted font-light leading-relaxed whitespace-pre-line max-w-2xl">
               {description}
             </p>
-          </div>
-        )}
+          ) : (
+            <p className="text-sm text-muted font-light">
+              Description {"\u00E0"} venir.{" "}
+              <a
+                href={`/mes-biens/${annonce.property_id}`}
+                className="text-sage hover:underline"
+              >
+                Voir la fiche bien
+              </a>
+            </p>
+          )}
+        </div>
 
         {/* Contact */}
-        {hasMerchant && (merchant?.telephone || merchant?.email_pro) && (
-          <div className="mb-10 p-5 bg-foreground/[0.02] rounded-2xl border border-foreground/5" data-testid="annonce-contact">
-            <h2 className="text-sm font-medium text-foreground mb-3">Contact</h2>
-            <div className="space-y-2">
-              {merchant?.raison_sociale && (
-                <p className="text-sm font-medium text-foreground">
-                  {merchant.raison_sociale}
-                </p>
-              )}
-              {merchant?.telephone && (
-                <a
-                  href={`tel:${merchant.telephone}`}
-                  className="block text-sm text-muted font-light hover:text-foreground transition-colors"
-                  data-testid="annonce-telephone"
-                >
-                  {merchant.telephone}
-                </a>
-              )}
-              {/* Email is revealed client-side via AnnoncePublicView for anti-scraping */}
-            </div>
+        <div className="mb-10 p-5 bg-foreground/[0.02] rounded-2xl border border-foreground/5" data-testid="annonce-contact">
+          <h2 className="text-sm font-medium text-foreground mb-3">Contact</h2>
+          <div className="space-y-2">
+            {hasMerchant && merchant?.raison_sociale && (
+              <p className="text-sm font-medium text-foreground">
+                {merchant.raison_sociale}
+              </p>
+            )}
+            {hasMerchant && merchant?.telephone ? (
+              <a
+                href={`tel:${merchant.telephone}`}
+                className="block text-sm text-muted font-light hover:text-foreground transition-colors"
+                data-testid="annonce-telephone"
+              >
+                {merchant.telephone}
+              </a>
+            ) : null}
+            {/* Email is revealed client-side via AnnoncePublicView for anti-scraping */}
+            {(!hasMerchant || (!merchant?.telephone && !merchant?.email_pro)) && (
+              <p className="text-sm text-muted font-light">
+                Coordonn{"\u00E9"}es disponibles sur demande
+              </p>
+            )}
           </div>
-        )}
+        </div>
 
         {/* Action buttons — client component */}
         {completedPhotos.length > 0 && (

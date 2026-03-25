@@ -85,8 +85,10 @@ export default function PropertyDetailPage() {
   const [showAssociateModal, setShowAssociateModal] = useState(false);
   const [selectedForAssoc, setSelectedForAssoc] = useState<Set<string>>(new Set());
 
-  // Annonce creation
+  // Annonce creation + archiving
   const [isCreatingAnnonce, setIsCreatingAnnonce] = useState(false);
+  const [activeAnnonceUuid, setActiveAnnonceUuid] = useState<string | null>(null);
+  const [isArchivingAnnonce, setIsArchivingAnnonce] = useState(false);
 
   // Dossier creation
   const [showDossierModal, setShowDossierModal] = useState(false);
@@ -149,11 +151,23 @@ export default function PropertyDetailPage() {
     }
   }, []);
 
+  const fetchActiveAnnonce = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/properties/${propertyId}/annonce`);
+      if (res.ok) {
+        const data = await res.json();
+        setActiveAnnonceUuid(data.uuid || null);
+      }
+    } catch {
+      // ignore — annonce info is non-critical
+    }
+  }, [propertyId]);
+
   useEffect(() => {
     if (session?.user?.id) {
-      Promise.all([fetchProperty(), fetchPhotos()]).then(() => setIsLoading(false));
+      Promise.all([fetchProperty(), fetchPhotos(), fetchActiveAnnonce()]).then(() => setIsLoading(false));
     }
-  }, [session, fetchProperty, fetchPhotos]);
+  }, [session, fetchProperty, fetchPhotos, fetchActiveAnnonce]);
 
   const handleSaveDescription = async () => {
     try {
@@ -231,6 +245,27 @@ export default function PropertyDetailPage() {
       setToastMsg("Erreur r\u00e9seau.");
     } finally {
       setIsCreatingDossier(false);
+    }
+  };
+
+  const handleArchiveAnnonce = async () => {
+    if (!activeAnnonceUuid || isArchivingAnnonce) return;
+    setIsArchivingAnnonce(true);
+    try {
+      const res = await fetch(`/api/annonce/${activeAnnonceUuid}/archive`, {
+        method: "POST",
+      });
+      if (res.ok) {
+        setActiveAnnonceUuid(null);
+        setToastMsg("Annonce archiv\u00e9e.");
+      } else {
+        const data = await res.json();
+        setToastMsg(data.error || "Erreur lors de l\u2019archivage.");
+      }
+    } catch {
+      setToastMsg("Erreur r\u00e9seau.");
+    } finally {
+      setIsArchivingAnnonce(false);
     }
   };
 
@@ -522,6 +557,16 @@ export default function PropertyDetailPage() {
                 >
                   {isCreatingAnnonce ? "Cr\u00e9ation..." : "Cr\u00e9er une annonce (inclus Pack Pro)"}
                 </button>
+                {activeAnnonceUuid && (
+                  <button
+                    onClick={handleArchiveAnnonce}
+                    disabled={isArchivingAnnonce}
+                    className="text-xs border border-red-300 text-red-600 px-4 py-2.5 rounded-full font-medium hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300/50"
+                    data-testid="archive-annonce-btn"
+                  >
+                    {isArchivingAnnonce ? "Archivage..." : "Archiver l\u2019annonce"}
+                  </button>
+                )}
               </div>
             </>
           )}
