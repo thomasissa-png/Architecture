@@ -10,13 +10,17 @@ interface ContactStickyProps {
   telephone?: string | null;
   email?: string | null;
   raisonSociale?: string | null;
+  /** Page title used in fallback mailto subject */
+  title?: string;
 }
 
 export default function ContactSticky({
   telephone,
   email,
+  raisonSociale,
+  title,
 }: ContactStickyProps) {
-  if (!telephone && !email) return null;
+  const fallbackSubject = title || (raisonSociale ? `Annonce ${raisonSociale}` : "Annonce Versiroom");
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-[60] p-4 pointer-events-none">
@@ -63,7 +67,28 @@ export default function ContactSticky({
             </svg>
             Envoyer un email
           </a>
-        ) : null}
+        ) : (
+          <a
+            href={`mailto:contact@versiroom.fr?subject=${encodeURIComponent(fallbackSubject)}`}
+            className="pointer-events-auto inline-flex items-center gap-2.5 bg-sage text-white px-6 py-3.5 rounded-full font-medium text-sm shadow-lg hover:bg-sage/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 min-h-[48px]"
+            data-testid="contact-sticky-fallback"
+          >
+            <svg
+              className="w-4.5 h-4.5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"
+              />
+            </svg>
+            Contacter
+          </a>
+        )}
       </div>
     </div>
   );

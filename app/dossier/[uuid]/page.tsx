@@ -160,7 +160,7 @@ export default async function DossierPage({ params }: PageProps) {
           )}
 
           {/* Property details */}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted font-light">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted font-light">
             {dossier.bien_adresse && (
               <span>{dossier.bien_adresse}</span>
             )}
@@ -173,11 +173,11 @@ export default async function DossierPage({ params }: PageProps) {
             {dossier.nb_pieces && (
               <span>{dossier.nb_pieces} pi{"\u00E8"}ces</span>
             )}
-            {dossier.bien_prix && (
-              <span>{formatPrice(dossier.bien_prix)}</span>
-            )}
+            <span className="text-xs bg-foreground text-background px-3 py-1.5 rounded-xl font-medium">
+              {dossier.bien_prix ? formatPrice(dossier.bien_prix) : "Prix sur demande"}
+            </span>
             {dossier.prix_moyen_m2 && (
-              <span className="text-sage">
+              <span className="text-xs bg-sage/10 text-sage px-3 py-1.5 rounded-xl font-medium">
                 {dossier.prix_moyen_m2.toLocaleString("fr-FR")} {"\u20AC"}/m{"\u00B2"} (quartier)
               </span>
             )}
@@ -289,6 +289,7 @@ export default async function DossierPage({ params }: PageProps) {
         telephone={hasMerchant ? profile?.telephone : null}
         email={hasMerchant ? profile?.email_pro : null}
         raisonSociale={hasMerchant ? profile?.raison_sociale : null}
+        title={title}
       />
     </div>
   );

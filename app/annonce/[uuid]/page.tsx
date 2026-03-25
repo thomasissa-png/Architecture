@@ -12,7 +12,9 @@ import { getPropertyById } from "@/lib/properties";
 import { getUserPhotos } from "@/lib/user-photos";
 import { getMerchantProfile } from "@/lib/merchant";
 import AnnoncePublicView from "@/components/AnnoncePublicView";
+import AnnonceGallery from "@/components/AnnonceGallery";
 import ContactSticky from "@/components/ContactSticky";
+import RoomNav from "@/components/RoomNav";
 
 interface PageProps {
   params: { uuid: string };
@@ -275,7 +277,19 @@ export default async function AnnoncePage({ params }: PageProps) {
           )}
         </div>
 
-        {/* Photo gallery grouped by room */}
+        {/* Room navigation — sticky pills */}
+        {completedPhotos.length > 1 && sortedRoomEntries.length > 1 && (
+          <div className="mb-6">
+            <RoomNav
+              rooms={sortedRoomEntries.map(([roomType]) => ({
+                id: `piece-${roomType}`,
+                label: ROOM_TYPE_LABELS[roomType] || (roomType === "other" ? "Autres" : roomType),
+              }))}
+            />
+          </div>
+        )}
+
+        {/* Photo gallery grouped by room — with lightbox */}
         {completedPhotos.length === 0 ? (
           <div className="text-center py-16">
             <p className="text-muted font-light">
@@ -283,40 +297,24 @@ export default async function AnnoncePage({ params }: PageProps) {
             </p>
           </div>
         ) : (
-          <div className="space-y-8 mb-10" data-testid="annonce-gallery">
-            {sortedRoomEntries.map(([roomType, roomPhotos]) => (
-              <div key={roomType}>
-                <h2 className="text-sm font-medium text-foreground mb-3">
-                  {ROOM_TYPE_LABELS[roomType] || roomType === "other"
-                    ? ROOM_TYPE_LABELS[roomType] || "Autres"
-                    : roomType}
-                </h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {roomPhotos.map((photo) => (
-                    <div
-                      key={photo.id}
-                      className="relative bg-foreground/[0.02] rounded-2xl overflow-hidden border border-foreground/5"
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={`/api/logs/image?path=${encodeURIComponent(photo.output_image_key!)}`}
-                        alt={photo.room_label || ROOM_TYPE_LABELS[photo.room_type || ""] || "Photo"}
-                        className="w-full aspect-[4/3] object-cover"
-                        loading="lazy"
-                      />
-                      {photo.room_label && (
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/40 to-transparent p-2">
-                          <span className="text-xs text-white/90 font-medium">
-                            {photo.room_label}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
+          <AnnonceGallery
+            photosByRoom={sortedRoomEntries.map(([roomType, roomPhotos]) => ({
+              roomType,
+              roomLabel: ROOM_TYPE_LABELS[roomType] || (roomType === "other" ? "Autres" : roomType),
+              photos: roomPhotos.map((p) => ({
+                id: p.id,
+                outputImageKey: p.output_image_key!,
+                roomType: p.room_type || "other",
+                roomLabel: p.room_label || ROOM_TYPE_LABELS[p.room_type || ""] || null,
+              })),
+            }))}
+            allPhotos={sortedRoomEntries.flatMap(([, roomPhotos]) =>
+              roomPhotos.map((p) => ({
+                src: `/api/logs/image?path=${encodeURIComponent(p.output_image_key!)}`,
+                alt: p.room_label || ROOM_TYPE_LABELS[p.room_type || ""] || "Photo",
+              }))
+            )}
+          />
         )}
 
         {/* Description */}
@@ -354,7 +352,14 @@ export default async function AnnoncePage({ params }: PageProps) {
             {/* Email is revealed client-side via AnnoncePublicView for anti-scraping */}
             {(!hasMerchant || (!merchant?.telephone && !merchant?.email_pro)) && (
               <p className="text-sm text-muted font-light">
-                Coordonn{"\u00E9"}es disponibles sur demande
+                Pour contacter le vendeur, envoyez un message {"\u00E0"}{" "}
+                <a
+                  href={`mailto:contact@versiroom.fr?subject=${encodeURIComponent(`Annonce : ${title}`)}`}
+                  className="text-sage hover:underline"
+                >
+                  contact@versiroom.fr
+                </a>{" "}
+                en mentionnant la r{"\u00E9"}f{"\u00E9"}rence de cette annonce.
               </p>
             )}
           </div>
@@ -405,6 +410,7 @@ export default async function AnnoncePage({ params }: PageProps) {
         telephone={hasMerchant ? merchant?.telephone : null}
         email={hasMerchant ? merchant?.email_pro : null}
         raisonSociale={hasMerchant ? merchant?.raison_sociale : null}
+        title={title}
       />
     </div>
   );
