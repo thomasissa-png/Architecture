@@ -728,6 +728,14 @@ export default function Home() {
                     {/* Outlet on wall */}
                     <rect x="310" y="200" width="8" height="12" rx="1" fill="none" stroke="#c8c0b4" strokeWidth="0.8" />
                   </svg>
+                  {/* Real photo overlay — scandinavian style from DB */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/api/demo?style=scandinavian&image=before"
+                    alt="Pi&egrave;ce vide avant home staging"
+                    className="absolute inset-0 w-full h-full object-cover"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                  />
                 </div>
                 <span className="absolute bottom-2.5 left-2.5 text-xs font-medium text-gray-400 bg-white/80 backdrop-blur-sm px-2.5 py-1 rounded-full">
                   AVANT
@@ -808,6 +816,14 @@ export default function Home() {
                     {/* Baseboard */}
                     <line x1="40" y1="248" x2="360" y2="248" stroke="#d8d0c6" strokeWidth="2" />
                   </svg>
+                  {/* Real photo overlay — scandinavian style from DB */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/api/demo?style=scandinavian&image=after"
+                    alt="Salon scandinave meubl&eacute; par Versiroom"
+                    className="absolute inset-0 w-full h-full object-cover"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                  />
                 </div>
                 <span className="absolute bottom-2.5 left-2.5 text-xs font-medium text-sage bg-white/80 backdrop-blur-sm px-2.5 py-1 rounded-full">
                   APR&Egrave;S
