@@ -228,8 +228,24 @@ Moyenne — 5 agents (reviewer, Yann, Lucas, fullstack, reviewer), 2 features su
 - Espaces vides corriges (9 points)
 - Comparateur mobile ameliore (icone horizontale + hint)
 
+---
+
+## Session 2026-03-25b — F4 Mode Marchand + E2E Tests + Header Mobile
+
+### Phase G — F4 Mode Marchand + Tests E2E + Header mobile (3 agents en parallele)
+- Statut : TERMINE
+- @fullstack : F4 Mode Marchand complet (10 fichiers crees/modifies, batch generation, PDF, page partageable)
+- @qa : 28 tests E2E Playwright (6 fichiers), CI pipeline avec job e2e
+- @ux : Header mobile fix (Tarifs masque, CTA raccourci, gap/padding reduits)
+- Commits : 8973a20 (F4), b1924ac (QA)
+
+### Phase H — Review croisee F4 (a faire)
+- Agents : @reviewer
+- Statut : NON COMMENCE
+- Points a verifier : securite header X-Internal-Dossier, race condition credits batch, sync style-resolver/StylePicker, edge cases PDF > 25Mo
+
 ### Phases NON commencees
-- F4 Mode Marchand (NEXT dans roadmap)
+- Review croisee F4
 - F5 Mode Decorateur (LATER)
 - Domaine propre versiroom.fr (action fondateur)
-- Tests E2E Playwright
+- Configuration lancement (cles API Stripe/NextAuth/Sentry)
