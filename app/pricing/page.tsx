@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession, signIn } from "next-auth/react";
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import AuthButton from "@/components/AuthButton";
 
@@ -73,6 +73,15 @@ function PricingContent() {
 
   const checkoutCancelled = searchParams.get("checkout") === "cancelled";
 
+  // Auto-buy after login redirect with ?buy=xxx
+  useEffect(() => {
+    const buyParam = searchParams.get("buy");
+    if (buyParam && session?.user?.id && retractationAccepted) {
+      handleBuy(buyParam);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session, searchParams, retractationAccepted]);
+
   async function handleBuy(packId: string) {
     if (!session?.user?.id) {
       signIn("google", { callbackUrl: `/pricing?buy=${packId}` });
@@ -93,7 +102,7 @@ function PricingContent() {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ packId }),
+        body: JSON.stringify({ packId, retractationAccepted }),
       });
 
       if (!res.ok) {

@@ -9,26 +9,30 @@ export default function AuthButton() {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
+  async function fetchCredits() {
+    try {
+      const res = await fetch("/api/user/credits");
+      if (res.ok) {
+        const data = await res.json();
+        setCredits(data.credits);
+      }
+    } catch {
+      // Silently fail — credits will show as loading
+    }
+  }
+
   // Fetch credits when authenticated
   useEffect(() => {
     if (status !== "authenticated") return;
-    let cancelled = false;
-
-    async function fetchCredits() {
-      try {
-        const res = await fetch("/api/user/credits");
-        if (res.ok) {
-          const data = await res.json();
-          if (!cancelled) setCredits(data.credits);
-        }
-      } catch {
-        // Silently fail — credits will show as loading
-      }
-    }
-
     fetchCredits();
-    return () => { cancelled = true; };
   }, [status]);
+
+  // Re-fetch credits after successful checkout
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.location.search.includes("checkout=success")) {
+      fetchCredits();
+    }
+  }, []);
 
   // Close menu on outside click
   useEffect(() => {

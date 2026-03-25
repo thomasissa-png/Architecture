@@ -72,7 +72,8 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: "Image path not found" }, { status: 404 });
       }
 
-      const basename = path.split("/").pop() || path;
+      const basename = (path.split("/").pop() || "").replace(/[^a-zA-Z0-9._-]/g, "");
+      if (!basename) return NextResponse.json({ error: "Invalid path" }, { status: 400 });
       const key = `logs/${basename}`;
       const buffer = await getImage(key);
 

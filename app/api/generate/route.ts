@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import Replicate from "replicate";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { getUserCredits, decrementCredit } from "@/lib/credits";
 import { logGeneration, savePass1Cache, getPass1Cache } from "@/lib/db";
 import { preprocessIterationComment } from "@/lib/custom-prompt";
 import {
@@ -990,6 +993,18 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Credit check — connected users must have credits
+  const session = await getServerSession(authOptions);
+  if (session?.user?.id) {
+    const credits = await getUserCredits(session.user.id);
+    if (credits <= 0) {
+      return NextResponse.json(
+        { error: "Crédits insuffisants. Rechargez un pack pour continuer." },
+        { status: 402 }
+      );
+    }
+  }
+
   let styleId = "unknown";
 
   try {
@@ -1158,6 +1173,11 @@ export async function POST(request: NextRequest) {
         outdoorSubtype: cached.meta.outdoorSubtype ?? undefined,
       }).catch((err) => console.error("DB log (iteration) failed:", err));
 
+      // Decrement credit after successful generation
+      if (session?.user?.id) {
+        await decrementCredit(session.user.id);
+      }
+
       return response;
     }
 
@@ -1290,6 +1310,11 @@ export async function POST(request: NextRequest) {
         outdoorSubtype: isOutdoor ? (outdoorSubtype ?? undefined) : undefined,
       }).catch((err) => console.error("DB log failed:", err));
 
+      // Decrement credit after successful generation
+      if (session?.user?.id) {
+        await decrementCredit(session.user.id);
+      }
+
       return response;
     }
 
@@ -1320,6 +1345,11 @@ export async function POST(request: NextRequest) {
       isOutdoor: isOutdoor || undefined,
       outdoorSubtype: isOutdoor ? (outdoorSubtype ?? undefined) : undefined,
     }).catch((err) => console.error("DB log failed:", err));
+
+    // Decrement credit after successful generation
+    if (session?.user?.id) {
+      await decrementCredit(session.user.id);
+    }
 
     return response;
   } catch (error) {

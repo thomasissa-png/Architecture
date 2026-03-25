@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getStripe } from "@/lib/stripe";
+import { getStripe, PACKS } from "@/lib/stripe";
 import { addCredits } from "@/lib/credits";
 import { getPool, ensureTable } from "@/lib/db";
 import Stripe from "stripe";
@@ -43,12 +43,29 @@ export async function POST(request: Request) {
 
     if (userId && credits > 0) {
       try {
+        // Idempotence check — prevent double credit on webhook replay
+        await ensureTable();
+        const pool = getPool();
+        const existing = await pool.query(
+          `SELECT status FROM purchases WHERE stripe_session_id = $1`,
+          [session.id]
+        );
+        if (existing.rows[0]?.status === 'completed') {
+          console.log(`Webhook replay ignored for session ${session.id}`);
+          return NextResponse.json({ received: true });
+        }
+
+        // H3: Validate credits match the pack definition
+        const pack = PACKS.find(p => p.id === packId);
+        if (!pack || pack.credits !== credits) {
+          console.error(`Credits mismatch: metadata=${credits}, pack=${pack?.credits}`);
+          return NextResponse.json({ error: "Credits mismatch" }, { status: 400 });
+        }
+
         await addCredits(userId, credits);
 
         // Update purchase status
-        await ensureTable();
-        const db = getPool();
-        await db.query(
+        await pool.query(
           `UPDATE purchases SET status = 'completed'
            WHERE stripe_session_id = $1`,
           [session.id]

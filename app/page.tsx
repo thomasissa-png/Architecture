@@ -1297,9 +1297,9 @@ export default function Home() {
                   Lien partageable 7 jours
                 </li>
               </ul>
-              <button className="w-full bg-foreground text-background px-4 py-2.5 rounded-full text-sm font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2">
-                Bient&ocirc;t disponible
-              </button>
+              <a href="/pricing" className="w-full block text-center bg-foreground text-background px-4 py-2.5 rounded-full text-sm font-medium hover:bg-foreground/85 transition-colors">
+                Acheter
+              </a>
             </div>
 
             {/* Pro — recommended */}
@@ -1323,9 +1323,9 @@ export default function Home() {
                   Lien partageable 30 jours
                 </li>
               </ul>
-              <button className="w-full bg-foreground text-background px-4 py-2.5 rounded-full text-sm font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2">
-                Bient&ocirc;t disponible
-              </button>
+              <a href="/pricing" className="w-full block text-center bg-foreground text-background px-4 py-2.5 rounded-full text-sm font-medium hover:bg-foreground/85 transition-colors">
+                Acheter
+              </a>
             </div>
 
             {/* Studio */}

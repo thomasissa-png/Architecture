@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { packId } = body;
+    const { packId, retractationAccepted } = body;
 
     const pack = getPackById(packId);
     if (!pack) {
@@ -51,6 +51,7 @@ export async function POST(request: Request) {
         userId: session.user.id,
         packId: pack.id,
         credits: String(pack.credits),
+        retractation_accepted: retractationAccepted ? "true" : "false",
       },
       success_url: `${baseUrl}/?checkout=success&pack=${pack.id}`,
       cancel_url: `${baseUrl}/pricing?checkout=cancelled`,
