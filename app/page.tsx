@@ -571,25 +571,37 @@ export default function Home() {
     setIsRefineModalOpen(true);
   }, []);
 
-  const handleDownloadAll = () => {
-    results.forEach((result, index) => {
-      // Convert base64 data URI to blob URL for reliable cross-browser download
-      const [meta, b64] = result.generatedUrl.split(",");
-      const mime = meta.match(/:(.*?);/)?.[1] || "image/png";
-      const bytes = atob(b64);
-      const arr = new Uint8Array(bytes.length);
-      for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
-      const blob = new Blob([arr], { type: mime });
+  const handleDownloadAll = async () => {
+    for (let index = 0; index < results.length; index++) {
+      const result = results[index];
+      // Add watermark (EU AI Act Art. 50)
+      const blob = await new Promise<Blob>((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext("2d")!;
+          ctx.drawImage(img, 0, 0);
+          const fontSize = Math.max(12, Math.round(img.width * 0.012));
+          ctx.font = `${fontSize}px Inter, system-ui, sans-serif`;
+          ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+          ctx.textAlign = "right";
+          const pad = Math.round(img.width * 0.015);
+          ctx.fillText("Généré par IA — VisiRénov", img.width - pad, img.height - pad);
+          canvas.toBlob((b) => resolve(b!), "image/jpeg", 0.92);
+        };
+        img.src = result.generatedUrl;
+      });
       const blobUrl = URL.createObjectURL(blob);
-
       const link = document.createElement("a");
       link.href = blobUrl;
-      link.download = `visirenov-${index + 1}-${Date.now()}.png`;
+      link.download = `visirenov-${index + 1}-${Date.now()}.jpg`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
-    });
+    }
   };
 
   // Auto-scroll to style step when files are added

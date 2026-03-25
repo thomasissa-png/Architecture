@@ -24,6 +24,41 @@ function dataUriToBlob(dataUri: string): Blob {
   return new Blob([arr], { type: mime });
 }
 
+/**
+ * Adds a discrete watermark to an image (EU AI Act Art. 50 compliance).
+ * Returns a new data URI with the watermark applied.
+ */
+function addWatermark(dataUri: string): Promise<Blob> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext("2d")!;
+      ctx.drawImage(img, 0, 0);
+
+      const fontSize = Math.max(12, Math.round(img.width * 0.012));
+      ctx.font = `${fontSize}px Inter, system-ui, sans-serif`;
+      ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+      ctx.textAlign = "right";
+      const padding = Math.round(img.width * 0.015);
+      ctx.fillText(
+        "Généré par IA — VisiRénov",
+        img.width - padding,
+        img.height - padding
+      );
+
+      canvas.toBlob(
+        (blob) => resolve(blob || dataUriToBlob(dataUri)),
+        "image/jpeg",
+        0.92
+      );
+    };
+    img.src = dataUri;
+  });
+}
+
 export default function ImageComparator({
   originalUrl,
   generatedUrl,
@@ -37,17 +72,16 @@ export default function ImageComparator({
     setCanShare(!!navigator.share);
   }, []);
 
-  const handleDownload = () => {
-    // Convert base64 to blob URL for reliable cross-browser download
-    const blob = dataUriToBlob(generatedUrl);
+  const handleDownload = async () => {
+    // Add watermark for EU AI Act Art. 50 compliance
+    const blob = await addWatermark(generatedUrl);
     const blobUrl = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = blobUrl;
-    link.download = `visirenov-${Date.now()}.png`;
+    link.download = `visirenov-${Date.now()}.jpg`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    // Revoke after a short delay to ensure download starts
     setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
   };
 
