@@ -197,7 +197,7 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-start sm:items-center justify-center pt-[5dvh] sm:pt-0"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="auth-modal-title"
@@ -212,7 +212,7 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
       {/* Modal — scrollable for iOS keyboard */}
       <div
         ref={modalRef}
-        className="relative w-full max-w-md mx-4 bg-background rounded-3xl shadow-2xl border border-foreground/5 max-h-[90dvh] overflow-y-auto"
+        className="relative w-full max-w-md bg-background rounded-3xl shadow-2xl border border-foreground/5 max-h-[min(90vh,90dvh)] overflow-y-auto"
         style={{ animation: "fadeInUp 300ms cubic-bezier(0.16, 1, 0.3, 1)" }}
       >
         {/* Close button — 44px touch target */}
