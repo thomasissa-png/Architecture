@@ -85,6 +85,9 @@ export default function PropertyDetailPage() {
   const [showAssociateModal, setShowAssociateModal] = useState(false);
   const [selectedForAssoc, setSelectedForAssoc] = useState<Set<string>>(new Set());
 
+  // Annonce creation
+  const [isCreatingAnnonce, setIsCreatingAnnonce] = useState(false);
+
   // Dossier creation
   const [showDossierModal, setShowDossierModal] = useState(false);
   const [selectedForDossier, setSelectedForDossier] = useState<Set<string>>(new Set());
@@ -228,6 +231,29 @@ export default function PropertyDetailPage() {
       setToastMsg("Erreur r\u00e9seau.");
     } finally {
       setIsCreatingDossier(false);
+    }
+  };
+
+  const handleCreateAnnonce = async () => {
+    if (isCreatingAnnonce) return;
+    setIsCreatingAnnonce(true);
+    try {
+      const res = await fetch("/api/annonce", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ propertyId }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        window.open(`/annonce/${data.uuid}`, "_blank");
+      } else {
+        const data = await res.json();
+        setToastMsg(data.error || "Erreur lors de la cr\u00e9ation de l\u2019annonce.");
+      }
+    } catch {
+      setToastMsg("Erreur r\u00e9seau.");
+    } finally {
+      setIsCreatingAnnonce(false);
     }
   };
 
@@ -466,7 +492,7 @@ export default function PropertyDetailPage() {
                 ))}
               </div>
 
-              {/* Dossier creation */}
+              {/* Dossier + Annonce creation */}
               <div className="mt-6 flex gap-2">
                 <button
                   onClick={() => {
@@ -479,6 +505,14 @@ export default function PropertyDetailPage() {
                   data-testid="create-dossier-btn"
                 >
                   Cr&#233;er un dossier
+                </button>
+                <button
+                  onClick={handleCreateAnnonce}
+                  disabled={isCreatingAnnonce || photos.length === 0}
+                  className="text-xs bg-sage text-white px-4 py-2 rounded-full font-medium hover:bg-sage/85 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                  data-testid="create-annonce-btn"
+                >
+                  {isCreatingAnnonce ? "Cr\u00e9ation..." : "Cr\u00e9er une annonce"}
                 </button>
               </div>
             </>

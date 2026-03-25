@@ -59,11 +59,14 @@
 | Mode Extérieur (F3) | Oui | Oui | Oui | Oui | Oui |
 | Mode Marchand (F4) | Non | Non | Non | Oui (max 10 photos/dossier) | Oui (max 15 photos) |
 | Mode Décorateur — Shopping list (F5) | Non | Non | Non | Oui (+1 crédit/liste) | Oui (+1 crédit/liste) |
+| **Annonce publique (F6)** | **Non** | **Non** | **Non** | **Oui (illimité)** | **Oui (illimité)** |
 | Export PDF | Non | Non | Non | Oui | Oui |
 | Lien partageable | Non | Non | Oui (7j) | Oui (30j) | Oui (90j) |
 | Téléchargement HD | Oui | Oui | Oui | Oui | Oui |
 
 **Justification du gating F4/F5 sur Pro+ uniquement :** F4 (Mode Marchand) et F5 (Décorateur) ont un coût marginal plus élevé (génération PDF, shopping list GPT-4.1 ~0,13€ vs 0,10€). Réserver ces features aux packs Pro et Studio crée un incitatif clair à monter en gamme pour Thomas et les agences. Le Starter couvre le besoin de Léa et de Claire en phase découverte.
+
+**Justification du gating F6 (Annonce publique) sur Pro+ uniquement :** F6 a un coût API nul (aucune génération IA, juste affichage de données existantes + ZIP client-side). Son gating sur Pro+ est justifié non pas par le coût marginal, mais par la cohérence du positionnement : F6 est une feature pro immobilier (Thomas, agences) qui n'a pas de sens pour Léa (pas de bien à vendre) ni pour Claire dans sa phase découverte. Inclure F6 dans Pro/Studio renforce la valeur perçue de ces packs sans friction supplémentaire. C'est un argument de vente : "Pro inclut vos dossiers PDF + vos pages d'annonce publique + le partage 30j."
 
 ---
 
@@ -168,6 +171,7 @@ Le volume discount cible les agences immobilières (persona secondaire) qui trai
 | F4 Mode Marchand | 29€/dossier fixe | ROI vs home stager humain (200-500€), marge 94% |
 | F5 Mode Décorateur | 9€/dossier fixe | Micro-transaction, marge >99%, add-on post-génération |
 | Feature gating F4/F5 | Pro et Studio uniquement | Coût marginal supérieur, incitatif montée en gamme |
+| F6 Annonce publique | Inclus Pro/Studio (0€ supplémentaire) | Coût API nul, extension naturelle du dossier PDF, canal d'acquisition organique (footer "Généré par Versiroom"), renforce la valeur Pro |
 | Volume discount F4 | [HYPOTHÈSE] À valider avant implémentation | Risque de complexité pricing sans validation terrain |
 
 ---

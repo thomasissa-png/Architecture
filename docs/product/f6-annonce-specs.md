@@ -392,6 +392,22 @@ Note : le score 9.3 intègre la résolution de F2 (filtre room_type) dans le mê
 
 **Handoff → @fullstack**
 - Fichiers produits : `docs/product/f6-annonce-specs.md`
-- Scope : MVP uniquement (pas de QR code, pas d'intégration portails, pas d'analytics)
-- Priorité d'implémentation : (1) Table + API, (2) Page publique SSR, (3) Bouton fiche bien, (4) ZIP download, (5) Actions partage
-- Points d'attention : la page annonce est publique (SSR, pas de useSession) — même pattern que `/dossier/[uuid]`
+- Scope : MVP uniquement (pas de QR code, pas d'intégration portails, pas d'analytics, pas de galerie lightbox, pas d'expiration automatique)
+- Priorité d'implémentation :
+  1. Table `annonces` (schema : uuid, user_id, property_id, status, created_at) + idempotence sur property_id
+  2. Route `POST /api/annonce` (idempotente sur property_id — retourne l'existante si déjà créée)
+  3. Route `GET /api/annonce/[uuid]` (données publiques, SSR)
+  4. Page `/annonce/[uuid]` SSR + tous les edge cases données manquantes
+  5. Bouton "Créer une annonce" sur `/mes-biens/[id]` (disabled si 0 photo)
+  6. Bouton "Archiver l'annonce" sur `/mes-biens/[id]` (change status → archived)
+  7. ZIP download avec barre de progression (JSZip + callbacks progression)
+  8. Boutons partage (copier lien, copier description, WhatsApp)
+  9. **F2 en bonus du même sprint** : filtre `room_type` dans `/ma-galerie/page.tsx` + param `room_type` dans `/api/user/photos` (2h estimées)
+- Points d'attention critiques :
+  - La page annonce est publique (SSR, pas de useSession) — même pattern que `/dossier/[uuid]`
+  - Ajouter `<meta name="robots" content="noindex, nofollow">` sur `/annonce/[uuid]`
+  - Email marchand : afficher en click-to-reveal ou obfusqué CSS (anti-scraping)
+  - Ne jamais afficher "0 €", "null m²", "null pièces" — tous les edge cases données manquantes sont dans la section 8
+  - Le disclaimer IA doit être inclus dans le texte copié via "Copier la description" : ajouter automatiquement en fin de texte "— Visuels générés par intelligence artificielle à des fins de projection, non contractuels."
+  - Idempotence POST : vérifier `WHERE user_id = $1 AND property_id = $2 AND status = 'active'` avant INSERT
+- Dépendance @legal : vérification CGU SeLoger/LeBonCoin/Bien'ici sur visuels IA. Le disclaimer est la mesure conservatoire — implémenter sans attendre la réponse @legal.
