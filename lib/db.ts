@@ -317,6 +317,45 @@ export async function getPass1Meta(key: string): Promise<Pass1Meta | null> {
   );
 }
 
+// ─── Iteration base image cache (furnished result for adjust mode) ───
+// Stores the last furnished result so "adjust" iterations can edit it
+// instead of starting from the empty pass-1 image.
+
+export async function saveIterationBase(
+  sessionId: string,
+  imageBase64: string
+): Promise<void> {
+  const key = `iteration-base/${sessionId}.jpg`;
+  const buffer = Buffer.from(imageBase64, "base64");
+  const { ok, error } = await withStorageRetry(
+    (client) => client.uploadFromBytes(key, buffer),
+    `saveIterationBase(${key})`
+  );
+  if (!ok) {
+    console.error("saveIterationBase upload failed:", error);
+    // Non-blocking: don't throw — caller uses fire-and-forget
+  }
+}
+
+export async function getIterationBase(
+  sessionId: string
+): Promise<string | null> {
+  const key = `iteration-base/${sessionId}.jpg`;
+  try {
+    const result = await withStorageRetry(
+      (client) => client.downloadAsBytes(key),
+      `getIterationBase(${key})`
+    );
+    if (!result.ok || !result.value) return null;
+    const buf = result.value[0];
+    if (!buf) return null;
+    return Buffer.from(buf.buffer, buf.byteOffset, buf.byteLength).toString("base64");
+  } catch (err) {
+    console.error(`getIterationBase failed for session "${sessionId}":`, err instanceof Error ? err.message : err);
+    return null;
+  }
+}
+
 // ─── Log a generation (fire-and-forget) ──────────────────────────────
 export interface GenerationLogParams {
   ip: string;

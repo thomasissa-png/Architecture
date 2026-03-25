@@ -4,8 +4,8 @@ import Replicate from "replicate";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { decrementCredit, addCredits } from "@/lib/credits";
-import { logGeneration, savePass1Cache, getPass1Cache, getPool } from "@/lib/db";
-import { preprocessIterationComment } from "@/lib/custom-prompt";
+import { logGeneration, savePass1Cache, getPass1Cache, getPool, saveIterationBase, getIterationBase } from "@/lib/db";
+import { preprocessIterationComment, classifyIterationIntent } from "@/lib/custom-prompt";
 import {
   buildIterationFurnitureResponsesPrompt,
   buildIterationFurnitureFluxPrompt,
@@ -19,13 +19,17 @@ import { saveUserPhoto } from "@/lib/user-photos";
 import {
   buildIterationOutdoorFurnitureResponsesPrompt,
   buildIterationOutdoorFurnitureFluxPrompt,
+  buildAdjustResponsesPrompt,
+  buildAdjustFluxPrompt,
+  buildAdjustOutdoorResponsesPrompt,
+  buildAdjustOutdoorFluxPrompt,
 } from "@/lib/iteration-prompt";
 
 /** Prompt version — increment when modifying any prompt builder or style prompt.
  * Used by audit agents (Yann Duval, Lucas Moreau) to correlate generation quality with prompt version.
  * History: v1-v5 (Sprints 1-7), v6-v10 (Sprints 8-12), v11-v15 (Sprints 13-16), v16-v17 (Sprint 17),
  * v18 (current — Sprint 18+, post all fixes) */
-export const PROMPT_VERSION = "v20";
+export const PROMPT_VERSION = "v21";
 
 // ─── Timeout wrapper for external API calls ─────────────────────────
 const API_TIMEOUT_MS = 120_000;
@@ -1078,7 +1082,7 @@ export async function POST(request: NextRequest) {
 
     styleId = bodyStyleId;
 
-    // ── F1 Iteration flow: re-pass 2 only ────────────────────────────
+    // ── F1 Iteration flow: adjust (edit furnished) or restyle (re-pass 2) ──
     if (pass1Key) {
       if (!iterationComment || !iterationComment.trim()) {
         return NextResponse.json(
@@ -1116,6 +1120,11 @@ export async function POST(request: NextRequest) {
       const outputSize = getOutputSize(cached.meta.width, cached.meta.height);
       const originalFurniturePrompt = cached.meta.furniturePrompt;
 
+      // Classify intent: adjust (edit furnished image) vs restyle (redo from empty)
+      console.log("Classifying iteration intent...");
+      const intent = await classifyIterationIntent(iterationComment.trim());
+      console.log(`Iteration intent: ${intent}`);
+
       // Pre-process the iteration comment via GPT-4.1-mini
       console.log("Pre-processing iteration comment...");
       const preprocessResult = await preprocessIterationComment(
@@ -1137,44 +1146,93 @@ export async function POST(request: NextRequest) {
 
       let responsesPrompt: string;
       let fluxPrompt: string;
+      let sourceImageBase64: string;
 
-      if (cached.meta.isOutdoor) {
-        responsesPrompt = buildIterationOutdoorFurnitureResponsesPrompt(
-          originalFurniturePrompt,
-          allModifications,
-        );
-        fluxPrompt = buildIterationOutdoorFurnitureFluxPrompt(
-          originalFurniturePrompt,
-          allModifications,
-        );
+      if (intent === "adjust") {
+        // ADJUST mode: edit the furnished result, keep existing furniture
+        // Try to load the last furnished result from Object Storage
+        const effectiveSessionId = sessionId ?? pass1Key;
+        const furnishedBase64 = await getIterationBase(effectiveSessionId);
+
+        if (furnishedBase64) {
+          sourceImageBase64 = furnishedBase64;
+          console.log("Adjust mode: using furnished iteration base image");
+        } else {
+          // Fallback: no furnished image stored yet — use pass1 (restyle behavior)
+          sourceImageBase64 = cached.imageBase64;
+          console.log("Adjust mode: no iteration base found, falling back to pass1 image");
+        }
+
+        // Build adjust-specific prompts (preserve existing, apply change only)
+        if (cached.meta.isOutdoor) {
+          responsesPrompt = buildAdjustOutdoorResponsesPrompt(
+            iterationComment.trim(),
+            preprocessResult.enrichedComment,
+          );
+          fluxPrompt = buildAdjustOutdoorFluxPrompt(
+            iterationComment.trim(),
+            preprocessResult.enrichedComment,
+          );
+        } else {
+          responsesPrompt = buildAdjustResponsesPrompt(
+            iterationComment.trim(),
+            preprocessResult.enrichedComment,
+            iterMeta,
+          );
+          fluxPrompt = buildAdjustFluxPrompt(
+            iterationComment.trim(),
+            preprocessResult.enrichedComment,
+          );
+        }
       } else {
-        responsesPrompt = buildIterationFurnitureResponsesPrompt(
-          originalFurniturePrompt,
-          allModifications,
-          iterMeta,
-        );
-        fluxPrompt = buildIterationFurnitureFluxPrompt(
-          originalFurniturePrompt,
-          allModifications,
-          iterMeta,
-        );
+        // RESTYLE mode: original behavior — re-pass 2 from empty pass1 image
+        sourceImageBase64 = cached.imageBase64;
+        console.log("Restyle mode: using pass1 (empty) image");
+
+        if (cached.meta.isOutdoor) {
+          responsesPrompt = buildIterationOutdoorFurnitureResponsesPrompt(
+            originalFurniturePrompt,
+            allModifications,
+          );
+          fluxPrompt = buildIterationOutdoorFurnitureFluxPrompt(
+            originalFurniturePrompt,
+            allModifications,
+          );
+        } else {
+          responsesPrompt = buildIterationFurnitureResponsesPrompt(
+            originalFurniturePrompt,
+            allModifications,
+            iterMeta,
+          );
+          fluxPrompt = buildIterationFurnitureFluxPrompt(
+            originalFurniturePrompt,
+            allModifications,
+            iterMeta,
+          );
+        }
       }
 
       const t0 = Date.now();
-      console.log(`Starting iteration pass 2... Output size: ${outputSize.openai}`);
-      const result = await generateIterationPass(cached.imageBase64, responsesPrompt, fluxPrompt, outputSize);
+      console.log(`Starting iteration (${intent})... Output size: ${outputSize.openai}`);
+      const result = await generateIterationPass(sourceImageBase64, responsesPrompt, fluxPrompt, outputSize);
       const t1 = Date.now();
 
       const outputBase64 = result.image.replace(/^data:image\/[\w+]+;base64,/, "");
       const iterationNumber = previousModifications.length + 1;
 
-      // Save iteration result to Object Storage
+      // Fire-and-forget: save the furnished result as the new iteration base
+      const effectiveSessionId = sessionId ?? pass1Key;
+      saveIterationBase(effectiveSessionId, outputBase64).catch((err) =>
+        console.error("saveIterationBase (iteration) failed:", err)
+      );
+
       const response = NextResponse.json({
         image: result.image,
         model: result.model,
         iterationNumber,
         warnings: preprocessResult.warnings,
         enrichedComment: preprocessResult.enrichedComment,
+        intent,
       });
 
       // Fire-and-forget: log + save iteration image
@@ -1186,7 +1244,7 @@ export async function POST(request: NextRequest) {
         withFurniture: true,
         inputWidth: cached.meta.width,
         inputHeight: cached.meta.height,
-        modelUsed: result.model,
+        modelUsed: `${result.model} (${intent})`,
         pass2Model: result.model,
         durationMs: t1 - t0,
         pass2DurationMs: t1 - t0,
@@ -1378,6 +1436,13 @@ export async function POST(request: NextRequest) {
     const t2 = Date.now();
 
     const outputBase64 = pass2.image.replace(/^data:image\/[\w+]+;base64,/, "");
+
+    // Fire-and-forget: save furnished result as iteration base for future adjust iterations
+    if (sessionId) {
+      saveIterationBase(sessionId, outputBase64).catch((err) =>
+        console.error("saveIterationBase (initial gen) failed:", err)
+      );
+    }
 
     // Fire-and-forget: save to user_photos gallery if user is connected
     let photoIdPromise: Promise<string | null> = Promise.resolve(null);

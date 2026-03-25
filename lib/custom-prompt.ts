@@ -84,6 +84,56 @@ warnings should be in French (the user's language). Each warning explains what w
   }
 }
 
+// ─── Iteration intent classification ──────────────────────────────────
+// Classifies a user comment as "adjust" (add/remove/modify individual items)
+// or "restyle" (change entire style / redo everything).
+
+export type IterationIntent = "adjust" | "restyle";
+
+export async function classifyIterationIntent(
+  comment: string
+): Promise<IterationIntent> {
+  if (!process.env.OPENAI_API_KEY) {
+    return "adjust"; // Safe default: preserve existing furniture
+  }
+
+  try {
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4.1-mini",
+      temperature: 0,
+      max_tokens: 10,
+      messages: [
+        {
+          role: "system",
+          content: `You classify user comments about an AI-generated furnished room image.
+Return ONLY "adjust" or "restyle".
+
+"adjust" = the user wants to ADD, REMOVE, or MODIFY specific items while keeping everything else.
+Examples: "add a shelf", "remove the lamp", "replace the sofa with a bigger one", "add plants", "change the rug color"
+
+"restyle" = the user wants to completely change the style or redo everything from scratch.
+Examples: "change to scandinavian style", "redo everything", "try a different look", "make it more modern", "start over"
+
+If unsure, default to "adjust" (safer — preserves existing furniture).`,
+        },
+        {
+          role: "user",
+          content: comment,
+        },
+      ],
+    });
+
+    const content = response.choices[0]?.message?.content?.trim().toLowerCase();
+    if (content === "restyle") return "restyle";
+    return "adjust"; // Default to adjust for safety
+  } catch (err) {
+    console.error("classifyIterationIntent failed:", err);
+    return "adjust"; // Safe fallback
+  }
+}
+
 // ─── Iteration comment pre-processing ─────────────────────────────────
 // Separate from preprocessCustomPrompt: NO split surface/furniture,
 // returns a single enriched modification string.

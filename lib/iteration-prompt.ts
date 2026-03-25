@@ -151,4 +151,69 @@ export function buildIterationOutdoorFurnitureFluxPrompt(
   ].join(" ");
 }
 
+// ─── ADJUST mode prompts (edit furnished image, keep existing furniture) ──
+
+export function buildAdjustResponsesPrompt(
+  userComment: string,
+  enrichedComment: string,
+  meta: { roomType?: string | null },
+): string {
+  return [
+    "Edit this furnished room photo. Keep ALL existing furniture, decorations, and room surfaces EXACTLY as they are.",
+    `APPLY THIS CHANGE ONLY: ${enrichedComment}`,
+    "Do NOT remove, move, or modify any existing item unless the user explicitly asks for it.",
+    "The room must look identical to the input except for the requested change.",
+    // Room-type-specific rules
+    meta.roomType === "kitchen" || meta.roomType === "bathroom"
+      ? "Built-in cabinetry, vanity units, and countertops are expected for this room type."
+      : meta.roomType === "wc"
+      ? "Very small space — do not overcrowd."
+      : "",
+    "Room structure is LOCKED — walls, floor, ceiling, paint, windows, doors must remain visually identical to the input.",
+    "Preserve all wall-mounted fixed equipment: radiators, heaters, vents, thermostats, switches.",
+    "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation.",
+    "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, subtle sensor grain (ISO 200), natural corner vignetting. Photo-realistic interior photograph. No text, watermarks, or logos.",
+  ].filter(Boolean).join(" ");
+}
+
+export function buildAdjustFluxPrompt(
+  userComment: string,
+  enrichedComment: string,
+): string {
+  return [
+    `CHANGE: ${enrichedComment}.`,
+    "Keep ALL existing furniture and decoration exactly as-is except for this change.",
+    "Room surfaces, camera angle, and lighting unchanged.",
+    "Photo-realistic interior photograph, DSLR full-frame 16-35mm f/8, deep DOF, sharp focus, subtle film grain.",
+  ].join(" ");
+}
+
+export function buildAdjustOutdoorResponsesPrompt(
+  userComment: string,
+  enrichedComment: string,
+): string {
+  return [
+    "Edit this furnished outdoor space photo. Keep ALL existing furniture, decorations, and ground surfaces EXACTLY as they are.",
+    `APPLY THIS CHANGE ONLY: ${enrichedComment}`,
+    "Do NOT remove, move, or modify any existing item unless the user explicitly asks for it.",
+    "The space must look identical to the input except for the requested change.",
+    "Ground surface and vertical structures are LOCKED — guard rails, walls, facades, gates, fences must remain visually identical.",
+    "Preserve existing vegetation in the background.",
+    "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation.",
+    "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, subtle sensor grain (ISO 200), natural corner vignetting. Photo-realistic outdoor photograph. No text, watermarks, or logos.",
+  ].join(" ");
+}
+
+export function buildAdjustOutdoorFluxPrompt(
+  userComment: string,
+  enrichedComment: string,
+): string {
+  return [
+    `CHANGE: ${enrichedComment}.`,
+    "Keep ALL existing outdoor furniture and decoration exactly as-is except for this change.",
+    "Ground surfaces, vegetation, camera angle, and lighting unchanged.",
+    "Photo-realistic outdoor photograph, DSLR full-frame 16-35mm f/8, deep DOF, sharp focus, subtle film grain.",
+  ].join(" ");
+}
+
 export { MAX_ITERATIONS, PASS1_TTL_MS };
