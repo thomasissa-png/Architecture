@@ -1,0 +1,458 @@
+/**
+ * F4 — Mode Marchand: Dossier detail, photo upload, and batch generation.
+ *
+ * GET /api/dossier/[uuid] — Get dossier details + photos
+ * POST /api/dossier/[uuid] — Add photos to dossier
+ * PATCH /api/dossier/[uuid] — Launch batch generation
+ */
+
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { getUserCredits, decrementCredit, addCredits } from "@/lib/credits";
+import { saveImage, getImage } from "@/lib/db";
+import {
+  getDossierByUuid,
+  getDossierPhotos,
+  addDossierPhoto,
+  updateDossierStatus,
+  updateDossierPhotoStatus,
+  updateDossierPhotoStyle,
+  isDossierExpired,
+  MAX_PHOTOS_PER_DOSSIER,
+  MAX_CONCURRENT_GENERATIONS,
+} from "@/lib/dossier";
+
+export const dynamic = "force-dynamic";
+
+// ─── GET: Dossier details + photos ───────────────────────────────────
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { uuid: string } }
+) {
+  const { uuid } = params;
+
+  const dossier = await getDossierByUuid(uuid);
+  if (!dossier) {
+    return NextResponse.json(
+      { error: "Dossier introuvable." },
+      { status: 404 }
+    );
+  }
+
+  if (isDossierExpired(dossier)) {
+    return NextResponse.json(
+      { error: "Ce dossier a expire." },
+      { status: 410 }
+    );
+  }
+
+  const photos = await getDossierPhotos(uuid);
+
+  return NextResponse.json({ dossier, photos });
+}
+
+// ─── POST: Add photos to dossier ────────────────────────────────────
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { uuid: string } }
+) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return NextResponse.json(
+      { error: "Connexion requise." },
+      { status: 401 }
+    );
+  }
+
+  const { uuid } = params;
+  const dossier = await getDossierByUuid(uuid);
+
+  if (!dossier) {
+    return NextResponse.json(
+      { error: "Dossier introuvable." },
+      { status: 404 }
+    );
+  }
+
+  if (dossier.user_id !== session.user.id) {
+    return NextResponse.json(
+      { error: "Acces refuse." },
+      { status: 403 }
+    );
+  }
+
+  try {
+    const body = await request.json();
+    const { photos } = body as {
+      photos: Array<{
+        image: string; // base64
+        roomLabel?: string;
+        roomTypeId?: string;
+        styleId?: string;
+        isOutdoor?: boolean;
+        photoIndex: number;
+      }>;
+    };
+
+    if (!photos || !Array.isArray(photos) || photos.length === 0) {
+      return NextResponse.json(
+        { error: "Aucune photo fournie." },
+        { status: 400 }
+      );
+    }
+
+    // Check total photo limit
+    const existingPhotos = await getDossierPhotos(uuid);
+    if (existingPhotos.length + photos.length > MAX_PHOTOS_PER_DOSSIER) {
+      return NextResponse.json(
+        { error: `Maximum ${MAX_PHOTOS_PER_DOSSIER} photos par dossier.` },
+        { status: 400 }
+      );
+    }
+
+    const addedPhotos = [];
+    for (const photo of photos) {
+      const base64 = photo.image.replace(/^data:image\/[\w+]+;base64,/, "");
+      const imageKey = await saveImage(
+        base64,
+        `dossier_${uuid}_${photo.photoIndex}_input`
+      );
+
+      const dossierPhoto = await addDossierPhoto({
+        dossierUuid: uuid,
+        photoIndex: photo.photoIndex,
+        roomLabel: photo.roomLabel,
+        roomTypeId: photo.roomTypeId,
+        styleId: photo.styleId || dossier.global_style_id || undefined,
+        isOutdoor: photo.isOutdoor,
+        inputImageKey: imageKey,
+      });
+
+      addedPhotos.push(dossierPhoto);
+    }
+
+    return NextResponse.json({ photos: addedPhotos }, { status: 201 });
+  } catch (err) {
+    console.error("Error adding photos to dossier:", err);
+    return NextResponse.json(
+      { error: "Erreur lors de l'ajout des photos." },
+      { status: 500 }
+    );
+  }
+}
+
+// ─── PATCH: Launch batch generation or update photo styles ──────────
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { uuid: string } }
+) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return NextResponse.json(
+      { error: "Connexion requise." },
+      { status: 401 }
+    );
+  }
+
+  const { uuid } = params;
+  const dossier = await getDossierByUuid(uuid);
+
+  if (!dossier) {
+    return NextResponse.json(
+      { error: "Dossier introuvable." },
+      { status: 404 }
+    );
+  }
+
+  if (dossier.user_id !== session.user.id) {
+    return NextResponse.json(
+      { error: "Acces refuse." },
+      { status: 403 }
+    );
+  }
+
+  try {
+    const body = await request.json();
+    const { action, photoId, styleId, isOutdoor, regeneratePhotoId } = body as {
+      action: "generate" | "update_style" | "regenerate";
+      photoId?: number;
+      styleId?: string;
+      isOutdoor?: boolean;
+      regeneratePhotoId?: number;
+    };
+
+    // ── Update individual photo style ──
+    if (action === "update_style" && photoId && styleId) {
+      await updateDossierPhotoStyle(photoId, styleId, isOutdoor ?? false);
+      return NextResponse.json({ success: true });
+    }
+
+    // ── Regenerate single photo ──
+    if (action === "regenerate" && regeneratePhotoId) {
+      // Check credits
+      const credits = await getUserCredits(session.user.id);
+      if (credits < 1) {
+        return NextResponse.json(
+          { error: "Credits insuffisants pour regenerer." },
+          { status: 402 }
+        );
+      }
+
+      const photos = await getDossierPhotos(uuid);
+      const targetPhoto = photos.find((p) => p.id === regeneratePhotoId);
+      if (!targetPhoto) {
+        return NextResponse.json(
+          { error: "Photo introuvable." },
+          { status: 404 }
+        );
+      }
+
+      // Decrement credit
+      const decremented = await decrementCredit(session.user.id);
+      if (!decremented) {
+        return NextResponse.json(
+          { error: "Credits insuffisants." },
+          { status: 402 }
+        );
+      }
+
+      // Generate single photo
+      const startTime = Date.now();
+      try {
+        await updateDossierPhotoStatus(targetPhoto.id, "generating");
+        const result = await generateSinglePhoto(targetPhoto, dossier);
+        await updateDossierPhotoStatus(targetPhoto.id, "completed", {
+          outputImageKey: result.outputKey,
+          pass1ImageKey: result.pass1Key,
+          durationMs: Date.now() - startTime,
+        });
+        return NextResponse.json({ success: true, photo: targetPhoto });
+      } catch (err) {
+        // Refund credit on failure
+        await addCredits(session.user.id, 1);
+        await updateDossierPhotoStatus(targetPhoto.id, "failed", {
+          errorMessage: err instanceof Error ? err.message : "Erreur inconnue",
+          durationMs: Date.now() - startTime,
+        });
+        return NextResponse.json(
+          { error: "Echec de la regeneration." },
+          { status: 500 }
+        );
+      }
+    }
+
+    // ── Launch batch generation ──
+    if (action === "generate") {
+      const photos = await getDossierPhotos(uuid);
+      const pendingPhotos = photos.filter((p) => p.status === "pending" || p.status === "failed");
+
+      if (pendingPhotos.length === 0) {
+        return NextResponse.json(
+          { error: "Aucune photo en attente de generation." },
+          { status: 400 }
+        );
+      }
+
+      // Check credits for all pending photos
+      const credits = await getUserCredits(session.user.id);
+      if (credits < pendingPhotos.length) {
+        return NextResponse.json(
+          {
+            error: `Credits insuffisants. ${pendingPhotos.length} credits necessaires, ${credits} disponibles.`,
+            creditsNeeded: pendingPhotos.length,
+            creditsAvailable: credits,
+          },
+          { status: 402 }
+        );
+      }
+
+      // Set dossier to generating
+      await updateDossierStatus(uuid, "generating");
+
+      // Start batch generation in background (non-blocking response)
+      // The client will poll GET /api/dossier/[uuid] for progress
+      processBatchGeneration(uuid, pendingPhotos, dossier, session.user.id).catch(
+        (err) => console.error("Batch generation error:", err)
+      );
+
+      return NextResponse.json({
+        status: "generating",
+        totalPhotos: pendingPhotos.length,
+      });
+    }
+
+    return NextResponse.json(
+      { error: "Action invalide." },
+      { status: 400 }
+    );
+  } catch (err) {
+    console.error("Error in dossier PATCH:", err);
+    return NextResponse.json(
+      { error: "Erreur serveur." },
+      { status: 500 }
+    );
+  }
+}
+
+// ─── Batch processing with semaphore ─────────────────────────────────
+
+import type { DossierPhoto, Dossier } from "@/lib/dossier";
+
+async function generateSinglePhoto(
+  photo: DossierPhoto,
+  dossier: Dossier
+): Promise<{ outputKey: string; pass1Key?: string }> {
+  // Read input image from storage
+  const inputImageData = await getImage(photo.input_image_key!);
+  if (!inputImageData) {
+    throw new Error("Image input introuvable dans le stockage.");
+  }
+
+  const inputBase64 = Buffer.from(inputImageData).toString("base64");
+
+  // Resolve style prompts
+  const effectiveStyleId = photo.style_id || dossier.global_style_id || "scandinavian";
+
+  // Call the generate API internally
+  const generateUrl = `${process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/generate`;
+
+  // We need to resolve prompts from the style ID.
+  // Import the styles data server-side.
+  const { getStyleById } = await import("@/lib/style-resolver");
+  const style = getStyleById(effectiveStyleId, photo.is_outdoor);
+
+  if (!style) {
+    throw new Error(`Style introuvable: ${effectiveStyleId}`);
+  }
+
+  // Call generate API with internal fetch
+  const response = await fetch(generateUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      // Forward auth - use internal API key or skip auth for internal calls
+      "X-Internal-Dossier": "true",
+    },
+    body: JSON.stringify({
+      image: `data:image/jpeg;base64,${inputBase64}`,
+      surfacePrompt: style.surfacePrompt,
+      furniturePrompt: style.furniturePrompt,
+      styleId: effectiveStyleId,
+      withFurniture: true,
+      width: 1536, // Default landscape
+      height: 1024,
+      roomType: photo.room_type_id,
+      isOutdoor: photo.is_outdoor,
+      _skipCreditCheck: true, // Internal flag
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `Generation failed (${response.status})`);
+  }
+
+  const data = await response.json();
+
+  // Save output image to storage
+  const outputBase64 = data.image.replace(/^data:image\/[\w+]+;base64,/, "");
+  const outputKey = await saveImage(
+    outputBase64,
+    `dossier_${dossier.uuid}_${photo.photo_index}_output`
+  );
+
+  return { outputKey, pass1Key: data.pass1_key };
+}
+
+async function processBatchGeneration(
+  dossierUuid: string,
+  photos: DossierPhoto[],
+  dossier: Dossier,
+  userId: string
+): Promise<void> {
+  const startTime = Date.now();
+  let successCount = 0;
+  let failCount = 0;
+
+  // Process with semaphore (max N concurrent)
+  const semaphore = new Semaphore(MAX_CONCURRENT_GENERATIONS);
+
+  await Promise.allSettled(
+    photos.map(async (photo) => {
+      await semaphore.acquire();
+      try {
+        // Decrement credit for this photo
+        const decremented = await decrementCredit(userId);
+        if (!decremented) {
+          throw new Error("Credits insuffisants.");
+        }
+
+        await updateDossierPhotoStatus(photo.id, "generating");
+
+        const photoStart = Date.now();
+        const result = await generateSinglePhoto(photo, dossier);
+
+        await updateDossierPhotoStatus(photo.id, "completed", {
+          outputImageKey: result.outputKey,
+          pass1ImageKey: result.pass1Key,
+          durationMs: Date.now() - photoStart,
+        });
+
+        successCount++;
+      } catch (err) {
+        failCount++;
+        // Refund credit on failure
+        await addCredits(userId, 1).catch(() => {});
+        await updateDossierPhotoStatus(photo.id, "failed", {
+          errorMessage: err instanceof Error ? err.message : "Erreur inconnue",
+        });
+      } finally {
+        semaphore.release();
+      }
+    })
+  );
+
+  // Update dossier final status
+  const finalStatus = failCount === photos.length
+    ? "partial"
+    : successCount === photos.length
+    ? "completed"
+    : "partial";
+
+  await updateDossierStatus(dossierUuid, finalStatus, {
+    successCount,
+    failCount,
+    totalDurationMs: Date.now() - startTime,
+  });
+}
+
+// ─── Simple Semaphore ────────────────────────────────────────────────
+
+class Semaphore {
+  private permits: number;
+  private queue: Array<() => void> = [];
+
+  constructor(permits: number) {
+    this.permits = permits;
+  }
+
+  async acquire(): Promise<void> {
+    if (this.permits > 0) {
+      this.permits--;
+      return;
+    }
+    return new Promise<void>((resolve) => {
+      this.queue.push(resolve);
+    });
+  }
+
+  release(): void {
+    if (this.queue.length > 0) {
+      const next = this.queue.shift()!;
+      next();
+    } else {
+      this.permits++;
+    }
+  }
+}

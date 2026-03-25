@@ -1,0 +1,128 @@
+"use client";
+
+/**
+ * F4 — Mode Marchand: Batch generation progress display.
+ * Shows per-photo status (pending, generating, completed, failed)
+ * with a progress bar and timing.
+ */
+
+interface PhotoStatus {
+  id: number;
+  photoIndex: number;
+  roomLabel: string | null;
+  status: "pending" | "generating" | "completed" | "failed";
+  errorMessage?: string | null;
+}
+
+interface DossierProgressProps {
+  photos: PhotoStatus[];
+  isGenerating: boolean;
+  elapsed: number; // seconds
+}
+
+export default function DossierProgress({
+  photos,
+  isGenerating,
+  elapsed,
+}: DossierProgressProps) {
+  const completed = photos.filter((p) => p.status === "completed").length;
+  const failed = photos.filter((p) => p.status === "failed").length;
+  const total = photos.length;
+  const progress = total > 0 ? ((completed + failed) / total) * 100 : 0;
+
+  return (
+    <div className="space-y-4" data-testid="dossier-progress">
+      {/* Progress bar */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-[var(--foreground)] font-medium">
+            {isGenerating ? "Generation en cours..." : "Termine"}
+          </span>
+          <span className="text-[var(--muted)] font-light">
+            {completed}/{total} photos
+            {failed > 0 && ` (${failed} echec${failed > 1 ? "s" : ""})`}
+          </span>
+        </div>
+
+        <div className="h-2 bg-[var(--foreground)]/5 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-[var(--sage)] rounded-full transition-all duration-500"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+
+        {isGenerating && elapsed > 0 && (
+          <p className="text-xs text-[var(--muted)] font-light">
+            {elapsed}s — estimation : ~{Math.ceil(total * 30)}s total
+          </p>
+        )}
+      </div>
+
+      {/* Per-photo status list */}
+      <div className="space-y-1.5">
+        {photos.map((photo) => (
+          <div
+            key={photo.id}
+            className="flex items-center gap-3 px-3 py-2 rounded-xl bg-[var(--foreground)]/[0.02]"
+            data-testid={`dossier-photo-status-${photo.id}`}
+          >
+            {/* Status icon */}
+            {photo.status === "completed" && (
+              <svg
+                className="w-4 h-4 text-[var(--sage)] shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            )}
+            {photo.status === "generating" && (
+              <svg
+                className="w-4 h-4 text-[var(--sage)] shrink-0 animate-spin"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+            )}
+            {photo.status === "failed" && (
+              <svg
+                className="w-4 h-4 text-red-400 shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            )}
+            {photo.status === "pending" && (
+              <div className="w-4 h-4 rounded-full border-2 border-[var(--foreground)]/10 shrink-0" />
+            )}
+
+            {/* Label */}
+            <span className="text-sm text-[var(--foreground)] font-light flex-1 truncate">
+              {photo.roomLabel || `Photo ${photo.photoIndex + 1}`}
+            </span>
+
+            {/* Status text */}
+            <span className={`text-xs font-light shrink-0 ${
+              photo.status === "completed" ? "text-[var(--sage)]" :
+              photo.status === "failed" ? "text-red-400" :
+              photo.status === "generating" ? "text-[var(--sage)]" :
+              "text-[var(--muted)]/60"
+            }`}>
+              {photo.status === "completed" && "Termine"}
+              {photo.status === "generating" && "En cours..."}
+              {photo.status === "failed" && "Echec"}
+              {photo.status === "pending" && "En attente"}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}

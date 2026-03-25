@@ -993,12 +993,16 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // F4: Internal dossier batch calls skip auth + credit (already handled by dossier API)
+  const isInternalDossierCall = request.headers.get("X-Internal-Dossier") === "true";
+
   // Auth + credit check
   // - Connected users: use credit system (optimistic decrement)
   // - Anonymous users: allowed with IP rate limit only (3 free generations enforced by rate limit)
-  const session = await getServerSession(authOptions);
+  // - Internal dossier calls: skip (credits managed by dossier batch endpoint)
+  const session = isInternalDossierCall ? null : await getServerSession(authOptions);
 
-  if (session?.user?.id) {
+  if (!isInternalDossierCall && session?.user?.id) {
     // Connected user — decrement credit optimistically
     const decremented = await decrementCredit(session.user.id);
     if (!decremented) {

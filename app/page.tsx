@@ -12,6 +12,7 @@ import OutdoorSubtypePicker from "@/components/OutdoorSubtypePicker";
 import { processImage, isLikelyInterior } from "@/lib/image-utils";
 import { OUTDOOR_STYLES } from "@/lib/outdoor-styles";
 import AuthButton from "@/components/AuthButton";
+import MerchantMode from "@/components/MerchantMode";
 
 interface GenerationResult {
   originalUrl: string;
@@ -129,6 +130,9 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [generationElapsed, setGenerationElapsed] = useState(0);
   const [preprocessWarnings, setPreprocessWarnings] = useState<string[]>([]);
+
+  // F4 — Merchant mode state
+  const [isMerchantMode, setIsMerchantMode] = useState(false);
 
   // F3 — Outdoor state
   const [isOutdoor, setIsOutdoor] = useState(false);
@@ -628,15 +632,16 @@ export default function Home() {
           <span className="text-xl font-semibold text-foreground tracking-tighter">
             Versiroom
           </span>
-          <nav className="flex items-center gap-4 sm:gap-6">
-            <a href="#pricing" className="text-xs text-muted font-light hover:text-foreground transition-colors">
+          <nav className="flex items-center gap-2 sm:gap-6">
+            <a href="#pricing" className="hidden sm:inline text-xs text-muted font-light hover:text-foreground transition-colors">
               Tarifs
             </a>
             <a
               href="#outil"
-              className="text-xs bg-foreground text-background px-4 py-2 rounded-full font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+              className="text-xs bg-foreground text-background px-3 sm:px-4 py-2 rounded-full font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
             >
-              Essayer gratuitement
+              <span className="sm:hidden">Essayer</span>
+              <span className="hidden sm:inline">Essayer gratuitement</span>
             </a>
             <AuthButton />
           </nav>
@@ -774,6 +779,44 @@ export default function Home() {
             </p>
           </div>
 
+          {/* F4 — Mode toggle: Standard / Marchand */}
+          <div className="flex justify-center mb-8" data-testid="mode-toggle">
+            <div className="inline-flex rounded-full bg-foreground/5 p-0.5">
+              <button
+                onClick={() => setIsMerchantMode(false)}
+                className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
+                  !isMerchantMode
+                    ? "bg-foreground text-background shadow-sm"
+                    : "text-muted hover:text-foreground"
+                }`}
+                data-testid="mode-standard"
+              >
+                Standard
+              </button>
+              <button
+                onClick={() => setIsMerchantMode(true)}
+                className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
+                  isMerchantMode
+                    ? "bg-foreground text-background shadow-sm"
+                    : "text-muted hover:text-foreground"
+                }`}
+                data-testid="mode-merchant"
+              >
+                Mode Marchand
+              </button>
+            </div>
+          </div>
+
+          {/* F4 — Merchant Mode */}
+          {isMerchantMode && (
+            <div className="animate-fade-in-up">
+              <MerchantMode />
+            </div>
+          )}
+
+          {/* Standard Mode */}
+          {!isMerchantMode && (
+          <>
           <StepIndicator currentStep={currentStep} />
 
           {/* Step 1: Upload */}
@@ -1243,6 +1286,8 @@ export default function Home() {
             isLoading={isRefining}
             warnings={refineWarnings}
           />
+          </>
+          )}
         </div>
       </section>
 

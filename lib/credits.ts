@@ -42,6 +42,23 @@ export async function decrementCredit(userId: string): Promise<boolean> {
   return result.rowCount !== null && result.rowCount > 0;
 }
 
+/**
+ * F4: Check if user has purchased a Pro-level pack (50+ credits purchased).
+ * For Mode Marchand access, we check purchase history rather than current balance
+ * because balance decreases with usage.
+ */
+export async function hasProAccess(userId: string): Promise<boolean> {
+  await ensureTable();
+  const db = getPool();
+  // Check if user has ever purchased a pro-level pack (50+ credits)
+  const result = await db.query(
+    `SELECT COUNT(*) as count FROM purchases
+     WHERE user_id = $1 AND credits_purchased >= 50 AND status = 'completed'`,
+    [userId]
+  );
+  return Number(result.rows[0]?.count ?? 0) > 0;
+}
+
 export async function addCredits(
   userId: string,
   amount: number

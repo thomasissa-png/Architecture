@@ -6,12 +6,14 @@ import { useDropzone } from "react-dropzone";
 interface UploadZoneProps {
   files: File[];
   onFilesChange: (files: File[]) => void;
+  maxFiles?: number;
 }
 
-const MAX_FILES = 5;
+const DEFAULT_MAX_FILES = 5;
 const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 
-export default function UploadZone({ files, onFilesChange }: UploadZoneProps) {
+export default function UploadZone({ files, onFilesChange, maxFiles }: UploadZoneProps) {
+  const MAX_FILES = maxFiles ?? DEFAULT_MAX_FILES;
   const [uploadFeedback, setUploadFeedback] = useState<string | null>(null);
 
   // Auto-dismiss feedback
@@ -46,7 +48,8 @@ export default function UploadZone({ files, onFilesChange }: UploadZoneProps) {
         );
       }
     },
-    [files, onFilesChange]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [files, onFilesChange, MAX_FILES]
   );
 
   const { getRootProps, getInputProps, isDragActive, fileRejections } =
