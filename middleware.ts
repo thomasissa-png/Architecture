@@ -1,0 +1,32 @@
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { getToken } from "next-auth/jwt";
+
+const PROTECTED_ROUTES = ["/mes-biens", "/ma-galerie", "/mes-dossiers", "/compte"];
+
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  const isProtected = PROTECTED_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(route + "/")
+  );
+
+  if (!isProtected) return NextResponse.next();
+
+  const token = await getToken({
+    req: request,
+    secret: process.env.NEXTAUTH_SECRET || "dev-secret-change-me",
+  });
+
+  if (!token) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/";
+    return NextResponse.redirect(url);
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: ["/mes-biens/:path*", "/ma-galerie/:path*", "/mes-dossiers/:path*", "/compte/:path*"],
+};

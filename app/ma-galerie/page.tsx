@@ -9,6 +9,7 @@
 import { useSession } from "next-auth/react";
 import { useState, useEffect, useCallback } from "react";
 import AuthButton from "@/components/AuthButton";
+import AuthModal from "@/components/AuthModal";
 
 interface UserPhoto {
   id: string;
@@ -55,13 +56,7 @@ export default function GaleriePage() {
   const [filterAssociated, setFilterAssociated] = useState<string>("");
   const [selectedPhoto, setSelectedPhoto] = useState<UserPhoto | null>(null);
   const [associatingPhotoId, setAssociatingPhotoId] = useState<string | null>(null);
-
-  // Redirect if not authenticated
-  useEffect(() => {
-    if (authStatus === "unauthenticated") {
-      window.location.href = "/";
-    }
-  }, [authStatus]);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
 
   const fetchPhotos = useCallback(async () => {
     try {
@@ -89,8 +84,8 @@ export default function GaleriePage() {
         const data = await res.json();
         setProperties(data.properties || []);
       }
-    } catch {
-      // ignore
+    } catch (err) {
+      console.error("Erreur chargement biens:", err);
     }
   }, []);
 
@@ -123,7 +118,39 @@ export default function GaleriePage() {
     return p.address_normalized || p.address_raw || p.city || "Bien sans adresse";
   };
 
-  if (authStatus === "loading" || isLoading) {
+  if (authStatus === "loading") {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-pulse text-muted font-light text-sm">Chargement...</div>
+      </div>
+    );
+  }
+
+  if (authStatus === "unauthenticated") {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-5">
+        <div className="text-center max-w-md space-y-4">
+          <h1 className="text-2xl font-semibold text-foreground">Ma galerie</h1>
+          <p className="text-sm text-muted font-light">
+            Connectez-vous pour voir votre galerie de photos generees.
+          </p>
+          <button
+            onClick={() => setAuthModalOpen(true)}
+            className="text-sm bg-foreground text-background px-6 py-2.5 rounded-full font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+          >
+            Se connecter
+          </button>
+          <AuthModal
+            isOpen={authModalOpen}
+            onClose={() => setAuthModalOpen(false)}
+            callbackUrl="/ma-galerie"
+          />
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-pulse text-muted font-light text-sm">Chargement...</div>

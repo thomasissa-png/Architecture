@@ -853,7 +853,7 @@ export default function Home() {
       <section className="pb-10 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {USE_CASES.map((uc, i) => (
-            <div key={uc.label} className={`text-center p-6 rounded-2xl border border-foreground/10 bg-white/40 ${i === 0 ? "animate-fade-in-up" : i === 1 ? "animate-fade-in-up animate-delay-100" : "animate-fade-in-up animate-delay-200"}`}>
+            <div key={uc.label} className={`text-center p-6 rounded-2xl border border-foreground/10 bg-background/40 ${i === 0 ? "animate-fade-in-up" : i === 1 ? "animate-fade-in-up animate-delay-100" : "animate-fade-in-up animate-delay-200"}`}>
               <p className="text-sm font-semibold text-foreground mb-1">{uc.label}</p>
               <p className="text-xs text-muted font-light">{uc.desc}</p>
             </div>
@@ -1397,7 +1397,7 @@ export default function Home() {
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="py-16 sm:py-24 px-5 sm:px-8 bg-white/40">
+      <section id="pricing" className="py-16 sm:py-24 px-5 sm:px-8 bg-background/40">
         <div ref={pricingRef} className="reveal max-w-4xl mx-auto">
           <div className="text-center mb-14">
             <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight mb-3">

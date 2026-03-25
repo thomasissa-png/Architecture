@@ -134,8 +134,8 @@ export default function PropertyDetailPage() {
         const data = await res.json();
         setPhotos(data.photos || []);
       }
-    } catch {
-      // ignore
+    } catch (err) {
+      console.error("Erreur chargement photos:", err);
     }
   }, [propertyId]);
 
@@ -146,8 +146,8 @@ export default function PropertyDetailPage() {
         const data = await res.json();
         setUnassociatedPhotos(data.photos || []);
       }
-    } catch {
-      // ignore
+    } catch (err) {
+      console.error("Erreur chargement photos non associees:", err);
     }
   }, []);
 
@@ -158,8 +158,8 @@ export default function PropertyDetailPage() {
         const data = await res.json();
         setActiveAnnonceUuid(data.uuid || null);
       }
-    } catch {
-      // ignore — annonce info is non-critical
+    } catch (err) {
+      console.error("Erreur chargement annonce:", err);
     }
   }, [propertyId]);
 
@@ -181,8 +181,8 @@ export default function PropertyDetailPage() {
         setProperty(data.property);
         setIsEditingDesc(false);
       }
-    } catch {
-      // ignore
+    } catch (err) {
+      console.error("Erreur sauvegarde description:", err);
     }
   };
 
@@ -199,8 +199,8 @@ export default function PropertyDetailPage() {
         setSelectedForAssoc(new Set());
         fetchPhotos();
       }
-    } catch {
-      // ignore
+    } catch (err) {
+      console.error("Erreur association photos:", err);
     }
   };
 
@@ -214,8 +214,8 @@ export default function PropertyDetailPage() {
       if (res.ok) {
         fetchPhotos();
       }
-    } catch {
-      // ignore
+    } catch (err) {
+      console.error("Erreur dissociation photo:", err);
     }
   };
 

@@ -34,8 +34,8 @@ export default function PhotoAssociator({ photoId, onDismiss }: PhotoAssociatorP
         const data = await res.json();
         setProperties(data.properties || []);
       }
-    } catch {
-      // ignore
+    } catch (err) {
+      console.error("Erreur chargement biens:", err);
     } finally {
       setIsLoading(false);
     }
@@ -56,8 +56,8 @@ export default function PhotoAssociator({ photoId, onDismiss }: PhotoAssociatorP
       if (res.ok) {
         onDismiss();
       }
-    } catch {
-      // ignore
+    } catch (err) {
+      console.error("Erreur association photo:", err);
     } finally {
       setIsAssociating(false);
     }

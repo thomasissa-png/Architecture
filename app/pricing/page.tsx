@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import AuthButton from "@/components/AuthButton";
 import AuthModal from "@/components/AuthModal";
@@ -75,6 +75,8 @@ function PricingContent() {
   const [retractationAccepted, setRetractationAccepted] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [pendingPackId, setPendingPackId] = useState<string | null>(null);
+  const [checkboxError, setCheckboxError] = useState(false);
+  const retractationRef = useRef<HTMLLabelElement>(null);
 
   const checkoutCancelled = searchParams.get("checkout") === "cancelled";
 
@@ -98,6 +100,9 @@ function PricingContent() {
       setError(
         "Veuillez accepter la clause de retractation avant de continuer."
       );
+      setCheckboxError(true);
+      retractationRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      setTimeout(() => setCheckboxError(false), 3000);
       return;
     }
 
@@ -273,13 +278,13 @@ function PricingContent() {
 
           {/* Retractation checkbox */}
           <div className="max-w-xl mx-auto mt-10">
-            <label className="flex items-start gap-3 cursor-pointer group">
+            <label ref={retractationRef} className={`flex items-start gap-3 cursor-pointer group rounded-xl p-3 -m-3 transition-colors ${checkboxError ? "border border-red-400 bg-red-50/50" : "border border-transparent"}`}>
               <input
                 type="checkbox"
                 checked={retractationAccepted}
                 onChange={(e) => {
                   setRetractationAccepted(e.target.checked);
-                  if (e.target.checked) setError(null);
+                  if (e.target.checked) { setError(null); setCheckboxError(false); }
                 }}
                 className="mt-0.5 w-4 h-4 rounded border-foreground/20 text-sage focus:ring-sage/50 cursor-pointer"
               />

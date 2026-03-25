@@ -77,8 +77,8 @@ export default function MesBiensPage() {
         const data = await res.json();
         setProperties(data.properties || []);
       }
-    } catch {
-      // ignore
+    } catch (err) {
+      console.error("Erreur chargement biens:", err);
     } finally {
       setIsLoading(false);
     }
@@ -111,8 +111,8 @@ export default function MesBiensPage() {
           setSuggestions(data.suggestions || []);
           setShowSuggestions(true);
         }
-      } catch {
-        // ignore
+      } catch (err) {
+        console.error("Erreur autocompletion adresse:", err);
       }
     }, 300);
   };

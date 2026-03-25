@@ -170,8 +170,8 @@ export default function MerchantMode() {
           setIsGenerating(false);
           setCurrentStep("results");
         }
-      } catch {
-        // Silently retry on next interval
+      } catch (err) {
+        console.error("Erreur polling dossier:", err);
       }
     };
 
@@ -419,8 +419,8 @@ export default function MerchantMode() {
         if (data.city) setEnrichedCity(data.city);
         if (data.postcode) setEnrichedPostcode(data.postcode);
       }
-    } catch {
-      // Non-blocking — enrichment is optional
+    } catch (err) {
+      console.error("Erreur enrichissement adresse:", err);
     } finally {
       setIsEnriching(false);
     }

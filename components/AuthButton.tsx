@@ -20,8 +20,8 @@ export default function AuthButton() {
         setCredits(data.credits);
         setHasPro(data.hasPro === true);
       }
-    } catch {
-      // Silently fail — credits will show as loading
+    } catch (err) {
+      console.error("Erreur chargement credits:", err);
     }
   }
 
@@ -93,18 +93,20 @@ export default function AuthButton() {
         className="flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded-full"
         aria-label="Menu utilisateur"
       >
-        {session.user.image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={session.user.image}
-            alt=""
-            className="w-8 h-8 rounded-full object-cover border border-foreground/10"
-          />
-        ) : (
-          <div className="w-8 h-8 rounded-full bg-sage/15 text-sage flex items-center justify-center text-xs font-medium">
-            {initials}
-          </div>
-        )}
+        <span className="w-11 h-11 flex items-center justify-center">
+          {session.user.image ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={session.user.image}
+              alt=""
+              className="w-8 h-8 rounded-full object-cover border border-foreground/10"
+            />
+          ) : (
+            <span className="w-8 h-8 rounded-full bg-sage/15 text-sage flex items-center justify-center text-xs font-medium">
+              {initials}
+            </span>
+          )}
+        </span>
         {credits !== null && (
           <span className="text-xs text-muted font-light hidden sm:inline">
             {credits} cr.
