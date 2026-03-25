@@ -3,6 +3,19 @@ import { getPool, checkStorageHealth } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(new Error(`Timeout: ${label} n'a pas répondu en ${ms / 1000}s`)),
+      ms
+    );
+    promise.then(
+      (val) => { clearTimeout(timer); resolve(val); },
+      (err) => { clearTimeout(timer); reject(err); }
+    );
+  });
+}
+
 export async function GET() {
   const checks: Record<string, { ok: boolean; error?: string; ms?: number }> = {};
 
@@ -10,7 +23,7 @@ export async function GET() {
   const pgStart = Date.now();
   try {
     const db = getPool();
-    await db.query("SELECT 1");
+    await withTimeout(db.query("SELECT 1"), 5_000, "PostgreSQL");
     checks.postgresql = { ok: true, ms: Date.now() - pgStart };
   } catch (err) {
     checks.postgresql = {
@@ -23,7 +36,7 @@ export async function GET() {
   // Check Object Storage
   const storageStart = Date.now();
   try {
-    const result = await checkStorageHealth();
+    const result = await withTimeout(checkStorageHealth(), 10_000, "Object Storage");
     checks.objectStorage = { ...result, ms: Date.now() - storageStart };
   } catch (err) {
     checks.objectStorage = {

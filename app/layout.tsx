@@ -31,6 +31,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
+    site: "@visirenov",
   },
   robots: { index: true, follow: true },
 };
@@ -41,6 +42,7 @@ const jsonLd = [
     "@type": "Organization",
     name: "VisiRénov",
     url: BASE_URL,
+    logo: `${BASE_URL}/logo.png`,
     description:
       "Home staging virtuel par IA pour architectes d'intérieur, marchands de biens et particuliers. Pipeline 2 passes qui préserve la géométrie de la pièce originale.",
     foundingDate: "2025",
@@ -116,10 +118,13 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <head>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
+        {jsonLd.map((schema, i) => (
+          <script
+            key={i}
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+          />
+        ))}
       </head>
       <body className="antialiased">{children}</body>
     </html>

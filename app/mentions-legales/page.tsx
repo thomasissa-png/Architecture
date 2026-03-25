@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Mentions légales",
   description: "Mentions légales de VisiRénov — éditeur, hébergeur, propriété intellectuelle.",
+  robots: { index: false, follow: false },
 };
 
 export default function MentionsLegales() {

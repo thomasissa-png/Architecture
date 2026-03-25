@@ -3,7 +3,13 @@ import { getPool, ensureTable } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token") || request.headers.get("authorization")?.replace("Bearer ", "");
+  if (process.env.ADMIN_PASSWORD && token !== process.env.ADMIN_PASSWORD) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   if (!process.env.DATABASE_URL) {
     return NextResponse.json({ error: "DATABASE_URL not configured" }, { status: 500 });
   }

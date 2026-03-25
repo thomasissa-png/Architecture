@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Conditions générales de vente",
   description: "Conditions générales de vente et d'utilisation de VisiRénov — packages crédits, retour, propriété intellectuelle.",
+  robots: { index: false, follow: false },
 };
 
 export default function CGV() {

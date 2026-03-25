@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Politique de confidentialité",
   description: "Politique de confidentialité de VisiRénov — RGPD, données collectées, droits des utilisateurs.",
+  robots: { index: false, follow: false },
 };
 
 export default function Confidentialite() {

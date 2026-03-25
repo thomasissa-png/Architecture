@@ -96,14 +96,13 @@ export async function ensureTable(): Promise<void> {
     { name: "pixel_diff_pct", type: "FLOAT" },
     { name: "color_shift_score", type: "FLOAT" },
   ];
-  for (const col of migrateColumns) {
-    await db.query(`
-      DO $$ BEGIN
-        ALTER TABLE generation_logs ADD COLUMN ${col.name} ${col.type};
-      EXCEPTION WHEN duplicate_column THEN NULL;
-      END $$;
-    `);
-  }
+  const migrateSql = migrateColumns
+    .map(
+      (col) =>
+        `DO $$ BEGIN ALTER TABLE generation_logs ADD COLUMN ${col.name} ${col.type}; EXCEPTION WHEN duplicate_column THEN NULL; END $$`
+    )
+    .join("; ");
+  await db.query(migrateSql);
 
   tableEnsured = true;
 }

@@ -549,7 +549,7 @@ export default function Home() {
         if (e instanceof Error && e.name === "AbortError") return;
         // Do NOT decrement iterations on error
         setRefineError(
-          e instanceof Error ? e.message : "Erreur lors de l'ajustement. Votre iteration a ete conservee."
+          e instanceof Error ? e.message : "Erreur lors de l'ajustement. Votre itération a été conservée."
         );
       } finally {
         if (!controller.signal.aborted) {
@@ -610,7 +610,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-gray-200/40">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-foreground/5">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 py-3 sm:py-4 flex items-center justify-between">
           <span className="text-xl font-semibold text-foreground tracking-tighter">
             VisiR&eacute;nov
@@ -705,7 +705,7 @@ export default function Home() {
                       {/* Rug */}
                       <ellipse cx="55" cy="78" rx="25" ry="4" fill="currentColor" fillOpacity="0.08" />
                     </svg>
-                    <span className="text-xs text-sage/60 font-light mt-2">Meubl&eacute; par l&apos;IA</span>
+                    <span className="text-xs text-sage/60 font-light mt-2">Visualisation meubl&eacute;e</span>
                   </div>
                 </div>
                 <span className="absolute bottom-2.5 left-2.5 text-xs font-medium text-sage bg-white/80 backdrop-blur-sm px-2.5 py-1 rounded-full">
@@ -716,7 +716,7 @@ export default function Home() {
           </div>
 
           {/* Social proof line */}
-          <p className="text-xs text-muted/70 font-light mb-6">
+          <p className="text-xs text-muted font-light mb-6">
             12 styles disponibles &middot; R&eacute;sultat en 90 secondes &middot; T&eacute;l&eacute;chargement HD gratuit
           </p>
 
@@ -736,7 +736,7 @@ export default function Home() {
       <section className="pb-16 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {USE_CASES.map((uc, i) => (
-            <div key={uc.label} className={`text-center p-6 rounded-2xl border border-gray-200/60 bg-white/40 ${i === 0 ? "animate-fade-in-up" : i === 1 ? "animate-fade-in-up animate-delay-100" : "animate-fade-in-up animate-delay-200"}`}>
+            <div key={uc.label} className={`text-center p-6 rounded-2xl border border-foreground/10 bg-white/40 ${i === 0 ? "animate-fade-in-up" : i === 1 ? "animate-fade-in-up animate-delay-100" : "animate-fade-in-up animate-delay-200"}`}>
               <p className="text-sm font-semibold text-foreground mb-1">{uc.label}</p>
               <p className="text-xs text-muted font-light">{uc.desc}</p>
             </div>
@@ -745,14 +745,14 @@ export default function Home() {
       </section>
 
       {/* Separator */}
-      <div className="max-w-24 mx-auto border-t border-gray-200/60" />
+      <div className="max-w-24 mx-auto border-t border-foreground/10" />
 
       {/* Tool Section */}
       <section id="outil" className="pt-16 sm:pt-24 pb-20 sm:pb-32 px-5 sm:px-8 scroll-mt-16">
         <div ref={toolRef} className="reveal max-w-5xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight mb-3">
-              Transformez vos photos
+              Mettez en sc&egrave;ne votre espace
             </h2>
             <p className="text-muted font-light">
               En trois &eacute;tapes simples
@@ -763,24 +763,24 @@ export default function Home() {
 
           {/* Step 1: Upload */}
           <div className="mb-16">
-            <h4 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
+            <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
               Upload
-            </h4>
+            </h3>
             <UploadZone files={files} onFilesChange={setFiles} />
           </div>
 
           {/* Step 2a: Type d'espace (intérieur/extérieur + sous-type) — revealed after upload */}
           <div id="step-space-type" className={`mb-16 scroll-mt-20 transition-all duration-700 ${files.length === 0 ? "hidden" : "animate-fade-in-up"}`}>
-            <h4 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
+            <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
               01 — Type d&apos;espace
-            </h4>
+            </h3>
 
             {/* Indoor / Outdoor toggle */}
             <div className="mb-6">
               <div
                 role="radiogroup"
                 aria-label="Choix entre interieur et exterieur"
-                className="inline-flex rounded-full bg-gray-100 p-0.5"
+                className="inline-flex rounded-full bg-foreground/5 p-0.5"
               >
                 <button
                   role="radio"
@@ -836,10 +836,10 @@ export default function Home() {
           </div>
 
           {/* Step 2b: Style — revealed after upload */}
-          <div id="step-style" className={`mb-16 scroll-mt-20 transition-all duration-700 ${files.length === 0 ? "hidden" : "animate-fade-in-up animate-delay-100"}`}>
-            <h4 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
+          <div id="step-style" className={`mb-16 scroll-mt-20 transition-all duration-700 ${files.length === 0 ? "hidden" : "animate-fade-in-up animate-delay-300"}`}>
+            <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
               02 — Style
-            </h4>
+            </h3>
 
             <StylePicker
               selectedStyle={selectedStyle}
@@ -855,16 +855,16 @@ export default function Home() {
           {/* Step 2c: Options (furniture toggle) */}
           {canGenerate && results.length === 0 && !isGenerating && (
             <div className="mb-8 animate-fade-in-up">
-              <h4 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
+              <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
                 03 — Options
-              </h4>
+              </h3>
               <div className="flex items-center justify-center gap-3">
                 <button
                   onClick={() => setWithFurniture(false)}
                   className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all ${
                     !withFurniture
                       ? "bg-foreground text-background shadow-sm"
-                      : "bg-gray-100 text-muted hover:bg-gray-200"
+                      : "bg-foreground/5 text-muted hover:bg-foreground/10"
                   }`}
                 >
                   Surfaces uniquement
@@ -874,7 +874,7 @@ export default function Home() {
                   className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all ${
                     withFurniture
                       ? "bg-foreground text-background shadow-sm"
-                      : "bg-gray-100 text-muted hover:bg-gray-200"
+                      : "bg-foreground/5 text-muted hover:bg-foreground/10"
                   }`}
                 >
                   Surfaces + Mobilier
@@ -925,7 +925,7 @@ export default function Home() {
                   const done = i < results.length;
                   const active = i >= currentProcessing && i < currentProcessing + 2 && !done;
                   return (
-                    <div key={i} className="relative rounded-2xl overflow-hidden border border-gray-200/60">
+                    <div key={i} className="relative rounded-2xl overflow-hidden border border-foreground/10">
                       <div className="aspect-[4/3]">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
@@ -946,7 +946,7 @@ export default function Home() {
                           </div>
                         ) : done ? null : (
                           <div className="bg-white/80 backdrop-blur-sm rounded-xl px-4 py-2 shadow-sm">
-                            <span className="text-xs text-muted/70 font-light">En attente</span>
+                            <span className="text-xs text-muted font-light">En attente</span>
                           </div>
                         )}
                       </div>
@@ -964,7 +964,7 @@ export default function Home() {
 
               {/* Timer + Cancel */}
               <div className="text-center space-y-2">
-                <p className="text-xs text-muted/70 font-light">
+                <p className="text-xs text-muted font-light">
                   {generationElapsed < 30
                     ? `${generationElapsed}s — Estimation : jusqu\u2019\u00e0 2 minutes par image`
                     : generationElapsed < 90
@@ -973,7 +973,7 @@ export default function Home() {
                 </p>
                 <button
                   onClick={handleCancelGeneration}
-                  className="text-xs text-muted/60 hover:text-foreground transition-colors underline underline-offset-4 font-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded"
+                  className="text-xs text-muted hover:text-foreground transition-colors underline underline-offset-4 font-light min-h-[44px] px-4 py-2 inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded"
                 >
                   Annuler
                 </button>
@@ -1014,9 +1014,9 @@ export default function Home() {
           {/* Step 3: Results */}
           {results.length > 0 && (
             <div id="step-results" className="animate-fade-in-up scroll-mt-28">
-              <h4 className="text-sm font-medium text-muted uppercase tracking-widest mb-6">
+              <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-6">
                 03 — R&eacute;sultat
-              </h4>
+              </h3>
               <div className="space-y-10">
                 {results.map((result, index) => {
                   const resultVersions = versions[index] || [];
@@ -1029,7 +1029,7 @@ export default function Home() {
                     <div key={index} className="space-y-5">
                       {/* Refine loading state */}
                       {isRefining && isRefineTarget && (
-                        <div className="relative rounded-2xl overflow-hidden border border-gray-200/60">
+                        <div className="relative rounded-2xl overflow-hidden border border-foreground/10">
                           <div className="aspect-[4/3] sm:aspect-[16/10] relative">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
@@ -1047,7 +1047,7 @@ export default function Home() {
                                 <p className="text-sm text-foreground font-medium mb-1">
                                   Ajustement en cours&hellip; jusqu&apos;&agrave; 2 minutes
                                 </p>
-                                <p className="text-xs text-muted/70 font-light">
+                                <p className="text-xs text-muted font-light">
                                   {refineElapsed}s
                                 </p>
                                 <p className="text-xs text-muted font-light mt-2 italic">
@@ -1146,30 +1146,30 @@ export default function Home() {
                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                                   <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
                                 </svg>
-                                Affiner ce resultat
+                                Affiner ce r&eacute;sultat
                               </button>
-                              <p className="text-[11px] text-muted/60 font-light">
-                                {iterationsRemaining} iteration{iterationsRemaining > 1 ? "s" : ""} restante{iterationsRemaining > 1 ? "s" : ""} sur cette photo
+                              <p className="text-[11px] text-muted font-light">
+                                {iterationsRemaining} it&eacute;ration{iterationsRemaining > 1 ? "s" : ""} restante{iterationsRemaining > 1 ? "s" : ""} &mdash; affinez le mobilier, les couleurs ou la composition
                               </p>
                             </>
                           ) : (
                             <>
                               <button
                                 disabled
-                                title="Iterations epuisees — rechargez un pack"
-                                className="inline-flex items-center gap-2 border border-gray-200 text-muted/50 px-5 min-h-[44px] py-2.5 rounded-full text-sm font-medium cursor-not-allowed"
+                                title="It&eacute;rations &eacute;puis&eacute;es — rechargez un pack"
+                                className="inline-flex items-center gap-2 border border-foreground/10 text-muted px-5 min-h-[44px] py-2.5 rounded-full text-sm font-medium cursor-not-allowed"
                               >
                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                                   <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
                                 </svg>
-                                Affiner ce resultat
+                                Affiner ce r&eacute;sultat
                               </button>
-                              <p className="text-[11px] text-muted/60 font-light">
-                                0 iteration restante
+                              <p className="text-[11px] text-muted font-light">
+                                0 it&eacute;ration restante
                               </p>
-                              <div className="mt-2 bg-gray-50/80 border border-gray-200/60 rounded-xl p-4 max-w-sm mx-auto">
+                              <div className="mt-2 bg-foreground/5 border border-foreground/10 rounded-xl p-4 max-w-sm mx-auto">
                                 <p className="text-xs text-muted font-light mb-2">
-                                  Pour continuer a affiner, rechargez un pack de credits.
+                                  Pour continuer &agrave; affiner, rechargez un pack de cr&eacute;dits.
                                 </p>
                                 <a
                                   href="#pricing"
@@ -1211,7 +1211,7 @@ export default function Home() {
                 </button>
                 <button
                   onClick={handleFullReset}
-                  className="inline-flex items-center justify-center gap-2 border border-gray-300 text-muted px-7 py-3.5 rounded-full text-sm font-medium hover:bg-gray-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+                  className="inline-flex items-center justify-center gap-2 border border-foreground/15 text-muted px-7 py-3.5 rounded-full text-sm font-medium hover:bg-foreground/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
                 >
                   Nouvelle session
                 </button>
@@ -1239,7 +1239,7 @@ export default function Home() {
               Tarifs simples et transparents
             </h2>
             <p className="text-muted font-light">
-              Commencez gratuitement, &eacute;voluez selon vos besoins
+              Sans abonnement. Sans engagement.
             </p>
           </div>
 
@@ -1249,11 +1249,11 @@ export default function Home() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
             {/* Découverte */}
-            <div className="border border-gray-200 rounded-2xl p-6 text-center bg-background">
+            <div className="border border-foreground/10 rounded-2xl p-6 text-center bg-background">
               <p className="text-xs text-muted font-medium uppercase tracking-widest mb-3">D&eacute;couverte</p>
               <p className="text-3xl font-bold text-foreground mb-0.5">4,90&euro;</p>
-              <p className="text-xs text-muted/70 font-light mb-1">5 cr&eacute;dits &middot; 0,98&euro;/photo</p>
-              <p className="text-[11px] text-muted/50 font-light mb-5">TTC &middot; TVA 20% incluse</p>
+              <p className="text-xs text-muted font-light mb-1">5 cr&eacute;dits &middot; 0,98&euro;/photo</p>
+              <p className="text-[11px] text-muted font-light mb-5">TTC &middot; TVA 20% incluse</p>
               <ul className="text-sm text-muted font-light space-y-2 text-left mb-6">
                 <li className="flex items-start gap-2">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
@@ -1264,18 +1264,18 @@ export default function Home() {
                   T&eacute;l&eacute;chargement HD
                 </li>
               </ul>
-              <a href="#outil" className="block w-full text-center border border-gray-300 text-foreground px-4 py-2.5 rounded-full text-sm font-medium hover:bg-gray-50 transition-colors">
-                Essayer gratuitement
+              <p className="text-[11px] text-muted font-light mb-4">3 g&eacute;n&eacute;rations offertes sans CB</p>
+              <a href="#outil" className="block w-full text-center border border-foreground/15 text-foreground px-4 py-2.5 rounded-full text-sm font-medium hover:bg-foreground/5 transition-colors">
+                Essayer l&apos;outil
               </a>
-              <p className="text-[11px] text-muted/50 font-light mt-2">3 g&eacute;n&eacute;rations offertes sans CB</p>
             </div>
 
             {/* Starter */}
-            <div className="border border-gray-200 rounded-2xl p-6 text-center bg-background">
+            <div className="border border-foreground/10 rounded-2xl p-6 text-center bg-background">
               <p className="text-xs text-muted font-medium uppercase tracking-widest mb-3">Starter</p>
               <p className="text-3xl font-bold text-foreground mb-0.5">14,90&euro;</p>
-              <p className="text-xs text-muted/70 font-light mb-1">20 cr&eacute;dits &middot; 0,75&euro;/photo</p>
-              <p className="text-[11px] text-muted/50 font-light mb-5">TTC &middot; TVA 20% incluse</p>
+              <p className="text-xs text-muted font-light mb-1">20 cr&eacute;dits &middot; 0,75&euro;/photo</p>
+              <p className="text-[11px] text-muted font-light mb-5">TTC &middot; TVA 20% incluse</p>
               <ul className="text-sm text-muted font-light space-y-2 text-left mb-6">
                 <li className="flex items-start gap-2">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
@@ -1296,8 +1296,8 @@ export default function Home() {
               <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-foreground text-background text-[11px] font-medium px-3 py-1 rounded-full uppercase tracking-wider">Recommand&eacute;</span>
               <p className="text-xs text-muted font-medium uppercase tracking-widest mb-3">Pro</p>
               <p className="text-3xl font-bold text-foreground mb-0.5">29&euro;</p>
-              <p className="text-xs text-muted/70 font-light mb-1">50 cr&eacute;dits &middot; 0,58&euro;/photo</p>
-              <p className="text-[11px] text-muted/50 font-light mb-5">TTC &middot; TVA 20% incluse</p>
+              <p className="text-xs text-muted font-light mb-1">50 cr&eacute;dits &middot; 0,58&euro;/photo</p>
+              <p className="text-[11px] text-muted font-light mb-5">TTC &middot; TVA 20% incluse</p>
               <ul className="text-sm text-muted font-light space-y-2 text-left mb-6">
                 <li className="flex items-start gap-2">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
@@ -1318,11 +1318,11 @@ export default function Home() {
             </div>
 
             {/* Studio */}
-            <div className="border border-gray-200 rounded-2xl p-6 text-center bg-background">
+            <div className="border border-foreground/10 rounded-2xl p-6 text-center bg-background">
               <p className="text-xs text-muted font-medium uppercase tracking-widest mb-3">Studio</p>
               <p className="text-3xl font-bold text-foreground mb-0.5">69&euro;</p>
-              <p className="text-xs text-muted/70 font-light mb-1">150 cr&eacute;dits &middot; 0,46&euro;/photo</p>
-              <p className="text-[11px] text-muted/50 font-light mb-5">TTC &middot; TVA 20% incluse</p>
+              <p className="text-xs text-muted font-light mb-1">150 cr&eacute;dits &middot; 0,46&euro;/photo</p>
+              <p className="text-[11px] text-muted font-light mb-5">TTC &middot; TVA 20% incluse</p>
               <ul className="text-sm text-muted font-light space-y-2 text-left mb-6">
                 <li className="flex items-start gap-2">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
@@ -1337,13 +1337,13 @@ export default function Home() {
                   Support d&eacute;di&eacute;
                 </li>
               </ul>
-              <a href="mailto:contact@visirenov.fr" className="block w-full text-center border border-gray-300 text-foreground px-4 py-2.5 rounded-full text-sm font-medium hover:bg-gray-50 transition-colors">
+              <a href="mailto:contact@visirenov.fr" className="block w-full text-center border border-foreground/15 text-foreground px-4 py-2.5 rounded-full text-sm font-medium hover:bg-foreground/5 transition-colors">
                 Nous contacter
               </a>
             </div>
           </div>
 
-          <p className="text-center text-[11px] text-muted/50 font-light mt-6">
+          <p className="text-center text-[11px] text-muted font-light mt-6">
             TVA r&eacute;cup&eacute;rable pour les professionnels assujettis.
           </p>
         </div>
@@ -1351,14 +1351,14 @@ export default function Home() {
 
       {/* Disclaimer */}
       <div className="text-center px-5 sm:px-8 pb-6 pt-8">
-        <p className="text-[11px] text-muted/70 font-light">
+        <p className="text-[11px] text-muted font-light">
           Visuels g&eacute;n&eacute;r&eacute;s par intelligence artificielle &mdash; repr&eacute;sentations indicatives non contractuelles.
         </p>
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-gray-200/40 py-10 px-5 sm:px-8">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted/70 font-light">
+      <footer className="border-t border-foreground/5 py-10 px-5 sm:px-8">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted font-light">
           <p>Pour les architectes, marchands de biens et particuliers</p>
           <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
             <a href="#pricing" className="hover:text-foreground transition-colors py-2">

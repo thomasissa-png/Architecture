@@ -210,15 +210,15 @@ export default function StylePicker({
               aria-checked={isSelected}
               className={`group text-left p-3.5 sm:p-5 rounded-2xl border transition-all duration-300 hover:shadow-sm hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
                 isSelected
-                  ? "border-foreground bg-foreground/[0.02] shadow-sm scale-[1.02]"
-                  : "border-gray-200 hover:border-gray-300"
+                  ? "border-foreground bg-foreground/5 shadow-sm scale-[1.02]"
+                  : "border-foreground/10 hover:border-foreground/15"
               }`}
             >
               <span className="flex gap-1.5 mb-2 sm:mb-3" aria-hidden="true">
                 {style.palette.map((color, i) => (
                   <span
                     key={i}
-                    className="w-4 h-4 sm:w-5 sm:h-5 rounded-full border border-gray-200/60"
+                    className="w-4 h-4 sm:w-5 sm:h-5 rounded-full ring-1 ring-inset ring-foreground/10"
                     style={{ backgroundColor: color }}
                   />
                 ))}
@@ -239,13 +239,13 @@ export default function StylePicker({
           aria-checked={isCustom}
           className={`group text-left p-3.5 sm:p-5 rounded-2xl border border-dashed transition-all duration-300 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
             isCustom
-              ? "border-foreground bg-foreground/[0.02] shadow-sm"
-              : "border-gray-300 hover:border-gray-400"
+              ? "border-foreground bg-foreground/5 shadow-sm"
+              : "border-foreground/15 hover:border-foreground/20"
           }`}
         >
           <IconCustom
             className={`w-5 h-5 mb-3 transition-colors duration-300 ${
-              isCustom ? "text-foreground" : "text-gray-300 group-hover:text-muted"
+              isCustom ? "text-foreground" : "text-foreground/30 group-hover:text-muted"
             }`}
           />
           <h4 className="text-sm font-semibold text-foreground mb-1 tracking-tight">
@@ -263,7 +263,7 @@ export default function StylePicker({
             value={customPrompt}
             onChange={(e) => onCustomPromptChange(e.target.value)}
             placeholder="Ex : style Art Déco avec mobilier doré, tapis persans et éclairage chaleureux…"
-            className="w-full p-5 border border-gray-200 rounded-2xl focus:border-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 resize-none h-28 text-sm font-light transition-colors placeholder:text-gray-300"
+            className="w-full p-5 border border-foreground/10 rounded-2xl focus:border-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 resize-none h-28 text-sm font-light transition-colors placeholder:text-foreground/30"
           />
         </div>
       )}

@@ -17,6 +17,22 @@ import {
   buildIterationOutdoorFurnitureFluxPrompt,
 } from "@/lib/iteration-prompt";
 
+// ─── Timeout wrapper for external API calls ─────────────────────────
+const API_TIMEOUT_MS = 120_000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(new Error(`Timeout: ${label} n'a pas répondu en ${ms / 1000}s`)),
+      ms
+    );
+    promise.then(
+      (val) => { clearTimeout(timer); resolve(val); },
+      (err) => { clearTimeout(timer); reject(err); }
+    );
+  });
+}
+
 // ─── Rate Limiting (in-memory, IP-based) ────────────────────────────
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 const RATE_LIMIT_WINDOW = 60_000; // 1 minute
@@ -647,32 +663,36 @@ async function tryOpenAIResponses(
         : buildFurnitureResponsesPrompt(furniturePrompt, roomTypeId);
   }
 
-  const response = await openai.responses.create({
-    model: "gpt-4.1",
-    input: [
-      {
-        role: "user",
-        content: [
-          {
-            type: "input_image",
-            image_url: `data:image/jpeg;base64,${imageBase64}`,
-            detail: "high",
-          },
-          {
-            type: "input_text",
-            text: prompt,
-          },
-        ],
-      },
-    ],
-    tools: [
-      {
-        type: "image_generation",
-        input_fidelity: "high",
-        size: size as "1024x1024" | "1536x1024" | "1024x1536",
-      },
-    ],
-  });
+  const response = await withTimeout(
+    openai.responses.create({
+      model: "gpt-4.1",
+      input: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "input_image",
+              image_url: `data:image/jpeg;base64,${imageBase64}`,
+              detail: "high",
+            },
+            {
+              type: "input_text",
+              text: prompt,
+            },
+          ],
+        },
+      ],
+      tools: [
+        {
+          type: "image_generation",
+          input_fidelity: "high",
+          size: size as "1024x1024" | "1536x1024" | "1024x1536",
+        },
+      ],
+    }),
+    API_TIMEOUT_MS,
+    "OpenAI Responses API"
+  );
 
   const imageOutput = response.output.find(
     (o: { type: string }) => o.type === "image_generation_call"
@@ -728,22 +748,26 @@ async function tryFluxDepth(
   // Pass 2 (furniture): slightly higher guidance to ensure furniture appears
   const guidance = pass === 1 ? 12 : 15;
 
-  const output = await replicate.run(
-    "black-forest-labs/flux-depth-pro" as `${string}/${string}`,
-    {
-      input: {
-        prompt,
-        negative_prompt: additionalNegative
-          ? `${negativeBase}, ${additionalNegative}`
-          : negativeBase,
-        control_image: dataUri,
-        width,
-        height,
-        steps: 25,
-        guidance,
-        output_format: "png",
-      },
-    }
+  const output = await withTimeout(
+    replicate.run(
+      "black-forest-labs/flux-depth-pro" as `${string}/${string}`,
+      {
+        input: {
+          prompt,
+          negative_prompt: additionalNegative
+            ? `${negativeBase}, ${additionalNegative}`
+            : negativeBase,
+          control_image: dataUri,
+          width,
+          height,
+          steps: 25,
+          guidance,
+          output_format: "png",
+        },
+      }
+    ),
+    API_TIMEOUT_MS,
+    "Flux Depth Pro"
   );
 
   let imageUrl: string;
@@ -757,7 +781,7 @@ async function tryFluxDepth(
     throw new Error("Unexpected output format from Flux Depth Pro");
   }
 
-  const imageResponse = await fetch(imageUrl);
+  const imageResponse = await withTimeout(fetch(imageUrl), 30_000, "Flux image download");
   const arrayBuffer = await imageResponse.arrayBuffer();
   const base64 = Buffer.from(arrayBuffer).toString("base64");
 
@@ -775,29 +799,33 @@ async function tryOpenAIResponsesWithPrompt(
 ): Promise<{ image: string; model: string }> {
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-  const response = await openai.responses.create({
-    model: "gpt-4.1",
-    input: [
-      {
-        role: "user",
-        content: [
-          {
-            type: "input_image",
-            image_url: `data:image/jpeg;base64,${imageBase64}`,
-            detail: "high",
-          },
-          { type: "input_text", text: prompt },
-        ],
-      },
-    ],
-    tools: [
-      {
-        type: "image_generation",
-        input_fidelity: "high",
-        size: size as "1024x1024" | "1536x1024" | "1024x1536",
-      },
-    ],
-  });
+  const response = await withTimeout(
+    openai.responses.create({
+      model: "gpt-4.1",
+      input: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "input_image",
+              image_url: `data:image/jpeg;base64,${imageBase64}`,
+              detail: "high",
+            },
+            { type: "input_text", text: prompt },
+          ],
+        },
+      ],
+      tools: [
+        {
+          type: "image_generation",
+          input_fidelity: "high",
+          size: size as "1024x1024" | "1536x1024" | "1024x1536",
+        },
+      ],
+    }),
+    API_TIMEOUT_MS,
+    "OpenAI Responses API"
+  );
 
   const imageOutput = response.output.find(
     (o: { type: string }) => o.type === "image_generation_call"
@@ -828,20 +856,24 @@ async function tryFluxDepthWithPrompt(
 
   const dataUri = `data:image/jpeg;base64,${imageBase64}`;
 
-  const output = await replicate.run(
-    "black-forest-labs/flux-depth-pro" as `${string}/${string}`,
-    {
-      input: {
-        prompt,
-        negative_prompt: FLUX_ITERATION_NEGATIVE_PROMPT,
-        control_image: dataUri,
-        width,
-        height,
-        steps: 25,
-        guidance: 15,
-        output_format: "png",
-      },
-    }
+  const output = await withTimeout(
+    replicate.run(
+      "black-forest-labs/flux-depth-pro" as `${string}/${string}`,
+      {
+        input: {
+          prompt,
+          negative_prompt: FLUX_ITERATION_NEGATIVE_PROMPT,
+          control_image: dataUri,
+          width,
+          height,
+          steps: 25,
+          guidance: 15,
+          output_format: "png",
+        },
+      }
+    ),
+    API_TIMEOUT_MS,
+    "Flux Depth Pro"
   );
 
   let imageUrl: string;
@@ -855,7 +887,7 @@ async function tryFluxDepthWithPrompt(
     throw new Error("Unexpected output format from Flux Depth Pro (iteration)");
   }
 
-  const imageResponse = await fetch(imageUrl);
+  const imageResponse = await withTimeout(fetch(imageUrl), 30_000, "Flux image download");
   const arrayBuffer = await imageResponse.arrayBuffer();
   const base64 = Buffer.from(arrayBuffer).toString("base64");
 
