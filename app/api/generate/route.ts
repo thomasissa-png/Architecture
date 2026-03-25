@@ -15,6 +15,7 @@ import {
 } from "@/lib/iteration-prompt";
 import { applyRoomTypeOverrides } from "@/lib/room-types";
 import { applyOutdoorSubtypeOverrides, OUTDOOR_SUBTYPES } from "@/lib/outdoor-subtypes";
+import { saveUserPhoto } from "@/lib/user-photos";
 import {
   buildIterationOutdoorFurnitureResponsesPrompt,
   buildIterationOutdoorFurnitureFluxPrompt,
@@ -1332,10 +1333,48 @@ export async function POST(request: NextRequest) {
     const t2 = Date.now();
 
     const outputBase64 = pass2.image.replace(/^data:image\/[\w+]+;base64,/, "");
+
+    // Fire-and-forget: save to user_photos gallery if user is connected
+    let photoIdPromise: Promise<string | null> = Promise.resolve(null);
+    if (session?.user?.id) {
+      photoIdPromise = (async () => {
+        try {
+          const { saveImage: saveImg } = await import("@/lib/db");
+          const ts = Date.now();
+          const [inputKey, outputKey, pass1ImageKey] = await Promise.all([
+            saveImg(base64Image, `user_photo_${ts}_input`).catch(() => null),
+            saveImg(outputBase64, `user_photo_${ts}_output`).catch(() => null),
+            pass1Base64 ? saveImg(pass1Base64, `user_photo_${ts}_pass1`).catch(() => null) : null,
+          ]);
+          return await saveUserPhoto({
+            userId: session.user.id,
+            inputImageKey: inputKey,
+            outputImageKey: outputKey,
+            pass1ImageKey: pass1ImageKey,
+            styleId: styleId || null,
+            roomType: isOutdoor ? null : (roomType || null),
+            roomLabel: null,
+            isOutdoor: isOutdoor || false,
+            propertyId: null,
+          });
+        } catch (err) {
+          console.error("saveUserPhoto failed:", err);
+          return null;
+        }
+      })();
+    }
+
+    // Wait briefly for photoId (50ms max) so we can include it in the response
+    const photoId = await Promise.race([
+      photoIdPromise,
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 50)),
+    ]);
+
     const response = NextResponse.json({
       image: pass2.image,
       model: `${pass1.model} → ${pass2.model}`,
       ...(pass1Saved ? { pass1_key: pass1CacheKey } : {}),
+      ...(photoId ? { photoId } : {}),
     });
 
     // Fire-and-forget: log to DB + save images to filesystem

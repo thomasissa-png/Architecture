@@ -14,12 +14,14 @@ import { OUTDOOR_STYLES } from "@/lib/outdoor-styles";
 import { useSession } from "next-auth/react";
 import AuthButton from "@/components/AuthButton";
 import MerchantMode from "@/components/MerchantMode";
+import PhotoAssociator from "@/components/PhotoAssociator";
 
 interface GenerationResult {
   originalUrl: string;
   generatedUrl: string;
   model: string;
   pass1Key?: string;
+  photoId?: string;
 }
 
 interface VersionEntry {
@@ -135,6 +137,7 @@ export default function Home() {
 
   // F4 — Merchant mode state
   const [isMerchantMode, setIsMerchantMode] = useState(false);
+  const [dismissedAssociators, setDismissedAssociators] = useState<Set<number>>(new Set());
 
   // F3 — Outdoor state
   const [isOutdoor, setIsOutdoor] = useState(false);
@@ -354,6 +357,7 @@ export default function Home() {
             generatedUrl: data.image,
             model: data.model,
             pass1Key: data.pass1_key,
+            photoId: data.photoId,
           } as GenerationResult;
         })
       );
@@ -636,9 +640,17 @@ export default function Home() {
           </span>
           <nav className="flex items-center gap-2 sm:gap-6">
             {session && (
-              <a href="/mes-dossiers" className="hidden sm:inline text-xs text-muted font-light hover:text-foreground transition-colors">
-                Mes dossiers
-              </a>
+              <>
+                <a href="/mes-biens" className="hidden sm:inline text-xs text-muted font-light hover:text-foreground transition-colors">
+                  Mes biens
+                </a>
+                <a href="/ma-galerie" className="hidden sm:inline text-xs text-muted font-light hover:text-foreground transition-colors">
+                  Ma galerie
+                </a>
+                <a href="/mes-dossiers" className="hidden sm:inline text-xs text-muted font-light hover:text-foreground transition-colors">
+                  Mes dossiers
+                </a>
+              </>
             )}
             <a href="#pricing" className="hidden sm:inline text-xs text-muted font-light hover:text-foreground transition-colors">
               Tarifs
@@ -1130,6 +1142,14 @@ export default function Home() {
                           originalUrl={result.originalUrl}
                           generatedUrl={displayUrl}
                           model={resultVersions[activeIdx]?.model || result.model}
+                        />
+                      )}
+
+                      {/* Photo associator for merchants */}
+                      {session && result.photoId && !dismissedAssociators.has(index) && (
+                        <PhotoAssociator
+                          photoId={result.photoId}
+                          onDismiss={() => setDismissedAssociators((prev) => { const next = new Set(prev); next.add(index); return next; })}
                         />
                       )}
 
