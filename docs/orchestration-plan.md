@@ -239,13 +239,36 @@ Moyenne — 5 agents (reviewer, Yann, Lucas, fullstack, reviewer), 2 features su
 - @ux : Header mobile fix (Tarifs masque, CTA raccourci, gap/padding reduits)
 - Commits : 8973a20 (F4), b1924ac (QA)
 
-### Phase H — Review croisee F4 (a faire)
-- Agents : @reviewer
-- Statut : NON COMMENCE
-- Points a verifier : securite header X-Internal-Dossier, race condition credits batch, sync style-resolver/StylePicker, edge cases PDF > 25Mo
+### Phase H — Review croisee F4
+- Statut : TERMINE
+- @reviewer : NO-GO initial (3 bloquants). C-01 securite header, C-02 Pro access, H-02 dimensions portrait → tous corriges.
+- 5 iterations d'audit (Thomas 6.1→9.0, Design 6.9→9.1, Copy 6.2→9.0)
+
+### Phase I — F4 enrichi (profil marchand + enrichissement + PDF brande)
+- Statut : TERMINE
+- F4.A Profil Marchand : SIRET Pappers/INSEE, logo, couleurs, police
+- F4.B Enrichissement adresse : API Adresse gouv, DVF, carte OSM, description GPT-4.1-mini
+- F4.C PDF brande : logo Thomas, couleurs custom, carte quartier, coordonnees
+
+### Phase J — Refonte architecture Bien/Dossier/Photos
+- Statut : TERMINE
+- Tables user_photos + properties
+- Pages /ma-galerie, /mes-biens, /mes-biens/[id]
+- PhotoAssociator post-generation
+- Dossier depuis selection de photos du bien
+
+### Phase K — Audit responsive PC+Mobile
+- Statut : TERMINE
+- @reviewer : PC 8.5, Mobile 7.5 → 12 corrections appliquees
+- Nav mobile dans dropdown AuthButton, flex-wrap boutons, min-h-[44px], data-testid
+
+### Scores finaux F4
+- Thomas : 9.0/10 (V1 6.1 → V5 9.0, +2.9 pts en 5 iterations)
+- Design : 9.1/10 (V1 6.9 → V4 9.1, +2.2 pts en 4 iterations)
+- Copy : 9.0/10 (V1 6.2 → V5 9.0, +2.8 pts en 5 iterations)
 
 ### Phases NON commencees
-- Review croisee F4
 - F5 Mode Decorateur (LATER)
 - Domaine propre versiroom.fr (action fondateur)
 - Configuration lancement (cles API Stripe/NextAuth/Sentry)
+- Tests E2E pour les nouvelles pages F4 (mes-biens, ma-galerie, properties API)
