@@ -322,3 +322,25 @@ Moyenne — 5 agents (reviewer, Yann, Lucas, fullstack, reviewer), 2 features su
 - CTA "Essayer gratuitement" conditionnel quand connecte — corrige mais a verifier en prod
 - Bien disparu apres mise a jour — cause racine corrigee (ensure cross-tables) mais a verifier en prod
 - API admin update-user — creee mais non testee en prod
+
+---
+
+## Session 2026-03-26b — Gradient Agents update + 5 bug fixes production
+
+### Phase S26b.0 — Mise a jour Gradient Agents
+- Statut : TERMINE
+- Source : github.com/thomasissa-png/Agent-Team branch claude/setup-project-context-ALWvD
+- Agents generiques ecrases dans .claude/agents/ (20 fichiers)
+- Agents custom preserves : client-mandataire.md, paysagiste.md
+- CLAUDE.md : bloc GRADIENT-AGENTS fusionne (nouvelles regles n°4 delegation + n°5 mindset IA)
+
+### Phase S26b.1 — Fix 5 bugs production + hero photos
+- Agents : @fullstack
+- Statut : EN COURS
+- Bugs :
+  1. **Modal auth coupee** — AuthModal.tsx max-h + padding compresse le formulaire
+  2. **Carte ne charge pas** — enrich-property fetchStaticMap echoue silencieusement
+  3. **"Aucune photo" associer** — photos avec output_image_key NULL ou filtrage user_id incorrect
+  4. **Dossier redirige homepage** — hasProAccess() toujours false (pas de Stripe), fix via role pro/admin
+  5. **Hero photos fixes** — pinner la generation scandinavian du 25/03/2026 11:00:19 au lieu de latest
+- Livrables attendus : AuthModal.tsx, enrich-property/route.ts, MerchantMode.tsx, user-photos.ts, credits.ts, demo/route.ts, page.tsx

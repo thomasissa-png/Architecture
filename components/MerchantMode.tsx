@@ -289,7 +289,12 @@ export default function MerchantMode() {
       // Step 4: Poll for progress
       startPolling(dossier.uuid);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Une erreur est survenue. Réessayez — vos crédits n'ont pas été consommés.");
+      const msg = err instanceof Error ? err.message : "";
+      // Rendre le message 403 plus clair pour l'utilisateur
+      const displayMsg = msg.includes("Pack Pro") || msg.includes("reserve aux")
+        ? "Acc\u00E8s Pro requis. Contactez l'administrateur pour activer votre compte."
+        : msg || "Une erreur est survenue. R\u00E9essayez \u2014 vos cr\u00E9dits n'ont pas \u00E9t\u00E9 consomm\u00E9s.";
+      setError(displayMsg);
       setIsGenerating(false);
       setCurrentStep("review");
     }
@@ -628,8 +633,8 @@ export default function MerchantMode() {
             </div>
           )}
 
-          {/* Carte du quartier (enriched) */}
-          {enrichedCarteKey && (
+          {/* Carte du quartier (enriched) — fallback si carte indisponible */}
+          {enrichedCarteKey ? (
             <div>
               <label className="text-xs font-medium text-foreground mb-1.5 block">
                 Carte du quartier
@@ -641,10 +646,51 @@ export default function MerchantMode() {
                   alt="Carte du quartier"
                   className="w-full h-auto"
                   data-testid="merchant-carte-preview"
+                  onError={(e) => {
+                    const el = e.target as HTMLImageElement;
+                    el.style.display = "none";
+                    const fallback = el.parentElement?.querySelector("[data-carte-fallback]");
+                    if (fallback) (fallback as HTMLElement).style.display = "flex";
+                  }}
                 />
+                <div
+                  data-carte-fallback
+                  className="hidden flex-col items-center justify-center gap-2 py-8 px-4 bg-foreground/[0.02]"
+                >
+                  <p className="text-sm text-muted font-light">Carte indisponible</p>
+                  {enrichedLat && enrichedLon && (
+                    <a
+                      href={`https://www.openstreetmap.org/?mlat=${enrichedLat}&mlon=${enrichedLon}#map=15/${enrichedLat}/${enrichedLon}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-sage underline hover:text-sage/80 transition-colors"
+                    >
+                      Voir sur OpenStreetMap
+                    </a>
+                  )}
+                </div>
               </div>
             </div>
-          )}
+          ) : enrichedLat && enrichedLon ? (
+            <div>
+              <label className="text-xs font-medium text-foreground mb-1.5 block">
+                Localisation
+              </label>
+              <div className="rounded-xl border border-foreground/5 p-4 flex flex-col items-center gap-2 bg-foreground/[0.02]">
+                <p className="text-sm text-muted font-light">
+                  {enrichedLat.toFixed(5)}, {enrichedLon.toFixed(5)}
+                </p>
+                <a
+                  href={`https://www.openstreetmap.org/?mlat=${enrichedLat}&mlon=${enrichedLon}#map=15/${enrichedLat}/${enrichedLon}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-sage underline hover:text-sage/80 transition-colors"
+                >
+                  Voir sur OpenStreetMap
+                </a>
+              </div>
+            </div>
+          ) : null}
 
           {/* Next button */}
           <div className="pt-4">

@@ -131,6 +131,7 @@ export async function getUserPhotos(
   }
   if (filters?.unassociatedOnly) {
     conditions.push("property_id IS NULL");
+    conditions.push("output_image_key IS NOT NULL");
   }
 
   const result = await db.query(

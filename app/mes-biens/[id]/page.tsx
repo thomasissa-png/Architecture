@@ -932,9 +932,14 @@ export default function PropertyDetailPage() {
               </div>
 
               {unassociatedPhotos.length === 0 ? (
-                <p className="text-sm text-muted font-light py-8 text-center">
-                  Aucune photo non class&#233;e disponible.
-                </p>
+                <div className="py-8 text-center">
+                  <p className="text-sm text-muted font-light">
+                    Aucune photo disponible.
+                  </p>
+                  <p className="text-xs text-muted/50 font-light mt-1">
+                    G&#233;n&#233;rez d&apos;abord des visuels dans le mode Standard.
+                  </p>
+                </div>
               ) : (
                 <>
                   <p className="text-xs text-muted font-light mb-3">

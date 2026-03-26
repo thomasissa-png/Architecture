@@ -43,20 +43,31 @@ export async function decrementCredit(userId: string): Promise<boolean> {
 }
 
 /**
- * F4: Check if user has purchased a Pro-level pack (50+ credits purchased).
- * For Mode Marchand access, we check purchase history rather than current balance
- * because balance decreases with usage.
+ * F4: Check if user has Pro access for Mode Marchand.
+ * Two paths:
+ * 1. User has purchased a Pro-level pack (50+ credits purchased via Stripe)
+ * 2. User has role 'pro' or 'admin' in users table (set via admin API)
+ * This allows the founder to grant Pro access manually before Stripe is live.
  */
 export async function hasProAccess(userId: string): Promise<boolean> {
   await ensureTable();
   const db = getPool();
-  // Check if user has ever purchased a pro-level pack (50+ credits)
-  const result = await db.query(
+
+  // Path 1: Check user role (pro or admin)
+  const roleResult = await db.query(
+    `SELECT role FROM users WHERE id = $1`,
+    [userId]
+  );
+  const role = roleResult.rows[0]?.role;
+  if (role === "pro" || role === "admin") return true;
+
+  // Path 2: Check purchase history (50+ credits purchased)
+  const purchaseResult = await db.query(
     `SELECT COUNT(*) as count FROM purchases
      WHERE user_id = $1 AND credits_purchased >= 50 AND status = 'completed'`,
     [userId]
   );
-  return Number(result.rows[0]?.count ?? 0) > 0;
+  return Number(purchaseResult.rows[0]?.count ?? 0) > 0;
 }
 
 export async function addCredits(

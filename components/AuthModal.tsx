@@ -212,13 +212,13 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
       {/* Modal — scrollable for iOS keyboard */}
       <div
         ref={modalRef}
-        className="relative w-full max-w-md bg-background rounded-3xl shadow-2xl border border-foreground/5 max-h-[min(90vh,90dvh)] overflow-y-auto"
+        className="relative w-full max-w-md bg-background rounded-3xl shadow-2xl border border-foreground/5 max-h-[min(90vh,90dvh)] flex flex-col"
         style={{ animation: "fadeInUp 300ms cubic-bezier(0.16, 1, 0.3, 1)" }}
       >
-        {/* Close button — 44px touch target */}
+        {/* Close button — 44px touch target, sticky top */}
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 w-11 h-11 flex items-center justify-center rounded-full hover:bg-foreground/5 transition-colors duration-200 text-muted hover:text-foreground z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+          className="sticky top-0 self-end mr-3 mt-3 w-11 h-11 flex-shrink-0 flex items-center justify-center rounded-full hover:bg-foreground/5 transition-colors duration-200 text-muted hover:text-foreground z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 bg-background/80 backdrop-blur-sm"
           aria-label="Fermer"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -226,7 +226,7 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
           </svg>
         </button>
 
-        <div className="px-6 sm:px-8 pt-10 pb-8">
+        <div className="px-6 sm:px-8 pt-2 pb-6 overflow-y-auto">
           {/* Header */}
           <div className="text-center mb-8">
             <h2 id="auth-modal-title" className="text-2xl font-bold text-foreground tracking-tight mb-2">

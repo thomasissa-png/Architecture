@@ -147,14 +147,23 @@ async function fetchDVFData(
 async function fetchStaticMap(lat: number, lon: number): Promise<string | null> {
   try {
     const url = `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lon}&zoom=15&size=600x300&markers=${lat},${lon},red-pushpin`;
-    const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
-    if (!res.ok) return null;
+    const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
+    if (!res.ok) {
+      console.error(`[fetchStaticMap] HTTP ${res.status} for ${lat},${lon}`);
+      return null;
+    }
 
     const buffer = Buffer.from(await res.arrayBuffer());
+    if (buffer.length < 100) {
+      console.error(`[fetchStaticMap] Buffer too small (${buffer.length} bytes) — likely invalid image`);
+      return null;
+    }
+
     const base64 = buffer.toString("base64");
     const key = await saveImage(base64, `map_${Date.now()}_${lat.toFixed(4)}_${lon.toFixed(4)}`);
     return key;
-  } catch {
+  } catch (err) {
+    console.error(`[fetchStaticMap] Failed for ${lat},${lon}:`, err instanceof Error ? err.message : err);
     return null;
   }
 }
