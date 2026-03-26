@@ -256,7 +256,7 @@
 
 - **Commande de reprise suggérée** :
 ```
-@orchestrator Reprends le projet Versiroom. La session du 26 mars a livré : F6 annonce publique (Marc 9.2/10), auth email/password, fiche bien enrichie (DPE/étage/parking), pipeline itération adjust/restyle (v21), 2 nouveaux agents (@client-mandataire Marc, @paysagiste Camille), suppression Studio, UI multi-photo. Priorités : (1) InlineGenerator sur fiche bien (specs prêtes dans docs/product/inline-generation-specs.md), (2) 2 styles outdoor manquants (Provençal, Industriel-Urbain), (3) test intégral production sur Replit. Le fondateur veut aussi vérifier que les photos s'affichent correctement après le fix read-after-write.
+@orchestrator Reprends le projet Versiroom. Lis docs/lessons-learned.md en premier. La session du 26 mars a livré : F6 annonce publique (Marc 9.2/10), auth email/password, fiche bien enrichie (DPE/étage/parking), pipeline itération adjust/restyle (v21), 2 nouveaux agents (@client-mandataire Marc, @paysagiste Camille), suppression Studio, UI multi-photo. Priorités : (1) InlineGenerator sur fiche bien (specs prêtes dans docs/product/inline-generation-specs.md), (2) 2 styles outdoor manquants (Provençal, Industriel-Urbain), (3) test intégral production sur Replit. Le fondateur veut aussi vérifier que les photos s'affichent correctement après le fix read-after-write.
 ```
 
 ---
