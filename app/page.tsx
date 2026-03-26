@@ -757,16 +757,15 @@ export default function Home() {
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src="/api/demo?type=hero&image=before&fixed=true"
-                    alt="Pi&egrave;ce vide avant home staging"
+                    alt=""
                     className="absolute inset-0 w-full h-full object-cover"
+                    style={{ display: "none" }}
+                    onLoad={(e) => { (e.target as HTMLImageElement).style.display = "block"; }}
                     onError={(e) => {
                       const img = e.target as HTMLImageElement;
-                      // Retry once after 2s (server cold start)
                       if (!img.dataset.retried) {
                         img.dataset.retried = "1";
                         setTimeout(() => { img.src = img.src.split("&_t=")[0] + "&_t=" + Date.now(); }, 2000);
-                      } else {
-                        img.style.display = "none";
                       }
                     }}
                   />
@@ -854,15 +853,15 @@ export default function Home() {
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src="/api/demo?style=scandinavian&image=after&fixed=true"
-                    alt="Salon scandinave meubl&eacute; par Versiroom"
+                    alt=""
                     className="absolute inset-0 w-full h-full object-cover"
+                    style={{ display: "none" }}
+                    onLoad={(e) => { (e.target as HTMLImageElement).style.display = "block"; }}
                     onError={(e) => {
                       const img = e.target as HTMLImageElement;
                       if (!img.dataset.retried) {
                         img.dataset.retried = "1";
                         setTimeout(() => { img.src = img.src.split("&_t=")[0] + "&_t=" + Date.now(); }, 2000);
-                      } else {
-                        img.style.display = "none";
                       }
                     }}
                   />
