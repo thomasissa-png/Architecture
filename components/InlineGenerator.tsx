@@ -481,6 +481,7 @@ export default function InlineGenerator({
                     }`}
                   >
                     {imgSrc ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
                       <img
                         src={imgSrc}
                         alt={photo.room_label || "Photo"}
@@ -579,7 +580,7 @@ export default function InlineGenerator({
 
             {/* Preview grid with status per photo */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-              {results.map((result: GenerationResult, i: number) => {
+              {results.map((result: GenerationResult) => {
                 const photo = photos.find((p) => p.id === result.photoId);
                 const imgSrc = photo?.input_image_key
                   ? `/api/logs/image?path=${encodeURIComponent(photo.input_image_key)}`
@@ -588,6 +589,7 @@ export default function InlineGenerator({
                 return (
                   <div key={result.photoId} className="relative rounded-xl overflow-hidden border border-foreground/5">
                     {imgSrc ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
                       <img
                         src={imgSrc}
                         alt="En cours..."
