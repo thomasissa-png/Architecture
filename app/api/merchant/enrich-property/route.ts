@@ -170,6 +170,9 @@ async function fetchStaticMap(lat: number, lon: number): Promise<string | null> 
 
 // ─── Commercial description: GPT-4.1-mini ──────────────────────────
 
+const DESCRIPTION_SYSTEM_PROMPT =
+  "Tu es un redacteur d'annonces immobilieres expert du marche francais. Tu rediges des descriptions commerciales pour des marchands de biens professionnels.\n\nTon style : precis, factuel, sobre. Aucun superlatif sans preuve. Chaque affirmation est verifiable.\n\nStructure de sortie (respecter cet ordre) :\n1. ACCROCHE (2-3 phrases) : projeter le lecteur dans la vie possible, ancrage local concret, ambiance du quartier\n2. DESCRIPTION DU BIEN (3-4 phrases) : surface, distribution des pieces, etat general, orientation, etage, luminosite\n3. LE QUARTIER (3-4 phrases) : transports a proximite avec lignes et temps a pied, commerces nommes, ecoles si pertinent. Deduis ces informations a partir de l'adresse — tu connais les quartiers francais.\n4. POINTS FORTS (2-3 phrases) : resume des atouts principaux, potentiel d'amenagement si applicable\n\nRegles :\n- NE JAMAIS ecrire \"bel appartement\", \"charmant\", \"magnifique\", \"spacieux\" sans donnee factuelle\n- NE JAMAIS ecrire \"proche de toutes commodites\" — citer les transports et commerces specifiques\n- Si une donnee n'est pas fournie, la deduire intelligemment de l'adresse ou l'omettre — ne PAS ecrire \"[DONNEE MANQUANTE]\" car c'est un texte final\n- Les visuels meubles generes par IA doivent etre contextualises : \"Projection d'amenagement generee par IA — bien livre vide.\"\n\nLongueur cible : 200-350 mots. Reponds uniquement avec la description, sans guillemets ni prefixe ni numerotation.";
+
 async function generateDescription(params: {
   type: string;
   surface: number | null;
@@ -184,10 +187,11 @@ async function generateDescription(params: {
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
     const userParts: string[] = [];
-    userParts.push(`Bien : ${params.type || "bien immobilier"}`);
-    if (params.surface) userParts.push(`${params.surface} m\u00B2`);
-    userParts.push(`a ${params.adresse}`);
-    if (params.nbPieces) userParts.push(`${params.nbPieces} pieces`);
+    userParts.push(`Type : ${params.type || "bien immobilier"}`);
+    if (params.surface) userParts.push(`Surface : ${params.surface} m\u00B2`);
+    userParts.push(`Adresse : ${params.adresse}`);
+    if (params.nbPieces) userParts.push(`Nombre de pi\u00E8ces : ${params.nbPieces}`);
+    if (params.city) userParts.push(`Ville : ${params.city}`);
     if (params.prixMoyenM2) userParts.push(`Prix moyen du quartier : ${params.prixMoyenM2} EUR/m\u00B2`);
 
     const response = await openai.chat.completions.create({
@@ -197,12 +201,11 @@ async function generateDescription(params: {
       messages: [
         {
           role: "system",
-          content:
-            "Tu es un redacteur immobilier haut de gamme. Redige une description commerciale complete et engageante de ce bien pour une annonce immobiliere professionnelle.\n\nStructure en 3-4 paragraphes :\n1. Accroche + localisation : situe le bien dans son quartier, mentionne le caractere du quartier (dynamique, residentiel, familial, etc.)\n2. Description du bien : surface, nombre de pieces, etage si connu, disposition, luminosite, potentiel d'amenagement\n3. Environnement : ecoles, transports en commun, commerces, espaces verts a proximite (deduis-les de l'adresse et du quartier)\n4. Points forts et conclusion : resume les atouts principaux, invite a la visite\n\nTon : professionnel, valorisant sans superlatifs excessifs. Style fluide et agreable a lire.\nLongueur : 150-250 mots.\nReponds uniquement avec la description, sans guillemets ni prefixe.",
+          content: DESCRIPTION_SYSTEM_PROMPT,
         },
         {
           role: "user",
-          content: userParts.join(". ") + ".",
+          content: userParts.join("\n"),
         },
       ],
     });
