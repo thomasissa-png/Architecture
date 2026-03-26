@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!annonce || !isAnnonceActive(annonce)) {
     return {
       title: "Annonce introuvable - Versiroom",
-      description: "Cette annonce n'existe pas ou a \u00E9t\u00E9 supprim\u00E9e.",
+      description: "Cette annonce n'existe pas ou a été supprimée.",
       robots: "noindex, nofollow",
     };
   }
@@ -46,11 +46,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     getPropertyById(annonce.property_id, annonce.user_id),
     getUserPhotos(annonce.user_id, { propertyId: annonce.property_id }),
   ]);
-  const title = annonce.title || "Annonce immobili\u00E8re";
+  const title = annonce.title || "Annonce immobilière";
 
   const details: string[] = [];
   if (property?.surface_m2) details.push(`${property.surface_m2}m\u00B2`);
-  if (property?.room_count) details.push(`${property.room_count} pi\u00E8ces`);
+  if (property?.room_count) details.push(`${property.room_count} pièces`);
   if (property?.sale_price) details.push(formatPrice(property.sale_price));
 
   const description = details.length > 0
@@ -89,7 +89,7 @@ export default async function AnnoncePage({ params }: PageProps) {
             Annonce introuvable
           </h1>
           <p className="text-muted font-light text-sm">
-            Cette annonce n&apos;existe pas ou a \u00E9t\u00E9 supprim\u00E9e.
+            Cette annonce n&apos;existe pas ou a été supprimée.
           </p>
         </div>
       </div>
@@ -105,7 +105,7 @@ export default async function AnnoncePage({ params }: PageProps) {
             Annonce introuvable
           </h1>
           <p className="text-muted font-light text-sm">
-            Cette annonce n&apos;existe pas ou a \u00E9t\u00E9 supprim\u00E9e.
+            Cette annonce n&apos;existe pas ou a été supprimée.
           </p>
         </div>
       </div>
@@ -127,7 +127,7 @@ export default async function AnnoncePage({ params }: PageProps) {
             Bien introuvable
           </h1>
           <p className="text-muted font-light text-sm">
-            Le bien associ{"\u00E9"} {"\u00E0"} cette annonce n&apos;existe plus.
+            Le bien associé à cette annonce n&apos;existe plus.
           </p>
         </div>
       </div>
@@ -135,7 +135,7 @@ export default async function AnnoncePage({ params }: PageProps) {
   }
 
   const completedPhotos = photos.filter((p) => p.output_image_key);
-  const title = annonce.title || "Annonce immobili\u00E8re";
+  const title = annonce.title || "Annonce immobilière";
   const description = property.description_final || property.description_generated;
   const hasMerchant = merchant?.is_merchant === true;
 
@@ -193,7 +193,7 @@ export default async function AnnoncePage({ params }: PageProps) {
           <span className="text-xs text-muted font-light">
             {hasMerchant && merchant?.raison_sociale
               ? merchant.raison_sociale
-              : "Annonce immobili\u00E8re"}
+              : "Annonce immobilière"}
           </span>
         </div>
       </header>
@@ -230,12 +230,12 @@ export default async function AnnoncePage({ params }: PageProps) {
           <div className="flex flex-wrap items-center gap-2 mb-4">
             {property.surface_m2 && (
               <span className="text-xs bg-foreground/5 text-foreground px-3 py-1.5 rounded-xl font-light">
-                {property.surface_m2} m{"\u00B2"}
+                {property.surface_m2} m²
               </span>
             )}
             {property.room_count && (
               <span className="text-xs bg-foreground/5 text-foreground px-3 py-1.5 rounded-xl font-light">
-                {property.room_count} pi{"\u00E8"}ce{property.room_count > 1 ? "s" : ""}
+                {property.room_count} pièce{property.room_count > 1 ? "s" : ""}
               </span>
             )}
             {property.city && (
@@ -252,7 +252,7 @@ export default async function AnnoncePage({ params }: PageProps) {
             </span>
             {property.dvf_median_price_m2 && (
               <span className="text-xs bg-sage/10 text-sage px-3 py-1.5 rounded-xl font-medium">
-                Prix moyen quartier : {property.dvf_median_price_m2.toLocaleString("fr-FR")} {"\u20AC"}/m{"\u00B2"}
+                Prix moyen quartier : {property.dvf_median_price_m2.toLocaleString("fr-FR")} €/m²
               </span>
             )}
           </div>
@@ -333,7 +333,7 @@ export default async function AnnoncePage({ params }: PageProps) {
             </div>
           ) : (
             <p className="text-sm text-muted font-light">
-              Description en cours de r{"\u00E9"}daction
+              Description en cours de rédaction
             </p>
           )}
         </div>
@@ -341,7 +341,7 @@ export default async function AnnoncePage({ params }: PageProps) {
         {/* Caracteristiques — displayed only if at least one field is filled */}
         {(property.dpe_classe || property.ges_classe || property.etage != null || property.parking || property.cave || property.charges_copro_annuelles || property.annee_construction || property.exposition || property.taxe_fonciere || property.nb_lots_copro) && (
           <div className="mb-10" data-testid="annonce-caracteristiques">
-            <h2 className="text-sm font-medium text-foreground mb-4">Caract{"\u00E9"}ristiques</h2>
+            <h2 className="text-sm font-medium text-foreground mb-4">Caractéristiques</h2>
 
             <div className="flex flex-wrap gap-2 mb-4">
               {/* DPE badge */}
@@ -385,14 +385,14 @@ export default async function AnnoncePage({ params }: PageProps) {
               {/* Passoire thermique warning */}
               {property.dpe_classe && (property.dpe_classe === "F" || property.dpe_classe === "G") && (
                 <span className="text-xs bg-red-100 text-red-700 px-3 py-1.5 rounded-xl font-medium" data-testid="annonce-passoire">
-                  Passoire {"\u00E9"}nerg{"\u00E9"}tique
+                  Passoire énergétique
                 </span>
               )}
 
               {/* Etage + ascenseur */}
               {property.etage != null && (
                 <span className="text-xs bg-foreground/5 text-foreground px-3 py-1.5 rounded-xl font-light" data-testid="annonce-etage">
-                  {property.etage === 0 ? "RDC" : `${property.etage}e {"\u00E9"}tage`}
+                  {property.etage === 0 ? "RDC" : `${property.etage}e étage`}
                   {property.ascenseur ? " — ascenseur" : ""}
                 </span>
               )}
@@ -430,17 +430,17 @@ export default async function AnnoncePage({ params }: PageProps) {
             <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-muted font-light">
               {property.charges_copro_annuelles && (
                 <span data-testid="annonce-charges">
-                  Charges copro : {property.charges_copro_annuelles.toLocaleString("fr-FR")} {"\u20AC"}/an
+                  Charges copro : {property.charges_copro_annuelles.toLocaleString("fr-FR")} €/an
                 </span>
               )}
               {property.taxe_fonciere && (
                 <span data-testid="annonce-taxe">
-                  Taxe fonci{"\u00E8"}re : {property.taxe_fonciere.toLocaleString("fr-FR")} {"\u20AC"}/an
+                  Taxe foncière : {property.taxe_fonciere.toLocaleString("fr-FR")} €/an
                 </span>
               )}
               {property.nb_lots_copro && (
                 <span data-testid="annonce-lots">
-                  Copropri{"\u00E9"}t{"\u00E9"} de {property.nb_lots_copro} lots
+                  Copropriété de {property.nb_lots_copro} lots
                 </span>
               )}
             </div>
@@ -495,7 +495,7 @@ export default async function AnnoncePage({ params }: PageProps) {
             </p>
           )}
           <p className="text-sm text-muted/60 font-light">
-            Projection d&apos;am{"\u00E9"}nagement r{"\u00E9"}alis{"\u00E9"}e par Versiroom — le bien est livr{"\u00E9"} brut. Visuels non contractuels.
+            Projection d&apos;aménagement réalisée par Versiroom — le bien est livré brut. Visuels non contractuels.
           </p>
           <p className="text-xs text-muted/40 font-light mt-1">
             <a
@@ -506,7 +506,7 @@ export default async function AnnoncePage({ params }: PageProps) {
             >
               Versiroom
             </a>
-            {" "}&mdash; {"\u00A9"} {new Date().getFullYear()}
+            {" "}&mdash; © {new Date().getFullYear()}
           </p>
         </div>
       </main>

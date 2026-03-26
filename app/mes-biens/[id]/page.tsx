@@ -182,7 +182,7 @@ export default function PropertyDetailPage() {
         if (res.status === 404) {
           setError("Bien introuvable.");
         } else {
-          setError("Erreur de chargement. Veuillez rafra\u00eechir la page.");
+          setError("Erreur de chargement. Veuillez rafraîchir la page.");
         }
         return;
       }
@@ -364,10 +364,10 @@ export default function PropertyDetailPage() {
         setDossierResult(data.dossier);
       } else {
         const data = await res.json();
-        setToastMsg(data.error || "Erreur lors de la cr\u00e9ation du dossier.");
+        setToastMsg(data.error || "Erreur lors de la création du dossier.");
       }
     } catch {
-      setToastMsg("Erreur r\u00e9seau.");
+      setToastMsg("Erreur réseau.");
     } finally {
       setIsCreatingDossier(false);
     }
@@ -382,13 +382,13 @@ export default function PropertyDetailPage() {
       });
       if (res.ok) {
         setActiveAnnonceUuid(null);
-        setToastMsg("Annonce archiv\u00e9e.");
+        setToastMsg("Annonce archivée.");
       } else {
         const data = await res.json();
         setToastMsg(data.error || "Erreur lors de l\u2019archivage.");
       }
     } catch {
-      setToastMsg("Erreur r\u00e9seau.");
+      setToastMsg("Erreur réseau.");
     } finally {
       setIsArchivingAnnonce(false);
     }
@@ -415,10 +415,10 @@ export default function PropertyDetailPage() {
         );
       } else {
         const data = await res.json();
-        setToastMsg(data.error || "Erreur lors de la cr\u00e9ation de l\u2019annonce.");
+        setToastMsg(data.error || "Erreur lors de la création de l\u2019annonce.");
       }
     } catch {
-      setToastMsg("Erreur r\u00e9seau.");
+      setToastMsg("Erreur réseau.");
     } finally {
       setIsCreatingAnnonce(false);
     }
@@ -903,7 +903,7 @@ export default function PropertyDetailPage() {
                   className="text-xs bg-sage text-white px-4 py-2.5 rounded-full font-medium hover:bg-sage/85 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                   data-testid="create-annonce-btn"
                 >
-                  {isCreatingAnnonce ? "Cr\u00e9ation..." : "Cr\u00e9er une annonce"}
+                  {isCreatingAnnonce ? "Création..." : "Créer une annonce"}
                 </button>
                 {activeAnnonceUuid && (
                   <button
@@ -1112,8 +1112,8 @@ export default function PropertyDetailPage() {
                         className="text-xs bg-foreground text-background px-4 py-2 rounded-full font-medium hover:bg-foreground/85 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {isCreatingDossier
-                          ? "Cr\u00e9ation en cours..."
-                          : `Cr\u00e9er le dossier (${selectedForDossier.size} photo${selectedForDossier.size !== 1 ? "s" : ""})`}
+                          ? "Création en cours..."
+                          : `Créer le dossier (${selectedForDossier.size} photo${selectedForDossier.size !== 1 ? "s" : ""})`}
                       </button>
                     </>
                   )}

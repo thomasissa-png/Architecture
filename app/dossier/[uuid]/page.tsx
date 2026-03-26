@@ -189,14 +189,14 @@ export default async function DossierPage({ params }: PageProps) {
               <span>{formatSurface(dossier.bien_surface)}</span>
             )}
             {dossier.nb_pieces && (
-              <span>{dossier.nb_pieces} pi{"\u00E8"}ces</span>
+              <span>{dossier.nb_pieces} pièces</span>
             )}
             <span className="text-xs bg-foreground text-background px-3 py-1.5 rounded-xl font-medium">
               {dossier.bien_prix ? formatPrice(dossier.bien_prix) : "Prix sur demande"}
             </span>
             {dossier.prix_moyen_m2 && (
               <span className="text-xs bg-sage/10 text-sage px-3 py-1.5 rounded-xl font-medium">
-                {dossier.prix_moyen_m2.toLocaleString("fr-FR")} {"\u20AC"}/m{"\u00B2"} (quartier)
+                {dossier.prix_moyen_m2.toLocaleString("fr-FR")} €/m² (quartier)
               </span>
             )}
           </div>
