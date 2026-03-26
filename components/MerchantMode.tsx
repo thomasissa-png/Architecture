@@ -98,6 +98,7 @@ export default function MerchantMode() {
 
   // Dossier state
   const [dossierUuid, setDossierUuid] = useState<string | null>(null);
+  const [dossierIdentifier, setDossierIdentifier] = useState<string | null>(null); // slug or uuid for share links
   const [dossierPhotos, setDossierPhotos] = useState<DossierPhotoStatus[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationElapsed, setGenerationElapsed] = useState(0);
@@ -287,6 +288,7 @@ export default function MerchantMode() {
 
       const { dossier } = await createRes.json();
       setDossierUuid(dossier.uuid);
+      setDossierIdentifier(dossier.slug || dossier.uuid);
 
       // Step 2: Process and upload photos
       const processedPhotos = await Promise.all(
@@ -397,8 +399,8 @@ export default function MerchantMode() {
 
   // ── Share link ──
   const handleShareLink = useCallback(async () => {
-    if (!dossierUuid) return;
-    const shareUrl = `${window.location.origin}/dossier/${dossierUuid}`;
+    if (!dossierIdentifier) return;
+    const shareUrl = `${window.location.origin}/dossier/${dossierIdentifier}`;
 
     try {
       await navigator.clipboard.writeText(shareUrl);
@@ -1133,7 +1135,7 @@ export default function MerchantMode() {
           <DossierResult
             photos={dossierPhotos}
             bienNom={bienTitle}
-            dossierUuid={dossierUuid}
+            dossierUuid={dossierIdentifier || dossierUuid}
             onDownloadPdf={handleDownloadPdf}
             onShareLink={handleShareLink}
             onRegenerate={handleRegenerate}

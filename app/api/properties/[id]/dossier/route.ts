@@ -13,6 +13,7 @@ import { hasProAccess, getUserCredits } from "@/lib/credits";
 import { getPropertyById } from "@/lib/properties";
 import { getUserPhotoById } from "@/lib/user-photos";
 import { createDossier, addDossierPhoto, updateDossierStatus } from "@/lib/dossier";
+import { getMerchantProfile } from "@/lib/merchant";
 
 export const dynamic = "force-dynamic";
 
@@ -95,9 +96,13 @@ export async function POST(
       ? [coverPhotoId, ...orderedIds.filter((id) => id !== coverPhotoId)]
       : orderedIds;
 
-    // 5. Create dossier with property snapshot
+    // 5. Fetch merchant profile for slug
+    const merchant = await getMerchantProfile(session.user.id);
+
+    // 6. Create dossier with property snapshot
     const dossier = await createDossier({
       userId: session.user.id,
+      companyName: merchant?.raison_sociale || null,
       bienNom: property.address_normalized || property.address_raw || undefined,
       bienAdresse: property.address_raw || undefined,
       bienSurface: property.surface_m2 || undefined,
@@ -152,10 +157,12 @@ export async function POST(
       failCount: validPhotos.length - completedCount,
     });
 
-    // 8. Return dossier info with PDF URL
+    // 9. Return dossier info with PDF URL
     return NextResponse.json({
       dossier: {
         uuid: dossier.uuid,
+        slug: dossier.slug,
+        identifier: dossier.slug || dossier.uuid,
         pdfUrl: `/api/dossier/${dossier.uuid}/pdf`,
       },
     }, { status: 201 });

@@ -13,6 +13,7 @@ import ProGate from "@/components/ProGate";
 interface Dossier {
   id: number;
   uuid: string;
+  slug: string | null;
   bien_nom: string | null;
   bien_adresse: string | null;
   bien_type: string | null;
@@ -182,7 +183,7 @@ export default function MesDossiersPage() {
                 return (
                   <a
                     key={dossier.uuid}
-                    href={`/dossier/${dossier.uuid}`}
+                    href={`/dossier/${dossier.slug || dossier.uuid}`}
                     className="block p-5 rounded-2xl border border-foreground/5 hover:border-foreground/10 hover:bg-foreground/5 transition-all group"
                     data-testid="dossier-card"
                   >
@@ -222,7 +223,7 @@ export default function MesDossiersPage() {
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            const url = `${window.location.origin}/dossier/${dossier.uuid}`;
+                            const url = `${window.location.origin}/dossier/${dossier.slug || dossier.uuid}`;
                             navigator.clipboard.writeText(url).then(() => {
                               setCopiedUuid(dossier.uuid);
                               setTimeout(() => setCopiedUuid(null), 2000);

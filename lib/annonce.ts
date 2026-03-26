@@ -7,6 +7,7 @@
  */
 
 import { getPool, ensureTable } from "@/lib/db";
+import { generateSlug, extractShortId, resolveSlugCollision } from "@/lib/slug";
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -15,6 +16,7 @@ export type AnnonceStatus = "active" | "archived";
 export interface Annonce {
   id: number;
   uuid: string;
+  slug: string | null;
   user_id: string;
   property_id: string;
   title: string | null;
@@ -48,6 +50,12 @@ export async function ensureAnnonceTable(): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_annonces_property ON annonces (property_id);
   `);
 
+  // ── Slug column (idempotent migration) ──
+  await db.query(`
+    DO $$ BEGIN ALTER TABLE annonces ADD COLUMN slug TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$;
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_annonces_slug ON annonces (slug) WHERE slug IS NOT NULL;
+  `);
+
   annonceTableEnsured = true;
 }
 
@@ -63,16 +71,22 @@ export async function createAnnonce(params: {
   userId: string;
   propertyId: string;
   title?: string | null;
+  companyName?: string | null;
 }): Promise<Annonce> {
   await ensureAnnonceTable();
   const db = getPool();
   const uuid = generateUUID();
+  const shortId = extractShortId(uuid);
+
+  // Generate slug, handle collisions
+  let slug = generateSlug(params.companyName, params.title, shortId);
+  slug = await resolveSlugCollision(db, "annonces", slug);
 
   const result = await db.query(
-    `INSERT INTO annonces (uuid, user_id, property_id, title)
-     VALUES ($1, $2, $3, $4)
+    `INSERT INTO annonces (uuid, slug, user_id, property_id, title)
+     VALUES ($1, $2, $3, $4, $5)
      RETURNING *`,
-    [uuid, params.userId, params.propertyId, params.title ?? null]
+    [uuid, slug, params.userId, params.propertyId, params.title ?? null]
   );
 
   return result.rows[0] as Annonce;
@@ -86,6 +100,39 @@ export async function getAnnonceByUuid(uuid: string): Promise<Annonce | null> {
     [uuid]
   );
   return (result.rows[0] as Annonce) ?? null;
+}
+
+export async function getAnnonceBySlug(slug: string): Promise<Annonce | null> {
+  await ensureAnnonceTable();
+  const db = getPool();
+  const result = await db.query(
+    `SELECT * FROM annonces WHERE slug = $1`,
+    [slug]
+  );
+  return (result.rows[0] as Annonce) ?? null;
+}
+
+/**
+ * Resolve identifier: try slug first (faster, indexed), then UUID.
+ * Returns the annonce and whether a redirect to slug is needed.
+ */
+export async function getAnnonceByIdentifier(
+  identifier: string
+): Promise<{ annonce: Annonce | null; redirectToSlug: boolean }> {
+  // Try slug first (most common case for new links)
+  const bySlug = await getAnnonceBySlug(identifier);
+  if (bySlug) return { annonce: bySlug, redirectToSlug: false };
+
+  // Try UUID (backward compat for old links)
+  const byUuid = await getAnnonceByUuid(identifier);
+  if (byUuid && byUuid.slug) {
+    return { annonce: byUuid, redirectToSlug: true };
+  }
+
+  // UUID found but no slug yet — serve without redirect
+  if (byUuid) return { annonce: byUuid, redirectToSlug: false };
+
+  return { annonce: null, redirectToSlug: false };
 }
 
 export async function getAnnoncesByUserId(userId: string): Promise<Annonce[]> {

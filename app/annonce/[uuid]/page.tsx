@@ -7,9 +7,10 @@
  */
 
 import { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { getAnnonceByUuid, isAnnonceActive } from "@/lib/annonce";
+import { getAnnonceByIdentifier, isAnnonceActive } from "@/lib/annonce";
 import { getPropertyById } from "@/lib/properties";
 import { getUserPhotos } from "@/lib/user-photos";
 import { getMerchantProfile } from "@/lib/merchant";
@@ -35,7 +36,7 @@ function formatPrice(price: number): string {
 
 // ─── Dynamic metadata for OG previews ────────────────────────────────
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const annonce = await getAnnonceByUuid(params.uuid);
+  const { annonce } = await getAnnonceByIdentifier(params.uuid);
 
   if (!annonce || !isAnnonceActive(annonce)) {
     return {
@@ -81,7 +82,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 // ─── Server Component ────────────────────────────────────────────────
 export default async function AnnoncePage({ params }: PageProps) {
-  const annonce = await getAnnonceByUuid(params.uuid);
+  const { annonce, redirectToSlug } = await getAnnonceByIdentifier(params.uuid);
+
+  // 301 redirect from UUID to slug for SEO + clean URLs
+  if (redirectToSlug && annonce?.slug) {
+    redirect(`/annonce/${annonce.slug}`);
+  }
 
   // Not found
   if (!annonce) {
@@ -563,7 +569,7 @@ export default async function AnnoncePage({ params }: PageProps) {
         {/* Action buttons — client component */}
         {completedPhotos.length > 0 && (
           <AnnoncePublicView
-            annonceUuid={params.uuid}
+            annonceUuid={annonce.slug || annonce.uuid}
             description={description || ""}
             city={property.city}
             surfaceM2={property.surface_m2}

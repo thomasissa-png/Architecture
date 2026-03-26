@@ -12,6 +12,7 @@ import {
   createDossier,
   getDossiersByUser,
 } from "@/lib/dossier";
+import { getMerchantProfile } from "@/lib/merchant";
 
 export const dynamic = "force-dynamic";
 
@@ -62,6 +63,9 @@ export async function POST(request: NextRequest) {
       nbPieces,
     } = body;
 
+    // Fetch merchant profile for company name (used in slug generation)
+    const merchant = await getMerchantProfile(session.user.id);
+
     const dossier = await createDossier({
       userId: session.user.id,
       bienNom: bienNom || undefined,
@@ -78,6 +82,7 @@ export async function POST(request: NextRequest) {
       carteImageKey: carteImageKey || undefined,
       prixMoyenM2: prixMoyenM2 ? Number(prixMoyenM2) : undefined,
       nbPieces: nbPieces ? Number(nbPieces) : undefined,
+      companyName: merchant?.raison_sociale || null,
     });
 
     return NextResponse.json({ dossier }, { status: 201 });

@@ -477,7 +477,7 @@ export default function PropertyDetailPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        window.open(`/annonce/${data.uuid}`, '_blank');
+        window.open(`/annonce/${data.identifier || data.uuid}`, '_blank');
       } else if (res.status === 403) {
         setToastMsg(
           <span>

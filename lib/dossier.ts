@@ -6,6 +6,7 @@
  */
 
 import { getPool, ensureTable } from "@/lib/db";
+import { generateSlug, extractShortId, resolveSlugCollision } from "@/lib/slug";
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -15,6 +16,7 @@ export type DossierPhotoStatus = "pending" | "generating" | "completed" | "faile
 export interface Dossier {
   id: number;
   uuid: string;
+  slug: string | null;
   user_id: string;
   bien_nom: string | null;
   bien_adresse: string | null;
@@ -73,6 +75,7 @@ export interface CreateDossierInput {
   carteImageKey?: string;
   prixMoyenM2?: number;
   nbPieces?: number;
+  companyName?: string | null;
 }
 
 export interface DossierPhotoInput {
@@ -143,6 +146,12 @@ export async function ensureDossierTables(): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_dossier_photos_uuid ON dossier_photos (dossier_uuid);
   `);
 
+  // ── Slug column (idempotent migration) ──
+  await db.query(`
+    DO $$ BEGIN ALTER TABLE dossiers ADD COLUMN slug TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$;
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_dossiers_slug ON dossiers (slug) WHERE slug IS NOT NULL;
+  `);
+
   // ── F4.B: Enrichment columns (address geocoding, DVF, description, map) ──
   const enrichColumns = [
     { name: "latitude", type: "DECIMAL(10,7)" },
@@ -177,14 +186,21 @@ export async function createDossier(input: CreateDossierInput): Promise<Dossier>
   await ensureDossierTables();
   const db = getPool();
   const uuid = generateUUID();
+  const shortId = extractShortId(uuid);
+
+  // Build a title for the slug from available info
+  const slugTitle = input.bienNom || input.bienAdresse || null;
+  let slug = generateSlug(input.companyName, slugTitle, shortId);
+  slug = await resolveSlugCollision(db, "dossiers", slug);
 
   const result = await db.query(
-    `INSERT INTO dossiers (uuid, user_id, bien_nom, bien_adresse, bien_surface, bien_prix, bien_type, global_style_id,
+    `INSERT INTO dossiers (uuid, slug, user_id, bien_nom, bien_adresse, bien_surface, bien_prix, bien_type, global_style_id,
        latitude, longitude, ville, code_postal, description_commerciale, carte_image_key, prix_moyen_m2, nb_pieces)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
      RETURNING *`,
     [
       uuid,
+      slug,
       input.userId,
       input.bienNom || null,
       input.bienAdresse || null,
@@ -214,6 +230,39 @@ export async function getDossierByUuid(uuid: string): Promise<Dossier | null> {
     [uuid]
   );
   return (result.rows[0] as Dossier) ?? null;
+}
+
+export async function getDossierBySlug(slug: string): Promise<Dossier | null> {
+  await ensureDossierTables();
+  const db = getPool();
+  const result = await db.query(
+    `SELECT * FROM dossiers WHERE slug = $1`,
+    [slug]
+  );
+  return (result.rows[0] as Dossier) ?? null;
+}
+
+/**
+ * Resolve identifier: try slug first (faster, indexed), then UUID.
+ * Returns the dossier and whether a redirect to slug is needed.
+ */
+export async function getDossierByIdentifier(
+  identifier: string
+): Promise<{ dossier: Dossier | null; redirectToSlug: boolean }> {
+  // Try slug first (most common case for new links)
+  const bySlug = await getDossierBySlug(identifier);
+  if (bySlug) return { dossier: bySlug, redirectToSlug: false };
+
+  // Try UUID (backward compat for old links)
+  const byUuid = await getDossierByUuid(identifier);
+  if (byUuid && byUuid.slug) {
+    return { dossier: byUuid, redirectToSlug: true };
+  }
+
+  // UUID found but no slug yet — serve without redirect
+  if (byUuid) return { dossier: byUuid, redirectToSlug: false };
+
+  return { dossier: null, redirectToSlug: false };
 }
 
 export async function getDossiersByUser(userId: string): Promise<Dossier[]> {

@@ -7,10 +7,11 @@
  */
 
 import { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import {
-  getDossierByUuid,
+  getDossierByIdentifier,
   getDossierPhotos,
   isDossierExpired,
   getDossierTitle,
@@ -33,7 +34,7 @@ interface PageProps {
 
 // ─── Dynamic metadata for OG previews ────────────────────────────────
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const dossier = await getDossierByUuid(params.uuid);
+  const { dossier } = await getDossierByIdentifier(params.uuid);
 
   if (!dossier || isDossierExpired(dossier)) {
     return {
@@ -66,7 +67,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 // ─── Server Component ────────────────────────────────────────────────
 export default async function DossierPage({ params }: PageProps) {
-  const dossier = await getDossierByUuid(params.uuid);
+  const { dossier, redirectToSlug } = await getDossierByIdentifier(params.uuid);
+
+  // 301 redirect from UUID to slug for SEO + clean URLs
+  if (redirectToSlug && dossier?.slug) {
+    redirect(`/dossier/${dossier.slug}`);
+  }
 
   // Dossier not found
   if (!dossier) {
@@ -105,9 +111,12 @@ export default async function DossierPage({ params }: PageProps) {
     );
   }
 
+  // Canonical identifier for links: prefer slug, fallback to uuid
+  const dossierIdentifier = dossier.slug || dossier.uuid;
+
   // Load photos + merchant profile + property + session (for characteristics + owner check)
   const [photos, profile, linkedProperty, session] = await Promise.all([
-    getDossierPhotos(params.uuid),
+    getDossierPhotos(dossier.uuid),
     getMerchantProfile(dossier.user_id),
     dossier.bien_adresse
       ? getPropertyByUserAndAddress(dossier.user_id, dossier.bien_adresse)
@@ -313,7 +322,7 @@ export default async function DossierPage({ params }: PageProps) {
         {completedPhotos.length > 0 && (
           <div className="mb-6 space-y-4">
             <ShareButtons
-              sharePath={`/dossier/${params.uuid}`}
+              sharePath={`/dossier/${dossierIdentifier}`}
               shareTitle={title}
             />
             <RoomNav
@@ -343,7 +352,7 @@ export default async function DossierPage({ params }: PageProps) {
                 inputImageKey: p.input_image_key || "",
                 outputImageKey: p.output_image_key || "",
               }))}
-              dossierUuid={params.uuid}
+              dossierUuid={dossierIdentifier}
             />
             {dossier.status === "partial" && (
               <p className="text-sm text-muted mt-2">
@@ -357,7 +366,7 @@ export default async function DossierPage({ params }: PageProps) {
         {completedPhotos.length > 0 && (
           <div className="text-center mt-8 sm:mt-12">
             <a
-              href={`/api/dossier/${params.uuid}/pdf`}
+              href={`/api/dossier/${dossier.uuid}/pdf`}
               className="inline-flex items-center gap-2 bg-foreground text-background px-6 py-3 rounded-xl font-medium text-sm hover:opacity-90 transition-opacity"
               data-testid="dossier-download-pdf"
             >

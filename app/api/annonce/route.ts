@@ -11,6 +11,7 @@ import { hasProAccess } from "@/lib/credits";
 import { createAnnonce, getActiveAnnonceForProperty } from "@/lib/annonce";
 import { getPropertyById } from "@/lib/properties";
 import { getUserPhotos } from "@/lib/user-photos";
+import { getMerchantProfile } from "@/lib/merchant";
 
 export const dynamic = "force-dynamic";
 
@@ -70,8 +71,15 @@ export async function POST(request: NextRequest) {
   // Idempotence: return existing active annonce if one exists
   const existing = await getActiveAnnonceForProperty(session.user.id, propertyId);
   if (existing) {
-    return NextResponse.json({ uuid: existing.uuid }, { status: 200 });
+    return NextResponse.json({
+      uuid: existing.uuid,
+      slug: existing.slug,
+      identifier: existing.slug || existing.uuid,
+    }, { status: 200 });
   }
+
+  // Fetch merchant profile for company name (used in slug generation)
+  const merchant = await getMerchantProfile(session.user.id);
 
   // Build auto-generated title: Format A "T3 60 m² — Quartier, Ville"
   const piecesPart = property.room_count ? `T${property.room_count}` : null;
@@ -107,7 +115,12 @@ export async function POST(request: NextRequest) {
     userId: session.user.id,
     propertyId,
     title,
+    companyName: merchant?.raison_sociale || null,
   });
 
-  return NextResponse.json({ uuid: annonce.uuid }, { status: 201 });
+  return NextResponse.json({
+    uuid: annonce.uuid,
+    slug: annonce.slug,
+    identifier: annonce.slug || annonce.uuid,
+  }, { status: 201 });
 }

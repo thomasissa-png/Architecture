@@ -30,5 +30,7 @@ export async function GET(
 
   return NextResponse.json({
     uuid: annonce?.uuid || null,
+    slug: annonce?.slug || null,
+    identifier: annonce?.slug || annonce?.uuid || null,
   });
 }
