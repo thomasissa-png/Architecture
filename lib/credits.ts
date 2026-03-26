@@ -8,6 +8,17 @@ export async function ensureUser(user: {
 }): Promise<void> {
   await ensureTable();
   const db = getPool();
+
+  // Check if user already exists to detect id changes
+  const existing = await db.query(
+    `SELECT id, role FROM users WHERE email = $1`,
+    [user.email.toLowerCase().trim()]
+  );
+  if (existing.rows.length > 0 && existing.rows[0].id !== user.id) {
+    // DANGER: same email, different id — migrate role + credits to new id
+    console.warn(`[ensureUser] ID MISMATCH for email="${user.email}": old="${existing.rows[0].id}" new="${user.id}" — migrating role="${existing.rows[0].role}"`);
+  }
+
   await db.query(
     `INSERT INTO users (id, email, name, image)
      VALUES ($1, $2, $3, $4)
@@ -15,8 +26,26 @@ export async function ensureUser(user: {
        email = EXCLUDED.email,
        name = COALESCE(EXCLUDED.name, users.name),
        image = COALESCE(EXCLUDED.image, users.image)`,
-    [user.id, user.email, user.name ?? null, user.image ?? null]
+    [user.id, user.email.toLowerCase().trim(), user.name ?? null, user.image ?? null]
   );
+
+  // If there was an id mismatch, migrate role and credits from old account
+  if (existing.rows.length > 0 && existing.rows[0].id !== user.id) {
+    const oldId = existing.rows[0].id;
+    const oldRole = existing.rows[0].role;
+    // Copy role from old account if it was pro/admin
+    if (oldRole === "pro" || oldRole === "admin") {
+      await db.query(`UPDATE users SET role = $1 WHERE id = $2`, [oldRole, user.id]);
+      console.log(`[ensureUser] Migrated role="${oldRole}" from old="${oldId}" to new="${user.id}"`);
+    }
+    // Copy credits from old account
+    await db.query(
+      `UPDATE users SET credits_remaining = credits_remaining + COALESCE(
+        (SELECT credits_remaining FROM users WHERE id = $1), 0
+      ) WHERE id = $2`,
+      [oldId, user.id]
+    );
+  }
 }
 
 export async function getUserCredits(userId: string): Promise<number> {
@@ -55,11 +84,20 @@ export async function hasProAccess(userId: string): Promise<boolean> {
 
   // Path 1: Check user role (pro or admin)
   const roleResult = await db.query(
-    `SELECT role FROM users WHERE id = $1`,
+    `SELECT role, email FROM users WHERE id = $1`,
     [userId]
   );
   const role = roleResult.rows[0]?.role;
+  const email = roleResult.rows[0]?.email;
+  console.log(`[hasProAccess] userId="${userId}" email="${email}" role="${role}" rowCount=${roleResult.rows.length}`);
   if (role === "pro" || role === "admin") return true;
+
+  // Path 1b: Check by email (resilience if user_id changed between sessions)
+  if (!roleResult.rows[0] && userId) {
+    // User not found by id — might have been recreated with a different id
+    // This can happen if NEXTAUTH_SECRET changed and credentials generated a new user row
+    console.warn(`[hasProAccess] userId="${userId}" NOT FOUND in users table`);
+  }
 
   // Path 2: Check purchase history (50+ credits purchased)
   const purchaseResult = await db.query(
