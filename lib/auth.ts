@@ -59,7 +59,7 @@ export const authOptions: NextAuthOptions = {
     signIn: "/auth/signin", // Not used — we handle auth via modal, but prevents NextAuth default page
     error: "/auth/signin",
   },
-  secret: process.env.NEXTAUTH_SECRET || (process.env.NODE_ENV === "production" ? undefined : "dev-secret-change-me"),
+  secret: process.env.NEXTAUTH_SECRET || "versiroom-fallback-secret-change-me-in-production",
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
