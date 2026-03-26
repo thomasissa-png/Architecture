@@ -2,12 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=Lora:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&display=swap');
 
 :root {
   --background: #FAFAF8;
   --foreground: #1C1C1E;
   --sage: #7D9B76;
+  --muted: #6B6B6E;
+  --border: rgba(28, 28, 30, 0.08);
 }
 
 body {
@@ -71,6 +73,24 @@ html {
 .reveal.visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* Accessibility: reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in-up,
+  .reveal {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .animate-delay-100,
+  .animate-delay-200,
+  .animate-delay-300,
+  .animate-delay-400 {
+    animation-delay: 0ms !important;
+  }
 }
 
 /* Hero before scene — empty room feel */

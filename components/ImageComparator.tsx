@@ -24,6 +24,41 @@ function dataUriToBlob(dataUri: string): Blob {
   return new Blob([arr], { type: mime });
 }
 
+/**
+ * Adds a discrete watermark to an image (EU AI Act Art. 50 compliance).
+ * Returns a new data URI with the watermark applied.
+ */
+function addWatermark(dataUri: string): Promise<Blob> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext("2d")!;
+      ctx.drawImage(img, 0, 0);
+
+      const fontSize = Math.max(12, Math.round(img.width * 0.012));
+      ctx.font = `${fontSize}px Inter, system-ui, sans-serif`;
+      ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+      ctx.textAlign = "right";
+      const padding = Math.round(img.width * 0.015);
+      ctx.fillText(
+        "Généré par IA — Versiroom",
+        img.width - padding,
+        img.height - padding
+      );
+
+      canvas.toBlob(
+        (blob) => resolve(blob || dataUriToBlob(dataUri)),
+        "image/jpeg",
+        0.92
+      );
+    };
+    img.src = dataUri;
+  });
+}
+
 export default function ImageComparator({
   originalUrl,
   generatedUrl,
@@ -37,17 +72,16 @@ export default function ImageComparator({
     setCanShare(!!navigator.share);
   }, []);
 
-  const handleDownload = () => {
-    // Convert base64 to blob URL for reliable cross-browser download
-    const blob = dataUriToBlob(generatedUrl);
+  const handleDownload = async () => {
+    // Add watermark for EU AI Act Art. 50 compliance
+    const blob = await addWatermark(generatedUrl);
     const blobUrl = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = blobUrl;
-    link.download = `visirenov-${Date.now()}.png`;
+    link.download = `versiroom-${Date.now()}.jpg`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    // Revoke after a short delay to ensure download starts
     setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
   };
 
@@ -55,7 +89,7 @@ export default function ImageComparator({
     if (!navigator.share) return;
     try {
       const blob = dataUriToBlob(generatedUrl);
-      const file = new File([blob], "visirenov.png", { type: "image/png" });
+      const file = new File([blob], "versiroom.png", { type: "image/png" });
       await navigator.share({
         title: "Mon visuel VisiR\u00e9nov",
         text: "D\u00e9couvrez cette visualisation d\u2019int\u00e9rieur g\u00e9n\u00e9r\u00e9e par IA",
@@ -82,10 +116,34 @@ export default function ImageComparator({
     }
   };
 
-  const handleWhatsApp = () => {
-    // WhatsApp only supports text links — download image first, then share
+  const handleWhatsApp = async () => {
+    const blob = dataUriToBlob(generatedUrl);
+    const file = new File([blob], "versiroom.png", { type: "image/png" });
+
+    // Mobile: navigator.share with files sends the image directly via WhatsApp
+    if (navigator.share && navigator.canShare?.({ files: [file] })) {
+      try {
+        await navigator.share({
+          text: "D\u00e9couvre ce visuel d\u2019int\u00e9rieur g\u00e9n\u00e9r\u00e9 par VisiR\u00e9nov \ud83c\udfe0",
+          files: [file],
+        });
+        return;
+      } catch {
+        // User cancelled — fall through to desktop fallback
+      }
+    }
+
+    // Desktop fallback: copy image to clipboard, then open WhatsApp Web
+    try {
+      const pngBlob = new Blob([blob], { type: "image/png" });
+      await navigator.clipboard.write([
+        new ClipboardItem({ "image/png": pngBlob }),
+      ]);
+    } catch {
+      // Clipboard not available — proceed anyway
+    }
     const text = encodeURIComponent(
-      "D\u00e9couvre ce visuel d\u2019int\u00e9rieur g\u00e9n\u00e9r\u00e9 par VisiR\u00e9nov \ud83c\udfe0 \u2014 visirenov.fr"
+      "D\u00e9couvre ce visuel d\u2019int\u00e9rieur g\u00e9n\u00e9r\u00e9 par VisiR\u00e9nov \ud83c\udfe0 \u2014 versiroom.fr"
     );
     window.open(`https://wa.me/?text=${text}`, "_blank", "noopener");
   };
@@ -109,21 +167,28 @@ export default function ImageComparator({
           className="aspect-[4/3] sm:aspect-[16/10]"
           style={{ width: "100%" }}
           handle={
-            <div className="flex flex-col items-center h-full" role="slider" aria-label="Comparer avant et apr\u00e8s" aria-valuemin={0} aria-valuemax={100} aria-valuenow={50}>
-              <div className="w-px h-full bg-white/80" />
-              <div className="absolute top-1/2 -translate-y-1/2 w-11 h-11 sm:w-9 sm:h-9 bg-white rounded-full shadow-md flex items-center justify-center">
-                <svg className="w-4 h-4 text-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
+            <div className="flex flex-col items-center h-full" role="slider" aria-label="Comparer avant et apr\u00e8s \u2014 glissez horizontalement" aria-valuemin={0} aria-valuemax={100} aria-valuenow={50}>
+              <div className="w-0.5 h-full bg-white/90 shadow-sm" />
+              <div className="absolute top-1/2 -translate-y-1/2 w-12 h-12 sm:w-10 sm:h-10 bg-white rounded-full shadow-lg flex items-center justify-center cursor-grab active:cursor-grabbing">
+                {/* Left/right arrows — explicit horizontal drag affordance */}
+                <svg className="w-5 h-5 sm:w-4 sm:h-4 text-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                </svg>
+                <svg className="w-5 h-5 sm:w-4 sm:h-4 text-foreground -ml-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                 </svg>
               </div>
             </div>
           }
         />
-        <div className="flex justify-between px-5 py-2.5 bg-gray-50/50">
-          <span className="text-[10px] font-medium text-muted uppercase tracking-widest">
+        <p className="text-center text-xs text-muted font-light py-1.5 sm:hidden">
+          Glissez pour comparer
+        </p>
+        <div className="flex justify-between px-5 py-2.5 bg-foreground/5">
+          <span className="text-xs font-medium text-muted uppercase tracking-widest">
             Avant
           </span>
-          <span className="text-[10px] font-medium text-muted uppercase tracking-widest">
+          <span className="text-xs font-medium text-muted uppercase tracking-widest">
             Apr\u00e8s
           </span>
         </div>
@@ -194,7 +259,7 @@ export default function ImageComparator({
       </div>
 
       {model && (
-        <p className="text-center text-[10px] text-muted/70 font-light">
+        <p className="text-center text-xs text-muted/70 font-light">
           G&eacute;n&eacute;r&eacute; avec {model}
         </p>
       )}

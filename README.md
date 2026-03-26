@@ -1,4 +1,4 @@
-# VisiRénov — Home Staging IA pour Marchands de Biens
+# Versiroom — Home Staging IA pour Marchands de Biens
 
 Outil de home staging virtuel permettant aux professionnels de l'immobilier de transformer des photos de biens bruts en visuels meublés et décorés grâce à l'intelligence artificielle.
 
@@ -16,7 +16,7 @@ Outil de home staging virtuel permettant aux professionnels de l'immobilier de t
 ```bash
 # Cloner le projet
 git clone <url-du-repo>
-cd visirenov
+cd versiroom
 
 # Installer les dépendances
 npm install

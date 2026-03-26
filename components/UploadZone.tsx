@@ -6,12 +6,14 @@ import { useDropzone } from "react-dropzone";
 interface UploadZoneProps {
   files: File[];
   onFilesChange: (files: File[]) => void;
+  maxFiles?: number;
 }
 
-const MAX_FILES = 5;
+const DEFAULT_MAX_FILES = 5;
 const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 
-export default function UploadZone({ files, onFilesChange }: UploadZoneProps) {
+export default function UploadZone({ files, onFilesChange, maxFiles }: UploadZoneProps) {
+  const MAX_FILES = maxFiles ?? DEFAULT_MAX_FILES;
   const [uploadFeedback, setUploadFeedback] = useState<string | null>(null);
 
   // Auto-dismiss feedback
@@ -46,7 +48,8 @@ export default function UploadZone({ files, onFilesChange }: UploadZoneProps) {
         );
       }
     },
-    [files, onFilesChange]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [files, onFilesChange, MAX_FILES]
   );
 
   const { getRootProps, getInputProps, isDragActive, fileRejections } =
@@ -149,11 +152,11 @@ export default function UploadZone({ files, onFilesChange }: UploadZoneProps) {
               <button
                 onClick={() => removeFile(index)}
                 aria-label={`Supprimer ${file.name}`}
-                className="absolute -top-2 -right-2 w-7 h-7 sm:w-5 sm:h-5 bg-foreground text-background rounded-full flex items-center justify-center text-xs sm:text-[10px] sm:opacity-60 sm:group-hover:opacity-100 transition-opacity focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                className="absolute -top-2 -right-2 w-7 h-7 sm:w-5 sm:h-5 bg-foreground text-background rounded-full flex items-center justify-center text-xs sm:text-xs sm:opacity-60 sm:group-hover:opacity-100 transition-opacity focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
               >
                 &times;
               </button>
-              <p className="text-[10px] text-muted/70 mt-1.5 truncate font-light">
+              <p className="text-xs text-muted/70 mt-1.5 truncate font-light">
                 {file.name}
               </p>
             </div>
