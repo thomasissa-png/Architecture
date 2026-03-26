@@ -1101,7 +1101,7 @@ export default function Home() {
           {isGenerating && (
             <div className="space-y-6 py-8">
               {/* Blur preview placeholders */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className={`grid gap-4 max-w-4xl mx-auto ${files.length === 1 ? "grid-cols-1 max-w-2xl" : "grid-cols-1 sm:grid-cols-2"}`}>
                 {files.map((file, i) => {
                   const done = i < results.length;
                   const active = i >= currentProcessing && i < currentProcessing + 2 && !done;
@@ -1196,9 +1196,9 @@ export default function Home() {
           {results.length > 0 && (
             <div id="step-results" className="animate-fade-in-up scroll-mt-28">
               <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-6">
-                03 — R&eacute;sultat
+                03 — Résultat
               </h3>
-              <div className="space-y-10">
+              <div className={`space-y-10 ${results.length === 1 ? "max-w-2xl mx-auto" : ""}`}>
                 {results.map((result, index) => {
                   const resultVersions = versions[index] || [];
                   const activeIdx = activeVersions[index] || 0;
