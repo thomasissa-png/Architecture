@@ -151,6 +151,19 @@ export default async function DossierPage({ params }: PageProps) {
 
       {/* Content */}
       <main className="max-w-6xl mx-auto px-5 sm:px-8 py-8 sm:py-12">
+        {/* Hero photo — first completed photo above title (Marc P0-2) */}
+        {completedPhotos[0]?.output_image_key && (
+          <div className="mb-6 rounded-2xl overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`/api/logs/image?path=${encodeURIComponent(completedPhotos[0].output_image_key)}`}
+              alt={title}
+              className="w-full aspect-[16/9] object-cover"
+              loading="eager"
+            />
+          </div>
+        )}
+
         {/* Title Section */}
         <div className="mb-8 sm:mb-12">
           <h1 className="text-2xl sm:text-3xl font-semibold text-foreground tracking-tight mb-2">
