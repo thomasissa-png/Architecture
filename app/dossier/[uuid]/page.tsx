@@ -171,11 +171,15 @@ export default async function DossierPage({ params }: PageProps) {
             {title}
           </h1>
 
-          {/* Description commerciale */}
+          {/* Description commerciale — split into visual paragraphs */}
           {dossier.description_commerciale && (
-            <p className="text-sm text-muted font-light mb-3 max-w-2xl">
-              {dossier.description_commerciale}
-            </p>
+            <div className="max-w-2xl space-y-4 mb-3">
+              {dossier.description_commerciale.split(/\n\n+/).map((paragraph, idx) => (
+                <p key={idx} className="text-sm text-muted font-light leading-relaxed">
+                  {paragraph.trim()}
+                </p>
+              ))}
+            </div>
           )}
 
           {/* Property details */}
@@ -206,6 +210,55 @@ export default async function DossierPage({ params }: PageProps) {
             Généré le {new Date(dossier.created_at).toLocaleDateString("fr-FR")}
           </p>
         </div>
+
+        {/* Analyse du marché — prix au m² comparatif */}
+        {dossier.bien_prix && dossier.bien_surface && dossier.bien_surface > 0 && (
+          (() => {
+            const prixM2Bien = Math.round(dossier.bien_prix! / dossier.bien_surface!);
+            const prixM2Quartier = dossier.prix_moyen_m2;
+            const ecart = prixM2Quartier
+              ? Math.round(((prixM2Bien - prixM2Quartier) / prixM2Quartier) * 100)
+              : null;
+
+            return (
+              <div className="mb-8 bg-foreground/[0.02] border border-foreground/5 rounded-2xl p-5" data-testid="dossier-market-analysis">
+                <h2 className="text-sm font-medium text-foreground mb-4">Analyse du marché</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {/* Prix au m² du bien */}
+                  <div>
+                    <p className="text-xs text-muted font-light mb-1">Prix au m² du bien</p>
+                    <p className="text-lg font-semibold text-foreground">
+                      {prixM2Bien.toLocaleString("fr-FR")} €/m²
+                    </p>
+                  </div>
+
+                  {/* Prix moyen quartier */}
+                  {prixM2Quartier && (
+                    <div>
+                      <p className="text-xs text-muted font-light mb-1">Prix moyen du quartier</p>
+                      <p className="text-lg font-semibold text-foreground">
+                        {prixM2Quartier.toLocaleString("fr-FR")} €/m²
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Ecart */}
+                  {ecart !== null && (
+                    <div>
+                      <p className="text-xs text-muted font-light mb-1">Écart</p>
+                      <p className={`text-lg font-semibold ${ecart < 0 ? "text-sage" : ecart > 0 ? "text-orange-500" : "text-foreground"}`}>
+                        {ecart > 0 ? "+" : ""}{ecart} %
+                        <span className="text-xs font-light text-muted ml-1.5">
+                          {ecart < 0 ? "sous le marché" : ecart > 0 ? "au-dessus du marché" : "dans la moyenne"}
+                        </span>
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })()
+        )}
 
         {/* Map preview — iframe OSM (no server dependency) */}
         {dossier.latitude && dossier.longitude ? (

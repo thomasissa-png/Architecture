@@ -482,7 +482,20 @@ export default function MerchantMode() {
   }, [bienSurface, bienType, bienNbPieces]);
 
   // ── Derived ──
-  const bienTitle = bienNom.trim() || `Dossier de presentation — ${new Date().toLocaleDateString("fr-FR")}`;
+  // Structured title: "[Type] [Surface] m² — [Adresse], [Ville]"
+  const bienTitle = (() => {
+    if (bienNom.trim()) return bienNom.trim();
+    const type = bienType ? bienType.charAt(0).toUpperCase() + bienType.slice(1) : null;
+    const surface = bienSurface ? `${bienSurface} m²` : null;
+    const city = enrichedCity?.trim() || null;
+    const adresse = bienAdresse?.trim() || null;
+    const location = adresse && city ? `${adresse}, ${city}` : adresse || city || null;
+    const propertyDesc = [type, surface].filter(Boolean).join(" ");
+    if (propertyDesc && location) return `${propertyDesc} \u2014 ${location}`;
+    if (propertyDesc) return propertyDesc;
+    if (location) return location;
+    return "Dossier de présentation";
+  })();
   const creditsNeeded = files.length;
 
   // ─── RENDER ────────────────────────────────────────────────────────

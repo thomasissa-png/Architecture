@@ -381,9 +381,35 @@ export function isDossierExpired(dossier: Dossier): boolean {
 }
 
 export function getDossierTitle(dossier: Dossier): string {
-  if (dossier.bien_nom) return dossier.bien_nom;
-  const date = new Date(dossier.created_at);
-  return `Dossier de présentation — ${date.toLocaleDateString("fr-FR")}`;
+  // Format: "[Type] [Surface] m² — [Adresse ou Quartier], [Ville]"
+  const type = dossier.bien_type
+    ? dossier.bien_type.charAt(0).toUpperCase() + dossier.bien_type.slice(1)
+    : null;
+  const surface = dossier.bien_surface ? `${dossier.bien_surface} m²` : null;
+  const adresse = dossier.bien_adresse?.trim() || null;
+  const ville = dossier.ville?.trim() || null;
+
+  // Build location part: "Adresse, Ville" or just "Ville"
+  const location = adresse && ville
+    ? `${adresse}, ${ville}`
+    : adresse || ville || null;
+
+  // Build property part: "Appartement 60 m²" or "Appartement" or "60 m²"
+  const propertyParts = [type, surface].filter(Boolean).join(" ");
+
+  if (propertyParts && location) {
+    return `${propertyParts} — ${location}`;
+  }
+  if (propertyParts) {
+    return propertyParts;
+  }
+  if (location) {
+    return location;
+  }
+
+  // Fallback: use bien_nom if set, otherwise generic
+  if (dossier.bien_nom?.trim()) return dossier.bien_nom.trim();
+  return "Dossier de présentation";
 }
 
 export function formatPrice(priceCents: number): string {
