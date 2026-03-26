@@ -290,7 +290,7 @@ export default async function DossierPage({ params }: PageProps) {
             </p>
           )}
           <p className="text-sm text-muted/60 font-light">
-            Projection d&apos;am{"\u00E9"}nagement r{"\u00E9"}alis{"\u00E9"}e par Versiroom — le bien est livr{"\u00E9"} brut. Visuels non contractuels.
+            Visuels d&apos;am{"\u00E9"}nagement g{"\u00E9"}n{"\u00E9"}r{"\u00E9"}s par intelligence artificielle — le bien est livr{"\u00E9"} brut. Ces images sont {"\u00E0"} titre indicatif et ne sont pas contractuelles.
           </p>
           <p className="text-xs text-muted/40 font-light mt-1">
             <a

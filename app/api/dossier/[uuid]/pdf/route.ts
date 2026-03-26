@@ -368,13 +368,29 @@ export async function GET(
       secondaryColor
     );
 
+    // ── Style labels for PDF display ───────────────────────────────
+    const STYLE_LABELS: Record<string, string> = {
+      scandinavian: "Style scandinave",
+      contemporary: "Style contemporain",
+      industrial: "Style industriel",
+      japandi: "Style japandi",
+      art_deco: "Style Art D\u00e9co",
+      mid_century: "Style Mid-Century",
+      bohemian: "Style boh\u00e8me",
+      mediterranean: "Style m\u00e9diterran\u00e9en",
+      cosy: "Style cosy",
+      wabi_sabi: "Style wabi-sabi",
+      maximalist: "Style maximaliste",
+      haussmannien: "Style haussmannien",
+    };
+
     // ── Photo Pages (before/after side by side) ────────────────────
     for (const photo of completedPhotos) {
       const page = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
 
       // Room label + style in header
       const roomLabel = photo.room_label || `Photo ${photo.photo_index + 1}`;
-      const styleLabel = photo.style_id ? ` — ${photo.style_id}` : "";
+      const styleLabel = photo.style_id ? ` — ${STYLE_LABELS[photo.style_id] || photo.style_id}` : "";
       page.drawText(roomLabel + styleLabel, {
         x: MARGIN,
         y: PAGE_HEIGHT - 35,
