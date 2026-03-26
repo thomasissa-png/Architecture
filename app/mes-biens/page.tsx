@@ -9,6 +9,7 @@
 import { useSession } from "next-auth/react";
 import { useState, useEffect, useCallback, useRef } from "react";
 import AuthButton from "@/components/AuthButton";
+import ProGate from "@/components/ProGate";
 import { TYPE_LABELS } from "@/lib/constants";
 
 interface Property {
@@ -175,6 +176,7 @@ export default function MesBiensPage() {
   }
 
   return (
+    <ProGate featureName="Mes biens">
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-foreground/5">
@@ -381,5 +383,6 @@ export default function MesBiensPage() {
         )}
       </main>
     </div>
+    </ProGate>
   );
 }
