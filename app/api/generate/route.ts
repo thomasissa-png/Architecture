@@ -1264,16 +1264,29 @@ export async function POST(request: NextRequest) {
         promptVersion: PROMPT_VERSION,
       }).catch((err) => console.error("DB log (iteration) failed:", err));
 
-      // Fire-and-forget: save iteration as a NEW user_photos entry (Bug 4 fix)
+      // Save iteration as a NEW user_photos entry (Bug 4 fix)
+      // CRITICAL: await output saveImage before calling saveUserPhoto.
+      // Skip entirely if outputKey is null to avoid "Image non disponible" in gallery.
       if (session?.user?.id) {
         (async () => {
           try {
             const { saveImage: saveImg } = await import("@/lib/db");
             const ts = Date.now();
-            const [outputKey, pass1ImageKey] = await Promise.all([
-              saveImg(outputBase64, `user_photo_iter${iterationNumber}_${ts}_output`).catch(() => null),
-              cached.imageBase64 ? saveImg(cached.imageBase64, `user_photo_iter${iterationNumber}_${ts}_pass1`).catch(() => null) : null,
-            ]);
+
+            const outputKey = await saveImg(outputBase64, `user_photo_iter${iterationNumber}_${ts}_output`).catch((err) => {
+              console.error("[saveUserPhoto iteration] output saveImage failed:", err);
+              return null;
+            });
+
+            if (!outputKey) {
+              console.error("[saveUserPhoto iteration] SKIPPING — outputKey is null");
+              return;
+            }
+
+            const pass1ImageKey = cached.imageBase64
+              ? await saveImg(cached.imageBase64, `user_photo_iter${iterationNumber}_${ts}_pass1`).catch(() => null)
+              : null;
+
             await saveUserPhoto({
               userId: session.user.id,
               inputImageKey: null, // original input not available in iteration cache
@@ -1444,18 +1457,35 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Fire-and-forget: save to user_photos gallery if user is connected
+    // Save to user_photos gallery if user is connected
+    // CRITICAL: await saveImage for the output BEFORE calling saveUserPhoto.
+    // If outputKey is null (Object Storage failure), skip saving entirely —
+    // a gallery entry without an output image shows "Image non disponible".
     let photoIdPromise: Promise<string | null> = Promise.resolve(null);
     if (session?.user?.id) {
       photoIdPromise = (async () => {
         try {
           const { saveImage: saveImg } = await import("@/lib/db");
           const ts = Date.now();
-          const [inputKey, outputKey, pass1ImageKey] = await Promise.all([
+
+          // Save output image first — this is the critical one
+          const outputKey = await saveImg(outputBase64, `user_photo_${ts}_output`).catch((err) => {
+            console.error("[saveUserPhoto] output saveImage failed:", err);
+            return null;
+          });
+
+          // If output save failed, do NOT create a gallery entry with null output
+          if (!outputKey) {
+            console.error("[saveUserPhoto] SKIPPING saveUserPhoto — outputKey is null (Object Storage failed)");
+            return null;
+          }
+
+          // Save input and pass1 in parallel (non-critical — null is acceptable)
+          const [inputKey, pass1ImageKey] = await Promise.all([
             saveImg(base64Image, `user_photo_${ts}_input`).catch(() => null),
-            saveImg(outputBase64, `user_photo_${ts}_output`).catch(() => null),
             pass1Base64 ? saveImg(pass1Base64, `user_photo_${ts}_pass1`).catch(() => null) : null,
           ]);
+
           return await saveUserPhoto({
             userId: session.user.id,
             inputImageKey: inputKey,
@@ -1474,10 +1504,11 @@ export async function POST(request: NextRequest) {
       })();
     }
 
-    // Wait briefly for photoId (50ms max) so we can include it in the response
+    // Wait for photoId (5s max) so the gallery entry is saved before the response
+    // 50ms was too short — Object Storage uploads take 200-2000ms typically.
     const photoId = await Promise.race([
       photoIdPromise,
-      new Promise<null>((resolve) => setTimeout(() => resolve(null), 50)),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)),
     ]);
 
     const response = NextResponse.json({

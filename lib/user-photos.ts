@@ -66,6 +66,9 @@ export async function saveUserPhoto(params: {
   isOutdoor?: boolean;
   propertyId?: string | null;
 }): Promise<string> {
+  // Diagnostic log: track what keys are being saved
+  console.log(`[saveUserPhoto] userId=${params.userId}, styleId=${params.styleId}, outputImageKey=${params.outputImageKey ?? "NULL"}, inputImageKey=${params.inputImageKey ?? "NULL"}`);
+
   await ensureUserPhotosTable();
   const db = getPool();
 
@@ -135,7 +138,13 @@ export async function getUserPhotos(
     values
   );
 
-  return result.rows as UserPhoto[];
+  const photos = result.rows as UserPhoto[];
+  const nullOutputCount = photos.filter((p) => !p.output_image_key).length;
+  if (nullOutputCount > 0) {
+    console.warn(`[getUserPhotos] ${nullOutputCount}/${photos.length} photos have NULL output_image_key for userId=${userId}`);
+  }
+
+  return photos;
 }
 
 export async function getUserPhotoById(photoId: string, userId: string): Promise<UserPhoto | null> {

@@ -22,9 +22,11 @@ export async function GET(req: NextRequest) {
   }
 
   try {
+    console.log(`[/api/logs/image] Looking for file="${file}", keys to try: ${JSON.stringify(keysToTry)}`);
     for (const key of keysToTry) {
       const buffer = await getImage(key);
       if (buffer) {
+        console.log(`[/api/logs/image] Found key="${key}", size=${buffer.length} bytes`);
         // Detect content type from extension
         const contentType = key.endsWith(".png") ? "image/png" : "image/jpeg";
         return new NextResponse(new Uint8Array(buffer), {
