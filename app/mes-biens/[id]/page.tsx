@@ -626,6 +626,13 @@ export default function PropertyDetailPage() {
                 >
                   Modifier la description
                 </button>
+                <button
+                  onClick={handleRegenerateDescription}
+                  disabled={isRegeneratingDesc}
+                  className="text-xs text-muted/50 font-light mt-1 ml-3 hover:text-sage hover:underline transition-colors disabled:opacity-50"
+                >
+                  {isRegeneratingDesc ? "Régénération..." : "Regénérer"}
+                </button>
               </div>
             ) : (
               <div className="mb-4">
@@ -638,7 +645,7 @@ export default function PropertyDetailPage() {
                   className="text-xs bg-sage text-white px-3 py-1.5 rounded-full font-medium hover:bg-sage/85 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   data-testid="regenerate-description"
                 >
-                  {isRegeneratingDesc ? "Generation en cours..." : "Generer la description"}
+                  {isRegeneratingDesc ? "Génération en cours..." : "Générer la description"}
                 </button>
               </div>
             )}

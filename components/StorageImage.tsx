@@ -74,7 +74,6 @@ export default function StorageImage({
 
   return (
     <>
-      {!loaded && fallback}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         ref={imgRef}
@@ -84,7 +83,6 @@ export default function StorageImage({
         loading={loading}
         onLoad={handleLoad}
         onError={handleError}
-        style={!loaded ? { display: "none" } : undefined}
       />
     </>
   );
