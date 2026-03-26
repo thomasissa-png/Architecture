@@ -197,7 +197,7 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
 
   return (
     <div
-      className="fixed inset-0 z-[100] overflow-y-auto"
+      className="fixed inset-0 z-[100]"
       role="dialog"
       aria-modal="true"
       aria-labelledby="auth-modal-title"
@@ -209,12 +209,12 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
         onClick={onClose}
       />
 
-      {/* Centering wrapper — min-h-full ensures vertical centering even on small screens */}
-      <div className="relative z-10 flex min-h-full items-center justify-center p-2 sm:p-4">
+      {/* Centering wrapper — bottom-anchored on mobile (safe from Dynamic Island), centered on desktop */}
+      <div className="relative z-10 flex items-end sm:items-center justify-center min-h-[100dvh] p-0 sm:p-4">
         {/* Modal */}
         <div
           ref={modalRef}
-          className="relative w-full max-w-md bg-background rounded-3xl shadow-2xl border border-foreground/5 max-h-[95vh] sm:max-h-[90vh] overflow-y-auto"
+          className="relative w-full sm:max-w-md bg-background rounded-t-3xl sm:rounded-3xl shadow-2xl border border-foreground/5 max-h-[90dvh] overflow-y-auto"
           style={{ animation: "fadeInUp 300ms cubic-bezier(0.16, 1, 0.3, 1)" }}
         >
         {/* Close button — 44px touch target, absolute top-right so it never scrolls away */}
@@ -228,7 +228,7 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
           </svg>
         </button>
 
-        <div className="px-6 sm:px-8 pt-6 pb-6">
+        <div className="px-6 sm:px-8 pt-6 pb-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
           {/* Header */}
           <div className="text-center mb-8">
             <h2 id="auth-modal-title" className="text-2xl font-bold text-foreground tracking-tight mb-2">
