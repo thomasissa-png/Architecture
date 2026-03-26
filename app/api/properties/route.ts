@@ -73,8 +73,9 @@ export async function GET() {
   }
 
   try {
+    console.log(`[GET /api/properties] userId="${session.user.id}" email="${session.user.email}"`);
     const properties = await getPropertiesByUser(session.user.id);
-    console.log(`[GET /api/properties] user=${session.user.id} found=${properties.length} biens`);
+    console.log(`[GET /api/properties] found=${properties.length} biens for userId="${session.user.id}"`);
     return NextResponse.json({ properties });
   } catch (err) {
     console.error("Error listing properties:", err);
