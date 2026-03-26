@@ -61,6 +61,28 @@ export const OUTDOOR_STYLES: Record<string, OutdoorStyle> = {
       "Bohemian garden furniture: two round weatherproof floor cushions 55cm in terracotta and mustard outdoor polyester fabric, low reclaimed-wood pallet coffee table 90x60cm aged grey finish, outdoor flat-weave polypropylene rug 160x230cm in warm earthy tones, freestanding bamboo rack 180cm with three hanging macrame plant holders, potted Heuchera 'Palace Purple' 40cm tall in woven sea-grass basket, potted Dryopteris filix-mas (male fern) and Rudbeckia mix in terracotta pots 30cm, battery string lights 2200K warm white draped loosely on the bamboo rack (unlit daytime). Layered informal atmosphere.",
   },
 
+  provencal: {
+    id: "provencal",
+    label: "Proven\u00E7al",
+    emoji: "\uD83C\uDFE1",
+    description: "Pierre calcaire, fer forg\u00E9, lavande, cypr\u00E8s",
+    surfacePrompt:
+      "Proven\u00E7al outdoor: warm aged limestone walls with natural patina and subtle weathering, terracotta floor tiles with irregular edges and warm tones laid in traditional staggered bond, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs, open sky preserved as-is.",
+    furniturePrompt:
+      "Proven\u00E7al outdoor furniture: wrought iron table 120cm with glass top, 4 wrought iron chairs with cream seat cushions (outdoor-rated), large terracotta pot 90cm with Italian cypress 180cm, lavender rows in weathered stone troughs 60cm, wall-mounted stone fountain basin 50cm with copper spout (dry/non-functional in daylight), Proven\u00E7al blue ceramic vase 30cm on table, olive branch arrangement in rustic ceramic pitcher, outdoor flat-weave polypropylene rug 200x300cm in warm ochre, wrought iron wall lantern (unlit daytime).",
+  },
+
+  industriel_urbain: {
+    id: "industriel_urbain",
+    label: "Industriel Urbain",
+    emoji: "\uD83C\uDFD7\uFE0F",
+    description: "B\u00E9ton brut, acier galvanis\u00E9, plantes graphiques",
+    surfacePrompt:
+      "Industrial urban outdoor: raw concrete walls keeping existing texture and color unchanged, smooth grey concrete floor, exposed ceiling with any visible pipes or beams preserved, open sky preserved as-is.",
+    furniturePrompt:
+      "Industrial urban outdoor furniture: galvanized steel planter boxes 80x40cm with Stipa tenuissima and Sedum acre, concrete bench 180cm with black steel frame, industrial steel side table 50cm, succulent arrangement in rusted corten steel container 40cm, Equisetum hyemale (horsetail) in tall narrow steel planter 100cm, black steel and wood slatted privacy screen 180cm, industrial pendant light on steel arm (unlit daytime), outdoor flat-weave polypropylene rug 160x230cm in charcoal grey.",
+  },
+
   minimaliste_urbain: {
     id: "minimaliste_urbain",
     label: "Minimaliste Urbain",
@@ -103,4 +125,6 @@ export const OUTDOOR_STYLE_LIST: OutdoorStyle[] = [
   OUTDOOR_STYLES.minimaliste_urbain,
   OUTDOOR_STYLES.rooftop,
   OUTDOOR_STYLES.cosy_balcon,
+  OUTDOOR_STYLES.provencal,
+  OUTDOOR_STYLES.industriel_urbain,
 ];

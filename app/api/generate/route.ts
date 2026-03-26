@@ -29,7 +29,7 @@ import {
  * Used by audit agents (Yann Duval, Lucas Moreau) to correlate generation quality with prompt version.
  * History: v1-v5 (Sprints 1-7), v6-v10 (Sprints 8-12), v11-v15 (Sprints 13-16), v16-v17 (Sprint 17),
  * v18 (current — Sprint 18+, post all fixes) */
-export const PROMPT_VERSION = "v21";
+export const PROMPT_VERSION = "v22";
 
 // ─── Timeout wrapper for external API calls ─────────────────────────
 const API_TIMEOUT_MS = 120_000;
