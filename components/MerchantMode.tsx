@@ -155,11 +155,22 @@ export default function MerchantMode() {
         const res = await fetch(`/api/dossier/${uuid}`);
         if (!res.ok) return;
 
-        const { dossier, photos } = await res.json();
-        setDossierPhotos(photos);
+        const { dossier, photos: rawPhotos } = await res.json();
+        // Map snake_case DB fields to camelCase component fields
+        const mappedPhotos: DossierPhotoStatus[] = rawPhotos.map((p: Record<string, unknown>) => ({
+          id: p.id as number,
+          photoIndex: (p.photoIndex ?? p.photo_index ?? 0) as number,
+          roomLabel: (p.roomLabel ?? p.room_label ?? null) as string | null,
+          status: (p.status ?? "pending") as DossierPhotoStatus["status"],
+          errorMessage: (p.errorMessage ?? p.error_message ?? null) as string | null,
+          inputImageKey: (p.inputImageKey ?? p.input_image_key ?? null) as string | null,
+          outputImageKey: (p.outputImageKey ?? p.output_image_key ?? null) as string | null,
+          styleId: (p.styleId ?? p.style_id ?? null) as string | null,
+        }));
+        setDossierPhotos(mappedPhotos);
 
         // Check if generation is complete
-        const allDone = photos.every(
+        const allDone = mappedPhotos.every(
           (p: DossierPhotoStatus) => p.status === "completed" || p.status === "failed"
         );
 
@@ -321,11 +332,20 @@ export default function MerchantMode() {
         return;
       }
 
-      // Refresh photos
+      // Refresh photos (map snake_case → camelCase)
       const detailRes = await fetch(`/api/dossier/${dossierUuid}`);
       if (detailRes.ok) {
-        const { photos } = await detailRes.json();
-        setDossierPhotos(photos);
+        const { photos: rawP } = await detailRes.json();
+        setDossierPhotos(rawP.map((p: Record<string, unknown>) => ({
+          id: p.id as number,
+          photoIndex: (p.photoIndex ?? p.photo_index ?? 0) as number,
+          roomLabel: (p.roomLabel ?? p.room_label ?? null) as string | null,
+          status: (p.status ?? "pending") as DossierPhotoStatus["status"],
+          errorMessage: (p.errorMessage ?? p.error_message ?? null) as string | null,
+          inputImageKey: (p.inputImageKey ?? p.input_image_key ?? null) as string | null,
+          outputImageKey: (p.outputImageKey ?? p.output_image_key ?? null) as string | null,
+          styleId: (p.styleId ?? p.style_id ?? null) as string | null,
+        })));
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Une erreur est survenue. Réessayez — vos crédits n'ont pas été consommés.");
