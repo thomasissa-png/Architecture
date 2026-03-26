@@ -359,9 +359,42 @@ Moyenne — 5 agents (reviewer, Yann, Lucas, fullstack, reviewer), 2 features su
 - Corrections Camille F1/F2 deja appliquees (Nephrolepis → Dryopteris, coton → polypropylene)
 
 ### Phase S26b.4 — InlineGenerator (generation depuis fiche bien)
-- Agents : @fullstack
 - Statut : TERMINE
-- Composant InlineGenerator.tsx : 4 etapes (select → style → generating → results)
-- Remplace le redirect homepage par panneau inline sur /mes-biens/[id]
-- Semaphore max 2 concurrent, AbortController, auto-association au bien
-- Zero nouveau endpoint API
+
+---
+
+## Session 2026-03-26c — QA + SEO/GEO + Marchand polish + 10/10
+
+### Phases TERMINEES
+- **QA audit complet** : 8.4→9.2/10 (0 P0, 13 P2 corriges)
+- **SEO strategy** : 76/100, keyword map, cocon semantique 4 niveaux
+- **GEO strategy** : cite par 0 LLM, plan Product Hunt + presse
+- **Growth content** : 48 articles/6 mois, 48 posts social/mois, pipeline auto
+- **3 landing pages personas** SSG : /marchand, /architecte, /particulier
+- **Page /comparatif** SEO+GEO : tableau factuel 4 concurrents
+- **Blog infra** : /blog, /blog/[slug], lib/blog.ts, API generate, 3 articles seed
+- **ProGate** /mes-biens + /mes-dossiers : 9.2/10 design
+- **StorageImage** composant : retry + fallback, deploye sur 5 fichiers
+- **Migration user_id transactionnelle** : photos+properties+dossiers+purchases+merchant
+- **saveUserPhoto AVANT response** : fix Replit autoscale (cause racine gallery vide)
+- **PDF WinAnsi sanitizer** : sanitizeForPdf() sur tous drawText
+- **~100 accents corriges** (27 fichiers)
+- **Room labels FR** : translateRoomLabel() partout
+- **Titre Format A** : T3 60 m² — Quartier, Ville
+- **Description enrichie** : benchmark SeLoger/Sotheby's, 200-350 mots, 4 sections
+- **Analyse marche** : section prix/m² bien vs quartier sur dossier
+- **Paragraphes aeres** : split \n\n sur annonce + dossier
+- **Bouton Modifier proprietaire** sur annonce+dossier publics
+- **Selecteur bien existant** dans MerchantMode
+- **Bouton supprimer bien** sur fiche bien
+- **Bouton regenerer description** sur fiche bien
+- **Pricing section polish** : CTAs alignes, 4 features uniformes, Pro highlight
+- **Auth modal bottom sheet** mobile
+- **Hero images statiques** : /imageavant.jpg + /imageapres.jpg dans repo
+
+### Travaux EN COURS
+- **Carte OSM sur page annonce** : identifie P0 par Marc, pas encore implemente
+- **Comparateur mobile** : curseur touch ne fonctionne pas (events touch manquants)
+- **Blog seed** : `npx tsx scripts/seed-blog.ts` a executer sur Replit
+- **Domaine versiroom.fr** : blocker SEO/GEO n°1, action fondateur
+- **Footer pages personas** : manquant sur /marchand /architecte /particulier
