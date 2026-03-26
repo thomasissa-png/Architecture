@@ -56,6 +56,18 @@ async function fetchImageAsBase64(imageKey: string): Promise<string> {
 }
 
 /**
+ * Convert a File to a base64 data URI via FileReader.
+ */
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+/**
  * Get image dimensions from a data URI.
  */
 function getImageDimensions(dataUri: string): Promise<{ width: number; height: number }> {
@@ -181,7 +193,9 @@ export default function InlineGenerator({
 
   const handleGenerate = useCallback(async () => {
     const selectedPhotos = photos.filter((p) => selectedPhotoIds.has(p.id) && p.input_image_key);
-    if (selectedPhotos.length === 0) return;
+    const useUploaded = uploadedFiles.length > 0 && selectedPhotos.length === 0;
+
+    if (!useUploaded && selectedPhotos.length === 0) return;
 
     const { surfacePrompt, furniturePrompt, styleId } = getPrompts();
 
@@ -189,9 +203,10 @@ export default function InlineGenerator({
     setIsGenerating(true);
     setElapsedSeconds(0);
 
-    // Initialize results
-    const initialResults: GenerationResult[] = selectedPhotos.map((p) => ({
-      photoId: p.id,
+    // Initialize results — either from existing photos or uploaded files
+    const itemCount = useUploaded ? uploadedFiles.length : selectedPhotos.length;
+    const initialResults: GenerationResult[] = Array.from({ length: itemCount }, (_, i) => ({
+      photoId: useUploaded ? `upload-${i}` : selectedPhotos[i].id,
       originalDataUri: "",
       generatedDataUri: null,
       model: null,
@@ -211,7 +226,7 @@ export default function InlineGenerator({
 
     const semaphore = createSemaphore(2);
 
-    const generateOne = async (photo: UserPhoto, index: number) => {
+    const generateOneFromDataUri = async (dataUri: string, index: number) => {
       await semaphore.acquire();
 
       if (abortController.signal.aborted) {
@@ -220,8 +235,6 @@ export default function InlineGenerator({
       }
 
       try {
-        // Fetch input image as base64
-        const dataUri = await fetchImageAsBase64(photo.input_image_key!);
         const { width, height } = await getImageDimensions(dataUri);
 
         // Update result with original image
@@ -270,7 +283,7 @@ export default function InlineGenerator({
         );
       } catch (err: unknown) {
         if (abortController.signal.aborted) return;
-        const message = err instanceof Error ? err.message : "Erreur lors de la generation";
+        const message = err instanceof Error ? err.message : "Erreur lors de la génération";
         setResults((prev: GenerationResult[]) =>
           prev.map((r: GenerationResult, i: number) =>
             i === index ? { ...r, error: message, status: "error" as const } : r
@@ -281,10 +294,17 @@ export default function InlineGenerator({
       }
     };
 
+    // Build generation tasks depending on source
+    const tasks = useUploaded
+      ? uploadedFiles.map((file, index) =>
+          fileToBase64(file).then((dataUri) => generateOneFromDataUri(dataUri, index))
+        )
+      : selectedPhotos.map((photo, index) =>
+          fetchImageAsBase64(photo.input_image_key!).then((dataUri) => generateOneFromDataUri(dataUri, index))
+        );
+
     // Launch all in parallel (semaphore limits to 2 concurrent)
-    await Promise.allSettled(
-      selectedPhotos.map((photo, index) => generateOne(photo, index))
-    );
+    await Promise.allSettled(tasks);
 
     // Stop timer
     if (timerRef.current) {
@@ -295,7 +315,7 @@ export default function InlineGenerator({
 
     // If any succeeded, move to results
     setStep("results");
-  }, [photos, selectedPhotoIds, getPrompts]);
+  }, [photos, selectedPhotoIds, uploadedFiles, getPrompts]);
 
   // ── Retry a single failed photo ──
 
@@ -354,7 +374,7 @@ export default function InlineGenerator({
           )
         );
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : "Erreur lors de la generation";
+        const message = err instanceof Error ? err.message : "Erreur lors de la génération";
         setResults((prev: GenerationResult[]) =>
           prev.map((r: GenerationResult, i: number) =>
             i === index ? { ...r, error: message, status: "error" as const } : r
@@ -398,7 +418,7 @@ export default function InlineGenerator({
   const handleClose = useCallback(() => {
     if (isGenerating) {
       const confirmed = window.confirm(
-        "La generation est en cours, voulez-vous annuler ?"
+        "La génération est en cours, voulez-vous annuler ?"
       );
       if (!confirmed) return;
       abortRef.current?.abort();
@@ -579,7 +599,7 @@ export default function InlineGenerator({
               <svg className="w-3.5 h-3.5" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="8,2 4,6 8,10" />
               </svg>
-              Retour a la selection
+              Retour à la sélection
             </button>
 
             <StylePicker
@@ -598,7 +618,7 @@ export default function InlineGenerator({
                 disabled={!hasStyleSelected}
                 className="text-xs bg-sage text-white px-5 py-2.5 rounded-full font-medium hover:bg-sage/85 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
               >
-                Lancer la generation ({selectedCount} photo{selectedCount > 1 ? "s" : ""})
+                Lancer la génération ({photosWithInput.length === 0 && uploadedFiles.length > 0 ? uploadedFiles.length : selectedCount} photo{(photosWithInput.length === 0 && uploadedFiles.length > 0 ? uploadedFiles.length : selectedCount) > 1 ? "s" : ""})
               </button>
             </div>
           </div>
@@ -651,7 +671,7 @@ export default function InlineGenerator({
                       )}
                       {result.status === "success" && (
                         <div className="bg-sage/90 backdrop-blur-sm rounded-full px-3 py-1.5">
-                          <span className="text-[10px] text-white font-medium">Termine</span>
+                          <span className="text-[10px] text-white font-medium">Terminé</span>
                         </div>
                       )}
                       {result.status === "error" && (
@@ -668,7 +688,7 @@ export default function InlineGenerator({
             {/* Progress summary */}
             <div className="text-center">
               <span className="text-xs text-muted font-light">
-                {successCount} termine{successCount > 1 ? "s" : ""}
+                {successCount} terminé{successCount > 1 ? "s" : ""}
                 {errorCount > 0 && ` / ${errorCount} erreur${errorCount > 1 ? "s" : ""}`}
                 {pendingCount > 0 && ` / ${pendingCount} en cours`}
               </span>
@@ -692,7 +712,7 @@ export default function InlineGenerator({
                 {result.status === "error" && (
                   <div className="flex items-center justify-between p-4 bg-red-50 rounded-xl border border-red-100">
                     <span className="text-xs text-red-600 font-light">
-                      {result.error || "Erreur lors de la generation"}
+                      {result.error || "Erreur lors de la génération"}
                     </span>
                     <button
                       onClick={() => handleRetry(i)}
@@ -715,7 +735,7 @@ export default function InlineGenerator({
                   onClick={handleAssociateResults}
                   className="text-xs bg-sage text-white px-5 py-2.5 rounded-full font-medium hover:bg-sage/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                 >
-                  Associer les resultats a ce bien ({successCount})
+                  Associer les résultats à ce bien ({successCount})
                 </button>
               )}
               <button

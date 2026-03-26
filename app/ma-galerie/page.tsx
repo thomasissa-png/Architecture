@@ -241,11 +241,11 @@ export default function GaleriePage() {
             <a href="/mes-biens" className="text-xs text-muted font-light hover:text-foreground transition-colors">
               Mes biens
             </a>
-            <a href="/mes-dossiers" className="text-xs text-muted font-light hover:text-foreground transition-colors">
-              Mes dossiers
-            </a>
             <a href="/ma-galerie" className="text-xs text-sage font-medium">
               Ma galerie
+            </a>
+            <a href="/mes-dossiers" className="text-xs text-muted font-light hover:text-foreground transition-colors">
+              Mes dossiers
             </a>
             <AuthButton />
           </nav>
