@@ -1,0 +1,310 @@
+import type { Metadata } from "next";
+
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://architecture-toum92.replit.app";
+
+export const metadata: Metadata = {
+  title: "Visualiser sa d\u00E9coration par IA | Versiroom",
+  description:
+    "Testez 12 styles de deco dans VOS pieces. Uploadez une photo, choisissez un style, voyez votre piece meublee en 90 secondes. Gratuit, instantane, sans inscription.",
+  keywords: [
+    "decoration interieure IA",
+    "visualiser decoration",
+    "home staging particulier",
+    "inspiration deco IA",
+    "deco interieure virtuelle",
+    "meuble par IA gratuit",
+  ],
+  openGraph: {
+    title: "Visualisez votre future d\u00E9coration avec l'IA | Versiroom",
+    description:
+      "Testez 12 styles de deco dans VOS pieces. Gratuit, instantane, sans inscription. Resultat en 90 secondes.",
+    type: "website",
+    locale: "fr_FR",
+    siteName: "Versiroom",
+    url: `${BASE_URL}/particulier`,
+  },
+  alternates: {
+    canonical: `${BASE_URL}/particulier`,
+  },
+};
+
+const faqItems = [
+  {
+    question: "Est-ce vraiment gratuit ?",
+    answer:
+      "Oui, vous avez 3 generations offertes sans carte bancaire et sans inscription. Vous pouvez tester Versiroom immediatement. Si vous voulez generer plus de visuels, des packs sont disponibles a partir de 4,90 euros.",
+  },
+  {
+    question: "Comment ca marche concretement ?",
+    answer:
+      "Prenez une photo de votre piece vide avec votre telephone. Uploadez-la sur Versiroom, choisissez un style parmi 12 ambiances (Scandinave, Japandi, Boheme, Cosy...), et recevez un visuel de votre piece meublee en 90 secondes. Vous pouvez ensuite telecharger l'image en HD ou la partager.",
+  },
+  {
+    question: "Le resultat ressemble-t-il vraiment a ma piece ?",
+    answer:
+      "Oui. Le pipeline 2 passes de Versiroom preserve la geometrie exacte de votre piece : les murs, les fenetres, la lumiere, l'angle de la photo. Seuls les finitions (couleur des murs, sol) et le mobilier changent. C'est votre piece, dans le style que vous avez choisi.",
+  },
+];
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqItems.map((item) => ({
+    "@type": "Question",
+    name: item.question,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: item.answer,
+    },
+  })),
+};
+
+export default function ParticulierPage() {
+  return (
+    <div className="min-h-screen bg-background">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
+      {/* Header */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-foreground/5">
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 py-3 sm:py-4 flex items-center justify-between">
+          <a
+            href="/"
+            className="text-xl font-semibold text-foreground tracking-tighter"
+          >
+            Versiroom
+          </a>
+          <nav className="flex items-center gap-4 sm:gap-6">
+            <a
+              href="/pricing"
+              className="text-xs text-muted font-light hover:text-foreground transition-colors"
+            >
+              Tarifs
+            </a>
+            <a
+              href="/#outil"
+              className="text-xs font-medium text-background bg-foreground px-4 py-2 rounded-full hover:bg-foreground/85 transition-colors"
+            >
+              Essayer
+            </a>
+          </nav>
+        </div>
+      </header>
+
+      {/* Hero */}
+      <section className="pt-28 sm:pt-36 pb-16 sm:pb-24 px-5 sm:px-8">
+        <div className="max-w-3xl mx-auto text-center">
+          <p className="text-xs text-sage font-medium uppercase tracking-widest mb-4">
+            Pour les particuliers
+          </p>
+          <h1 className="text-3xl sm:text-5xl font-bold text-foreground tracking-tight mb-5 leading-tight">
+            Visualisez votre future d&eacute;coration avec l&apos;IA
+          </h1>
+          <p className="text-lg sm:text-xl text-muted font-light leading-relaxed max-w-2xl mx-auto mb-10">
+            Testez 12 styles de d&eacute;co dans VOS pi&egrave;ces.
+            Gratuit, instantan&eacute;, sans inscription.
+          </p>
+          <a
+            href="/#outil"
+            className="inline-flex items-center gap-2 bg-foreground text-background px-8 py-3.5 rounded-full text-sm font-medium hover:bg-foreground/85 transition-all duration-200 active:scale-[0.98]"
+          >
+            Essayer gratuitement
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </a>
+          <p className="text-xs text-muted font-light mt-4">
+            3 g&eacute;n&eacute;rations offertes &middot; sans carte bancaire
+          </p>
+        </div>
+      </section>
+
+      {/* Le probleme */}
+      <section className="pb-16 sm:pb-24 px-5 sm:px-8">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-8 text-center">
+            Le probl&egrave;me que vous connaissez
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            {[
+              {
+                icon: (
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5a1.5 1.5 0 001.5-1.5V5.25a1.5 1.5 0 00-1.5-1.5H3.75a1.5 1.5 0 00-1.5 1.5v14.25c0 .828.672 1.5 1.5 1.5z" />
+                  </svg>
+                ),
+                title: "Pinterest, c\u2019est beau mais pas chez vous",
+                desc: "Vous trouvez de belles photos de decoration sur Pinterest ou Instagram. Mais c'est toujours chez quelqu'un d'autre. Impossible de voir le resultat dans votre piece.",
+              },
+              {
+                icon: (
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                ),
+                title: "Les apps deco existantes d\u00E9\u00E7oivent",
+                desc: "Les applications de decoration existantes sont soit moches (rendu cartoon), soit payantes des le depart, soit limitees a 2-3 styles generiques.",
+              },
+              {
+                icon: (
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
+                  </svg>
+                ),
+                title: "Difficile de choisir un style",
+                desc: "Scandinave ou Japandi ? Contemporain ou Cosy ? Sans voir le resultat dans votre piece, impossible de trancher. Vous achetez des meubles a l'aveugle.",
+              },
+            ].map((item) => (
+              <div
+                key={item.title}
+                className="p-6 rounded-2xl border border-foreground/10 bg-background"
+              >
+                <div className="text-foreground/60 mb-3">{item.icon}</div>
+                <p className="text-sm font-semibold text-foreground mb-2">{item.title}</p>
+                <p className="text-xs text-muted font-light leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Separator */}
+      <div className="max-w-24 mx-auto border-t border-foreground/10" />
+
+      {/* La solution */}
+      <section className="py-16 sm:py-24 px-5 sm:px-8">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-4 text-center">
+            Essayez avant d&apos;acheter
+          </h2>
+          <p className="text-muted font-light text-center mb-12 max-w-xl mx-auto">
+            Voyez &agrave; quoi votre pi&egrave;ce ressemblerait dans 12 styles diff&eacute;rents.
+          </p>
+          <div className="space-y-6">
+            {[
+              {
+                num: "01",
+                title: "Votre pi\u00E8ce, vos styles",
+                desc: "Uploadez une photo de votre salon, chambre ou sejour. L'IA genere un visuel meuble directement dans votre piece, pas dans celle de quelqu'un d'autre.",
+              },
+              {
+                num: "02",
+                title: "12 ambiances \u00E0 explorer",
+                desc: "Scandinave, Japandi, Boheme, Cosy, Contemporain, Industriel, Art Deco, Mid-Century, Mediterraneen, Wabi-Sabi, Maximaliste, Haussmannien. Testez-les toutes.",
+              },
+              {
+                num: "03",
+                title: "R\u00E9sultat en 90 secondes",
+                desc: "Pas besoin d'attendre. Le visuel meuble est genere en moins de 2 minutes. Comparez avec la photo originale grace au slider avant/apres.",
+              },
+              {
+                num: "04",
+                title: "Partagez et sauvegardez",
+                desc: "Telechargez l'image en HD, partagez-la sur Instagram ou WhatsApp, ou envoyez-la a votre partenaire pour choisir ensemble.",
+              },
+            ].map((item) => (
+              <div key={item.num} className="flex gap-5 items-start">
+                <span className="text-sage text-xs font-medium tracking-widest mt-1 shrink-0">
+                  {item.num}
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-foreground mb-1">{item.title}</p>
+                  <p className="text-sm text-muted font-light leading-relaxed">{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Separator */}
+      <div className="max-w-24 mx-auto border-t border-foreground/10" />
+
+      {/* Citation */}
+      <section className="py-16 sm:py-24 px-5 sm:px-8">
+        <div className="max-w-2xl mx-auto text-center">
+          <blockquote className="text-lg sm:text-xl text-foreground font-light italic leading-relaxed">
+            &laquo; Je veux voir &agrave; quoi MON salon ressemblerait en scandinave, pas le salon de quelqu&apos;un d&apos;autre sur Pinterest. &raquo;
+          </blockquote>
+          <p className="text-xs text-muted font-light mt-4">
+            L&eacute;a, 32 ans &mdash; Nantes
+          </p>
+        </div>
+      </section>
+
+      {/* Separator */}
+      <div className="max-w-24 mx-auto border-t border-foreground/10" />
+
+      {/* FAQ */}
+      <section className="py-16 sm:py-24 px-5 sm:px-8">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-10 text-center">
+            Questions fr&eacute;quentes
+          </h2>
+          <div className="space-y-8">
+            {faqItems.map((item) => (
+              <div key={item.question}>
+                <h3 className="text-sm font-semibold text-foreground mb-2">
+                  {item.question}
+                </h3>
+                <p className="text-sm text-muted font-light leading-relaxed">
+                  {item.answer}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA final */}
+      <section className="pb-20 sm:pb-32 px-5 sm:px-8">
+        <div className="max-w-xl mx-auto text-center">
+          <p className="text-lg font-semibold text-foreground mb-3">
+            Envie de voir votre future d&eacute;co ?
+          </p>
+          <p className="text-sm text-muted font-light mb-8">
+            3 g&eacute;n&eacute;rations offertes, sans carte bancaire, r&eacute;sultat en 90 secondes.
+          </p>
+          <a
+            href="/#outil"
+            className="inline-flex items-center gap-2 bg-foreground text-background px-8 py-3.5 rounded-full text-sm font-medium hover:bg-foreground/85 transition-all duration-200 active:scale-[0.98]"
+          >
+            Essayer gratuitement
+          </a>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-foreground/5 py-10 px-5 sm:px-8">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted font-light">
+          <div>
+            <p>Pour les architectes, marchands de biens et particuliers</p>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
+            <a href="/" className="hover:text-foreground transition-colors py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded">
+              Accueil
+            </a>
+            <a href="/marchand" className="hover:text-foreground transition-colors py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded">
+              Marchands
+            </a>
+            <a href="/architecte" className="hover:text-foreground transition-colors py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded">
+              Architectes
+            </a>
+            <a href="/pricing" className="hover:text-foreground transition-colors py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded">
+              Tarifs
+            </a>
+            <a href="/blog" className="hover:text-foreground transition-colors py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded">
+              Blog
+            </a>
+            <a href="/mentions-legales" className="hover:text-foreground transition-colors py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded">
+              Mentions l&eacute;gales
+            </a>
+            <span>&copy; Versiroom 2026</span>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
