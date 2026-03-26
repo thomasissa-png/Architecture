@@ -8,42 +8,95 @@ export async function ensureUser(user: {
 }): Promise<void> {
   await ensureTable();
   const db = getPool();
+  const email = user.email.toLowerCase().trim();
 
-  // Check if user already exists to detect id changes
+  // Check if user already exists with a DIFFERENT id (provider switch: credentials→Google or vice versa)
   const existing = await db.query(
-    `SELECT id, role FROM users WHERE email = $1`,
-    [user.email.toLowerCase().trim()]
-  );
-  if (existing.rows.length > 0 && existing.rows[0].id !== user.id) {
-    // DANGER: same email, different id — migrate role + credits to new id
-    console.warn(`[ensureUser] ID MISMATCH for email="${user.email}": old="${existing.rows[0].id}" new="${user.id}" — migrating role="${existing.rows[0].role}"`);
-  }
-
-  await db.query(
-    `INSERT INTO users (id, email, name, image)
-     VALUES ($1, $2, $3, $4)
-     ON CONFLICT (id) DO UPDATE SET
-       email = EXCLUDED.email,
-       name = COALESCE(EXCLUDED.name, users.name),
-       image = COALESCE(EXCLUDED.image, users.image)`,
-    [user.id, user.email.toLowerCase().trim(), user.name ?? null, user.image ?? null]
+    `SELECT id, role, credits_remaining FROM users WHERE email = $1`,
+    [email]
   );
 
-  // If there was an id mismatch, migrate role and credits from old account
   if (existing.rows.length > 0 && existing.rows[0].id !== user.id) {
     const oldId = existing.rows[0].id;
     const oldRole = existing.rows[0].role;
-    // Copy role from old account if it was pro/admin
-    if (oldRole === "pro" || oldRole === "admin") {
-      await db.query(`UPDATE users SET role = $1 WHERE id = $2`, [oldRole, user.id]);
-      console.log(`[ensureUser] Migrated role="${oldRole}" from old="${oldId}" to new="${user.id}"`);
+    const oldCredits = existing.rows[0].credits_remaining || 0;
+    console.warn(`[ensureUser] ID MISMATCH for email="${email}": old="${oldId}" new="${user.id}" — migrating everything`);
+
+    // Transaction: migrate all data from old id to new id, then delete old user
+    const client = await db.connect();
+    try {
+      await client.query("BEGIN");
+
+      // 1. Create new user (or update if exists)
+      await client.query(
+        `INSERT INTO users (id, email, name, image, role, credits_remaining)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         ON CONFLICT (id) DO UPDATE SET
+           email = EXCLUDED.email,
+           name = COALESCE(EXCLUDED.name, users.name),
+           image = COALESCE(EXCLUDED.image, users.image),
+           role = CASE WHEN EXCLUDED.role IN ('pro','admin') THEN EXCLUDED.role ELSE users.role END,
+           credits_remaining = users.credits_remaining + EXCLUDED.credits_remaining`,
+        [user.id, email, user.name ?? null, user.image ?? null, oldRole || "user", oldCredits]
+      );
+
+      // 2. Migrate user_photos ownership
+      await client.query(
+        `UPDATE user_photos SET user_id = $1 WHERE user_id = $2`,
+        [user.id, oldId]
+      );
+      // 3. Migrate properties ownership
+      await client.query(
+        `UPDATE properties SET user_id = $1 WHERE user_id = $2`,
+        [user.id, oldId]
+      );
+      // 4. Migrate dossiers ownership
+      await client.query(
+        `UPDATE dossiers SET user_id = $1 WHERE user_id = $2`,
+        [user.id, oldId]
+      );
+      // 5. Migrate purchases
+      await client.query(
+        `UPDATE purchases SET user_id = $1 WHERE user_id = $2`,
+        [user.id, oldId]
+      );
+      // 6. Migrate merchant_profiles
+      await client.query(
+        `UPDATE merchant_profiles SET user_id = $1 WHERE user_id = $2`,
+        [user.id, oldId]
+      );
+
+      // 7. Delete old user row (all references migrated)
+      await client.query(`DELETE FROM users WHERE id = $1`, [oldId]);
+
+      await client.query("COMMIT");
+      console.log(`[ensureUser] Migrated all data from "${oldId}" to "${user.id}" (role=${oldRole}, credits=${oldCredits}, photos+properties+dossiers+purchases+merchant)`);
+    } catch (err) {
+      await client.query("ROLLBACK");
+      console.error("[ensureUser] Migration failed, rolling back:", err instanceof Error ? err.message : err);
+      // Fallback: just upsert without migration
+      await db.query(
+        `INSERT INTO users (id, email, name, image)
+         VALUES ($1, $2, $3, $4)
+         ON CONFLICT (id) DO UPDATE SET
+           email = EXCLUDED.email,
+           name = COALESCE(EXCLUDED.name, users.name),
+           image = COALESCE(EXCLUDED.image, users.image)`,
+        [user.id, email, user.name ?? null, user.image ?? null]
+      );
+    } finally {
+      client.release();
     }
-    // Copy credits from old account
+  } else {
+    // Normal case: same id or new user — simple upsert
     await db.query(
-      `UPDATE users SET credits_remaining = credits_remaining + COALESCE(
-        (SELECT credits_remaining FROM users WHERE id = $1), 0
-      ) WHERE id = $2`,
-      [oldId, user.id]
+      `INSERT INTO users (id, email, name, image)
+       VALUES ($1, $2, $3, $4)
+       ON CONFLICT (id) DO UPDATE SET
+         email = EXCLUDED.email,
+         name = COALESCE(EXCLUDED.name, users.name),
+         image = COALESCE(EXCLUDED.image, users.image)`,
+      [user.id, email, user.name ?? null, user.image ?? null]
     );
   }
 }
