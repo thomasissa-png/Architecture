@@ -102,6 +102,9 @@ export default function PropertyDetailPage() {
   // Description regeneration
   const [isRegeneratingDesc, setIsRegeneratingDesc] = useState(false);
 
+  // Delete property
+  const [isDeletingProperty, setIsDeletingProperty] = useState(false);
+
   // Inline generator
   const [showGenerator, setShowGenerator] = useState(false);
 
@@ -442,6 +445,24 @@ export default function PropertyDetailPage() {
       setToastMsg("Erreur réseau.");
     } finally {
       setIsArchivingAnnonce(false);
+    }
+  };
+
+  const handleDeleteProperty = async () => {
+    if (!window.confirm("Supprimer ce bien ? Cette action est irréversible. Les photos associées seront dissociées.")) return;
+    setIsDeletingProperty(true);
+    try {
+      const res = await fetch(`/api/properties/${propertyId}`, { method: "DELETE" });
+      if (res.ok) {
+        window.location.href = "/mes-biens";
+      } else {
+        const data = await res.json();
+        setToastMsg(data.error || "Erreur lors de la suppression.");
+      }
+    } catch {
+      setToastMsg("Erreur réseau.");
+    } finally {
+      setIsDeletingProperty(false);
     }
   };
 
@@ -1197,6 +1218,16 @@ export default function PropertyDetailPage() {
             {toastMsg}
           </div>
         )}
+        {/* Delete property — bottom of page, discrete */}
+        <div className="mt-16 pt-8 border-t border-foreground/5">
+          <button
+            onClick={handleDeleteProperty}
+            disabled={isDeletingProperty}
+            className="text-xs text-red-400 font-light hover:text-red-500 transition-colors disabled:opacity-50"
+          >
+            {isDeletingProperty ? "Suppression..." : "Supprimer ce bien"}
+          </button>
+        </div>
       </main>
     </div>
   );

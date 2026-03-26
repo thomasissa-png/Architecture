@@ -36,6 +36,35 @@ const AI_DISCLAIMER = "Visuels générés par IA à titre indicatif — Powered 
 
 // ─── Helpers ─────────────────────────────────────────────────────────
 
+/**
+ * Sanitize text for WinAnsi encoding (pdf-lib StandardFonts limitation).
+ * Replaces non-WinAnsi characters with ASCII equivalents.
+ */
+function sanitizeForPdf(text: string): string {
+  return text
+    .replace(/\u202F/g, " ")  // narrow no-break space → regular space
+    .replace(/\u00A0/g, " ")  // no-break space → regular space
+    .replace(/\u2019/g, "'")  // right single quotation → apostrophe
+    .replace(/\u2018/g, "'")  // left single quotation → apostrophe
+    .replace(/\u201C/g, '"')  // left double quotation → quote
+    .replace(/\u201D/g, '"')  // right double quotation → quote
+    .replace(/\u2013/g, "-")  // en dash → hyphen
+    .replace(/\u2014/g, "-")  // em dash → hyphen
+    .replace(/\u2026/g, "...") // ellipsis → three dots
+    .replace(/\u0153/g, "oe") // oe ligature
+    .replace(/\u0152/g, "OE") // OE ligature
+    .replace(/[^\x00-\xFF]/g, ""); // strip any remaining non-Latin1 chars
+}
+
+/** Safe drawText that sanitizes for WinAnsi encoding */
+function safeDrawText(
+  page: PDFPage,
+  text: string,
+  options: { x: number; y: number; size: number; font: PDFFont; color: ReturnType<typeof rgb>; maxWidth?: number }
+) {
+  page.drawText(sanitizeForPdf(text), options);
+}
+
 function hexToRgb(hex: string): { r: number; g: number; b: number } {
   const clean = hex.replace("#", "");
   const r = parseInt(clean.substring(0, 2), 16) / 255;
@@ -82,7 +111,7 @@ function drawFooter(
   });
 
   // AI disclaimer (left)
-  page.drawText(AI_DISCLAIMER, {
+  safeDrawText(page,AI_DISCLAIMER, {
     x: MARGIN,
     y: 12,
     size: 7,
@@ -94,7 +123,7 @@ function drawFooter(
   if (merchantName || merchantTel) {
     const coordParts = [merchantName, merchantTel].filter(Boolean).join(" — ");
     const textWidth = font.widthOfTextAtSize(coordParts, 7);
-    page.drawText(coordParts, {
+    safeDrawText(page,coordParts, {
       x: PAGE_WIDTH - MARGIN - textWidth,
       y: 12,
       size: 7,
@@ -195,7 +224,7 @@ export async function GET(
       }
     } else {
       // Fallback: Versiroom text logo
-      coverPage.drawText("Versiroom", {
+      safeDrawText(coverPage,"Versiroom", {
         x: MARGIN,
         y: headerY,
         size: 16,
@@ -217,7 +246,7 @@ export async function GET(
       let infoY = headerY;
       for (const line of infoLines) {
         const lineWidth = font.widthOfTextAtSize(line, 9);
-        coverPage.drawText(line, {
+        safeDrawText(coverPage,line, {
           x: PAGE_WIDTH - MARGIN - lineWidth,
           y: infoY,
           size: 9,
@@ -255,7 +284,7 @@ export async function GET(
     // -- Title + details under hero --
     let yPos = heroStartY - heroHeight - 30;
 
-    coverPage.drawText(title, {
+    safeDrawText(coverPage,title, {
       x: MARGIN,
       y: yPos,
       size: 24,
@@ -281,7 +310,7 @@ export async function GET(
       if (line.trim()) lines.push(line.trim());
 
       for (const l of lines) {
-        coverPage.drawText(l, {
+        safeDrawText(coverPage,l, {
           x: MARGIN,
           y: yPos,
           size: 11,
@@ -304,7 +333,7 @@ export async function GET(
     if (infoParts.length > 0) {
       // Draw info pills as text with separators
       const infoText = infoParts.join("  |  ");
-      coverPage.drawText(infoText, {
+      safeDrawText(coverPage,infoText, {
         x: MARGIN,
         y: yPos,
         size: 10,
@@ -316,7 +345,7 @@ export async function GET(
 
     // Address
     if (dossier.bien_adresse) {
-      coverPage.drawText(dossier.bien_adresse, {
+      safeDrawText(coverPage,dossier.bien_adresse, {
         x: MARGIN,
         y: yPos,
         size: 10,
@@ -328,7 +357,7 @@ export async function GET(
 
     // Price
     if (dossier.bien_prix) {
-      coverPage.drawText(formatPrice(dossier.bien_prix), {
+      safeDrawText(coverPage,formatPrice(dossier.bien_prix), {
         x: MARGIN,
         y: yPos,
         size: 14,
@@ -339,7 +368,7 @@ export async function GET(
     }
 
     // Date
-    coverPage.drawText(dateStr, {
+    safeDrawText(coverPage,dateStr, {
       x: MARGIN,
       y: yPos,
       size: 9,
@@ -400,7 +429,7 @@ export async function GET(
       // Room label + style in header
       const roomLabel = translateRoomLabel(photo.room_label, `Photo ${photo.photo_index + 1}`);
       const styleLabel = photo.style_id ? ` — ${STYLE_LABELS[photo.style_id] || photo.style_id}` : "";
-      page.drawText(roomLabel + styleLabel, {
+      safeDrawText(page,roomLabel + styleLabel, {
         x: MARGIN,
         y: PAGE_HEIGHT - 35,
         size: 14,
@@ -434,7 +463,7 @@ export async function GET(
       }
 
       // "Avant home staging" label
-      page.drawText("Avant home staging", {
+      safeDrawText(page,"Avant home staging", {
         x: MARGIN + imgAreaWidth / 2 - 40,
         y: imgY - 5,
         size: 8,
@@ -464,7 +493,7 @@ export async function GET(
 
       // "Apres home staging" label
       const afterLabelColor = rgb(secondaryColor.r, secondaryColor.g, secondaryColor.b);
-      page.drawText("Après home staging", {
+      safeDrawText(page,"Après home staging", {
         x: MARGIN * 2 + imgAreaWidth + imgAreaWidth / 2 - 40,
         y: imgY - 5,
         size: 8,
@@ -485,7 +514,7 @@ export async function GET(
       // Page number
       const pageNum = `${completedPhotos.indexOf(photo) + 1} / ${completedPhotos.length}`;
       const pageNumWidth = font.widthOfTextAtSize(pageNum, 7);
-      page.drawText(pageNum, {
+      safeDrawText(page,pageNum, {
         x: PAGE_WIDTH / 2 - pageNumWidth / 2,
         y: PAGE_HEIGHT - 20,
         size: 7,
