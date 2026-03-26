@@ -91,7 +91,7 @@ export async function GET(req: NextRequest) {
       await loadHeroImages();
       const cached = heroCache[imageType];
       if (cached) {
-        return new NextResponse(cached, {
+        return new NextResponse(Buffer.from(cached), {
           headers: {
             "Content-Type": "image/jpeg",
             "Cache-Control": "public, max-age=86400, s-maxage=86400, immutable",
