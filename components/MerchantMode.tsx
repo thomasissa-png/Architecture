@@ -63,6 +63,10 @@ export default function MerchantMode() {
   // Step state — photos first (Thomas flow: arrive avec ses photos)
   const [currentStep, setCurrentStep] = useState<MerchantStep>("photos");
 
+  // Existing properties (for quick select)
+  const [existingProperties, setExistingProperties] = useState<Array<{ id: string; address_raw: string | null; address_normalized: string | null; property_type: string | null; surface_m2: number | null; room_count: number | null; sale_price: number | null; city: string | null; latitude: number | null; longitude: number | null; description_generated: string | null; description_final: string | null }>>([]);
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
+
   // Property info
   const [bienNom, setBienNom] = useState("");
   const [bienAdresse, setBienAdresse] = useState("");
@@ -134,6 +138,37 @@ export default function MerchantMode() {
       return next;
     });
   }, [files]);
+
+  // ── Fetch existing properties for quick select ──
+  useEffect(() => {
+    if (!session?.user?.id) return;
+    fetch("/api/properties")
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => {
+        if (data?.properties) setExistingProperties(data.properties);
+      })
+      .catch(() => {});
+  }, [session]);
+
+  const handleSelectProperty = useCallback((propertyId: string) => {
+    const prop = existingProperties.find((p) => p.id === propertyId);
+    if (!prop) return;
+    setSelectedPropertyId(propertyId);
+    setBienNom(prop.address_normalized || prop.address_raw || "");
+    setBienAdresse(prop.address_normalized || prop.address_raw || "");
+    setBienType(prop.property_type || "");
+    setBienSurface(prop.surface_m2 ? String(prop.surface_m2) : "");
+    setBienPrix(prop.sale_price ? String(prop.sale_price) : "");
+    setBienNbPieces(prop.room_count ? String(prop.room_count) : "");
+    if (prop.latitude && prop.longitude) {
+      setEnrichedLat(Number(prop.latitude));
+      setEnrichedLon(Number(prop.longitude));
+    }
+    if (prop.city) setEnrichedCity(prop.city);
+    if (prop.description_final || prop.description_generated) {
+      setEnrichedDescription(prop.description_final || prop.description_generated || "");
+    }
+  }, [existingProperties]);
 
   // ── Stable preview URLs ──
   const previewUrls = useMemo(() => {
@@ -476,9 +511,8 @@ export default function MerchantMode() {
                 Informations du bien
               </h3>
               <p className="text-xs text-muted/60 font-light mb-1">
-                Saisissez l&apos;adresse du bien pour enrichir automatiquement le dossier.
+                Sélectionnez un bien existant ou saisissez une nouvelle adresse.
               </p>
-              <p className="text-xs text-muted mt-1 mb-6">Facultatif — vous pourrez compl&#233;ter ces informations plus tard depuis la fiche du bien.</p>
             </div>
             <button
               onClick={() => setCurrentStep("photos")}
@@ -488,10 +522,34 @@ export default function MerchantMode() {
             </button>
           </div>
 
+          {/* Quick select existing property */}
+          {existingProperties.length > 0 && (
+            <div>
+              <label className="text-xs font-medium text-foreground mb-1.5 block">
+                Bien existant
+              </label>
+              <select
+                value={selectedPropertyId || ""}
+                onChange={(e) => {
+                  if (e.target.value) handleSelectProperty(e.target.value);
+                  else setSelectedPropertyId(null);
+                }}
+                className="w-full px-4 py-3 border border-foreground/5 rounded-xl text-sm font-light bg-background focus:border-foreground focus:outline-none transition-colors"
+              >
+                <option value="">Nouveau bien (saisir l&apos;adresse)</option>
+                {existingProperties.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.address_normalized || p.address_raw || "Bien sans adresse"} {p.surface_m2 ? `— ${p.surface_m2} m²` : ""}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           {/* Address autocomplete */}
           <div className="relative">
             <label className="text-xs font-medium text-foreground mb-1.5 block">
-              Adresse du bien
+              {selectedPropertyId ? "Adresse" : "Adresse du bien"}
             </label>
             <input
               type="text"
