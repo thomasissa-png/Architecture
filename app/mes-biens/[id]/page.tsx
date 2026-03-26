@@ -883,19 +883,6 @@ export default function PropertyDetailPage() {
                 ))}
               </div>
 
-              {/* Inline generator panel */}
-              {showGenerator && (
-                <InlineGenerator
-                  propertyId={propertyId}
-                  photos={photos}
-                  onClose={() => setShowGenerator(false)}
-                  onPhotosGenerated={() => {
-                    fetchPhotos();
-                    setShowGenerator(false);
-                  }}
-                />
-              )}
-
               {/* Dossier + Annonce creation */}
               <div className="mt-6 flex gap-2">
                 <button
@@ -935,6 +922,19 @@ export default function PropertyDetailPage() {
                 </p>
               )}
             </>
+          )}
+
+          {/* Inline generator panel — outside photos ternary so it works even with 0 photos */}
+          {showGenerator && (
+            <InlineGenerator
+              propertyId={propertyId}
+              photos={photos}
+              onClose={() => setShowGenerator(false)}
+              onPhotosGenerated={() => {
+                fetchPhotos();
+                setShowGenerator(false);
+              }}
+            />
           )}
         </section>
 
