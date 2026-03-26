@@ -321,8 +321,12 @@ export default function InlineGenerator({
 
   const handleRetry = useCallback(
     async (index: number) => {
-      const photo = photos.find((p) => p.id === results[index]?.photoId);
-      if (!photo || !photo.input_image_key) return;
+      const result = results[index];
+      if (!result) return;
+
+      const isUploadedFile = result.photoId.startsWith("upload-");
+      const photo = isUploadedFile ? null : photos.find((p) => p.id === result.photoId);
+      if (!isUploadedFile && (!photo || !photo.input_image_key)) return;
 
       const { surfacePrompt, furniturePrompt, styleId } = getPrompts();
 
@@ -334,7 +338,20 @@ export default function InlineGenerator({
       );
 
       try {
-        const dataUri = results[index].originalDataUri || await fetchImageAsBase64(photo.input_image_key);
+        let dataUri: string;
+        if (isUploadedFile) {
+          // For uploaded files, use the cached originalDataUri or re-read the file
+          const uploadIndex = parseInt(result.photoId.replace("upload-", ""), 10);
+          if (result.originalDataUri) {
+            dataUri = result.originalDataUri;
+          } else if (uploadedFiles[uploadIndex]) {
+            dataUri = await fileToBase64(uploadedFiles[uploadIndex]);
+          } else {
+            throw new Error("Fichier uploadé introuvable pour le retry");
+          }
+        } else {
+          dataUri = result.originalDataUri || await fetchImageAsBase64(photo!.input_image_key!);
+        }
         const { width, height } = await getImageDimensions(dataUri);
         const base64 = dataUri.replace(/^data:image\/[\w+]+;base64,/, "");
 
@@ -382,7 +399,7 @@ export default function InlineGenerator({
         );
       }
     },
-    [photos, results, getPrompts]
+    [photos, results, uploadedFiles, getPrompts]
   );
 
   // ── Associate results to property ──
@@ -646,7 +663,7 @@ export default function InlineGenerator({
                 const photo = photos.find((p) => p.id === result.photoId);
                 const imgSrc = photo?.input_image_key
                   ? `/api/logs/image?path=${encodeURIComponent(photo.input_image_key)}`
-                  : undefined;
+                  : result.originalDataUri || undefined;
 
                 return (
                   <div key={result.photoId} className="relative rounded-xl overflow-hidden border border-foreground/5">
