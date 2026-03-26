@@ -16,6 +16,7 @@ import AnnonceGallery from "@/components/AnnonceGallery";
 import ContactSticky from "@/components/ContactSticky";
 import RoomNav from "@/components/RoomNav";
 import { ROOM_TYPE_LABELS } from "@/lib/constants";
+import StorageImage from "@/components/StorageImage";
 
 interface PageProps {
   params: { uuid: string };
@@ -167,11 +168,11 @@ export default async function AnnoncePage({ params }: PageProps) {
       <header className="border-b border-foreground/5 bg-background/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-5 sm:px-8 py-3 sm:py-4 flex items-center justify-between">
           {hasMerchant && merchant?.logo_storage_key ? (
-            /* eslint-disable-next-line @next/next/no-img-element */
-            <img
-              src={`/api/logs/image?path=${encodeURIComponent(merchant.logo_storage_key)}`}
+            <StorageImage
+              imageKey={merchant.logo_storage_key}
               alt={merchant.raison_sociale || "Logo"}
               className="h-8 w-auto object-contain"
+              loading="eager"
             />
           ) : hasMerchant && merchant?.raison_sociale ? (
             <span
@@ -204,12 +205,11 @@ export default async function AnnoncePage({ params }: PageProps) {
         const heroPhoto = (photosByRoom["living_room"]?.[0]) || completedPhotos[0];
         return (
           <div className="w-full">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={`/api/logs/image?path=${encodeURIComponent(heroPhoto.output_image_key!)}`}
+            <StorageImage
+              imageKey={heroPhoto.output_image_key}
               alt={heroPhoto.room_label || "Photo principale"}
               className="w-full aspect-[16/9] object-cover rounded-b-2xl"
-              data-testid="annonce-hero-photo"
+              loading="eager"
             />
           </div>
         );

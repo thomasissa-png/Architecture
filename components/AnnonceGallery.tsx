@@ -7,6 +7,7 @@
 
 import { useState } from "react";
 import Lightbox from "@/components/Lightbox";
+import StorageImage from "@/components/StorageImage";
 
 interface GalleryPhoto {
   id: string | number;
@@ -54,9 +55,8 @@ export default function AnnonceGallery({ photosByRoom, allPhotos }: AnnonceGalle
                   }}
                   aria-label={`Agrandir : ${photo.roomLabel || "Photo"}`}
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={`/api/logs/image?path=${encodeURIComponent(photo.outputImageKey)}`}
+                  <StorageImage
+                    imageKey={photo.outputImageKey}
                     alt={photo.roomLabel || "Photo"}
                     className="w-full aspect-[4/3] object-cover"
                     loading="lazy"

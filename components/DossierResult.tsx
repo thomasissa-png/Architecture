@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import StorageImage from "@/components/StorageImage";
 
 /**
  * F4 — Mode Marchand: Dossier result display.
@@ -160,9 +161,8 @@ export default function DossierResult({
               {/* Before */}
               <div className="relative">
                 <div className="aspect-[4/3]">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={`/api/logs/image?path=${encodeURIComponent(photo.inputImageKey || "")}`}
+                  <StorageImage
+                    imageKey={photo.inputImageKey}
                     alt={`${photo.roomLabel || "Photo"} — avant`}
                     className="w-full h-full object-cover"
                     loading="lazy"
@@ -176,9 +176,8 @@ export default function DossierResult({
               {/* After */}
               <div className="relative">
                 <div className="aspect-[4/3]">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={`/api/logs/image?path=${encodeURIComponent(photo.outputImageKey || "")}`}
+                  <StorageImage
+                    imageKey={photo.outputImageKey}
                     alt={`${photo.roomLabel || "Photo"} — après`}
                     className="w-full h-full object-cover"
                     loading="lazy"

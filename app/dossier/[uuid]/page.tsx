@@ -22,6 +22,7 @@ import DossierCaracteristiques from "@/components/DossierCaracteristiques";
 import ContactSticky from "@/components/ContactSticky";
 import ShareButtons from "@/components/ShareButtons";
 import RoomNav from "@/components/RoomNav";
+import StorageImage from "@/components/StorageImage";
 
 interface PageProps {
   params: { uuid: string };
@@ -120,11 +121,11 @@ export default async function DossierPage({ params }: PageProps) {
       <header className="border-b border-foreground/5 bg-background/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 py-3 sm:py-4 flex items-center justify-between">
           {hasMerchant && profile?.logo_storage_key ? (
-            /* eslint-disable-next-line @next/next/no-img-element */
-            <img
-              src={`/api/logs/image?path=${encodeURIComponent(profile.logo_storage_key)}`}
+            <StorageImage
+              imageKey={profile.logo_storage_key}
               alt={profile.raison_sociale || "Logo"}
               className="h-8 w-auto object-contain"
+              loading="eager"
             />
           ) : hasMerchant && profile?.raison_sociale ? (
             <span
@@ -154,9 +155,8 @@ export default async function DossierPage({ params }: PageProps) {
         {/* Hero photo — first completed photo above title (Marc P0-2) */}
         {completedPhotos[0]?.output_image_key && (
           <div className="mb-6 rounded-2xl overflow-hidden">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={`/api/logs/image?path=${encodeURIComponent(completedPhotos[0].output_image_key)}`}
+            <StorageImage
+              imageKey={completedPhotos[0].output_image_key}
               alt={title}
               className="w-full aspect-[16/9] object-cover"
               loading="eager"
@@ -221,9 +221,8 @@ export default async function DossierPage({ params }: PageProps) {
           </div>
         ) : dossier.carte_image_key ? (
           <div className="mb-8 rounded-2xl border border-foreground/5 overflow-hidden max-w-lg">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={`/api/logs/image?path=${encodeURIComponent(dossier.carte_image_key)}`}
+            <StorageImage
+              imageKey={dossier.carte_image_key}
               alt="Carte du quartier"
               className="w-full h-auto"
             />

@@ -9,6 +9,7 @@
 
 import { useState } from "react";
 import Lightbox from "@/components/Lightbox";
+import StorageImage from "@/components/StorageImage";
 
 interface DossierPhotoView {
   id: number;
@@ -67,9 +68,8 @@ export default function DossierPublicView({
                 aria-label={`Agrandir ${photo.roomLabel} — avant`}
               >
                 <div className="aspect-[4/3]">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={`/api/logs/image?path=${encodeURIComponent(photo.inputImageKey)}`}
+                  <StorageImage
+                    imageKey={photo.inputImageKey}
                     alt={`${photo.roomLabel} — avant`}
                     className="w-full h-full object-cover"
                     loading="lazy"
@@ -88,9 +88,8 @@ export default function DossierPublicView({
                 aria-label={`Agrandir ${photo.roomLabel} — après`}
               >
                 <div className="aspect-[4/3]">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={`/api/logs/image?path=${encodeURIComponent(photo.outputImageKey)}`}
+                  <StorageImage
+                    imageKey={photo.outputImageKey}
                     alt={`${photo.roomLabel} — apres`}
                     className="w-full h-full object-cover"
                     loading="lazy"
