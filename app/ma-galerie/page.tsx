@@ -134,6 +134,8 @@ export default function GaleriePage() {
       if (res.ok) {
         setAssociatingPhotoId(null);
         fetchPhotos();
+      } else {
+        setToastMsg("Erreur lors de l'association. Réessayez.");
       }
     } catch {
       console.error("Erreur association");

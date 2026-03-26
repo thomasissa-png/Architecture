@@ -119,6 +119,7 @@ export default function InlineGenerator({
   const [results, setResults] = useState<GenerationResult[]>([]);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [associateError, setAssociateError] = useState<string | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -377,10 +378,14 @@ export default function InlineGenerator({
       });
 
       if (res.ok) {
+        setAssociateError(null);
         onPhotosGenerated();
+      } else {
+        setAssociateError("Erreur lors de l'association. Réessayez.");
       }
     } catch (err) {
       console.error("Erreur association photos:", err);
+      setAssociateError("Erreur lors de l'association. Réessayez.");
     }
   }, [results, propertyId, onPhotosGenerated]);
 
@@ -665,6 +670,9 @@ export default function InlineGenerator({
 
             {/* Actions */}
             <div className="flex flex-wrap gap-3 pt-2 border-t border-foreground/5">
+              {associateError && (
+                <p className="w-full text-xs text-red-500/80 font-light">{associateError}</p>
+              )}
               {successCount > 0 && (
                 <button
                   onClick={handleAssociateResults}

@@ -323,6 +323,8 @@ export default function PropertyDetailPage() {
         setShowAssociateModal(false);
         setSelectedForAssoc(new Set());
         fetchPhotos();
+      } else {
+        setToastMsg("Erreur lors de l'association. Réessayez.");
       }
     } catch (err) {
       console.error("Erreur association photos:", err);
@@ -339,6 +341,8 @@ export default function PropertyDetailPage() {
       });
       if (res.ok) {
         fetchPhotos();
+      } else {
+        setToastMsg("Erreur lors de la dissociation. Réessayez.");
       }
     } catch (err) {
       console.error("Erreur dissociation photo:", err);
