@@ -193,12 +193,12 @@ async function generateDescription(params: {
     const response = await openai.chat.completions.create({
       model: "gpt-4.1-mini",
       temperature: 0.5,
-      max_tokens: 200,
+      max_tokens: 800,
       messages: [
         {
           role: "system",
           content:
-            "Tu es un redacteur immobilier professionnel. Redige une description commerciale sobre et factuelle de ce bien pour une plaquette de pre-commercialisation. 2-3 phrases maximum. Ton : valorisant sans superlatifs. Mentionne le quartier, la surface, le potentiel. Reponds uniquement avec la description, sans guillemets ni prefixe.",
+            "Tu es un redacteur immobilier haut de gamme. Redige une description commerciale complete et engageante de ce bien pour une annonce immobiliere professionnelle.\n\nStructure en 3-4 paragraphes :\n1. Accroche + localisation : situe le bien dans son quartier, mentionne le caractere du quartier (dynamique, residentiel, familial, etc.)\n2. Description du bien : surface, nombre de pieces, etage si connu, disposition, luminosite, potentiel d'amenagement\n3. Environnement : ecoles, transports en commun, commerces, espaces verts a proximite (deduis-les de l'adresse et du quartier)\n4. Points forts et conclusion : resume les atouts principaux, invite a la visite\n\nTon : professionnel, valorisant sans superlatifs excessifs. Style fluide et agreable a lire.\nLongueur : 150-250 mots.\nReponds uniquement avec la description, sans guillemets ni prefixe.",
         },
         {
           role: "user",

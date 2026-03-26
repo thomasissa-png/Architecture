@@ -24,6 +24,8 @@ interface Property {
   sale_price: number | null;
   dvf_median_price_m2: number | null;
   dvf_period: string | null;
+  latitude: string | null;
+  longitude: string | null;
   map_image_key: string | null;
   description_generated: string | null;
   description_final: string | null;
@@ -403,11 +405,11 @@ export default function PropertyDetailPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        window.location.href = `/annonce/${data.uuid}`;
+        window.open(`/annonce/${data.uuid}`, '_blank');
       } else if (res.status === 403) {
         setToastMsg(
           <span>
-            Cette fonctionnalit{"\u00e9"} est r{"\u00e9"}serv{"\u00e9"}e au Pack Pro.{" "}
+            Cette fonctionnalité est réservée au Pack Pro.{" "}
             <a href="/pricing" className="underline font-semibold">Voir les tarifs</a>
           </span>
         );
@@ -450,7 +452,7 @@ export default function PropertyDetailPage() {
         <div className="text-center">
           <p className="text-muted font-light text-sm">{error}</p>
           <a href="/mes-biens" className="inline-block mt-4 text-xs text-sage font-medium hover:underline">
-            Retour {"\u00E0"} mes biens
+            Retour à mes biens
           </a>
         </div>
       </div>
@@ -583,27 +585,35 @@ export default function PropertyDetailPage() {
 
           {/* Map */}
           <div>
-            {property.map_image_key ? (
+            {property.latitude && property.longitude ? (
+              <div className="w-full rounded-2xl border border-foreground/5 overflow-hidden">
+                <iframe
+                  title="Carte du quartier"
+                  width="100%"
+                  height="250"
+                  style={{ border: 0 }}
+                  loading="lazy"
+                  referrerPolicy="no-referrer"
+                  src={`https://www.openstreetmap.org/export/embed.html?bbox=${Number(property.longitude) - 0.008},${Number(property.latitude) - 0.005},${Number(property.longitude) + 0.008},${Number(property.latitude) + 0.005}&layer=mapnik&marker=${property.latitude},${property.longitude}`}
+                />
+              </div>
+            ) : property.map_image_key ? (
               <img
                 src={`/api/logs/image?path=${encodeURIComponent(property.map_image_key)}`}
                 alt="Carte du quartier"
                 className="w-full rounded-2xl border border-foreground/5"
               />
-            ) : (
-              <div className="w-full aspect-video bg-foreground/[0.02] rounded-2xl border border-foreground/5 flex items-center justify-center">
-                <span className="text-xs text-muted font-light">Carte en chargement...</span>
-              </div>
-            )}
+            ) : null}
           </div>
         </div>
 
         {/* Informations complementaires */}
         <section className="mb-10 p-5 bg-foreground/[0.02] rounded-2xl border border-foreground/5" data-testid="comp-info-section">
           <h2 className="text-lg font-semibold text-foreground mb-1">
-            Informations compl{"\u00E9"}mentaires
+            Informations complémentaires
           </h2>
           <p className="text-xs text-muted font-light mb-4">
-            Ces informations seront affich{"\u00E9"}es automatiquement sur l&apos;annonce et le dossier.
+            Ces informations seront affichées automatiquement sur l&apos;annonce et le dossier.
           </p>
 
           {/* DPE + GES row */}
@@ -650,7 +660,7 @@ export default function PropertyDetailPage() {
             </div>
             <div>
               <label htmlFor="etage" className="block text-xs font-medium text-foreground mb-1">
-                {"\u00C9"}tage
+                Étage
               </label>
               <input
                 id="etage"
@@ -722,7 +732,7 @@ export default function PropertyDetailPage() {
             </div>
             <div>
               <label htmlFor="annee-construction" className="block text-xs font-medium text-foreground mb-1">
-                Ann{"\u00E9"}e construction
+                Année construction
               </label>
               <input
                 id="annee-construction"
@@ -742,7 +752,7 @@ export default function PropertyDetailPage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
             <div>
               <label htmlFor="charges-copro" className="block text-xs font-medium text-foreground mb-1">
-                Charges copro ({"\u20AC"}/an)
+                Charges copro (&#8364;/an)
               </label>
               <input
                 id="charges-copro"
@@ -757,7 +767,7 @@ export default function PropertyDetailPage() {
             </div>
             <div>
               <label htmlFor="taxe-fonciere" className="block text-xs font-medium text-foreground mb-1">
-                Taxe fonci{"\u00E8"}re ({"\u20AC"}/an)
+                Taxe foncière (&#8364;/an)
               </label>
               <input
                 id="taxe-fonciere"
@@ -799,7 +809,7 @@ export default function PropertyDetailPage() {
             </button>
             {compInfoSaved && (
               <span className="text-xs text-sage font-medium" data-testid="comp-info-saved">
-                Enregistr{"\u00E9"}
+                Enregistré
               </span>
             )}
           </div>
@@ -906,7 +916,7 @@ export default function PropertyDetailPage() {
                   className="text-xs bg-sage text-white px-4 py-2.5 rounded-full font-medium hover:bg-sage/85 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                   data-testid="create-annonce-btn"
                 >
-                  {isCreatingAnnonce ? "Cr\u00e9ation..." : "Cr\u00e9er une annonce (inclus Pack Pro)"}
+                  {isCreatingAnnonce ? "Cr\u00e9ation..." : "Cr\u00e9er une annonce"}
                 </button>
                 {activeAnnonceUuid && (
                   <button
@@ -921,7 +931,7 @@ export default function PropertyDetailPage() {
               </div>
               {!compInfo.dpeClasse && (
                 <p className="text-xs text-amber-600 font-light mt-2" data-testid="dpe-annonce-warning">
-                  Pensez {"\u00E0"} renseigner le DPE avant de publier votre annonce.
+                  Pensez à renseigner le DPE avant de publier votre annonce.
                 </p>
               )}
             </>

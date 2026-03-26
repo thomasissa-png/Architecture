@@ -52,11 +52,11 @@ async function embedImageFromStorage(
 
   try {
     return await pdfDoc.embedJpg(imageData);
-  } catch {
+  } catch (jpgErr) {
     try {
       return await pdfDoc.embedPng(imageData);
-    } catch {
-      console.error(`Failed to embed image from key: ${storageKey}`);
+    } catch (pngErr) {
+      console.error(`[PDF] Failed to embed image key="${storageKey}" — JPG error: ${jpgErr instanceof Error ? jpgErr.message : jpgErr}, PNG error: ${pngErr instanceof Error ? pngErr.message : pngErr}`);
       return null;
     }
   }
@@ -504,7 +504,9 @@ export async function GET(
       },
     });
   } catch (err) {
-    console.error("Error generating PDF:", err);
+    const errMsg = err instanceof Error ? err.message : String(err);
+    const errStack = err instanceof Error ? err.stack : undefined;
+    console.error(`[PDF] Error generating PDF for dossier uuid=${uuid}: ${errMsg}`, errStack || "");
     return NextResponse.json(
       { error: "Erreur lors de la generation du PDF." },
       { status: 500 }
