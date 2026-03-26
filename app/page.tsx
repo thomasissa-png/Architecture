@@ -1438,83 +1438,105 @@ export default function Home() {
             Payez uniquement ce que vous utilisez &mdash; sans abonnement.
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 items-stretch max-w-4xl mx-auto">
             {/* Découverte */}
-            <div className="border border-foreground/10 rounded-2xl p-6 text-center bg-background">
-              <p className="text-xs text-muted font-medium uppercase tracking-widest mb-3">D&eacute;couverte</p>
-              <p className="text-3xl font-bold text-foreground mb-0.5">4,90&euro;</p>
+            <div className="flex flex-col border border-foreground/8 rounded-2xl p-7 text-center bg-background hover:border-foreground/15 transition-colors">
+              <p className="text-xs text-muted font-medium uppercase tracking-widest mb-4">D&eacute;couverte</p>
+              <p className="text-4xl font-bold text-foreground mb-0.5">4,90&euro;</p>
               <p className="text-xs text-muted font-light mb-1">5 cr&eacute;dits &middot; 0,98&euro;/photo</p>
-              <p className="text-[11px] text-muted font-light mb-5">TTC &middot; TVA 20% incluse</p>
-              <ul className="text-sm text-muted font-light space-y-2 text-left mb-6">
-                <li className="flex items-start gap-2">
+              <p className="text-[11px] text-muted/60 font-light mb-6">TTC &middot; TVA 20% incluse</p>
+              <ul className="text-sm text-muted font-light space-y-2.5 text-left mb-8 flex-1">
+                <li className="flex items-start gap-2.5">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                   12 styles disponibles
                 </li>
-                <li className="flex items-start gap-2">
+                <li className="flex items-start gap-2.5">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                   T&eacute;l&eacute;chargement HD
                 </li>
+                <li className="flex items-start gap-2.5">
+                  <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  Partage &amp; comparateur
+                </li>
+                <li className="flex items-start gap-2.5 text-muted/40">
+                  <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M18 12H6" /></svg>
+                  <span className="line-through">It&eacute;rations</span>
+                </li>
               </ul>
-              <p className="text-[11px] text-muted font-light mb-4">3 g&eacute;n&eacute;rations offertes sans CB</p>
-              <a href="#outil" className="block w-full text-center border border-foreground/10 text-foreground px-4 py-2.5 rounded-full text-sm font-medium hover:bg-foreground/5 transition-colors">
-                Essayer l&apos;outil
-              </a>
+              <div className="mt-auto">
+                <p className="text-[11px] text-sage font-medium mb-3">3 g&eacute;n&eacute;rations offertes sans CB</p>
+                <a href="#outil" className="block w-full text-center border border-foreground/15 text-foreground px-4 py-3 rounded-full text-sm font-medium hover:bg-foreground/5 transition-colors">
+                  Essayer l&apos;outil
+                </a>
+              </div>
             </div>
 
             {/* Starter */}
-            <div className="border border-foreground/10 rounded-2xl p-6 text-center bg-background">
-              <p className="text-xs text-muted font-medium uppercase tracking-widest mb-3">Starter</p>
-              <p className="text-3xl font-bold text-foreground mb-0.5">14,90&euro;</p>
+            <div className="flex flex-col border border-foreground/8 rounded-2xl p-7 text-center bg-background hover:border-foreground/15 transition-colors">
+              <p className="text-xs text-muted font-medium uppercase tracking-widest mb-4">Starter</p>
+              <p className="text-4xl font-bold text-foreground mb-0.5">14,90&euro;</p>
               <p className="text-xs text-muted font-light mb-1">20 cr&eacute;dits &middot; 0,75&euro;/photo</p>
-              <p className="text-[11px] text-muted font-light mb-5">TTC &middot; TVA 20% incluse</p>
-              <ul className="text-sm text-muted font-light space-y-2 text-left mb-6">
-                <li className="flex items-start gap-2">
+              <p className="text-[11px] text-muted/60 font-light mb-6">TTC &middot; TVA 20% incluse</p>
+              <ul className="text-sm text-muted font-light space-y-2.5 text-left mb-8 flex-1">
+                <li className="flex items-start gap-2.5">
+                  <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  12 styles + mode personnalis&eacute;
+                </li>
+                <li className="flex items-start gap-2.5">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                   1 it&eacute;ration par photo
                 </li>
-                <li className="flex items-start gap-2">
+                <li className="flex items-start gap-2.5">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                   Lien partageable 7 jours
                 </li>
+                <li className="flex items-start gap-2.5 text-muted/40">
+                  <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M18 12H6" /></svg>
+                  <span className="line-through">Mode Marchand</span>
+                </li>
               </ul>
-              <a href="/pricing" className="w-full block text-center bg-foreground text-background px-4 py-2.5 rounded-full text-sm font-medium hover:bg-foreground/85 transition-colors">
-                Acheter
-              </a>
+              <div className="mt-auto">
+                <a href="/pricing" className="block w-full text-center bg-foreground text-background px-4 py-3 rounded-full text-sm font-medium hover:bg-foreground/85 transition-colors">
+                  Acheter
+                </a>
+              </div>
             </div>
 
             {/* Pro — recommended */}
-            <div className="border-2 border-foreground rounded-2xl p-6 text-center bg-background relative">
-              <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-foreground text-background text-[11px] font-medium px-3 py-1 rounded-full uppercase tracking-wider">Recommand&eacute;</span>
-              <p className="text-xs text-muted font-medium uppercase tracking-widest mb-3">Pro</p>
-              <p className="text-3xl font-bold text-foreground mb-0.5">29&euro;</p>
+            <div className="flex flex-col border-2 border-sage/30 rounded-2xl p-7 text-center bg-background relative shadow-[0_8px_32px_rgba(125,155,118,0.12)]">
+              <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-sage text-white text-[11px] font-semibold px-4 py-1 rounded-full uppercase tracking-wider shadow-sm">Recommand&eacute;</span>
+              <p className="text-xs text-sage font-medium uppercase tracking-widest mb-4">Pro</p>
+              <p className="text-4xl font-bold text-foreground mb-0.5">29&euro;</p>
               <p className="text-xs text-muted font-light mb-1">50 cr&eacute;dits &middot; 0,58&euro;/photo</p>
-              <p className="text-[11px] text-muted font-light mb-5">TTC &middot; TVA 20% incluse</p>
-              <ul className="text-sm text-muted font-light space-y-2 text-left mb-6">
-                <li className="flex items-start gap-2">
+              <p className="text-[11px] text-muted/60 font-light mb-6">TTC &middot; TVA 20% incluse</p>
+              <ul className="text-sm text-muted font-light space-y-2.5 text-left mb-8 flex-1">
+                <li className="flex items-start gap-2.5">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                   3 it&eacute;rations par photo
                 </li>
-                <li className="flex items-start gap-2">
+                <li className="flex items-start gap-2.5">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                   <span><strong className="font-medium text-foreground">Mode Marchand</strong> &mdash; dossiers PDF</span>
                 </li>
-                <li className="flex items-start gap-2">
+                <li className="flex items-start gap-2.5">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                   Annonces immobili&egrave;res
                 </li>
-                <li className="flex items-start gap-2">
+                <li className="flex items-start gap-2.5">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                   Lien partageable 30 jours
                 </li>
               </ul>
-              <a href="/pricing" className="w-full block text-center bg-foreground text-background px-4 py-2.5 rounded-full text-sm font-medium hover:bg-foreground/85 transition-colors">
-                Acheter
-              </a>
+              <div className="mt-auto">
+                <a href="/pricing" className="block w-full text-center bg-sage text-white px-4 py-3 rounded-full text-sm font-semibold hover:bg-sage/85 transition-colors shadow-sm">
+                  Acheter
+                </a>
+              </div>
             </div>
 
           </div>
 
-          <p className="text-center text-[11px] text-muted font-light mt-6">
+          <p className="text-center text-[11px] text-muted/60 font-light mt-8">
             TVA r&eacute;cup&eacute;rable pour les professionnels assujettis.
           </p>
         </div>
