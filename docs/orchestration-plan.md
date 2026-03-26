@@ -271,4 +271,54 @@ Moyenne — 5 agents (reviewer, Yann, Lucas, fullstack, reviewer), 2 features su
 - F5 Mode Decorateur (LATER)
 - Domaine propre versiroom.fr (action fondateur)
 - Configuration lancement (cles API Stripe/NextAuth/Sentry)
-- Tests E2E pour les nouvelles pages F4 (mes-biens, ma-galerie, properties API)
+
+---
+
+## Session 2026-03-26 — Sprint massif (lint, auth, F6, audits, agents)
+
+### Phase S26.1 — Stabilisation build + auth
+- Statut : TERMINE
+- Livrables : 6 lint fixes, AuthModal email/password+Google, CredentialsProvider, API register, middleware auth serveur
+- Score : build OK, auth fonctionnel
+
+### Phase S26.2 — F6 Annonce publique
+- Statut : TERMINE (4 iterations Marc V1→V4)
+- Livrables : lib/annonce.ts, API annonce, page SSR, ContactSticky, Lightbox, RoomNav, ShareButtons, AnnonceGallery
+- Scores Marc : Annonce 6.9→9.2, Dossier 6.4→9.0, PRO/COHERENT/APPELER 9.5/10
+
+### Phase S26.3 — Fiche bien enrichie
+- Statut : TERMINE
+- Livrables : 11 champs (DPE, etage, parking...), API PATCH, affichage annonce+dossier, DossierCaracteristiques
+
+### Phase S26.4 — Audits frontend complets (3 axes)
+- Statut : TERMINE (2 passes audit + corrections)
+- Technique : 6.3→7.75→~9.0 (middleware, catch, focus traps, a11y)
+- Design : ~7→8.2→~9.0 (tokens, focus-visible, CTA coherents)
+- UX : 6.9→8.3→~9.0 (skeleton, etats vides, navigation)
+
+### Phase S26.5 — Prompt versioning + pipeline iteration
+- Statut : TERMINE
+- Livrables : PROMPT_VERSION v18→v21, classification adjust/restyle, saveIterationBase, read-after-write saveImage
+- Score reviewer versioning : 9/10
+
+### Phase S26.6 — Agents crees
+- Statut : TERMINE
+- @client-mandataire (Marc Leroy, acheteur) — persona enrichi avec processus decision 30s + 3 questions fondamentales
+- @paysagiste (Camille Verdier, espaces exterieurs) — grille 10 criteres, audit outdoor 6.1→8.2
+
+### Phase S26.7 — Suppression Studio + multi-photo
+- Statut : TERMINE
+- Pack Studio supprime (4→3 tiers)
+- Step annotate dans MerchantMode (dropdown piece+style par photo)
+
+### Phase S26.8 — Fix image display
+- Statut : TERMINE
+- Cause racine : Object Storage consistance eventuelle (ok:true mais blob pas lisible)
+- Fix : read-after-write, retry getImage, iteration save await 5s
+
+### Travaux EN COURS (non termines)
+- InlineGenerator (generation depuis fiche bien sans quitter la page) — specs PM pretes, implementation @fullstack a lancer
+- 2 styles outdoor manquants (Provencal, Industriel-Urbain) — signales par Camille
+- CTA "Essayer gratuitement" conditionnel quand connecte — corrige mais a verifier en prod
+- Bien disparu apres mise a jour — cause racine corrigee (ensure cross-tables) mais a verifier en prod
+- API admin update-user — creee mais non testee en prod
