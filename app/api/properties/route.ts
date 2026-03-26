@@ -74,9 +74,11 @@ export async function GET() {
 
   try {
     const properties = await getPropertiesByUser(session.user.id);
+    console.log(`[GET /api/properties] user=${session.user.id} found=${properties.length} biens`);
     return NextResponse.json({ properties });
   } catch (err) {
     console.error("Error listing properties:", err);
+    console.error("[GET /api/properties] userId:", session.user.id, "error:", err instanceof Error ? err.message : err);
     return NextResponse.json(
       { error: "Erreur lors de la r\u00E9cup\u00E9ration des biens." },
       { status: 500 }
