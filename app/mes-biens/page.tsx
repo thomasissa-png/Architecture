@@ -134,7 +134,7 @@ export default function MesBiensPage() {
 
       if (!res.ok) {
         const data = await res.json();
-        setCreateError(data.error || "Erreur lors de la cr\u00e9ation.");
+        setCreateError(data.error || "Erreur lors de la création.");
         return;
       }
 
@@ -142,7 +142,7 @@ export default function MesBiensPage() {
       // Redirect to the new property page
       window.location.href = `/mes-biens/${data.property.id}`;
     } catch {
-      setCreateError("Erreur r\u00e9seau.");
+      setCreateError("Erreur réseau.");
     } finally {
       setIsCreating(false);
     }
@@ -307,7 +307,7 @@ export default function MesBiensPage() {
                 disabled={isCreating || !newAddress.trim()}
                 className="text-xs bg-sage text-white px-4 py-2 rounded-full font-medium hover:bg-sage/85 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
               >
-                {isCreating ? "Cr\u00e9ation..." : "Cr\u00e9er le bien"}
+                {isCreating ? "Création..." : "Créer le bien"}
               </button>
               <button
                 onClick={() => setShowCreateForm(false)}

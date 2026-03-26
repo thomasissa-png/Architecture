@@ -887,7 +887,7 @@ export default function MerchantMode() {
           </div>
 
           <p className="text-xs text-muted/60 font-light -mt-2">
-            Ce style sera appliqu{"\u00E9"} aux photos sans style individuel.
+            Ce style sera appliqué aux photos sans style individuel.
           </p>
 
           <StylePicker
@@ -942,8 +942,8 @@ export default function MerchantMode() {
               <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted font-light mt-1">
                 {bienAdresse && <span>{bienAdresse}</span>}
                 {bienType && <span className="capitalize">{bienType}</span>}
-                {bienSurface && <span>{bienSurface} m{"\u00B2"}</span>}
-                {bienPrix && <span>{Number(bienPrix).toLocaleString("fr-FR")} {"\u20AC"}</span>}
+                {bienSurface && <span>{bienSurface} m²</span>}
+                {bienPrix && <span>{Number(bienPrix).toLocaleString("fr-FR")} €</span>}
               </div>
             </div>
 

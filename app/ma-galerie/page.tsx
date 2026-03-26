@@ -235,14 +235,14 @@ export default function GaleriePage() {
               className="text-xs font-light bg-foreground/5 border-0 rounded-xl px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
               data-testid="filter-room-type"
             >
-              <option value="">Toutes les pi{"\u00E8"}ces</option>
+              <option value="">Toutes les pièces</option>
               <option value="living_room">Salon</option>
               <option value="bedroom">Chambre</option>
               <option value="kitchen">Cuisine</option>
               <option value="bathroom">Salle de bain</option>
               <option value="office">Bureau</option>
-              <option value="dining_room">Salle {"\u00E0"} manger</option>
-              <option value="entryway">Entr{"\u00E9"}e</option>
+              <option value="dining_room">Salle à manger</option>
+              <option value="entryway">Entrée</option>
               <option value="laundry">Buanderie</option>
             </select>
 
@@ -252,7 +252,7 @@ export default function GaleriePage() {
               className="text-xs font-light bg-foreground/5 border-0 rounded-xl px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
             >
               <option value="">Toutes</option>
-              <option value="true">Associ{"\u00E9"}es</option>
+              <option value="true">Associées</option>
               <option value="false">Non class&#233;es</option>
             </select>
           </div>
@@ -281,7 +281,7 @@ export default function GaleriePage() {
                 {photo.output_image_key ? (
                   <img
                     src={`/api/logs/image?path=${encodeURIComponent(photo.output_image_key)}`}
-                    alt={photo.style_id || "Photo g\u00e9n\u00e9r\u00e9e"}
+                    alt={photo.style_id || "Photo générée"}
                     className="w-full aspect-[4/3] object-cover"
                     loading="lazy"
                     onError={(e) => {
@@ -398,7 +398,7 @@ export default function GaleriePage() {
                     <p className="text-xs text-sage font-medium mb-1">Apr&#232;s</p>
                     <img
                       src={`/api/logs/image?path=${encodeURIComponent(selectedPhoto.output_image_key)}`}
-                      alt="Apr\u00e8s"
+                      alt="Après"
                       className="w-full rounded-xl"
                       onError={(e) => {
                         e.currentTarget.src = "";

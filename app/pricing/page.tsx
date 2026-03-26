@@ -270,9 +270,9 @@ function PricingContent() {
                 className="mt-0.5 w-4 h-4 rounded border-foreground/20 text-sage focus:ring-sage/50 cursor-pointer"
               />
               <span className="text-xs text-muted font-light leading-relaxed group-hover:text-foreground/70 transition-colors">
-                J&apos;accepte que l&apos;ex{"\u00E9"}cution du service num{"\u00E9"}rique
-                commence imm{"\u00E9"}diatement et renonce express{"\u00E9"}ment {"\u00E0"} mon droit de
-                r{"\u00E9"}tractation de 14 jours conform{"\u00E9"}ment {"\u00E0"} l&apos;article L.
+                J&apos;accepte que l&apos;exécution du service numérique
+                commence immédiatement et renonce expressément à mon droit de
+                rétractation de 14 jours conformément à l&apos;article L.
                 221-28 du Code de la consommation.
               </span>
             </label>
