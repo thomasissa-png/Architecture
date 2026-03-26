@@ -1555,6 +1555,18 @@ export default function Home() {
             <p className="text-[11px] text-muted mt-1">Un produit <a href="https://versi-immobilier.fr" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Versi Immobilier</a></p>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
+            <a href="/marchand" className="hover:text-foreground transition-colors py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded">
+              Marchands
+            </a>
+            <a href="/architecte" className="hover:text-foreground transition-colors py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded">
+              Architectes
+            </a>
+            <a href="/particulier" className="hover:text-foreground transition-colors py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded">
+              Particuliers
+            </a>
+            <a href="/blog" className="hover:text-foreground transition-colors py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded">
+              Blog
+            </a>
             <a href="#pricing" className="hover:text-foreground transition-colors py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded">
               Tarifs
             </a>

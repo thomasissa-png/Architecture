@@ -35,6 +35,9 @@ export const metadata: Metadata = {
     site: "@versiroom",
   },
   robots: { index: true, follow: true },
+  alternates: {
+    canonical: BASE_URL,
+  },
 };
 
 const jsonLd = [
