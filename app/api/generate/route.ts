@@ -1468,45 +1468,38 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Save to user_photos gallery if user is connected
-    // CRITICAL: await saveImage for the output BEFORE calling saveUserPhoto.
-    // If outputKey is null (Object Storage failure), skip saving entirely —
-    // a gallery entry without an output image shows "Image non disponible".
-    let photoIdPromise: Promise<string | null> = Promise.resolve(null);
+    // Save to user gallery BEFORE sending response (critical for Replit autoscale).
+    // On autoscale, the worker is killed after the response is sent.
+    // Any async work after NextResponse.json() will be lost.
+    let photoId: string | null = null;
     console.log(`[generate] saveUserPhoto check: userId="${session?.user?.id || "NONE"}" — ${session?.user?.id ? "WILL save to gallery" : "SKIPPING gallery save (no session)"}`);
     if (session?.user?.id) {
-      photoIdPromise = (async () => {
-        try {
-          const { saveImage: saveImg } = await import("@/lib/db");
-          const ts = Date.now();
+      try {
+        const { saveImage: saveImg } = await import("@/lib/db");
+        const ts = Date.now();
 
-          // Save output image — retry once on failure (Object Storage can be flaky)
-          let outputKey = await saveImg(outputBase64, `user_photo_${ts}_output`).catch((err) => {
-            console.error("[saveUserPhoto] output saveImage failed (attempt 1):", err);
+        // Save output image — retry once on failure
+        let outputKey = await saveImg(outputBase64, `user_photo_${ts}_output`).catch((err) => {
+          console.error("[saveUserPhoto] output saveImage failed (attempt 1):", err);
+          return null;
+        });
+
+        if (!outputKey) {
+          await new Promise((r) => setTimeout(r, 1000));
+          outputKey = await saveImg(outputBase64, `user_photo_${ts}_output_r`).catch((err) => {
+            console.error("[saveUserPhoto] output saveImage failed (attempt 2):", err);
             return null;
           });
+        }
 
-          // Retry once after 1s if first attempt failed
-          if (!outputKey) {
-            await new Promise((r) => setTimeout(r, 1000));
-            outputKey = await saveImg(outputBase64, `user_photo_${ts}_output_r`).catch((err) => {
-              console.error("[saveUserPhoto] output saveImage failed (attempt 2):", err);
-              return null;
-            });
-          }
-
-          if (!outputKey) {
-            console.error("[saveUserPhoto] SKIPPING saveUserPhoto — outputKey is null after 2 attempts");
-            return null;
-          }
-
-          // Save input and pass1 in parallel (non-critical — null is acceptable)
+        if (outputKey) {
+          // Save input and pass1 in parallel (non-critical)
           const [inputKey, pass1ImageKey] = await Promise.all([
             saveImg(base64Image, `user_photo_${ts}_input`).catch(() => null),
             pass1Base64 ? saveImg(pass1Base64, `user_photo_${ts}_pass1`).catch(() => null) : null,
           ]);
 
-          return await saveUserPhoto({
+          photoId = await saveUserPhoto({
             userId: session.user.id,
             inputImageKey: inputKey,
             outputImageKey: outputKey,
@@ -1517,20 +1510,15 @@ export async function POST(request: NextRequest) {
             isOutdoor: isOutdoor || false,
             propertyId: null,
           });
-        } catch (err) {
-          console.error("saveUserPhoto failed:", err);
-          return null;
+          console.log(`[generate] saveUserPhoto SUCCESS: photoId=${photoId} outputKey=${outputKey}`);
+        } else {
+          console.error("[saveUserPhoto] SKIPPING — outputKey null after 2 attempts");
         }
-      })();
+      } catch (err) {
+        console.error("[saveUserPhoto] FAILED:", err);
+      }
     }
-
-    // Wait for photoId (8s max) so the gallery entry is saved before the response
-    // Increased from 5s to 8s to allow retry on Object Storage flakiness.
-    const photoId = await Promise.race([
-      photoIdPromise,
-      new Promise<null>((resolve) => setTimeout(() => resolve(null), 8000)),
-    ]);
-    console.log(`[generate] photoId result: ${photoId || "NULL (timeout or save failed)"} for userId="${session?.user?.id || "NONE"}"`);
+    console.log(`[generate] photoId final: ${photoId || "NULL"} for userId="${session?.user?.id || "NONE"}"`);
 
     const response = NextResponse.json({
       image: pass2.image,
@@ -1539,8 +1527,8 @@ export async function POST(request: NextRequest) {
       ...(photoId ? { photoId } : {}),
     });
 
-    // Fire-and-forget: log to DB + save images to filesystem
-    logGeneration({
+    // Log to DB BEFORE returning response (Replit autoscale kills worker after response)
+    await logGeneration({
       ip, styleId, surfacePrompt: trimmedSurface, furniturePrompt: trimmedFurniture,
       withFurniture: true, inputWidth: width, inputHeight: height,
       modelUsed: `${pass1.model} → ${pass2.model}`,
