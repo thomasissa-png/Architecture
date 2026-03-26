@@ -1018,8 +1018,8 @@ export default function Home() {
                   onSelect={setSelectedRoomType}
                 />
                 {!selectedRoomType && selectedStyle && (
-                  <p className="text-xs text-sage font-light text-center mt-2">
-                    S&eacute;lectionnez un type de pi&egrave;ce pour continuer
+                  <p className="text-sm text-sage font-medium text-center mt-3 animate-pulse">
+                    ↑ Sélectionnez un type de pièce pour continuer
                   </p>
                 )}
               </div>
@@ -1105,9 +1105,16 @@ export default function Home() {
                     </svg>
                     G&eacute;n&eacute;ration en cours&hellip; ({currentProcessing + 1}/{files.length})
                   </>
+                ) : (!isOutdoor && selectedStyle !== null && !selectedRoomType) ? (
+                  <>
+                    Choisissez un type de pièce
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                    </svg>
+                  </>
                 ) : (
                   <>
-                    G&eacute;n&eacute;rer la visualisation
+                    Générer la visualisation
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
