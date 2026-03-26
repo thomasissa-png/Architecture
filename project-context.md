@@ -243,28 +243,32 @@
 
 ## Mémo de reprise — dernière session
 
-- **Date et heure de clôture** : 2026-03-26 ~21h
-- **Résumé de la session** : Sprint massif couvrant lint fixes, auth email/password, F6 annonce publique (4 itérations Marc → 9.2/10), fiche bien enrichie (11 champs DPE/étage/parking), 3 audits frontend complets itérés (technique 9.0, design 9.0, UX 9.0), pipeline itération corrigé (adjust/restyle via classification LLM), prompt versioning v21, 2 nouveaux agents créés (@client-mandataire Marc, @paysagiste Camille), suppression pack Studio, UI annotation multi-photo, fix critique image display (read-after-write Object Storage).
+- **Date et heure de clôture** : 2026-03-26 (session 2b)
+- **Branch** : `claude/setup-project-context-K9w4y`
+- **Résumé de la session** : Session massive (35+ livrables). Gradient Agents mis à jour. 15+ bugs corrigés (modal auth, carte OSM, hero images, dossier photos NaN, accents x100, InlineGenerator P0). 2 styles outdoor ajoutés (Provençal, Industriel-Urbain, v22). InlineGenerator complet (upload direct + photos existantes). ProGate /mes-biens et /mes-dossiers. StorageImage composant réutilisable. Migration transactionnelle user_id (fix critique persistance photos cross-provider). 3 landing pages personas SSG (/marchand, /architecte, /particulier). Page /comparatif SEO+GEO. Blog infrastructure + 3 articles seed + API generate. Stratégies SEO (76/100), GEO, Growth content. Description annonce enrichie (benchmark SeLoger/Sotheby's). Audits Thomas 5.6→7.8 + Marc 5.6→7.5. QA complet 8.4→9.2. Selecteur bien existant MerchantMode.
 
 - **Travaux en cours** :
-  1. **InlineGenerator** — specs PM prêtes (`docs/product/inline-generation-specs.md`), implémentation @fullstack à lancer. Thomas ne devrait pas quitter `/mes-biens/[id]` pour générer.
-  2. **2 styles outdoor manquants** (Provençal, Industriel-Urbain) — signalés par Camille dans `docs/reviews/outdoor-reaudit-camille-v2.md`.
-  3. **Vérification production** — CTA conditionnel, biens persistants, galerie photos. Les fixes sont poussés mais non vérifiés en prod.
-  4. **API admin update-user** — créée mais non testée en prod.
+  1. **Hero images statiques** — fichiers dans `public/hero/` sur Replit, `page.tsx` pointe vers `/hero/before.jpg` et `/hero/after.jpg`. MAIS les fichiers ne sont pas dans le repo git (uploadés via Replit UI). Il faut les git add/commit/push.
+  2. **Comparateur mobile** — le curseur avant/après ne fonctionne pas sur mobile (events touch manquants dans ImageComparator.tsx).
+  3. **Photos disparaissent de la galerie** — les logs debug sont en place (`[generate] session:`, `[generate] saveUserPhoto check:`, `[generate] photoId result:`). Vérifier les logs Replit après une génération pour identifier si c'est la session null ou l'Object Storage.
+  4. **Blog articles seed** — exécuter `npx tsx scripts/seed-blog.ts` sur Replit pour publier les 3 articles.
+  5. **Domaine versiroom.fr** — blocker SEO/GEO n°1. Action fondateur.
 
 - **Prochaines actions recommandées** :
-  1. **@fullstack : InlineGenerator** — implémenter la génération inline sur `/mes-biens/[id]`. Specs dans `docs/product/inline-generation-specs.md`. Priorité HAUTE car rupture de parcours Thomas.
-  2. **@fullstack : 2 styles outdoor** (Provençal + Industriel-Urbain) dans `lib/outdoor-styles.ts`. Camille a les recommandations. Incrémenter PROMPT_VERSION.
-  3. **@qa : Test intégral production** — vérifier sur Replit que les photos s'affichent, les biens persistent, les itérations sauvegardent, l'admin fonctionne.
+  1. **Fix comparateur mobile** — ajouter touch events dans `ImageComparator.tsx` (touchstart/touchmove)
+  2. **Vérifier logs génération** — après un deploy, générer une photo et lire les 3 lignes de log pour diagnostiquer la perte de photos galerie
+  3. **Seed blog** — `npx tsx scripts/seed-blog.ts` pour publier les 3 articles
+  4. **Domaine** — acheter versiroom.fr, configurer DNS, mettre à jour BASE_URL
+  5. **Footer pages personas** — ajouter footer Versiroom sur /marchand, /architecte, /particulier (P2 design audit)
 
 - **Blockers éventuels** :
-  - Les clés API (OPENAI_API_KEY, GOOGLE_CLIENT_ID/SECRET, STRIPE_SECRET_KEY, PAPPERS_API_KEY) ne sont pas configurées sur Replit — voir `docs/infra/env-vars-guide.md`
-  - Le domaine est toujours `architecture-toum92.replit.app` — domaine propre nécessaire avant lancement commercial
-  - Les images existantes en Object Storage peuvent avoir été perdues (consistance éventuelle du sidecar Replit)
+  - Domaine toujours sur Replit (sous-domaine générique, pas versiroom.fr)
+  - Hero images dépendent de `public/hero/` étant dans le repo git
+  - Photos galerie : cause racine pas encore confirmée par les logs
 
 - **Commande de reprise suggérée** :
 ```
-@orchestrator Reprends le projet Versiroom. La session du 26 mars a livré : F6 annonce publique (Marc 9.2/10), auth email/password, fiche bien enrichie (DPE/étage/parking), pipeline itération adjust/restyle (v21), 2 nouveaux agents (@client-mandataire Marc, @paysagiste Camille), suppression Studio, UI multi-photo. Priorités : (1) InlineGenerator sur fiche bien (specs prêtes dans docs/product/inline-generation-specs.md), (2) 2 styles outdoor manquants (Provençal, Industriel-Urbain), (3) test intégral production sur Replit. Le fondateur veut aussi vérifier que les photos s'affichent correctement après le fix read-after-write.
+@orchestrator Reprends le projet Versiroom. La session 26/03b a livré : Gradient Agents update, 15+ bug fixes (modal, carte, hero, dossier NaN, accents, InlineGenerator P0), 2 styles outdoor v22, InlineGenerator complet, ProGate, StorageImage, migration user_id transactionnelle, 3 landing pages personas, /comparatif, blog infra + 3 articles, SEO/GEO/Growth strategies. Priorités : (1) Fix comparateur mobile (touch events), (2) Vérifier logs photos galerie, (3) Seed blog articles, (4) Footer pages personas, (5) Domaine versiroom.fr.
 ```
 
 ---
