@@ -180,10 +180,10 @@ export async function POST(req: NextRequest) {
       slug,
       title: finalTitle,
       content: parsed.content,
-      meta_description: parsed.meta_description || null,
+      meta_description: parsed.meta_description || undefined,
       keyword,
       persona: persona || "tous",
-      style_id: styleId || null,
+      style_id: styleId || undefined,
       published: true,
     });
 
