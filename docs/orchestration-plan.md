@@ -336,11 +336,32 @@ Moyenne — 5 agents (reviewer, Yann, Lucas, fullstack, reviewer), 2 features su
 
 ### Phase S26b.1 — Fix 5 bugs production + hero photos
 - Agents : @fullstack
-- Statut : EN COURS
-- Bugs :
-  1. **Modal auth coupee** — AuthModal.tsx max-h + padding compresse le formulaire
-  2. **Carte ne charge pas** — enrich-property fetchStaticMap echoue silencieusement
-  3. **"Aucune photo" associer** — photos avec output_image_key NULL ou filtrage user_id incorrect
-  4. **Dossier redirige homepage** — hasProAccess() toujours false (pas de Stripe), fix via role pro/admin
-  5. **Hero photos fixes** — pinner la generation scandinavian du 25/03/2026 11:00:19 au lieu de latest
-- Livrables attendus : AuthModal.tsx, enrich-property/route.ts, MerchantMode.tsx, user-photos.ts, credits.ts, demo/route.ts, page.tsx
+- Statut : TERMINE
+- Bugs corriges :
+  1. **Modal auth coupee** — CORRIGE : flex-1 min-h-0 scroll interne, bouton fermer absolute
+  2. **Carte ne charge pas** — CORRIGE : iframe OSM cote client (staticmap.openstreetmap.de down)
+  3. **"Aucune photo" associer** — DEJA CORRIGE (filtre output_image_key NOT NULL en place)
+  4. **Dossier redirige homepage** — DEJA CORRIGE (hasProAccess verifie role pro/admin)
+  5. **Hero photos fixes** — CORRIGE : param ?fixed=true, pinnees sur scandinavian 25/03/2026
+- Note : DVF (api.cquest.org) aussi down mais degrade gracieusement (null)
+
+### Phase S26b.2 — Carte OSM iframe (APIs externes down)
+- Statut : TERMINE
+- staticmap.openstreetmap.de timeout + api.cquest.org DVF 502
+- Fix : iframe OSM embed dans MerchantMode + dossier public (zero dependance serveur)
+- DVF : pas d'alternative fonctionnelle, degrade gracieusement
+
+### Phase S26b.3 — 2 styles outdoor + PROMPT_VERSION v22
+- Agents : @fullstack
+- Statut : TERMINE
+- Provencal : limestone, wrought iron, cypress, lavender, terracotta
+- Industriel-Urbain : raw concrete, galvanized steel, Stipa, Sedum, corten
+- Corrections Camille F1/F2 deja appliquees (Nephrolepis → Dryopteris, coton → polypropylene)
+
+### Phase S26b.4 — InlineGenerator (generation depuis fiche bien)
+- Agents : @fullstack
+- Statut : TERMINE
+- Composant InlineGenerator.tsx : 4 etapes (select → style → generating → results)
+- Remplace le redirect homepage par panneau inline sur /mes-biens/[id]
+- Semaphore max 2 concurrent, AbortController, auto-association au bien
+- Zero nouveau endpoint API
