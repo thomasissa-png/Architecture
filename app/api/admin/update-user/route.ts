@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     // Auth check
     if (!process.env.ADMIN_PASSWORD || password !== process.env.ADMIN_PASSWORD) {
       return NextResponse.json(
-        { error: "Acc\u00E8s refus\u00E9." },
+        { error: "Accès refusé." },
         { status: 401 }
       );
     }
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     // Validate role if provided
     if (role !== undefined && !VALID_ROLES.includes(role)) {
       return NextResponse.json(
-        { error: `R\u00F4le invalide. Valeurs accept\u00E9es : ${VALID_ROLES.join(", ")}` },
+        { error: `Rôle invalide. Valeurs acceptées : ${VALID_ROLES.join(", ")}` },
         { status: 400 }
       );
     }
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     // Validate credits if provided
     if (credits !== undefined && (typeof credits !== "number" || !Number.isInteger(credits) || credits <= 0)) {
       return NextResponse.json(
-        { error: "Nombre de cr\u00E9dits invalide (entier positif requis)." },
+        { error: "Nombre de crédits invalide (entier positif requis)." },
         { status: 400 }
       );
     }

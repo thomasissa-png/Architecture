@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     // Auth check
     if (!process.env.ADMIN_PASSWORD || password !== process.env.ADMIN_PASSWORD) {
       return NextResponse.json(
-        { error: "Acc\u00E8s refus\u00E9." },
+        { error: "Accès refusé." },
         { status: 401 }
       );
     }
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
 
     if (!credits || typeof credits !== "number" || credits <= 0 || !Number.isInteger(credits)) {
       return NextResponse.json(
-        { error: "Nombre de cr\u00E9dits invalide (entier positif requis)." },
+        { error: "Nombre de crédits invalide (entier positif requis)." },
         { status: 400 }
       );
     }

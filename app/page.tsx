@@ -118,7 +118,7 @@ async function resilientFetch(
 
 const USE_CASES = [
   { label: "Architectes", desc: "Partagez des pistes d\u2019inspiration" },
-  { label: "Marchands de biens", desc: "Pr\u00e9commercialisez vos op\u00e9rations" },
+  { label: "Marchands de biens", desc: "Précommercialisez vos opérations" },
   { label: "Particuliers", desc: "Visualisez votre espace avant d\u2019acheter" },
 ];
 
@@ -302,7 +302,7 @@ export default function Home() {
       const invalidIndex = validations.findIndex((v) => !v.pass);
       if (invalidIndex !== -1) {
         setError(
-          `"${files[invalidIndex].name}" ne semble pas \u00eatre une photo d\u2019int\u00e9rieur. Uploadez une photo de pi\u00e8ce pour un meilleur r\u00e9sultat.`
+          `"${files[invalidIndex].name}" ne semble pas être une photo d\u2019intérieur. Uploadez une photo de pièce pour un meilleur résultat.`
         );
         setIsGenerating(false);
         return;
@@ -319,7 +319,7 @@ export default function Home() {
       const processed = await Promise.all(files.map((f) => processImage(f)));
       processedImages = processed.map((p, i) => ({ ...p, fileIndex: i }));
     } catch {
-      setError("Erreur lors du traitement des images. V\u00e9rifiez vos fichiers.");
+      setError("Erreur lors du traitement des images. Vérifiez vos fichiers.");
       setIsGenerating(false);
       return;
     }
@@ -389,7 +389,7 @@ export default function Home() {
           setError(
             result.reason instanceof Error
               ? result.reason.message
-              : "Erreur lors de la g\u00e9n\u00e9ration"
+              : "Erreur lors de la génération"
           );
         }
       }
@@ -476,7 +476,7 @@ export default function Home() {
     async (comment: string) => {
       const targetResult = results[refineTargetIndex];
       if (!targetResult?.pass1Key) {
-        setRefineError("Les surfaces de cette g\u00E9n\u00E9ration ont expir\u00E9. Reg\u00E9n\u00E9rez depuis l'image originale.");
+        setRefineError("Les surfaces de cette génération ont expiré. Regénérez depuis l'image originale.");
         return;
       }
 
@@ -1084,7 +1084,7 @@ export default function Home() {
               <p className="text-center text-xs text-muted font-light mt-2">
                 {withFurniture
                   ? "Finitions et mobilier complet"
-                  : "Pi\u00e8ce finie sans meuble \u2014 id\u00e9al pour voir les surfaces"}
+                  : "Pièce finie sans meuble — idéal pour voir les surfaces"}
               </p>
             </div>
           )}
@@ -1167,10 +1167,10 @@ export default function Home() {
               <div className="text-center space-y-2">
                 <p className="text-xs text-muted font-light">
                   {generationElapsed < 30
-                    ? `${generationElapsed}s — Estimation : jusqu\u2019\u00e0 2 minutes par image`
+                    ? `${generationElapsed}s — Estimation : jusqu\u2019à 2 minutes par image`
                     : generationElapsed < 90
-                    ? `${generationElapsed}s — G\u00e9n\u00e9ration en cours\u2026`
-                    : `${generationElapsed}s — Presque termin\u00e9\u2026`}
+                    ? `${generationElapsed}s — Génération en cours\u2026`
+                    : `${generationElapsed}s — Presque terminé\u2026`}
                 </p>
                 <button
                   onClick={handleCancelGeneration}

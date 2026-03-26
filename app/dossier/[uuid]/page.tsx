@@ -303,7 +303,7 @@ export default async function DossierPage({ params }: PageProps) {
             </p>
           )}
           <p className="text-sm text-muted/60 font-light">
-            Visuels d&apos;am{"\u00E9"}nagement g{"\u00E9"}n{"\u00E9"}r{"\u00E9"}s par intelligence artificielle — le bien est livr{"\u00E9"} brut. Ces images sont {"\u00E0"} titre indicatif et ne sont pas contractuelles.
+            Visuels d&apos;aménagement générés par intelligence artificielle — le bien est livré brut. Ces images sont à titre indicatif et ne sont pas contractuelles.
           </p>
           <p className="text-xs text-muted/40 font-light mt-1">
             Disponible jusqu&apos;au {new Date(dossier.expires_at).toLocaleDateString("fr-FR")}
@@ -317,7 +317,7 @@ export default async function DossierPage({ params }: PageProps) {
             >
               Versiroom
             </a>
-            {" "}&mdash; {"\u00A9"} {new Date().getFullYear()}
+            {" "}&mdash; © {new Date().getFullYear()}
           </p>
         </div>
       </main>

@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
   const photos = await getUserPhotos(session.user.id, { propertyId });
   if (photos.length === 0) {
     return NextResponse.json(
-      { error: "Aucune photo associ\u00E9e \u00E0 ce bien." },
+      { error: "Aucune photo associée à ce bien." },
       { status: 400 }
     );
   }
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
   const typePart = property.property_type
     ? property.property_type.charAt(0).toUpperCase() + property.property_type.slice(1)
     : "Bien";
-  const surfacePart = property.surface_m2 ? `${property.surface_m2}m\u00B2` : "";
+  const surfacePart = property.surface_m2 ? `${property.surface_m2}m²` : "";
   const cityPart = property.city || "";
   const titleParts = [typePart, surfacePart, cityPart].filter(Boolean);
   const title = titleParts.length > 1

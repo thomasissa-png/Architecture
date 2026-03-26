@@ -188,11 +188,11 @@ async function generateDescription(params: {
 
     const userParts: string[] = [];
     userParts.push(`Type : ${params.type || "bien immobilier"}`);
-    if (params.surface) userParts.push(`Surface : ${params.surface} m\u00B2`);
+    if (params.surface) userParts.push(`Surface : ${params.surface} m²`);
     userParts.push(`Adresse : ${params.adresse}`);
-    if (params.nbPieces) userParts.push(`Nombre de pi\u00E8ces : ${params.nbPieces}`);
+    if (params.nbPieces) userParts.push(`Nombre de pièces : ${params.nbPieces}`);
     if (params.city) userParts.push(`Ville : ${params.city}`);
-    if (params.prixMoyenM2) userParts.push(`Prix moyen du quartier : ${params.prixMoyenM2} EUR/m\u00B2`);
+    if (params.prixMoyenM2) userParts.push(`Prix moyen du quartier : ${params.prixMoyenM2} EUR/m²`);
 
     const response = await openai.chat.completions.create({
       model: "gpt-4.1-mini",

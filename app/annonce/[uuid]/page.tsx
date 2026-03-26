@@ -49,7 +49,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const title = annonce.title || "Annonce immobilière";
 
   const details: string[] = [];
-  if (property?.surface_m2) details.push(`${property.surface_m2}m\u00B2`);
+  if (property?.surface_m2) details.push(`${property.surface_m2}m²`);
   if (property?.room_count) details.push(`${property.room_count} pièces`);
   if (property?.sale_price) details.push(formatPrice(property.sale_price));
 

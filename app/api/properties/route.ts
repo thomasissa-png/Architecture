@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
   } catch (err) {
     console.error("Error creating property:", err);
     return NextResponse.json(
-      { error: "Erreur lors de la cr\u00E9ation du bien." },
+      { error: "Erreur lors de la création du bien." },
       { status: 500 }
     );
   }
@@ -81,7 +81,7 @@ export async function GET() {
     console.error("Error listing properties:", err);
     console.error("[GET /api/properties] userId:", session.user.id, "error:", err instanceof Error ? err.message : err);
     return NextResponse.json(
-      { error: "Erreur lors de la r\u00E9cup\u00E9ration des biens." },
+      { error: "Erreur lors de la récupération des biens." },
       { status: 500 }
     );
   }
@@ -197,11 +197,11 @@ async function generateDescription(
 
     const parts: string[] = [];
     parts.push(`Type : ${type || "bien immobilier"}`);
-    if (surface) parts.push(`Surface : ${surface} m\u00B2`);
+    if (surface) parts.push(`Surface : ${surface} m²`);
     parts.push(`Adresse : ${adresse}`);
-    if (nbPieces) parts.push(`Nombre de pi\u00E8ces : ${nbPieces}`);
+    if (nbPieces) parts.push(`Nombre de pièces : ${nbPieces}`);
     if (city) parts.push(`Ville : ${city}`);
-    if (prixMoyenM2) parts.push(`Prix moyen du quartier : ${prixMoyenM2} EUR/m\u00B2`);
+    if (prixMoyenM2) parts.push(`Prix moyen du quartier : ${prixMoyenM2} EUR/m²`);
 
     const response = await openai.chat.completions.create({
       model: "gpt-4.1-mini",

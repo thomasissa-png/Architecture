@@ -292,9 +292,9 @@ export async function GET(
     const infoParts: string[] = [];
     if (dossier.bien_type) infoParts.push(typeLabels[dossier.bien_type] || dossier.bien_type);
     if (dossier.bien_surface) infoParts.push(formatSurface(dossier.bien_surface));
-    if (dossier.nb_pieces) infoParts.push(`${dossier.nb_pieces} pi\u00e8ces`);
+    if (dossier.nb_pieces) infoParts.push(`${dossier.nb_pieces} pièces`);
     if (dossier.ville) infoParts.push(dossier.ville);
-    if (dossier.prix_moyen_m2) infoParts.push(`${dossier.prix_moyen_m2.toLocaleString("fr-FR")} \u20AC/m\u00B2 (quartier)`);
+    if (dossier.prix_moyen_m2) infoParts.push(`${dossier.prix_moyen_m2.toLocaleString("fr-FR")} €/m² (quartier)`);
 
     if (infoParts.length > 0) {
       // Draw info pills as text with separators
@@ -374,10 +374,10 @@ export async function GET(
       contemporary: "Style contemporain",
       industrial: "Style industriel",
       japandi: "Style japandi",
-      art_deco: "Style Art D\u00e9co",
+      art_deco: "Style Art Déco",
       mid_century: "Style Mid-Century",
-      bohemian: "Style boh\u00e8me",
-      mediterranean: "Style m\u00e9diterran\u00e9en",
+      bohemian: "Style bohème",
+      mediterranean: "Style méditerranéen",
       cosy: "Style cosy",
       wabi_sabi: "Style wabi-sabi",
       maximalist: "Style maximaliste",
@@ -447,7 +447,7 @@ export async function GET(
 
       // "Apres home staging" label
       const afterLabelColor = rgb(secondaryColor.r, secondaryColor.g, secondaryColor.b);
-      page.drawText("Apr\u00e8s home staging", {
+      page.drawText("Après home staging", {
         x: MARGIN * 2 + imgAreaWidth + imgAreaWidth / 2 - 40,
         y: imgY - 5,
         size: 8,

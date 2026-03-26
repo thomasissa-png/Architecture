@@ -396,5 +396,5 @@ export function formatPrice(priceCents: number): string {
 }
 
 export function formatSurface(surface: number): string {
-  return `${surface} m\u00B2`;
+  return `${surface} m²`;
 }

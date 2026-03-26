@@ -14,7 +14,7 @@ test.describe("Homepage", () => {
 
     // Hero heading
     const heading = page.locator("h1");
-    await expect(heading).toContainText("Votre pi\u00e8ce meubl\u00e9e");
+    await expect(heading).toContainText("Votre pièce meublée");
     await expect(heading).toContainText("en 90 secondes");
 
     // Brand name in header
@@ -60,7 +60,7 @@ test.describe("Homepage", () => {
     await expect(pricing).toContainText("69\u20ac");
 
     // Pack names
-    await expect(pricing).toContainText("D\u00e9couverte");
+    await expect(pricing).toContainText("Découverte");
     await expect(pricing).toContainText("Starter");
     await expect(pricing).toContainText("Pro");
     await expect(pricing).toContainText("Studio");

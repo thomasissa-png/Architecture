@@ -162,7 +162,7 @@ export async function POST(
   } catch (err) {
     console.error("Error creating property dossier:", err);
     return NextResponse.json(
-      { error: "Erreur lors de la cr\u00E9ation du dossier." },
+      { error: "Erreur lors de la création du dossier." },
       { status: 500 }
     );
   }

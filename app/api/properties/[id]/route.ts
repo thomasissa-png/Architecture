@@ -35,7 +35,7 @@ export async function GET(
   } catch (err) {
     console.error("Error getting property:", err);
     return NextResponse.json(
-      { error: "Erreur lors de la r\u00E9cup\u00E9ration du bien." },
+      { error: "Erreur lors de la récupération du bien." },
       { status: 500 }
     );
   }
@@ -92,7 +92,7 @@ export async function PATCH(
   } catch (err) {
     console.error("Error updating property:", err);
     return NextResponse.json(
-      { error: "Erreur lors de la mise \u00E0 jour du bien." },
+      { error: "Erreur lors de la mise à jour du bien." },
       { status: 500 }
     );
   }

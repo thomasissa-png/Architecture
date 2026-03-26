@@ -84,7 +84,7 @@ export async function GET(
   } catch (err) {
     console.error("Error getting property photos:", err);
     return NextResponse.json(
-      { error: "Erreur lors de la r\u00E9cup\u00E9ration des photos." },
+      { error: "Erreur lors de la récupération des photos." },
       { status: 500 }
     );
   }

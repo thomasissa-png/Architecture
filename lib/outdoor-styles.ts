@@ -32,7 +32,7 @@ export const OUTDOOR_STYLES: Record<string, OutdoorStyle> = {
     id: "contemporain_outdoor",
     label: "Contemporain Outdoor",
     emoji: "\uD83C\uDFE2",
-    description: "Dalles b\u00E9ton gris, mobilier modulaire anthracite",
+    description: "Dalles béton gris, mobilier modulaire anthracite",
     surfacePrompt:
       "Contemporary outdoor: large-format grey concrete pavers 60x60cm laid in linear bond with 4mm grey grouted joints, narrow stainless steel expansion joint every 3m, preserve all existing guard rails and exterior walls unchanged, open sky preserved as-is.",
     furniturePrompt:
@@ -41,9 +41,9 @@ export const OUTDOOR_STYLES: Record<string, OutdoorStyle> = {
 
   mediterraneen_outdoor: {
     id: "mediterraneen_outdoor",
-    label: "M\u00E9diterran\u00E9en",
+    label: "Méditerranéen",
     emoji: "\uD83E\uDED2",
-    description: "Tomettes terre cuite, table fer forg\u00E9, oliviers",
+    description: "Tomettes terre cuite, table fer forgé, oliviers",
     surfacePrompt:
       "Mediterranean outdoor: reclaimed Proven\u00E7al terracotta tiles 30x30cm with natural irregular patina and slightly raised grout joints in light ochre mortar, low dry-stone rendered wall coping in warm limestone, preserve all existing walls facades and guard rails unchanged, open sky preserved as-is.",
     furniturePrompt:
@@ -52,9 +52,9 @@ export const OUTDOOR_STYLES: Record<string, OutdoorStyle> = {
 
   boheme_garden: {
     id: "boheme_garden",
-    label: "Boh\u00E8me Garden",
+    label: "Bohème Garden",
     emoji: "\uD83C\uDF3F",
-    description: "Dalles irr\u00E9guli\u00E8res, poufs, macram\u00E9, guirlandes",
+    description: "Dalles irrégulières, poufs, macramé, guirlandes",
     surfacePrompt:
       "Bohemian garden outdoor: reclaimed irregular sandstone pavers 20-40cm variable size with moss-filled joints and raked white marble gravel borders 30cm wide, preserve all existing fences hedges and background trees unchanged, open sky preserved as-is.",
     furniturePrompt:
@@ -63,9 +63,9 @@ export const OUTDOOR_STYLES: Record<string, OutdoorStyle> = {
 
   provencal: {
     id: "provencal",
-    label: "Proven\u00E7al",
+    label: "Provençal",
     emoji: "\uD83C\uDFE1",
-    description: "Pierre calcaire, fer forg\u00E9, lavande, cypr\u00E8s",
+    description: "Pierre calcaire, fer forgé, lavande, cyprès",
     surfacePrompt:
       "Proven\u00E7al outdoor: warm aged limestone walls with natural patina and subtle weathering, terracotta floor tiles with irregular edges and warm tones laid in traditional staggered bond, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs, open sky preserved as-is.",
     furniturePrompt:
@@ -76,7 +76,7 @@ export const OUTDOOR_STYLES: Record<string, OutdoorStyle> = {
     id: "industriel_urbain",
     label: "Industriel Urbain",
     emoji: "\uD83C\uDFD7\uFE0F",
-    description: "B\u00E9ton brut, acier galvanis\u00E9, plantes graphiques",
+    description: "Béton brut, acier galvanisé, plantes graphiques",
     surfacePrompt:
       "Industrial urban outdoor: raw concrete walls keeping existing texture and color unchanged, smooth grey concrete floor, exposed ceiling with any visible pipes or beams preserved, open sky preserved as-is.",
     furniturePrompt:
@@ -87,7 +87,7 @@ export const OUTDOOR_STYLES: Record<string, OutdoorStyle> = {
     id: "minimaliste_urbain",
     label: "Minimaliste Urbain",
     emoji: "\u2B1C",
-    description: "B\u00E9ton bross\u00E9, bains de soleil teck, herbe ornementale",
+    description: "Béton brossé, bains de soleil teck, herbe ornementale",
     surfacePrompt:
       "Minimalist urban outdoor: brushed light grey concrete floor 90x90cm large slabs with 6mm charcoal grouted joints, immaculate smooth finish free of stains, preserve all existing guard rails walls and facades unchanged, open sky preserved as-is.",
     furniturePrompt:
@@ -98,7 +98,7 @@ export const OUTDOOR_STYLES: Record<string, OutdoorStyle> = {
     id: "rooftop",
     label: "Rooftop",
     emoji: "\uD83C\uDF06",
-    description: "Lames IP\u00C9 argent\u00E9es, banquette, parasol, vue ville",
+    description: "Lames IPÉ argentées, banquette, parasol, vue ville",
     surfacePrompt:
       "Rooftop outdoor: IPE hardwood deck planks 140mm wide silver-grey naturally weathered patina with stainless steel hidden fixings, deck laid parallel to the building facade, preserve existing parapet walls guard rails and city skyline exactly as in the input, open sky preserved as-is.",
     furniturePrompt:
