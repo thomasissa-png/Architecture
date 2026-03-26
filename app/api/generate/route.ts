@@ -1473,6 +1473,7 @@ export async function POST(request: NextRequest) {
     // If outputKey is null (Object Storage failure), skip saving entirely —
     // a gallery entry without an output image shows "Image non disponible".
     let photoIdPromise: Promise<string | null> = Promise.resolve(null);
+    console.log(`[generate] saveUserPhoto check: userId="${session?.user?.id || "NONE"}" — ${session?.user?.id ? "WILL save to gallery" : "SKIPPING gallery save (no session)"}`);
     if (session?.user?.id) {
       photoIdPromise = (async () => {
         try {
@@ -1529,6 +1530,7 @@ export async function POST(request: NextRequest) {
       photoIdPromise,
       new Promise<null>((resolve) => setTimeout(() => resolve(null), 8000)),
     ]);
+    console.log(`[generate] photoId result: ${photoId || "NULL (timeout or save failed)"} for userId="${session?.user?.id || "NONE"}"`);
 
     const response = NextResponse.json({
       image: pass2.image,
