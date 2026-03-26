@@ -9,6 +9,7 @@ import { useSession } from "next-auth/react";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams } from "next/navigation";
 import AuthButton from "@/components/AuthButton";
+import InlineGenerator from "@/components/InlineGenerator";
 import { STYLE_LABELS, TYPE_LABELS } from "@/lib/constants";
 
 interface Property {
@@ -95,6 +96,9 @@ export default function PropertyDetailPage() {
   const [isCreatingAnnonce, setIsCreatingAnnonce] = useState(false);
   const [activeAnnonceUuid, setActiveAnnonceUuid] = useState<string | null>(null);
   const [isArchivingAnnonce, setIsArchivingAnnonce] = useState(false);
+
+  // Inline generator
+  const [showGenerator, setShowGenerator] = useState(false);
 
   // Dossier creation
   const [showDossierModal, setShowDossierModal] = useState(false);
@@ -818,12 +822,12 @@ export default function PropertyDetailPage() {
               >
                 + Associer des photos
               </button>
-              <a
-                href={`/?propertyId=${propertyId}`}
+              <button
+                onClick={() => setShowGenerator(true)}
                 className="text-xs bg-sage text-white px-3 py-1.5 rounded-full font-medium hover:bg-sage/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
               >
-                + Générer pour ce bien
-              </a>
+                + Generer pour ce bien
+              </button>
             </div>
           </div>
 
@@ -868,6 +872,19 @@ export default function PropertyDetailPage() {
                   </div>
                 ))}
               </div>
+
+              {/* Inline generator panel */}
+              {showGenerator && (
+                <InlineGenerator
+                  propertyId={propertyId}
+                  photos={photos}
+                  onClose={() => setShowGenerator(false)}
+                  onPhotosGenerated={() => {
+                    fetchPhotos();
+                    setShowGenerator(false);
+                  }}
+                />
+              )}
 
               {/* Dossier + Annonce creation */}
               <div className="mt-6 flex gap-2">
