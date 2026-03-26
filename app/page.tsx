@@ -755,7 +755,7 @@ export default function Home() {
                   </svg>
                   {/* Real photo — static file, no API dependency */}
                   <img
-                    src="/hero/before.jpg"
+                    src="/imageavant.jpg"
                     alt="Pièce vide avant home staging"
                     className="absolute inset-0 w-full h-full object-cover"
                   />
@@ -841,7 +841,7 @@ export default function Home() {
                   </svg>
                   {/* Real photo — static file, no API dependency */}
                   <img
-                    src="/hero/after.jpg"
+                    src="/imageapres.jpg"
                     alt="Salon scandinave meublé par Versiroom"
                     className="absolute inset-0 w-full h-full object-cover"
                   />
