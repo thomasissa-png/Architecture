@@ -210,11 +210,11 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
       />
 
       {/* Centering wrapper — min-h-full ensures vertical centering even on small screens */}
-      <div className="relative flex min-h-full items-center justify-center p-4">
+      <div className="relative z-10 flex min-h-full items-center justify-center p-2 sm:p-4">
         {/* Modal */}
         <div
           ref={modalRef}
-          className="relative w-full max-w-md bg-background rounded-3xl shadow-2xl border border-foreground/5"
+          className="relative w-full max-w-md bg-background rounded-3xl shadow-2xl border border-foreground/5 max-h-[95vh] sm:max-h-[90vh] overflow-y-auto"
           style={{ animation: "fadeInUp 300ms cubic-bezier(0.16, 1, 0.3, 1)" }}
         >
         {/* Close button — 44px touch target, absolute top-right so it never scrolls away */}
