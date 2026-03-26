@@ -326,6 +326,7 @@ export default function PropertyDetailPage() {
       }
     } catch (err) {
       console.error("Erreur association photos:", err);
+      setToastMsg("Erreur lors de l'association. Réessayez.");
     }
   };
 
@@ -341,6 +342,7 @@ export default function PropertyDetailPage() {
       }
     } catch (err) {
       console.error("Erreur dissociation photo:", err);
+      setToastMsg("Erreur lors de la dissociation. Réessayez.");
     }
   };
 

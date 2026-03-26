@@ -35,12 +35,16 @@ export default function ShareButtons({
     setTimeout(() => setCopied(false), 2000);
   }, []);
 
+  const [copyError, setCopyError] = useState(false);
+
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(shareUrl);
       showCopied();
+      setCopyError(false);
     } catch {
-      // Clipboard unavailable
+      setCopyError(true);
+      setTimeout(() => setCopyError(false), 3000);
     }
   };
 
@@ -83,7 +87,7 @@ export default function ShareButtons({
             d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m9.86-2.06a4.5 4.5 0 00-1.242-7.244l-4.5-4.5a4.5 4.5 0 00-6.364 6.364L4.34 8.374"
           />
         </svg>
-        {copied ? "Copie !" : "Copier le lien"}
+        {copied ? "Copie !" : copyError ? "Impossible de copier" : "Copier le lien"}
       </button>
 
       {/* WhatsApp / Native share */}

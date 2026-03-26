@@ -7,7 +7,7 @@
  */
 
 import { useSession } from "next-auth/react";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import AuthButton from "@/components/AuthButton";
 import AuthModal from "@/components/AuthModal";
 import { STYLE_LABELS } from "@/lib/constants";
@@ -42,6 +42,49 @@ export default function GaleriePage() {
   const [selectedPhoto, setSelectedPhoto] = useState<UserPhoto | null>(null);
   const [associatingPhotoId, setAssociatingPhotoId] = useState<string | null>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const detailModalRef = useRef<HTMLDivElement>(null);
+
+  // Toast auto-dismiss
+  useEffect(() => {
+    if (toastMsg) {
+      const t = setTimeout(() => setToastMsg(null), 4000);
+      return () => clearTimeout(t);
+    }
+  }, [toastMsg]);
+
+  // Focus trap + Escape + scroll lock for detail modal
+  useEffect(() => {
+    if (!selectedPhoto) return;
+    document.body.style.overflow = "hidden";
+
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") { setSelectedPhoto(null); return; }
+      if (e.key !== "Tab" || !detailModalRef.current) return;
+      const focusable = detailModalRef.current.querySelectorAll<HTMLElement>(
+        'button, input, a[href], [tabindex]:not([tabindex="-1"])'
+      );
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last?.focus(); }
+      } else {
+        if (document.activeElement === last) { e.preventDefault(); first?.focus(); }
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    // Focus first element in modal
+    setTimeout(() => {
+      const firstFocusable = detailModalRef.current?.querySelector<HTMLElement>('button, input, a[href]');
+      firstFocusable?.focus();
+    }, 100);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
+    };
+  }, [selectedPhoto]);
 
   const fetchPhotos = useCallback(async () => {
     try {
@@ -94,6 +137,7 @@ export default function GaleriePage() {
       }
     } catch {
       console.error("Erreur association");
+      setToastMsg("Erreur lors de l'association. Réessayez.");
     }
   };
 
@@ -360,6 +404,9 @@ export default function GaleriePage() {
             onClick={() => setSelectedPhoto(null)}
           >
             <div
+              ref={detailModalRef}
+              role="dialog"
+              aria-modal="true"
               className="bg-background rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6"
               onClick={(e) => e.stopPropagation()}
             >
@@ -448,6 +495,12 @@ export default function GaleriePage() {
                 </div>
               ) : null}
             </div>
+          </div>
+        )}
+        {/* Inline toast */}
+        {toastMsg && (
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-red-500/90 text-white text-xs font-medium px-4 py-2.5 rounded-full shadow-lg animate-fade-in">
+            {toastMsg}
           </div>
         )}
       </main>

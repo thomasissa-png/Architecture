@@ -230,7 +230,7 @@ export default function MesBiensPage() {
                   value={newAddress}
                   onChange={(e) => handleAddressInput(e.target.value)}
                   onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
-                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 300)}
                   placeholder="12 rue de la Paix, 75002 Paris"
                   className="w-full text-sm font-light bg-background border border-foreground/10 rounded-xl px-3 py-2 text-foreground placeholder:text-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                 />
@@ -310,7 +310,16 @@ export default function MesBiensPage() {
                 {isCreating ? "Création..." : "Créer le bien"}
               </button>
               <button
-                onClick={() => setShowCreateForm(false)}
+                onClick={() => {
+                  setShowCreateForm(false);
+                  setNewAddress("");
+                  setNewType("");
+                  setNewSurface("");
+                  setNewRooms("");
+                  setNewPrice("");
+                  setCreateError(null);
+                  setSuggestions([]);
+                }}
                 className="text-xs text-muted font-light px-4 py-2 rounded-full hover:text-foreground transition-colors"
               >
                 Annuler

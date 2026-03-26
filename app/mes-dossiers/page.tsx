@@ -98,9 +98,16 @@ export default function MesDossiersPage() {
     );
   }
 
-  // Not authenticated — redirecting
+  // Not authenticated — redirect to home
   if (!session) {
-    return null;
+    if (typeof window !== "undefined") {
+      window.location.href = "/";
+    }
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-sm text-muted font-light">Redirection en cours...</p>
+      </div>
+    );
   }
 
   return (
