@@ -753,13 +753,22 @@ export default function Home() {
                     {/* Outlet on wall */}
                     <rect x="310" y="200" width="8" height="12" rx="1" fill="none" stroke="#c8c0b4" strokeWidth="0.8" />
                   </svg>
-                  {/* Real photo overlay — scandinavian style from DB */}
+                  {/* Real photo overlay — scandinavian style, cached in server memory */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src="/api/demo?type=hero&image=before&fixed=true"
                     alt="Pi&egrave;ce vide avant home staging"
                     className="absolute inset-0 w-full h-full object-cover"
-                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                    onError={(e) => {
+                      const img = e.target as HTMLImageElement;
+                      // Retry once after 2s (server cold start)
+                      if (!img.dataset.retried) {
+                        img.dataset.retried = "1";
+                        setTimeout(() => { img.src = img.src.split("&_t=")[0] + "&_t=" + Date.now(); }, 2000);
+                      } else {
+                        img.style.display = "none";
+                      }
+                    }}
                   />
                 </div>
                 <span className="absolute bottom-2.5 left-2.5 text-xs font-medium text-gray-400 bg-white/80 backdrop-blur-sm px-2.5 py-1 rounded-full">
@@ -841,13 +850,21 @@ export default function Home() {
                     {/* Baseboard */}
                     <line x1="40" y1="248" x2="360" y2="248" stroke="#d8d0c6" strokeWidth="2" />
                   </svg>
-                  {/* Real photo overlay — scandinavian style from DB */}
+                  {/* Real photo overlay — scandinavian style, cached in server memory */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src="/api/demo?style=scandinavian&image=after&fixed=true"
                     alt="Salon scandinave meubl&eacute; par Versiroom"
                     className="absolute inset-0 w-full h-full object-cover"
-                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                    onError={(e) => {
+                      const img = e.target as HTMLImageElement;
+                      if (!img.dataset.retried) {
+                        img.dataset.retried = "1";
+                        setTimeout(() => { img.src = img.src.split("&_t=")[0] + "&_t=" + Date.now(); }, 2000);
+                      } else {
+                        img.style.display = "none";
+                      }
+                    }}
                   />
                 </div>
                 <span className="absolute bottom-2.5 left-2.5 text-xs font-medium text-sage bg-white/80 backdrop-blur-sm px-2.5 py-1 rounded-full">
