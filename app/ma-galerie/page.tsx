@@ -208,8 +208,8 @@ export default function GaleriePage() {
             <a href="/" className="text-xl font-semibold text-foreground tracking-tighter">Versiroom</a>
             <nav className="flex items-center gap-2 sm:gap-6">
               <a href="/mes-biens" className="text-xs text-muted font-light hover:text-foreground transition-colors">Mes biens</a>
-              <a href="/mes-dossiers" className="text-xs text-muted font-light hover:text-foreground transition-colors">Mes dossiers</a>
               <a href="/ma-galerie" className="text-xs text-sage font-medium">Ma galerie</a>
+              <a href="/mes-dossiers" className="text-xs text-muted font-light hover:text-foreground transition-colors">Mes dossiers</a>
               <AuthButton />
             </nav>
           </div>

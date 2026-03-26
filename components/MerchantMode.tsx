@@ -648,7 +648,7 @@ export default function MerchantMode() {
                 data-testid="merchant-description"
               />
               <p className="text-xs text-muted/50 font-light mt-1">
-                Generee automatiquement — vous pouvez la modifier.
+                Générée automatiquement — vous pouvez la modifier.
               </p>
             </div>
           )}

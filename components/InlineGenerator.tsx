@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import StylePicker, { StyleOption } from "@/components/StylePicker";
 import ImageComparator from "@/components/ImageComparator";
+import UploadZone from "@/components/UploadZone";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -109,6 +110,9 @@ export default function InlineGenerator({
   const [selectedPhotoIds, setSelectedPhotoIds] = useState<Set<string>>(
     () => new Set(photos.filter((p) => p.input_image_key).map((p) => p.id))
   );
+
+  // Upload: when no photos are associated yet, allow direct upload
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
   // Step 2: style
   const [selectedStyle, setSelectedStyle] = useState<StyleOption | null>(null);
@@ -427,13 +431,13 @@ export default function InlineGenerator({
       <div className="flex items-center justify-between px-5 py-4 border-b border-foreground/5">
         <div>
           <h3 className="text-sm font-semibold text-foreground tracking-tight">
-            Generation de visuels meubles
+            Génération de visuels meublés
           </h3>
           <p className="text-xs text-muted font-light mt-0.5">
-            {step === "select" && "Selectionnez les photos a transformer"}
+            {step === "select" && "Sélectionnez les photos à transformer"}
             {step === "style" && "Choisissez un style d'ambiance"}
-            {step === "generating" && `Generation en cours... ${elapsedSeconds}s`}
-            {step === "results" && `${successCount} resultat${successCount > 1 ? "s" : ""} genere${successCount > 1 ? "s" : ""}`}
+            {step === "generating" && `Génération en cours... ${elapsedSeconds}s`}
+            {step === "results" && `${successCount} résultat${successCount > 1 ? "s" : ""} généré${successCount > 1 ? "s" : ""}`}
           </p>
         </div>
         <button
@@ -448,22 +452,53 @@ export default function InlineGenerator({
         {/* ── Step 1: Select photos ── */}
         {step === "select" && (
           <div className="space-y-4">
+            {/* If no photos associated, show upload zone */}
+            {photosWithInput.length === 0 && uploadedFiles.length === 0 && (
+              <div className="space-y-3">
+                <p className="text-sm text-muted font-light">
+                  Aucune photo associée. Uploadez vos photos pour générer des visuels meublés.
+                </p>
+                <UploadZone files={uploadedFiles} onFilesChange={setUploadedFiles} maxFiles={5} />
+              </div>
+            )}
+
+            {/* If files uploaded, show them and allow proceeding */}
+            {uploadedFiles.length > 0 && (
+              <div className="space-y-3">
+                <p className="text-xs text-muted font-light">
+                  {uploadedFiles.length} photo{uploadedFiles.length > 1 ? "s" : ""} prête{uploadedFiles.length > 1 ? "s" : ""}
+                </p>
+                <UploadZone files={uploadedFiles} onFilesChange={setUploadedFiles} maxFiles={5} />
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => setStep("style")}
+                    className="text-xs bg-foreground text-background px-5 py-2.5 rounded-full font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                  >
+                    Choisir le style
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* If photos already associated, show selection grid */}
+            {photosWithInput.length > 0 && (
+            <>
             <div className="flex items-center justify-between">
               <span className="text-xs text-muted font-light">
-                {selectedCount} / {photosWithInput.length} photo{photosWithInput.length > 1 ? "s" : ""} selectionnee{selectedCount > 1 ? "s" : ""}
+                {selectedCount} / {photosWithInput.length} photo{photosWithInput.length > 1 ? "s" : ""} sélectionnée{selectedCount > 1 ? "s" : ""}
               </span>
               <div className="flex gap-2">
                 <button
                   onClick={selectAll}
                   className="text-xs text-sage hover:text-sage/80 font-light transition-colors"
                 >
-                  Tout selectionner
+                  Tout sélectionner
                 </button>
                 <button
                   onClick={deselectAll}
                   className="text-xs text-muted hover:text-foreground font-light transition-colors"
                 >
-                  Tout deselectionner
+                  Tout désélectionner
                 </button>
               </div>
             </div>
@@ -529,6 +564,8 @@ export default function InlineGenerator({
                 Choisir le style
               </button>
             </div>
+            </>
+            )}
           </div>
         )}
 
@@ -577,7 +614,7 @@ export default function InlineGenerator({
                   <path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round" />
                 </svg>
                 <span>
-                  Generation en cours... {elapsedSeconds}s
+                  Génération en cours... {elapsedSeconds}s
                   <span className="text-muted/60 ml-1">(~90s par photo)</span>
                 </span>
               </div>
@@ -661,7 +698,7 @@ export default function InlineGenerator({
                       onClick={() => handleRetry(i)}
                       className="text-xs bg-red-500 text-white px-3 py-1.5 rounded-full font-medium hover:bg-red-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300"
                     >
-                      Reessayer
+                      Réessayer
                     </button>
                   </div>
                 )}

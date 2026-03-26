@@ -842,7 +842,7 @@ export default function PropertyDetailPage() {
                 onClick={() => setShowGenerator(true)}
                 className="text-xs bg-sage text-white px-3 py-1.5 rounded-full font-medium hover:bg-sage/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
               >
-                + Generer pour ce bien
+                + Générer pour ce bien
               </button>
             </div>
           </div>
