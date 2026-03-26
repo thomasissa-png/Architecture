@@ -320,13 +320,17 @@ export default async function AnnoncePage({ params }: PageProps) {
           />
         )}
 
-        {/* Description */}
+        {/* Description — split into visual paragraphs for structured reading */}
         <div className="mb-10" data-testid="annonce-description">
           <h2 className="text-sm font-medium text-foreground mb-3">Description</h2>
           {description ? (
-            <p className="text-sm text-muted font-light leading-relaxed whitespace-pre-line max-w-2xl">
-              {description}
-            </p>
+            <div className="max-w-2xl space-y-4">
+              {description.split(/\n\n+/).map((paragraph, idx) => (
+                <p key={idx} className="text-sm text-muted font-light leading-relaxed">
+                  {paragraph.trim()}
+                </p>
+              ))}
+            </div>
           ) : (
             <p className="text-sm text-muted font-light">
               Description en cours de r{"\u00E9"}daction

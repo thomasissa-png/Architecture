@@ -202,7 +202,7 @@ export default async function DossierPage({ params }: PageProps) {
           </div>
 
           <p className="text-xs text-muted/50 mt-2">
-            Généré le {new Date(dossier.created_at).toLocaleDateString("fr-FR")} — Disponible jusqu&apos;au {new Date(dossier.expires_at).toLocaleDateString("fr-FR")}
+            Généré le {new Date(dossier.created_at).toLocaleDateString("fr-FR")}
           </p>
         </div>
 
@@ -304,6 +304,9 @@ export default async function DossierPage({ params }: PageProps) {
           )}
           <p className="text-sm text-muted/60 font-light">
             Visuels d&apos;am{"\u00E9"}nagement g{"\u00E9"}n{"\u00E9"}r{"\u00E9"}s par intelligence artificielle — le bien est livr{"\u00E9"} brut. Ces images sont {"\u00E0"} titre indicatif et ne sont pas contractuelles.
+          </p>
+          <p className="text-xs text-muted/40 font-light mt-1">
+            Disponible jusqu&apos;au {new Date(dossier.expires_at).toLocaleDateString("fr-FR")}
           </p>
           <p className="text-xs text-muted/40 font-light mt-1">
             <a
