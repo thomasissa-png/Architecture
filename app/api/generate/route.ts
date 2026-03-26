@@ -1479,15 +1479,23 @@ export async function POST(request: NextRequest) {
           const { saveImage: saveImg } = await import("@/lib/db");
           const ts = Date.now();
 
-          // Save output image first — this is the critical one
-          const outputKey = await saveImg(outputBase64, `user_photo_${ts}_output`).catch((err) => {
-            console.error("[saveUserPhoto] output saveImage failed:", err);
+          // Save output image — retry once on failure (Object Storage can be flaky)
+          let outputKey = await saveImg(outputBase64, `user_photo_${ts}_output`).catch((err) => {
+            console.error("[saveUserPhoto] output saveImage failed (attempt 1):", err);
             return null;
           });
 
-          // If output save failed, do NOT create a gallery entry with null output
+          // Retry once after 1s if first attempt failed
           if (!outputKey) {
-            console.error("[saveUserPhoto] SKIPPING saveUserPhoto — outputKey is null (Object Storage failed)");
+            await new Promise((r) => setTimeout(r, 1000));
+            outputKey = await saveImg(outputBase64, `user_photo_${ts}_output_r`).catch((err) => {
+              console.error("[saveUserPhoto] output saveImage failed (attempt 2):", err);
+              return null;
+            });
+          }
+
+          if (!outputKey) {
+            console.error("[saveUserPhoto] SKIPPING saveUserPhoto — outputKey is null after 2 attempts");
             return null;
           }
 
@@ -1515,11 +1523,11 @@ export async function POST(request: NextRequest) {
       })();
     }
 
-    // Wait for photoId (5s max) so the gallery entry is saved before the response
-    // 50ms was too short — Object Storage uploads take 200-2000ms typically.
+    // Wait for photoId (8s max) so the gallery entry is saved before the response
+    // Increased from 5s to 8s to allow retry on Object Storage flakiness.
     const photoId = await Promise.race([
       photoIdPromise,
-      new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 8000)),
     ]);
 
     const response = NextResponse.json({
