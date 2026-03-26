@@ -12,25 +12,40 @@ export async function GET(req: NextRequest) {
 
   // Normalize: accept either "logs/foo.jpg", "/logs/foo.jpg", or just "foo.jpg"
   const basename = file.split("/").pop() || file;
-  const key = `logs/${basename}`;
+  const normalizedKey = `logs/${basename}`;
+
+  // Try normalized key first, then raw key as fallback (in case the stored key
+  // uses a different prefix than "logs/")
+  const keysToTry = [normalizedKey];
+  if (file !== normalizedKey && !file.startsWith("/")) {
+    keysToTry.push(file);
+  }
 
   try {
-    const buffer = await getImage(key);
-    if (!buffer) {
-      console.warn(`/api/logs/image: 404 for key "${key}" (file param: "${file}")`);
-      return NextResponse.json({ error: "Image not found", key, detail: "Key does not exist in Object Storage" }, { status: 404 });
+    for (const key of keysToTry) {
+      const buffer = await getImage(key);
+      if (buffer) {
+        // Detect content type from extension
+        const contentType = key.endsWith(".png") ? "image/png" : "image/jpeg";
+        return new NextResponse(new Uint8Array(buffer), {
+          headers: {
+            "Content-Type": contentType,
+            "Cache-Control": "public, max-age=86400",
+          },
+        });
+      }
     }
-    return new NextResponse(new Uint8Array(buffer), {
-      headers: {
-        "Content-Type": "image/jpeg",
-        "Cache-Control": "public, max-age=86400",
-      },
-    });
+
+    console.warn(`/api/logs/image: 404 for keys ${JSON.stringify(keysToTry)} (file param: "${file}")`);
+    return NextResponse.json(
+      { error: "Image not found", keys: keysToTry, detail: "Key does not exist in Object Storage" },
+      { status: 404 }
+    );
   } catch (err) {
     const detail = err instanceof Error ? err.message : "Unknown error";
-    console.error(`/api/logs/image: 500 for key "${key}":`, detail);
+    console.error(`/api/logs/image: 500 for keys ${JSON.stringify(keysToTry)}:`, detail);
     return NextResponse.json(
-      { error: "Failed to fetch image", key, detail },
+      { error: "Failed to fetch image", keys: keysToTry, detail },
       { status: 500 }
     );
   }
