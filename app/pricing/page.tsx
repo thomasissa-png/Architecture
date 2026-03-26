@@ -9,13 +9,19 @@ import AuthModal from "@/components/AuthModal";
 const PACKS = [
   {
     id: "decouverte",
-    name: "Decouverte",
+    name: "Découverte",
     credits: 5,
     price: "4,90",
     perPhoto: "0,98",
-    features: ["12 styles disponibles", "Telechargement HD"],
+    features: [
+      { text: "12 styles disponibles", active: true },
+      { text: "Téléchargement HD", active: true },
+      { text: "Itérations", active: false },
+      { text: "Mode Marchand", active: false },
+    ],
     cta: "Acheter",
     highlight: false,
+    note: "3 générations offertes sans CB",
   },
   {
     id: "starter",
@@ -23,7 +29,12 @@ const PACKS = [
     credits: 20,
     price: "14,90",
     perPhoto: "0,75",
-    features: ["1 iteration par photo", "Lien partageable 7 jours"],
+    features: [
+      { text: "1 itération par photo", active: true },
+      { text: "Lien partageable 7 jours", active: true },
+      { text: "Téléchargement HD", active: true },
+      { text: "Mode Marchand", active: false },
+    ],
     cta: "Acheter",
     highlight: false,
   },
@@ -34,10 +45,10 @@ const PACKS = [
     price: "29",
     perPhoto: "0,58",
     features: [
-      "3 iterations par photo",
-      "Mode Marchand — dossiers PDF",
-      "Annonces immobilieres",
-      "Lien partageable 30 jours",
+      { text: "3 itérations par photo", active: true },
+      { text: "Mode Marchand — dossiers PDF", active: true },
+      { text: "Annonces immobilières", active: true },
+      { text: "Lien partageable 30 jours", active: true },
     ],
     cta: "Acheter",
     highlight: true,
@@ -157,7 +168,7 @@ function PricingContent() {
           {checkoutCancelled && (
             <div className="mb-8 bg-amber-50/50 border border-amber-200/60 rounded-2xl p-5 text-center max-w-xl mx-auto">
               <p className="text-amber-700/90 text-sm font-light">
-                Paiement annule. Vous pouvez reessayer a tout moment.
+                Paiement annulé. Vous pouvez réessayer à tout moment.
               </p>
             </div>
           )}
@@ -170,38 +181,38 @@ function PricingContent() {
           )}
 
           {/* Packs grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-4xl mx-auto items-stretch">
             {PACKS.map((pack) => (
               <div
                 key={pack.id}
-                className={`rounded-2xl p-6 text-center bg-background relative ${
+                className={`rounded-2xl p-7 text-center bg-background relative flex flex-col transition-colors ${
                   pack.highlight
-                    ? "border-2 border-foreground"
-                    : "border border-foreground/10"
+                    ? "border-2 border-sage/30 shadow-[0_8px_32px_rgba(125,155,118,0.12)]"
+                    : "border border-foreground/10 hover:border-foreground/15"
                 }`}
               >
                 {pack.highlight && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-foreground text-background text-[11px] font-medium px-3 py-1 rounded-full uppercase tracking-wider">
-                    Recommande
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-foreground text-background text-[11px] font-semibold px-4 py-1 rounded-full uppercase tracking-wider shadow-sm">
+                    Recommandé
                   </span>
                 )}
                 <p className="text-xs text-muted font-medium uppercase tracking-widest mb-3">
                   {pack.name}
                 </p>
-                <p className="text-3xl font-bold text-foreground mb-0.5">
-                  {pack.price}&euro;
+                <p className="text-4xl font-bold text-foreground mb-0.5">
+                  {pack.price}€
                 </p>
                 <p className="text-xs text-muted font-light mb-1">
-                  {pack.credits} credits &middot; {pack.perPhoto}&euro;/photo
+                  {pack.credits} crédits · {pack.perPhoto}€/photo
                 </p>
-                <p className="text-[11px] text-muted font-light mb-5">
-                  TTC &middot; TVA 20% incluse
+                <p className="text-[11px] text-muted/60 font-light mb-6">
+                  TTC · TVA 20% incluse
                 </p>
-                <ul className="text-sm text-muted font-light space-y-2 text-left mb-6">
+                <ul className="text-sm text-muted font-light space-y-2.5 text-left mb-8 flex-1">
                   {pack.features.map((f) => (
-                    <li key={f} className="flex items-start gap-2">
+                    <li key={f.text} className={`flex items-start gap-2.5 ${!f.active ? "opacity-40 line-through" : ""}`}>
                       <svg
-                        className="w-4 h-4 text-sage flex-shrink-0 mt-0.5"
+                        className={`w-4 h-4 flex-shrink-0 mt-0.5 ${f.active ? "text-sage" : "text-muted/30"}`}
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -210,19 +221,22 @@ function PricingContent() {
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          d="M5 13l4 4L19 7"
+                          d={f.active ? "M5 13l4 4L19 7" : "M18 12H6"}
                         />
                       </svg>
-                      {f}
+                      {f.text}
                     </li>
                   ))}
                 </ul>
+                {pack.note && (
+                  <p className="text-xs text-sage font-medium mb-4">{pack.note}</p>
+                )}
                 <button
                   onClick={() => handleBuy(pack.id)}
                   disabled={loadingPack !== null}
-                  className={`w-full px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-200 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 disabled:opacity-40 disabled:cursor-not-allowed ${
+                  className={`mt-auto w-full px-4 py-3 rounded-full text-sm font-medium transition-all duration-200 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 disabled:opacity-40 disabled:cursor-not-allowed ${
                     pack.highlight
-                      ? "bg-foreground text-background hover:bg-foreground/85"
+                      ? "bg-foreground text-background hover:bg-foreground/85 font-semibold shadow-sm"
                       : "border border-foreground/10 text-foreground hover:bg-foreground/5"
                   }`}
                 >
