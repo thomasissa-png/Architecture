@@ -518,6 +518,24 @@ export default async function AnnoncePage({ params }: PageProps) {
           </div>
         )}
 
+        {/* Carte du quartier — OSM iframe */}
+        {property.latitude && property.longitude && (
+          <div className="mb-10">
+            <h2 className="text-sm font-medium text-foreground mb-3">Localisation</h2>
+            <div className="rounded-2xl border border-foreground/5 overflow-hidden">
+              <iframe
+                title="Carte du quartier"
+                width="100%"
+                height="280"
+                style={{ border: 0 }}
+                loading="lazy"
+                referrerPolicy="no-referrer"
+                src={`https://www.openstreetmap.org/export/embed.html?bbox=${Number(property.longitude) - 0.008},${Number(property.latitude) - 0.005},${Number(property.longitude) + 0.008},${Number(property.latitude) + 0.005}&layer=mapnik&marker=${property.latitude},${property.longitude}`}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Contact — only shown if merchant has phone or email, otherwise ContactSticky handles fallback */}
         {hasMerchant && (merchant?.telephone || merchant?.email_pro) && (
           <div className="mb-10 p-5 bg-foreground/[0.02] rounded-2xl border border-foreground/5" data-testid="annonce-contact">
