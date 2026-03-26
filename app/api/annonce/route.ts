@@ -73,21 +73,24 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ uuid: existing.uuid }, { status: 200 });
   }
 
-  // Build auto-generated title: "[Type] [Surface] m² — [Adresse], [Ville]"
-  const typePart = property.property_type
-    ? property.property_type.charAt(0).toUpperCase() + property.property_type.slice(1)
-    : null;
+  // Build auto-generated title: Format A "T3 60 m² — Quartier, Ville"
+  const piecesPart = property.room_count ? `T${property.room_count}` : null;
   const surfacePart = property.surface_m2 ? `${property.surface_m2} m²` : null;
   const addressPart = property.address_normalized?.trim() || property.address_raw?.trim() || null;
   const cityPart = property.city?.trim() || null;
 
-  // Location: "Adresse, Ville" or just "Ville" or just "Adresse"
-  const location = addressPart && cityPart
-    ? `${addressPart}, ${cityPart}`
-    : addressPart || cityPart || null;
+  // Short address: strip city from full address for brevity
+  const shortAddr = addressPart && cityPart && addressPart.includes(cityPart)
+    ? addressPart.replace(cityPart, "").replace(/,\s*$/, "").trim() || null
+    : addressPart || null;
 
-  // Property: "Appartement 60 m²" or "Appartement" or "60 m²"
-  const propertyDesc = [typePart, surfacePart].filter(Boolean).join(" ");
+  // Location: "Rue Henri Barbusse, Le Mans" or just "Le Mans"
+  const location = shortAddr && cityPart
+    ? `${shortAddr}, ${cityPart}`
+    : shortAddr || cityPart || null;
+
+  // Property: "T3 60 m²" or "T3" or "60 m²"
+  const propertyDesc = [piecesPart, surfacePart].filter(Boolean).join(" ");
 
   let title: string;
   if (propertyDesc && location) {

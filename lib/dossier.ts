@@ -381,21 +381,25 @@ export function isDossierExpired(dossier: Dossier): boolean {
 }
 
 export function getDossierTitle(dossier: Dossier): string {
-  // Format: "[Type] [Surface] m² — [Adresse ou Quartier], [Ville]"
-  const type = dossier.bien_type
-    ? dossier.bien_type.charAt(0).toUpperCase() + dossier.bien_type.slice(1)
-    : null;
+  // Format A (creative-strategy): "T3 60 m² — Quartier, Ville"
+  const pieces = dossier.nb_pieces ? `T${dossier.nb_pieces}` : null;
   const surface = dossier.bien_surface ? `${dossier.bien_surface} m²` : null;
-  const adresse = dossier.bien_adresse?.trim() || null;
   const ville = dossier.ville?.trim() || null;
 
-  // Build location part: "Adresse, Ville" or just "Ville"
-  const location = adresse && ville
-    ? `${adresse}, ${ville}`
-    : adresse || ville || null;
+  // Prefer short address (city quarter or short street) over full address
+  const adresse = dossier.bien_adresse?.trim() || null;
+  // Extract short form: last part before city, or first meaningful part
+  const shortAddr = adresse && ville && adresse.includes(ville)
+    ? adresse.replace(ville, "").replace(/,\s*$/, "").trim() || null
+    : adresse || null;
 
-  // Build property part: "Appartement 60 m²" or "Appartement" or "60 m²"
-  const propertyParts = [type, surface].filter(Boolean).join(" ");
+  // Build location: "Rue Henri Barbusse, Le Mans" or just "Le Mans"
+  const location = shortAddr && ville
+    ? `${shortAddr}, ${ville}`
+    : shortAddr || ville || null;
+
+  // Build property part: "T3 60 m²" or "T3" or "60 m²"
+  const propertyParts = [pieces, surface].filter(Boolean).join(" ");
 
   if (propertyParts && location) {
     return `${propertyParts} — ${location}`;
