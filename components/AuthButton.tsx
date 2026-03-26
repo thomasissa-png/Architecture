@@ -145,7 +145,7 @@ export default function AuthButton() {
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-xs text-muted font-light">Cr{"\u00E9"}dits</span>
+              <span className="text-xs text-muted font-light">Crédits</span>
               <span className="text-sm font-medium text-foreground">
                 {credits !== null ? credits : "..."}
               </span>

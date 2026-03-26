@@ -91,8 +91,8 @@ export default function ImageComparator({
       const blob = dataUriToBlob(generatedUrl);
       const file = new File([blob], "versiroom.png", { type: "image/png" });
       await navigator.share({
-        title: "Mon visuel VisiR\u00e9nov",
-        text: "D\u00e9couvrez cette visualisation d\u2019int\u00e9rieur g\u00e9n\u00e9r\u00e9e par IA",
+        title: "Mon visuel VisiRénov",
+        text: "Découvrez cette visualisation d\u2019intérieur générée par IA",
         files: [file],
       });
     } catch {
@@ -124,7 +124,7 @@ export default function ImageComparator({
     if (navigator.share && navigator.canShare?.({ files: [file] })) {
       try {
         await navigator.share({
-          text: "D\u00e9couvre ce visuel d\u2019int\u00e9rieur g\u00e9n\u00e9r\u00e9 par VisiR\u00e9nov \ud83c\udfe0",
+          text: "Découvre ce visuel d\u2019intérieur généré par VisiRénov \ud83c\udfe0",
           files: [file],
         });
         return;
@@ -143,7 +143,7 @@ export default function ImageComparator({
       // Clipboard not available — proceed anyway
     }
     const text = encodeURIComponent(
-      "D\u00e9couvre ce visuel d\u2019int\u00e9rieur g\u00e9n\u00e9r\u00e9 par VisiR\u00e9nov \ud83c\udfe0 \u2014 versiroom.fr"
+      "Découvre ce visuel d\u2019intérieur généré par VisiRénov \ud83c\udfe0 \u2014 versiroom.fr"
     );
     window.open(`https://wa.me/?text=${text}`, "_blank", "noopener");
   };
@@ -161,13 +161,13 @@ export default function ImageComparator({
           itemTwo={
             <ReactCompareSliderImage
               src={generatedUrl}
-              alt="Apr\u00e8s \u2014 Visualisation IA"
+              alt="Après — Visualisation IA"
             />
           }
           className="aspect-[4/3] sm:aspect-[16/10]"
           style={{ width: "100%" }}
           handle={
-            <div className="flex flex-col items-center h-full" role="slider" aria-label="Comparer avant et apr\u00e8s \u2014 glissez horizontalement" aria-valuemin={0} aria-valuemax={100} aria-valuenow={50}>
+            <div className="flex flex-col items-center h-full" role="slider" aria-label="Comparer avant et après — glissez horizontalement" aria-valuemin={0} aria-valuemax={100} aria-valuenow={50}>
               <div className="w-0.5 h-full bg-white/90 shadow-sm" />
               <div className="absolute top-1/2 -translate-y-1/2 w-12 h-12 sm:w-10 sm:h-10 bg-white rounded-full shadow-lg flex items-center justify-center cursor-grab active:cursor-grabbing">
                 {/* Left/right arrows — explicit horizontal drag affordance */}
@@ -189,7 +189,7 @@ export default function ImageComparator({
             Avant
           </span>
           <span className="text-xs font-medium text-muted uppercase tracking-widest">
-            Apr\u00e8s
+            Après
           </span>
         </div>
       </div>
@@ -199,7 +199,7 @@ export default function ImageComparator({
         {/* Download */}
         <button
           onClick={handleDownload}
-          aria-label="T\u00e9l\u00e9charger l'image g\u00e9n\u00e9r\u00e9e"
+          aria-label="Télécharger l'image générée"
           className="inline-flex items-center gap-2 bg-foreground text-background px-5 min-h-[44px] py-3 sm:py-2.5 rounded-full text-sm font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>

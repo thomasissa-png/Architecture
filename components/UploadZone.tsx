@@ -43,8 +43,8 @@ export default function UploadZone({ files, onFilesChange, maxFiles }: UploadZon
         onFilesChange([...files, ...newFiles]);
         setUploadFeedback(
           newFiles.length === 1
-            ? "Photo ajout\u00e9e avec succ\u00e8s"
-            : `${newFiles.length} photos ajout\u00e9es avec succ\u00e8s`
+            ? "Photo ajoutée avec succès"
+            : `${newFiles.length} photos ajoutées avec succès`
         );
       }
     },
@@ -131,8 +131,8 @@ export default function UploadZone({ files, onFilesChange, maxFiles }: UploadZon
             {fileRejections.some((r) =>
               r.errors.some((e) => e.code === "file-too-large")
             )
-              ? "Certains fichiers d\u00e9passent la taille maximale de 10 Mo."
-              : "Format non accept\u00e9. Utilisez JPG, PNG, WEBP ou HEIC."}
+              ? "Certains fichiers dépassent la taille maximale de 10 Mo."
+              : "Format non accepté. Utilisez JPG, PNG, WEBP ou HEIC."}
           </p>
         </div>
       )}

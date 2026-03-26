@@ -86,7 +86,7 @@ export default function ProGate({ children, featureName }: ProGateProps) {
           {featureName}
         </h1>
         <p className="text-sm text-muted font-light mb-8 max-w-sm mx-auto leading-relaxed">
-          G{"\u00E9"}rez vos biens, cr{"\u00E9"}ez des dossiers de pr{"\u00E9"}sentation et des annonces professionnelles pour vos acqu{"\u00E9"}reurs {"\u2014"} fonctionnalit{"\u00E9"} r{"\u00E9"}serv{"\u00E9"}e aux comptes Pro.
+          Gérez vos biens, créez des dossiers de présentation et des annonces professionnelles pour vos acquéreurs — fonctionnalité réservée aux comptes Pro.
         </p>
 
         {/* Pricing highlight */}
@@ -97,13 +97,13 @@ export default function ProGate({ children, featureName }: ProGateProps) {
               <svg className="w-3.5 h-3.5 text-sage mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
               </svg>
-              Gestion de biens illimit{"\u00E9"}e
+              Gestion de biens illimitée
             </li>
             <li className="flex items-start gap-2">
               <svg className="w-3.5 h-3.5 text-sage mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
               </svg>
-              Dossiers de pr{"\u00E9"}sentation brand{"\u00E9"}s
+              Dossiers de présentation brandés
             </li>
             <li className="flex items-start gap-2">
               <svg className="w-3.5 h-3.5 text-sage mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -124,16 +124,16 @@ export default function ProGate({ children, featureName }: ProGateProps) {
           href="/#pricing"
           className="inline-flex items-center justify-center px-8 py-3 bg-sage text-white rounded-full text-sm font-medium hover:opacity-90 active:scale-[0.99] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
         >
-          D{"\u00E9"}couvrir les offres Pro
+          Découvrir les offres Pro
         </a>
 
         <p className="text-xs text-muted/50 font-light mt-4">
-          Vous avez d{"\u00E9"}j{"\u00E0"} un acc{"\u00E8"}s Pro ?{" "}
+          Vous avez déjà un accès Pro ?{" "}
           <button
             onClick={() => window.location.reload()}
             className="underline hover:text-muted/80 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-sage/50 rounded-sm min-h-[44px] inline-flex items-center"
           >
-            Rafra{"\u00EE"}chir la page
+            Rafraîchir la page
           </button>
         </p>
       </div>

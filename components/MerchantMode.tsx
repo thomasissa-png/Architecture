@@ -292,8 +292,8 @@ export default function MerchantMode() {
       const msg = err instanceof Error ? err.message : "";
       // Rendre le message 403 plus clair pour l'utilisateur
       const displayMsg = msg.includes("Pack Pro") || msg.includes("reserve aux")
-        ? "Acc\u00E8s Pro requis. Contactez l'administrateur pour activer votre compte."
-        : msg || "Une erreur est survenue. R\u00E9essayez \u2014 vos cr\u00E9dits n'ont pas \u00E9t\u00E9 consomm\u00E9s.";
+        ? "Accès Pro requis. Contactez l'administrateur pour activer votre compte."
+        : msg || "Une erreur est survenue. Réessayez — vos crédits n'ont pas été consommés.";
       setError(displayMsg);
       setIsGenerating(false);
       setCurrentStep("review");
@@ -522,7 +522,7 @@ export default function MerchantMode() {
               )}
               {enrichedPrixM2 && (
                 <span className="text-xs px-3 py-1 rounded-full bg-sage/10 text-sage font-medium">
-                  Prix moyen : {enrichedPrixM2.toLocaleString("fr-FR")} {"\u20AC"}/m{"\u00B2"}
+                  Prix moyen : {enrichedPrixM2.toLocaleString("fr-FR")} €/m²
                 </span>
               )}
             </div>
@@ -547,7 +547,7 @@ export default function MerchantMode() {
 
             <div>
               <label className="text-xs font-medium text-foreground mb-1.5 block">
-                Surface (m{"\u00B2"})
+                Surface (m²)
               </label>
               <input
                 type="number"
@@ -681,10 +681,10 @@ export default function MerchantMode() {
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-1">
-                Pi{"\u00E8"}ce et style par photo
+                Pièce et style par photo
               </h3>
               <p className="text-xs text-muted/60 font-light">
-                Assignez un type de pi{"\u00E8"}ce et un style {"\u00E0"} chaque photo. Par d{"\u00E9"}faut, toutes utilisent le style global.
+                Assignez un type de pièce et un style à chaque photo. Par défaut, toutes utilisent le style global.
               </p>
             </div>
             <button
@@ -717,7 +717,7 @@ export default function MerchantMode() {
                   {/* Room type dropdown */}
                   <div>
                     <label className="text-[11px] text-muted font-light block mb-1">
-                      Pi{"\u00E8"}ce
+                      Pièce
                     </label>
                     <select
                       value={entry.roomTypeId || ""}
@@ -725,7 +725,7 @@ export default function MerchantMode() {
                       className="w-full text-sm font-light border border-foreground/10 rounded-lg px-3 py-2 bg-background focus:border-foreground focus:outline-none transition-colors"
                       data-testid={`merchant-annotate-room-${index}`}
                     >
-                      <option value="">Non sp{"\u00E9"}cifi{"\u00E9"}</option>
+                      <option value="">Non spécifié</option>
                       {ROOM_TYPE_LIST.map((rt) => (
                         <option key={rt.id} value={rt.id}>
                           {rt.emoji} {rt.label}
@@ -856,7 +856,7 @@ export default function MerchantMode() {
                 className="px-8 py-3 bg-foreground text-background rounded-xl font-medium text-sm hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
                 data-testid="merchant-next-photos"
               >
-                {"\u00C9"}tape suivante
+                Étape suivante
               </button>
               <span className="text-xs text-muted font-light">
                 {files.length} photo{files.length > 1 ? "s" : ""} — {files.length} crédit{files.length > 1 ? "s" : ""}
@@ -875,7 +875,7 @@ export default function MerchantMode() {
                 Style global
               </h3>
               <p className="text-xs text-muted/60 font-light">
-                Appliqu{"\u00E9"} aux photos sans style individuel.
+                Appliqué aux photos sans style individuel.
               </p>
             </div>
             <button

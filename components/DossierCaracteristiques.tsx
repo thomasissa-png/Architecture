@@ -48,7 +48,7 @@ export default function DossierCaracteristiques({ property }: DossierCaracterist
   return (
     <div className="mb-8" data-testid="dossier-caracteristiques">
       <h2 className="text-sm font-medium text-foreground mb-4">
-        Caract{"\u00E9"}ristiques
+        Caractéristiques
       </h2>
 
       <div className="flex flex-wrap gap-2 mb-4">
@@ -75,14 +75,14 @@ export default function DossierCaracteristiques({ property }: DossierCaracterist
         {/* Passoire thermique */}
         {property.dpe_classe && (property.dpe_classe === "F" || property.dpe_classe === "G") && (
           <span className="text-xs bg-red-100 text-red-700 px-3 py-1.5 rounded-xl font-medium" data-testid="dossier-passoire">
-            Passoire {"\u00E9"}nerg{"\u00E9"}tique
+            Passoire énergétique
           </span>
         )}
 
         {/* Etage + ascenseur */}
         {property.etage != null && (
           <span className="text-xs bg-foreground/5 text-foreground px-3 py-1.5 rounded-xl font-light" data-testid="dossier-etage">
-            {property.etage === 0 ? "RDC" : `${property.etage}e \u00E9tage`}
+            {property.etage === 0 ? "RDC" : `${property.etage}e étage`}
             {property.ascenseur ? " \u2014 ascenseur" : ""}
           </span>
         )}
@@ -120,17 +120,17 @@ export default function DossierCaracteristiques({ property }: DossierCaracterist
       <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-muted font-light">
         {property.charges_copro_annuelles && (
           <span data-testid="dossier-charges">
-            Charges copro : {property.charges_copro_annuelles.toLocaleString("fr-FR")} {"\u20AC"}/an
+            Charges copro : {property.charges_copro_annuelles.toLocaleString("fr-FR")} €/an
           </span>
         )}
         {property.taxe_fonciere && (
           <span data-testid="dossier-taxe">
-            Taxe fonci{"\u00E8"}re : {property.taxe_fonciere.toLocaleString("fr-FR")} {"\u20AC"}/an
+            Taxe foncière : {property.taxe_fonciere.toLocaleString("fr-FR")} €/an
           </span>
         )}
         {property.nb_lots_copro && (
           <span data-testid="dossier-lots">
-            Copropri{"\u00E9"}t{"\u00E9"} de {property.nb_lots_copro} lots
+            Copropriété de {property.nb_lots_copro} lots
           </span>
         )}
       </div>
