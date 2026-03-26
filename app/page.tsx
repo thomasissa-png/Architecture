@@ -756,7 +756,7 @@ export default function Home() {
                   {/* Real photo overlay — scandinavian style from DB */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src="/api/demo?type=hero&image=before"
+                    src="/api/demo?type=hero&image=before&fixed=true"
                     alt="Pi&egrave;ce vide avant home staging"
                     className="absolute inset-0 w-full h-full object-cover"
                     onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
@@ -844,7 +844,7 @@ export default function Home() {
                   {/* Real photo overlay — scandinavian style from DB */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src="/api/demo?style=scandinavian&image=after"
+                    src="/api/demo?style=scandinavian&image=after&fixed=true"
                     alt="Salon scandinave meubl&eacute; par Versiroom"
                     className="absolute inset-0 w-full h-full object-cover"
                     onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}

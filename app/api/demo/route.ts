@@ -20,6 +20,7 @@ export async function GET(req: NextRequest) {
   const type = req.nextUrl.searchParams.get("type");
   const imageType = req.nextUrl.searchParams.get("image"); // "before" | "after"
   const list = req.nextUrl.searchParams.get("list");
+  const fixed = req.nextUrl.searchParams.get("fixed"); // "true" to pin hero to a specific generation
 
   try {
     await ensureTable();
@@ -39,7 +40,32 @@ export async function GET(req: NextRequest) {
 
     // Get best generation for a specific style or hero
     let row;
-    if (style) {
+
+    // Fixed hero: pin to the scandinavian generation from 2026-03-25 ~11:00:19
+    if (fixed === "true" && (type === "hero" || style)) {
+      const fixedResult = await pool.query(`
+        SELECT input_image_path, output_image_path, style_id, duration_ms
+        FROM generation_logs
+        WHERE success = true AND output_image_path IS NOT NULL
+          AND style_id = 'scandinavian'
+          AND created_at >= '2026-03-25T10:59:00'
+          AND created_at <= '2026-03-25T11:02:00'
+        ORDER BY created_at DESC
+        LIMIT 1
+      `);
+      row = fixedResult.rows[0];
+      // Fallback to latest scandinavian if fixed timestamp not found
+      if (!row) {
+        const fallbackResult = await pool.query(`
+          SELECT input_image_path, output_image_path, style_id, duration_ms
+          FROM generation_logs
+          WHERE success = true AND output_image_path IS NOT NULL AND style_id = 'scandinavian'
+          ORDER BY created_at DESC
+          LIMIT 1
+        `);
+        row = fallbackResult.rows[0];
+      }
+    } else if (style) {
       const result = await pool.query(`
         SELECT input_image_path, output_image_path, style_id, duration_ms
         FROM generation_logs
