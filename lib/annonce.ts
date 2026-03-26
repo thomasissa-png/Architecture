@@ -123,6 +123,20 @@ export async function getActiveAnnonceForProperty(
   return (result.rows[0] as Annonce) ?? null;
 }
 
+export async function updateAnnonceTitle(
+  uuid: string,
+  userId: string,
+  title: string
+): Promise<boolean> {
+  await ensureAnnonceTable();
+  const db = getPool();
+  const result = await db.query(
+    `UPDATE annonces SET title = $1 WHERE uuid = $2 AND user_id = $3`,
+    [title, uuid, userId]
+  );
+  return (result.rowCount ?? 0) > 0;
+}
+
 // ─── Helpers ─────────────────────────────────────────────────────────
 
 export function isAnnonceExpired(annonce: Annonce): boolean {

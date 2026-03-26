@@ -189,7 +189,7 @@ export default async function DossierPage({ params }: PageProps) {
           </h1>
 
           {/* Description commerciale — split into visual paragraphs */}
-          {dossier.description_commerciale && (
+          {dossier.description_commerciale ? (
             <div className="max-w-2xl space-y-4 mb-3">
               {dossier.description_commerciale.split(/\n\n+/).map((paragraph, idx) => (
                 <p key={idx} className="text-sm text-muted font-light leading-relaxed">
@@ -197,6 +197,10 @@ export default async function DossierPage({ params }: PageProps) {
                 </p>
               ))}
             </div>
+          ) : (
+            <p className="text-sm text-muted font-light mb-3">
+              Description en cours de r&eacute;daction.
+            </p>
           )}
 
           {/* Property details */}

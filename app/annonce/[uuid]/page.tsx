@@ -268,6 +268,14 @@ export default async function AnnoncePage({ params }: PageProps) {
             >
               {property.sale_price ? formatPrice(property.sale_price) : "Prix sur demande"}
             </span>
+            {property.sale_price && property.surface_m2 && property.surface_m2 > 0 && (
+              <span
+                className="text-xs bg-foreground/10 text-foreground px-3 py-1.5 rounded-xl font-medium"
+                data-testid="annonce-price-m2"
+              >
+                {Math.round(property.sale_price / property.surface_m2).toLocaleString("fr-FR")} €/m²
+              </span>
+            )}
             {property.dvf_median_price_m2 && (
               <span className="text-xs bg-sage/10 text-sage px-3 py-1.5 rounded-xl font-medium">
                 Prix moyen quartier : {property.dvf_median_price_m2.toLocaleString("fr-FR")} €/m²
@@ -297,6 +305,19 @@ export default async function AnnoncePage({ params }: PageProps) {
             </a>
           </div>
         )}
+        {hasMerchant && !merchant?.telephone && merchant?.email_pro && (
+          <div className="mb-8">
+            <a
+              href={`mailto:${merchant.email_pro}`}
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-sage text-white rounded-full text-sm font-medium hover:opacity-90 active:scale-[0.99] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+              </svg>
+              Envoyer un message
+            </a>
+          </div>
+        )}
 
         {/* Room navigation — sticky pills */}
         {completedPhotos.length > 1 && sortedRoomEntries.length > 1 && (
@@ -313,9 +334,17 @@ export default async function AnnoncePage({ params }: PageProps) {
         {/* Photo gallery grouped by room — with lightbox */}
         {completedPhotos.length === 0 ? (
           <div className="text-center py-16">
-            <p className="text-muted font-light">
-              Aucune photo disponible pour cette annonce.
+            <p className="text-sm text-muted font-light mb-4">
+              Photos en cours de pr&eacute;paration &mdash; contactez-nous pour les recevoir en avant-premi&egrave;re
             </p>
+            {hasMerchant && (merchant?.telephone || merchant?.email_pro) && (
+              <a
+                href={merchant?.telephone ? `tel:${merchant.telephone}` : `mailto:${merchant?.email_pro}`}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-sage text-white rounded-full text-sm font-medium hover:opacity-90 transition-opacity"
+              >
+                {merchant?.telephone ? "Appeler" : "Envoyer un message"}
+              </a>
+            )}
           </div>
         ) : (
           <AnnonceGallery
@@ -337,6 +366,30 @@ export default async function AnnoncePage({ params }: PageProps) {
             )}
           />
         )}
+
+        {/* Atouts scannables — max 4 items */}
+        {(() => {
+          const atouts: { icon: string; label: string }[] = [];
+          if (property.parking) atouts.push({ icon: "P", label: "Parking" });
+          if (property.cave) atouts.push({ icon: "C", label: "Cave" });
+          if (property.exposition) atouts.push({ icon: "☀", label: `Exposition ${property.exposition}` });
+          if (property.ascenseur) atouts.push({ icon: "↑", label: "Ascenseur" });
+          const display = atouts.slice(0, 4);
+          if (display.length === 0) return null;
+          return (
+            <div className="mb-6 flex flex-wrap gap-2" data-testid="annonce-atouts">
+              {display.map((a) => (
+                <span
+                  key={a.label}
+                  className="inline-flex items-center gap-1.5 text-xs bg-sage/10 text-sage px-3 py-1.5 rounded-xl font-medium"
+                >
+                  <span className="text-[10px] opacity-70">{a.icon}</span>
+                  {a.label}
+                </span>
+              ))}
+            </div>
+          );
+        })()}
 
         {/* Description — split into visual paragraphs for structured reading */}
         <div className="mb-10" data-testid="annonce-description">

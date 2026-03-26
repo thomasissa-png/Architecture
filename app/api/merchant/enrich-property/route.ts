@@ -180,6 +180,7 @@ async function generateDescription(params: {
   nbPieces: number | null;
   prixMoyenM2: number | null;
   city: string;
+  salePrice: number | null;
 }): Promise<string | null> {
   if (!process.env.OPENAI_API_KEY) return null;
 
@@ -192,6 +193,7 @@ async function generateDescription(params: {
     userParts.push(`Adresse : ${params.adresse}`);
     if (params.nbPieces) userParts.push(`Nombre de pièces : ${params.nbPieces}`);
     if (params.city) userParts.push(`Ville : ${params.city}`);
+    if (params.salePrice && params.surface) userParts.push(`Prix de vente : ${params.salePrice} EUR (${Math.round(params.salePrice / params.surface)} EUR/m²)`);
     if (params.prixMoyenM2) userParts.push(`Prix moyen du quartier : ${params.prixMoyenM2} EUR/m²`);
 
     const response = await openai.chat.completions.create({
@@ -229,6 +231,7 @@ export async function POST(request: NextRequest) {
     surface?: number;
     type?: string;
     nbPieces?: number;
+    salePrice?: number;
   };
 
   try {
@@ -265,6 +268,7 @@ export async function POST(request: NextRequest) {
     nbPieces: body.nbPieces || null,
     prixMoyenM2: dvfData.prixMoyenM2,
     city: geo.city,
+    salePrice: body.salePrice ? Number(body.salePrice) : null,
   });
 
   return NextResponse.json({

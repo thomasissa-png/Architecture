@@ -119,8 +119,13 @@ async function enrichProperty(
   ]);
 
   // 3. Description AFTER DVF so price/m2 is available
+  // Retrieve sale_price from the property for prompt enrichment
+  const { getPropertyById: getPropertyForPrice } = await import("@/lib/properties");
+  const propForPrice = await getPropertyForPrice(propertyId, userId);
+  const salePrice = propForPrice?.sale_price ?? null;
+
   const description = await generateDescription(
-    meta.type, meta.surface, label, meta.nbPieces, city, dvfResult
+    meta.type, meta.surface, label, meta.nbPieces, city, dvfResult, salePrice
   );
 
   // 3. Update property with enriched data
@@ -188,7 +193,8 @@ async function generateDescription(
   adresse: string,
   nbPieces: number | null,
   city: string,
-  prixMoyenM2: number | null
+  prixMoyenM2: number | null,
+  salePrice: number | null = null
 ): Promise<string | null> {
   if (!process.env.OPENAI_API_KEY) return null;
   try {
@@ -201,6 +207,7 @@ async function generateDescription(
     parts.push(`Adresse : ${adresse}`);
     if (nbPieces) parts.push(`Nombre de pièces : ${nbPieces}`);
     if (city) parts.push(`Ville : ${city}`);
+    if (salePrice && surface) parts.push(`Prix de vente : ${salePrice} EUR (${Math.round(salePrice / surface)} EUR/m²)`);
     if (prixMoyenM2) parts.push(`Prix moyen du quartier : ${prixMoyenM2} EUR/m²`);
 
     const response = await openai.chat.completions.create({
