@@ -193,7 +193,7 @@ export default function ComparatifPage() {
       {/* Tableau comparatif */}
       <section className="pb-16 sm:pb-24 px-5 sm:px-8">
         <div className="max-w-5xl mx-auto overflow-x-auto">
-          <table className="w-full border-collapse text-sm">
+          <table className="w-full min-w-[700px] border-collapse text-sm">
             <thead>
               <tr className="border-b-2 border-foreground/15">
                 <th className="text-left py-4 px-4 text-xs font-semibold text-foreground uppercase tracking-wider">

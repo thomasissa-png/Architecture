@@ -425,7 +425,7 @@ export default function InlineGenerator({
   return (
     <div
       ref={containerRef}
-      className="mt-6 bg-white border border-foreground/10 rounded-2xl overflow-hidden animate-fade-in-up"
+      className="mt-6 bg-background border border-foreground/10 rounded-2xl overflow-hidden animate-fade-in-up"
     >
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-foreground/5">

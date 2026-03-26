@@ -534,7 +534,7 @@ export default function MerchantMode() {
                   if (e.target.value) handleSelectProperty(e.target.value);
                   else setSelectedPropertyId(null);
                 }}
-                className="w-full px-4 py-3 border border-foreground/5 rounded-xl text-sm font-light bg-background focus:border-foreground focus:outline-none transition-colors"
+                className="w-full px-4 py-3 border border-foreground/10 rounded-xl text-sm font-light bg-background focus:border-foreground focus:outline-none transition-colors min-h-[44px]"
               >
                 <option value="">Nouveau bien (saisir l&apos;adresse)</option>
                 {existingProperties.map((p) => (
