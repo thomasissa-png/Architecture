@@ -150,7 +150,7 @@ export default function ImageComparator({
 
   return (
     <div className="space-y-5">
-      <div className="rounded-2xl overflow-hidden border border-gray-200/80">
+      <div className="rounded-2xl overflow-hidden border border-gray-200/80" style={{ touchAction: "none" }}>
         <ReactCompareSlider
           itemOne={
             <ReactCompareSliderImage
