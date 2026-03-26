@@ -173,7 +173,7 @@ export default function AdminPage() {
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [authenticated, versionFilter]);
+  }, [authenticated, versionFilter, password]);
 
   if (!authenticated) {
     return (

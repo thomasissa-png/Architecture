@@ -42,7 +42,6 @@ export default function StorageImage({
   loading = "lazy",
   fallback = DEFAULT_FALLBACK,
 }: StorageImageProps) {
-  const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
   const retriedRef = useRef(false);
   const imgRef = useRef<HTMLImageElement>(null);
