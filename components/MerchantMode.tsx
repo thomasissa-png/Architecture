@@ -571,7 +571,7 @@ export default function MerchantMode() {
               onFocus={() => addressSuggestions.length > 0 && setShowSuggestions(true)}
               onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
               placeholder="Commencez à taper : 45 rue de la Paix, 75002 Paris"
-              className="w-full px-4 py-3 border border-foreground/5 rounded-xl text-sm font-light focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
+              className="w-full px-4 py-3 border border-foreground/10 rounded-xl text-sm font-light focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
               data-testid="merchant-bien-adresse"
             />
             {isEnriching && (
@@ -582,7 +582,7 @@ export default function MerchantMode() {
 
             {/* Suggestions dropdown */}
             {showSuggestions && addressSuggestions.length > 0 && (
-              <div className="absolute z-20 left-0 right-0 mt-1 bg-background border border-foreground/5 rounded-xl shadow-lg overflow-hidden" data-testid="merchant-address-suggestions">
+              <div className="absolute z-20 left-0 right-0 mt-1 bg-background border border-foreground/10 rounded-xl shadow-lg overflow-hidden" data-testid="merchant-address-suggestions">
                 {addressSuggestions.map((s, i) => (
                   <button
                     key={i}
@@ -631,7 +631,7 @@ export default function MerchantMode() {
                 value={bienNom}
                 onChange={(e) => setBienNom(e.target.value)}
                 placeholder="Ex : T3 renove avec vue"
-                className="w-full px-4 py-3 border border-foreground/5 rounded-xl text-sm font-light focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
+                className="w-full px-4 py-3 border border-foreground/10 rounded-xl text-sm font-light focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
                 data-testid="merchant-bien-nom"
               />
             </div>
@@ -645,7 +645,7 @@ export default function MerchantMode() {
                 value={bienSurface}
                 onChange={(e) => setBienSurface(e.target.value)}
                 placeholder="65"
-                className="w-full px-4 py-3 border border-foreground/5 rounded-xl text-sm font-light focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
+                className="w-full px-4 py-3 border border-foreground/10 rounded-xl text-sm font-light focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
                 data-testid="merchant-bien-surface"
               />
             </div>
@@ -659,7 +659,7 @@ export default function MerchantMode() {
                 value={bienNbPieces}
                 onChange={(e) => setBienNbPieces(e.target.value)}
                 placeholder="3"
-                className="w-full px-4 py-3 border border-foreground/5 rounded-xl text-sm font-light focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
+                className="w-full px-4 py-3 border border-foreground/10 rounded-xl text-sm font-light focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
                 data-testid="merchant-bien-nb-pieces"
               />
             </div>
@@ -673,7 +673,7 @@ export default function MerchantMode() {
                 value={bienPrix}
                 onChange={(e) => setBienPrix(e.target.value)}
                 placeholder="350000"
-                className="w-full px-4 py-3 border border-foreground/5 rounded-xl text-sm font-light focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
+                className="w-full px-4 py-3 border border-foreground/10 rounded-xl text-sm font-light focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
                 data-testid="merchant-bien-prix"
               />
               <p className="text-xs text-muted/50 font-light mt-1">
@@ -715,7 +715,7 @@ export default function MerchantMode() {
                 value={enrichedDescription}
                 onChange={(e) => setEnrichedDescription(e.target.value)}
                 rows={3}
-                className="w-full px-4 py-3 border border-foreground/5 rounded-xl text-sm font-light focus:border-foreground focus:outline-none transition-colors resize-none placeholder:text-foreground/30"
+                className="w-full px-4 py-3 border border-foreground/10 rounded-xl text-sm font-light focus:border-foreground focus:outline-none transition-colors resize-none placeholder:text-foreground/30"
                 data-testid="merchant-description"
               />
               <p className="text-xs text-muted/50 font-light mt-1">
@@ -791,7 +791,7 @@ export default function MerchantMode() {
               const entry = photoEntries[index];
               if (!entry) return null;
               return (
-                <div key={index} className="border border-foreground/5 rounded-xl p-3 space-y-3" data-testid={`merchant-annotate-card-${index}`}>
+                <div key={index} className="border border-foreground/10 rounded-xl p-3 space-y-3" data-testid={`merchant-annotate-card-${index}`}>
                   {/* Thumbnail */}
                   <div className="aspect-[4/3] rounded-lg overflow-hidden bg-foreground/5">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -1024,7 +1024,7 @@ export default function MerchantMode() {
             </button>
           </div>
 
-          <div className="border border-foreground/5 rounded-2xl p-5 space-y-4">
+          <div className="border border-foreground/10 rounded-2xl p-5 space-y-4">
             {/* Property summary */}
             <div>
               <h4 className="text-base font-semibold text-foreground">

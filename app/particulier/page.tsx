@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Footer from "@/components/Footer";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://architecture-toum92.replit.app";
 
@@ -276,35 +277,7 @@ export default function ParticulierPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-foreground/5 py-10 px-5 sm:px-8">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted font-light">
-          <div>
-            <p>Pour les architectes, marchands de biens et particuliers</p>
-          </div>
-          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
-            <a href="/" className="hover:text-foreground transition-colors py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded">
-              Accueil
-            </a>
-            <a href="/marchand" className="hover:text-foreground transition-colors py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded">
-              Marchands
-            </a>
-            <a href="/architecte" className="hover:text-foreground transition-colors py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded">
-              Architectes
-            </a>
-            <a href="/pricing" className="hover:text-foreground transition-colors py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded">
-              Tarifs
-            </a>
-            <a href="/blog" className="hover:text-foreground transition-colors py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded">
-              Blog
-            </a>
-            <a href="/mentions-legales" className="hover:text-foreground transition-colors py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded">
-              Mentions l&eacute;gales
-            </a>
-            <span>&copy; Versiroom 2026</span>
-          </div>
-        </div>
-      </footer>
+      <Footer currentPage="/particulier" />
     </div>
   );
 }

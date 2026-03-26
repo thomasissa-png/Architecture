@@ -573,7 +573,7 @@ export default function InlineGenerator({
                       className={`absolute top-2 right-2 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
                         isSelected
                           ? "bg-sage border-sage"
-                          : "bg-white/80 border-foreground/20"
+                          : "bg-background/80 border-foreground/20"
                       }`}
                     >
                       {isSelected && (
