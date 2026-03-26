@@ -21,6 +21,11 @@ export default function ProGate({ children, featureName }: ProGateProps) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (status === "unauthenticated") {
+      setIsLoading(false);
+      setHasPro(false);
+      return;
+    }
     if (status !== "authenticated" || !session?.user?.id) return;
 
     fetch("/api/user/credits")
@@ -66,7 +71,10 @@ export default function ProGate({ children, featureName }: ProGateProps) {
         </div>
       </header>
 
-      <div className="max-w-lg mx-auto px-5 sm:px-8 py-20 text-center">
+      <div
+        className="max-w-lg mx-auto px-5 sm:px-8 py-20 text-center"
+        style={{ animation: "fadeInUp 400ms cubic-bezier(0.16, 1, 0.3, 1) both" }}
+      >
         {/* Lock icon */}
         <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-sage/10 flex items-center justify-center">
           <svg className="w-8 h-8 text-sage" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -77,11 +85,8 @@ export default function ProGate({ children, featureName }: ProGateProps) {
         <h1 className="text-2xl font-bold text-foreground tracking-tight mb-3">
           {featureName}
         </h1>
-        <p className="text-sm text-muted font-light mb-2 max-w-sm mx-auto leading-relaxed">
-          Cette fonctionnalit{"\u00E9"} est r{"\u00E9"}serv{"\u00E9"}e aux comptes Pro.
-        </p>
         <p className="text-sm text-muted font-light mb-8 max-w-sm mx-auto leading-relaxed">
-          G{"\u00E9"}rez vos biens, cr{"\u00E9"}ez des dossiers de pr{"\u00E9"}sentation et des annonces professionnelles pour vos acquéreurs.
+          G{"\u00E9"}rez vos biens, cr{"\u00E9"}ez des dossiers de pr{"\u00E9"}sentation et des annonces professionnelles pour vos acqu{"\u00E9"}reurs {"\u2014"} fonctionnalit{"\u00E9"} r{"\u00E9"}serv{"\u00E9"}e aux comptes Pro.
         </p>
 
         {/* Pricing highlight */}
@@ -89,19 +94,27 @@ export default function ProGate({ children, featureName }: ProGateProps) {
           <p className="text-sm font-semibold text-foreground mb-3">Pack Pro inclut :</p>
           <ul className="space-y-2 text-sm text-muted font-light">
             <li className="flex items-start gap-2">
-              <span className="text-sage mt-0.5">&#10003;</span>
+              <svg className="w-3.5 h-3.5 text-sage mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+              </svg>
               Gestion de biens illimit{"\u00E9"}e
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-sage mt-0.5">&#10003;</span>
+              <svg className="w-3.5 h-3.5 text-sage mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+              </svg>
               Dossiers de pr{"\u00E9"}sentation brand{"\u00E9"}s
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-sage mt-0.5">&#10003;</span>
+              <svg className="w-3.5 h-3.5 text-sage mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+              </svg>
               Annonces publiques partageables
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-sage mt-0.5">&#10003;</span>
+              <svg className="w-3.5 h-3.5 text-sage mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+              </svg>
               Enrichissement automatique (description, carte, DVF)
             </li>
           </ul>
@@ -109,7 +122,7 @@ export default function ProGate({ children, featureName }: ProGateProps) {
 
         <a
           href="/#pricing"
-          className="inline-flex items-center justify-center px-8 py-3 bg-sage text-white rounded-full text-sm font-medium hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+          className="inline-flex items-center justify-center px-8 py-3 bg-sage text-white rounded-full text-sm font-medium hover:opacity-90 active:scale-[0.99] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
         >
           D{"\u00E9"}couvrir les offres Pro
         </a>
@@ -118,7 +131,7 @@ export default function ProGate({ children, featureName }: ProGateProps) {
           Vous avez d{"\u00E9"}j{"\u00E0"} un acc{"\u00E8"}s Pro ?{" "}
           <button
             onClick={() => window.location.reload()}
-            className="underline hover:text-muted/80 transition-colors"
+            className="underline hover:text-muted/80 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-sage/50 rounded-sm min-h-[44px] inline-flex items-center"
           >
             Rafra{"\u00EE"}chir la page
           </button>
