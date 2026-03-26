@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import StorageImage from "@/components/StorageImage";
+import { translateRoomLabel } from "@/lib/constants";
 
 /**
  * F4 — Mode Marchand: Dossier result display.
@@ -142,7 +143,7 @@ export default function DossierResult({
             {/* Room label header */}
             <div className="px-4 py-2.5 border-b border-foreground/5 flex items-center justify-between">
               <span className="text-sm font-medium text-foreground">
-                {photo.roomLabel || `Photo ${photo.photoIndex + 1}`}
+                {translateRoomLabel(photo.roomLabel, `Photo ${photo.photoIndex + 1}`)}
               </span>
               {onRegenerate && (
                 <button
@@ -163,7 +164,7 @@ export default function DossierResult({
                 <div className="aspect-[4/3]">
                   <StorageImage
                     imageKey={photo.inputImageKey}
-                    alt={`${photo.roomLabel || "Photo"} — avant`}
+                    alt={`${translateRoomLabel(photo.roomLabel, "Photo")} — avant`}
                     className="w-full h-full object-cover"
                     loading="lazy"
                   />
@@ -178,7 +179,7 @@ export default function DossierResult({
                 <div className="aspect-[4/3]">
                   <StorageImage
                     imageKey={photo.outputImageKey}
-                    alt={`${photo.roomLabel || "Photo"} — après`}
+                    alt={`${translateRoomLabel(photo.roomLabel, "Photo")} — après`}
                     className="w-full h-full object-cover"
                     loading="lazy"
                   />
@@ -218,7 +219,7 @@ export default function DossierResult({
             >
               <div className="flex-1 min-w-0">
                 <span className="text-sm text-red-600 font-light">
-                  {photo.roomLabel || `Photo ${photo.photoIndex + 1}`}
+                  {translateRoomLabel(photo.roomLabel, `Photo ${photo.photoIndex + 1}`)}
                 </span>
                 {photo.errorMessage && (
                   <p className="text-xs text-muted mt-1 font-light">{photo.errorMessage}</p>

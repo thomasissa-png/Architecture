@@ -23,6 +23,7 @@ import {
   formatSurface,
 } from "@/lib/dossier";
 import { getMerchantProfile, getMerchantLogo } from "@/lib/merchant";
+import { translateRoomLabel } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
 
@@ -233,17 +234,21 @@ export async function GET(
     const heroWidth = PAGE_WIDTH - MARGIN * 2;
 
     if (completedPhotos[0]?.output_image_key) {
-      const heroImg = await embedImageFromStorage(pdfDoc, completedPhotos[0].output_image_key);
-      if (heroImg) {
-        const dims = heroImg.scaleToFit(heroWidth, heroHeight);
-        const xOffset = MARGIN + (heroWidth - dims.width) / 2;
-        const yOffset = heroStartY - heroHeight + (heroHeight - dims.height) / 2;
-        coverPage.drawImage(heroImg, {
-          x: xOffset,
-          y: yOffset,
-          width: dims.width,
-          height: dims.height,
-        });
+      try {
+        const heroImg = await embedImageFromStorage(pdfDoc, completedPhotos[0].output_image_key);
+        if (heroImg) {
+          const dims = heroImg.scaleToFit(heroWidth, heroHeight);
+          const xOffset = MARGIN + (heroWidth - dims.width) / 2;
+          const yOffset = heroStartY - heroHeight + (heroHeight - dims.height) / 2;
+          coverPage.drawImage(heroImg, {
+            x: xOffset,
+            y: yOffset,
+            width: dims.width,
+            height: dims.height,
+          });
+        }
+      } catch (imgErr) {
+        console.error(`[PDF] Failed to embed hero image: ${imgErr instanceof Error ? imgErr.message : imgErr}`);
       }
     }
 
@@ -344,17 +349,21 @@ export async function GET(
 
     // Map at bottom right of cover (if available)
     if (dossier.carte_image_key) {
-      const mapImg = await embedImageFromStorage(pdfDoc, dossier.carte_image_key);
-      if (mapImg) {
-        const mapMaxW = 240;
-        const mapMaxH = 100;
-        const mapDims = mapImg.scaleToFit(mapMaxW, mapMaxH);
-        coverPage.drawImage(mapImg, {
-          x: PAGE_WIDTH - MARGIN - mapDims.width,
-          y: FOOTER_HEIGHT + 10,
-          width: mapDims.width,
-          height: mapDims.height,
-        });
+      try {
+        const mapImg = await embedImageFromStorage(pdfDoc, dossier.carte_image_key);
+        if (mapImg) {
+          const mapMaxW = 240;
+          const mapMaxH = 100;
+          const mapDims = mapImg.scaleToFit(mapMaxW, mapMaxH);
+          coverPage.drawImage(mapImg, {
+            x: PAGE_WIDTH - MARGIN - mapDims.width,
+            y: FOOTER_HEIGHT + 10,
+            width: mapDims.width,
+            height: mapDims.height,
+          });
+        }
+      } catch (imgErr) {
+        console.error(`[PDF] Failed to embed map image: ${imgErr instanceof Error ? imgErr.message : imgErr}`);
       }
     }
 
@@ -389,7 +398,7 @@ export async function GET(
       const page = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
 
       // Room label + style in header
-      const roomLabel = photo.room_label || `Photo ${photo.photo_index + 1}`;
+      const roomLabel = translateRoomLabel(photo.room_label, `Photo ${photo.photo_index + 1}`);
       const styleLabel = photo.style_id ? ` — ${STYLE_LABELS[photo.style_id] || photo.style_id}` : "";
       page.drawText(roomLabel + styleLabel, {
         x: MARGIN,
@@ -406,17 +415,21 @@ export async function GET(
 
       // Before image
       if (photo.input_image_key) {
-        const beforeImg = await embedImageFromStorage(pdfDoc, photo.input_image_key);
-        if (beforeImg) {
-          const dims = beforeImg.scaleToFit(imgAreaWidth, imgAreaHeight);
-          const xOffset = MARGIN + (imgAreaWidth - dims.width) / 2;
-          const yOffset = imgY + (imgAreaHeight - dims.height) / 2;
-          page.drawImage(beforeImg, {
-            x: xOffset,
-            y: yOffset,
-            width: dims.width,
-            height: dims.height,
-          });
+        try {
+          const beforeImg = await embedImageFromStorage(pdfDoc, photo.input_image_key);
+          if (beforeImg) {
+            const dims = beforeImg.scaleToFit(imgAreaWidth, imgAreaHeight);
+            const xOffset = MARGIN + (imgAreaWidth - dims.width) / 2;
+            const yOffset = imgY + (imgAreaHeight - dims.height) / 2;
+            page.drawImage(beforeImg, {
+              x: xOffset,
+              y: yOffset,
+              width: dims.width,
+              height: dims.height,
+            });
+          }
+        } catch (imgErr) {
+          console.error(`[PDF] Failed to embed before image for photo ${photo.id}: ${imgErr instanceof Error ? imgErr.message : imgErr}`);
         }
       }
 
@@ -431,17 +444,21 @@ export async function GET(
 
       // After image
       if (photo.output_image_key) {
-        const afterImg = await embedImageFromStorage(pdfDoc, photo.output_image_key);
-        if (afterImg) {
-          const dims = afterImg.scaleToFit(imgAreaWidth, imgAreaHeight);
-          const xOffset = MARGIN * 2 + imgAreaWidth + (imgAreaWidth - dims.width) / 2;
-          const yOffset = imgY + (imgAreaHeight - dims.height) / 2;
-          page.drawImage(afterImg, {
-            x: xOffset,
-            y: yOffset,
-            width: dims.width,
-            height: dims.height,
-          });
+        try {
+          const afterImg = await embedImageFromStorage(pdfDoc, photo.output_image_key);
+          if (afterImg) {
+            const dims = afterImg.scaleToFit(imgAreaWidth, imgAreaHeight);
+            const xOffset = MARGIN * 2 + imgAreaWidth + (imgAreaWidth - dims.width) / 2;
+            const yOffset = imgY + (imgAreaHeight - dims.height) / 2;
+            page.drawImage(afterImg, {
+              x: xOffset,
+              y: yOffset,
+              width: dims.width,
+              height: dims.height,
+            });
+          }
+        } catch (imgErr) {
+          console.error(`[PDF] Failed to embed after image for photo ${photo.id}: ${imgErr instanceof Error ? imgErr.message : imgErr}`);
         }
       }
 
@@ -524,7 +541,7 @@ export async function GET(
     const errStack = err instanceof Error ? err.stack : undefined;
     console.error(`[PDF] Error generating PDF for dossier uuid=${uuid}: ${errMsg}`, errStack || "");
     return NextResponse.json(
-      { error: "Erreur lors de la generation du PDF." },
+      { error: `Erreur lors de la generation du PDF : ${errMsg}` },
       { status: 500 }
     );
   }

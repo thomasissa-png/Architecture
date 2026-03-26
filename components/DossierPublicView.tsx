@@ -29,16 +29,31 @@ export default function DossierPublicView({
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   // Build a flat array of all images (avant + apres, interleaved per photo)
+  // Skip entries with empty/missing keys to avoid 404s in lightbox
   const allImages: { src: string; alt: string }[] = [];
   for (const photo of photos) {
-    allImages.push({
-      src: `/api/logs/image?path=${encodeURIComponent(photo.inputImageKey)}`,
-      alt: `${photo.roomLabel} — avant`,
-    });
-    allImages.push({
-      src: `/api/logs/image?path=${encodeURIComponent(photo.outputImageKey)}`,
-      alt: `${photo.roomLabel} — après`,
-    });
+    if (photo.inputImageKey) {
+      allImages.push({
+        src: `/api/logs/image?path=${encodeURIComponent(photo.inputImageKey)}`,
+        alt: `${photo.roomLabel} — avant`,
+      });
+    }
+    if (photo.outputImageKey) {
+      allImages.push({
+        src: `/api/logs/image?path=${encodeURIComponent(photo.outputImageKey)}`,
+        alt: `${photo.roomLabel} — après`,
+      });
+    }
+  }
+
+  // Build index mapping: photoIndex -> [beforeLightboxIdx, afterLightboxIdx]
+  // Used to correctly open the lightbox when clicking on a specific image
+  const lightboxIndexMap: Array<[number, number]> = [];
+  let lightboxIdx = 0;
+  for (const photo of photos) {
+    const beforeIdx = photo.inputImageKey ? lightboxIdx++ : -1;
+    const afterIdx = photo.outputImageKey ? lightboxIdx++ : -1;
+    lightboxIndexMap.push([beforeIdx, afterIdx]);
   }
 
   return (
@@ -64,7 +79,7 @@ export default function DossierPublicView({
               <button
                 type="button"
                 className="relative bg-background cursor-zoom-in text-left"
-                onClick={() => setLightboxIndex(photoIndex * 2)}
+                onClick={() => { const idx = lightboxIndexMap[photoIndex]?.[0]; if (idx !== undefined && idx >= 0) setLightboxIndex(idx); }}
                 aria-label={`Agrandir ${photo.roomLabel} — avant`}
               >
                 <div className="aspect-[4/3]">
@@ -84,7 +99,7 @@ export default function DossierPublicView({
               <button
                 type="button"
                 className="relative bg-background cursor-zoom-in text-left"
-                onClick={() => setLightboxIndex(photoIndex * 2 + 1)}
+                onClick={() => { const idx = lightboxIndexMap[photoIndex]?.[1]; if (idx !== undefined && idx >= 0) setLightboxIndex(idx); }}
                 aria-label={`Agrandir ${photo.roomLabel} — après`}
               >
                 <div className="aspect-[4/3]">

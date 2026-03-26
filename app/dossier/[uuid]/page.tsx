@@ -23,6 +23,7 @@ import ContactSticky from "@/components/ContactSticky";
 import ShareButtons from "@/components/ShareButtons";
 import RoomNav from "@/components/RoomNav";
 import StorageImage from "@/components/StorageImage";
+import { translateRoomLabel } from "@/lib/constants";
 
 interface PageProps {
   params: { uuid: string };
@@ -244,7 +245,7 @@ export default async function DossierPage({ params }: PageProps) {
             <RoomNav
               rooms={completedPhotos.map((p) => ({
                 id: `piece-${p.id}`,
-                label: p.room_label || `Photo ${p.photo_index + 1}`,
+                label: translateRoomLabel(p.room_label, `Photo ${p.photo_index + 1}`),
               }))}
             />
           </div>
@@ -264,7 +265,7 @@ export default async function DossierPage({ params }: PageProps) {
             <DossierPublicView
               photos={completedPhotos.map((p) => ({
                 id: p.id,
-                roomLabel: p.room_label || `Photo ${p.photo_index + 1}`,
+                roomLabel: translateRoomLabel(p.room_label, `Photo ${p.photo_index + 1}`),
                 inputImageKey: p.input_image_key || "",
                 outputImageKey: p.output_image_key || "",
               }))}

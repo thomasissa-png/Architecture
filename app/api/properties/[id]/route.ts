@@ -63,6 +63,7 @@ export async function PATCH(
       "floorNumber",
       "salePrice",
       "descriptionFinal",
+      "descriptionGenerated",
       "dpeClasse",
       "gesClasse",
       "etage",

@@ -99,6 +99,9 @@ export default function PropertyDetailPage() {
   const [activeAnnonceUuid, setActiveAnnonceUuid] = useState<string | null>(null);
   const [isArchivingAnnonce, setIsArchivingAnnonce] = useState(false);
 
+  // Description regeneration
+  const [isRegeneratingDesc, setIsRegeneratingDesc] = useState(false);
+
   // Inline generator
   const [showGenerator, setShowGenerator] = useState(false);
 
@@ -272,6 +275,48 @@ export default function PropertyDetailPage() {
       }
     } catch (err) {
       console.error("Erreur sauvegarde description:", err);
+    }
+  };
+
+  const handleRegenerateDescription = async () => {
+    if (!property?.address_raw) return;
+    setIsRegeneratingDesc(true);
+    try {
+      const res = await fetch("/api/merchant/enrich-property", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          adresse: property.address_raw,
+          surface: property.surface_m2 || undefined,
+          type: property.property_type || undefined,
+          nbPieces: property.room_count || undefined,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.description) {
+          // Save the new description to the property
+          const patchRes = await fetch(`/api/properties/${propertyId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ descriptionGenerated: data.description }),
+          });
+          if (patchRes.ok) {
+            const patchData = await patchRes.json();
+            setProperty(patchData.property);
+            setToastMsg("Description generee avec succes.");
+          }
+        } else {
+          setToastMsg("La description n\u2019a pas pu etre generee. Reessayez.");
+        }
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        setToastMsg(errData.error || "Erreur lors de la generation de la description.");
+      }
+    } catch {
+      setToastMsg("Erreur reseau. Verifiez votre connexion.");
+    } finally {
+      setIsRegeneratingDesc(false);
     }
   };
 
@@ -583,9 +628,19 @@ export default function PropertyDetailPage() {
                 </button>
               </div>
             ) : (
-              <p className="text-xs text-muted/50 font-light mb-4">
-                Description en cours d&apos;enrichissement...
-              </p>
+              <div className="mb-4">
+                <p className="text-xs text-muted/50 font-light mb-2">
+                  Aucune description disponible.
+                </p>
+                <button
+                  onClick={handleRegenerateDescription}
+                  disabled={isRegeneratingDesc}
+                  className="text-xs bg-sage text-white px-3 py-1.5 rounded-full font-medium hover:bg-sage/85 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  data-testid="regenerate-description"
+                >
+                  {isRegeneratingDesc ? "Generation en cours..." : "Generer la description"}
+                </button>
+              </div>
             )}
           </div>
 

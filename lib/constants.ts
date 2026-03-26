@@ -27,10 +27,27 @@ export const ROOM_TYPE_LABELS: Record<string, string> = {
   office: "Bureau",
   dining_room: "Salle à manger",
   hallway: "Entrée",
+  entryway: "Entrée",
   terrace: "Terrasse",
   balcony: "Balcon",
   garden: "Jardin",
+  wc: "WC",
+  laundry: "Buanderie",
+  cellar: "Cave",
+  other: "Autre",
 };
+
+/**
+ * Translate a room label: if it matches a known English room_type key,
+ * return the French label. Otherwise return the original string.
+ */
+export function translateRoomLabel(label: string | null | undefined, fallback?: string): string {
+  if (!label) return fallback || "Photo";
+  // If the label matches a known room_type key, translate it
+  if (ROOM_TYPE_LABELS[label]) return ROOM_TYPE_LABELS[label];
+  // Otherwise it's already a user-provided French label
+  return label;
+}
 
 export const TYPE_LABELS: Record<string, string> = {
   appartement: "Appartement",
