@@ -112,12 +112,16 @@ async function enrichProperty(
   const postcode = props.postcode || "";
   const city = props.city || "";
 
-  // 2. DVF + 3. Map + 4. Description in parallel
-  const [dvfResult, mapKey, description] = await Promise.all([
+  // 2. DVF + Map in parallel (DVF needed for description)
+  const [dvfResult, mapKey] = await Promise.all([
     fetchDVF(lat, lon),
     fetchMap(lat, lon),
-    generateDescription(meta.type, meta.surface, label, meta.nbPieces, city),
   ]);
+
+  // 3. Description AFTER DVF so price/m2 is available
+  const description = await generateDescription(
+    meta.type, meta.surface, label, meta.nbPieces, city, dvfResult
+  );
 
   // 3. Update property with enriched data
   await updateProperty(propertyId, userId, {
@@ -183,7 +187,8 @@ async function generateDescription(
   surface: number | null,
   adresse: string,
   nbPieces: number | null,
-  city: string
+  city: string,
+  prixMoyenM2: number | null
 ): Promise<string | null> {
   if (!process.env.OPENAI_API_KEY) return null;
   try {
@@ -196,6 +201,7 @@ async function generateDescription(
     parts.push(`Adresse : ${adresse}`);
     if (nbPieces) parts.push(`Nombre de pi\u00E8ces : ${nbPieces}`);
     if (city) parts.push(`Ville : ${city}`);
+    if (prixMoyenM2) parts.push(`Prix moyen du quartier : ${prixMoyenM2} EUR/m\u00B2`);
 
     const response = await openai.chat.completions.create({
       model: "gpt-4.1-mini",
