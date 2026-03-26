@@ -14,6 +14,15 @@ export async function GET(req: NextRequest) {
   const basename = file.split("/").pop() || file;
   const normalizedKey = `logs/${basename}`;
 
+  // Diagnostic: detect null/undefined passed as string
+  if (file === "null" || file === "undefined" || file === "") {
+    console.error(`[/api/logs/image] DIAGNOSTIC: received file="${file}" — caller has a null/undefined output_image_key`);
+    return NextResponse.json(
+      { error: "Invalid file parameter: null/undefined key", detail: "The output_image_key in the database is likely NULL" },
+      { status: 400 }
+    );
+  }
+
   // Try normalized key first, then raw key as fallback (in case the stored key
   // uses a different prefix than "logs/")
   const keysToTry = [normalizedKey];

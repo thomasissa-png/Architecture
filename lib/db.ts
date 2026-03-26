@@ -213,6 +213,34 @@ export async function saveImage(base64: string, name: string): Promise<string> {
     console.error("Object Storage upload failed:", error);
     throw new Error(`Failed to upload ${key}: ${error}`);
   }
+
+  // Read-after-write verification: confirm the blob is retrievable.
+  // Replit Object Storage sidecar can report ok:true but lose data on restart.
+  const verify = await withStorageRetry(
+    (client) => client.downloadAsBytes(key),
+    `saveImage:verify(${key})`
+  );
+  if (!verify.ok || !verify.value?.[0]) {
+    console.error(`[saveImage] VERIFY FAILED — uploaded key "${key}" (${buffer.length} bytes) but immediate read-back returned ok=${verify.ok}`);
+    // Retry upload once more
+    const retry = await withStorageRetry(
+      (client) => client.uploadFromBytes(key, buffer),
+      `saveImage:retryUpload(${key})`
+    );
+    if (!retry.ok) {
+      throw new Error(`Failed to upload ${key} after verify+retry: ${retry.error}`);
+    }
+    // Verify again
+    const verify2 = await withStorageRetry(
+      (client) => client.downloadAsBytes(key),
+      `saveImage:verify2(${key})`
+    );
+    if (!verify2.ok || !verify2.value?.[0]) {
+      throw new Error(`Failed to verify ${key} after retry — data not durable`);
+    }
+    console.log(`[saveImage] Retry succeeded for key "${key}"`);
+  }
+
   return key;
 }
 
@@ -224,8 +252,25 @@ export async function getImage(key: string): Promise<Uint8Array | null> {
     );
     const { ok, value } = result;
     if (!ok || !value) {
-      console.warn(`getImage: key "${key}" not found in Object Storage`);
-      return null;
+      // Retry once after 500ms — sidecar eventual consistency
+      console.warn(`getImage: key "${key}" not found, retrying after 500ms...`);
+      await new Promise((r) => setTimeout(r, 500));
+      storageClient = null; // Force fresh client
+      const retry = await withStorageRetry(
+        (client) => client.downloadAsBytes(key),
+        `getImage:retry(${key})`
+      );
+      if (!retry.ok || !retry.value) {
+        console.warn(`getImage: key "${key}" still not found after retry`);
+        return null;
+      }
+      const retryBuf = retry.value[0];
+      if (!retryBuf) {
+        console.warn(`getImage: key "${key}" returned empty buffer on retry`);
+        return null;
+      }
+      console.log(`getImage: key "${key}" found on retry (${retryBuf.length} bytes)`);
+      return new Uint8Array(retryBuf.buffer, retryBuf.byteOffset, retryBuf.byteLength);
     }
     // SDK returns [Buffer] tuple
     const buf = value[0];

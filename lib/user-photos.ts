@@ -140,8 +140,11 @@ export async function getUserPhotos(
 
   const photos = result.rows as UserPhoto[];
   const nullOutputCount = photos.filter((p) => !p.output_image_key).length;
+  const emptyStringCount = photos.filter((p) => p.output_image_key === "").length;
+  console.log(`[getUserPhotos] userId=${userId}: ${photos.length} photos returned, ${nullOutputCount} with NULL output_image_key, ${emptyStringCount} with empty string output_image_key`);
   if (nullOutputCount > 0) {
-    console.warn(`[getUserPhotos] ${nullOutputCount}/${photos.length} photos have NULL output_image_key for userId=${userId}`);
+    const nullPhotos = photos.filter((p) => !p.output_image_key);
+    console.warn(`[getUserPhotos] Photos with NULL output_image_key:`, nullPhotos.map((p) => ({ id: p.id, styleId: p.style_id, createdAt: p.created_at })));
   }
 
   return photos;

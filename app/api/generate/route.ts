@@ -1267,8 +1267,10 @@ export async function POST(request: NextRequest) {
       // Save iteration as a NEW user_photos entry (Bug 4 fix)
       // CRITICAL: await output saveImage before calling saveUserPhoto.
       // Skip entirely if outputKey is null to avoid "Image non disponible" in gallery.
+      // Must await (with timeout) before returning response — fire-and-forget is killed
+      // by Replit's serverless runtime after the response is sent.
       if (session?.user?.id) {
-        (async () => {
+        const iterPhotoPromise = (async () => {
           try {
             const { saveImage: saveImg } = await import("@/lib/db");
             const ts = Date.now();
@@ -1280,7 +1282,7 @@ export async function POST(request: NextRequest) {
 
             if (!outputKey) {
               console.error("[saveUserPhoto iteration] SKIPPING — outputKey is null");
-              return;
+              return null;
             }
 
             const pass1ImageKey = cached.imageBase64
@@ -1298,10 +1300,18 @@ export async function POST(request: NextRequest) {
               isOutdoor: cached.meta.isOutdoor || false,
               propertyId: null,
             });
+            return outputKey;
           } catch (err) {
             console.error("saveUserPhoto (iteration) failed:", err);
+            return null;
           }
         })();
+
+        // Wait up to 5s for the gallery save to complete before returning
+        await Promise.race([
+          iterPhotoPromise,
+          new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)),
+        ]);
       }
 
       // Generation succeeded — credit was already decremented optimistically
