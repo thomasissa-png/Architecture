@@ -197,7 +197,7 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+      className="fixed inset-0 z-[100] overflow-y-auto"
       role="dialog"
       aria-modal="true"
       aria-labelledby="auth-modal-title"
@@ -209,12 +209,14 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
         onClick={onClose}
       />
 
-      {/* Modal — scrollable for iOS keyboard */}
-      <div
-        ref={modalRef}
-        className="relative w-full max-w-md bg-background rounded-3xl shadow-2xl border border-foreground/5 max-h-[min(90vh,90dvh)] flex flex-col overflow-hidden"
-        style={{ animation: "fadeInUp 300ms cubic-bezier(0.16, 1, 0.3, 1)" }}
-      >
+      {/* Centering wrapper — min-h-full ensures vertical centering even on small screens */}
+      <div className="relative flex min-h-full items-center justify-center p-4">
+        {/* Modal */}
+        <div
+          ref={modalRef}
+          className="relative w-full max-w-md bg-background rounded-3xl shadow-2xl border border-foreground/5"
+          style={{ animation: "fadeInUp 300ms cubic-bezier(0.16, 1, 0.3, 1)" }}
+        >
         {/* Close button — 44px touch target, absolute top-right so it never scrolls away */}
         <button
           onClick={onClose}
@@ -226,7 +228,7 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
           </svg>
         </button>
 
-        <div className="px-6 sm:px-8 pt-6 pb-6 overflow-y-auto flex-1 min-h-0">
+        <div className="px-6 sm:px-8 pt-6 pb-6">
           {/* Header */}
           <div className="text-center mb-8">
             <h2 id="auth-modal-title" className="text-2xl font-bold text-foreground tracking-tight mb-2">
@@ -405,6 +407,7 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
             <a href="/cgv" className="underline hover:text-muted/80 transition-colors">CGV</a> et notre{" "}
             <a href="/confidentialite" className="underline hover:text-muted/80 transition-colors">politique de confidentialité</a>.
           </p>
+        </div>
         </div>
       </div>
     </div>
