@@ -193,8 +193,20 @@ export default async function DossierPage({ params }: PageProps) {
           </p>
         </div>
 
-        {/* Map preview */}
-        {dossier.carte_image_key && (
+        {/* Map preview — iframe OSM (no server dependency) */}
+        {dossier.latitude && dossier.longitude ? (
+          <div className="mb-8 rounded-2xl border border-foreground/5 overflow-hidden max-w-lg">
+            <iframe
+              title="Carte du quartier"
+              width="100%"
+              height="250"
+              style={{ border: 0 }}
+              loading="lazy"
+              referrerPolicy="no-referrer"
+              src={`https://www.openstreetmap.org/export/embed.html?bbox=${Number(dossier.longitude) - 0.008},${Number(dossier.latitude) - 0.005},${Number(dossier.longitude) + 0.008},${Number(dossier.latitude) + 0.005}&layer=mapnik&marker=${dossier.latitude},${dossier.longitude}`}
+            />
+          </div>
+        ) : dossier.carte_image_key ? (
           <div className="mb-8 rounded-2xl border border-foreground/5 overflow-hidden max-w-lg">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -203,7 +215,7 @@ export default async function DossierPage({ params }: PageProps) {
               className="w-full h-auto"
             />
           </div>
-        )}
+        ) : null}
 
         {/* Caracteristiques from property */}
         {linkedProperty && (
