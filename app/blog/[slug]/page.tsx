@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getBlogPostBySlug, getBlogPosts } from "@/lib/blog";
+import { getBlogPostBySlug } from "@/lib/blog";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://architecture-toum92.replit.app";
 
