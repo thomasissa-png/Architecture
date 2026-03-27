@@ -51,6 +51,11 @@ const faqItems = [
     answer:
       "Vos photos sont traitées uniquement pour générer le visuel. Elles ne sont ni partagées, ni utilisées pour entraîner une IA. Elles sont supprimées automatiquement sous 30 jours.",
   },
+  {
+    question: "Ça marche aussi pour une petite pièce ou une pièce sombre ?",
+    answer:
+      "Oui. Versiroom fonctionne avec toutes les configurations — petite surface, couloir, pièce sans fenêtre ou sous mauvaise lumière. L'IA s'adapte à la géométrie réelle de votre espace. Plus la photo est nette, plus le résultat sera précis.",
+  },
 ];
 
 const jsonLd = {
@@ -241,7 +246,7 @@ export default function ParticulierPage() {
               {
                 num: "04",
                 title: "Partagez et sauvegardez",
-                desc: "Finies les disputes sur la couleur du mur. Téléchargez l'image en HD, partagez-la sur Instagram ou WhatsApp, ou envoyez-la à votre partenaire. Utilisez le visuel comme référence pour choisir exactement les bons meubles.",
+                desc: "Finies les disputes sur la couleur du mur. Partagez sur Instagram, sauvegardez dans votre board Pinterest, ou envoyez à votre partenaire. Le visuel est net, sans filigrane — prêt à publier. Utilisez le visuel comme référence pour choisir exactement les bons meubles.",
               },
             ].map((item) => (
               <div key={item.num} className="flex gap-5 items-start">
@@ -300,11 +305,11 @@ export default function ParticulierPage() {
       {/* CTA final */}
       <section className="pb-20 sm:pb-32 px-5 sm:px-8">
         <div className="max-w-xl mx-auto text-center">
-          <p className="text-xs text-muted font-light mb-6">
-            Rendu photo-réaliste, pas un filtre. Testé sur des pièces réelles en conditions de chantier.
-          </p>
           <p className="text-lg font-semibold text-foreground mb-3">
             Votre salon en Scandinave, en 90 secondes.
+          </p>
+          <p className="text-sm text-muted font-light mb-6">
+            Rendu photo-réaliste, pas un filtre. Testé sur des pièces réelles en conditions de chantier.
           </p>
           <p className="text-sm text-muted font-light mb-8">
             3 générations offertes · Sans CB · Ensuite à partir de 4,90 €

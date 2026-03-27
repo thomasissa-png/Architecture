@@ -65,6 +65,11 @@ const faqItems = [
     answer:
       "Vous pouvez régénérer immédiatement avec un autre style, ou affiner le résultat avec le mode personnalisé. Avec le Pro, 3 itérations par photo sont incluses : ajoutez un commentaire (« plus épuré », « changer le sol ») et Versiroom ajuste. Aucun engagement, aucun risque.",
   },
+  {
+    question: "Mon client risque-t-il de confondre le visuel avec un rendu définitif ?",
+    answer:
+      "Chaque visuel porte le label « Visualisation IA » en surimpression. C'est une transparence assumée : votre client sait que c'est une piste de travail, pas un engagement. Cette mention est conforme au EU AI Act.",
+  },
 ];
 
 const jsonLd = {
@@ -171,6 +176,8 @@ export default function ArchitectePage() {
         <span>Résultat en 90 secondes</span>
         <span>·</span>
         <span>HD gratuit, sans filigrane</span>
+        <span>·</span>
+        <span>Gratuit pour commencer</span>
       </div>
 
       {/* Le problème */}
@@ -306,7 +313,7 @@ export default function ArchitectePage() {
               {
                 step: "3",
                 title: "Partagez",
-                desc: "Envoyez la planche d'ambiance à votre client par email, lien partageable ou téléchargement HD. 90 secondes.",
+                desc: "Votre client reçoit une image HD par email ou un lien vers une page de visualisation — pas besoin de télécharger une app. 90 secondes.",
               },
             ].map((item) => (
               <div key={item.step}>
@@ -342,16 +349,19 @@ export default function ArchitectePage() {
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-10 text-center">
             Questions fréquentes
           </h2>
-          <div className="space-y-8">
+          <div className="space-y-1">
             {faqItems.map((item) => (
-              <div key={item.question}>
-                <h3 className="text-sm font-semibold text-foreground mb-2">
+              <details key={item.question} className="group">
+                <summary className="flex items-center justify-between cursor-pointer py-4 text-sm font-semibold text-foreground hover:text-foreground/80 transition-colors">
                   {item.question}
-                </h3>
-                <p className="text-sm text-muted font-light leading-relaxed">
+                  <svg className="w-4 h-4 text-muted shrink-0 ml-4 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </summary>
+                <p className="text-sm text-muted font-light leading-relaxed pb-4">
                   {item.answer}
                 </p>
-              </div>
+              </details>
             ))}
           </div>
         </div>
