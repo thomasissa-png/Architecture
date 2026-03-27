@@ -258,33 +258,47 @@
 
 ## Mémo de reprise — dernière session
 
-- **Date et heure de clôture** : 2026-03-26 (session 2c — marathon)
-- **Branch** : `claude/setup-project-context-K9w4y`
-- **Résumé de la session** : Session marathon (50+ commits, 40+ livrables). Couverture complete : bugs prod (modal, carte, hero, accents, gallery, PDF), features (InlineGenerator, ProGate, StorageImage, selecteur bien, bouton supprimer, bouton modifier annonce/dossier, regenerer description), SEO/GEO (3 landing pages, /comparatif, blog infra + 3 articles, strategies), audits qualite (QA 9.2/10, Thomas 8.8, Marc 9.4, design 8.5), fixes critiques (migration user_id transactionnelle, saveUserPhoto AVANT response Replit autoscale, PDF WinAnsi sanitizer). Titres Format A (T3 60m²), descriptions benchmark, analyse marche, pricing polish.
+- **Date et heure de clôture** : 2026-03-27 (session 3 — 50 commits, 70 fichiers, 6842 insertions)
+- **Branch** : `claude/update-gradient-agents-rnmKh`
+- **Résumé de la session** :
+  - **Gradient Agents v2** : mise à jour depuis Agent-Team, 6 agents modifiés, agent @moi ajouté, CLAUDE.md fusionné
+  - **Sprint 22 — Audit visuel Yann+Lucas** (#31-42, 28 images) : Flux P2 désactivé (hallucinations #41/#42), itérations destructrices fixées, allowWallMounted, prises électriques, warm shift, grain photo. Prompts v24 validés par les 3 experts (indoor + outdoor)
+  - **Prompts v24** : mood sentences 12 styles indoor + 8 outdoor, atmosphere directive, condensation contraintes, corrections Camille (2 plafonds outdoor, textiles, fontaine murale)
+  - **5 agents métier créés** : interior-architect (Yann), ai-image-expert (Lucas), paysagiste (Camille v2), marchand-de-biens (Thomas), client-mandataire (Marc v2.1) — tous invocables par subagent_type
+  - **V2a Export Portails** : LeBonCoin/SeLoger/Bien'ici, composant ExportPortail, portal-formatter.ts, 36 tests unitaires + 16 E2E, Thomas 9.1→9.5/10
+  - **PDF portrait A4** : refonte layout fiche de bien pro, photos empilées, page marchand, QR code, DPE badge, liens tel/mailto cliquables. Marc 5.7→8.6/10
+  - **Section "Votre interlocuteur"** sur annonce + dossier publics (MerchantInfoBlock)
+  - **Propagation branding** : couleurs CSS vars + polices marchand sur pages web dossier/annonce, mapping PDF serif/sans-serif
+  - **Fix SIRET** : validation placeholder Pappers, fallback API gouv.fr
+  - **Homepage/Tarifs P0** : galerie avant/après 3 personas, teaser Mode Marchand, ROI Thomas "29€ vs 200-500€", blocs persona tarifs, page /examples
+  - **URLs slug** : annonces + dossiers avec noms lisibles, redirect 301 UUID→slug
+  - **Comparateur mobile** : touch-action:none
+  - **Footer** : composant réutilisable sur les 4 pages personas
+  - **Lint fixes** : 4 erreurs bloquant le build corrigées
+  - **QA pré-lancement** : GO, 0 P0, 7 P1 tous corrigés
 
 - **Travaux en cours** :
-  1. **Carte OSM sur page annonce** — identifie P0 par Marc audit final, pas encore implemente (le dossier l'a, l'annonce non)
-  2. **Comparateur mobile** — curseur touch ne fonctionne pas (events touchstart/touchmove manquants dans ImageComparator.tsx)
-  3. **Blog seed** — `npx tsx scripts/seed-blog.ts` a executer sur Replit pour publier les 3 articles
-  4. **Footer pages personas** — manquant sur /marchand /architecte /particulier (P2 design audit)
-  5. **Domaine versiroom.fr** — blocker SEO/GEO n°1, action fondateur
-  6. **URLs personnalisees annonces/dossiers** — reporte (changement d'architecture slug + migration DB)
-  7. **Hero images** — /imageavant.jpg + /imageapres.jpg dans repo, page.tsx pointe vers eux. Verifier que ca fonctionne apres deploy.
-  8. **Photos galerie** — fix saveUserPhoto AVANT response applique. A verifier en prod.
+  1. **Blog seed** — `npx tsx scripts/seed-blog.ts` à exécuter sur Replit
+  2. **Domaine versiroom.fr** — blocker SEO/GEO n°1, action fondateur
+  3. **SIRET/médiateur** — placeholders dans les pages légales, action fondateur
+  4. **Clés API prod** — Google OAuth, Stripe, Sentry, Pappers
+  5. **Images galerie homepage** — 3 vraies photos avant/après par persona (au lieu de la même image ×3)
 
 - **Prochaines actions recommandées** :
-  1. **Carte OSM annonce** — ajouter iframe OSM sur la page annonce publique (meme pattern que dossier). @fullstack, 15 min.
-  2. **Comparateur mobile** — ajouter touch events dans ImageComparator.tsx. @fullstack, 30 min.
-  3. **Seed blog** — `npx tsx scripts/seed-blog.ts` sur Replit. Action fondateur, 1 min.
-  4. **Domaine** — acheter versiroom.fr, configurer DNS. Action fondateur.
-  5. **Thomas+Marc 10/10** — iterations restantes : type de bien dans le titre, badge atout, notification SMS, estimation loyer.
+  1. **F5 Mode Décorateur** — prochaine feature dans la roadmap (specs dans docs/product/functional-specs.md §F5)
+  2. **Seed blog** — `npx tsx scripts/seed-blog.ts` sur Replit. Action fondateur, 1 min.
+  3. **Domaine** — acheter versiroom.fr, configurer DNS. Action fondateur.
+  4. **Tester en prod** — générer des photos avec les prompts v24 et relancer Yann+Lucas pour mesurer le gain
 
 - **Blockers éventuels** :
-  - Domaine Replit = plafond SEO/GEO (tous les agents convergent sur ce point)
-  - Photos galerie : le fix saveUserPhoto AVANT response n'est pas encore verifie en prod
-  - Le blog est cree mais vide en prod (seed non execute)
+  - Domaine Replit = plafond SEO/GEO (tous les agents convergent)
+  - Blog vide en prod (seed non exécuté)
+  - Clés API prod non configurées (Stripe non fonctionnel)
 
 - **Commande de reprise suggérée** :
+```
+@orchestrator Reprends le projet Versiroom. Session 27/03 (50 commits) : Sprint 22 audit visuel + prompts v24 validés Yann/Lucas/Camille, 5 agents métier créés, V2a export portails (Thomas 9.5), PDF portrait (Marc 8.6), branding propagé, homepage/tarifs P0, URLs slug, QA GO 0 P0. Priorités : (1) F5 Mode Décorateur, (2) Seed blog, (3) Domaine versiroom.fr, (4) Test prompts v24 en production.
+```
 ```
 @orchestrator Reprends le projet Versiroom. Session 26/03c marathon (50+ commits) : tous bugs prod corriges, QA 9.2/10, Thomas 8.8, Marc 9.4, SEO/GEO strategies + 3 landing pages + /comparatif + blog infra. Fix critique gallery (saveUserPhoto AVANT response Replit autoscale). Priorites : (1) Carte OSM page annonce (P0 Marc), (2) Comparateur mobile (touch events), (3) Seed blog sur Replit, (4) Domaine versiroom.fr, (5) Footer pages personas.
 ```

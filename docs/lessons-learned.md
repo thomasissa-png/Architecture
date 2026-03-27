@@ -1,5 +1,20 @@
 # Lessons Learned — Versiroom
 
+## Session 2026-03-27 (Sprint 22 + V2a + PDF portrait + agents)
+
+| Session | Date | Catégorie | Sévérité | Description | Correction appliquée | Recommandation framework | Statut |
+|---|---|---|---|---|---|---|---|
+| 27 | 2026-03-27 | problème | P0 | Flux Depth Pro détruit la géométrie en passe 2 (hallucination fenêtre #41, perte voûte #42, Yann 4.2/Lucas 5.0) | Flux désactivé en passe 2. Si GPT-4.1 échoue P2, retourner P1 seule. | Règle CLAUDE.md : NE JAMAIS utiliser Flux en passe 2. Flux autorisé P1 uniquement. | appliqué |
+| 27 | 2026-03-27 | problème | P0 | Itérations détruisent le mobilier existant (#33 tout Japandi perdu) — l'image source était la passe 1 vide au lieu de l'output meublé | Directives préservation dans iteration-prompt.ts + vérification image source = output | Règle CLAUDE.md : itérations TOUJOURS sur l'image output, JAMAIS sur passe 1 | appliqué |
+| 27 | 2026-03-27 | problème | P0 | "Do NOT attach to walls" sabote les demandes légitimes d'étagères murales (#33) | allowWallMounted flag dans custom-prompt.ts + iteration-prompt.ts | Règle CLAUDE.md : autoriser wall-mounted SI l'utilisateur le demande explicitement | appliqué |
+| 27 | 2026-03-27 | problème | P1 | PAPPERS_API_KEY="..." (placeholder) évaluée truthy → appel Pappers timeout 8s avant fallback gouv.fr | hasPappersKey() rejette placeholders, skip direct vers gouv.fr | Règle @fullstack : toujours valider les clés API contre les placeholders, pas juste truthy | appliqué |
+| 27 | 2026-03-27 | problème | P1 | Police custom /compte = promesse non tenue — 5 polices proposées mais ignorées partout sauf aperçu | Mapping serif→TimesRoman, sans→Helvetica dans PDF. fontFamily sur MerchantBrandWrapper web | pdf-lib ne supporte pas embed .ttf sans chantier significatif — documenter la limitation | appliqué |
+| 27 | 2026-03-27 | pattern | - | Audits croisés Yann+Lucas+Camille en parallèle (6 gen par batch) = résultats en 2 min au lieu de timeout | - | Anti-timeout : toujours découper les audits visuels en batch de 6 max. 28 images = 4 agents parallèles. | appliqué |
+| 27 | 2026-03-27 | pattern | - | Mood sentences au début des furniturePrompts améliorent la composition — validé par Yann + Lucas | - | Toujours ouvrir un prompt créatif par une phrase d'INTENTION avant la liste technique de meubles | appliqué |
+| 27 | 2026-03-27 | pattern | - | Pipeline copy→design→UX→Thomas→QA sur V2a = couverture complète, 9.1→9.5 Thomas en 2 itérations | - | Pattern à capitaliser : audit 3 experts → corrections → audit persona → QA | appliqué |
+| 27 | 2026-03-27 | recommandation | P1 | Agent-factory bloqué par permissions Write sur .claude/agents/ — timeout 2x | Agents créés manuellement par l'orchestrateur | Agent-factory a besoin de permissions Write auto-approved sur .claude/agents/ | ouvert |
+| 27 | 2026-03-27 | préférence fondateur | - | [PRÉFÉRENCE FONDATEUR] : le PDF doit être au niveau des meilleurs PDFs possibles, type fiche de bien immobilier | PDF refait en portrait A4, photos empilées, page marchand, QR code | Les livrables envoyés aux acquéreurs sont le critère n°1 — toujours viser le niveau Sotheby's/Barnes | appliqué |
+
 ## Session 2026-03-26c (marathon)
 
 | Session | Date | Catégorie | Sévérité | Description | Correction appliquée | Recommandation framework | Statut |
