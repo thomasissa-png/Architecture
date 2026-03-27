@@ -888,24 +888,38 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Encart Mode Pro — compact */}
+      {/* 3 encarts personas */}
       <section className="px-5 sm:px-8 pb-10 sm:pb-14">
-        <div className="max-w-2xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 bg-foreground/[0.02] border border-foreground/10 rounded-2xl px-6 py-4">
-          <div className="flex items-center gap-3">
-            <span className="text-[10px] font-semibold text-sage bg-sage/10 px-2.5 py-1 rounded-full uppercase tracking-wider whitespace-nowrap">Pro</span>
-            <p className="text-sm text-foreground font-light">
-              Dossiers, PDF brandé, annonces — <strong className="font-semibold">29 €/mois</strong>
-            </p>
-          </div>
-          <a
-            href="/pricing"
-            className="flex-shrink-0 inline-flex items-center gap-1.5 text-sm text-sage font-medium hover:text-sage/80 transition-colors"
-          >
-            Découvrir
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg>
-          </a>
+        <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {[
+            {
+              label: "Architectes",
+              desc: "Un support de conversation dès le premier RDV.",
+              href: "/architecte",
+            },
+            {
+              label: "Marchands de biens",
+              desc: "Dossiers de pré-commercialisation en 10 minutes.",
+              href: "/marchand",
+            },
+            {
+              label: "Particuliers",
+              desc: "Votre pièce, dans le style que vous voulez.",
+              href: "/particulier",
+            },
+          ].map((p) => (
+            <a
+              key={p.label}
+              href={p.href}
+              className="group rounded-2xl border border-foreground/10 hover:border-sage/30 px-5 py-4 transition-all duration-200 hover:shadow-sm"
+            >
+              <p className="text-sm font-semibold text-foreground mb-1">{p.label}</p>
+              <p className="text-xs text-muted font-light mb-2">{p.desc}</p>
+              <span className="text-xs text-sage font-medium group-hover:underline">
+                En savoir plus →
+              </span>
+            </a>
+          ))}
         </div>
       </section>
 
