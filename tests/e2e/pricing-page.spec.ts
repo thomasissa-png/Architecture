@@ -36,10 +36,10 @@ test.describe("Pricing page — /pricing", () => {
   });
 
   test("displays correct prices for each pack", async ({ page }) => {
-    await expect(page.locator("text=4,90")).toBeVisible();
-    await expect(page.locator("text=14,90")).toBeVisible();
-    // Pro pack is 29 EUR
-    await expect(page.locator("text=29€")).toBeVisible();
+    await expect(page.locator("text=Gratuit")).toBeVisible();
+    await expect(page.locator("text=9,90")).toBeVisible();
+    // Pro pack is 29 EUR/mois
+    await expect(page.locator("text=29")).toBeVisible();
   });
 
   test("displays credit counts per pack", async ({ page }) => {

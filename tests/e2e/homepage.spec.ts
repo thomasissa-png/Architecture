@@ -54,10 +54,9 @@ test.describe("Homepage", () => {
       ":scope > div > div:last-child > div.border"
     );
     // Fallback: just check prices are visible in the pricing section
-    await expect(pricing).toContainText("4,90\u20ac");
-    await expect(pricing).toContainText("14,90\u20ac");
-    await expect(pricing).toContainText("29\u20ac");
-    await expect(pricing).toContainText("69\u20ac");
+    await expect(pricing).toContainText("Gratuit");
+    await expect(pricing).toContainText("9,90");
+    await expect(pricing).toContainText("29");
 
     // Pack names
     await expect(pricing).toContainText("Découverte");

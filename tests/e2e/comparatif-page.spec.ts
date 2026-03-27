@@ -56,7 +56,7 @@ test.describe("Comparatif page — /comparatif", () => {
 
   test("Versiroom price is displayed in the table", async ({ page }) => {
     const table = page.locator("table");
-    await expect(table).toContainText("4,90");
+    await expect(table).toContainText("9,90");
   });
 
   test("JSON-LD FAQPage structured data is present", async ({ page }) => {
