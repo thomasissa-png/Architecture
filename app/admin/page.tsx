@@ -211,27 +211,32 @@ export default function AdminPage() {
   if (error) return <div style={{ padding: 40, fontFamily: "Inter, sans-serif", color: "#c00" }}>Erreur : {error}</div>;
   if (logs.length === 0) return <div style={{ padding: 40, fontFamily: "Inter, sans-serif" }}>Aucune generation loguee.</div>;
 
-  const auditPromptText = `Fais appel aux agents Architecte d'Interieur (Yann Duval) et Expert IA Image (Lucas Moreau) pour auditer les generations recentes de production.
+  const auditPromptText = `Fais appel aux agents Architecte d'Interieur (Yann Duval), Expert IA Image (Lucas Moreau) et Paysagiste (Camille Verdier, pour les generations outdoor) pour auditer les generations recentes de production.
 
 Methode d'acces aux donnees de production :
-- Utilise WebFetch sur https://architecture-toum92.replit.app/api/logs pour recuperer TOUS les logs (style, duree, succes, prompts construits, chemins images)
-- Pour les images : WebFetch sur https://architecture-toum92.replit.app/api/logs/image?file={filename} (le filename est dans input_image_path, pass1_image_path, output_image_path)
-- Note : les images peuvent etre indisponibles (404) si le serveur a ete redeploy depuis la generation. Dans ce cas, auditer sur la base des prompts construits.
+- Utilise WebFetch sur https://architecture-toum92.replit.app/api/logs?token=allezpsg pour recuperer TOUS les logs (style, duree, succes, prompts construits, chemins images)
+- Pour les images : telecharge-les avec curl dans /tmp/audit-images/ :
+  curl -s -o /tmp/audit-images/{id}_{type}.jpg "https://architecture-toum92.replit.app/api/logs/image?path={image_path}&token=allezpsg"
+  (image_path = input_image_path, pass1_image_path, output_image_path de chaque log)
+- Puis lis les images avec Read tool pour les analyser visuellement (Read supporte les images JPG/PNG)
+- IMPORTANT : decoupe l'audit en batches de 6 generations max par agent pour eviter les timeouts
 
 Workflow d'audit :
-1. Recupere les logs via l'API production (WebFetch sur /api/logs)
-2. Identifie les generations NOUVELLES depuis le dernier audit (voir CLAUDE.md pour le numero du dernier audit)
-3. Pour chaque generation, examine :
-   - Les images INPUT, PASSE 1 et OUTPUT (via /api/logs/image?file=...)
+1. Recupere les logs via l'API production (WebFetch sur /api/logs?token=allezpsg)
+2. Identifie les generations NOUVELLES depuis le dernier audit (voir docs/reviews/audit-visuel-* pour le dernier batch audite)
+3. Telecharge TOUTES les images (input, pass1, output) dans /tmp/audit-images/
+4. Pour chaque generation, examine visuellement avec Read :
+   - Les images INPUT, PASSE 1 et OUTPUT
    - Le prompt construit passe 1 (built_prompt_pass1) et passe 2 (built_prompt_pass2)
    - Le style utilise, la duree par passe, le modele utilise
-4. Yann evalue (grille 10 criteres, fidelite et credibilite comptent double) : fidelite stylistique, vocabulaire visuel, hero pieces, coherence matieres, eclairage, credibilite pro, completude, differenciation, adaptabilite spatiale, potentiel photorealiste
-5. Lucas evalue (grille 10 criteres, preservation et rendu comptent double) : preservation architecturale, contraintes lumiere, vocabulaire photo, structure prompt, negative prompting, compatibilite multi-modeles, coherence I/O, richesse descriptive, adaptabilite conditions variables, rendu final credible
-6. Note /10 par generation + classement comparatif
-7. Patterns recurrents (problemes communs a plusieurs generations)
-8. Plan d'amelioration prioritaire (P0-P4) avec corrections concretes de prompts/parametres
+5. Yann evalue (grille 10 criteres, fidelite et credibilite comptent double) : fidelite stylistique, vocabulaire visuel, hero pieces, coherence matieres, eclairage, credibilite pro, completude, differenciation, adaptabilite spatiale, potentiel photorealiste
+6. Lucas evalue (grille 10 criteres, preservation et rendu comptent double) : preservation architecturale, contraintes lumiere, vocabulaire photo, structure prompt, negative prompting, compatibilite multi-modeles, coherence I/O, richesse descriptive, adaptabilite conditions variables, rendu final credible
+7. Camille evalue les generations outdoor (grille 10 criteres) : fidelite style paysager, vocabulaire vegetal, mobilier outdoor, materiaux exterieurs, eclairage naturel, credibilite pro, completude, differenciation, integration environnement, potentiel photorealiste
+8. Note /10 par generation + classement comparatif
+9. Patterns recurrents (problemes communs a plusieurs generations)
+10. Plan d'amelioration prioritaire (P0-P4) avec corrections concretes de prompts/parametres
 
-Demande type : "Fais appel a l'agent Architecte d'Interieur et a l'agent Expert IA Image pour auditer toutes les generations depuis le dernier audit. Donne la note de chaque generation, identifie les patterns de problemes recurrents, et propose un plan d'amelioration prioritaire."`;
+Demande type : "Fais appel aux agents Architecte d'Interieur, Expert IA Image et Paysagiste pour auditer toutes les generations depuis le dernier audit. Telecharge les images dans /tmp/audit-images/ et analyse-les visuellement. Donne la note de chaque generation, identifie les patterns recurrents, et propose un plan d'amelioration prioritaire."`;
 
   return (
     <div style={{ padding: "24px 32px", fontFamily: "Inter, sans-serif", maxWidth: 1400, margin: "0 auto" }}>
@@ -247,7 +252,7 @@ Demande type : "Fais appel a l'agent Architecte d'Interieur et a l'agent Expert 
         >
           <span style={{ fontSize: 16 }}>&#x1f9d1;&#x200d;&#x1f3a8;</span>
           <span style={{ fontSize: 13, fontWeight: 600, color: "#3d5a38" }}>
-            Prompt d&apos;audit agents (Yann Duval + Lucas Moreau)
+            Prompt d&apos;audit agents (Yann Duval + Lucas Moreau + Camille Verdier)
           </span>
           <span style={{ marginLeft: "auto", fontSize: 12, color: "#7D9B76" }}>
             {showAuditPrompt ? "Masquer" : "Copier le prompt pour lancer un audit"}
