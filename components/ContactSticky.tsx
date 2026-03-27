@@ -12,6 +12,8 @@ interface ContactStickyProps {
   raisonSociale?: string | null;
   /** Page title used in fallback mailto subject */
   title?: string;
+  /** Merchant brand color for CTA background */
+  brandColor?: string | null;
 }
 
 export default function ContactSticky({
@@ -19,6 +21,7 @@ export default function ContactSticky({
   email,
   raisonSociale,
   title,
+  brandColor,
 }: ContactStickyProps) {
   const fallbackSubject = title || (raisonSociale ? `Annonce ${raisonSociale}` : "Annonce Versiroom");
 
@@ -28,7 +31,8 @@ export default function ContactSticky({
         {telephone ? (
           <a
             href={`tel:${telephone}`}
-            className="pointer-events-auto inline-flex items-center gap-2.5 bg-sage text-white px-6 py-3.5 rounded-full font-medium text-sm shadow-lg hover:bg-sage/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 min-h-[48px]"
+            className="pointer-events-auto inline-flex items-center gap-2.5 text-white px-6 py-3.5 rounded-full font-medium text-sm shadow-lg hover:opacity-90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 min-h-[48px]"
+            style={{ backgroundColor: brandColor || "#7D9B76" }}
             data-testid="contact-sticky-phone"
           >
             <svg
@@ -49,7 +53,8 @@ export default function ContactSticky({
         ) : email ? (
           <a
             href={`mailto:${email}`}
-            className="pointer-events-auto inline-flex items-center gap-2.5 bg-sage text-white px-6 py-3.5 rounded-full font-medium text-sm shadow-lg hover:bg-sage/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 min-h-[48px]"
+            className="pointer-events-auto inline-flex items-center gap-2.5 text-white px-6 py-3.5 rounded-full font-medium text-sm shadow-lg hover:opacity-90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 min-h-[48px]"
+            style={{ backgroundColor: brandColor || "#7D9B76" }}
             data-testid="contact-sticky-email"
           >
             <svg
@@ -70,7 +75,7 @@ export default function ContactSticky({
         ) : (
           <a
             href={`mailto:contact@versiroom.fr?subject=${encodeURIComponent(fallbackSubject)}`}
-            className="pointer-events-auto inline-flex items-center gap-2.5 bg-sage text-white px-6 py-3.5 rounded-full font-medium text-sm shadow-lg hover:bg-sage/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 min-h-[48px]"
+            className="pointer-events-auto inline-flex items-center gap-2.5 bg-sage text-white px-6 py-3.5 rounded-full font-medium text-sm shadow-lg hover:opacity-90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 min-h-[48px]"
             data-testid="contact-sticky-fallback"
           >
             <svg

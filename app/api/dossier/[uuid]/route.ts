@@ -42,7 +42,7 @@ export async function GET(
 
   if (isDossierExpired(dossier)) {
     return NextResponse.json(
-      { error: "Ce dossier a expire." },
+      { error: "Ce dossier a expiré." },
       { status: 410 }
     );
   }

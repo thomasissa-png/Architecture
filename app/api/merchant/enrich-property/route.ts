@@ -237,7 +237,7 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Corps de requete invalide." }, { status: 400 });
+    return NextResponse.json({ error: "Corps de requête invalide." }, { status: 400 });
   }
 
   const adresse = body.adresse?.trim();
@@ -249,7 +249,7 @@ export async function POST(request: NextRequest) {
   const geo = await geocodeAddress(adresse);
   if (!geo) {
     return NextResponse.json(
-      { error: "Adresse introuvable. Verifiez et reessayez." },
+      { error: "Adresse introuvable. Vérifiez et réessayez." },
       { status: 404 }
     );
   }

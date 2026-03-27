@@ -67,7 +67,10 @@ export default function MerchantInfoBlock({
         {/* Info lines */}
         <div className="space-y-2 min-w-0">
           {raisonSociale && (
-            <p className="text-sm font-semibold text-foreground">
+            <p
+              className="text-sm font-semibold"
+              style={{ color: couleurPrincipale || "#1C1C1E" }}
+            >
               {raisonSociale}
             </p>
           )}

@@ -65,6 +65,10 @@ export interface AnnonceData {
   dpeClasse?: string | null;
   gesClasse?: string | null;
   totalPhotos: number;
+  /** Merchant business name (optional, for contact block in copyText) */
+  merchantName?: string | null;
+  /** Merchant phone (optional, for contact block in copyText) */
+  merchantPhone?: string | null;
 }
 
 // ─── Constants ───────────────────────────────────────────────────────
@@ -388,12 +392,20 @@ export function formatForPortal(
   // Build copyable text block
   let copyText = "";
 
+  // Merchant contact line (inserted after description, before structured fields or DPE)
+  const merchantParts: string[] = [];
+  if (annonce.merchantName) merchantParts.push(annonce.merchantName);
+  if (annonce.merchantPhone) merchantParts.push(annonce.merchantPhone);
+  const merchantLine = merchantParts.length > 0
+    ? `\n\nContact : ${merchantParts.join(" — ")}`
+    : "";
+
   if (config.hasStructuredFields) {
     // SeLoger / Bien'ici format: separated sections
     copyText += title.text + "\n\n";
     copyText += "---\n\n";
     copyText += "Description :\n\n";
-    copyText += description.text + "\n\n";
+    copyText += description.text + merchantLine + "\n\n";
     copyText += "---\n\n";
     copyText += "Champs à saisir dans le formulaire :\n\n";
     for (const field of structuredFields) {
@@ -402,7 +414,7 @@ export function formatForPortal(
   } else {
     // LeBonCoin format: continuous text
     copyText += title.text + "\n\n";
-    copyText += description.text;
+    copyText += description.text + merchantLine;
     if (annonce.dpeClasse) {
       copyText += "\n\nDPE : " + annonce.dpeClasse;
     }

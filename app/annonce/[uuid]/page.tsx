@@ -23,6 +23,7 @@ import MerchantInfoBlock from "@/components/MerchantInfoBlock";
 import RoomNav from "@/components/RoomNav";
 import { ROOM_TYPE_LABELS } from "@/lib/constants";
 import StorageImage from "@/components/StorageImage";
+import MerchantBrandWrapper from "@/components/MerchantBrandWrapper";
 
 interface PageProps {
   params: { uuid: string };
@@ -181,6 +182,11 @@ export default async function AnnoncePage({ params }: PageProps) {
   );
 
   return (
+    <MerchantBrandWrapper
+      font={hasMerchant ? merchant?.police : null}
+      couleurPrincipale={hasMerchant ? merchant?.couleur_principale : null}
+      couleurSecondaire={hasMerchant ? merchant?.couleur_secondaire : null}
+    >
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-foreground/5 bg-background/80 backdrop-blur-md sticky top-0 z-50">
@@ -251,7 +257,8 @@ export default async function AnnoncePage({ params }: PageProps) {
         {/* Title + key info */}
         <div className="mb-8 sm:mb-10">
           <h1
-            className="text-2xl sm:text-3xl font-semibold text-foreground tracking-tight mb-3"
+            className="text-2xl sm:text-3xl font-semibold tracking-tight mb-3"
+            style={{ color: "var(--brand-primary, #1C1C1E)" }}
             data-testid="annonce-title"
           >
             {title}
@@ -276,7 +283,8 @@ export default async function AnnoncePage({ params }: PageProps) {
               </span>
             )}
             <span
-              className="text-xs bg-foreground text-background px-3 py-1.5 rounded-xl font-medium"
+              className="text-xs text-white px-3 py-1.5 rounded-xl font-medium"
+              style={{ backgroundColor: "var(--brand-primary, #1C1C1E)" }}
               data-testid="annonce-price"
             >
               {property.sale_price ? formatPrice(property.sale_price) : "Prix sur demande"}
@@ -319,6 +327,8 @@ export default async function AnnoncePage({ params }: PageProps) {
             coproChargesAnnuelles={property.charges_copro_annuelles}
             dpeClasse={property.dpe_classe}
             gesClasse={property.ges_classe}
+            merchantName={hasMerchant ? merchant?.raison_sociale : null}
+            merchantPhone={hasMerchant ? merchant?.telephone : null}
             photos={completedPhotos.map((p) => ({
               id: p.id,
               outputImageKey: p.output_image_key!,
@@ -334,7 +344,8 @@ export default async function AnnoncePage({ params }: PageProps) {
           <div className="mb-8">
             <a
               href={`tel:${merchant.telephone}`}
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-sage text-white rounded-full text-sm font-medium hover:opacity-90 active:scale-[0.99] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 text-white rounded-full text-sm font-medium hover:opacity-90 active:scale-[0.99] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+              style={{ backgroundColor: "var(--brand-primary, #7D9B76)" }}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
@@ -347,7 +358,8 @@ export default async function AnnoncePage({ params }: PageProps) {
           <div className="mb-8">
             <a
               href={`mailto:${merchant.email_pro}`}
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-sage text-white rounded-full text-sm font-medium hover:opacity-90 active:scale-[0.99] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 text-white rounded-full text-sm font-medium hover:opacity-90 active:scale-[0.99] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+              style={{ backgroundColor: "var(--brand-primary, #7D9B76)" }}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
@@ -630,7 +642,10 @@ export default async function AnnoncePage({ params }: PageProps) {
         )}
 
         {/* Footer */}
-        <div className="mt-12 pt-6 border-t border-foreground/5 text-center pb-20">
+        <div
+          className="mt-12 pt-6 border-t text-center pb-20"
+          style={{ borderColor: "var(--brand-secondary, rgba(28,28,30,0.05))" }}
+        >
           {hasMerchant && (merchant?.raison_sociale || merchant?.telephone || merchant?.email_pro) && (
             <p className="text-xs text-muted font-light mb-2">
               {[merchant?.raison_sociale, merchant?.telephone, merchant?.email_pro].filter(Boolean).join(" — ")}
@@ -659,7 +674,9 @@ export default async function AnnoncePage({ params }: PageProps) {
         email={hasMerchant ? merchant?.email_pro : null}
         raisonSociale={hasMerchant ? merchant?.raison_sociale : null}
         title={title}
+        brandColor={hasMerchant ? merchant?.couleur_principale : null}
       />
     </div>
+    </MerchantBrandWrapper>
   );
 }

@@ -27,13 +27,17 @@ export default function MerchantBrandWrapper({
   couleurSecondaire,
   children,
 }: MerchantBrandWrapperProps) {
+  const isSerif = font === "Playfair Display" || font === "Lora";
   const fontFamily =
-    font && font !== "Inter" ? `'${font}', sans-serif` : "inherit";
+    font && font !== "Inter"
+      ? `'${font}', ${isSerif ? "serif" : "sans-serif"}`
+      : "inherit";
 
   return (
     <div
       style={
         {
+          fontFamily,
           "--brand-font": fontFamily,
           "--brand-primary": couleurPrincipale || "#7D9B76",
           "--brand-secondary": couleurSecondaire || "#1C1C1E",

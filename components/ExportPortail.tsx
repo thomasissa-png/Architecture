@@ -45,6 +45,10 @@ interface ExportPortailProps {
   gesClasse?: string | null;
   photos: ExportPortailPhoto[];
   annonceUuid: string;
+  /** Merchant business name (for contact in exported text) */
+  merchantName?: string | null;
+  /** Merchant phone (for contact in exported text) */
+  merchantPhone?: string | null;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────
@@ -82,6 +86,8 @@ export default function ExportPortail({
   dpeClasse,
   gesClasse,
   photos,
+  merchantName,
+  merchantPhone,
 }: ExportPortailProps) {
   const [selectedPortal, setSelectedPortal] = useState<PortalId | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
@@ -105,11 +111,13 @@ export default function ExportPortail({
       dpeClasse,
       gesClasse,
       totalPhotos: photos.length,
+      merchantName,
+      merchantPhone,
     }),
     [
       title, description, surface, roomCount, price, city, propertyType,
       isCopro, coproLots, coproChargesAnnuelles, dpeClasse, gesClasse,
-      photos.length,
+      photos.length, merchantName, merchantPhone,
     ]
   );
 

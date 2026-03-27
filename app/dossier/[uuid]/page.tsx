@@ -27,6 +27,7 @@ import MerchantInfoBlock from "@/components/MerchantInfoBlock";
 import ShareButtons from "@/components/ShareButtons";
 import RoomNav from "@/components/RoomNav";
 import StorageImage from "@/components/StorageImage";
+import MerchantBrandWrapper from "@/components/MerchantBrandWrapper";
 import { translateRoomLabel } from "@/lib/constants";
 
 interface PageProps {
@@ -140,6 +141,11 @@ export default async function DossierPage({ params }: PageProps) {
   const title = getDossierTitle(dossier);
 
   return (
+    <MerchantBrandWrapper
+      font={hasMerchant ? profile?.police : null}
+      couleurPrincipale={hasMerchant ? profile?.couleur_principale : null}
+      couleurSecondaire={hasMerchant ? profile?.couleur_secondaire : null}
+    >
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-foreground/5 bg-background/80 backdrop-blur-md sticky top-0 z-50">
@@ -203,7 +209,10 @@ export default async function DossierPage({ params }: PageProps) {
 
         {/* Title Section */}
         <div className="mb-8 sm:mb-12">
-          <h1 className="text-2xl sm:text-3xl font-semibold text-foreground tracking-tight mb-2">
+          <h1
+            className="text-2xl sm:text-3xl font-semibold tracking-tight mb-2"
+            style={{ color: "var(--brand-primary, #1C1C1E)" }}
+          >
             {title}
           </h1>
 
@@ -236,7 +245,10 @@ export default async function DossierPage({ params }: PageProps) {
             {dossier.nb_pieces && (
               <span>{dossier.nb_pieces} pièces</span>
             )}
-            <span className="text-xs bg-foreground text-background px-3 py-1.5 rounded-xl font-medium">
+            <span
+              className="text-xs text-white px-3 py-1.5 rounded-xl font-medium"
+              style={{ backgroundColor: "var(--brand-primary, #1C1C1E)" }}
+            >
               {dossier.bien_prix ? formatPrice(dossier.bien_prix) : "Prix sur demande"}
             </span>
             {dossier.prix_moyen_m2 ? (
@@ -428,7 +440,10 @@ export default async function DossierPage({ params }: PageProps) {
         )}
 
         {/* Footer */}
-        <div className="mt-12 pt-6 border-t border-foreground/5 text-center space-y-2 pb-20">
+        <div
+          className="mt-12 pt-6 border-t text-center space-y-2 pb-20"
+          style={{ borderColor: "var(--brand-secondary, rgba(28,28,30,0.05))" }}
+        >
           {hasMerchant && (profile?.raison_sociale || profile?.telephone || profile?.email_pro) && (
             <p className="text-xs text-muted font-light">
               {[profile?.raison_sociale, profile?.telephone, profile?.email_pro].filter(Boolean).join(" — ")}
@@ -460,7 +475,9 @@ export default async function DossierPage({ params }: PageProps) {
         email={hasMerchant ? profile?.email_pro : null}
         raisonSociale={hasMerchant ? profile?.raison_sociale : null}
         title={title}
+        brandColor={hasMerchant ? profile?.couleur_principale : null}
       />
     </div>
+    </MerchantBrandWrapper>
   );
 }

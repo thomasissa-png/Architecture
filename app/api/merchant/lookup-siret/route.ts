@@ -298,7 +298,7 @@ export async function POST(request: NextRequest) {
     body = await request.json();
   } catch {
     return NextResponse.json(
-      { error: "Corps de requete invalide." },
+      { error: "Corps de requête invalide." },
       { status: 400 }
     );
   }
@@ -323,7 +323,7 @@ export async function POST(request: NextRequest) {
 
     if (results.length === 0) {
       return NextResponse.json(
-        { error: "Aucune entreprise trouvee. Essayez un autre nom ou entrez le SIRET directement.", results: [] },
+        { error: "Aucune entreprise trouvée. Essayez un autre nom ou entrez le SIRET directement.", results: [] },
         { status: 404 }
       );
     }

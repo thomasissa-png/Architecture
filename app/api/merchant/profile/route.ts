@@ -46,7 +46,7 @@ export async function PUT(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Corps de requete invalide." }, { status: 400 });
+    return NextResponse.json({ error: "Corps de requête invalide." }, { status: 400 });
   }
 
   // Validate colors
