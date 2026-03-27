@@ -28,8 +28,10 @@ import {
 /** Prompt version — increment when modifying any prompt builder or style prompt.
  * Used by audit agents (Yann Duval, Lucas Moreau) to correlate generation quality with prompt version.
  * History: v1-v5 (Sprints 1-7), v6-v10 (Sprints 8-12), v11-v15 (Sprints 13-16), v16-v17 (Sprint 17),
- * v18 (current — Sprint 18+, post all fixes) */
-export const PROMPT_VERSION = "v24";
+ * v18 (Sprint 18+), v24 (prompts validés Yann/Lucas/Camille 8.0/7.8),
+ * v25 (5 corrections additives: Flos IC, no duplicate, plantes visuelles, lanternes, matériaux),
+ * v26 (migration gpt-image-1 → gpt-image-1.5, latence /4 attendue) */
+export const PROMPT_VERSION = "v26";
 
 // ─── Timeout wrapper for external API calls ─────────────────────────
 const API_TIMEOUT_MS = 120_000;
@@ -706,9 +708,10 @@ async function tryOpenAIResponses(
       tools: [
         {
           type: "image_generation",
+          model: "gpt-image-1.5",
           input_fidelity: "high",
           size: size as "1024x1024" | "1536x1024" | "1024x1536",
-        },
+        } as Record<string, unknown>,
       ],
     }),
     API_TIMEOUT_MS,
@@ -730,7 +733,7 @@ async function tryOpenAIResponses(
 
   return {
     image: `data:image/png;base64,${resultB64}`,
-    model: `OpenAI GPT-4.1 (pass ${pass})`,
+    model: `OpenAI GPT-Image-1.5 (pass ${pass})`,
   };
 }
 
@@ -839,9 +842,10 @@ async function tryOpenAIResponsesWithPrompt(
       tools: [
         {
           type: "image_generation",
+          model: "gpt-image-1.5",
           input_fidelity: "high",
           size: size as "1024x1024" | "1536x1024" | "1024x1536",
-        },
+        } as Record<string, unknown>,
       ],
     }),
     API_TIMEOUT_MS,
@@ -863,7 +867,7 @@ async function tryOpenAIResponsesWithPrompt(
 
   return {
     image: `data:image/png;base64,${resultB64}`,
-    model: "OpenAI GPT-4.1 (iteration)",
+    model: "OpenAI GPT-Image-1.5 (iteration)",
   };
 }
 
