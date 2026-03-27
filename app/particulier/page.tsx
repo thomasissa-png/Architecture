@@ -114,7 +114,7 @@ export default function ParticulierPage() {
           <h1 className="text-3xl sm:text-5xl font-bold text-foreground tracking-tight mb-5 leading-tight">
             Votre appartement.
             <br />
-            <span className="font-light text-muted">Pas celui de quelqu'un d'autre.</span>
+            <span className="font-light text-muted">Pas celui de quelqu&apos;un d&apos;autre.</span>
           </h1>
           <p className="text-lg sm:text-xl text-muted font-light leading-relaxed max-w-2xl mx-auto mb-8">
             Testez 12 styles de déco dans VOS pièces.
@@ -222,7 +222,7 @@ export default function ParticulierPage() {
       <section className="py-16 sm:py-24 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-4 text-center">
-            Essayez avant d'acheter
+            Essayez avant d&apos;acheter
           </h2>
           <p className="text-muted font-light text-center mb-12 max-w-xl mx-auto">
             Voyez à quoi votre pièce ressemblerait dans 12 styles différents.
@@ -269,7 +269,7 @@ export default function ParticulierPage() {
       <section className="py-10 sm:py-14 px-5 sm:px-8">
         <div className="max-w-2xl mx-auto text-center">
           <blockquote className="text-base sm:text-lg text-foreground font-light leading-relaxed italic">
-            « J'ai testé 4 styles sur mon salon vide en 10 minutes. Mon copain a enfin compris pourquoi je voulais du Japandi. »
+            « J&apos;ai testé 4 styles sur mon salon vide en 10 minutes. Mon copain a enfin compris pourquoi je voulais du Japandi. »
           </blockquote>
           <p className="text-sm text-muted font-light mt-3">
             Julie, 29 ans — Bordeaux, nouvel appartement

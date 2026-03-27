@@ -323,7 +323,7 @@ export default function MarchandPage() {
                 <li>Recharge : +20 crédits à 9 €</li>
               </ul>
               <a href="/pricing?pack=pro" className="mt-5 text-xs font-semibold text-white bg-sage px-4 min-h-[44px] flex items-center justify-center rounded-full hover:bg-sage/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2">
-                S'abonner au Pro
+                S&apos;abonner au Pro
               </a>
             </div>
           </div>
@@ -339,7 +339,7 @@ export default function MarchandPage() {
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
               <p className="text-2xl sm:text-3xl font-bold text-foreground">12</p>
-              <p className="text-xs text-muted font-light mt-1">Styles curatés par un architecte d'intérieur</p>
+              <p className="text-xs text-muted font-light mt-1">Styles curatés par un architecte d&apos;intérieur</p>
             </div>
             <div>
               <p className="text-2xl sm:text-3xl font-bold text-foreground">90s</p>
@@ -477,7 +477,7 @@ export default function MarchandPage() {
       <section className="pb-20 sm:pb-32 px-5 sm:px-8">
         <div className="max-w-xl mx-auto text-center">
           <p className="text-xs text-muted font-light mb-6">
-            Conçu pour les professionnels de l'immobilier. Visuels utilisés en dossiers de pré-commercialisation.
+            Conçu pour les professionnels de l&apos;immobilier. Visuels utilisés en dossiers de pré-commercialisation.
           </p>
           <p className="text-lg font-semibold text-foreground mb-3">
             Prêt à accélérer votre commercialisation ?
@@ -493,7 +493,7 @@ export default function MarchandPage() {
               href="/pricing"
               className="inline-flex items-center justify-center gap-2 bg-sage text-white px-8 py-3.5 rounded-full text-sm font-semibold hover:bg-sage/85 transition-all duration-200 active:scale-[0.98] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
             >
-              S'abonner au Mode Pro
+              S&apos;abonner au Mode Pro
             </a>
             <a
               href="/#outil"

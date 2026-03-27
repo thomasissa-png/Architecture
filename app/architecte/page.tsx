@@ -123,7 +123,7 @@ export default function ArchitectePage() {
       <section className="pt-28 sm:pt-36 pb-10 sm:pb-14 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto text-center">
           <p className="text-xs text-sage font-medium uppercase tracking-widest mb-4">
-            Pour les architectes d'intérieur
+            Pour les architectes d&apos;intérieur
           </p>
           <h1 className="text-3xl sm:text-5xl font-bold text-foreground tracking-tight mb-5 leading-tight">
             Vos clients veulent voir.
@@ -131,7 +131,7 @@ export default function ArchitectePage() {
             <span className="font-light text-muted">En 90 secondes, montrez-leur.</span>
           </h1>
           <p className="text-lg sm:text-xl text-muted font-light leading-relaxed max-w-2xl mx-auto mb-8">
-            Une planche d'ambiance pour votre client dès le premier RDV,
+            Une planche d&apos;ambiance pour votre client dès le premier RDV,
             sans attendre 48h le rendu 3D.
           </p>
           <a
@@ -334,10 +334,10 @@ export default function ArchitectePage() {
       <section className="py-10 sm:py-14 px-5 sm:px-8">
         <div className="max-w-2xl mx-auto text-center">
           <blockquote className="text-base sm:text-lg text-foreground font-light leading-relaxed italic">
-            « C'est devenu mon réflexe du premier rendez-vous. Je photographie la pièce, je génère 3 ambiances, et mon client choisit sa direction en 10 minutes au lieu d'attendre une semaine. »
+            « C&apos;est devenu mon réflexe du premier rendez-vous. Je photographie la pièce, je génère 3 ambiances, et mon client choisit sa direction en 10 minutes au lieu d&apos;attendre une semaine. »
           </blockquote>
           <p className="text-sm text-muted font-light mt-3">
-            Architecte d'intérieur DPLG — Paris, 12 ans d'expérience
+            Architecte d&apos;intérieur DPLG — Paris, 12 ans d&apos;expérience
           </p>
         </div>
       </section>

@@ -876,7 +876,7 @@ export default function Home() {
           {/* Persona links — discret, sous le CTA */}
           <div className="mt-6 flex flex-col sm:flex-row gap-2 sm:gap-6 items-center justify-center">
             <a href="/architecte" className="text-xs text-muted hover:text-sage transition-colors">
-              Vous êtes architecte ? Voir les cas d'usage →
+              Vous êtes architecte ? Voir les cas d&apos;usage →
             </a>
             <a href="/marchand" className="text-xs text-muted hover:text-sage transition-colors">
               Marchand de biens ? Voir le Mode Pro →
@@ -1598,7 +1598,7 @@ export default function Home() {
               </ul>
               <div className="mt-auto">
                 <a href="/pricing" className="block w-full text-center bg-sage text-white px-4 py-3 rounded-full text-sm font-semibold hover:bg-sage/85 transition-colors shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2">
-                  S'abonner
+                  S&apos;abonner
                 </a>
               </div>
             </div>
