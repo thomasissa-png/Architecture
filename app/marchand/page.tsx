@@ -107,30 +107,30 @@ export default function MarchandPage() {
       />
 
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-foreground/5">
+      <header role="banner" className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-foreground/5">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 py-3 sm:py-4 flex items-center justify-between">
           <a
             href="/"
-            className="text-xl font-semibold text-foreground tracking-tighter"
+            className="text-xl font-semibold text-foreground tracking-tighter focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded"
           >
             Versiroom
           </a>
-          <nav className="flex items-center gap-4 sm:gap-6">
+          <nav aria-label="Navigation principale" className="flex items-center gap-4 sm:gap-6">
             <a
-              href="/mes-dossiers"
-              className="text-xs text-muted font-light hover:text-foreground transition-colors"
+              href="/examples"
+              className="text-xs text-muted font-light hover:text-foreground transition-colors py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded"
             >
-              Mes dossiers
+              Exemples
             </a>
             <a
               href="/pricing"
-              className="text-xs text-muted font-light hover:text-foreground transition-colors"
+              className="text-xs text-muted font-light hover:text-foreground transition-colors py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded"
             >
               Tarifs
             </a>
             <a
               href="/#outil"
-              className="text-xs font-medium text-background bg-foreground px-4 py-2 rounded-full hover:bg-foreground/85 transition-colors"
+              className="text-xs font-medium text-background bg-foreground px-4 min-h-[44px] flex items-center rounded-full hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
             >
               Essayer
             </a>
@@ -155,7 +155,7 @@ export default function MarchandPage() {
           </p>
           <a
             href="/#outil"
-            className="inline-flex items-center gap-2 bg-sage text-white px-8 py-3.5 rounded-full text-sm font-semibold hover:bg-sage/85 transition-all duration-200 active:scale-[0.98] shadow-sm"
+            className="inline-flex items-center gap-2 bg-sage text-white px-8 py-3.5 rounded-full text-sm font-semibold hover:bg-sage/85 transition-all duration-200 active:scale-[0.98] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
           >
             Créer mon dossier Pro
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -262,7 +262,7 @@ export default function MarchandPage() {
             </p>
             <p className="text-sm text-foreground font-light leading-relaxed mt-1">
               Home stager traditionnel : <span className="font-semibold">~9 000 €</span>.
-              Versiroom Pro : <span className="font-semibold">29 €/mois</span>.
+              Versiroom Pro : <span className="font-semibold">29 €/mois</span> (soit 348 €/an).
             </p>
             <p className="text-lg font-semibold text-sage mt-3">
               Économie : 97 %
@@ -291,7 +291,7 @@ export default function MarchandPage() {
                 <li>Téléchargement HD</li>
                 <li>Partage et comparateur</li>
               </ul>
-              <a href="/#outil" className="block text-center mt-5 text-xs font-medium text-foreground border border-foreground/15 px-4 py-2.5 rounded-full hover:bg-foreground/5 transition-colors">
+              <a href="/#outil" className="mt-5 text-xs font-medium text-foreground border border-foreground/15 px-4 min-h-[44px] flex items-center justify-center rounded-full hover:bg-foreground/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2">
                 Essayer
               </a>
             </div>
@@ -306,8 +306,8 @@ export default function MarchandPage() {
                 <li>Historique des générations</li>
                 <li>Recharge : +10 crédits à 5,90 €</li>
               </ul>
-              <a href="/pricing" className="block text-center mt-5 text-xs font-medium text-foreground border border-foreground/15 px-4 py-2.5 rounded-full hover:bg-foreground/5 transition-colors">
-                Acheter
+              <a href="/pricing?pack=starter" className="mt-5 text-xs font-medium text-foreground border border-foreground/15 px-4 min-h-[44px] flex items-center justify-center rounded-full hover:bg-foreground/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2">
+                Acheter le Starter
               </a>
             </div>
             {/* Pro */}
@@ -322,29 +322,34 @@ export default function MarchandPage() {
                 <li>Annonces et liens acquéreurs</li>
                 <li>Recharge : +20 crédits à 9 €</li>
               </ul>
-              <a href="/pricing" className="block text-center mt-5 text-xs font-semibold text-white bg-sage px-4 py-2.5 rounded-full hover:bg-sage/85 transition-colors">
-                S'abonner
+              <a href="/pricing?pack=pro" className="mt-5 text-xs font-semibold text-white bg-sage px-4 min-h-[44px] flex items-center justify-center rounded-full hover:bg-sage/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2">
+                S'abonner au Pro
               </a>
             </div>
           </div>
           <p className="text-xs text-muted/60 font-light text-center mt-4">
-            Tous les détails sur la <a href="/pricing" className="underline hover:text-foreground transition-colors">page tarifs</a>.
+            Tous les détails sur la <a href="/pricing" className="underline hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded">page tarifs</a>.
           </p>
         </div>
       </section>
 
-      {/* Témoignage */}
+      {/* Chiffres clés */}
       <section className="py-10 sm:py-14 px-5 sm:px-8">
-        <div className="max-w-2xl mx-auto text-center">
-          <blockquote className="text-base sm:text-lg text-foreground font-light leading-relaxed italic">
-            « Je sortais mes plaquettes en 3 jours avec un home stager. Maintenant c'est fait dans la matinée. Mes acquéreurs reçoivent les visuels le jour même de la visite. »
-          </blockquote>
-          <p className="text-sm text-foreground/70 font-light mt-3">
-            Thomas B. — Marchand de biens, Bordeaux
-          </p>
-          <p className="text-xs text-muted font-light mt-0.5">
-            10 opérations/an · Utilisateur Versiroom depuis 2026
-          </p>
+        <div className="max-w-2xl mx-auto">
+          <div className="grid grid-cols-3 gap-4 text-center">
+            <div>
+              <p className="text-2xl sm:text-3xl font-bold text-foreground">12</p>
+              <p className="text-xs text-muted font-light mt-1">Styles curatés par un architecte d'intérieur</p>
+            </div>
+            <div>
+              <p className="text-2xl sm:text-3xl font-bold text-foreground">90s</p>
+              <p className="text-xs text-muted font-light mt-1">Pour un visuel meublé HD</p>
+            </div>
+            <div>
+              <p className="text-2xl sm:text-3xl font-bold text-foreground">0,58 €</p>
+              <p className="text-xs text-muted font-light mt-1">Par photo avec le Pro</p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -445,21 +450,24 @@ export default function MarchandPage() {
       <div className="max-w-24 mx-auto border-t border-foreground/10" />
 
       {/* FAQ */}
-      <section className="py-16 sm:py-24 px-5 sm:px-8">
+      <section aria-label="Questions fréquentes" className="py-16 sm:py-24 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-10 text-center">
             Questions fréquentes
           </h2>
-          <div className="space-y-8">
+          <div className="space-y-4">
             {faqItems.map((item) => (
-              <div key={item.question}>
-                <h3 className="text-sm font-semibold text-foreground mb-2">
+              <details key={item.question} className="group">
+                <summary className="text-sm font-semibold text-foreground cursor-pointer py-3 list-none flex items-center justify-between min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded">
                   {item.question}
-                </h3>
-                <p className="text-sm text-muted font-light leading-relaxed">
+                  <svg className="w-4 h-4 text-muted shrink-0 ml-4 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </summary>
+                <p className="text-sm text-muted font-light leading-relaxed pb-4">
                   {item.answer}
                 </p>
-              </div>
+              </details>
             ))}
           </div>
         </div>
@@ -483,13 +491,13 @@ export default function MarchandPage() {
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a
               href="/pricing"
-              className="inline-flex items-center justify-center gap-2 bg-sage text-white px-8 py-3.5 rounded-full text-sm font-semibold hover:bg-sage/85 transition-all duration-200 active:scale-[0.98] shadow-sm"
+              className="inline-flex items-center justify-center gap-2 bg-sage text-white px-8 py-3.5 rounded-full text-sm font-semibold hover:bg-sage/85 transition-all duration-200 active:scale-[0.98] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
             >
               S'abonner au Mode Pro
             </a>
             <a
               href="/#outil"
-              className="inline-flex items-center justify-center gap-2 border border-foreground/15 text-foreground px-6 py-3.5 rounded-full text-sm font-medium hover:bg-foreground/5 transition-colors"
+              className="inline-flex items-center justify-center gap-2 border border-foreground/15 text-foreground px-6 py-3.5 rounded-full text-sm font-medium hover:bg-foreground/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
             >
               Essayer gratuitement
             </a>
