@@ -29,8 +29,8 @@ interface Pack {
 
 const PACKS: Pack[] = [
   {
-    id: "gratuit",
-    name: "Gratuit",
+    id: "decouverte",
+    name: "Découverte",
     credits: 3,
     price: "0",
     perPhoto: "0",
@@ -39,43 +39,29 @@ const PACKS: Pack[] = [
       { text: "Téléchargement HD", active: true },
       { text: "Partage & comparateur", active: true },
       { text: "Itérations", active: false },
+      { text: "Mode Pro", active: false },
     ],
     cta: "Essayer",
     highlight: false,
     note: "Sans carte bancaire",
-    personaLine: "Testez la qualité Versiroom sur vos propres photos avant de décider.",
-  },
-  {
-    id: "decouverte",
-    name: "Découverte",
-    credits: 5,
-    price: "4,90",
-    perPhoto: "0,98",
-    features: [
-      { text: "12 styles disponibles", active: true },
-      { text: "Téléchargement HD", active: true },
-      { text: "Partage & comparateur", active: true },
-      { text: "Itérations", active: false },
-    ],
-    cta: "Acheter",
-    highlight: false,
-    personaLine: "Ce pack est fait pour vous si vous découvrez le home staging virtuel et voulez tester sur vos premières photos.",
+    personaLine: "Testez la qualité Versiroom sur vos propres photos. 3 générations offertes.",
   },
   {
     id: "starter",
     name: "Starter",
-    credits: 20,
-    price: "14,90",
-    perPhoto: "0,75",
+    credits: 15,
+    price: "9,90",
+    perPhoto: "0,66",
     features: [
       { text: "12 styles + mode personnalisé", active: true },
       { text: "1 itération par photo", active: true },
-      { text: "Lien partageable 7 jours", active: true },
+      { text: "Historique des générations", active: true },
+      { text: "Recharge : +10 crédits à 5,90 €", active: true },
       { text: "Mode Pro", active: false },
     ],
     cta: "Acheter",
     highlight: false,
-    personaLine: "Ce pack est fait pour vous si vous avez un projet en cours et voulez tester plusieurs styles avec des itérations.",
+    personaLine: "Achat unique — vos crédits n'expirent pas. Pour un projet de décoration ou quelques biens à valoriser.",
   },
   {
     id: "pro",
@@ -87,11 +73,13 @@ const PACKS: Pack[] = [
       { text: "3 itérations par photo", active: true },
       { text: "Mode Pro", active: true },
       { text: "Dossiers de pré-commercialisation", active: true, sub: true },
-      { text: "Liens partageables sans limite", active: true, sub: true },
+      { text: "PDF brandé (logo, couleurs)", active: true, sub: true },
+      { text: "Annonces & liens sans limite", active: true, sub: true },
+      { text: "Recharge : +20 crédits à 9 €", active: true },
     ],
     cta: "S'abonner",
     highlight: true,
-    personaLine: "Pour les architectes, marchands de biens et agences qui gèrent plusieurs projets par an.",
+    personaLine: "Pour les marchands de biens, architectes multi-projets et agences.",
     roiNote: "29\u00A0€/mois au lieu de 200-500\u00A0€ chez un home stager",
   },
 ];
@@ -135,7 +123,7 @@ function PricingContent() {
 
     if (!retractationAccepted) {
       setError(
-        "Veuillez accepter la clause de r\u00e9tractation avant de continuer."
+        "Veuillez accepter la clause de rétractation avant de continuer."
       );
       setCheckboxError(true);
       retractationRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -201,7 +189,7 @@ function PricingContent() {
               Tarifs simples et transparents
             </h1>
             <p className="text-muted font-light">
-              Sans engagement. Résiliez à tout moment.
+              3 offres claires. Starter sans abonnement, Pro mensuel. Résiliez à tout moment.
             </p>
           </div>
 
@@ -235,7 +223,7 @@ function PricingContent() {
           </div>
 
           {/* Packs grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 max-w-5xl mx-auto items-stretch">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-4xl mx-auto items-stretch">
             {PACKS.map((pack) => (
               <div
                 key={pack.id}
@@ -247,7 +235,7 @@ function PricingContent() {
               >
                 {pack.highlight && (
                   <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-sage text-white text-[11px] font-semibold px-4 py-1 rounded-full tracking-wider shadow-sm">
-                    Prix de lancement
+                    Recommandé
                   </span>
                 )}
                 <p className={`text-xs font-medium uppercase tracking-widest mb-3 ${pack.highlight ? "text-sage" : "text-muted"}`}>
@@ -257,10 +245,11 @@ function PricingContent() {
                   {pack.price}&euro;{pack.id === "pro" && <span className="text-base font-normal text-muted">/mois</span>}
                 </p>
                 <p className="text-xs text-muted font-light mb-1">
-                  {pack.credits} cr&eacute;dits &middot; {pack.perPhoto}&euro;/photo
+                  {pack.credits} crédits · {pack.perPhoto}€/photo
                 </p>
+                {pack.id === "starter" && <p className="text-[11px] text-sage font-medium mb-1">Achat unique — sans abonnement</p>}
                 <p className={`text-[11px] text-muted/60 font-light ${pack.roiNote ? "mb-2" : "mb-6"}`}>
-                  TTC &middot; TVA 20% incluse
+                  TTC · TVA 20% incluse
                 </p>
                 {pack.roiNote && (
                   <p className="text-xs text-sage font-medium mb-6">{pack.roiNote}</p>
@@ -340,6 +329,24 @@ function PricingContent() {
             ))}
           </div>
 
+          {/* Section recharge */}
+          <div className="max-w-2xl mx-auto mt-10 p-6 rounded-2xl border border-foreground/5 bg-foreground/[0.02]">
+            <h3 className="text-sm font-semibold text-foreground mb-2">Besoin de plus de crédits ?</h3>
+            <p className="text-xs text-muted font-light mb-3">Rechargez à tout moment au prix de votre offre.</p>
+            <div className="grid grid-cols-2 gap-4 text-xs text-muted font-light">
+              <div>
+                <p className="font-medium text-foreground mb-1">Starter</p>
+                <p>+10 crédits — 5,90 €</p>
+                <p>+25 crédits — 12,90 €</p>
+              </div>
+              <div>
+                <p className="font-medium text-foreground mb-1">Pro</p>
+                <p>+20 crédits — 9 €</p>
+                <p>+50 crédits — 19 €</p>
+              </div>
+            </div>
+          </div>
+
           {/* Retractation checkbox */}
           <div className="max-w-xl mx-auto mt-10">
             <label ref={retractationRef} className={`flex items-start gap-3 cursor-pointer group rounded-xl p-3 -m-3 transition-colors ${checkboxError ? "border border-red-400 bg-red-50/50" : "border border-transparent"}`}>
@@ -363,7 +370,7 @@ function PricingContent() {
 
           {/* Free trial note */}
           <p className="text-center text-[11px] text-muted font-light mt-8">
-            3 g&eacute;n&eacute;rations offertes sans carte bancaire &middot; TVA r&eacute;cup&eacute;rable
+            3 générations offertes sans carte bancaire · TVA récupérable
             pour les professionnels assujettis.
           </p>
         </div>

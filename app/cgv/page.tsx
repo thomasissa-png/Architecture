@@ -55,9 +55,9 @@ export default function CGV() {
                   </tr>
                 </thead>
                 <tbody className="text-muted">
-                  <tr className="border-b border-foreground/10"><td className="py-2 pr-4">Découverte</td><td className="py-2 pr-4">5</td><td className="py-2 pr-4">4,90 €</td><td className="py-2">0,98 €</td></tr>
-                  <tr className="border-b border-foreground/10"><td className="py-2 pr-4">Starter</td><td className="py-2 pr-4">20</td><td className="py-2 pr-4">14,90 €</td><td className="py-2">0,75 €</td></tr>
-                  <tr><td className="py-2 pr-4">Pro</td><td className="py-2 pr-4">50</td><td className="py-2 pr-4">29,00 €</td><td className="py-2">0,58 €</td></tr>
+                  <tr className="border-b border-foreground/10"><td className="py-2 pr-4">Découverte</td><td className="py-2 pr-4">3</td><td className="py-2 pr-4">Gratuit</td><td className="py-2">0 €</td></tr>
+                  <tr className="border-b border-foreground/10"><td className="py-2 pr-4">Starter (achat unique)</td><td className="py-2 pr-4">15</td><td className="py-2 pr-4">9,90 €</td><td className="py-2">0,66 €</td></tr>
+                  <tr><td className="py-2 pr-4">Pro (abonnement mensuel)</td><td className="py-2 pr-4">50/mois</td><td className="py-2 pr-4">29 €/mois</td><td className="py-2">0,58 €</td></tr>
                 </tbody>
               </table>
             </div>

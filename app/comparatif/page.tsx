@@ -41,7 +41,7 @@ const faqItems = [
   {
     question: "Combien coute le home staging virtuel par IA ?",
     answer:
-      "Les prix varient selon les outils. En France, les tarifs vont de 4,90 euros pour 5 photos (Versiroom) a 9,99 euros par mois en illimite (Renovate Club). InterieurAI propose un tarif a la photo des 1,25 euro. Gepetto fonctionne sur devis. A titre de comparaison, un home stager humain facture entre 200 et 500 euros par planche, avec un delai de 48 a 72 heures.",
+      "Les prix varient selon les outils. En France, les tarifs vont de 9,90 euros pour 15 photos en achat unique (Versiroom Starter) a 29 euros par mois pour 50 generations (Versiroom Pro). Renovate Club propose un forfait illimite a 9,99 euros par mois. InterieurAI propose un tarif a la photo des 1,25 euro. Gepetto fonctionne sur devis. A titre de comparaison, un home stager humain facture entre 200 et 500 euros par planche, avec un delai de 48 a 72 heures.",
   },
   {
     question:
@@ -67,7 +67,7 @@ const jsonLd = {
 const comparatifData = [
   {
     critere: "Prix",
-    versiroom: "A partir de 4,90 \u20AC (5 credits)",
+    versiroom: "Gratuit (3 cr\u00E9dits) puis 9,90 \u20AC (15 cr\u00E9dits)",
     gepetto: "Sur devis",
     interieurAI: "Des 1,25 \u20AC/photo",
     renovateClub: "9,99 \u20AC/mois illimite",

@@ -34,7 +34,7 @@ const faqItems = [
   {
     question: "Est-ce vraiment gratuit ?",
     answer:
-      "Oui, vous avez 3 générations offertes sans carte bancaire et sans inscription. Vous pouvez tester Versiroom immédiatement. Si vous voulez générer plus de visuels, des packs sont disponibles à partir de 4,90 euros.",
+      "Oui, vous avez 3 générations offertes sans carte bancaire et sans inscription. Vous pouvez tester Versiroom immédiatement. Si vous voulez générer plus de visuels, des packs sont disponibles à partir de 9,90 euros.",
   },
   {
     question: "Comment ça marche concrètement ?",
@@ -336,7 +336,7 @@ export default function ParticulierPage() {
             Rendu photo-réaliste, pas un filtre. Testé sur des pièces réelles en conditions de chantier.
           </p>
           <p className="text-sm text-muted font-light mb-8">
-            3 générations offertes · Sans CB · Ensuite à partir de 4,90 €
+            3 générations offertes · Sans CB · Ensuite à partir de 9,90 €
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a

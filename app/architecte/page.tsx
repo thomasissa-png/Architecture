@@ -422,7 +422,7 @@ export default function ArchitectePage() {
             </a>
           </div>
           <p className="text-xs text-foreground/40 font-light mt-4">
-            Aussi disponible à l'usage, sans abonnement — à partir de 4,90 € · 5 planches
+            Aussi disponible à l'usage, sans abonnement — à partir de 9,90 € · 15 générations
           </p>
         </div>
       </section>
