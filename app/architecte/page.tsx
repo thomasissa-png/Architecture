@@ -154,11 +154,11 @@ export default function ArchitectePage() {
         <div className="max-w-3xl mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 rounded-2xl overflow-hidden">
             <div className="relative aspect-[4/3]">
-              <img src="/imageavant.jpg" alt="Appartement en chantier avant Versiroom" className="w-full h-full object-cover" loading="lazy" />
+              <img src="/imageavant.jpg" alt="Appartement en chantier avant Versiroom" className="w-full h-full object-cover" loading="eager" />
               <span className="absolute bottom-2 left-2 text-xs font-medium text-white bg-black/50 px-2 py-1 rounded">Avant</span>
             </div>
             <div className="relative aspect-[4/3]">
-              <img src="/imageapres.jpg" alt="Appartement meublé en style Scandinave par Versiroom" className="w-full h-full object-cover" loading="lazy" />
+              <img src="/imageapres.jpg" alt="Appartement meublé en style Scandinave par Versiroom" className="w-full h-full object-cover" loading="eager" />
               <span className="absolute bottom-2 left-2 text-xs font-medium text-white bg-black/50 px-2 py-1 rounded">Après</span>
               <span className="absolute top-2 right-2 text-[10px] font-light text-white/70 bg-black/30 px-2 py-0.5 rounded">Visualisation IA</span>
             </div>
@@ -169,30 +169,7 @@ export default function ArchitectePage() {
         </div>
       </section>
 
-      {/* Galerie multi-styles — remplacer les placeholders par des images réelles */}
-      <section className="pb-6 sm:pb-10 px-5 sm:px-8">
-        <div className="max-w-4xl mx-auto">
-          <p className="text-xs text-muted font-light text-center mb-4">
-            La même pièce, 3 directions esthétiques — générées en 90 secondes chacune
-          </p>
-          <div className="grid grid-cols-3 gap-2 sm:gap-3">
-            {[
-              { style: "Japandi", src: "/imageapres.jpg" },
-              { style: "Art Déco", src: "/imageapres.jpg" },
-              { style: "Haussmannien", src: "/imageapres.jpg" },
-            ].map((item) => (
-              <div key={item.style} className="relative aspect-[4/3] rounded-xl overflow-hidden">
-                <img src={item.src} alt={`Style ${item.style} — Versiroom`} className="w-full h-full object-cover" loading="lazy" />
-                <span className="absolute bottom-2 left-2 text-xs font-medium text-white bg-black/50 px-2 py-1 rounded">{item.style}</span>
-                <span className="absolute top-2 right-2 text-[10px] font-light text-white/70 bg-black/30 px-2 py-0.5 rounded">Visualisation IA</span>
-              </div>
-            ))}
-          </div>
-          <p className="text-xs text-muted/50 font-light text-center mt-2">
-            Images placeholder — seront remplacées par des générations réelles
-          </p>
-        </div>
-      </section>
+      {/* Galerie multi-styles — à activer quand 3 images réelles distinctes seront disponibles dans public/demo/ */}
 
       {/* Social proof line */}
       <div className="flex flex-wrap justify-center gap-6 sm:gap-10 text-xs text-muted font-light py-6">
@@ -291,7 +268,7 @@ export default function ArchitectePage() {
               {
                 num: "04",
                 title: "Géométrie préservée",
-                desc: "Le rendu photo-réaliste respecte la géométrie réelle de votre pièce : hauteur sous plafond, proportions, position des ouvertures. Même sur un chantier brut, le résultat est crédible pour un dossier de présentation client.",
+                desc: "Le rendu photo-réaliste respecte la géométrie réelle de votre pièce : hauteur sous plafond, proportions, position des ouvertures. Même sur un chantier brut, le résultat est crédible pour un dossier de présentation client. Uploadez jusqu'à 5 photos en une seule session.",
               },
             ].map((item) => (
               <div key={item.num} className="flex gap-5 items-start">
@@ -338,7 +315,7 @@ export default function ArchitectePage() {
               {
                 step: "3",
                 title: "Partagez",
-                desc: "Votre client reçoit une image HD par email ou un lien vers une page de visualisation — pas besoin de télécharger une app. 90 secondes.",
+                desc: "Envoyez par email, WhatsApp ou copiez le lien. Votre client reçoit le visuel sur son téléphone. 90 secondes.",
               },
             ].map((item) => (
               <div key={item.step}>
@@ -377,7 +354,7 @@ export default function ArchitectePage() {
           <div className="space-y-1">
             {faqItems.map((item) => (
               <details key={item.question} className="group">
-                <summary className="flex items-center justify-between cursor-pointer py-4 text-sm font-semibold text-foreground hover:text-foreground/80 transition-colors">
+                <summary className="flex items-center justify-between cursor-pointer py-4 text-sm font-semibold text-foreground hover:text-foreground/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2">
                   {item.question}
                   <svg className="w-4 h-4 text-muted shrink-0 ml-4 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -421,9 +398,9 @@ export default function ArchitectePage() {
               Voir les tarifs Pro
             </a>
           </div>
-          <p className="text-xs text-foreground/40 font-light mt-4">
-            Aussi disponible à l'usage, sans abonnement — à partir de 9,90 € · 15 générations
-          </p>
+          <a href="/pricing" className="block text-xs text-sage font-medium mt-4 hover:underline transition-colors">
+            Préférez tester sans engagement ? 9,90 € · 15 générations · achat unique.
+          </a>
         </div>
       </section>
 

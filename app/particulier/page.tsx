@@ -141,11 +141,11 @@ export default function ParticulierPage() {
         <div className="max-w-3xl mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 rounded-2xl overflow-hidden">
             <div className="relative aspect-[4/3]">
-              <img src="/imageavant.jpg" alt="Pièce vide avant Versiroom" className="w-full h-full object-cover" loading="lazy" />
+              <img src="/imageavant.jpg" alt="Pièce vide avant Versiroom" className="w-full h-full object-cover" loading="eager" />
               <span className="absolute bottom-2 left-2 text-xs font-medium text-white bg-black/50 px-2 py-1 rounded">Avant</span>
             </div>
             <div className="relative aspect-[4/3]">
-              <img src="/imageapres.jpg" alt="Pièce meublée par Versiroom" className="w-full h-full object-cover" loading="lazy" />
+              <img src="/imageapres.jpg" alt="Pièce meublée par Versiroom" className="w-full h-full object-cover" loading="eager" />
               <span className="absolute bottom-2 left-2 text-xs font-medium text-white bg-black/50 px-2 py-1 rounded">Après</span>
             </div>
           </div>
@@ -155,29 +155,7 @@ export default function ParticulierPage() {
         </div>
       </section>
 
-      {/* Galerie multi-styles — remplacer les placeholders par des images réelles */}
-      <section className="pb-6 sm:pb-10 px-5 sm:px-8">
-        <div className="max-w-4xl mx-auto">
-          <p className="text-xs text-muted font-light text-center mb-4">
-            Votre pièce dans 3 ambiances différentes
-          </p>
-          <div className="grid grid-cols-3 gap-2 sm:gap-3">
-            {[
-              { style: "Bohème", src: "/imageapres.jpg" },
-              { style: "Japandi", src: "/imageapres.jpg" },
-              { style: "Cosy", src: "/imageapres.jpg" },
-            ].map((item) => (
-              <div key={item.style} className="relative aspect-[4/3] rounded-xl overflow-hidden">
-                <img src={item.src} alt={`Style ${item.style} — Versiroom`} className="w-full h-full object-cover" loading="lazy" />
-                <span className="absolute bottom-2 left-2 text-xs font-medium text-white bg-black/50 px-2 py-1 rounded">{item.style}</span>
-              </div>
-            ))}
-          </div>
-          <p className="text-xs text-muted/50 font-light text-center mt-2">
-            Images placeholder — seront remplacées par des générations réelles
-          </p>
-        </div>
-      </section>
+      {/* Galerie multi-styles — à activer quand 3 images réelles distinctes seront disponibles dans public/demo/ */}
 
       {/* Social proof line */}
       <div className="flex flex-wrap justify-center gap-6 sm:gap-10 text-xs text-muted font-light py-6">
@@ -311,7 +289,7 @@ export default function ParticulierPage() {
           <div className="space-y-1">
             {faqItems.map((item) => (
               <details key={item.question} className="group">
-                <summary className="flex items-center justify-between cursor-pointer py-4 text-sm font-semibold text-foreground hover:text-foreground/80 transition-colors">
+                <summary className="flex items-center justify-between cursor-pointer py-4 text-sm font-semibold text-foreground hover:text-foreground/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2">
                   {item.question}
                   <svg className="w-4 h-4 text-muted shrink-0 ml-4 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />

@@ -56,6 +56,7 @@ const PACKS: Pack[] = [
       { text: "12 styles + mode personnalisé", active: true },
       { text: "1 itération par photo", active: true },
       { text: "Historique des générations", active: true },
+      { text: "Crédits sans expiration", active: true },
       { text: "Recharge : +10 crédits à 5,90 €", active: true },
       { text: "Mode Pro", active: false },
     ],
@@ -75,12 +76,13 @@ const PACKS: Pack[] = [
       { text: "Dossiers de pré-commercialisation", active: true, sub: true },
       { text: "PDF brandé (logo, couleurs)", active: true, sub: true },
       { text: "Annonces & liens sans limite", active: true, sub: true },
+      { text: "Sans engagement — résiliable en 1 clic", active: true },
       { text: "Recharge : +20 crédits à 9 €", active: true },
     ],
     cta: "S'abonner",
     highlight: true,
     personaLine: "Pour les marchands de biens, architectes multi-projets et agences.",
-    roiNote: "29\u00A0€/mois au lieu de 200-500\u00A0€ chez un home stager",
+    roiNote: "29 €/mois au lieu de 200-500 € chez un home stager",
   },
 ];
 
@@ -212,7 +214,7 @@ function PricingContent() {
           {/* CTA gratuit bandeau */}
           <div className="bg-sage/8 border border-sage/20 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 mb-10 max-w-2xl mx-auto">
             <p className="text-sm text-foreground font-light text-center sm:text-left">
-              Essayez avec <strong className="font-semibold">3 photos gratuites</strong> &mdash; sans carte bancaire
+              Essayez avec <strong className="font-semibold">3 photos gratuites</strong> — sans carte bancaire
             </p>
             <a
               href="/#outil"
@@ -242,18 +244,25 @@ function PricingContent() {
                   {pack.name}
                 </p>
                 <p className="text-4xl font-bold text-foreground mb-0.5">
-                  {pack.price}&euro;{pack.id === "pro" && <span className="text-base font-normal text-muted">/mois</span>}
+                  {pack.id === "decouverte" ? (
+                    <span>Gratuit</span>
+                  ) : (
+                    <>{pack.price} €{pack.id === "pro" && <span className="text-base font-normal text-muted">/mois</span>}</>
+                  )}
                 </p>
                 <p className="text-xs text-muted font-light mb-1">
                   {pack.credits} crédits · {pack.perPhoto}€/photo
                 </p>
-                {pack.id === "starter" && <p className="text-[11px] text-sage font-medium mb-1">Achat unique — sans abonnement</p>}
+                {pack.id === "starter" && <p className="text-xs text-sage font-medium mb-1">Achat unique — sans abonnement</p>}
                 <p className={`text-[11px] text-muted/60 font-light ${pack.roiNote ? "mb-2" : "mb-6"}`}>
                   TTC · TVA 20% incluse
                 </p>
                 {pack.roiNote && (
                   <p className="text-xs text-sage font-medium mb-6">{pack.roiNote}</p>
                 )}
+                <p className="text-[13px] text-foreground/60 font-medium mb-4 text-left">
+                  {pack.personaLine}
+                </p>
                 <ul className="text-sm text-muted font-light space-y-2.5 text-left mb-4 flex-1">
                   {pack.features.map((f) => (
                     <li
@@ -283,9 +292,6 @@ function PricingContent() {
                     </li>
                   ))}
                 </ul>
-                <p className="text-xs text-muted/70 font-light italic mb-4 text-left">
-                  {pack.personaLine}
-                </p>
                 {pack.note && (
                   <p className="text-xs text-sage font-medium mb-4">{pack.note}</p>
                 )}
@@ -327,6 +333,28 @@ function PricingContent() {
                 </button>
               </div>
             ))}
+          </div>
+
+          {/* Comparaison ROI */}
+          <div className="max-w-2xl mx-auto mt-12 mb-4">
+            <h3 className="text-lg font-semibold text-foreground text-center mb-6">
+              Comparez avec un home stager
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="rounded-2xl border border-foreground/10 p-6 text-center">
+                <p className="text-sm font-semibold text-foreground mb-3">Home stager classique</p>
+                <p className="text-2xl font-bold text-foreground mb-1">1 500 €</p>
+                <p className="text-xs text-muted font-light">5 visuels par bien · Délai 48-72h</p>
+              </div>
+              <div className="rounded-2xl border-2 border-sage/30 bg-sage/5 p-6 text-center">
+                <p className="text-sm font-semibold text-sage mb-3">Versiroom Pro</p>
+                <p className="text-2xl font-bold text-foreground mb-1">29 €<span className="text-sm font-light text-muted">/mois</span></p>
+                <p className="text-xs text-muted font-light">50 visuels/mois · Résultat en 90 secondes</p>
+              </div>
+            </div>
+            <p className="text-center text-sm text-sage font-semibold mt-4">
+              Économie : plus de 97 %
+            </p>
           </div>
 
           {/* Section recharge */}
