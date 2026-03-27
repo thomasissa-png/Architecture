@@ -403,6 +403,9 @@ export function formatForPortal(
     // LeBonCoin format: continuous text
     copyText += title.text + "\n\n";
     copyText += description.text;
+    if (annonce.dpeClasse) {
+      copyText += "\n\nDPE : " + annonce.dpeClasse;
+    }
   }
 
   return {

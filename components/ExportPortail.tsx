@@ -86,6 +86,7 @@ export default function ExportPortail({
   const [selectedPortal, setSelectedPortal] = useState<PortalId | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [zipError, setZipError] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   // Build annonce data object for formatter
@@ -160,6 +161,7 @@ export default function ExportPortail({
   const handleDownloadZip = async () => {
     if (!exported || isDownloading || photos.length === 0) return;
     setIsDownloading(true);
+    setZipError(false);
 
     try {
       const JSZip = (await import("jszip")).default;
@@ -205,6 +207,7 @@ export default function ExportPortail({
       URL.revokeObjectURL(url);
     } catch (err) {
       console.error("ZIP download failed:", err);
+      setZipError(true);
     } finally {
       setIsDownloading(false);
     }
@@ -319,7 +322,7 @@ export default function ExportPortail({
             <div className="mt-3">
               <button
                 onClick={handleCopyTitle}
-                className="text-xs text-sage hover:text-sage/80 transition-colors font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded-md px-2 py-3"
+                className="text-xs text-sage hover:text-sage/80 transition-colors font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded-md px-4 py-3"
               >
                 {copied === "title"
                   ? "Copié"
@@ -354,7 +357,7 @@ export default function ExportPortail({
             <div className="mt-3">
               <button
                 onClick={handleCopyDescription}
-                className="text-xs text-sage hover:text-sage/80 transition-colors font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded-md px-2 py-3"
+                className="text-xs text-sage hover:text-sage/80 transition-colors font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded-md px-4 py-3"
               >
                 {copied === "desc"
                   ? "Copié"
@@ -462,6 +465,13 @@ export default function ExportPortail({
               </span>
             )}
           </div>
+
+          {/* ZIP error message */}
+          {zipError && (
+            <p className="text-xs text-red-600 font-medium mt-1">
+              Téléchargement échoué — réessayez
+            </p>
+          )}
 
           {/* Portal notes (HYPOTHESE marker) */}
           {exported.portal.notes && (
