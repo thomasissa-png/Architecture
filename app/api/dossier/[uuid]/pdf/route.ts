@@ -530,6 +530,7 @@ export async function GET(
     const BASE_URL = "https://architecture-toum92.replit.app";
     const dossierWebUrl = `${BASE_URL}/dossier/${dossier.slug || dossier.uuid}`;
     const merchantTel = hasMerchant ? profile?.telephone || null : null;
+    const merchantEmail = hasMerchant ? profile?.email_pro || null : null;
 
     // Contact block sits above the footer, ~80pt tall
     const contactBlockY = FOOTER_HEIGHT + 8;
@@ -570,6 +571,25 @@ export async function GET(
           height: 18,
         }, `tel:${telDigits}`);
         contactTextY -= 18;
+      }
+
+      // Email under phone (if available) — clickable mailto: link
+      if (merchantEmail) {
+        const emailTextWidth = font.widthOfTextAtSize(sanitizeForPdf(merchantEmail), 10);
+        safeDrawText(coverPage, merchantEmail, {
+          x: textX,
+          y: contactTextY,
+          size: 10,
+          font,
+          color: rgb(primaryColor.r, primaryColor.g, primaryColor.b),
+        });
+        addLinkAnnotation(coverPage, pdfDoc, {
+          x: textX,
+          y: contactTextY - 2,
+          width: emailTextWidth,
+          height: 12,
+        }, `mailto:${merchantEmail}`);
+        contactTextY -= 14;
       }
 
       // Merchant name (if available, smaller)
@@ -616,6 +636,18 @@ export async function GET(
           height: 18,
         }, `tel:${telDigits}`);
         fallbackY -= 20;
+      }
+
+      // Email under phone in fallback
+      if (merchantEmail) {
+        safeDrawText(coverPage, merchantEmail, {
+          x: MARGIN,
+          y: fallbackY,
+          size: 10,
+          font,
+          color: rgb(primaryColor.r, primaryColor.g, primaryColor.b),
+        });
+        fallbackY -= 14;
       }
 
       // URL in readable size

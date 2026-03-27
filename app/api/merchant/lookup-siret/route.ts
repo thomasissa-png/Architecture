@@ -363,13 +363,13 @@ export async function POST(request: NextRequest) {
 
   if (!pappersReachable && !inseeReachable) {
     return NextResponse.json(
-      { error: "Service de verification indisponible. Reessayez dans quelques instants.", serviceDown: true },
+      { error: "Service de vérification indisponible. Réessayez dans quelques instants.", serviceDown: true },
       { status: 503 }
     );
   }
 
   return NextResponse.json(
-    { error: "SIRET introuvable. Verifiez le numero et reessayez." },
+    { error: "SIRET introuvable. Vérifiez le numéro et réessayez." },
     { status: 404 }
   );
 }

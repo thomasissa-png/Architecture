@@ -19,6 +19,7 @@ export const dynamic = "force-dynamic";
 
 const VALID_FONTS = ["Inter", "Playfair Display", "Montserrat", "Lora", "DM Sans"];
 const HEX_COLOR_RE = /^#[0-9A-Fa-f]{6}$/;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_LOGO_BYTES = 2 * 1024 * 1024; // 2Mo
 
 // ─── GET: Retrieve merchant profile ──────────────────────────────────
@@ -60,6 +61,14 @@ export async function PUT(request: NextRequest) {
   if (body.police && !VALID_FONTS.includes(body.police as string)) {
     return NextResponse.json(
       { error: `Police invalide. Choix possibles : ${VALID_FONTS.join(", ")}.` },
+      { status: 400 }
+    );
+  }
+
+  // Validate email format if provided
+  if (body.emailPro && !EMAIL_RE.test(body.emailPro as string)) {
+    return NextResponse.json(
+      { error: "Adresse email invalide." },
       { status: 400 }
     );
   }
@@ -113,7 +122,7 @@ export async function POST(request: NextRequest) {
     // Validate type
     if (!["image/png", "image/jpeg", "image/jpg"].includes(file.type)) {
       return NextResponse.json(
-        { error: "Format invalide. Seuls PNG et JPG sont acceptes." },
+        { error: "Format invalide. Seuls PNG et JPG sont acceptés." },
         { status: 400 }
       );
     }
@@ -121,7 +130,7 @@ export async function POST(request: NextRequest) {
     // Validate size
     if (file.size > MAX_LOGO_BYTES) {
       return NextResponse.json(
-        { error: "Le logo ne doit pas depasser 2 Mo." },
+        { error: "Le logo ne doit pas dépasser 2 Mo." },
         { status: 400 }
       );
     }
