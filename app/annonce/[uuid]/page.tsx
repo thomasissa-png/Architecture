@@ -303,6 +303,31 @@ export default async function AnnoncePage({ params }: PageProps) {
           )}
         </div>
 
+        {/* V2a — Export pre-formatted for portals (Pro owners only) — above gallery for visibility */}
+        {isOwner && hasPro && completedPhotos.length > 0 && (
+          <ExportPortail
+            title={title}
+            description={description || ""}
+            surface={property.surface_m2}
+            roomCount={property.room_count}
+            price={property.sale_price}
+            city={property.city || ""}
+            propertyType={property.property_type || "Bien immobilier"}
+            isCopro={!!(property.nb_lots_copro && property.nb_lots_copro > 0)}
+            coproLots={property.nb_lots_copro}
+            coproChargesAnnuelles={property.charges_copro_annuelles}
+            dpeClasse={property.dpe_classe}
+            gesClasse={property.ges_classe}
+            photos={completedPhotos.map((p) => ({
+              id: p.id,
+              outputImageKey: p.output_image_key!,
+              roomType: p.room_type || "other",
+              roomLabel: p.room_label || ROOM_TYPE_LABELS[p.room_type || ""] || "Photo",
+            }))}
+            annonceUuid={annonce.slug || annonce.uuid}
+          />
+        )}
+
         {/* CTA — Call to action above fold (Marc P1) */}
         {hasMerchant && merchant?.telephone && (
           <div className="mb-8">
@@ -585,31 +610,6 @@ export default async function AnnoncePage({ params }: PageProps) {
               outputImageKey: p.output_image_key!,
               roomLabel: p.room_label || ROOM_TYPE_LABELS[p.room_type || ""] || "Photo",
             }))}
-          />
-        )}
-
-        {/* V2a — Export pre-formatted for portals (Pro owners only, not in DOM for visitors) */}
-        {isOwner && hasPro && completedPhotos.length > 0 && (
-          <ExportPortail
-            title={title}
-            description={description || ""}
-            surface={property.surface_m2}
-            roomCount={property.room_count}
-            price={property.sale_price}
-            city={property.city || ""}
-            propertyType={property.property_type || "Bien immobilier"}
-            isCopro={!!(property.nb_lots_copro && property.nb_lots_copro > 0)}
-            coproLots={property.nb_lots_copro}
-            coproChargesAnnuelles={property.charges_copro_annuelles}
-            dpeClasse={property.dpe_classe}
-            gesClasse={property.ges_classe}
-            photos={completedPhotos.map((p) => ({
-              id: p.id,
-              outputImageKey: p.output_image_key!,
-              roomType: p.room_type || "other",
-              roomLabel: p.room_label || ROOM_TYPE_LABELS[p.room_type || ""] || "Photo",
-            }))}
-            annonceUuid={annonce.slug || annonce.uuid}
           />
         )}
 
