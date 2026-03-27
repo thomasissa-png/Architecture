@@ -34,7 +34,7 @@ const faqItems = [
   {
     question: "Est-ce vraiment gratuit ?",
     answer:
-      "Oui, vous avez 3 générations offertes sans carte bancaire et sans inscription. Vous pouvez tester Versiroom immédiatement. Si vous voulez générer plus de visuels, des packs sont disponibles à partir de 9,90 euros.",
+      "Oui, vous avez 3 générations offertes — ça représente 3 visuels complets, assez pour tester 3 styles dans votre pièce principale. Sans carte bancaire et sans inscription. Si vous voulez aller plus loin, le pack Starter à 9,90 € vous donne 15 générations en achat unique — pas d'abonnement, pas de renouvellement automatique.",
   },
   {
     question: "Comment ça marche concrètement ?",
@@ -132,7 +132,7 @@ export default function ParticulierPage() {
           <p className="text-sm text-foreground/60 font-light mt-4">
             Sans carte bancaire · Sans inscription · 3 générations offertes
           </p>
-          <p className="text-xs text-muted/60 font-light mt-6">Une photo, 90 secondes, 12 possibilités.</p>
+          <p className="text-xs text-foreground/50 font-medium mt-6">Une photo, 90 secondes, 12 possibilités.</p>
         </div>
       </section>
 
@@ -226,7 +226,7 @@ export default function ParticulierPage() {
           </h2>
           <p className="text-muted font-light text-center mb-12 max-w-xl mx-auto">
             Voyez à quoi votre pièce ressemblerait dans 12 styles différents.
-            Vous n'avez même pas besoin que la pièce soit finie — une photo pendant les travaux suffit.
+            Même si votre pièce est encore vide, ça marche parfaitement.
           </p>
           <div className="space-y-6">
             {[
@@ -248,7 +248,7 @@ export default function ParticulierPage() {
               {
                 num: "04",
                 title: "Partagez et sauvegardez",
-                desc: "Finies les disputes sur la couleur du mur. Partagez sur Instagram, sauvegardez dans votre board Pinterest, ou envoyez à votre partenaire. Le visuel est net, sans filigrane — prêt à publier. Utilisez le visuel comme référence pour choisir exactement les bons meubles.",
+                desc: "Finies les disputes sur la couleur du mur. Partagez sur votre story Insta, montrez à vos amis, ou envoyez à votre partenaire pour avoir son avis. Le visuel est net, sans filigrane — prêt à publier.",
               },
             ].map((item) => (
               <div key={item.num} className="flex gap-5 items-start">
@@ -311,7 +311,7 @@ export default function ParticulierPage() {
             Votre salon en Scandinave, en 90 secondes.
           </p>
           <p className="text-sm text-muted font-light mb-6">
-            Rendu photo-réaliste, pas un filtre. Testé sur des pièces réelles en conditions de chantier.
+            Rendu photo-réaliste, pas un filtre. Testé sur des vraies pièces — salons, chambres, studios.
           </p>
           <p className="text-sm text-muted font-light mb-8">
             3 générations offertes · Sans CB · Ensuite à partir de 9,90 €
@@ -325,7 +325,7 @@ export default function ParticulierPage() {
             </a>
             <a
               href="/pricing"
-              className="inline-flex items-center justify-center gap-2 border border-foreground/15 text-foreground px-6 py-3.5 rounded-full text-sm font-medium hover:bg-foreground/5 transition-colors"
+              className="text-xs text-muted font-light underline hover:text-foreground transition-colors"
             >
               Voir les packs
             </a>
