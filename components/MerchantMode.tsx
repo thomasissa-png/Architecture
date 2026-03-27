@@ -217,6 +217,9 @@ export default function MerchantMode() {
           }
           setIsGenerating(false);
           setCurrentStep("results");
+          // Auto-open dossier page in new tab (primary action)
+          const dossierPath = dossier.slug || dossier.uuid || uuid;
+          window.open(`/dossier/${dossierPath}`, '_blank');
         }
       } catch (err) {
         console.error("Erreur polling dossier:", err);

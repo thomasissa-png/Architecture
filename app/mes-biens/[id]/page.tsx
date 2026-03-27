@@ -416,6 +416,9 @@ export default function PropertyDetailPage() {
       if (res.ok) {
         const data = await res.json();
         setDossierResult(data.dossier);
+        // Auto-open dossier page in new tab (primary action)
+        const dossierPath = data.dossier.identifier || data.dossier.slug || data.dossier.uuid;
+        window.open(`/dossier/${dossierPath}`, '_blank');
       } else {
         const data = await res.json();
         setToastMsg(data.error || "Erreur lors de la création du dossier.");

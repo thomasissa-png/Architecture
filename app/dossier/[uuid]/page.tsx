@@ -234,6 +234,26 @@ export default async function DossierPage({ params }: PageProps) {
                 {dossier.prix_moyen_m2.toLocaleString("fr-FR")} €/m² (quartier)
               </span>
             )}
+            {linkedProperty?.dpe_classe && (() => {
+              const DPE_BADGE_COLORS: Record<string, string> = {
+                A: "bg-[#319834] text-white",
+                B: "bg-[#33a357] text-white",
+                C: "bg-[#cbdb2a] text-foreground",
+                D: "bg-[#f0e50a] text-foreground",
+                E: "bg-[#f0b40a] text-foreground",
+                F: "bg-[#eb6235] text-white",
+                G: "bg-[#d7221f] text-white",
+              };
+              const cls = DPE_BADGE_COLORS[linkedProperty.dpe_classe!] || "bg-foreground/10 text-foreground";
+              return (
+                <span
+                  className={`text-xs px-3 py-1.5 rounded-xl font-medium ${cls}`}
+                  data-testid="dossier-dpe-inline"
+                >
+                  DPE {linkedProperty.dpe_classe}
+                </span>
+              );
+            })()}
           </div>
 
           <p className="text-xs text-muted/50 mt-2">
@@ -367,10 +387,10 @@ export default async function DossierPage({ params }: PageProps) {
           <div className="text-center mt-8 sm:mt-12">
             <a
               href={`/api/dossier/${dossier.uuid}/pdf`}
-              className="inline-flex items-center gap-2 bg-foreground text-background px-6 py-3 rounded-xl font-medium text-sm hover:opacity-90 transition-opacity"
+              className="inline-flex items-center gap-2 border border-foreground/20 text-foreground/60 px-5 py-2.5 rounded-xl font-light text-xs hover:border-foreground/40 hover:text-foreground/80 transition-colors"
               data-testid="dossier-download-pdf"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
               Télécharger le PDF
