@@ -82,7 +82,7 @@ const PACKS: Pack[] = [
     cta: "S'abonner",
     highlight: true,
     personaLine: "Pour les marchands de biens, architectes multi-projets et agences.",
-    roiNote: "29 €/mois au lieu de 200-500 € par planche chez un home stager — jusqu\u2019à 20 000 € d\u2019économie par an",
+    roiNote: "8 biens \u00d7 5 photos \u00d7 300 \u20ac/planche = 12 000 \u20ac/an chez un home stager. Versiroom Pro : 348 \u20ac/an.",
   },
 ];
 
@@ -110,8 +110,13 @@ function PricingContent() {
   // Auto-buy after login redirect with ?buy=xxx
   useEffect(() => {
     const buyParam = searchParams.get("buy");
-    if (buyParam && session?.user?.id && retractationAccepted) {
-      handleBuy(buyParam);
+    if (buyParam && session?.user?.id) {
+      if (retractationAccepted) {
+        handleBuy(buyParam);
+      } else {
+        setError("Cochez la clause ci-dessous puis cliquez sur le bouton de votre offre pour finaliser votre achat.");
+        retractationRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session, searchParams, retractationAccepted]);
@@ -247,7 +252,7 @@ function PricingContent() {
                   {pack.id === "decouverte" ? (
                     <span>Gratuit</span>
                   ) : (
-                    <>{pack.price} €{pack.id === "pro" && <span className="text-base font-normal text-muted">/mois</span>}</>
+                    <>{pack.price} €{pack.id === "pro" && <span className="text-base font-normal text-muted">/mois</span>}{pack.id === "starter" && <span className="text-base font-normal text-muted"> une fois</span>}</>
                   )}
                 </p>
                 <p className="text-xs text-muted font-light mb-1">
@@ -256,7 +261,7 @@ function PricingContent() {
                     : `${pack.credits} crédits · ${pack.perPhoto} €/photo`}
                 </p>
                 {pack.id === "starter" && <p className="text-xs text-sage font-medium mb-1">Achat unique — sans abonnement</p>}
-                <p className={`text-[11px] text-muted/60 font-light ${pack.roiNote ? "mb-2" : "mb-6"}`}>
+                <p className={`text-xs text-muted font-light ${pack.roiNote ? "mb-2" : "mb-6"}`}>
                   TTC · TVA 20% incluse
                 </p>
                 {pack.roiNote && (
@@ -297,53 +302,83 @@ function PricingContent() {
                 {pack.note && (
                   <p className="text-xs text-sage font-medium mb-4">{pack.note}</p>
                 )}
-                <button
-                  onClick={() => handleBuy(pack.id)}
-                  disabled={loadingPack !== null}
-                  className={`mt-auto w-full px-4 py-3 min-h-[44px] rounded-full text-sm font-medium transition-all duration-200 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 disabled:opacity-40 disabled:cursor-not-allowed ${
-                    pack.highlight
-                      ? "bg-foreground text-background hover:bg-foreground/85 font-semibold shadow-sm"
-                      : "border border-foreground/10 text-foreground hover:bg-foreground/5"
-                  }`}
-                >
-                  {loadingPack === pack.id ? (
-                    <span className="inline-flex items-center gap-2">
-                      <svg
-                        className="animate-spin w-4 h-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                        />
-                      </svg>
-                      Redirection...
-                    </span>
-                  ) : (
-                    pack.cta
-                  )}
-                </button>
+                {pack.id === "decouverte" ? (
+                  <a
+                    href="/#outil"
+                    className="mt-auto w-full px-4 py-3 min-h-[44px] rounded-full text-sm font-medium transition-all duration-200 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 border border-foreground/10 text-foreground hover:bg-foreground/5 inline-flex items-center justify-center"
+                  >
+                    {pack.cta}
+                  </a>
+                ) : (
+                  <button
+                    onClick={() => handleBuy(pack.id)}
+                    disabled={loadingPack !== null}
+                    className={`mt-auto w-full px-4 py-3 min-h-[44px] rounded-full text-sm font-medium transition-all duration-200 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 disabled:opacity-40 disabled:cursor-not-allowed ${
+                      pack.highlight
+                        ? "bg-foreground text-background hover:bg-foreground/85 font-semibold shadow-sm"
+                        : "border border-foreground/10 text-foreground hover:bg-foreground/5"
+                    }`}
+                  >
+                    {loadingPack === pack.id ? (
+                      <span className="inline-flex items-center gap-2">
+                        <svg
+                          className="animate-spin w-4 h-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                          />
+                        </svg>
+                        Redirection...
+                      </span>
+                    ) : (
+                      pack.cta
+                    )}
+                  </button>
+                )}
               </div>
             ))}
           </div>
 
+          {/* Retractation checkbox — visible avant d'acheter */}
+          <div className="max-w-xl mx-auto mt-8">
+            <label ref={retractationRef} className={`flex items-start gap-3 cursor-pointer group rounded-xl p-3 -m-3 transition-colors ${checkboxError ? "border border-red-400 bg-red-50/50" : "border border-transparent"}`}>
+              <input
+                type="checkbox"
+                checked={retractationAccepted}
+                onChange={(e) => {
+                  setRetractationAccepted(e.target.checked);
+                  if (e.target.checked) { setError(null); setCheckboxError(false); }
+                }}
+                className="mt-0.5 w-5 h-5 min-w-[20px] rounded border-foreground/20 text-sage focus:ring-sage/50 focus-visible:ring-sage/50 cursor-pointer"
+              />
+              <span className="text-xs text-muted font-light leading-relaxed group-hover:text-foreground/70 transition-colors">
+                {"J'accepte que l'exécution du service numérique commence immédiatement et renonce expressément à mon droit de rétractation de 14 jours conformément à l'article L. 221-28 du Code de la consommation."}
+              </span>
+            </label>
+          </div>
+
           {/* Comparaison ROI */}
-          <div className="max-w-xl mx-auto mt-10 text-center">
+          <div className="max-w-xl mx-auto mt-10 text-center space-y-1.5">
             <p className="text-sm text-muted font-light">
-              Un home stager facture 200 à 500 € par planche et 48-72h de délai.
+              Un home stager facture <strong className="text-foreground font-semibold">200 à 500 € par planche</strong> et 48-72h de délai.
             </p>
             <p className="text-sm text-muted font-light">
-              Versiroom Pro : <strong className="text-foreground font-semibold">0,58 €/photo</strong>, résultat en 90 secondes.
+              Versiroom Pro : <strong className="text-foreground font-semibold">0,58 €/photo</strong>, résultat en <strong className="text-foreground font-semibold">90 secondes</strong>.
+            </p>
+            <p className="text-xs text-sage font-medium pt-1">
+              Sur 8 biens et 40 photos par an, vous passez de 12 000 € à 348 €.
             </p>
           </div>
 
@@ -397,29 +432,40 @@ function PricingContent() {
             </div>
           </div>
 
-          {/* Retractation checkbox */}
-          <div className="max-w-xl mx-auto mt-10">
-            <label ref={retractationRef} className={`flex items-start gap-3 cursor-pointer group rounded-xl p-3 -m-3 transition-colors ${checkboxError ? "border border-red-400 bg-red-50/50" : "border border-transparent"}`}>
-              <input
-                type="checkbox"
-                checked={retractationAccepted}
-                onChange={(e) => {
-                  setRetractationAccepted(e.target.checked);
-                  if (e.target.checked) { setError(null); setCheckboxError(false); }
-                }}
-                className="mt-0.5 w-4 h-4 rounded border-foreground/20 text-sage focus:ring-sage/50 focus-visible:ring-sage/50 cursor-pointer"
-              />
-              <span className="text-xs text-muted font-light leading-relaxed group-hover:text-foreground/70 transition-colors">
-                {"J'accepte que l'exécution du service numérique commence immédiatement et renonce expressément à mon droit de rétractation de 14 jours conformément à l'article L. 221-28 du Code de la consommation."}
-              </span>
-            </label>
-          </div>
-
           {/* Free trial note */}
           <p className="text-center text-[11px] text-muted font-light mt-8">
             3 générations offertes sans carte bancaire · TVA récupérable
             pour les professionnels assujettis.
           </p>
+
+          {/* FAQ */}
+          <div className="max-w-2xl mx-auto mt-16">
+            <h2 className="text-lg font-semibold text-foreground text-center mb-8">Questions fréquentes</h2>
+            <div className="space-y-4">
+              {[
+                { q: "Mes crédits Starter expirent-ils ?", a: "Non. Les crédits Starter sont valables à vie, sans limite de temps." },
+                { q: "Les crédits Pro non utilisés sont-ils reportés ?", a: "Non, les 50 crédits Pro sont renouvelés chaque mois. Les crédits non utilisés ne sont pas cumulables." },
+                { q: "Comment résilier mon abonnement Pro ?", a: "En 1 clic depuis votre compte, rubrique Abonnement. La résiliation prend effet à la fin du mois en cours." },
+                { q: "Je peux changer d'offre ?", a: "Oui, vous pouvez passer de Starter à Pro à tout moment. Vos crédits Starter restent disponibles en plus de votre abonnement Pro." },
+                { q: "Je reçois une facture ?", a: "Oui, une facture TTC est envoyée automatiquement par email après chaque achat ou renouvellement." },
+                { q: "Le paiement est-il sécurisé ?", a: "Oui. Tous les paiements sont traités par Stripe, leader mondial du paiement en ligne. Vos données bancaires ne transitent jamais par nos serveurs." },
+              ].map((faq) => (
+                <details key={faq.q} className="group border border-foreground/10 rounded-xl overflow-hidden">
+                  <summary className="flex items-center justify-between px-5 py-4 min-h-[44px] cursor-pointer text-sm font-medium text-foreground hover:bg-foreground/[0.02] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 list-none [&::-webkit-details-marker]:hidden">
+                    {faq.q}
+                    <svg className="w-4 h-4 flex-shrink-0 text-muted group-open:rotate-180 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                  </summary>
+                  <p className="px-5 pb-4 text-sm text-muted font-light leading-relaxed">{faq.a}</p>
+                </details>
+              ))}
+            </div>
+          </div>
+
+          {/* Bandeau sécurité paiement */}
+          <div className="max-w-xl mx-auto mt-10 flex items-center justify-center gap-3 text-xs text-muted font-light">
+            <svg className="w-4 h-4 text-sage flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+            <span>Paiement sécurisé par Stripe · Données bancaires chiffrées · CB, Visa, Mastercard</span>
+          </div>
         </div>
       </section>
 
