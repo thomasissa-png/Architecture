@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "Mentions légales",
@@ -9,7 +10,7 @@ export const metadata: Metadata = {
 export default function MentionsLegales() {
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-gray-200/40 py-6 px-5 sm:px-8">
+      <header className="border-b border-foreground/10/40 py-6 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
           <a href="/" className="text-xl font-semibold text-foreground tracking-tighter">
             Versiroom
@@ -84,6 +85,8 @@ export default function MentionsLegales() {
           Dernière mise à jour : mars 2026
         </p>
       </main>
+
+      <Footer currentPage="/mentions-legales" />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import AuthButton from "@/components/AuthButton";
 import AuthModal from "@/components/AuthModal";
+import Footer from "@/components/Footer";
 
 interface PackFeature {
   text: string;
@@ -119,7 +120,7 @@ function PricingContent() {
 
     if (!retractationAccepted) {
       setError(
-        "Veuillez accepter la clause de retractation avant de continuer."
+        "Veuillez accepter la clause de r\u00e9tractation avant de continuer."
       );
       setCheckboxError(true);
       retractationRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -347,44 +348,13 @@ function PricingContent() {
 
           {/* Free trial note */}
           <p className="text-center text-[11px] text-muted font-light mt-8">
-            3 generations offertes sans carte bancaire &middot; TVA recuperable
+            3 g&eacute;n&eacute;rations offertes sans carte bancaire &middot; TVA r&eacute;cup&eacute;rable
             pour les professionnels assujettis.
           </p>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-foreground/5 py-10 px-5 sm:px-8">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted font-light">
-          <div>
-            <p>Pour les architectes, marchands de biens et particuliers</p>
-          </div>
-          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
-            <a href="/" className="hover:text-foreground transition-colors py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded">
-              Accueil
-            </a>
-            <a
-              href="/mentions-legales"
-              className="hover:text-foreground transition-colors py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded"
-            >
-              Mentions legales
-            </a>
-            <a
-              href="/cgv"
-              className="hover:text-foreground transition-colors py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded"
-            >
-              CGV
-            </a>
-            <a
-              href="/confidentialite"
-              className="hover:text-foreground transition-colors py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded"
-            >
-              Confidentialite
-            </a>
-            <span>&copy; Versiroom 2026</span>
-          </div>
-        </div>
-      </footer>
+      <Footer currentPage="/pricing" />
 
       {/* Auth Modal */}
       <AuthModal

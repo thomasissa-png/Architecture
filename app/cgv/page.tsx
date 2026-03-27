@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "Conditions générales de vente",
@@ -9,7 +10,7 @@ export const metadata: Metadata = {
 export default function CGV() {
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-gray-200/40 py-6 px-5 sm:px-8">
+      <header className="border-b border-foreground/10/40 py-6 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
           <a href="/" className="text-xl font-semibold text-foreground tracking-tighter">
             Versiroom
@@ -46,7 +47,7 @@ export default function CGV() {
             <div className="mt-4 overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-gray-200">
+                  <tr className="border-b border-foreground/10">
                     <th className="py-2 pr-4 font-medium text-foreground">Pack</th>
                     <th className="py-2 pr-4 font-medium text-foreground">Crédits</th>
                     <th className="py-2 pr-4 font-medium text-foreground">Prix TTC</th>
@@ -54,10 +55,9 @@ export default function CGV() {
                   </tr>
                 </thead>
                 <tbody className="text-muted">
-                  <tr className="border-b border-gray-100"><td className="py-2 pr-4">Découverte</td><td className="py-2 pr-4">5</td><td className="py-2 pr-4">4,90 €</td><td className="py-2">0,98 €</td></tr>
-                  <tr className="border-b border-gray-100"><td className="py-2 pr-4">Starter</td><td className="py-2 pr-4">20</td><td className="py-2 pr-4">14,90 €</td><td className="py-2">0,75 €</td></tr>
-                  <tr className="border-b border-gray-100"><td className="py-2 pr-4">Pro</td><td className="py-2 pr-4">50</td><td className="py-2 pr-4">29,00 €</td><td className="py-2">0,58 €</td></tr>
-                  <tr><td className="py-2 pr-4">Studio</td><td className="py-2 pr-4">150</td><td className="py-2 pr-4">69,00 €</td><td className="py-2">0,46 €</td></tr>
+                  <tr className="border-b border-foreground/10"><td className="py-2 pr-4">Découverte</td><td className="py-2 pr-4">5</td><td className="py-2 pr-4">4,90 €</td><td className="py-2">0,98 €</td></tr>
+                  <tr className="border-b border-foreground/10"><td className="py-2 pr-4">Starter</td><td className="py-2 pr-4">20</td><td className="py-2 pr-4">14,90 €</td><td className="py-2">0,75 €</td></tr>
+                  <tr><td className="py-2 pr-4">Pro</td><td className="py-2 pr-4">50</td><td className="py-2 pr-4">29,00 €</td><td className="py-2">0,58 €</td></tr>
                 </tbody>
               </table>
             </div>
@@ -122,6 +122,8 @@ export default function CGV() {
           Dernière mise à jour : mars 2026
         </p>
       </main>
+
+      <Footer currentPage="/cgv" />
     </div>
   );
 }
