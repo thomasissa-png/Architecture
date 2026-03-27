@@ -901,14 +901,14 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Card Architecte */}
             <div className="rounded-2xl border border-foreground/10 bg-background overflow-hidden">
-              <div className="aspect-[4/3] bg-foreground/5 relative flex items-center justify-center">
-                {/* [PLACEHOLDER — image avant/après architecte, à remplacer par ImageComparator ou fichier statique public/demo/] */}
-                <div className="text-center p-6">
-                  <div className="w-full h-full flex items-center justify-center text-muted/40">
-                    <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
-                    </svg>
-                  </div>
+              <div className="aspect-[4/3] bg-foreground/5 relative grid grid-cols-2">
+                <div className="relative">
+                  <img src="/imageavant.jpg" alt="Pièce avant home staging" className="w-full h-full object-cover" />
+                  <span className="absolute bottom-2 left-2 text-[10px] font-medium uppercase tracking-wider bg-foreground/70 text-background px-2 py-0.5 rounded">Avant</span>
+                </div>
+                <div className="relative">
+                  <img src="/imageapres.jpg" alt="Pièce après home staging scandinave" className="w-full h-full object-cover" />
+                  <span className="absolute bottom-2 right-2 text-[10px] font-medium uppercase tracking-wider bg-sage/90 text-white px-2 py-0.5 rounded">Après</span>
                 </div>
               </div>
               <div className="p-5">
@@ -922,14 +922,14 @@ export default function Home() {
 
             {/* Card Marchand */}
             <div className="rounded-2xl border border-foreground/10 bg-background overflow-hidden">
-              <div className="aspect-[4/3] bg-foreground/5 relative flex items-center justify-center">
-                {/* [PLACEHOLDER — image avant/après marchand, à remplacer par ImageComparator ou fichier statique public/demo/] */}
-                <div className="text-center p-6">
-                  <div className="w-full h-full flex items-center justify-center text-muted/40">
-                    <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
-                    </svg>
-                  </div>
+              <div className="aspect-[4/3] bg-foreground/5 relative grid grid-cols-2">
+                <div className="relative">
+                  <img src="/imageavant.jpg" alt="Pièce brute avant staging" className="w-full h-full object-cover" />
+                  <span className="absolute bottom-2 left-2 text-[10px] font-medium uppercase tracking-wider bg-foreground/70 text-background px-2 py-0.5 rounded">Avant</span>
+                </div>
+                <div className="relative">
+                  <img src="/imageapres.jpg" alt="Pièce meublée contemporain" className="w-full h-full object-cover" />
+                  <span className="absolute bottom-2 right-2 text-[10px] font-medium uppercase tracking-wider bg-sage/90 text-white px-2 py-0.5 rounded">Après</span>
                 </div>
               </div>
               <div className="p-5">
@@ -943,14 +943,14 @@ export default function Home() {
 
             {/* Card Particulier */}
             <div className="rounded-2xl border border-foreground/10 bg-background overflow-hidden">
-              <div className="aspect-[4/3] bg-foreground/5 relative flex items-center justify-center">
-                {/* [PLACEHOLDER — image avant/après particulier, à remplacer par ImageComparator ou fichier statique public/demo/] */}
-                <div className="text-center p-6">
-                  <div className="w-full h-full flex items-center justify-center text-muted/40">
-                    <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
-                    </svg>
-                  </div>
+              <div className="aspect-[4/3] bg-foreground/5 relative grid grid-cols-2">
+                <div className="relative">
+                  <img src="/imageavant.jpg" alt="Salon vide avant décoration" className="w-full h-full object-cover" />
+                  <span className="absolute bottom-2 left-2 text-[10px] font-medium uppercase tracking-wider bg-foreground/70 text-background px-2 py-0.5 rounded">Avant</span>
+                </div>
+                <div className="relative">
+                  <img src="/imageapres.jpg" alt="Salon meublé japandi" className="w-full h-full object-cover" />
+                  <span className="absolute bottom-2 right-2 text-[10px] font-medium uppercase tracking-wider bg-sage/90 text-white px-2 py-0.5 rounded">Après</span>
                 </div>
               </div>
               <div className="p-5">
