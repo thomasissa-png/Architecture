@@ -349,10 +349,10 @@ export default function ComptePage() {
                 />
                 <div>
                   <span className="text-sm font-medium text-foreground">
-                    Je suis marchand de biens
+                    Je suis un professionnel de l'immobilier
                   </span>
                   <p className="text-xs text-muted font-light mt-0.5">
-                    Active le branding personnalisé sur vos dossiers et PDF.
+                    Active le branding personnalisé sur vos dossiers de pré-commercialisation.
                   </p>
                 </div>
               </label>

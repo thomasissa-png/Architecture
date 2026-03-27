@@ -29,6 +29,23 @@ interface Pack {
 
 const PACKS: Pack[] = [
   {
+    id: "gratuit",
+    name: "Gratuit",
+    credits: 3,
+    price: "0",
+    perPhoto: "0",
+    features: [
+      { text: "12 styles disponibles", active: true },
+      { text: "Téléchargement HD", active: true },
+      { text: "Partage & comparateur", active: true },
+      { text: "Itérations", active: false },
+    ],
+    cta: "Essayer",
+    highlight: false,
+    note: "Sans carte bancaire",
+    personaLine: "Testez la qualité Versiroom sur vos propres photos avant de décider.",
+  },
+  {
     id: "decouverte",
     name: "Découverte",
     credits: 5,
@@ -42,7 +59,6 @@ const PACKS: Pack[] = [
     ],
     cta: "Acheter",
     highlight: false,
-    note: "3 générations offertes sans CB",
     personaLine: "Ce pack est fait pour vous si vous découvrez le home staging virtuel et voulez tester sur vos premières photos.",
   },
   {
@@ -185,7 +201,7 @@ function PricingContent() {
               Tarifs simples et transparents
             </h1>
             <p className="text-muted font-light">
-              Sans abonnement. Sans engagement.
+              Sans engagement. Résiliez à tout moment.
             </p>
           </div>
 
@@ -219,7 +235,7 @@ function PricingContent() {
           </div>
 
           {/* Packs grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-4xl mx-auto items-stretch">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 max-w-5xl mx-auto items-stretch">
             {PACKS.map((pack) => (
               <div
                 key={pack.id}
@@ -230,15 +246,15 @@ function PricingContent() {
                 }`}
               >
                 {pack.highlight && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-foreground text-background text-[11px] font-semibold px-4 py-1 rounded-full uppercase tracking-wider shadow-sm">
-                    Recommand&eacute;
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-sage text-white text-[11px] font-semibold px-4 py-1 rounded-full tracking-wider shadow-sm">
+                    Prix de lancement
                   </span>
                 )}
                 <p className={`text-xs font-medium uppercase tracking-widest mb-3 ${pack.highlight ? "text-sage" : "text-muted"}`}>
                   {pack.name}
                 </p>
                 <p className="text-4xl font-bold text-foreground mb-0.5">
-                  {pack.price}&euro;
+                  {pack.price}&euro;{pack.id === "pro" && <span className="text-base font-normal text-muted">/mois</span>}
                 </p>
                 <p className="text-xs text-muted font-light mb-1">
                   {pack.credits} cr&eacute;dits &middot; {pack.perPhoto}&euro;/photo
