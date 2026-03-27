@@ -534,29 +534,33 @@ Les builders de `route.ts` détectent `isOutdoor: true` dans le body de la requ�
 
 ---
 
-## F4 — Mode marchand
+## F4 — Mode Pro (ex Mode Marchand)
 
-Upload bien complet → dossier pré-commercialisation PDF + lien partageable. Max 15 photos.
+> **Renommage (2026-03-27) :** "Mode Marchand" → "Mode Pro" partout. Le terme "Marchand" était réducteur. "Pro" couvre tous les professionnels récurrents (architectes, marchands de biens, agences).
+> **Renommage (2026-03-27) :** "Dossiers PDF avant/après" → "Dossiers de pré-commercialisation" — terminologie professionnelle.
+> **Modèle économique mis à jour (2026-03-27) :** Le Mode Pro n'est plus facturé 29€/dossier. Il est inclus dans l'**Abonnement Pro 29€/mois**.
+
+Upload bien complet → Dossier de pré-commercialisation PDF + lien partageable acquéreurs sans limite. Max 15 photos.
 
 ### F4.1 User Stories
 
-**US-F4-01 — Créer un dossier complet de pré-commercialisation (Thomas)**
-- Job-to-be-done : Quand j'achète un bien avec 8 pièces brutes, je veux créer un dossier "après travaux + meublé" en une seule session, sans traiter chaque photo individuellement.
-- Given : L'utilisateur est en mode Marchand. Il uploade jusqu'à 15 photos du même bien.
+**US-F4-01 — Créer un dossier de pré-commercialisation complet (Thomas)**
+- Job-to-be-done : Quand j'achète un bien avec 8 pièces brutes, je veux créer un dossier de pré-commercialisation "après travaux + meublé" en une seule session, sans traiter chaque photo individuellement.
+- Given : L'utilisateur est abonné Pro et est en Mode Pro. Il uploade jusqu'à 15 photos du même bien.
 - When : Il sélectionne un style global, un type de bien (appartement, maison, loft) et lance la génération batch.
-- Then : Toutes les photos sont traitées en parallèle (max 3 concurrent). Un dossier est créé avec la vue avant/après de chaque pièce. Un PDF est généré et un lien partageable est créé.
-- Critère d'acceptance : Le PDF contient toutes les photos (avant + après côte à côte), le nom du bien, la date, et les infos renseignées par l'utilisateur (adresse, surface, prix).
+- Then : Toutes les photos sont traitées en parallèle (max 3 concurrent). Un dossier de pré-commercialisation est créé avec la vue avant/après de chaque pièce. Un PDF est généré et un lien partageable est créé sans limite de durée.
+- Critère d'acceptance : Le PDF contient toutes les photos (avant + après côte à côte), le nom du bien, la date, et les infos renseignées par l'utilisateur (adresse, surface, prix). Le lien partageable n'a pas de TTL tant que l'abonnement Pro est actif.
 
-**US-F4-02 — Partager le dossier avec des acquéreurs (Thomas)**
-- Job-to-be-done : Quand je veux envoyer mon dossier à un acquéreur potentiel, je veux un lien propre, pas une pièce jointe de 50 Mo.
-- Given : Le dossier est généré.
+**US-F4-02 — Partager le dossier de pré-commercialisation avec des acquéreurs (Thomas)**
+- Job-to-be-done : Quand je veux envoyer mon dossier de pré-commercialisation à un acquéreur potentiel, je veux un lien propre, pas une pièce jointe de 50 Mo.
+- Given : Le dossier de pré-commercialisation est généré. L'utilisateur est abonné Pro actif.
 - When : L'utilisateur clique sur "Partager le dossier".
 - Then : Un lien unique est généré (ex. `versiroom.app/dossier/abc123`). Le lien affiche une page web légère avec les visuels avant/après et les infos du bien. Pas de login requis pour consulter.
-- Critère d'acceptance : Le lien est valide 30 jours. La page est mobile-friendly. Un bouton "Télécharger le PDF" est présent.
+- Critère d'acceptance : Le lien est valide sans limite de durée tant que l'abonnement Pro est actif (vs 30j pour les packs one-shot). La page est mobile-friendly. Un bouton "Télécharger le PDF" est présent.
 
 **US-F4-03 — Choisir le style pièce par pièce (Thomas avancé)**
 - Job-to-be-done : Quand le salon mérite un style "Contemporain" et la chambre un style "Cosy", je veux pouvoir différencier.
-- Given : L'utilisateur est en mode Marchand avec plusieurs photos uploadées.
+- Given : L'utilisateur est en Mode Pro avec plusieurs photos uploadées.
 - When : Il clique sur une photo individuelle avant de lancer la génération batch.
 - Then : Il peut assigner un style différent à chaque photo. Un style global est appliqué par défaut ; les photos sans style spécifique héritent du global.
 - Critère d'acceptance : L'interface affiche un badge de style sur chaque vignette. Le style individuel peut être modifié ou réinitialisé au style global.
@@ -565,10 +569,10 @@ Upload bien complet → dossier pré-commercialisation PDF + lien partageable. M
 
 ### F4.2 Wireframes ASCII
 
-**État : Upload batch mode marchand**
+**État : Upload batch mode Pro**
 ```
 ┌──────────────────────────────────────────────────────────┐
-│  Mode Marchand — Dossier de pré-commercialisation        │
+│  Mode Pro — Dossier de pré-commercialisation             │
 │                                                          │
 │  Infos du bien :                                         │
 │  [Nom/Adresse_____________]  [Surface : ___m²]           │
@@ -618,13 +622,13 @@ Upload bien complet → dossier pré-commercialisation PDF + lien partageable. M
 
 ### F4.3 Règles métier
 
-- **Accès** : Mode Marchand disponible à partir du Pack Pro (29€, 30 crédits). Le Pack Découverte ne donne pas accès.
-- **Volume** : Max 15 photos par dossier. Chaque photo consomme 1 crédit. Un dossier de 15 photos = 15 crédits.
+- **Accès** : Mode Pro disponible uniquement pour les **abonnés Pro actifs** (29€/mois). Les packs one-shot (Découverte, Starter) n'y donnent pas accès. Vérification côté serveur via statut Stripe subscription.
+- **Volume** : Max 15 photos par dossier de pré-commercialisation. Chaque photo consomme 1 crédit sur le quota mensuel. Un dossier de 15 photos = 15 crédits.
 - **Traitement** : Max 3 photos en parallèle (limite API + coût). Les autres photos attendent en queue.
-- **PDF** : Généré côté serveur (bibliothèque à définir : `pdf-lib` ou `puppeteer`). Contenu : page de couverture (nom, adresse, surface, prix, date), puis 1 page par pièce (avant à gauche, après à droite, légende style).
-- **Lien partageable** : UUID unique, stocké en DB avec référence aux images Object Storage. TTL 30 jours. Pas de login pour consulter.
+- **PDF** : Généré côté serveur (bibliothèque à définir : `pdf-lib` ou `puppeteer`). Contenu : page de couverture (nom, adresse, surface, prix, date, mention "Dossier de pré-commercialisation — Simulation générée par IA"), puis 1 page par pièce (avant à gauche, après à droite, légende style).
+- **Lien partageable** : UUID unique, stocké en DB avec référence aux images Object Storage. **Sans TTL tant que l'abonnement Pro est actif** (vs 30j pour les packs one-shot). Si l'abonnement expire : le lien affiche "Ce dossier n'est plus accessible. Contactez l'auteur." Pas de login pour consulter.
 - **Infos du bien** : Nom/adresse, surface (m²), prix (€). Ces champs sont optionnels pour la génération mais obligatoires pour le PDF.
-- **Regénération individuelle** : Chaque photo peut être regénérée individuellement après le batch (consomme 1 crédit supplémentaire).
+- **Regénération individuelle** : Chaque photo peut être regénérée individuellement après le batch (consomme 1 crédit supplémentaire sur le quota mensuel).
 - **Style global vs individuel** : Style global appliqué par défaut. Override par photo possible. Styles intérieur et extérieur mixables.
 
 ---
@@ -645,19 +649,19 @@ Upload bien complet → dossier pré-commercialisation PDF + lien partageable. M
 
 | Event name | Properties | Trigger |
 |---|---|---|
-| `merchant_mode_started` | `{ photo_count, global_style_id }` | Clic "Générer le dossier" |
-| `merchant_batch_photo_completed` | `{ photo_index, style_id, duration_ms, success: bool }` | Fin de génération d'une photo |
-| `merchant_batch_completed` | `{ total_photos, success_count, fail_count, total_duration_ms }` | Fin du batch complet |
-| `merchant_pdf_downloaded` | `{ photo_count, bien_info_filled: bool }` | Téléchargement PDF |
-| `merchant_link_copied` | `{ dossier_id, photo_count }` | Copie du lien |
-| `merchant_shared_link_visited` | `{ dossier_id, source: 'direct'|'whatsapp'|'email' }` | Visite page dossier public |
-| `merchant_photo_regenerated` | `{ photo_index, style_id }` | Regénération individuelle |
+| `pro_mode_started` | `{ photo_count, global_style_id }` | Clic "Générer le dossier" |
+| `pro_batch_photo_completed` | `{ photo_index, style_id, duration_ms, success: bool }` | Fin de génération d'une photo |
+| `pro_batch_completed` | `{ total_photos, success_count, fail_count, total_duration_ms }` | Fin du batch complet |
+| `pro_pdf_downloaded` | `{ photo_count, bien_info_filled: bool }` | Téléchargement dossier de pré-commercialisation PDF |
+| `pro_link_copied` | `{ dossier_id, photo_count }` | Copie du lien partageable acquéreurs |
+| `pro_shared_link_visited` | `{ dossier_id, source: 'direct'|'whatsapp'|'email' }` | Visite page dossier public |
+| `pro_photo_regenerated` | `{ photo_index, style_id }` | Regénération individuelle |
 
 ---
 
 ### F4.6 Dépendances
 
-- **Auth (bloquant)** : Le mode Marchand nécessite un sessionId persistant ou une auth légère pour retrouver le dossier. Sans auth, le dossier est perdu si l'onglet est fermé. Auth minimale recommandée : email + magic link.
+- **Auth (bloquant)** : Le Mode Pro nécessite une auth complète (abonnement Stripe actif vérifié côté serveur). Sans auth, accès refusé. L'abonnement Pro est la clé d'accès — pas de magic link seul.
 - **Technique** : Nouvelle table DB `dossiers` (uuid, session_id, bien_info JSON, photos JSON, pdf_path, created_at, expires_at).
 - **Technique** : Génération PDF côté serveur (`pdf-lib` ou `puppeteer`). Les images sont récupérées depuis Object Storage.
 - **Technique** : Nouvelle route `/dossier/[uuid]` (page Next.js publique, no auth, SSR ou SSG avec revalidation).
@@ -752,7 +756,7 @@ Produits réels (IKEA, Leroy Merlin). Shopping list avec prix/liens. Export PDF/
 
 ### F5.3 Règles métier
 
-- **Accès** : Mode Décorateur disponible à partir du Pack Pro (29€). Le Pack Découverte ne donne pas accès.
+- **Accès** : Mode Décorateur disponible uniquement pour les **abonnés Pro actifs** (29€/mois). Le Pack Découverte et le Pack Starter ne donnent pas accès. Vérification côté serveur via statut Stripe subscription.
 - **Coût** : La génération de shopping list consomme 1 crédit supplémentaire (appel GPT-4.1 dédié). L'export PDF consomme 0 crédit supplémentaire.
 - **Sources produits** : IKEA France (priorité), Leroy Merlin (pour accessoires déco/plantes), Made.com ou Maisons du Monde (pour pièces premium). Les liens sont des URLs de recherche générées dynamiquement, pas des liens produits hardcodés.
 - **Disclaimer obligatoire** : "Prix indicatifs à la date de génération. Les prix et disponibilités sont susceptibles de changer. Versiroom ne garantit pas l'exactitude des prix."
@@ -810,7 +814,7 @@ Produits réels (IKEA, Leroy Merlin). Shopping list avec prix/liens. Export PDF/
 
 ## 6. Matrice des dépendances
 
-| Composant | F1 Itération | F2 Type pièce | F3 Extérieur | F4 Mode marchand | F5 Décorateur |
+| Composant | F1 Itération | F2 Type pièce | F3 Extérieur | F4 Mode Pro | F5 Décorateur |
 |---|---|---|---|---|---|
 | Pipeline 2 passes (existant) | Requis | Requis | Requis (modifié) | Requis | Requis |
 | `/api/generate` (existant) | Modifié (+pass1_key) | Modifié (+roomType) | Modifié (+isOutdoor) | Modifié (batch) | Inchangé |
@@ -831,7 +835,7 @@ Produits réels (IKEA, Leroy Merlin). Shopping list avec prix/liens. Export PDF/
 1. **F2** (type de pièce) — Impact fort, effort minimal, pas de dépendance. Doit précéder F4/F5.
 2. **F1** (itération) — Impact fort sur rétention, effort moyen, dépend de Object Storage (déjà en place).
 3. **F3** (extérieur) — Impact fort pour Thomas et Léa, effort moyen, dépend de F2.
-4. **F4** (mode marchand) — Impact fort sur panier moyen, effort élevé (PDF + auth), dépend de F2, F3.
+4. **F4** (Mode Pro) — Impact fort sur rétention abonnés Pro, effort élevé (PDF + auth + abonnement Stripe), dépend de F2, F3.
 5. **F5** (décorateur) — Impact fort sur différenciation, effort élevé (GPT + PDF), dépend de F2, F3.
 
 ---
@@ -853,63 +857,226 @@ Produits réels (IKEA, Leroy Merlin). Shopping list avec prix/liens. Export PDF/
 | **Coût moyen par génération standard** | **~0,10€** |
 | **Coût moyen par génération avec shopping list + PDF** | **~0,13€** |
 
-### 7.2 Grille des packages
+### 7.2 Grille des offres (modèle hybride — mis à jour 2026-03-27)
 
-| Pack | Prix TTC | Crédits | Prix/crédit | Coût API/crédit | Marge brute/crédit | Marge brute totale | % marge |
-|---|---|---|---|---|---|---|---|
-| **Découverte** | 4,90€ | 5 | 0,98€ | 0,10€ | 0,88€ | 4,40€ | 90% |
-| **Starter** | 14,90€ | 20 | 0,745€ | 0,10€ | 0,645€ | 12,90€ | 87% |
-| **Pro** | 29€ | 50 | 0,58€ | 0,10€ | 0,48€ | 24,00€ | 83% |
-| **Studio** | 69€ | 150 | 0,46€ | 0,10€ | 0,36€ | 54,00€ | 78% |
+#### Abonnement Pro — 29€/mois TTC
 
-> Les prix sont HT. TVA 20% à ajouter pour les particuliers. Les pros (Claire, Thomas) récupèrent la TVA.
+| Abonnement | Prix TTC | Crédits inclus | Prix/crédit | Coût API/crédit | Marge brute mensuelle | % marge |
+|---|---|---|---|---|---|---|
+| **Pro** | 29€/mois | 50/mois | 0,58€ | 0,10€ | ~24,00€ (hors coûts PDF/GPT) | ~83% |
 
-### 7.3 Feature gating par package
+> Les crédits sont renouvelés chaque mois. Les crédits non consommés ne se cumulent pas.
 
-| Feature | Découverte | Starter | Pro | Studio |
+#### Crédits supplémentaires (abonnés Pro uniquement)
+
+| Pack rachat | Prix TTC | Crédits | Prix/crédit | Coût API/crédit | Marge brute | % marge |
+|---|---|---|---|---|---|---|
+| **+20 crédits** | 9€ | 20 | 0,45€ | 0,10€ | 7,00€ | 78% |
+| **+50 crédits** | 19€ | 50 | 0,38€ | 0,10€ | 14,00€ | 74% |
+| **+100 crédits** | 34€ | 100 | 0,34€ | 0,10€ | 24,00€ | 71% |
+
+> Crédits rachetés valables 90 jours. Non cumulables avec les crédits mensuels (file séparée).
+
+#### Packages one-shot — non-abonnés
+
+| Pack | Prix TTC | Crédits | Prix/crédit | Coût API/crédit | Marge brute totale | % marge |
+|---|---|---|---|---|---|---|
+| **Découverte** | 4,90€ | 5 | 0,98€ | 0,10€ | 4,40€ | 90% |
+| **Starter** | 14,90€ | 20 | 0,745€ | 0,10€ | 12,90€ | 87% |
+| ~~**Studio**~~ | ~~69€~~ | ~~150~~ | — | — | — | **SUPPRIMÉ 2026-03-25** |
+
+> Les prix sont TTC (TVA 20% incluse). Les pros (Claire, Thomas) récupèrent la TVA sur les abonnements Pro.
+
+### 7.3 Feature gating par offre (mis à jour 2026-03-27)
+
+| Feature | Gratuit | Découverte | Starter | Pro Abonnement |
 |---|---|---|---|---|
-| Génération standard (12 styles) | 5 crédits | 20 crédits | 50 crédits | 150 crédits |
-| Itérations par photo (F1) | 0 | 1 | 3 | 5 |
+| Générations standard (12 styles) | 3 | 5 | 20 | 50/mois |
+| Itérations par photo (F1) | 0 | 0 | 1 | 3 |
 | Type de pièce (F2) | Oui | Oui | Oui | Oui |
 | Mode Extérieur (F3) | Oui | Oui | Oui | Oui |
-| Mode Marchand (F4) | Non | Non | Oui (max 10 photos/dossier) | Oui (max 15 photos) |
-| Shopping list (F5) | Non | Non | Oui (+1 crédit/liste) | Oui (+1 crédit/liste) |
-| Export PDF | Non | Non | Oui | Oui |
-| Lien partageable | Non | Oui (7j) | Oui (30j) | Oui (90j) |
+| **Mode Pro** (ex Mode Marchand, F4) | Non | Non | Non | **Oui (max 15 photos/dossier)** |
+| **Dossiers de pré-commercialisation** (F4) | Non | Non | Non | **Oui — inclus** |
+| Shopping list / Mode Décorateur (F5) | Non | Non | Non | Oui (+1 crédit/liste) |
+| Export PDF | Non | Non | Non | Oui |
+| Lien partageable | Non | Non | Oui (7j) | **Oui — sans limite de durée** |
 | Téléchargement HD | Oui | Oui | Oui | Oui |
+| **Rachat crédits préférentiels** | Non | Non | Non | **Oui** |
 
-### 7.4 Simulation atteinte KPI North Star (3 000€/mois marge nette)
+> **Note (2026-03-27) :** Le pack Pro one-shot 29€ est supprimé et remplacé par l'Abonnement Pro 29€/mois. À même prix, l'abonnement inclut le Mode Pro, les Dossiers de pré-commercialisation et les liens sans limite — aucune raison de proposer les deux.
 
-**Hypothèses :**
-- Coût infra mensuel (Replit + PG) : 50€
-- Coût acquisition (SEO + contenu, pas de paid en phase 1) : 0€
-- Marge nette = marge brute - infra
+### 7.4 Simulation atteinte KPI North Star (3 000€/mois marge nette) — modèle hybride
 
-**Mix de ventes nécessaire pour 3 000€ marge nette :**
+**Seuil de rentabilité :**
 
-| Mix scénario | Packs vendus/mois | Recettes brutes | Marge brute | Marge nette |
+| Abonnés Pro actifs | MRR abonnements | Marge brute (~83%) | MRR one-shot (estimé) | Marge brute one-shot | Total marge brute | Infra | Marge nette |
+|---|---|---|---|---|---|---|---|
+| 50 | 1 450€ | 1 204€ | 300€ | 258€ | 1 462€ | 50€ | **1 412€** |
+| 80 | 2 320€ | 1 926€ | 400€ | 344€ | 2 270€ | 50€ | **2 220€** |
+| **110** | **3 190€** | **2 648€** | **500€** | **430€** | **3 078€** | **50€** | **≈ 3 028€** |
+| 140 | 4 060€ | 3 370€ | 600€ | 516€ | 3 886€ | 50€ | **3 836€** |
+
+> **Seuil de rentabilité KPI North Star : ~110 abonnés Pro actifs.** Soit ~3,7 nouveaux abonnés nets par jour (en comptant un churn mensuel de 5%).
+
+**Break-even infra :**
+- Coût infra fixe 50€/mois. Couvert dès 2 abonnés Pro actifs.
+
+### 7.5 Justification du pricing vs concurrents (mis à jour 2026-03-27)
+
+| | Versiroom Pro | Pedra (EU) | REimagineHome Optimal | Renovate Club (FR) |
 |---|---|---|---|---|
-| **Conservateur** (Starter × 60 + Pro × 30 + Studio × 10) | 100 | 60×14,90 + 30×29 + 10×69 = 2 464€ | ~2 130€ | 2 080€ |
-| **Cible** (Starter × 50 + Pro × 60 + Studio × 25) | 135 | 50×14,90 + 60×29 + 25×69 = 3 420€ | ~2 880€ | 2 830€ |
-| **Objectif** (Starter × 60 + Pro × 80 + Studio × 30) | 170 | 60×14,90 + 80×29 + 30×69 = 5 204€ | ~4 360€ | 4 310€ |
+| Prix | 29€/mois | 29€/mois | 29$/mois | 9,99€/mois |
+| Crédits | 50/mois + rachats | Variable | Variable (~200) | Illimité |
+| Prix/image | 0,58€ | N/A | ~0,15$ | ~0€ |
+| Mode Pro / Dossier | Oui — inclus | Non | Non | Non |
+| Pipeline 2 passes | Oui | Non | Non | Non |
+| Styles marché FR | Oui | Non | Non | Oui (~80+) |
+| Lien partageable acquéreurs | Sans limite (Pro) | Non | Non | Non |
 
-> L'objectif 3 000€/mois de marge nette est atteint entre le scénario "Cible" et "Objectif" : environ **140-150 packs vendus/mois**.
+> Versiroom Pro (29€/mois) est aligné sur Pedra mais apporte un pipeline qualité supérieur (2 passes, styles FR curatés) et une feature unique : les Dossiers de pré-commercialisation inclus. Vs Renovate Club (9,99€/mois illimité) : Versiroom ne joue pas le volume mais la qualité professionnelle. Thomas dépense 200-500€/planche en home staging humain — 29€/mois pour 50 crédits est une réduction de 99%+.
 
-**Volume en crédits correspondant :**
-- 150 packs vendus/mois (mix Starter 60 + Pro 80 + Studio 10) = 60×20 + 80×50 + 10×150 = 6 700 crédits/mois = ~1 675 générations/semaine (≈ cible KPI secondaire 1 000 photos/semaine).
+---
 
-**Break-even :**
-- Coût infra fixe 50€/mois. Couvert dès la vente de 6 packs Découverte ou 4 packs Starter.
+## F7 — Pages dédiées par profil (/architecte, /marchand, /particulier)
 
-### 7.5 Justification du pricing vs concurrents
+> **Décision fondateur (2026-03-27) :** Les pages dédiées par profil remplacent la section personas actuellement sur la homepage. La homepage devient généraliste (Hero + outil + pricing). Les pages /architecte, /marchand, /particulier ciblent chaque persona avec un before/after dédié, des témoignages contextualisés, et un CTA adapté.
 
-| | Versiroom Pro | REimagineHome Optimal | Virtual Staging AI |
-|---|---|---|---|
-| Prix | 29€ one-shot | 29$/mois | 16$/mois |
-| Crédits | 50 | Variable (~200) | 6 |
-| Prix/image | 0,58€ | ~0,15$ | ~2,67$ |
-| Engagement | Aucun | Mensuel | Mensuel |
-| Pipeline 2 passes | Oui | Non | Non |
-| Styles marché FR | Oui | Non | Non |
+### F7.1 User Stories
 
-> Versiroom est plus cher par crédit que REimagineHome (0,58€ vs 0,15$) mais sans engagement mensuel et avec un pipeline de qualité supérieure (2 passes, styles français, cohérence architecturale). Le prix se justifie par la valeur perçue, pas le volume. Thomas dépense 200-500€/planche en home staging humain — 0,58€/image est une réduction de 99,9%.
+**US-F7-01 — Architecte trouvant immédiatement sa valeur sur /architecte (Claire)**
+- Job-to-be-done : Quand Claire cherche un outil pour montrer des ambiances à ses clients, elle veut une page qui lui parle directement — avec son vocabulaire, ses problèmes, ses preuves.
+- Given : Claire arrive sur `/architecte` depuis une recherche Google ou un lien partagé par un confrère.
+- When : Elle charge la page.
+- Then : Elle voit en premier écran : un H1 ancré sur sa frustration ("Vos clients veulent voir. En 90 secondes, montrez-leur."), un avant/après d'une pièce de chantier transformée en planche d'ambiance professionnelle, et un CTA "Générer votre première planche gratuitement".
+- Critère d'acceptance : Le mot "planche" (vocabulaire Claire) apparaît au moins 1 fois dans le premier écran. Le CTA pointe vers le générateur. La page charge en < 2s.
+
+**US-F7-02 — Marchand de biens évaluant son ROI sur /marchand (Thomas)**
+- Job-to-be-done : Quand Thomas cherche un outil pour ses dossiers de pré-commercialisation, il veut voir immédiatement le ROI comparé à son home stager actuel.
+- Given : Thomas arrive sur `/marchand` depuis LinkedIn, une recommandation, ou une annonce ciblée.
+- When : Il charge la page.
+- Then : Il voit en premier écran : un H1 ancré sur le coût ("29€/mois. Vos dossiers de pré-commercialisation en 10 minutes, pas 10 jours."), un avant/après d'un bien brut transformé en dossier meublé multi-pièces, l'argument "vs 200-500€/planche chez un home stager", et un CTA "Créer mon premier dossier — Abonnement Pro".
+- Critère d'acceptance : Le prix 29€/mois est visible dans le premier écran. Le terme "dossier de pré-commercialisation" apparaît au moins 2 fois. Le CTA pointe vers l'abonnement Pro.
+
+**US-F7-03 — Particulière visualisant son futur appartement sur /particulier (Léa)**
+- Job-to-be-done : Quand Léa cherche à visualiser des styles dans son appartement, elle veut une page fun, rapide, avec un before/after qui ressemble à son contexte (appartement vide, pas un loft de luxe).
+- Given : Léa arrive sur `/particulier` depuis Instagram, Pinterest, ou un partage WhatsApp.
+- When : Elle charge la page.
+- Then : Elle voit en premier écran : un H1 ancré sur la personnalisation ("Votre appartement. Pas celui de quelqu'un d'autre."), un avant/après d'un T3 standard dans 3 styles différents, et un CTA "Essayer gratuitement — sans carte bancaire".
+- Critère d'acceptance : Le CTA "gratuit" est visible dans le premier écran. Le mot "votre" (personnalisation) apparaît dans le H1. La page fonctionne en mobile-first (viewport 375px).
+
+---
+
+### F7.2 Wireframes ASCII
+
+**Page /architecte — Premier écran**
+```
+┌──────────────────────────────────────────────────────────┐
+│  [Logo Versiroom]                    [Tarifs] [Essayer →] │
+├──────────────────────────────────────────────────────────┤
+│                                                          │
+│  Vos clients veulent voir.                               │
+│  En 90 secondes, montrez-leur.                           │
+│                                                          │
+│  [Avant : chantier béton]  [Après : planche Contemporain]│
+│  ◄──────────── Glisser ────────────►                     │
+│                                                          │
+│  "Un support de conversation avec mon client dès le 1er  │
+│   RDV, sans attendre 48h le rendu 3D."                   │
+│  — Claire D., architecte DPLG, Lyon                      │
+│                                                          │
+│  [ Générer votre première planche gratuitement → ]       │
+│  Sans carte bancaire · 3 générations offertes            │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+```
+
+**Page /marchand — Premier écran**
+```
+┌──────────────────────────────────────────────────────────┐
+│  [Logo Versiroom]                    [Tarifs] [Essayer →] │
+├──────────────────────────────────────────────────────────┤
+│                                                          │
+│  29€/mois. Vos dossiers de pré-commercialisation         │
+│  en 10 minutes, pas 10 jours.                            │
+│                                                          │
+│  [Avant : appartement vide brut]   [Après : dossier PDF  │
+│                                    meublé 8 pièces]       │
+│  ◄──────────── Glisser ────────────►                     │
+│                                                          │
+│  vs 200-500€ par planche chez un home stager             │
+│  Lien partageable acquéreurs · Sans limite de durée       │
+│                                                          │
+│  [ Créer mon premier dossier — Abonnement Pro → ]        │
+│  Prix de lancement · 50 crédits/mois inclus              │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+```
+
+**Page /particulier — Premier écran**
+```
+┌──────────────────────────────────────────────────────────┐
+│  [Logo Versiroom]                    [Tarifs] [Essayer →] │
+├──────────────────────────────────────────────────────────┤
+│                                                          │
+│  Votre appartement. Pas celui de quelqu'un d'autre.      │
+│                                                          │
+│  [T3 vide → Scandinave]  [T3 vide → Japandi]             │
+│  [T3 vide → Bohème]      (3 styles, même pièce)          │
+│                                                          │
+│  "J'ai enfin vu MON salon en scandinave,                 │
+│   pas une photo générique Pinterest."                    │
+│  — Léa M., primo-accédante, Nantes                       │
+│                                                          │
+│  [ Essayer gratuitement — sans carte bancaire → ]        │
+│  3 générations offertes · 12 styles disponibles          │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+```
+
+---
+
+### F7.3 Règles métier
+
+- **Section personas homepage** : SUPPRIMÉE (pills "Architectes / Marchands / Particuliers" + descriptions). Remplacée par des liens vers les 3 pages dans le header (nav secondaire) et le footer.
+- **Contenu des avant/après** : Utiliser des générations réelles issues de la production Versiroom (notées ≥ 7,5/10 par Yann Duval ou Lucas Moreau dans les logs). Pas d'images synthétiques ou de photos tierces — cohérence avec le positionnement "ne trahit pas votre espace".
+- **Témoignages** : [HYPOTHÈSE — à valider avec données réelles] En attendant des témoignages clients réels, les citations peuvent être des verbatims de personas tels que documentés dans `docs/strategy/personas.md`. Marquer dans le code source `{/* TODO: remplacer par témoignage réel */}`. Dès qu'un utilisateur réel donne son accord, remplacer.
+- **CTA** :
+  - `/architecte` et `/particulier` → CTA gratuit → redirige vers la homepage avec ancre sur l'outil.
+  - `/marchand` → CTA abonnement Pro → redirige vers la page pricing avec ancre sur l'offre Pro (badge "Prix de lancement").
+- **SEO** : Chaque page a une balise `<title>` et une `<meta description>` dédiées, optimisées sur les requêtes longue traîne du persona (voir `docs/seo/metadata-templates.md` pour le format).
+- **Mobile-first** : Les 3 pages sont designées pour un viewport 375px en priorité. L'avant/après slider est utilisable au doigt. Les CTAs sont sticky sur mobile.
+
+---
+
+### F7.4 Edge cases
+
+1. **Avant/après non disponible** (aucune génération ≥ 7,5/10 dans les logs pour un persona) : Afficher l'avant/après généraliste de la homepage en fallback. Marquer dans la DB un flag `eligible_for_gallery: bool` sur les générations.
+2. **Témoignage réel disponible** : Remplacer le verbatim persona par le témoignage réel avec prénom + métier + ville. Ne jamais afficher de nom complet sans accord écrit.
+3. **Utilisateur déjà connecté arrive sur /marchand** : Si abonné Pro, le CTA devient "Accéder à mon espace Pro". Si non-abonné, garder le CTA "Abonnement Pro".
+4. **Lien depuis campagne paid (UTM)** : Les pages /architecte, /marchand, /particulier doivent préserver les paramètres UTM dans les liens CTA (pour tracking conversion PostHog).
+5. **Navigation depuis /marchand vers le générateur** : L'utilisateur non connecté est redirigé vers l'inscription. Ne pas perdre le contexte persona (paramètre `?from=marchand` dans l'URL d'inscription pour personnaliser l'onboarding).
+
+---
+
+### F7.5 Events tracking
+
+| Event name | Properties | Trigger |
+|---|---|---|
+| `persona_page_viewed` | `{ persona: 'architecte'|'marchand'|'particulier', source: UTM }` | Chargement page /architecte, /marchand, /particulier |
+| `persona_page_cta_clicked` | `{ persona, cta_type: 'free'|'pro', position: 'hero'|'bottom' }` | Clic CTA principal ou secondaire |
+| `persona_page_comparator_interacted` | `{ persona, interaction: 'drag'|'click' }` | Interaction avec le slider avant/après |
+| `persona_page_testimonial_visible` | `{ persona }` | Témoignage visible (IntersectionObserver) |
+
+---
+
+### F7.6 Dépendances
+
+- **Technique** : Création de 3 routes Next.js : `app/architecte/page.tsx`, `app/marchand/page.tsx`, `app/particulier/page.tsx`.
+- **Technique** : Composant réutilisable `PersonaHero` (avant/après + H1 + témoignage + CTA) paramétrable par persona.
+- **Technique** : Images avant/après sélectionnées depuis Object Storage (via flag `eligible_for_gallery` à ajouter en DB).
+- **Technique** : `generateMetadata()` par page pour les balises SEO dédiées.
+- **Produit** : Suppression de la section personas de `app/page.tsx` (pills "Architectes / Marchands / Particuliers").
+- **Produit** : Ajout des liens /architecte, /marchand, /particulier dans le header (nav secondaire, visible desktop) et le footer.
+- **Produit** : F7 est indépendant de F1-F6. Peut être implémenté en parallèle de l'Auth.
+- **Design** : Les avant/après de chaque page doivent respecter le design system (palette, typographie, composant ImageComparator existant).
+- **SEO** : Coordonner avec `docs/seo/metadata-templates.md` pour les balises title/description/OG de chaque page.

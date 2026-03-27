@@ -66,9 +66,11 @@
 ---
 
 ## Modèle économique et juridique
-- **Modèle économique** : Vente de packages (crédits de génération) — PAS d'abonnement mensuel pour le lancement
-  - Pricing actuel sur le site (tiers SaaS mensuel) à REMPLACER par un système de packages unitaires
-  - Grille de packages : ⚠️ À DÉFINIR PAR AGENTS — @product-manager doit concevoir les tiers (nombre de crédits, prix, itérations incluses)
+- **Modèle économique** : Hybride — **Abonnement Pro 29€/mois TTC** (50 crédits/mois + Mode Pro + Dossiers de pré-commercialisation) + Packages one-shot pour non-abonnés (Découverte 4,90€, Starter 14,90€) + Packs de rachat crédits préférentiels pour abonnés (9€/19€/34€)
+  - Décision fondateur 2026-03-27 : remplacement du pack Pro one-shot par l'abonnement Pro mensuel
+  - **Mode Marchand renommé "Mode Pro"** (2026-03-27)
+  - **"Dossiers PDF avant/après" renommés "Dossiers de pré-commercialisation"** (2026-03-27)
+  - Seuil de rentabilité KPI North Star : ~110 abonnés Pro actifs
 - **Pays de commercialisation** : France
 - **Données sensibles collectées** : [x] Non — Photos de pièces vides uniquement, pas de données personnelles sensibles
 - **Utilisation d'IA générative** : [x] Oui — Génération d'images meublées à partir de photos de pièces vides (OpenAI gpt-4.1 image generation + Flux Depth Pro)
@@ -105,7 +107,7 @@
   1. Commentaire sur visuel généré → nouvelle génération (1 à 3 itérations selon package)
   2. Option type de pièce (salon, chambre, salle de bain, cuisine, etc.)
   3. Option extérieur (terrasse, balcon, patio, etc.)
-  4. Mode marchand de biens : dossiers de pré-commercialisation automatiques
+  4. **Mode Pro** (ex Mode Marchand) : Dossiers de pré-commercialisation automatiques (inclus abonnement Pro)
   5. Mode décorateur d'intérieur : meublage à partir de vrais produits (IKEA, Leroy Merlin, etc.) avec présentation produits/prix/liens
 
 ### Ordre de développement validé (2026-03-24)
@@ -117,9 +119,10 @@
 | 1 | **F1 — Itération commentaire** | Boucle de feedback = rétention + valeur perçue immédiate |
 | 2 | **F2 — Type de pièce** | Effort minimal, impact qualité sur toutes les générations |
 | 3 | **F3 — Extérieur** | Élargit le marché (terrasses, balcons) avant monétisation |
-| 4 | **Auth + Crédits + Stripe** | Monétisation — packages one-shot (4,90€ à 69€), gating F4/F5 |
+| 4 | **Auth + Abonnement Pro + Stripe** | Monétisation — abonnement 29€/mois + packs one-shot 4,90€/14,90€, gating F4/F5 (mis à jour 2026-03-27) |
+| 4b | **F7 — Pages profil /architecte /marchand /particulier** | PARALLÈLE à Auth — SEO + messaging persona, suppression section personas homepage (ajouté 2026-03-27) |
 | 5 | **QA automatisée** | Vitest + Playwright, stabiliser avant les features avancées |
-| 6 | **F4 — Mode marchand** | Feature pro (réservée package Pro+), dossiers batch |
+| 6 | **F4 — Mode Pro** (ex Mode Marchand) | Feature pro réservée abonnement Pro, Dossiers de pré-commercialisation batch (renommé 2026-03-27) |
 | 7 | **F5 — Mode décorateur** | Feature premium, shopping list produits réels, la plus complexe |
 
 ---
@@ -186,6 +189,7 @@
 | @creative-strategy | 2026-03-25 | docs/strategy/naming-proposals.md | Analyse Versiroom (forces/faiblesses/risques). 4 propositions axe Versi (Versiroom, Versiscène, Versivue, VersiSpace). 4 propositions indépendantes (Stagira, Planora, Cadra, Placim). Tableau comparatif 6 critères. Recommandation Top 3 : Cadra (n°1), Stagira (n°2), Versiroom (n°3). Impact sur 12 livrables existants avec effort estimé. Décision finale au fondateur. | Versiroom écarté car "Rénov" positionne dans la rénovation grand public — décalage avec l'usage réel (meubler des pièces, pas rénover). Cadra recommandé vs Stagira : même score 25/30 mais Cadra est plus court (2 syllabes vs 3), plus immédiatement lisible par les 3 personas, et n'a aucune marque concurrente proche. Axe indépendant recommandé vs axe Versi : les 3 personas (Claire architecte, Léa particulière) ne sont pas des profils "clients d'une agence immobilière" — un nom trop lié à Versi Immobilier ferme ces personas. La filiation peut être discrète en footer sans être dans le nom. 3 hypothèses explicitement marquées (notoriété Versi, disponibilité domaines, absence de dépôt INPI). |
 
 | @fullstack | 2026-03-25 | page.tsx, layout.tsx, globals.css, StylePicker.tsx, 3 pages legales, sitemap.ts, robots.ts, api/health, .env.local.example, ImageComparator.tsx, .github/workflows/ci.yml | Implementation complete de tous les retours audits : pricing 4 packs one-shot TTC, footer liens legaux, disclaimer IA, hero H1/H2, SEO (sitemap, robots, JSON-LD, metadataBase, OG, Twitter Cards), tokens CSS (--muted, --border), revelation progressive, bouton Annuler, pastilles couleur (emojis retires), badge AVANT/APRES text-xs, Haussmannien 12e style, CI/CD GitHub Actions, watermark IA EU AI Act Art. 50. | Pricing packages choisis vs abonnement (decision fondateur). Emojis remplaces par pastilles hex (coherence brief premium). Tokens foreground/N au lieu de gray Tailwind (WCAG verifiable). JSON-LD en body (pas head) pour eviter conflit hydratation Sentry. |
+| @product-manager | 2026-03-27 | docs/product/pricing-strategy.md, docs/product/functional-specs.md, docs/product/roadmap.md, project-context.md | 5 décisions fondateur intégrées : (1) Abonnement Pro 29€/mois avec badge "Prix de lancement" (50 crédits/mois, Mode Pro, Dossiers de pré-commercialisation, liens sans limite) — remplace le pack Pro one-shot 29€. (2) Crédits supplémentaires abonnés : 3 paliers 9€/19€/34€ à tarif préférentiel (-49% à -54% vs non-abonnés). (3) "Mode Marchand" renommé "Mode Pro" partout. (4) "Dossiers PDF avant/après" renommés "Dossiers de pré-commercialisation". (5) Pages dédiées /architecte /marchand /particulier (F7) remplaçant la section personas homepage. Seuil rentabilité recalculé : 110 abonnés Pro actifs = 3 028€ marge nette (vs 140 transactions one-shot). | Passage au modèle hybride : l'abonnement mensuel génère un MRR récurrent et prévisible vs transactions one-shot à réacquérir chaque mois. Le prix 29€/mois est aligné sur Pedda (leader EU) mais différencié par les Dossiers de pré-commercialisation et les liens sans limite — features uniques. Le tarif préférentiel des crédits rachetés fidélise les abonnés aux mois de fort volume sans créer de tier "agences" complexe. Les pages profil /architecte /marchand /particulier sont préférées à la section personas homepage car elles créent des cibles SEO et paid dédiées sans fragmenter la codebase. |
 | @fullstack | 2026-03-25 | lib/auth.ts, lib/credits.ts, lib/stripe.ts, api/auth, api/stripe/checkout, api/stripe/webhook, api/user/credits, api/demo, pricing/page.tsx, AuthButton.tsx, Providers.tsx | Auth NextAuth Google + Stripe one-time payments + systeme de credits (users + purchases tables) + API demo auto-populee. Retractation checkbox obligatoire. SessionProvider wrapper. 4 packs Stripe definis. | NextAuth choisi (vs Clerk recommande par PM) pour rester dans l'ecosisteme Next.js sans dependance externe. Stripe mode payment (pas subscription). Demo API sert depuis la DB existante (pas de fichiers statiques a dropper). |
 | @reviewer | 2026-03-25 | (3 audits successifs, pas de fichier) | Audit Auth+Stripe : 4.5→6.5→7.5/10. Bloquant corrige : generate ouvert sans auth. Critiques corriges : idempotence webhook, page signin 404, secret dev, validation credits. Hauts corriges : boutons pricing, race condition credits, retractation serveur. | Decrement optimiste (avant generation) choisi vs apres : elimine la race condition 30-120s. Refund automatique en cas d'echec. Auth obligatoire pour generer retenu puis reverte (anonymous OK avec rate limit IP). |
 | @creative-strategy | 2026-03-25 | docs/strategy/naming-proposals.md (enrichi) | 6 propositions supplementaires orientees pro : Dossira (23/30), Planchi (23/30), Ambio (21/30), Plancia (21/30), Planche (20/30), Rendia (19/30). Recommandation finale : Cadra ou Versiroom. | Noms orientes "livrable professionnel" (dossier, planche, rendu) vs noms precedents orientes "action visuelle" (cadrer, staging). Dossira et Planchi nouveaux candidats serieux mais Cadra reste n.1 sur la grille. |
