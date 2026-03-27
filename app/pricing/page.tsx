@@ -6,7 +6,27 @@ import { useSearchParams } from "next/navigation";
 import AuthButton from "@/components/AuthButton";
 import AuthModal from "@/components/AuthModal";
 
-const PACKS = [
+interface PackFeature {
+  text: string;
+  active: boolean;
+  sub?: boolean;
+}
+
+interface Pack {
+  id: string;
+  name: string;
+  credits: number;
+  price: string;
+  perPhoto: string;
+  features: PackFeature[];
+  cta: string;
+  highlight: boolean;
+  note?: string;
+  personaLine: string;
+  roiNote?: string;
+}
+
+const PACKS: Pack[] = [
   {
     id: "decouverte",
     name: "Découverte",
@@ -16,12 +36,13 @@ const PACKS = [
     features: [
       { text: "12 styles disponibles", active: true },
       { text: "Téléchargement HD", active: true },
+      { text: "Partage & comparateur", active: true },
       { text: "Itérations", active: false },
-      { text: "Mode Marchand", active: false },
     ],
     cta: "Acheter",
     highlight: false,
     note: "3 générations offertes sans CB",
+    personaLine: "Ce pack est fait pour vous si vous découvrez le home staging virtuel et voulez tester sur vos premières photos.",
   },
   {
     id: "starter",
@@ -30,13 +51,14 @@ const PACKS = [
     price: "14,90",
     perPhoto: "0,75",
     features: [
+      { text: "12 styles + mode personnalisé", active: true },
       { text: "1 itération par photo", active: true },
       { text: "Lien partageable 7 jours", active: true },
-      { text: "Téléchargement HD", active: true },
       { text: "Mode Marchand", active: false },
     ],
     cta: "Acheter",
     highlight: false,
+    personaLine: "Ce pack est fait pour vous si vous avez un projet en cours et voulez tester plusieurs styles avec des itérations.",
   },
   {
     id: "pro",
@@ -46,12 +68,15 @@ const PACKS = [
     perPhoto: "0,58",
     features: [
       { text: "3 itérations par photo", active: true },
-      { text: "Mode Marchand — dossiers PDF", active: true },
-      { text: "Annonces immobilières", active: true },
-      { text: "Lien partageable 30 jours", active: true },
+      { text: "Mode Marchand", active: true },
+      { text: "Dossiers PDF avant/après", active: true, sub: true },
+      { text: "Annonces immobilières prêtes à publier", active: true, sub: true },
+      { text: "Lien partageable acquéreurs 30 jours", active: true, sub: true },
     ],
     cta: "Acheter",
     highlight: true,
+    personaLine: "Ce pack est fait pour vous si vous êtes marchand de biens ou agent et gérez plusieurs opérations par an.",
+    roiNote: "29\u00A0€ au lieu de 200-500\u00A0€ chez un home stager",
   },
 ];
 
@@ -180,6 +205,19 @@ function PricingContent() {
             </div>
           )}
 
+          {/* CTA gratuit bandeau */}
+          <div className="bg-sage/8 border border-sage/20 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 mb-10 max-w-2xl mx-auto">
+            <p className="text-sm text-foreground font-light text-center sm:text-left">
+              Essayez avec <strong className="font-semibold">3 photos gratuites</strong> &mdash; sans carte bancaire
+            </p>
+            <a
+              href="/#outil"
+              className="flex-shrink-0 inline-flex items-center gap-2 bg-foreground text-background px-5 py-2.5 rounded-full text-sm font-medium hover:bg-foreground/85 active:scale-[0.99] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+            >
+              Essayer l&apos;outil
+            </a>
+          </div>
+
           {/* Packs grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-4xl mx-auto items-stretch">
             {PACKS.map((pack) => (
@@ -193,26 +231,32 @@ function PricingContent() {
               >
                 {pack.highlight && (
                   <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-foreground text-background text-[11px] font-semibold px-4 py-1 rounded-full uppercase tracking-wider shadow-sm">
-                    Recommandé
+                    Recommand&eacute;
                   </span>
                 )}
-                <p className="text-xs text-muted font-medium uppercase tracking-widest mb-3">
+                <p className={`text-xs font-medium uppercase tracking-widest mb-3 ${pack.highlight ? "text-sage" : "text-muted"}`}>
                   {pack.name}
                 </p>
                 <p className="text-4xl font-bold text-foreground mb-0.5">
-                  {pack.price}€
+                  {pack.price}&euro;
                 </p>
                 <p className="text-xs text-muted font-light mb-1">
-                  {pack.credits} crédits · {pack.perPhoto}€/photo
+                  {pack.credits} cr&eacute;dits &middot; {pack.perPhoto}&euro;/photo
                 </p>
-                <p className="text-[11px] text-muted/60 font-light mb-6">
-                  TTC · TVA 20% incluse
+                <p className={`text-[11px] text-muted/60 font-light ${pack.roiNote ? "mb-2" : "mb-6"}`}>
+                  TTC &middot; TVA 20% incluse
                 </p>
-                <ul className="text-sm text-muted font-light space-y-2.5 text-left mb-8 flex-1">
+                {pack.roiNote && (
+                  <p className="text-xs text-sage font-medium mb-6">{pack.roiNote}</p>
+                )}
+                <ul className="text-sm text-muted font-light space-y-2.5 text-left mb-4 flex-1">
                   {pack.features.map((f) => (
-                    <li key={f.text} className={`flex items-start gap-2.5 ${!f.active ? "opacity-40 line-through" : ""}`}>
+                    <li
+                      key={f.text}
+                      className={`flex items-start gap-2.5 ${!f.active ? "opacity-40 line-through" : ""} ${f.sub ? "pl-6" : ""}`}
+                    >
                       <svg
-                        className={`w-4 h-4 flex-shrink-0 mt-0.5 ${f.active ? "text-sage" : "text-muted/30"}`}
+                        className={`flex-shrink-0 mt-0.5 ${f.sub ? "w-3.5 h-3.5" : "w-4 h-4"} ${f.active ? (f.sub ? "text-sage/70" : "text-sage") : "text-muted/30"}`}
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -224,10 +268,19 @@ function PricingContent() {
                           d={f.active ? "M5 13l4 4L19 7" : "M18 12H6"}
                         />
                       </svg>
-                      {f.text}
+                      {f.sub ? (
+                        <span className="text-xs">{f.text}</span>
+                      ) : f.text === "Mode Marchand" && f.active ? (
+                        <span><strong className="font-medium text-foreground">Mode Marchand</strong></span>
+                      ) : (
+                        f.text
+                      )}
                     </li>
                   ))}
                 </ul>
+                <p className="text-xs text-muted/70 font-light italic mb-4 text-left">
+                  {pack.personaLine}
+                </p>
                 {pack.note && (
                   <p className="text-xs text-sage font-medium mb-4">{pack.note}</p>
                 )}

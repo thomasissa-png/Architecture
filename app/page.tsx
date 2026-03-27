@@ -1593,9 +1593,12 @@ export default function Home() {
                   <span className="line-through">It&eacute;rations</span>
                 </li>
               </ul>
+              <p className="text-xs text-muted/70 font-light italic mb-4 text-left">
+                Ce pack est fait pour vous si vous d&eacute;couvrez le home staging virtuel et voulez tester sur vos premi&egrave;res photos.
+              </p>
               <div className="mt-auto">
                 <p className="text-[11px] text-sage font-medium mb-3">3 g&eacute;n&eacute;rations offertes sans CB</p>
-                <a href="#outil" className="block w-full text-center border border-foreground/15 text-foreground px-4 py-3 rounded-full text-sm font-medium hover:bg-foreground/5 transition-colors">
+                <a href="#outil" className="block w-full text-center border border-foreground/15 text-foreground px-4 py-3 rounded-full text-sm font-medium hover:bg-foreground/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2">
                   Essayer l&apos;outil
                 </a>
               </div>
@@ -1625,8 +1628,11 @@ export default function Home() {
                   <span className="line-through">Mode Marchand</span>
                 </li>
               </ul>
+              <p className="text-xs text-muted/70 font-light italic mb-4 text-left">
+                Ce pack est fait pour vous si vous avez un projet en cours et voulez tester plusieurs styles avec des it&eacute;rations.
+              </p>
               <div className="mt-auto">
-                <a href="/pricing" className="block w-full text-center bg-foreground text-background px-4 py-3 rounded-full text-sm font-medium hover:bg-foreground/85 transition-colors">
+                <a href="/pricing" className="block w-full text-center bg-foreground text-background px-4 py-3 rounded-full text-sm font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2">
                   Acheter
                 </a>
               </div>
@@ -1638,27 +1644,35 @@ export default function Home() {
               <p className="text-xs text-sage font-medium uppercase tracking-widest mb-4">Pro</p>
               <p className="text-4xl font-bold text-foreground mb-0.5">29&euro;</p>
               <p className="text-xs text-muted font-light mb-1">50 cr&eacute;dits &middot; 0,58&euro;/photo</p>
-              <p className="text-[11px] text-muted/60 font-light mb-6">TTC &middot; TVA 20% incluse</p>
-              <ul className="text-sm text-muted font-light space-y-2.5 text-left mb-8 flex-1">
+              <p className="text-[11px] text-muted/60 font-light mb-2">TTC &middot; TVA 20% incluse</p>
+              <p className="text-xs text-sage font-medium mb-6">29&euro; au lieu de 200-500&euro; chez un home stager</p>
+              <ul className="text-sm text-muted font-light space-y-2.5 text-left mb-4 flex-1">
                 <li className="flex items-start gap-2.5">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                   3 it&eacute;rations par photo
                 </li>
                 <li className="flex items-start gap-2.5">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  <span><strong className="font-medium text-foreground">Mode Marchand</strong> &mdash; dossiers PDF</span>
+                  <span><strong className="font-medium text-foreground">Mode Marchand</strong></span>
                 </li>
-                <li className="flex items-start gap-2.5">
-                  <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  Annonces immobili&egrave;res
+                <li className="flex items-start gap-2.5 pl-6">
+                  <svg className="w-3.5 h-3.5 text-sage/70 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  <span className="text-xs">Dossiers PDF avant/apr&egrave;s</span>
                 </li>
-                <li className="flex items-start gap-2.5">
-                  <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  Lien partageable 30 jours
+                <li className="flex items-start gap-2.5 pl-6">
+                  <svg className="w-3.5 h-3.5 text-sage/70 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  <span className="text-xs">Annonces immobili&egrave;res pr&ecirc;tes &agrave; publier</span>
+                </li>
+                <li className="flex items-start gap-2.5 pl-6">
+                  <svg className="w-3.5 h-3.5 text-sage/70 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  <span className="text-xs">Lien partageable acqu&eacute;reurs 30 jours</span>
                 </li>
               </ul>
+              <p className="text-xs text-muted/70 font-light italic mb-4 text-left">
+                Ce pack est fait pour vous si vous &ecirc;tes marchand de biens ou agent et g&eacute;rez plusieurs op&eacute;rations par an.
+              </p>
               <div className="mt-auto">
-                <a href="/pricing" className="block w-full text-center bg-sage text-white px-4 py-3 rounded-full text-sm font-semibold hover:bg-sage/85 transition-colors shadow-sm">
+                <a href="/pricing" className="block w-full text-center bg-sage text-white px-4 py-3 rounded-full text-sm font-semibold hover:bg-sage/85 transition-colors shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2">
                   Acheter
                 </a>
               </div>
