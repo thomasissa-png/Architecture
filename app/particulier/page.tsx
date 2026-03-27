@@ -4,25 +4,26 @@ import Footer from "@/components/Footer";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://architecture-toum92.replit.app";
 
 export const metadata: Metadata = {
-  title: "Visualiser sa d\u00E9coration par IA | Versiroom",
+  title: "Visualiser sa décoration par IA | Versiroom",
   description:
-    "Testez 12 styles de deco dans VOS pieces. Uploadez une photo, choisissez un style, voyez votre piece meublee en 90 secondes. Gratuit, instantane, sans inscription.",
+    "Testez 12 styles de déco dans VOS pièces. Uploadez une photo, choisissez un style, voyez votre pièce meublée en 90 secondes. Gratuit, instantané, sans inscription.",
   keywords: [
-    "decoration interieure IA",
-    "visualiser decoration",
+    "décoration intérieure IA",
+    "visualiser décoration",
     "home staging particulier",
-    "inspiration deco IA",
-    "deco interieure virtuelle",
-    "meuble par IA gratuit",
+    "inspiration déco IA",
+    "déco intérieure virtuelle",
+    "meublé par IA gratuit",
   ],
   openGraph: {
-    title: "Visualisez votre future d\u00E9coration avec l'IA | Versiroom",
+    title: "Visualisez votre future décoration avec l'IA | Versiroom",
     description:
-      "Testez 12 styles de deco dans VOS pieces. Gratuit, instantane, sans inscription. Resultat en 90 secondes.",
+      "Testez 12 styles de déco dans VOS pièces. Gratuit, instantané, sans inscription. Résultat en 90 secondes.",
     type: "website",
     locale: "fr_FR",
     siteName: "Versiroom",
     url: `${BASE_URL}/particulier`,
+    images: [{ url: `${BASE_URL}/imageapres.jpg`, width: 1200, height: 630, alt: "Versiroom — Home staging virtuel par IA" }],
   },
   alternates: {
     canonical: `${BASE_URL}/particulier`,
@@ -33,17 +34,17 @@ const faqItems = [
   {
     question: "Est-ce vraiment gratuit ?",
     answer:
-      "Oui, vous avez 3 generations offertes sans carte bancaire et sans inscription. Vous pouvez tester Versiroom immediatement. Si vous voulez generer plus de visuels, des packs sont disponibles a partir de 4,90 euros.",
+      "Oui, vous avez 3 générations offertes sans carte bancaire et sans inscription. Vous pouvez tester Versiroom immédiatement. Si vous voulez générer plus de visuels, des packs sont disponibles à partir de 4,90 euros.",
   },
   {
-    question: "Comment ca marche concretement ?",
+    question: "Comment ça marche concrètement ?",
     answer:
-      "Prenez une photo de votre piece vide avec votre telephone. Uploadez-la sur Versiroom, choisissez un style parmi 12 ambiances (Scandinave, Japandi, Boheme, Cosy...), et recevez un visuel de votre piece meublee en 90 secondes. Vous pouvez ensuite telecharger l'image en HD ou la partager.",
+      "Prenez une photo de votre pièce vide avec votre téléphone. Uploadez-la sur Versiroom, choisissez un style parmi 12 ambiances (Scandinave, Japandi, Bohème, Cosy…), et recevez un visuel de votre pièce meublée en 90 secondes. Vous pouvez ensuite télécharger l'image en HD ou la partager.",
   },
   {
-    question: "Le resultat ressemble-t-il vraiment a ma piece ?",
+    question: "Le résultat ressemble-t-il vraiment à ma pièce ?",
     answer:
-      "Oui. Le pipeline 2 passes de Versiroom preserve la geometrie exacte de votre piece : les murs, les fenetres, la lumiere, l'angle de la photo. Seuls les finitions (couleur des murs, sol) et le mobilier changent. C'est votre piece, dans le style que vous avez choisi.",
+      "Oui. Versiroom utilise une technologie IA qui préserve la géométrie exacte de votre pièce : les murs, les fenêtres, la lumière, l'angle de la photo. Seules les finitions (couleur des murs, sol) et le mobilier changent. C'est votre pièce, dans le style que vous avez choisi.",
   },
 ];
 
@@ -95,7 +96,7 @@ export default function ParticulierPage() {
       </header>
 
       {/* Hero */}
-      <section className="pt-28 sm:pt-36 pb-16 sm:pb-24 px-5 sm:px-8">
+      <section className="pt-28 sm:pt-36 pb-10 sm:pb-14 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto text-center">
           <p className="text-xs text-sage font-medium uppercase tracking-widest mb-4">
             Pour les particuliers
@@ -105,35 +106,58 @@ export default function ParticulierPage() {
             <br />
             <span className="font-light text-muted">Pas celui de quelqu'un d'autre.</span>
           </h1>
-          <p className="text-lg sm:text-xl text-muted font-light leading-relaxed max-w-2xl mx-auto mb-4">
+          <p className="text-lg sm:text-xl text-muted font-light leading-relaxed max-w-2xl mx-auto mb-8">
             Testez 12 styles de déco dans VOS pièces.
             Gratuit, instantané, depuis votre iPhone.
           </p>
-          {/* TODO: remplacer par témoignage réel */}
-          <blockquote className="text-sm text-foreground/70 font-light italic mb-8 max-w-lg mx-auto">
-            « J'ai enfin vu MON salon en scandinave, pas une photo générique Pinterest. »
-            <span className="block text-xs text-muted mt-1 not-italic">— Léa M., primo-accédante, Nantes</span>
-          </blockquote>
           <a
             href="/#outil"
             className="inline-flex items-center gap-2 bg-foreground text-background px-8 py-3.5 rounded-full text-sm font-medium hover:bg-foreground/85 transition-all duration-200 active:scale-[0.98]"
           >
-            Essayer gratuitement — sans carte bancaire
+            Essayer gratuitement
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
           </a>
           <p className="text-sm text-foreground/60 font-light mt-4">
-            3 générations offertes · 12 styles disponibles
+            Sans carte bancaire · 3 générations offertes
           </p>
         </div>
       </section>
 
-      {/* Le probleme */}
+      {/* Avant / Après */}
+      <section className="pb-4 sm:pb-6 px-5 sm:px-8">
+        <div className="max-w-3xl mx-auto">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 rounded-2xl overflow-hidden">
+            <div className="relative aspect-[4/3]">
+              <img src="/imageavant.jpg" alt="Pièce vide avant Versiroom" className="w-full h-full object-cover" />
+              <span className="absolute bottom-2 left-2 text-xs font-medium text-white bg-black/50 px-2 py-1 rounded">Avant</span>
+            </div>
+            <div className="relative aspect-[4/3]">
+              <img src="/imageapres.jpg" alt="Pièce meublée par Versiroom" className="w-full h-full object-cover" />
+              <span className="absolute bottom-2 left-2 text-xs font-medium text-white bg-black/50 px-2 py-1 rounded">Après</span>
+            </div>
+          </div>
+          <p className="text-xs text-muted font-light text-center mt-3">
+            Votre pièce vide → votre pièce meublée. Résultat en 90 secondes, depuis votre iPhone.
+          </p>
+        </div>
+      </section>
+
+      {/* Social proof line */}
+      <div className="flex flex-wrap justify-center gap-6 sm:gap-10 text-xs text-muted font-light py-6">
+        <span>12 styles curatés</span>
+        <span>·</span>
+        <span>Résultat en 90 secondes</span>
+        <span>·</span>
+        <span>HD gratuit, sans filigrane</span>
+      </div>
+
+      {/* Le problème */}
       <section className="pb-16 sm:pb-24 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-8 text-center">
-            Le probl&egrave;me que vous connaissez
+            Le problème que vous connaissez
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
             {[
@@ -143,8 +167,8 @@ export default function ParticulierPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5a1.5 1.5 0 001.5-1.5V5.25a1.5 1.5 0 00-1.5-1.5H3.75a1.5 1.5 0 00-1.5 1.5v14.25c0 .828.672 1.5 1.5 1.5z" />
                   </svg>
                 ),
-                title: "Pinterest, c\u2019est beau mais pas chez vous",
-                desc: "Vous trouvez de belles photos de decoration sur Pinterest ou Instagram. Mais c'est toujours chez quelqu'un d'autre. Impossible de voir le resultat dans votre piece.",
+                title: "Pinterest, c'est beau mais pas chez vous",
+                desc: "Vous trouvez de belles photos de décoration sur Pinterest ou Instagram. Mais c'est toujours chez quelqu'un d'autre. Impossible de voir le résultat dans votre pièce.",
               },
               {
                 icon: (
@@ -152,8 +176,8 @@ export default function ParticulierPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 ),
-                title: "Les apps deco existantes d\u00E9\u00E7oivent",
-                desc: "Les applications de decoration existantes sont soit moches (rendu cartoon), soit payantes des le depart, soit limitees a 2-3 styles generiques.",
+                title: "Les apps déco existantes déçoivent",
+                desc: "Les applications de décoration existantes sont soit moches (rendu cartoon), soit payantes dès le départ, soit limitées à 2-3 styles génériques.",
               },
               {
                 icon: (
@@ -162,7 +186,7 @@ export default function ParticulierPage() {
                   </svg>
                 ),
                 title: "Difficile de choisir un style",
-                desc: "Scandinave ou Japandi ? Contemporain ou Cosy ? Sans voir le resultat dans votre piece, impossible de trancher. Vous achetez des meubles a l'aveugle.",
+                desc: "Scandinave ou Japandi ? Contemporain ou Cosy ? Sans voir le résultat dans votre pièce, impossible de trancher. Vous achetez des meubles à l'aveugle.",
               },
             ].map((item) => (
               <div
@@ -185,32 +209,33 @@ export default function ParticulierPage() {
       <section className="py-16 sm:py-24 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-4 text-center">
-            Essayez avant d&apos;acheter
+            Essayez avant d'acheter
           </h2>
           <p className="text-muted font-light text-center mb-12 max-w-xl mx-auto">
-            Voyez &agrave; quoi votre pi&egrave;ce ressemblerait dans 12 styles diff&eacute;rents.
+            Voyez à quoi votre pièce ressemblerait dans 12 styles différents.
+            Vous n'avez même pas besoin que la pièce soit finie — une photo pendant les travaux suffit.
           </p>
           <div className="space-y-6">
             {[
               {
                 num: "01",
-                title: "Votre pi\u00E8ce, vos styles",
-                desc: "Uploadez une photo de votre salon, chambre ou sejour. L'IA genere un visuel meuble directement dans votre piece, pas dans celle de quelqu'un d'autre.",
+                title: "Votre pièce, vos styles",
+                desc: "Uploadez une photo de votre salon, chambre ou séjour. L'IA génère un visuel meublé directement dans votre pièce, pas dans celle de quelqu'un d'autre.",
               },
               {
                 num: "02",
-                title: "12 ambiances \u00E0 explorer",
-                desc: "Scandinave, Japandi, Boheme, Cosy, Contemporain, Industriel, Art Deco, Mid-Century, Mediterraneen, Wabi-Sabi, Maximaliste, Haussmannien. Testez-les toutes.",
+                title: "12 ambiances à explorer",
+                desc: "Scandinave, Japandi, Bohème, Cosy, Contemporain, Industriel, Art Déco, Mid-Century, Méditerranéen, Wabi-Sabi, Maximaliste, Haussmannien. Scandinave le matin, Maximaliste le soir : testez autant de fois que vous voulez.",
               },
               {
                 num: "03",
-                title: "R\u00E9sultat en 90 secondes",
-                desc: "Pas besoin d'attendre. Le visuel meuble est genere en moins de 2 minutes. Comparez avec la photo originale grace au slider avant/apres.",
+                title: "Résultat en 90 secondes",
+                desc: "Pas besoin d'attendre. Le visuel meublé est généré en moins de 2 minutes. Comparez avec la photo originale grâce au slider avant/après.",
               },
               {
                 num: "04",
                 title: "Partagez et sauvegardez",
-                desc: "Telechargez l'image en HD, partagez-la sur Instagram ou WhatsApp, ou envoyez-la a votre partenaire pour choisir ensemble.",
+                desc: "Téléchargez l'image en HD, partagez-la sur Instagram ou WhatsApp, ou envoyez-la à votre partenaire pour choisir ensemble.",
               },
             ].map((item) => (
               <div key={item.num} className="flex gap-5 items-start">
@@ -230,37 +255,25 @@ export default function ParticulierPage() {
       {/* Separator */}
       <div className="max-w-24 mx-auto border-t border-foreground/10" />
 
-      {/* Citation */}
-      <section className="py-16 sm:py-24 px-5 sm:px-8">
-        <div className="max-w-2xl mx-auto text-center">
-          <blockquote className="text-lg sm:text-xl text-foreground font-light italic leading-relaxed">
-            &laquo; Je veux voir &agrave; quoi MON salon ressemblerait en scandinave, pas le salon de quelqu&apos;un d&apos;autre sur Pinterest. &raquo;
-          </blockquote>
-          <p className="text-xs text-muted font-light mt-4">
-            L&eacute;a, 32 ans &mdash; Nantes
-          </p>
-        </div>
-      </section>
-
-      {/* Separator */}
-      <div className="max-w-24 mx-auto border-t border-foreground/10" />
-
       {/* FAQ */}
       <section className="py-16 sm:py-24 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-10 text-center">
-            Questions fr&eacute;quentes
+            Questions fréquentes
           </h2>
-          <div className="space-y-8">
+          <div className="space-y-1">
             {faqItems.map((item) => (
-              <div key={item.question}>
-                <h3 className="text-sm font-semibold text-foreground mb-2">
+              <details key={item.question} className="group">
+                <summary className="flex items-center justify-between cursor-pointer py-4 text-sm font-semibold text-foreground hover:text-foreground/80 transition-colors">
                   {item.question}
-                </h3>
-                <p className="text-sm text-muted font-light leading-relaxed">
+                  <svg className="w-4 h-4 text-muted shrink-0 ml-4 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </summary>
+                <p className="text-sm text-muted font-light leading-relaxed pb-4">
                   {item.answer}
                 </p>
-              </div>
+              </details>
             ))}
           </div>
         </div>
@@ -272,11 +285,8 @@ export default function ParticulierPage() {
           <p className="text-lg font-semibold text-foreground mb-3">
             Envie de voir votre future déco ?
           </p>
-          <p className="text-sm text-muted font-light mb-4">
+          <p className="text-sm text-muted font-light mb-8">
             3 générations offertes, sans carte bancaire, résultat en 90 secondes.
-          </p>
-          <p className="text-xs text-muted font-light mb-8">
-            Découvrez gratuitement — 3 générations sans CB
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a
