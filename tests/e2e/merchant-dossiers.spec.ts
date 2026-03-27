@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 /**
- * E2E tests for /mes-dossiers (F4 Mode Marchand — Dossier list).
+ * E2E tests for /mes-dossiers (F4 Mode Pro — Dossier list).
  * Verifies page loads and handles unauthenticated state gracefully.
  */
 

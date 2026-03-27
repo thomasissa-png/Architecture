@@ -125,7 +125,7 @@ export async function decrementCredit(userId: string): Promise<boolean> {
 }
 
 /**
- * F4: Check if user has Pro access for Mode Marchand.
+ * F4: Check if user has Pro access for Mode Pro (ex Mode Marchand).
  * Two paths:
  * 1. User has purchased a Pro-level pack (50+ credits purchased via Stripe)
  * 2. User has role 'pro' or 'admin' in users table (set via admin API)

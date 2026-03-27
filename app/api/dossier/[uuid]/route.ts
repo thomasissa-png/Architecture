@@ -1,5 +1,5 @@
 /**
- * F4 — Mode Marchand: Dossier detail, photo upload, and batch generation.
+ * F4 — Mode Pro (ex Mode Marchand): Dossier detail, photo upload, and batch generation.
  *
  * GET /api/dossier/[uuid] — Get dossier details + photos
  * POST /api/dossier/[uuid] — Add photos to dossier

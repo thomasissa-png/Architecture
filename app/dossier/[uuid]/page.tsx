@@ -1,5 +1,5 @@
 /**
- * F4 — Mode Marchand: Public shareable dossier page.
+ * F4 — Mode Pro (ex Mode Marchand): Public shareable dossier page.
  *
  * /dossier/[uuid] — SSR, no auth required, mobile-friendly.
  * OpenGraph metadata for link preview in messaging apps.

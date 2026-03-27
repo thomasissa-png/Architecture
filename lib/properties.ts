@@ -1,5 +1,5 @@
 /**
- * Properties (Biens) — Entite persistante pour le Mode Marchand.
+ * Properties (Biens) — Entité persistante pour le Mode Pro (ex Mode Marchand).
  *
  * Un bien = une adresse + enrichissement API (geocoding, DVF, carte, description).
  * Plusieurs photos (user_photos) peuvent etre associees a un bien.

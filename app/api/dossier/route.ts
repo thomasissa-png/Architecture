@@ -1,5 +1,5 @@
 /**
- * F4 — Mode Marchand: Create and list dossiers.
+ * F4 — Mode Pro (ex Mode Marchand): Create and list dossiers.
  * POST /api/dossier — Create a new dossier
  * GET /api/dossier — List user's dossiers
  */
@@ -26,11 +26,11 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // F4.3: Mode Marchand requires Pack Pro minimum (50+ credits purchased)
+  // F4.3: Mode Pro requires Pro subscription or Pack Pro minimum
   const proAccess = await hasProAccess(session.user.id);
   if (!proAccess) {
     return NextResponse.json(
-      { error: "Le Mode Marchand est reserve aux utilisateurs ayant achete un Pack Pro ou superieur." },
+      { error: "Le Mode Pro est réservé aux abonnés Pro." },
       { status: 403 }
     );
   }

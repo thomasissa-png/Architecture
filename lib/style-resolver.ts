@@ -2,7 +2,7 @@
  * F4 — Server-side style resolver.
  *
  * Duplicates the style prompt data from StylePicker.tsx and outdoor-styles.ts
- * for use in server-side batch generation (Mode Marchand).
+ * for use in server-side batch generation (Mode Pro).
  *
  * Why duplicate instead of importing StylePicker? StylePicker is a "use client"
  * component — importing it in a server context causes issues with React hooks

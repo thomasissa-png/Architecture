@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Page "Mes dossiers" — liste des dossiers Mode Marchand de l'utilisateur.
+ * Page "Mes dossiers" — liste des dossiers Mode Pro de l'utilisateur.
  * Redirige vers la page d'accueil si non connecte.
  */
 
@@ -142,7 +142,7 @@ export default function MesDossiersPage() {
             Mes dossiers
           </h1>
           <p className="text-sm text-muted font-light mb-8">
-            Retrouvez tous vos dossiers Mode Marchand.
+            Retrouvez tous vos dossiers Mode Pro.
           </p>
 
           {/* Loading */}
@@ -163,7 +163,7 @@ export default function MesDossiersPage() {
           {!isLoading && !error && dossiers.length === 0 && (
             <div className="text-center py-20">
               <p className="text-sm text-muted font-light mb-4">
-                Aucun dossier. Créez votre premier dossier en Mode Marchand.
+                Aucun dossier. Créez votre premier dossier en Mode Pro.
               </p>
               <a
                 href="/"

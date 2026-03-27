@@ -97,26 +97,33 @@ export default function ArchitectePage() {
       <section className="pt-28 sm:pt-36 pb-16 sm:pb-24 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto text-center">
           <p className="text-xs text-sage font-medium uppercase tracking-widest mb-4">
-            Pour les architectes d&apos;int&eacute;rieur
+            Pour les architectes d'intérieur
           </p>
           <h1 className="text-3xl sm:text-5xl font-bold text-foreground tracking-tight mb-5 leading-tight">
-            Home staging virtuel IA pour architectes d&apos;int&eacute;rieur
+            Vos clients veulent voir.
+            <br />
+            <span className="font-light text-muted">En 90 secondes, montrez-leur.</span>
           </h1>
-          <p className="text-lg sm:text-xl text-muted font-light leading-relaxed max-w-2xl mx-auto mb-10">
-            Partagez des pistes d&apos;inspiration &agrave; vos clients en 90 secondes,
-            au lieu d&apos;attendre 2-3 jours par planche de rendu.
+          <p className="text-lg sm:text-xl text-muted font-light leading-relaxed max-w-2xl mx-auto mb-4">
+            Un support de conversation avec votre client dès le premier RDV,
+            sans attendre 48h le rendu 3D.
           </p>
+          {/* TODO: remplacer par témoignage réel */}
+          <blockquote className="text-sm text-foreground/70 font-light italic mb-8 max-w-lg mx-auto">
+            « Je ne cherche pas un rendu final, je cherche un support de conversation avec mon client. »
+            <span className="block text-xs text-muted mt-1 not-italic">— Claire D., architecte DPLG, Lyon</span>
+          </blockquote>
           <a
             href="/#outil"
             className="inline-flex items-center gap-2 bg-foreground text-background px-8 py-3.5 rounded-full text-sm font-medium hover:bg-foreground/85 transition-all duration-200 active:scale-[0.98]"
           >
-            Essayer gratuitement
+            Générer votre première planche gratuitement
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
           </a>
-          <p className="text-xs text-muted font-light mt-4">
-            3 g&eacute;n&eacute;rations offertes &middot; sans carte bancaire
+          <p className="text-sm text-foreground/60 font-light mt-4">
+            Sans carte bancaire · 3 générations offertes
           </p>
         </div>
       </section>
@@ -263,17 +270,28 @@ export default function ArchitectePage() {
       <section className="pb-20 sm:pb-32 px-5 sm:px-8">
         <div className="max-w-xl mx-auto text-center">
           <p className="text-lg font-semibold text-foreground mb-3">
-            Pr&ecirc;t &agrave; gagner du temps sur vos pr&eacute;sentations client ?
+            Prêt à gagner du temps sur vos présentations client ?
           </p>
-          <p className="text-sm text-muted font-light mb-8">
-            3 g&eacute;n&eacute;rations offertes, sans carte bancaire, r&eacute;sultat en 90 secondes.
+          <p className="text-sm text-muted font-light mb-4">
+            3 générations offertes, sans carte bancaire, résultat en 90 secondes.
           </p>
-          <a
-            href="/#outil"
-            className="inline-flex items-center gap-2 bg-foreground text-background px-8 py-3.5 rounded-full text-sm font-medium hover:bg-foreground/85 transition-all duration-200 active:scale-[0.98]"
-          >
-            Essayer gratuitement
-          </a>
+          <p className="text-xs text-muted font-light mb-8">
+            Abonnement Pro — 29€/mois, tout inclus
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <a
+              href="/#outil"
+              className="inline-flex items-center justify-center gap-2 bg-foreground text-background px-8 py-3.5 rounded-full text-sm font-medium hover:bg-foreground/85 transition-all duration-200 active:scale-[0.98]"
+            >
+              Essayer gratuitement
+            </a>
+            <a
+              href="/pricing"
+              className="inline-flex items-center justify-center gap-2 border border-foreground/15 text-foreground px-6 py-3.5 rounded-full text-sm font-medium hover:bg-foreground/5 transition-colors"
+            >
+              Voir les tarifs Pro
+            </a>
+          </div>
         </div>
       </section>
 

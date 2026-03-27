@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 /**
- * E2E tests for F4 Mode Marchand API routes.
+ * E2E tests for F4 Mode Pro API routes.
  * Tests API endpoints respond correctly (auth-gated = 401, public = 200/404).
  */
 

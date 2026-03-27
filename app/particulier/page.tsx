@@ -101,23 +101,30 @@ export default function ParticulierPage() {
             Pour les particuliers
           </p>
           <h1 className="text-3xl sm:text-5xl font-bold text-foreground tracking-tight mb-5 leading-tight">
-            Visualisez votre future d&eacute;coration avec l&apos;IA
+            Votre appartement.
+            <br />
+            <span className="font-light text-muted">Pas celui de quelqu'un d'autre.</span>
           </h1>
-          <p className="text-lg sm:text-xl text-muted font-light leading-relaxed max-w-2xl mx-auto mb-10">
-            Testez 12 styles de d&eacute;co dans VOS pi&egrave;ces.
-            Gratuit, instantan&eacute;, sans inscription.
+          <p className="text-lg sm:text-xl text-muted font-light leading-relaxed max-w-2xl mx-auto mb-4">
+            Testez 12 styles de déco dans VOS pièces.
+            Gratuit, instantané, depuis votre iPhone.
           </p>
+          {/* TODO: remplacer par témoignage réel */}
+          <blockquote className="text-sm text-foreground/70 font-light italic mb-8 max-w-lg mx-auto">
+            « J'ai enfin vu MON salon en scandinave, pas une photo générique Pinterest. »
+            <span className="block text-xs text-muted mt-1 not-italic">— Léa M., primo-accédante, Nantes</span>
+          </blockquote>
           <a
             href="/#outil"
             className="inline-flex items-center gap-2 bg-foreground text-background px-8 py-3.5 rounded-full text-sm font-medium hover:bg-foreground/85 transition-all duration-200 active:scale-[0.98]"
           >
-            Essayer gratuitement
+            Essayer gratuitement — sans carte bancaire
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
           </a>
-          <p className="text-xs text-muted font-light mt-4">
-            3 g&eacute;n&eacute;rations offertes &middot; sans carte bancaire
+          <p className="text-sm text-foreground/60 font-light mt-4">
+            3 générations offertes · 12 styles disponibles
           </p>
         </div>
       </section>
@@ -263,17 +270,28 @@ export default function ParticulierPage() {
       <section className="pb-20 sm:pb-32 px-5 sm:px-8">
         <div className="max-w-xl mx-auto text-center">
           <p className="text-lg font-semibold text-foreground mb-3">
-            Envie de voir votre future d&eacute;co ?
+            Envie de voir votre future déco ?
           </p>
-          <p className="text-sm text-muted font-light mb-8">
-            3 g&eacute;n&eacute;rations offertes, sans carte bancaire, r&eacute;sultat en 90 secondes.
+          <p className="text-sm text-muted font-light mb-4">
+            3 générations offertes, sans carte bancaire, résultat en 90 secondes.
           </p>
-          <a
-            href="/#outil"
-            className="inline-flex items-center gap-2 bg-foreground text-background px-8 py-3.5 rounded-full text-sm font-medium hover:bg-foreground/85 transition-all duration-200 active:scale-[0.98]"
-          >
-            Essayer gratuitement
-          </a>
+          <p className="text-xs text-muted font-light mb-8">
+            Découvrez gratuitement — 3 générations sans CB
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <a
+              href="/#outil"
+              className="inline-flex items-center justify-center gap-2 bg-foreground text-background px-8 py-3.5 rounded-full text-sm font-medium hover:bg-foreground/85 transition-all duration-200 active:scale-[0.98]"
+            >
+              Essayer gratuitement
+            </a>
+            <a
+              href="/pricing"
+              className="inline-flex items-center justify-center gap-2 border border-foreground/15 text-foreground px-6 py-3.5 rounded-full text-sm font-medium hover:bg-foreground/5 transition-colors"
+            >
+              Voir les packs
+            </a>
+          </div>
         </div>
       </section>
 

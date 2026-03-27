@@ -27,11 +27,11 @@ export async function POST(
     return NextResponse.json({ error: "Connexion requise." }, { status: 401 });
   }
 
-  // Mode Marchand requires Pack Pro
+  // Mode Pro requires Pro subscription
   const proAccess = await hasProAccess(session.user.id);
   if (!proAccess) {
     return NextResponse.json(
-      { error: "Le Mode Marchand est reserve aux utilisateurs ayant achete un Pack Pro ou superieur." },
+      { error: "Le Mode Pro est réservé aux abonnés Pro." },
       { status: 403 }
     );
   }

@@ -100,9 +100,9 @@ test.describe("Pricing page — /pricing", () => {
     ).toBeVisible();
   });
 
-  test("Pro pack features mention Mode Marchand", async ({ page }) => {
+  test("Pro pack features mention Mode Pro", async ({ page }) => {
     await expect(
-      page.locator("text=Mode Marchand")
+      page.locator("text=Mode Pro")
     ).toBeVisible();
   });
 

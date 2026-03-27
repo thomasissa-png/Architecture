@@ -100,23 +100,30 @@ export default function MarchandPage() {
             Pour les marchands de biens
           </p>
           <h1 className="text-3xl sm:text-5xl font-bold text-foreground tracking-tight mb-5 leading-tight">
-            Home staging virtuel IA pour marchands de biens
+            29€/mois. Vos dossiers de pré-commercialisation
+            <br />
+            <span className="font-light text-muted">en 10 minutes, pas 10 jours.</span>
           </h1>
-          <p className="text-lg sm:text-xl text-muted font-light leading-relaxed max-w-2xl mx-auto mb-10">
-            Transformez vos biens bruts en visuels meubl&eacute;s professionnels.
-            Cr&eacute;ez des dossiers de pr&eacute;-commercialisation en 90 secondes.
+          <p className="text-lg sm:text-xl text-muted font-light leading-relaxed max-w-2xl mx-auto mb-4">
+            vs 200-500€ par planche chez un home stager.
+            Lien partageable acquéreurs · Sans limite de durée.
           </p>
+          {/* TODO: remplacer par témoignage réel */}
+          <blockquote className="text-sm text-foreground/70 font-light italic mb-8 max-w-lg mx-auto">
+            « 3 dossiers complets en une matinée au lieu de 1 500€ chez un prestataire. »
+            <span className="block text-xs text-muted mt-1 not-italic">— Thomas B., marchand de biens, Bordeaux</span>
+          </blockquote>
           <a
-            href="/#outil"
-            className="inline-flex items-center gap-2 bg-foreground text-background px-8 py-3.5 rounded-full text-sm font-medium hover:bg-foreground/85 transition-all duration-200 active:scale-[0.98]"
+            href="/pricing"
+            className="inline-flex items-center gap-2 bg-sage text-white px-8 py-3.5 rounded-full text-sm font-semibold hover:bg-sage/85 transition-all duration-200 active:scale-[0.98] shadow-sm"
           >
-            Essayer gratuitement
+            Créer mon premier dossier — Abonnement Pro
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
           </a>
-          <p className="text-xs text-muted font-light mt-4">
-            3 g&eacute;n&eacute;rations offertes &middot; sans carte bancaire
+          <p className="text-sm text-foreground/60 font-light mt-4">
+            Prix de lancement · 50 crédits/mois inclus
           </p>
         </div>
       </section>
@@ -287,17 +294,28 @@ export default function MarchandPage() {
       <section className="pb-20 sm:pb-32 px-5 sm:px-8">
         <div className="max-w-xl mx-auto text-center">
           <p className="text-lg font-semibold text-foreground mb-3">
-            Pr&ecirc;t &agrave; acc&eacute;l&eacute;rer votre commercialisation ?
+            Prêt à accélérer votre commercialisation ?
           </p>
-          <p className="text-sm text-muted font-light mb-8">
-            3 g&eacute;n&eacute;rations offertes, sans carte bancaire, r&eacute;sultat en 90 secondes.
+          <p className="text-sm text-muted font-light mb-4">
+            Abonnement Pro — 29€/mois · Dossiers illimités · 50 crédits/mois
           </p>
-          <a
-            href="/#outil"
-            className="inline-flex items-center gap-2 bg-foreground text-background px-8 py-3.5 rounded-full text-sm font-medium hover:bg-foreground/85 transition-all duration-200 active:scale-[0.98]"
-          >
-            Essayer gratuitement
-          </a>
+          <p className="text-xs text-muted font-light mb-8">
+            3 générations offertes, sans carte bancaire.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <a
+              href="/pricing"
+              className="inline-flex items-center justify-center gap-2 bg-sage text-white px-8 py-3.5 rounded-full text-sm font-semibold hover:bg-sage/85 transition-all duration-200 active:scale-[0.98] shadow-sm"
+            >
+              S'abonner au Mode Pro
+            </a>
+            <a
+              href="/#outil"
+              className="inline-flex items-center justify-center gap-2 border border-foreground/15 text-foreground px-6 py-3.5 rounded-full text-sm font-medium hover:bg-foreground/5 transition-colors"
+            >
+              Essayer gratuitement
+            </a>
+          </div>
         </div>
       </section>
 

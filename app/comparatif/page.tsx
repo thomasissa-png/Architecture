@@ -101,7 +101,7 @@ const comparatifData = [
     renovateClub: "Professionnels immobilier",
   },
   {
-    critere: "Mode Marchand (dossier PDF)",
+    critere: "Mode Pro (dossiers de pré-commercialisation)",
     versiroom: "Oui",
     gepetto: "Non",
     interieurAI: "Non",
@@ -294,9 +294,9 @@ export default function ComparatifPage() {
                   href="/marchand"
                   className="text-sage underline underline-offset-2 hover:text-foreground transition-colors"
                 >
-                  mode Marchand
+                  Mode Pro
                 </a>{" "}
-                lui permet de cr&eacute;er des dossiers PDF professionnels avec
+                lui permet de créer des dossiers de pré-commercialisation avec
                 annonces partageables et QR code. Au lieu de payer 200-500
                 euros par planche &agrave; un home stager humain, il
                 g&eacute;n&egrave;re ses visuels en quelques minutes.
@@ -363,7 +363,7 @@ export default function ComparatifPage() {
               </span>
               <div>
                 <p className="text-sm font-semibold text-foreground mb-1">
-                  Mode Marchand &mdash; dossiers PDF et annonces partageables
+                  Mode Pro — dossiers de pré-commercialisation et annonces partageables
                 </p>
                 <p className="text-sm text-muted font-light leading-relaxed">
                   Aucun concurrent ne propose de g&eacute;n&eacute;rer un

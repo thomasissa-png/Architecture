@@ -1,5 +1,5 @@
 /**
- * F4 — Mode Marchand: Dossier de pre-commercialisation.
+ * F4 — Mode Pro (ex Mode Marchand): Dossier de pré-commercialisation.
  *
  * Types + CRUD DB functions for dossiers and dossier photos.
  * Max 15 photos/dossier. 1 photo = 1 credit. Pack Pro minimum required.

@@ -1,5 +1,5 @@
 /**
- * F4.C — Mode Marchand: PDF brande professionnel.
+ * F4.C — Mode Pro (ex Mode Marchand): PDF brandé professionnel.
  *
  * GET /api/dossier/[uuid]/pdf — Generate and download branded PDF
  *

@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 /**
- * E2E tests for /mes-biens (F4 Mode Marchand — Property list).
+ * E2E tests for /mes-biens (F4 Mode Pro — Property list).
  * These tests run WITHOUT authentication, so they verify the page loads
  * and shows the appropriate unauthenticated/loading state.
  */

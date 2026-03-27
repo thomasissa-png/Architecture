@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 /**
- * E2E tests for /compte (F4 Mode Marchand — Merchant profile).
+ * E2E tests for /compte (F4 Mode Pro — Merchant profile).
  * Verifies page loads and handles unauthenticated state gracefully.
  */
 
