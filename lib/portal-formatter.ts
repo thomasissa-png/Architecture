@@ -168,7 +168,7 @@ export function formatTitle(
   const cutLimit = maxChars - 1;
   const lastSpace = cleaned.lastIndexOf(" ", cutLimit);
   const safeIndex = lastSpace > 0 ? lastSpace : cutLimit;
-  const truncated = cleaned.slice(0, safeIndex) + "\u2026";
+  const truncated = cleaned.slice(0, safeIndex) + "…";
 
   return {
     text: truncated,
@@ -199,7 +199,7 @@ export function formatDescription(
 
   // No description — return disclaimer only with placeholder
   if (!cleaned) {
-    const text = "Description \u00e0 venir.\n\n" + AI_DISCLAIMER;
+    const text = "Description à rédiger.\n\n" + AI_DISCLAIMER;
     return { text, truncated: false, charCount: text.length, maxChars };
   }
 
@@ -265,13 +265,13 @@ function buildStructuredFields(
 
   // Surface
   if (annonce.surface != null && annonce.surface > 0) {
-    fields.push({ label: "Surface", value: `${annonce.surface} m\u00b2` });
+    fields.push({ label: "Surface", value: `${annonce.surface} m²` });
   }
 
   // Room count
   if (annonce.roomCount != null && annonce.roomCount > 0) {
     fields.push({
-      label: "Nombre de pi\u00e8ces",
+      label: "Nombre de pièces",
       value: String(annonce.roomCount),
     });
   }
@@ -296,7 +296,7 @@ function buildStructuredFields(
   } else {
     fields.push({
       label: "DPE",
-      value: "\u00c0 compl\u00e9ter manuellement",
+      value: "À renseigner dans le formulaire",
       warning: true,
       tooltip: "Obligatoire depuis 2022 pour les annonces de vente",
     });
@@ -314,18 +314,18 @@ function buildStructuredFields(
       annonce.coproChargesAnnuelles != null
     ) {
       fields.push({
-        label: "Copropri\u00e9t\u00e9",
-        value: `${annonce.coproLots} lots \u2014 charges : ${annonce.coproChargesAnnuelles.toLocaleString("fr-FR")} \u20ac/an`,
+        label: "Copropriété",
+        value: `${annonce.coproLots} lots — charges : ${annonce.coproChargesAnnuelles.toLocaleString("fr-FR")} €/an`,
       });
     } else if (annonce.coproLots != null) {
       fields.push({
-        label: "Copropri\u00e9t\u00e9",
+        label: "Copropriété",
         value: `${annonce.coproLots} lots`,
       });
     } else {
       fields.push({
-        label: "Copropri\u00e9t\u00e9",
-        value: "Donn\u00e9es \u00e0 compl\u00e9ter manuellement",
+        label: "Copropriété",
+        value: "Informations copropriété à renseigner",
         warning: true,
       });
     }
@@ -392,12 +392,12 @@ export function formatForPortal(
     // SeLoger / Bien'ici format: separated sections
     copyText += title.text + "\n\n";
     copyText += "---\n\n";
-    copyText += "DESCRIPTION :\n\n";
+    copyText += "Description :\n\n";
     copyText += description.text + "\n\n";
     copyText += "---\n\n";
-    copyText += "CHAMPS \u00c0 REMPLIR DANS LE FORMULAIRE :\n\n";
+    copyText += "Champs à saisir dans le formulaire :\n\n";
     for (const field of structuredFields) {
-      copyText += `\u2022 ${field.label} : ${field.value}\n`;
+      copyText += `• ${field.label} : ${field.value}\n`;
     }
   } else {
     // LeBonCoin format: continuous text
