@@ -23,6 +23,7 @@ import { getPropertyByUserAndAddress } from "@/lib/properties";
 import DossierPublicView from "@/components/DossierPublicView";
 import DossierCaracteristiques from "@/components/DossierCaracteristiques";
 import ContactSticky from "@/components/ContactSticky";
+import MerchantInfoBlock from "@/components/MerchantInfoBlock";
 import ShareButtons from "@/components/ShareButtons";
 import RoomNav from "@/components/RoomNav";
 import StorageImage from "@/components/StorageImage";
@@ -408,6 +409,21 @@ export default async function DossierPage({ params }: PageProps) {
               </svg>
               Télécharger le PDF
             </a>
+          </div>
+        )}
+
+        {/* Merchant info block — before footer */}
+        {hasMerchant && profile && (
+          <div className="mt-10 mb-10">
+            <MerchantInfoBlock
+              raisonSociale={profile.raison_sociale}
+              adresse={profile.adresse}
+              telephone={profile.telephone}
+              emailPro={profile.email_pro}
+              siret={profile.siret}
+              logoStorageKey={profile.logo_storage_key}
+              couleurPrincipale={profile.couleur_principale}
+            />
           </div>
         )}
 

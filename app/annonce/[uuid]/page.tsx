@@ -19,6 +19,7 @@ import AnnoncePublicView from "@/components/AnnoncePublicView";
 import ExportPortail from "@/components/ExportPortail";
 import AnnonceGallery from "@/components/AnnonceGallery";
 import ContactSticky from "@/components/ContactSticky";
+import MerchantInfoBlock from "@/components/MerchantInfoBlock";
 import RoomNav from "@/components/RoomNav";
 import { ROOM_TYPE_LABELS } from "@/lib/constants";
 import StorageImage from "@/components/StorageImage";
@@ -611,6 +612,21 @@ export default async function AnnoncePage({ params }: PageProps) {
               roomLabel: p.room_label || ROOM_TYPE_LABELS[p.room_type || ""] || "Photo",
             }))}
           />
+        )}
+
+        {/* Merchant info block — before footer */}
+        {hasMerchant && merchant && (
+          <div className="mt-10 mb-10">
+            <MerchantInfoBlock
+              raisonSociale={merchant.raison_sociale}
+              adresse={merchant.adresse}
+              telephone={merchant.telephone}
+              emailPro={merchant.email_pro}
+              siret={merchant.siret}
+              logoStorageKey={merchant.logo_storage_key}
+              couleurPrincipale={merchant.couleur_principale}
+            />
+          </div>
         )}
 
         {/* Footer */}
