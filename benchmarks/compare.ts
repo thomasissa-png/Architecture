@@ -10,7 +10,8 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { PNG } from "pngjs";
-import pixelmatch from "pixelmatch";
+// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
+const pixelmatch = require("pixelmatch");
 import { BENCHMARK_CONFIG } from "./config";
 
 // ── CLI args ────────────────────────────────────────────────────────
@@ -105,7 +106,7 @@ function calculatePixelDiff(
   const differentPixels = pixelmatch(
     img1.data,
     img2.data,
-    null, // no diff output image
+    undefined, // no diff output image
     width,
     height,
     { threshold }
