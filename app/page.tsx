@@ -888,56 +888,24 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Encart Mode Pro — positionné après le hero, avant l'outil */}
+      {/* Encart Mode Pro — compact */}
       <section className="px-5 sm:px-8 pb-10 sm:pb-14">
-        <div className="max-w-4xl mx-auto bg-foreground/[0.02] border border-foreground/10 rounded-2xl p-8 sm:p-10 flex flex-col md:flex-row items-start gap-8">
-          {/* Icône */}
-          <div className="flex-shrink-0 w-14 h-14 rounded-xl bg-sage/10 flex items-center justify-center">
-            <svg className="w-7 h-7 text-sage" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+        <div className="max-w-2xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 bg-foreground/[0.02] border border-foreground/10 rounded-2xl px-6 py-4">
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] font-semibold text-sage bg-sage/10 px-2.5 py-1 rounded-full uppercase tracking-wider whitespace-nowrap">Pro</span>
+            <p className="text-sm text-foreground font-light">
+              Dossiers, PDF brandé, annonces — <strong className="font-semibold">29 €/mois</strong>
+            </p>
+          </div>
+          <a
+            href="/pricing"
+            className="flex-shrink-0 inline-flex items-center gap-1.5 text-sm text-sage font-medium hover:text-sage/80 transition-colors"
+          >
+            Découvrir
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
-          </div>
-          {/* Contenu */}
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-3">
-              <h3 className="text-lg sm:text-xl font-semibold text-foreground">
-                Mode Pro — pour les professionnels
-              </h3>
-              <span className="text-[10px] font-semibold text-sage bg-sage/10 px-2.5 py-1 rounded-full uppercase tracking-wider whitespace-nowrap">
-                Recommandé
-              </span>
-            </div>
-            <p className="text-sm text-muted font-light mb-5 leading-relaxed">
-              Vous utilisez Versiroom pour des projets clients ou des dossiers de vente ?
-              Le Mode Pro ajoute ce dont vous avez besoin — sans changer votre workflow.
-            </p>
-            <ul className="space-y-2 mb-5">
-              <li className="flex items-start gap-2.5 text-sm text-muted font-light">
-                <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                50 générations/mois
-              </li>
-              <li className="flex items-start gap-2.5 text-sm text-muted font-light">
-                <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                Dossiers de pré-commercialisation
-              </li>
-              <li className="flex items-start gap-2.5 text-sm text-muted font-light">
-                <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                Liens partageables sans limite
-              </li>
-            </ul>
-            <p className="text-base font-semibold text-foreground mb-1">
-              29€/mois
-            </p>
-            <p className="text-xs text-muted font-light mb-5">
-              vs. 200 à 500€ par planche chez un home stager virtuel
-            </p>
-            <a
-              href="#pricing"
-              className="inline-flex items-center gap-2 text-sm text-sage font-medium hover:text-sage/80 transition-colors"
-            >
-              Voir le Mode Pro →
-            </a>
-          </div>
+          </a>
         </div>
       </section>
 
