@@ -637,7 +637,13 @@ export default function PropertyDetailPage() {
               </div>
             ) : description ? (
               <div className="mb-4">
-                <p className="text-sm text-muted font-light leading-relaxed">{description}</p>
+                <div className="max-w-2xl space-y-3">
+                  {description.split(/\n\n+/).map((paragraph, idx) => (
+                    <p key={idx} className="text-sm text-muted font-light leading-relaxed">
+                      {paragraph.trim()}
+                    </p>
+                  ))}
+                </div>
                 <button
                   onClick={() => {
                     setEditDesc(description);

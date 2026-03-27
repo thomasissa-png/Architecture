@@ -12,6 +12,33 @@ import AuthButton from "@/components/AuthButton";
 import AuthModal from "@/components/AuthModal";
 import { STYLE_LABELS } from "@/lib/constants";
 
+/** Format relatif intelligent : "Aujourd'hui", "Hier", "Il y a 3 jours", puis "15 mars" au-dela de 7 jours */
+function formatRelativeDate(dateStr: string): string {
+  const date = new Date(dateStr);
+  const now = new Date();
+  // Reset to midnight for day comparison
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const target = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const diffMs = today.getTime() - target.getTime();
+  const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return "Aujourd'hui";
+  if (diffDays === 1) return "Hier";
+  if (diffDays >= 2 && diffDays <= 6) return `Il y a ${diffDays} jours`;
+
+  // Beyond 7 days: "15 mars" or "15 mars 2025" if different year
+  const day = date.getDate();
+  const months = [
+    "janvier", "février", "mars", "avril", "mai", "juin",
+    "juillet", "août", "septembre", "octobre", "novembre", "décembre",
+  ];
+  const month = months[date.getMonth()];
+  if (date.getFullYear() !== now.getFullYear()) {
+    return `${day} ${month} ${date.getFullYear()}`;
+  }
+  return `${day} ${month}`;
+}
+
 interface UserPhoto {
   id: string;
   property_id: string | null;
@@ -317,8 +344,8 @@ export default function GaleriePage() {
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4" data-testid="galerie-grid">
             {photos.map((photo) => (
+              <div key={photo.id} className="flex flex-col">
               <div
-                key={photo.id}
                 className="group relative bg-foreground/[0.02] rounded-2xl overflow-hidden border border-foreground/5 hover:border-sage/30 transition-all cursor-pointer"
                 data-testid="photo-card"
                 onClick={() => setSelectedPhoto(photo)}
@@ -394,6 +421,8 @@ export default function GaleriePage() {
                     ))}
                   </div>
                 )}
+              </div>
+              <p className="text-xs text-foreground/50 font-light mt-1.5 px-1">{formatRelativeDate(photo.created_at)}</p>
               </div>
             ))}
           </div>

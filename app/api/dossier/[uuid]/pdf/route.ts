@@ -295,7 +295,21 @@ export async function GET(
 
     // Description commerciale
     if (dossier.description_commerciale) {
-      // Wrap long description to ~80 chars per line
+      // Reserve space for elements below description:
+      // - info pills line (~20px)
+      // - address line (~16px)
+      // - price line (~20px)
+      // - date line (~16px)
+      // - map area if present (~110px)
+      // - footer (FOOTER_HEIGHT = 35px)
+      // - padding (10px)
+      const belowDescriptionHeight = 82 + (dossier.carte_image_key ? 110 : 0);
+      const descBottomLimit = FOOTER_HEIGHT + belowDescriptionHeight;
+
+      const DESC_FONT_SIZE = 11;
+      const DESC_LINE_HEIGHT = 16;
+
+      // Wrap long description to ~90 chars per line
       const words = dossier.description_commerciale.split(" ");
       let line = "";
       const lines: string[] = [];
@@ -309,15 +323,34 @@ export async function GET(
       }
       if (line.trim()) lines.push(line.trim());
 
-      for (const l of lines) {
-        safeDrawText(coverPage,l, {
+      // Draw lines, truncating with "..." if we'd overflow into the reserved zone
+      for (let i = 0; i < lines.length; i++) {
+        const nextY = yPos - DESC_LINE_HEIGHT;
+        if (nextY < descBottomLimit) {
+          // This line would overflow — truncate with ellipsis on the previous line
+          // If this is the very first line, still draw it truncated
+          const truncated = lines[i].length > 60
+            ? lines[i].substring(0, 60).trim() + "..."
+            : lines[i] + "...";
+          safeDrawText(coverPage, truncated, {
+            x: MARGIN,
+            y: yPos,
+            size: DESC_FONT_SIZE,
+            font,
+            color: rgb(0.35, 0.35, 0.35),
+          });
+          yPos -= DESC_LINE_HEIGHT;
+          break;
+        }
+
+        safeDrawText(coverPage, lines[i], {
           x: MARGIN,
           y: yPos,
-          size: 11,
+          size: DESC_FONT_SIZE,
           font,
           color: rgb(0.35, 0.35, 0.35),
         });
-        yPos -= 16;
+        yPos -= DESC_LINE_HEIGHT;
       }
       yPos -= 6;
     }

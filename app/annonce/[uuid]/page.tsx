@@ -232,7 +232,7 @@ export default async function AnnoncePage({ params }: PageProps) {
             <StorageImage
               imageKey={heroPhoto.output_image_key}
               alt={heroPhoto.room_label || "Photo principale"}
-              className="w-full aspect-[16/9] object-cover rounded-b-2xl"
+              className="w-full max-h-[50vh] sm:max-h-[60vh] object-cover rounded-b-2xl"
               loading="eager"
             />
           </div>
