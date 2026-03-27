@@ -188,6 +188,22 @@ export default function ComptePage() {
     setSiretError(null);
   }, []);
 
+  // Debounced autocomplete on company search input
+  useEffect(() => {
+    const q = companySearch.trim();
+    if (q.length < 2) {
+      setCompanyResults([]);
+      setShowResults(false);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      handleCompanySearch();
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [companySearch, handleCompanySearch]);
+
   // Close results on outside click
   useEffect(() => {
     if (!showResults) return;
@@ -372,7 +388,7 @@ export default function ComptePage() {
                     <label className="text-xs font-medium text-foreground mb-1.5 block">
                       Rechercher par nom d&apos;entreprise
                     </label>
-                    <div className="flex gap-2">
+                    <div className="relative">
                       <input
                         type="text"
                         value={companySearch}
@@ -382,25 +398,24 @@ export default function ComptePage() {
                         }}
                         onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleCompanySearch(); } }}
                         placeholder="Ex : Dupont Immobilier, SCI Martin..."
-                        className="flex-1 px-4 py-3 border border-foreground/10 rounded-xl text-sm font-light focus-visible:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
+                        className="w-full px-4 py-3 pr-10 border border-foreground/10 rounded-xl text-sm font-light focus-visible:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
                         data-testid="merchant-company-search"
                       />
-                      <button
-                        onClick={handleCompanySearch}
-                        disabled={isSearching || companySearch.trim().length < 2}
-                        className="px-4 py-3 bg-foreground text-background rounded-full text-sm font-medium hover:bg-foreground/85 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 whitespace-nowrap"
-                      >
-                        {isSearching ? (
-                          <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                      {isSearching && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          <svg className="animate-spin w-4 h-4 text-muted" fill="none" viewBox="0 0 24 24">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                           </svg>
-                        ) : (
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        </div>
+                      )}
+                      {!isSearching && companySearch.trim().length > 0 && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          <svg className="w-4 h-4 text-muted/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                           </svg>
-                        )}
-                      </button>
+                        </div>
+                      )}
                     </div>
 
                     {/* Search results dropdown */}
@@ -656,11 +671,12 @@ export default function ComptePage() {
                     <select
                       value={police}
                       onChange={(e) => setPolice(e.target.value)}
+                      style={{ fontFamily: police }}
                       className="w-full px-4 py-3 border border-foreground/10 rounded-xl text-sm font-light focus-visible:border-foreground focus:outline-none transition-colors bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                       data-testid="merchant-police"
                     >
                       {FONT_OPTIONS.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
+                        <option key={opt.value} value={opt.value} style={{ fontFamily: opt.value }}>
                           {opt.label}
                         </option>
                       ))}
@@ -679,12 +695,23 @@ export default function ComptePage() {
                         className="w-8 h-8 rounded-lg"
                         style={{ backgroundColor: couleurSecondaire }}
                       />
-                      <span
-                        className="text-sm font-medium ml-2"
-                        style={{ color: couleurPrincipale, fontFamily: police }}
+                    </div>
+                    <div
+                      className="mt-3 space-y-1"
+                      style={{ fontFamily: police }}
+                    >
+                      <p
+                        className="text-lg font-semibold"
+                        style={{ color: couleurPrincipale }}
                       >
                         {raisonSociale || "Votre raison sociale"}
-                      </span>
+                      </p>
+                      <p
+                        className="text-sm font-light"
+                        style={{ color: couleurSecondaire }}
+                      >
+                        Dossier de pré-commercialisation
+                      </p>
                     </div>
                   </div>
                 </div>

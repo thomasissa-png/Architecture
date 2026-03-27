@@ -167,14 +167,14 @@ function PricingContent() {
         <div className="max-w-6xl mx-auto px-5 sm:px-8 py-3 sm:py-4 flex items-center justify-between">
           <a
             href="/"
-            className="text-xl font-semibold text-foreground tracking-tighter"
+            className="text-xl font-semibold text-foreground tracking-tighter focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm"
           >
             Versiroom
           </a>
           <nav className="flex items-center gap-4 sm:gap-6">
             <a
               href="/#outil"
-              className="text-xs text-muted font-light hover:text-foreground transition-colors"
+              className="text-xs text-muted font-light hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm"
             >
               Essayer
             </a>
@@ -218,9 +218,9 @@ function PricingContent() {
             </p>
             <a
               href="/#outil"
-              className="flex-shrink-0 inline-flex items-center gap-2 bg-foreground text-background px-5 py-2.5 rounded-full text-sm font-medium hover:bg-foreground/85 active:scale-[0.99] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+              className="flex-shrink-0 inline-flex items-center gap-2 bg-foreground text-background px-5 py-2.5 min-h-[44px] rounded-full text-sm font-medium hover:bg-foreground/85 active:scale-[0.99] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
             >
-              Essayer l&apos;outil
+              {"Essayer l'outil"}
             </a>
           </div>
 
@@ -298,7 +298,7 @@ function PricingContent() {
                 <button
                   onClick={() => handleBuy(pack.id)}
                   disabled={loadingPack !== null}
-                  className={`mt-auto w-full px-4 py-3 rounded-full text-sm font-medium transition-all duration-200 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 disabled:opacity-40 disabled:cursor-not-allowed ${
+                  className={`mt-auto w-full px-4 py-3 min-h-[44px] rounded-full text-sm font-medium transition-all duration-200 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 disabled:opacity-40 disabled:cursor-not-allowed ${
                     pack.highlight
                       ? "bg-foreground text-background hover:bg-foreground/85 font-semibold shadow-sm"
                       : "border border-foreground/10 text-foreground hover:bg-foreground/5"
@@ -336,41 +336,61 @@ function PricingContent() {
           </div>
 
           {/* Comparaison ROI */}
-          <div className="max-w-2xl mx-auto mt-12 mb-4">
-            <h3 className="text-lg font-semibold text-foreground text-center mb-6">
-              Comparez avec un home stager
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div className="rounded-2xl border border-foreground/10 p-6 text-center">
-                <p className="text-sm font-semibold text-foreground mb-3">Home stager classique</p>
-                <p className="text-2xl font-bold text-foreground mb-1">1 500 €</p>
-                <p className="text-xs text-muted font-light">5 visuels par bien · Délai 48-72h</p>
-              </div>
-              <div className="rounded-2xl border-2 border-sage/30 bg-sage/5 p-6 text-center">
-                <p className="text-sm font-semibold text-sage mb-3">Versiroom Pro</p>
-                <p className="text-2xl font-bold text-foreground mb-1">29 €<span className="text-sm font-light text-muted">/mois</span></p>
-                <p className="text-xs text-muted font-light">50 visuels/mois · Résultat en 90 secondes</p>
-              </div>
-            </div>
-            <p className="text-center text-sm text-sage font-semibold mt-4">
-              Économie : plus de 97 %
+          <div className="max-w-xl mx-auto mt-10 text-center">
+            <p className="text-sm text-muted font-light">
+              Un home stager facture 200 à 500 € par planche et 48-72h de délai.
+            </p>
+            <p className="text-sm text-muted font-light">
+              Versiroom Pro : <strong className="text-foreground font-semibold">0,58 €/photo</strong>, résultat en 90 secondes.
             </p>
           </div>
 
           {/* Section recharge */}
           <div className="max-w-2xl mx-auto mt-10 p-6 rounded-2xl border border-foreground/5 bg-foreground/[0.02]">
             <h3 className="text-sm font-semibold text-foreground mb-2">Besoin de plus de crédits ?</h3>
-            <p className="text-xs text-muted font-light mb-3">Rechargez à tout moment au prix de votre offre.</p>
-            <div className="grid grid-cols-2 gap-4 text-xs text-muted font-light">
-              <div>
-                <p className="font-medium text-foreground mb-1">Starter</p>
-                <p>+10 crédits — 5,90 €</p>
-                <p>+25 crédits — 12,90 €</p>
+            <p className="text-xs text-muted font-light mb-4">Rechargez à tout moment au prix de votre offre.</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="p-4 rounded-xl border border-foreground/10">
+                <p className="text-xs font-semibold text-foreground mb-2">Recharges Starter</p>
+                <div className="space-y-2">
+                  <button
+                    onClick={() => handleBuy("recharge-starter-10")}
+                    disabled={loadingPack !== null}
+                    className="w-full flex items-center justify-between text-xs text-muted font-light px-3 py-2.5 rounded-lg border border-foreground/10 hover:bg-foreground/5 transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <span>+10 crédits</span>
+                    <span className="font-medium text-foreground">5,90 €</span>
+                  </button>
+                  <button
+                    onClick={() => handleBuy("recharge-starter-25")}
+                    disabled={loadingPack !== null}
+                    className="w-full flex items-center justify-between text-xs text-muted font-light px-3 py-2.5 rounded-lg border border-foreground/10 hover:bg-foreground/5 transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <span>+25 crédits</span>
+                    <span className="font-medium text-foreground">12,90 €</span>
+                  </button>
+                </div>
               </div>
-              <div>
-                <p className="font-medium text-foreground mb-1">Pro</p>
-                <p>+20 crédits — 9 €</p>
-                <p>+50 crédits — 19 €</p>
+              <div className="p-4 rounded-xl border border-sage/20 bg-sage/5">
+                <p className="text-xs font-semibold text-sage mb-2">Recharges Pro</p>
+                <div className="space-y-2">
+                  <button
+                    onClick={() => handleBuy("recharge-pro-20")}
+                    disabled={loadingPack !== null}
+                    className="w-full flex items-center justify-between text-xs text-muted font-light px-3 py-2.5 rounded-lg border border-sage/20 hover:bg-sage/10 transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <span>+20 crédits</span>
+                    <span className="font-medium text-foreground">9 €</span>
+                  </button>
+                  <button
+                    onClick={() => handleBuy("recharge-pro-50")}
+                    disabled={loadingPack !== null}
+                    className="w-full flex items-center justify-between text-xs text-muted font-light px-3 py-2.5 rounded-lg border border-sage/20 hover:bg-sage/10 transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <span>+50 crédits</span>
+                    <span className="font-medium text-foreground">19 €</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -385,13 +405,10 @@ function PricingContent() {
                   setRetractationAccepted(e.target.checked);
                   if (e.target.checked) { setError(null); setCheckboxError(false); }
                 }}
-                className="mt-0.5 w-4 h-4 rounded border-foreground/20 text-sage focus:ring-sage/50 cursor-pointer"
+                className="mt-0.5 w-4 h-4 rounded border-foreground/20 text-sage focus:ring-sage/50 focus-visible:ring-sage/50 cursor-pointer"
               />
               <span className="text-xs text-muted font-light leading-relaxed group-hover:text-foreground/70 transition-colors">
-                J&apos;accepte que l&apos;exécution du service numérique
-                commence immédiatement et renonce expressément à mon droit de
-                rétractation de 14 jours conformément à l&apos;article L.
-                221-28 du Code de la consommation.
+                {"J'accepte que l'exécution du service numérique commence immédiatement et renonce expressément à mon droit de rétractation de 14 jours conformément à l'article L. 221-28 du Code de la consommation."}
               </span>
             </label>
           </div>
