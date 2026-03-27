@@ -126,6 +126,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      </head>
       <body className="antialiased">
         {/* JSON-LD schemas — placed in body to avoid hydration mismatch with Sentry */}
         {jsonLd.map((schema, i) => (

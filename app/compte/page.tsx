@@ -696,21 +696,24 @@ export default function ComptePage() {
                         style={{ backgroundColor: couleurSecondaire }}
                       />
                     </div>
-                    <div
-                      className="mt-3 space-y-1"
-                      style={{ fontFamily: police }}
-                    >
+                    <div className="mt-3 space-y-1">
                       <p
                         className="text-lg font-semibold"
-                        style={{ color: couleurPrincipale }}
+                        style={{ color: couleurPrincipale, fontFamily: `'${police}', sans-serif` }}
                       >
                         {raisonSociale || "Votre raison sociale"}
                       </p>
                       <p
                         className="text-sm font-light"
-                        style={{ color: couleurSecondaire }}
+                        style={{ color: couleurSecondaire, fontFamily: `'${police}', sans-serif` }}
                       >
                         Dossier de pré-commercialisation
+                      </p>
+                      <p
+                        className="text-xs text-muted/50 font-light mt-2"
+                        style={{ fontFamily: `'${police}', sans-serif` }}
+                      >
+                        Police : {police}
                       </p>
                     </div>
                   </div>
