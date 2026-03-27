@@ -8,6 +8,7 @@ const LINKS = [
   { href: "/marchand", label: "Marchands" },
   { href: "/architecte", label: "Architectes" },
   { href: "/particulier", label: "Particuliers" },
+  { href: "/examples", label: "Exemples" },
   { href: "/pricing", label: "Tarifs" },
   { href: "/blog", label: "Blog" },
   { href: "/mentions-legales", label: "Mentions l\u00e9gales" },

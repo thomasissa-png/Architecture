@@ -962,6 +962,16 @@ export default function Home() {
               </div>
             </div>
           </div>
+
+          {/* Link to full examples page */}
+          <div className="text-center mt-8">
+            <a
+              href="/examples"
+              className="inline-block text-xs font-medium text-sage hover:text-sage-dark transition-colors underline underline-offset-4 decoration-sage/30 hover:decoration-sage/60"
+            >
+              Voir tous les exemples &rarr;
+            </a>
+          </div>
         </div>
       </section>
 
