@@ -410,7 +410,7 @@ export default function MerchantMode() {
       // Clipboard API unavailable — no deprecated execCommand fallback
       console.warn("Clipboard API not available");
     }
-  }, [dossierUuid]);
+  }, [dossierIdentifier]);
 
   // ── Update photo entry ──
   const updatePhotoEntry = useCallback((index: number, updates: Partial<PhotoEntry>) => {

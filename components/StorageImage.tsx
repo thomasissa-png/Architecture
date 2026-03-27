@@ -60,10 +60,6 @@ export default function StorageImage({
     }
   }, [imageKey]);
 
-  const handleLoad = useCallback(() => {
-    setLoaded(true);
-  }, []);
-
   // No key or empty string -- show fallback immediately
   if (!imageKey || failed) {
     return <>{fallback}</>;
@@ -80,7 +76,6 @@ export default function StorageImage({
         alt={alt}
         className={className}
         loading={loading}
-        onLoad={handleLoad}
         onError={handleError}
       />
     </>
