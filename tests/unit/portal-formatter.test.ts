@@ -415,6 +415,92 @@ test("room types are ordered: salon > chambre > cuisine > sdb", () => {
   assert.ok(kitchen < bath, "kitchen before bathroom");
 });
 
+// ─── Additional edge cases (Sprint V2a QA) ─────────────────────────
+
+console.log("\nEdge cases:");
+
+test("formatTitle — whitespace-only title treated as empty", () => {
+  const result = formatTitle("   ", 100);
+  assert.equal(result.text, "");
+  assert.equal(result.truncated, false);
+  assert.equal(result.charCount, 0);
+});
+
+test("formatDescription — multi-paragraph truncation preserves paragraph break", () => {
+  // 3 paragraphs where only first 2 fit within a tight limit
+  const config = { ...PORTAL_CONFIGS.leboncoin, descriptionMaxChars: 200 };
+  const desc = "Premier paragraphe assez court.\n\nDeuxieme paragraphe un peu plus long que le premier.\n\nTroisieme paragraphe qui depasse certainement la limite imposee par le portail.";
+
+  const result = formatDescription(desc, config);
+
+  // Should truncate but not mid-sentence if paragraph break is available
+  assert.ok(
+    result.charCount <= config.descriptionMaxChars,
+    `charCount ${result.charCount} must be <= ${config.descriptionMaxChars}`
+  );
+  assert.ok(
+    result.text.includes(AI_DISCLAIMER),
+    "Disclaimer must be present even when truncated"
+  );
+});
+
+test("formatForPortal — annonce with no photos", () => {
+  const noPhotos: AnnonceData = { ...FULL_ANNONCE, totalPhotos: 0 };
+  const result = formatForPortal("leboncoin", noPhotos);
+
+  assert.equal(result.photosIncluded, 0);
+  assert.equal(result.photosCapped, false);
+  // copyText must still be valid
+  assert.ok(result.copyText.length > 0, "copyText must not be empty even without photos");
+});
+
+test("formatForPortal — LeBonCoin includes DPE in copyText when present", () => {
+  const result = formatForPortal("leboncoin", FULL_ANNONCE);
+  assert.ok(
+    result.copyText.includes("DPE : C"),
+    "LBC copyText must include DPE line when dpeClasse is set"
+  );
+});
+
+test("formatForPortal — LeBonCoin omits DPE line when dpeClasse is null", () => {
+  const noDpe: AnnonceData = { ...FULL_ANNONCE, dpeClasse: null };
+  const result = formatForPortal("leboncoin", noDpe);
+  assert.ok(
+    !result.copyText.includes("DPE :"),
+    "LBC copyText must not have DPE line when dpeClasse is null"
+  );
+});
+
+test("formatForPortal — copro with lots but no charges shows lots only", () => {
+  const lotsOnly: AnnonceData = {
+    ...FULL_ANNONCE,
+    isCopro: true,
+    coproLots: 8,
+    coproChargesAnnuelles: null,
+  };
+  const result = formatForPortal("seloger", lotsOnly);
+
+  const coproField = result.structuredFields.find((f) =>
+    f.label.includes("Copropri")
+  );
+  assert.ok(coproField, "Copro field must exist");
+  assert.ok(coproField!.value.includes("8"), "Must show lot count");
+  assert.equal(coproField!.warning, undefined, "Should not have warning when lots are known");
+});
+
+test("formatDescription — sentence boundary truncation when no paragraph break", () => {
+  // Single paragraph that exceeds the limit — should cut at ". "
+  const config = { ...PORTAL_CONFIGS.leboncoin, descriptionMaxChars: 200 };
+  const desc = "Premiere phrase assez courte. Deuxieme phrase qui continue un peu plus. Troisieme phrase qui va depasser la limite du portail et devrait etre coupee proprement sans couper un mot.";
+
+  const result = formatDescription(desc, config);
+
+  assert.ok(
+    result.charCount <= config.descriptionMaxChars,
+    `charCount ${result.charCount} must be <= ${config.descriptionMaxChars}`
+  );
+});
+
 // ─── Cross-portal consistency ───────────────────────────────────────
 
 console.log("\nCross-portal consistency:");
