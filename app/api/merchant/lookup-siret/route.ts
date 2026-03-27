@@ -5,9 +5,8 @@
  * Body: { siret: "12345678901234" }        → lookup by SIRET
  * Body: { query: "Dupont Immobilier" }      → search by company name
  *
- * Primary: Pappers API (requires PAPPERS_API_KEY).
- * Fallback: API INSEE SIRENE (free, no key required for SIRET lookup).
- * Name search only works with Pappers API.
+ * SIRET lookup: Pappers (primary) → INSEE SIRENE (fallback).
+ * Name search: Pappers (primary) → recherche-entreprises.api.gouv.fr (fallback, free, no key).
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -150,6 +149,57 @@ async function searchByName(query: string): Promise<CompanyResult[]> {
   }
 }
 
+// ─── Recherche Entreprises API (free fallback for name search) ────────
+
+interface GouvSearchResponse {
+  results?: Array<{
+    nom_complet?: string;
+    nom_raison_sociale?: string;
+    siege?: {
+      siret?: string;
+      adresse?: string;
+      code_postal?: string;
+      libelle_commune?: string;
+    };
+    nature_juridique?: string;
+    activite_principale?: string;
+  }>;
+}
+
+async function searchByNameGouv(query: string): Promise<CompanyResult[]> {
+  try {
+    const res = await fetch(
+      `https://recherche-entreprises.api.gouv.fr/search?q=${encodeURIComponent(query)}&page=1&per_page=5`,
+      { signal: AbortSignal.timeout(8000) }
+    );
+
+    if (!res.ok) return [];
+
+    const data: GouvSearchResponse = await res.json();
+    if (!data.results?.length) return [];
+
+    return data.results.map((r) => {
+      // The gouv.fr API returns a full address in siege.adresse (e.g. "17 PLACE NOTRE-DAME 95300 PONTOISE")
+      // Use it directly instead of concatenating parts to avoid duplication
+      const adresse = r.siege?.adresse || [
+        r.siege?.code_postal,
+        r.siege?.libelle_commune,
+      ].filter(Boolean).join(" ");
+
+      return {
+        raisonSociale: r.nom_complet || r.nom_raison_sociale || "",
+        adresse: adresse || "",
+        formeJuridique: r.nature_juridique || "",
+        dirigeant: null,
+        codeNaf: r.activite_principale || null,
+        siret: r.siege?.siret || "",
+      };
+    });
+  } catch {
+    return [];
+  }
+}
+
 // ─── INSEE SIRENE Fallback (SIRET only) ──────────────────────────────
 
 interface InseeResponse {
@@ -249,7 +299,13 @@ export async function POST(request: NextRequest) {
 
   // ── Search by company name ──
   if (body.query && body.query.trim().length >= 2) {
-    const results = await searchByName(body.query.trim());
+    const q = body.query.trim();
+
+    // Try Pappers first (if API key configured), then free gouv.fr fallback
+    let results = await searchByName(q);
+    if (results.length === 0) {
+      results = await searchByNameGouv(q);
+    }
 
     if (results.length === 0) {
       return NextResponse.json(
