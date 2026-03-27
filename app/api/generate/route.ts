@@ -686,6 +686,7 @@ async function tryOpenAIResponses(
         : buildFurnitureResponsesPrompt(furniturePrompt, roomTypeId);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- gpt-image-1.5 not yet in SDK types
   const response = await withTimeout(
     openai.responses.create({
       model: "gpt-4.1",
@@ -712,13 +713,13 @@ async function tryOpenAIResponses(
           input_fidelity: "high",
           size: size as "1024x1024" | "1536x1024" | "1024x1536",
         },
-      ] as unknown as Array<Record<string, unknown>>,
-    }),
+      ],
+    } as any),
     API_TIMEOUT_MS,
     "OpenAI Responses API"
   );
 
-  const imageOutput = response.output.find(
+  const imageOutput = (response as any).output.find(
     (o: { type: string }) => o.type === "image_generation_call"
   );
 
@@ -823,6 +824,7 @@ async function tryOpenAIResponsesWithPrompt(
 ): Promise<{ image: string; model: string }> {
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- gpt-image-1.5 not yet in SDK types
   const response = await withTimeout(
     openai.responses.create({
       model: "gpt-4.1",
@@ -846,13 +848,13 @@ async function tryOpenAIResponsesWithPrompt(
           input_fidelity: "high",
           size: size as "1024x1024" | "1536x1024" | "1024x1536",
         },
-      ] as unknown as Array<Record<string, unknown>>,
-    }),
+      ],
+    } as any),
     API_TIMEOUT_MS,
     "OpenAI Responses API"
   );
 
-  const imageOutput = response.output.find(
+  const imageOutput = (response as any).output.find(
     (o: { type: string }) => o.type === "image_generation_call"
   );
 
