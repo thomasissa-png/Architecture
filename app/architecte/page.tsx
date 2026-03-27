@@ -169,6 +169,31 @@ export default function ArchitectePage() {
         </div>
       </section>
 
+      {/* Galerie multi-styles — remplacer les placeholders par des images réelles */}
+      <section className="pb-6 sm:pb-10 px-5 sm:px-8">
+        <div className="max-w-4xl mx-auto">
+          <p className="text-xs text-muted font-light text-center mb-4">
+            La même pièce, 3 directions esthétiques — générées en 90 secondes chacune
+          </p>
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+            {[
+              { style: "Japandi", src: "/imageapres.jpg" },
+              { style: "Art Déco", src: "/imageapres.jpg" },
+              { style: "Haussmannien", src: "/imageapres.jpg" },
+            ].map((item) => (
+              <div key={item.style} className="relative aspect-[4/3] rounded-xl overflow-hidden">
+                <img src={item.src} alt={`Style ${item.style} — Versiroom`} className="w-full h-full object-cover" loading="lazy" />
+                <span className="absolute bottom-2 left-2 text-xs font-medium text-white bg-black/50 px-2 py-1 rounded">{item.style}</span>
+                <span className="absolute top-2 right-2 text-[10px] font-light text-white/70 bg-black/30 px-2 py-0.5 rounded">Visualisation IA</span>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-muted/50 font-light text-center mt-2">
+            Images placeholder — seront remplacées par des générations réelles
+          </p>
+        </div>
+      </section>
+
       {/* Social proof line */}
       <div className="flex flex-wrap justify-center gap-6 sm:gap-10 text-xs text-muted font-light py-6">
         <span>12 styles curatés</span>
