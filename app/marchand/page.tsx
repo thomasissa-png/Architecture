@@ -173,11 +173,11 @@ export default function MarchandPage() {
         <div className="max-w-3xl mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 rounded-2xl overflow-hidden">
             <div className="relative aspect-[4/3]">
-              <img src="/imageavant.jpg" alt="T3 brut à Bordeaux avant home staging Versiroom" className="w-full h-full object-cover" loading="lazy" />
+              <img src="/imageavant.jpg" alt="T3 brut à Bordeaux avant home staging Versiroom" className="w-full h-full object-cover" />
               <span className="absolute bottom-2 left-2 text-xs font-medium text-white bg-black/50 px-2 py-1 rounded">Avant</span>
             </div>
             <div className="relative aspect-[4/3]">
-              <img src="/imageapres.jpg" alt="T3 meublé en style Scandinave par Versiroom" className="w-full h-full object-cover" loading="lazy" />
+              <img src="/imageapres.jpg" alt="T3 meublé en style Scandinave par Versiroom" className="w-full h-full object-cover" />
               <span className="absolute bottom-2 left-2 text-xs font-medium text-white bg-black/50 px-2 py-1 rounded">Après</span>
             </div>
           </div>
