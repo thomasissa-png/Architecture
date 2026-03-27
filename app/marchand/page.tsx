@@ -112,6 +112,12 @@ export default function MarchandPage() {
           </a>
           <nav className="flex items-center gap-4 sm:gap-6">
             <a
+              href="/mes-dossiers"
+              className="text-xs text-muted font-light hover:text-foreground transition-colors"
+            >
+              Mes dossiers
+            </a>
+            <a
               href="/pricing"
               className="text-xs text-muted font-light hover:text-foreground transition-colors"
             >

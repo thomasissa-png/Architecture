@@ -38,7 +38,7 @@ const faqItems = [
   {
     question: "Les 12 styles sont-ils adaptés à une clientèle haut de gamme ?",
     answer:
-      "Oui. Chaque style a été conçu et validé par Yann Duval, architecte d'intérieur avec 20 ans d'expérience. Les prompts incluent des références de mobilier iconique (Eames, Noguchi, PH5), des dimensions précises et des matériaux spécifiques. Le rendu est crédible pour une présentation client professionnelle.",
+      "Oui. Chaque style a été conçu et validé par Yann Duval, architecte d'intérieur avec 20 ans d'expérience. Les prompts incluent des références de mobilier iconique (Eames, Noguchi, PH5), des dimensions précises et des matériaux spécifiques. Le rendu photo-réaliste est crédible pour une présentation client professionnelle.",
   },
   {
     question: "Puis-je tester plusieurs ambiances sur la même photo ?",
@@ -191,7 +191,7 @@ export default function ArchitectePage() {
                   </svg>
                 ),
                 title: "Difficulté à se projeter",
-                desc: "Vos clients ne visualisent pas le potentiel d'une pièce vide sur un plan 2D. Ils ont besoin de voir la pièce meublée dans la direction esthétique envisagée.",
+                desc: "Sans visuel, vous défendez votre direction stylistique face au doute de votre client — avec un plan 2D ou des moodboards Pinterest qui ne montrent jamais sa pièce à lui.",
               },
               {
                 icon: (
@@ -215,6 +215,12 @@ export default function ArchitectePage() {
           </div>
         </div>
       </section>
+
+      <div className="text-center mt-8">
+        <a href="/#outil" className="text-sm text-sage font-medium hover:underline transition-colors">
+          Voir comment Versiroom résout ce problème →
+        </a>
+      </div>
 
       {/* Separator */}
       <div className="max-w-24 mx-auto border-t border-foreground/10" />
@@ -332,7 +338,7 @@ export default function ArchitectePage() {
       <section className="pb-20 sm:pb-32 px-5 sm:px-8">
         <div className="max-w-xl mx-auto text-center">
           <p className="text-xs text-muted font-light mb-6">
-            Conçu avec et pour des architectes d'intérieur indépendants.
+            Styles conçus par un architecte d'intérieur avec 20 ans d'expérience. Technologie validée sur des centaines de pièces réelles.
           </p>
           <p className="text-lg font-semibold text-foreground mb-3">
             Prêt à gagner du temps sur vos présentations client ?
@@ -341,7 +347,7 @@ export default function ArchitectePage() {
             3 générations offertes, sans carte bancaire, résultat en 90 secondes.
           </p>
           <p className="text-xs text-muted font-light mb-8">
-            Abonnement Pro — 29 €/mois, tout inclus
+            Abonnement Pro — 29 €/mois · 50 planches/mois · tout inclus
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a
@@ -358,7 +364,7 @@ export default function ArchitectePage() {
             </a>
           </div>
           <p className="text-xs text-foreground/40 font-light mt-4">
-            Aussi disponible à l'usage, sans abonnement — à partir de 4,90 €
+            Aussi disponible à l'usage, sans abonnement — à partir de 4,90 € · 5 planches
           </p>
         </div>
       </section>

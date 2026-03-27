@@ -44,7 +44,7 @@ const faqItems = [
   {
     question: "Le résultat ressemble-t-il vraiment à ma pièce ?",
     answer:
-      "Oui. Versiroom utilise une technologie IA qui préserve la géométrie exacte de votre pièce : les murs, les fenêtres, la lumière, l'angle de la photo. Seules les finitions (couleur des murs, sol) et le mobilier changent. C'est votre pièce, dans le style que vous avez choisi.",
+      "Oui. Versiroom utilise une technologie IA qui préserve la géométrie exacte de votre pièce : les murs, les fenêtres, la lumière, l'angle de la photo. Seules les finitions (couleur des murs, sol) et le mobilier changent. C'est votre pièce, dans le style que vous avez choisi. Le rendu est photo-réaliste — pas un filtre Instagram ni un placement 3D.",
   },
   {
     question: "Que faites-vous de mes photos ?",
@@ -225,7 +225,7 @@ export default function ParticulierPage() {
               {
                 num: "01",
                 title: "Votre pièce, vos styles",
-                desc: "Uploadez une photo de votre salon, chambre ou séjour. L'IA génère un visuel meublé directement dans votre pièce, pas dans celle de quelqu'un d'autre.",
+                desc: "Uploadez une photo de votre salon, chambre ou séjour. L'IA génère un visuel meublé directement dans votre pièce, pas dans celle de quelqu'un d'autre. Aucune décision à prendre — juste voir.",
               },
               {
                 num: "02",
@@ -288,13 +288,16 @@ export default function ParticulierPage() {
       <section className="pb-20 sm:pb-32 px-5 sm:px-8">
         <div className="max-w-xl mx-auto text-center">
           <p className="text-xs text-muted font-light mb-6">
-            Déjà utilisé pour meubler des centaines de pièces en France.
+            Technologie validée sur des centaines de pièces réelles en France. Rendu photo-réaliste, pas un filtre.
           </p>
           <p className="text-lg font-semibold text-foreground mb-3">
             Votre salon en Scandinave, en 90 secondes.
           </p>
           <p className="text-sm text-muted font-light mb-4">
             3 générations offertes, sans carte bancaire.
+          </p>
+          <p className="text-xs text-muted font-light mb-2">
+            Résultat photo-réaliste · Aucune installation
           </p>
           <p className="text-xs text-muted font-light mb-8">
             Ensuite à partir de 4,90 €
