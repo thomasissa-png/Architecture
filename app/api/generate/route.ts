@@ -99,9 +99,9 @@ function getOutputSize(
 // - furniturePrompt: freestanding objects with precise silhouettes + scale
 
 // ── Shared prompt fragments (constants to avoid duplication) ─────────
-const DSLR_LINE = "DSLR full-frame 16-35mm f/8, deep DOF, sharp focus, subtle grain ISO 200, natural vignetting. No text or watermarks.";
+const DSLR_LINE = "DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Subtle photographic film grain must be visible at 100% zoom — not smooth CGI rendering. Natural lens vignetting darkening the corners by 5-10%. No text or watermarks.";
 const CEILING_PRESERVATION = "Preserve ceiling 3D geometry — vaults, beams, ribs keep shape. Refinish ceiling surface: smooth plaster over raw concrete, formwork marks, seams. Beams keep 3D shape but receive clean painted finish.";
-const LIGHT_PRESERVATION = "Preserve existing light direction, shadow positions, and relative intensity. Maintain wall color temperature from input. Do not artificially brighten darker areas.";
+const LIGHT_PRESERVATION = "Preserve existing light direction, shadow positions, and relative intensity. Maintain wall color temperature from input. Do not artificially brighten darker areas. Do not add any warm tint or yellow cast — if the input walls are cool-toned or neutral, the output walls must remain the same temperature.";
 const CAMERA_PRESERVATION = "Same camera angle, lens distortion, vanishing points, field of view, orientation.";
 
 // ── Pass 1: Surface finishing ────────────────────────────────────────
@@ -113,7 +113,7 @@ function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string
       "Ceramic or natural stone floor tiles — NOT wood, NOT parquet. Subway tile or smooth splashback behind work area.",
       CEILING_PRESERVATION,
       "For the ceiling light fixture, follow the style description above exactly.",
-      "Remove construction leftovers: dangling cables, junction boxes, exposed wiring. Keep all fixed wall equipment: radiators, switches, vents in exact position.",
+      "Remove construction leftovers: dangling cables, junction boxes, exposed wiring, electrical outlets, round black wall boxes, cable exits — blend into wall finish. Keep all fixed wall equipment: radiators, switches, vents in exact position.",
       "Room stays COMPLETELY EMPTY — no furniture, no appliances, no objects. Same number of windows and doors.",
       `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
       DSLR_LINE,
@@ -126,7 +126,7 @@ function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string
       `Edit this photo of a room. Apply this surface finish: ${surfacePrompt}.`,
       "Floor-to-ceiling ceramic tiles in shower zone and behind vanity area. Water-resistant floor — ceramic or stone tiles, matte non-slip. No wood flooring. Recessed IP44 ceiling spotlights.",
       CEILING_PRESERVATION,
-      "Remove construction leftovers: dangling cables, junction boxes, exposed wiring. Keep all fixed wall equipment in exact position: radiators, heaters, vents, switches.",
+      "Remove construction leftovers: dangling cables, junction boxes, exposed wiring, electrical outlets, round black wall boxes, cable exits — blend into wall finish. Keep all fixed wall equipment in exact position: radiators, heaters, vents, switches.",
       "Room stays COMPLETELY EMPTY — no fixtures, no objects. Same number of windows and doors.",
       `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
       DSLR_LINE,
@@ -139,7 +139,7 @@ function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string
       `Edit this photo of a room. Apply this surface finish: ${surfacePrompt}.`,
       "Waterproof floor — small ceramic tiles or vinyl in neutral tone. Washable matte paint or ceramic tiles on lower half of walls.",
       CEILING_PRESERVATION,
-      "Remove construction leftovers. Keep all fixed wall equipment in exact position: radiators, heaters, vents, switches.",
+      "Remove construction leftovers including electrical outlets, round black wall boxes, cable exits — blend into wall finish. Keep all fixed wall equipment in exact position: radiators, heaters, vents, switches.",
       "Room stays COMPLETELY EMPTY — no fixtures, no objects. Same number of windows and doors.",
       `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
       DSLR_LINE,
@@ -153,7 +153,7 @@ function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string
       "Warm-toned flooring suitable for bare feet. For the ceiling light fixture, follow the style description above exactly.",
       "If the input has ONE accent wall (different color or texture from the other walls), preserve that accent wall as-is — apply the style's wall color to the remaining walls. If ALL walls share the same color, apply the style's wall color to ALL walls uniformly.",
       CEILING_PRESERVATION,
-      "Remove construction leftovers: dangling cables, junction boxes. Keep all fixed wall equipment in exact position: radiators, heaters, vents, switches.",
+      "Remove construction leftovers: dangling cables, junction boxes, exposed wiring, electrical outlets, round black wall boxes, cable exits — blend into wall finish. Keep all fixed wall equipment in exact position: radiators, heaters, vents, switches.",
       "Room stays COMPLETELY EMPTY — no furniture, no objects. Same number of windows and doors.",
       `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
       DSLR_LINE,
@@ -166,7 +166,7 @@ function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string
       `Edit this photo of a room. Apply this surface finish: ${surfacePrompt}.`,
       "Waterproof easy-to-clean floor — white or light grey ceramic tiles matte finish. Walls in washable matte white paint.",
       CEILING_PRESERVATION,
-      "Remove construction leftovers. Keep all fixed wall equipment in exact position: radiators, heaters, vents, switches.",
+      "Remove construction leftovers including electrical outlets, round black wall boxes, cable exits — blend into wall finish. Keep all fixed wall equipment in exact position: radiators, heaters, vents, switches.",
       "Room stays COMPLETELY EMPTY — no appliances, no objects. Same number of windows and doors.",
       `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
       DSLR_LINE,
@@ -179,7 +179,7 @@ function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string
       `Edit this photo of a room. Apply this surface finish: ${surfacePrompt}.`,
       "Concrete or stone floor kept as-is or with simple sealant. Clean matte white or light grey paint over existing masonry.",
       CEILING_PRESERVATION,
-      "Remove construction leftovers. Keep all fixed wall equipment in exact position: radiators, heaters, vents, switches.",
+      "Remove construction leftovers including electrical outlets, round black wall boxes, cable exits — blend into wall finish. Keep all fixed wall equipment in exact position: radiators, heaters, vents, switches.",
       "Room stays COMPLETELY EMPTY — no shelving, no objects. Same number of windows and doors.",
       `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
       DSLR_LINE,
@@ -193,7 +193,7 @@ function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string
       "Durable floor finish suitable for an entrance — ceramic tiles, natural stone, or hard-wearing wood.",
       CEILING_PRESERVATION,
       "For the ceiling light fixture, follow the style description above exactly.",
-      "Remove construction leftovers. Keep all fixed wall equipment in exact position: radiators, heaters, vents, switches.",
+      "Remove construction leftovers including electrical outlets, round black wall boxes, cable exits — blend into wall finish. Keep all fixed wall equipment in exact position: radiators, heaters, vents, switches.",
       "Room stays COMPLETELY EMPTY — no furniture, no objects. Same number of windows and doors.",
       `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
       DSLR_LINE,
@@ -207,7 +207,7 @@ function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string
     "Refinish the floor and repaint or replaster the walls. For the ceiling light fixture, follow the style description above exactly.",
     "If the input has ONE accent wall (different color or texture from the other walls), preserve that accent wall as-is — apply the style's wall color to the remaining walls. If ALL walls share the same color, apply the style's wall color to ALL walls uniformly.",
     CEILING_PRESERVATION,
-    "Remove all visible construction elements: dangling cables, exposed wiring, junction boxes without covers, cable conduits, and temporary fixtures.",
+    "Remove all visible construction elements: dangling cables, exposed wiring, junction boxes without covers, cable conduits, temporary fixtures, electrical outlets, round black wall boxes, and cable exits. They must blend seamlessly into the wall finish.",
     "Do not add baseboards or moldings unless clearly present in the input photo.",
     "Preserve all wall-mounted fixed equipment visible in the input: radiators, heaters, vents, thermostats, electrical panels, switches, and outlets must remain in their exact position, size, and appearance.",
     "Keep the room COMPLETELY EMPTY — no furniture, no rugs, no textiles, no decoration, no objects.",
@@ -224,9 +224,9 @@ function buildSurfacesFluxPrompt(surfacePrompt: string, roomTypeId?: string | nu
       `${surfacePrompt}, finished empty kitchen interior.`,
       "Ceramic or stone floor tiles — no wood, no parquet. Subway tile or smooth splashback behind work area.",
       "Preserve ceiling 3D geometry — vaults, beams, ribs keep shape. Ceiling light per style.",
-      "Remove construction leftovers. Keep wall-mounted equipment in place: radiators, heaters, vents, switches.",
+      "Remove construction leftovers including electrical outlets, round black wall boxes, cable exits — blend into wall finish. Keep wall-mounted equipment in place: radiators, heaters, vents, switches.",
       "Empty room — no furniture, no appliances. Same windows and doors.",
-      "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, subtle grain.",
+      "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
     ].join(" ");
   }
 
@@ -235,9 +235,9 @@ function buildSurfacesFluxPrompt(surfacePrompt: string, roomTypeId?: string | nu
     return [
       `${surfacePrompt}, finished empty bathroom interior.`,
       "Floor-to-ceiling ceramic tiles in shower zone and behind vanity. Water-resistant stone or ceramic floor, matte non-slip. No wood. Recessed IP44 ceiling spotlights.",
-      "Preserve ceiling 3D geometry. Remove construction leftovers. Keep wall equipment in place: radiators, heaters, vents, switches.",
+      "Preserve ceiling 3D geometry. Remove construction leftovers including electrical outlets, round black wall boxes, cable exits — blend into wall finish. Keep wall equipment in place: radiators, heaters, vents, switches.",
       "Empty room — no fixtures, no objects. Same windows and doors.",
-      "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, subtle grain.",
+      "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
     ].join(" ");
   }
 
@@ -248,7 +248,7 @@ function buildSurfacesFluxPrompt(surfacePrompt: string, roomTypeId?: string | nu
       "Small ceramic tiles or vinyl floor, neutral tone. Washable matte paint or ceramic tiles on lower walls.",
       "Remove construction leftovers. Keep wall equipment in place: radiators, heaters, vents, switches.",
       "Empty room — no fixtures, no objects. Same windows and doors.",
-      "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, subtle grain.",
+      "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
     ].join(" ");
   }
 
@@ -258,9 +258,9 @@ function buildSurfacesFluxPrompt(surfacePrompt: string, roomTypeId?: string | nu
       `${surfacePrompt}, finished empty bedroom interior.`,
       "Warm-toned flooring for bare feet. Ceiling light per style.",
       "If ONE accent wall differs in color or texture, preserve it as-is — restyle plain walls only. If ALL walls share the same color, restyle ALL walls uniformly.",
-      "Preserve ceiling 3D geometry. Remove construction leftovers. Keep wall equipment in place: radiators, heaters, vents, switches.",
+      "Preserve ceiling 3D geometry. Remove construction leftovers including electrical outlets, round black wall boxes, cable exits — blend into wall finish. Keep wall equipment in place: radiators, heaters, vents, switches.",
       "Empty room — no furniture, no objects. Same windows and doors.",
-      "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, subtle grain.",
+      "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
     ].join(" ");
   }
 
@@ -272,7 +272,7 @@ function buildSurfacesFluxPrompt(surfacePrompt: string, roomTypeId?: string | nu
       "Preserve ceiling 3D geometry — vaults, beams, ribs keep shape. Clean plaster finish over raw concrete.",
       "Remove construction leftovers. Keep wall equipment in place: radiators, heaters, vents, switches.",
       "Empty room — no appliances, no objects. Same windows and doors.",
-      "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, subtle grain.",
+      "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
     ].join(" ");
   }
 
@@ -284,7 +284,7 @@ function buildSurfacesFluxPrompt(surfacePrompt: string, roomTypeId?: string | nu
       "Preserve ceiling 3D geometry — vaults, beams, ribs keep shape. Clean plaster finish over raw concrete.",
       "Remove construction leftovers. Keep wall equipment in place: radiators, heaters, vents, switches.",
       "Empty room — no shelving, no objects. Same windows and doors.",
-      "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, subtle grain.",
+      "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
     ].join(" ");
   }
 
@@ -295,7 +295,7 @@ function buildSurfacesFluxPrompt(surfacePrompt: string, roomTypeId?: string | nu
       "Durable floor — ceramic tiles, stone, or hard-wearing wood. Ceiling light per style.",
       "Remove construction leftovers. Keep wall equipment in place: radiators, heaters, vents, switches.",
       "Empty room — no furniture, no objects. Same windows and doors.",
-      "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, subtle grain.",
+      "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
     ].join(" ");
   }
 
@@ -305,13 +305,13 @@ function buildSurfacesFluxPrompt(surfacePrompt: string, roomTypeId?: string | nu
     "Refinished floor, repainted walls. Ceiling light per style description.",
     "If ONE accent wall differs in color or texture, preserve it as-is — restyle plain walls only. If ALL walls share the same color, restyle ALL walls uniformly.",
     "Preserve ceiling 3D geometry — vaults, beams, ribs, arches keep their shape and volume. Refinish ceiling surface: smooth plaster and paint over raw concrete, formwork marks, plasterboard seams. Beams keep 3D shape but receive clean painted finish. Ceiling between structural elements must look fully finished and smooth.",
-    "Remove all construction leftovers: dangling cables, exposed wiring, junction boxes, cable conduits, temporary fixtures.",
+    "Remove all construction leftovers: dangling cables, exposed wiring, junction boxes, cable conduits, temporary fixtures, electrical outlets, round black wall boxes, cable exits — blend into wall finish.",
     "Do not add baseboards or moldings unless clearly present in the input photo.",
     "Keep all wall-mounted equipment: radiators, heaters, vents, thermostats, switches, outlets in exact position.",
     "Completely empty room — no furniture, no rugs, no textiles, no objects.",
     "Exact same number of windows and doors as the original. Same room geometry, same proportions.",
     "Preserve existing light direction, shadow patterns, wall color temperature, light falloff, and camera angle.",
-    "Photo-realistic interior photograph, DSLR full-frame 16-35mm f/8, deep DOF, sharp focus, subtle film grain.",
+    "Photo-realistic interior photograph, DSLR full-frame 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
   ].join(" ");
 }
 
@@ -320,7 +320,7 @@ function buildSurfacesFluxPrompt(surfacePrompt: string, roomTypeId?: string | nu
 // Shared compact fragments for pass 2
 const STRUCTURE_LOCKED = "Room structure is LOCKED: walls, floor, ceiling, windows visually identical to input. Shadows from furniture are natural. No new openings.";
 const EQUIPMENT_PRESERVATION = "Keep all wall-mounted equipment visible (radiators, vents, switches, outlets). Do not place furniture in front of radiators.";
-const CAMERA_AND_PHOTO = `${CAMERA_PRESERVATION} DSLR full-frame 16-35mm f/8, deep DOF, sharp focus, subtle grain ISO 200, natural vignetting. No text or watermarks.`;
+const CAMERA_AND_PHOTO = `${CAMERA_PRESERVATION} DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Subtle photographic film grain must be visible at 100% zoom — not smooth CGI rendering. Natural lens vignetting darkening the corners by 5-10%. No text or watermarks.`;
 
 function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: string | null): string {
   // Kitchen: compact dedicated prompt (~95 words) — built-ins allowed, no depth distribution
@@ -445,7 +445,7 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: str
 function buildFurnitureFluxPrompt(furniturePrompt: string, roomTypeId?: string | null): string {
   const FLUX_STRUCTURE = "Walls, floor, ceiling identical to input. Shadows from furniture natural. No new openings.";
   const FLUX_EQUIPMENT = "Keep radiators, vents, switches visible.";
-  const FLUX_PHOTO = "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, subtle grain.";
+  const FLUX_PHOTO = "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.";
 
   // Kitchen: compact Flux furniture (~60 words)
   if (roomTypeId === "kitchen") {
@@ -554,7 +554,7 @@ function buildFurnitureFluxPrompt(furniturePrompt: string, roomTypeId?: string |
     "Freestanding only. No wall-mounted art, no framed paintings, no prints, no mirrors, no built-in shelving, no curtains.",
     "Walls, floor, ceiling identical to input. Shadows from furniture natural. No new openings.",
     "Keep radiators, vents, switches visible. Do not block radiators.",
-    "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, subtle grain.",
+    "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
   ].join(" ");
 }
 
@@ -609,7 +609,7 @@ function buildOutdoorSurfacesFluxPrompt(
     "Preserve exact lighting conditions from input — same shadow hardness, direction, color temperature.",
     "Empty outdoor space — no furniture, no rugs, no objects.",
     "Same camera angle, same proportions.",
-    "Photo-realistic outdoor photograph, DSLR full-frame 16-35mm f/8, deep DOF, sharp focus, subtle film grain.",
+    "Photo-realistic outdoor photograph, DSLR full-frame 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
   ]
     .filter(Boolean)
     .join(" ");
@@ -656,7 +656,7 @@ function buildOutdoorFurnitureFluxPrompt(
     "Every piece casts realistic shadows consistent with existing natural light.",
     "Preserve exact lighting from input — same shadow hardness, direction, color temperature.",
     "Same camera angle, same proportions.",
-    "Photo-realistic outdoor photograph, DSLR full-frame 16-35mm f/8, deep DOF, sharp focus, subtle film grain.",
+    "Photo-realistic outdoor photograph, DSLR full-frame 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
   ]
     .filter(Boolean)
     .join(" ");
@@ -981,7 +981,9 @@ async function generatePass(
     }
   }
 
-  if (process.env.REPLICATE_API_TOKEN) {
+  // Flux Depth Pro détruit la géométrie en passe 2 — audit visuel #41/#42 (Yann 4.2, Lucas 5.0).
+  // Retourner une erreur plutôt que risquer la destruction. Flux reste autorisé en passe 1 (surfaces).
+  if (pass !== 2 && process.env.REPLICATE_API_TOKEN) {
     try {
       return await tryFluxDepth(base64Image, surfacePrompt, furniturePrompt, pass, outputSize.w, outputSize.h, additionalNegative, roomTypeId, outdoor);
     } catch (err) {
@@ -1455,11 +1457,37 @@ export async function POST(request: NextRequest) {
       return response;
     }
 
+    // Pass 2 is ALWAYS attempted after a successful pass 1 (audit #36, #39, #40: empty rooms = no client value).
+    // Retry once before falling back to pass 1 result alone.
     console.log("Starting pass 2 (furniture)...");
-    const pass2 = await generatePass(pass1Base64, trimmedSurface, trimmedFurniture, 2, outputSize, negativeOverride, isOutdoor ? null : roomType, outdoorParam);
+    let pass2: { image: string; model: string } | null = null;
+    let pass2Failed = false;
+    let pass2Attempts = 0;
+
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      pass2Attempts = attempt;
+      try {
+        pass2 = await generatePass(pass1Base64, trimmedSurface, trimmedFurniture, 2, outputSize, negativeOverride, isOutdoor ? null : roomType, outdoorParam);
+        break; // success
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error(`Pass 2 attempt ${attempt}/2 failed: ${msg}`);
+        if (attempt < 2) {
+          console.log("Retrying pass 2...");
+        }
+      }
+    }
+
     const t2 = Date.now();
 
-    const outputBase64 = pass2.image.replace(/^data:image\/[\w+]+;base64,/, "");
+    // If pass 2 failed after 2 attempts, deliver pass 1 (surfaces only) with pass2Failed flag
+    if (!pass2) {
+      pass2Failed = true;
+      console.warn("Pass 2 failed after 2 attempts — delivering pass 1 (surfaces only)");
+    }
+
+    const finalImage = pass2 ? pass2.image : pass1.image;
+    const outputBase64 = finalImage.replace(/^data:image\/[\w+]+;base64,/, "");
 
     // Fire-and-forget: save furnished result as iteration base for future adjust iterations
     if (sessionId) {
@@ -1521,20 +1549,21 @@ export async function POST(request: NextRequest) {
     console.log(`[generate] photoId final: ${photoId || "NULL"} for userId="${session?.user?.id || "NONE"}"`);
 
     const response = NextResponse.json({
-      image: pass2.image,
-      model: `${pass1.model} → ${pass2.model}`,
+      image: finalImage,
+      model: pass2 ? `${pass1.model} → ${pass2.model}` : `${pass1.model} (surfaces uniquement — passe 2 échouée)`,
       ...(pass1Saved ? { pass1_key: pass1CacheKey } : {}),
       ...(photoId ? { photoId } : {}),
+      ...(pass2Failed ? { pass2Failed: true } : {}),
     });
 
     // Log to DB BEFORE returning response (Replit autoscale kills worker after response)
     await logGeneration({
       ip, styleId, surfacePrompt: trimmedSurface, furniturePrompt: trimmedFurniture,
       withFurniture: true, inputWidth: width, inputHeight: height,
-      modelUsed: `${pass1.model} → ${pass2.model}`,
-      pass1Model: pass1.model, pass2Model: pass2.model,
+      modelUsed: pass2 ? `${pass1.model} → ${pass2.model}` : `${pass1.model} (pass2 failed x${pass2Attempts})`,
+      pass1Model: pass1.model, pass2Model: pass2?.model ?? "FAILED",
       durationMs: t2 - t0, pass1DurationMs: t1 - t0, pass2DurationMs: t2 - t1,
-      success: true,
+      success: !pass2Failed,
       builtPromptPass1, builtPromptPass2,
       inputBase64: base64Image, pass1Base64, outputBase64,
       sessionId: sessionId ?? undefined,

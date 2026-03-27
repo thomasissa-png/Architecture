@@ -606,6 +606,25 @@ agents/
 - **surfacePrompt : TOUJOURS preserver la geometrie du plafond** — ecrire "white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs" et JAMAIS "smooth white ceiling" (efface les voutes/poutres).
 - **Builder : NE JAMAIS contredire les surfacePrompts** — le builder dit "follow the style description exactly" pour le luminaire, pas "update the fixture".
 - **Paradoxe luminosite** : quand les murs passent de brut a blanc, la piece devient physiquement plus claire. Ancrer les OMBRES et GRADIENTS, pas l'exposition globale.
+- **NE JAMAIS utiliser Flux Depth Pro en passe 2** — il regenere la scene au lieu d'editer, detruisant la geometrie (audit visuel #41/#42, Yann 4.2, Lucas 5.0). Flux autorise en passe 1 uniquement.
+- **Iterations : TOUJOURS envoyer l'image OUTPUT (meublee)** comme source, jamais l'image passe 1 (vide). L'iteration doit AJOUTER au resultat existant, pas remplacer.
+- **Iterations : autoriser les elements muraux si l'utilisateur le demande** — la contrainte "no wall-mounted" doit etre levee quand le commentaire mentionne explicitement etageres, miroirs, cadres, appliques.
+- **Passe 1 : nettoyer les prises electriques** — "Cover all visible electrical outlets, junction boxes, cable exits with the wall finish" (les boitiers ronds noirs restent visibles sinon).
+- **Passe 1 : pas de warm color shift** — "Do not add any warm tint or yellow cast" (les murs cool/neutres doivent rester cool/neutres).
+- **Passe 2 TOUJOURS lancee** apres passe 1 reussie. Si passe 2 echoue, retry 1 fois puis livrer passe 1 seule avec message.
+- **Grain photographique obligatoire** — "Subtle film grain visible at 100% zoom, natural lens vignetting darkening corners 5-10%" (empeche le rendu CGI-clean).
+
+### Sprint 22 — Audit visuel croise Yann Duval + Lucas Moreau (12 generations #31-42)
+155. CRITIQUE : Flux Depth Pro desactive en passe 2 — hallucinations fenetre, perte geometrie, changement angle (#41 Yann 4.6, #42 Yann 3.7)
+156. CRITIQUE : Iterations destructrices — le mobilier existant disparait (#33 tout le Japandi perdu, #35 surfaces degradees). Fix : image source = output meuble + directives preservation
+157. CRITIQUE : Contradiction etageres murales — "Do NOT attach to walls" sabote les demandes utilisateur legitimes (#33). Fix : detection dans pre-processing + flag allowWallMounted
+158. HAUTE : Style Cosy trop generique "hotel business" (#37 Yann 6.8, #38 Yann 7.0). Fix : ajout chunky knit throw, pillar candles, layered cushions velvet/linen/boucle, sheepskin
+159. HAUTE : Prises electriques non nettoyees en passe 1 (#32, #39, #40). Fix : directive "cover outlets with wall finish"
+160. HAUTE : 3/12 generations livrent passe 1 seule = piece vide (#36, #39, #40). Fix : passe 2 forcee avec retry
+161. MOYENNE : Warm color shift systematique (murs cool virent beige). Fix : "do not add warm tint or yellow cast"
+162. MOYENNE : Rendu CGI-clean sans grain ni vignettage. Fix : renforcement descripteurs photo
+163. Meilleure generation : #36 Scandinavian passe 1 (Yann 8.2, Lucas 8.3) — transformation violet→blanc impeccable, convecteur preserve
+164. Pipeline 2 passes GPT-4.1 VALIDE : #31 (8.1/8.0), #38 (7.0/7.9) — geometrie preservee sur espaces complexes (verriere double hauteur)
 <!-- GRADIENT-AGENTS-START -->
 # Gradient Agents — Instructions globales
 
