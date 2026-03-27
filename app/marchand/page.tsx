@@ -60,6 +60,11 @@ const faqItems = [
     answer:
       "Vos photos sont traitées uniquement pour générer le visuel, puis supprimées automatiquement sous 30 jours. Elles ne sont ni partagées, ni utilisées pour entraîner un modèle d'IA. Vos projets clients restent confidentiels.",
   },
+  {
+    question: "Et si le résultat ne me convient pas ?",
+    answer:
+      "Vous pouvez itérer sur chaque visuel : ajoutez un commentaire (« plus de lumière », « retirer le tapis ») et Versiroom régénère en tenant compte de vos retours. Avec le Mode Pro, 3 itérations par photo sont incluses.",
+  },
 ];
 
 const jsonLd = {
@@ -158,10 +163,7 @@ export default function MarchandPage() {
             </svg>
           </a>
           <p className="text-sm text-foreground/60 font-light mt-4">
-            Prix de lancement · 50 crédits/mois inclus
-          </p>
-          <p className="text-xs text-foreground/40 font-light mt-1">
-            1 crédit = 1 visuel généré
+            50 crédits/mois inclus · 1 crédit = 1 visuel
           </p>
         </div>
       </section>
@@ -171,11 +173,11 @@ export default function MarchandPage() {
         <div className="max-w-3xl mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 rounded-2xl overflow-hidden">
             <div className="relative aspect-[4/3]">
-              <img src="/imageavant.jpg" alt="T3 brut à Bordeaux avant home staging Versiroom" className="w-full h-full object-cover" />
+              <img src="/imageavant.jpg" alt="T3 brut à Bordeaux avant home staging Versiroom" className="w-full h-full object-cover" loading="lazy" />
               <span className="absolute bottom-2 left-2 text-xs font-medium text-white bg-black/50 px-2 py-1 rounded">Avant</span>
             </div>
             <div className="relative aspect-[4/3]">
-              <img src="/imageapres.jpg" alt="T3 meublé en style Scandinave par Versiroom" className="w-full h-full object-cover" />
+              <img src="/imageapres.jpg" alt="T3 meublé en style Scandinave par Versiroom" className="w-full h-full object-cover" loading="lazy" />
               <span className="absolute bottom-2 left-2 text-xs font-medium text-white bg-black/50 px-2 py-1 rounded">Après</span>
             </div>
           </div>
@@ -186,12 +188,14 @@ export default function MarchandPage() {
       </section>
 
       {/* Social proof line */}
-      <div className="flex flex-wrap justify-center gap-6 sm:gap-10 text-xs text-muted font-light py-6">
+      <div className="flex flex-wrap justify-center gap-4 sm:gap-8 text-xs text-muted font-light py-6">
         <span>12 styles curatés</span>
         <span>·</span>
         <span>Résultat en 90 secondes</span>
         <span>·</span>
-        <span>HD gratuit, sans filigrane</span>
+        <span>HD sans filigrane</span>
+        <span>·</span>
+        <span>Utilisé en dossiers de pré-commercialisation</span>
       </div>
 
       {/* Le problème */}
@@ -262,6 +266,18 @@ export default function MarchandPage() {
               Économie : 97 %
             </p>
           </div>
+        </div>
+      </section>
+
+      {/* Témoignage */}
+      <section className="py-10 sm:py-14 px-5 sm:px-8">
+        <div className="max-w-2xl mx-auto text-center">
+          <blockquote className="text-base sm:text-lg text-foreground font-light leading-relaxed italic">
+            « Je sortais mes plaquettes en 3 jours avec un home stager. Maintenant c'est fait dans la matinée. Mes acquéreurs reçoivent les visuels le jour même de la visite. »
+          </blockquote>
+          <p className="text-sm text-muted font-light mt-3">
+            Marchand de biens — Bordeaux, 10 opérations/an
+          </p>
         </div>
       </section>
 

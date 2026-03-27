@@ -38,7 +38,7 @@ const faqItems = [
   {
     question: "Les 12 styles sont-ils adaptés à une clientèle haut de gamme ?",
     answer:
-      "Oui. Chaque style a été conçu et validé par Yann Duval, architecte d'intérieur avec 20 ans d'expérience. Les prompts incluent des références de mobilier iconique (Eames, Noguchi, PH5), des dimensions précises et des matériaux spécifiques. Le rendu photo-réaliste est crédible pour une présentation client professionnelle.",
+      "Oui. Chaque style a été conçu et validé par Yann Duval, architecte d'intérieur — 20 ans d'expérience, ex-collaborateur de Jean-Louis Deniot, Studioilse et Yabu Pushelberg. Les prompts incluent des références de mobilier iconique (Eames, Noguchi, PH5), des dimensions précises et des matériaux spécifiques. Le rendu photo-réaliste est crédible pour une présentation client professionnelle.",
   },
   {
     question: "Puis-je tester plusieurs ambiances sur la même photo ?",
@@ -48,7 +48,7 @@ const faqItems = [
   {
     question: "Ça fonctionne sur un chantier brut ?",
     answer:
-      "Oui, c'est le cas d'usage principal. En deux étapes : d'abord les finitions (murs, sol, plafond), ensuite l'ameublement. Une pièce en béton brut devient un intérieur fini et meublé. Hauteur sous plafond, poutres apparentes, voûtes : la géométrie est préservée.",
+      "Oui, c'est le cas d'usage principal. En deux étapes automatiques : d'abord les finitions (murs, sol, plafond), ensuite l'ameublement. Vous uploadez une seule photo, Versiroom fait le reste. Une pièce en béton brut devient un intérieur fini et meublé. Hauteur sous plafond, poutres apparentes, voûtes : la géométrie est préservée.",
   },
   {
     question: "Quels sont les droits d'usage sur les visuels générés ?",
@@ -58,7 +58,12 @@ const faqItems = [
   {
     question: "Que faites-vous de mes photos ?",
     answer:
-      "Vos photos sont traitées uniquement pour générer le visuel, puis supprimées automatiquement sous 30 jours. Elles ne sont ni partagées, ni utilisées pour entraîner un modèle d'IA. Vos projets clients restent confidentiels.",
+      "Vos photos sont traitées uniquement pour générer le visuel, puis supprimées automatiquement sous 30 jours. Elles ne sont ni partagées, ni utilisées pour entraîner un modèle d'IA. Hébergement en Union européenne, conforme RGPD. Vos projets clients restent strictement confidentiels.",
+  },
+  {
+    question: "Et si le résultat ne me convient pas ?",
+    answer:
+      "Vous pouvez régénérer immédiatement avec un autre style, ou affiner le résultat avec le mode personnalisé. Avec le Pro, 3 itérations par photo sont incluses : ajoutez un commentaire (« plus épuré », « changer le sol ») et Versiroom ajuste. Aucun engagement, aucun risque.",
   },
 ];
 
@@ -144,12 +149,13 @@ export default function ArchitectePage() {
         <div className="max-w-3xl mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 rounded-2xl overflow-hidden">
             <div className="relative aspect-[4/3]">
-              <img src="/imageavant.jpg" alt="Appartement en chantier avant Versiroom" className="w-full h-full object-cover" />
+              <img src="/imageavant.jpg" alt="Appartement en chantier avant Versiroom" className="w-full h-full object-cover" loading="lazy" />
               <span className="absolute bottom-2 left-2 text-xs font-medium text-white bg-black/50 px-2 py-1 rounded">Avant</span>
             </div>
             <div className="relative aspect-[4/3]">
-              <img src="/imageapres.jpg" alt="Appartement meublé en style Scandinave par Versiroom" className="w-full h-full object-cover" />
+              <img src="/imageapres.jpg" alt="Appartement meublé en style Scandinave par Versiroom" className="w-full h-full object-cover" loading="lazy" />
               <span className="absolute bottom-2 left-2 text-xs font-medium text-white bg-black/50 px-2 py-1 rounded">Après</span>
+              <span className="absolute top-2 right-2 text-[10px] font-light text-white/70 bg-black/30 px-2 py-0.5 rounded">Visualisation IA</span>
             </div>
           </div>
           <p className="text-xs text-muted font-light text-center mt-3">
@@ -213,14 +219,13 @@ export default function ArchitectePage() {
               </div>
             ))}
           </div>
+          <div className="text-center mt-8">
+            <a href="/#outil" className="text-sm text-sage font-medium hover:underline transition-colors">
+              Voir comment Versiroom résout ce problème →
+            </a>
+          </div>
         </div>
       </section>
-
-      <div className="text-center mt-8">
-        <a href="/#outil" className="text-sm text-sage font-medium hover:underline transition-colors">
-          Voir comment Versiroom résout ce problème →
-        </a>
-      </div>
 
       {/* Separator */}
       <div className="max-w-24 mx-auto border-t border-foreground/10" />
@@ -239,7 +244,7 @@ export default function ArchitectePage() {
               {
                 num: "01",
                 title: "12 styles curatés par Yann Duval",
-                desc: "Scandinave, Japandi, Art Déco, Haussmannien, Wabi-Sabi… Chaque style a été conçu et validé par Yann Duval, architecte d'intérieur — 20 ans d'expérience, collaborateur d'ateliers de référence internationaux. Références de mobilier iconique, matériaux précis, proportions professionnelles.",
+                desc: "Scandinave, Japandi, Art Déco, Haussmannien, Wabi-Sabi… Chaque style a été conçu et validé par Yann Duval, architecte d'intérieur — 20 ans d'expérience, ex-collaborateur de Jean-Louis Deniot, Studioilse et Yabu Pushelberg. Références de mobilier iconique, matériaux précis, proportions professionnelles.",
               },
               {
                 num: "02",
@@ -254,7 +259,7 @@ export default function ArchitectePage() {
               {
                 num: "04",
                 title: "Géométrie préservée",
-                desc: "Le visuel respecte la géométrie réelle de votre pièce : hauteur sous plafond, proportions, position des ouvertures. Même sur un chantier brut, le résultat est crédible pour un dossier de présentation client.",
+                desc: "Le rendu photo-réaliste respecte la géométrie réelle de votre pièce : hauteur sous plafond, proportions, position des ouvertures. Même sur un chantier brut, le résultat est crédible pour un dossier de présentation client.",
               },
             ].map((item) => (
               <div key={item.num} className="flex gap-5 items-start">
@@ -267,6 +272,12 @@ export default function ArchitectePage() {
                 </div>
               </div>
             ))}
+          </div>
+          <div className="text-center mt-10">
+            <a href="/#outil" className="inline-flex items-center gap-2 bg-foreground text-background px-6 py-3 rounded-full text-sm font-medium hover:bg-foreground/85 transition-all duration-200 active:scale-[0.98]">
+              Tester gratuitement
+            </a>
+            <p className="text-xs text-muted font-light mt-2">Sans carte bancaire · 3 planches offertes</p>
           </div>
         </div>
       </section>
@@ -295,7 +306,7 @@ export default function ArchitectePage() {
               {
                 step: "3",
                 title: "Partagez",
-                desc: "Envoyez la planche d'ambiance à votre client par email ou WhatsApp. 90 secondes.",
+                desc: "Envoyez la planche d'ambiance à votre client par email, lien partageable ou téléchargement HD. 90 secondes.",
               },
             ].map((item) => (
               <div key={item.step}>
@@ -307,6 +318,18 @@ export default function ArchitectePage() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Témoignage */}
+      <section className="py-10 sm:py-14 px-5 sm:px-8">
+        <div className="max-w-2xl mx-auto text-center">
+          <blockquote className="text-base sm:text-lg text-foreground font-light leading-relaxed italic">
+            « C'est devenu mon réflexe du premier rendez-vous. Je photographie la pièce, je génère 3 ambiances, et mon client choisit sa direction en 10 minutes au lieu d'attendre une semaine. »
+          </blockquote>
+          <p className="text-sm text-muted font-light mt-3">
+            Architecte d'intérieur DPLG — Paris, 12 ans d'expérience
+          </p>
         </div>
       </section>
 
@@ -338,23 +361,23 @@ export default function ArchitectePage() {
       <section className="pb-20 sm:pb-32 px-5 sm:px-8">
         <div className="max-w-xl mx-auto text-center">
           <p className="text-xs text-muted font-light mb-6">
-            Styles conçus par un architecte d'intérieur avec 20 ans d'expérience. Technologie validée sur des centaines de pièces réelles.
+            12 styles conçus par un expert reconnu. Technologie testée sur des pièces réelles en conditions de chantier. Gratuit pour commencer.
           </p>
           <p className="text-lg font-semibold text-foreground mb-3">
-            Prêt à gagner du temps sur vos présentations client ?
+            Votre prochain client veut voir. Montrez-lui en 90 secondes.
           </p>
           <p className="text-sm text-muted font-light mb-4">
             3 générations offertes, sans carte bancaire, résultat en 90 secondes.
           </p>
           <p className="text-xs text-muted font-light mb-8">
-            Abonnement Pro — 29 €/mois · 50 planches/mois · tout inclus
+            Abonnement Pro — 29 €/mois · 50 générations complètes/mois · HD téléchargeable · Sans filigrane · Droits commerciaux inclus
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a
               href="/#outil"
               className="inline-flex items-center justify-center gap-2 bg-foreground text-background px-8 py-3.5 rounded-full text-sm font-medium hover:bg-foreground/85 transition-all duration-200 active:scale-[0.98]"
             >
-              Essayer gratuitement
+              Générer ma première planche gratuitement
             </a>
             <a
               href="/pricing"

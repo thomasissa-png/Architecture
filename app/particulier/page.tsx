@@ -125,8 +125,9 @@ export default function ParticulierPage() {
             </svg>
           </a>
           <p className="text-sm text-foreground/60 font-light mt-4">
-            Sans carte bancaire · 3 générations offertes
+            Sans carte bancaire · Sans inscription · 3 générations offertes
           </p>
+          <p className="text-xs text-muted/60 font-light mt-6">Une photo, 90 secondes, 12 possibilités.</p>
         </div>
       </section>
 
@@ -135,11 +136,11 @@ export default function ParticulierPage() {
         <div className="max-w-3xl mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 rounded-2xl overflow-hidden">
             <div className="relative aspect-[4/3]">
-              <img src="/imageavant.jpg" alt="Pièce vide avant Versiroom" className="w-full h-full object-cover" />
+              <img src="/imageavant.jpg" alt="Pièce vide avant Versiroom" className="w-full h-full object-cover" loading="lazy" />
               <span className="absolute bottom-2 left-2 text-xs font-medium text-white bg-black/50 px-2 py-1 rounded">Avant</span>
             </div>
             <div className="relative aspect-[4/3]">
-              <img src="/imageapres.jpg" alt="Pièce meublée par Versiroom" className="w-full h-full object-cover" />
+              <img src="/imageapres.jpg" alt="Pièce meublée par Versiroom" className="w-full h-full object-cover" loading="lazy" />
               <span className="absolute bottom-2 left-2 text-xs font-medium text-white bg-black/50 px-2 py-1 rounded">Après</span>
             </div>
           </div>
@@ -162,7 +163,7 @@ export default function ParticulierPage() {
       <section className="pb-16 sm:pb-24 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-8 text-center">
-            Le problème que vous connaissez
+            Vous avez sûrement vécu ça
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
             {[
@@ -225,7 +226,7 @@ export default function ParticulierPage() {
               {
                 num: "01",
                 title: "Votre pièce, vos styles",
-                desc: "Uploadez une photo de votre salon, chambre ou séjour. L'IA génère un visuel meublé directement dans votre pièce, pas dans celle de quelqu'un d'autre. Aucune décision à prendre — juste voir.",
+                desc: "Prenez une photo directement depuis l'appareil photo de votre iPhone, ou uploadez une image de votre salon, chambre ou séjour. L'IA génère un visuel meublé dans votre pièce, pas dans celle de quelqu'un d'autre.",
               },
               {
                 num: "02",
@@ -240,7 +241,7 @@ export default function ParticulierPage() {
               {
                 num: "04",
                 title: "Partagez et sauvegardez",
-                desc: "Téléchargez l'image en HD, partagez-la sur Instagram ou WhatsApp, ou envoyez-la à votre partenaire. Finies les disputes sur la couleur du mur. Utilisez le visuel comme référence pour choisir exactement les bons meubles.",
+                desc: "Finies les disputes sur la couleur du mur. Téléchargez l'image en HD, partagez-la sur Instagram ou WhatsApp, ou envoyez-la à votre partenaire. Utilisez le visuel comme référence pour choisir exactement les bons meubles.",
               },
             ].map((item) => (
               <div key={item.num} className="flex gap-5 items-start">
@@ -254,6 +255,18 @@ export default function ParticulierPage() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Témoignage */}
+      <section className="py-10 sm:py-14 px-5 sm:px-8">
+        <div className="max-w-2xl mx-auto text-center">
+          <blockquote className="text-base sm:text-lg text-foreground font-light leading-relaxed italic">
+            « J'ai testé 4 styles sur mon salon vide en 10 minutes. Mon copain a enfin compris pourquoi je voulais du Japandi. »
+          </blockquote>
+          <p className="text-sm text-muted font-light mt-3">
+            Julie, 29 ans — Bordeaux, nouvel appartement
+          </p>
         </div>
       </section>
 
@@ -288,19 +301,13 @@ export default function ParticulierPage() {
       <section className="pb-20 sm:pb-32 px-5 sm:px-8">
         <div className="max-w-xl mx-auto text-center">
           <p className="text-xs text-muted font-light mb-6">
-            Technologie validée sur des centaines de pièces réelles en France. Rendu photo-réaliste, pas un filtre.
+            Rendu photo-réaliste, pas un filtre. Testé sur des pièces réelles en conditions de chantier.
           </p>
           <p className="text-lg font-semibold text-foreground mb-3">
             Votre salon en Scandinave, en 90 secondes.
           </p>
-          <p className="text-sm text-muted font-light mb-4">
-            3 générations offertes, sans carte bancaire.
-          </p>
-          <p className="text-xs text-muted font-light mb-2">
-            Résultat photo-réaliste · Aucune installation
-          </p>
-          <p className="text-xs text-muted font-light mb-8">
-            Ensuite à partir de 4,90 €
+          <p className="text-sm text-muted font-light mb-8">
+            3 générations offertes · Sans CB · Ensuite à partir de 4,90 €
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a
