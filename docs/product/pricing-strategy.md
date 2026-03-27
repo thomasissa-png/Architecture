@@ -25,9 +25,10 @@
 
 ### Décision fondateur (non négociable)
 
-- **3 tiers seulement** : Découverte (gratuit), Starter, Pro
-- **Recharge de crédits** au prix unitaire du tier souscrit
-- Plus de packs one-shot séparés — le modèle est tier + recharge
+- **3 tiers seulement** : Découverte (gratuit), Starter (one-shot), Pro (abonnement)
+- **Seul le Pro est en abonnement mensuel** — Starter est un achat unique
+- **Recharge de crédits** au prix unitaire du tier acheté/souscrit
+- Plus de packs séparés — le modèle est tier + recharge
 
 ### Coût API de référence
 
@@ -54,18 +55,18 @@
 
 | | |
 |---|---|
-| **Prix** | 9,90€/mois TTC |
-| **Crédits inclus** | 15 générations/mois (renouvelés chaque mois, non cumulables) |
+| **Prix** | 9,90€ TTC — **achat unique** (pas d'abonnement) |
+| **Crédits inclus** | 15 générations (pas de renouvellement mensuel, pas d'expiration) |
 | **Recharge** | +10 crédits = 5,90€ (0,59€/crédit) |
 | **Features** | Tout Découverte + 1 itération par photo + historique des générations |
 | **Exclusions** | Mode Pro (dossiers, PDF brandé, annonces), export portails |
-| **Persona cible** | Léa (usage régulier), Claire (projets ponctuels) |
-| **Coût API** | 15 × 0,10€ = 1,50€/mois |
-| **Marge brute** | 8,40€/mois (85%) |
+| **Persona cible** | Léa (usage ponctuel), Claire (projets ponctuels) |
+| **Coût API** | 15 × 0,10€ = 1,50€ |
+| **Marge brute** | 8,40€ (85%) |
 
-**Justification** : 9,90€ est le prix psychologique du "premier abonnement" — aligné sur Renovate Club (9,99€). 15 crédits couvrent l'usage de Léa (1 appartement, 5 pièces × 3 styles). L'itération (1 par photo) différencie du gratuit sans cannibaliser le Pro. Le Starter est un stepping stone vers le Pro, pas une offre terminale.
+**Justification** : 9,90€ est le prix psychologique du "premier achat" — micro-transaction impulsive pour Léa. Le modèle one-shot (pas d'abonnement) colle à l'usage ponctuel de Léa (1 appartement, pas d'usage récurrent) et de Claire en projet unique. Seul le Pro est en abonnement — les professionnels récurrents (Thomas, Claire multi-projets) ont besoin du renouvellement mensuel, pas les particuliers.
 
-**Recharge Starter** : 0,59€/crédit (vs 0,66€ inclus dans l'abo). Le prix de recharge est légèrement inférieur au prix unitaire inclus pour récompenser la fidélité sans dévaloriser l'abonnement.
+**Recharge Starter** : 0,59€/crédit. Les crédits Starter n'expirent pas — l'utilisateur recharge quand il en a besoin, au même prix unitaire. Pas de pression temporelle.
 
 ---
 
@@ -147,11 +148,13 @@ Hypothèse : marge nette = marge brute - coûts fixes (hébergement ~50€/mois,
 
 | Scénario | Mix | Abonnés | Recharges | Marge nette/mois |
 |---|---|---|---|---|
-| **Conservateur** | 60% Starter, 40% Pro | 100 Starter + 40 Pro | +500€ recharges | 100×8,40 + 40×24 + 500 - 60 = **2 240€** |
-| **Base** | 50% Starter, 50% Pro | 80 Starter + 80 Pro | +800€ recharges | 80×8,40 + 80×24 + 800 - 60 = **3 332€** ✅ |
-| **Optimiste** | 40% Starter, 60% Pro | 60 Starter + 120 Pro | +1200€ recharges | 60×8,40 + 120×24 + 1200 - 60 = **4 524€** |
+| **Conservateur** | Starter dominant | 150 Starter (one-shot) + 40 Pro (abo) | +500€ recharges | 150×8,40 + 40×24 + 500 - 60 = **2 660€** |
+| **Base** | Mixte | 120 Starter (one-shot) + 80 Pro (abo) | +800€ recharges | 120×8,40 + 80×24 + 800 - 60 = **3 668€** ✅ |
+| **Optimiste** | Pro dominant | 80 Starter (one-shot) + 120 Pro (abo) | +1200€ recharges | 80×8,40 + 120×24 + 1200 - 60 = **4 692€** |
 
-**Seuil de rentabilité North Star** : ~80 Starter + 80 Pro + recharges = 3 000€/mois. Atteignable avec ~160 abonnés actifs.
+**Note** : les Starter sont des achats uniques, pas récurrents. Le revenu Starter dépend du flux de nouveaux utilisateurs. Le Pro (abonnement) génère le revenu récurrent. Les recharges (Starter + Pro) complètent.
+
+**Seuil North Star** : ~80 Pro abonnés + flux Starter + recharges = 3 000€/mois.
 
 ---
 
@@ -161,15 +164,15 @@ Hypothèse : marge nette = marge brute - coûts fixes (hébergement ~50€/mois,
 
 | Avant (v2) | Après (v3) |
 |---|---|
-| 4 tiers (Gratuit + Découverte 4,90€ + Starter 14,90€ + Pro 29€) | 3 tiers (Découverte gratuit + Starter 9,90€ + Pro 29€) |
-| Packs one-shot séparés | Recharge au prix du tier |
+| 4 tiers (Gratuit + Découverte 4,90€ + Starter 14,90€ + Pro 29€) | 3 tiers (Découverte gratuit + Starter 9,90€ one-shot + Pro 29€/mois) |
+| Packs one-shot séparés | Starter = one-shot, Pro = abonnement, recharge pour les deux |
 | Découverte = pack payant 4,90€/5 crédits | Découverte = gratuit (3 crédits) |
-| Starter = pack payant 14,90€/20 crédits | Starter = abonnement 9,90€/mois, 15 crédits |
-| Crédits non renouvelables (one-shot) | Crédits mensuels renouvelés + recharges |
+| Starter = pack payant 14,90€/20 crédits | Starter = achat unique 9,90€, 15 crédits sans expiration |
+| Tout en one-shot sauf Pro | Seul le Pro est en abonnement mensuel (50 crédits renouvelés) |
 
 ### Impact code
 
-- **Stripe** : créer 2 subscriptions (Starter 9,90€/mois, Pro 29€/mois) + 4 produits recharge (one-time payments)
+- **Stripe** : créer 1 subscription (Pro 29€/mois) + 1 produit one-time (Starter 9,90€) + 4 produits recharge (one-time payments)
 - **page /pricing** : refondre avec 3 colonnes au lieu de 4, highlight sur Pro
 - **pages /marchand, /architecte, /particulier** : mettre à jour les mentions de prix
 - **lib/credits.ts** : adapter la logique de recharge (vérifier tier actif, appliquer le bon prix)
@@ -185,8 +188,8 @@ Hypothèse : marge nette = marge brute - coûts fixes (hébergement ~50€/mois,
 
 | | Découverte | Starter | **Pro** |
 |---|---|---|---|
-| Prix | Gratuit | 9,90€/mois | **29€/mois** |
-| Crédits | 3 offertes | 15/mois | **50/mois** |
+| Prix | Gratuit | 9,90€ (one-shot) | **29€/mois** |
+| Crédits | 3 offertes | 15 (sans expiration) | **50/mois** |
 | Itérations | — | 1/photo | **3/photo** |
 | Mode Pro | — | — | **✅ Complet** |
 | Recharge | — | Dès 5,90€ | **Dès 9€** |

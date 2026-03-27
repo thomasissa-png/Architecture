@@ -1,7 +1,7 @@
 # Audit Pricing — Positionnement & Conversion
 
 > Produit par @creative-strategy — 2026-03-27
-> Contexte : refonte fondateur 3 tiers (Découverte gratuit / Starter / Pro) + recharge crédits
+> Contexte : refonte fondateur 3 tiers — Découverte (gratuit) / Starter (one-shot 9,90€) / Pro (seul abonnement, 29€/mois) + recharge crédits
 
 ---
 
@@ -27,9 +27,9 @@
 
 | Persona | Tier principal | Justification | Parcours d'upgrade |
 |---|---|---|---|
-| **Léa** (particulière) | Découverte → Starter | Usage ponctuel (1 appart), 5 pièces × 3 styles = 15 crédits/mois suffisent. Le Starter à 9,90€ est une micro-transaction impulsive pour elle. | Découverte (3 essais) → "j'en veux plus" → Starter 9,90€ |
-| **Claire** (architecte) | Starter ou Pro | Dépend de sa charge : 1-2 projets/mois = Starter suffit (15 + recharge). 3+ projets simultanés = Pro nécessaire pour le volume (50 crédits) + itérations (3/photo). | Découverte → Starter → Pro si multi-projets |
-| **Thomas** (marchand) | Pro | Le Mode Pro (dossiers, PDF brandé, annonces, export portails) est sa raison d'être. Il ne peut pas faire son métier avec le Starter. 50 crédits couvrent ses pics. | Découverte → Pro direct (le ROI 29€ vs 9 000€ est évident) |
+| **Léa** (particulière) | Découverte → Starter | Usage ponctuel (1 appart), 5 pièces × 3 styles = 15 crédits suffisent. Le Starter à 9,90€ one-shot est une micro-transaction impulsive, sans engagement. | Découverte (3 essais) → "j'en veux plus" → Starter 9,90€ (achat unique) → recharge si besoin |
+| **Claire** (architecte) | Starter ou Pro | Dépend de sa charge : projet ponctuel = Starter one-shot (15 + recharge). Multi-projets récurrents = Pro abonnement pour le volume (50/mois) + itérations (3/photo). | Découverte → Starter → Pro si récurrent |
+| **Thomas** (marchand) | Pro | Le Mode Pro (dossiers, PDF brandé, annonces, export portails) est sa raison d'être. L'abonnement 29€/mois couvre ses pics. | Découverte → Pro direct (le ROI 29€/mois vs 9 000€/an est évident) |
 
 **Point d'attention** : Thomas ne passera probablement jamais par le Starter — il ira directement Découverte → Pro. Le Starter existe pour Léa et Claire, pas pour Thomas. La page /marchand doit pousser le Pro directement, pas le Starter.
 
@@ -66,11 +66,11 @@ La recharge au prix du tier est un mécanisme de **rétention** :
 Découverte (3 crédits gratuits)
   ↓ teste 3 styles, convaincu par la qualité
   ↓
-Starter (9,90€/mois) — Léa, Claire occasionnelle
-  ↓ épuise ses crédits, veut plus → recharge 5,90€
+Starter (9,90€ one-shot) — Léa, Claire occasionnelle
+  ↓ épuise ses crédits → recharge 5,90€ (même prix)
   ↓ veut les dossiers PDF / annonces → upgrade Pro
   ↓
-Pro (29€/mois) — Thomas, Claire multi-projets
+Pro (29€/mois abonnement) — Thomas, Claire multi-projets
   ↓ mois chargé → recharge 9€ ou 19€
 ```
 
