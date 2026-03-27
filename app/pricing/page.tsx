@@ -38,8 +38,8 @@ const PACKS: Pack[] = [
       { text: "12 styles disponibles", active: true },
       { text: "Téléchargement HD", active: true },
       { text: "Partage & comparateur", active: true },
-      { text: "Itérations", active: false },
-      { text: "Mode Pro", active: false },
+      { text: "Itérations (ajuster le résultat après génération)", active: false },
+      { text: "Mode Pro (dossiers, PDF, annonces)", active: false },
     ],
     cta: "Essayer",
     highlight: false,
@@ -62,7 +62,7 @@ const PACKS: Pack[] = [
     ],
     cta: "Acheter",
     highlight: false,
-    personaLine: "Achat unique — vos crédits n'expirent pas. Pour un projet de décoration ou quelques biens à valoriser.",
+    personaLine: "Achat unique — vos crédits n'expirent pas. Idéal pour un projet ponctuel de décoration ou un bien isolé à valoriser.",
   },
   {
     id: "pro",
@@ -72,17 +72,17 @@ const PACKS: Pack[] = [
     perPhoto: "0,58",
     features: [
       { text: "3 itérations par photo", active: true },
-      { text: "Mode Pro", active: true },
-      { text: "Dossiers de pré-commercialisation", active: true, sub: true },
-      { text: "PDF brandé (logo, couleurs)", active: true, sub: true },
-      { text: "Annonces & liens sans limite", active: true, sub: true },
+      { text: "Mode Pro complet", active: true },
+      { text: "Dossiers de pré-commercialisation", active: true },
+      { text: "PDF brandé avec votre logo", active: true },
+      { text: "Annonces & liens partageables illimités", active: true },
       { text: "Sans engagement — résiliable en 1 clic", active: true },
       { text: "Recharge : +20 crédits à 9 €", active: true },
     ],
     cta: "S'abonner",
     highlight: true,
     personaLine: "Pour les marchands de biens, architectes multi-projets et agences.",
-    roiNote: "29 €/mois au lieu de 200-500 € chez un home stager",
+    roiNote: "29 €/mois au lieu de 200-500 € par planche chez un home stager — jusqu\u2019à 20 000 € d\u2019économie par an",
   },
 ];
 
@@ -251,7 +251,9 @@ function PricingContent() {
                   )}
                 </p>
                 <p className="text-xs text-muted font-light mb-1">
-                  {pack.credits} crédits · {pack.perPhoto}€/photo
+                  {pack.id === "decouverte"
+                    ? `${pack.credits} photos offertes`
+                    : `${pack.credits} crédits · ${pack.perPhoto} €/photo`}
                 </p>
                 {pack.id === "starter" && <p className="text-xs text-sage font-medium mb-1">Achat unique — sans abonnement</p>}
                 <p className={`text-[11px] text-muted/60 font-light ${pack.roiNote ? "mb-2" : "mb-6"}`}>
