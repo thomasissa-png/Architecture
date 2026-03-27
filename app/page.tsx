@@ -117,12 +117,6 @@ async function resilientFetch(
   throw new Error("La génération a échoué après plusieurs tentatives.");
 }
 
-const AUDIENCE_PILLS = [
-  { label: "Architectes", href: "/architecte" },
-  { label: "Marchands de biens", href: "/marchand" },
-  { label: "Particuliers", href: "/particulier" },
-];
-
 export default function Home() {
   const { data: session, status: authStatus } = useSession();
   const [files, setFiles] = useState<File[]>([]);
@@ -696,19 +690,6 @@ export default function Home() {
       {/* Hero */}
       <section className="pt-24 sm:pt-28 pb-8 sm:pb-10 px-5 sm:px-8">
         <div ref={heroRef} className="reveal max-w-4xl mx-auto text-center">
-          {/* Multi-audience pills — links to persona pages */}
-          <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
-            {AUDIENCE_PILLS.map((p) => (
-              <a
-                key={p.label}
-                href={p.href}
-                className="text-[11px] font-medium text-sage bg-sage/10 px-3 py-1.5 rounded-full hover:bg-sage/20 transition-colors cursor-pointer"
-              >
-                {p.label}
-              </a>
-            ))}
-          </div>
-
           <h1 className="text-3xl sm:text-5xl lg:text-7xl font-bold text-foreground leading-[1.08] tracking-tighter mb-5 sm:mb-6">
             Votre pi&egrave;ce meubl&eacute;e,
             <br />
@@ -870,7 +851,7 @@ export default function Home() {
             </svg>
           </a>
           <p className="text-sm text-foreground/60 font-light mt-3">
-            3 générations offertes · Sans carte bancaire
+            3 générations offertes · Sans carte bancaire · <a href="#pricing" className="underline hover:text-foreground transition-colors">Tarifs à partir de 9,90 €</a>
           </p>
 
           {/* Persona links — discret, sous le CTA */}
@@ -888,40 +869,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 3 encarts personas */}
-      <section className="px-5 sm:px-8 pb-10 sm:pb-14">
-        <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {[
-            {
-              label: "Architectes",
-              desc: "Un support de conversation dès le premier RDV.",
-              href: "/architecte",
-            },
-            {
-              label: "Marchands de biens",
-              desc: "Dossiers de pré-commercialisation en 10 minutes.",
-              href: "/marchand",
-            },
-            {
-              label: "Particuliers",
-              desc: "Votre pièce, dans le style que vous voulez.",
-              href: "/particulier",
-            },
-          ].map((p) => (
-            <a
-              key={p.label}
-              href={p.href}
-              className="group rounded-2xl border border-foreground/10 hover:border-sage/30 px-5 py-4 transition-all duration-200 hover:shadow-sm"
-            >
-              <p className="text-sm font-semibold text-foreground mb-1">{p.label}</p>
-              <p className="text-xs text-muted font-light mb-2">{p.desc}</p>
-              <span className="text-xs text-sage font-medium group-hover:underline">
-                En savoir plus →
-              </span>
-            </a>
-          ))}
-        </div>
-      </section>
+      {/* Liens personas déplacés après le pricing — les liens discrets sous le CTA Hero suffisent ici */}
 
       {/* Separator */}
       <div className="max-w-24 mx-auto border-t border-foreground/10" />
