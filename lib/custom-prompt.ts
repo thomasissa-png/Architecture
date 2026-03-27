@@ -142,6 +142,7 @@ export interface IterationPreprocessResult {
   enrichedComment: string;
   warnings: string[];
   isExclusive: boolean;
+  allowWallMounted: boolean;
 }
 
 export async function preprocessIterationComment(
@@ -151,7 +152,7 @@ export async function preprocessIterationComment(
 ): Promise<IterationPreprocessResult> {
   // Fallback: if no API key, return raw comment
   if (!process.env.OPENAI_API_KEY) {
-    return { enrichedComment: comment, warnings: [], isExclusive: false };
+    return { enrichedComment: comment, warnings: [], isExclusive: false, allowWallMounted: false };
   }
 
   try {
@@ -179,10 +180,11 @@ Your job:
    - Example: if user says "plus de plantes" → "add a tall fiddle-leaf fig in a white ribbed ceramic pot and a trailing pothos on a side table"
 4. FILTER OUT and warn about:
    - Structural changes (add/remove windows, doors, walls) → not possible in refinement mode
-   - Wall-mounted items (art, shelving, curtains, drapes, blinds) → cannot attach to walls
    - Surface changes (repaint walls, change floor) → surfaces are locked
    - Radical changes requesting removal of ALL furniture → not supported in refinement
    - Sanitary/plumbing equipment (WC, toilet, bathtub, shower, sink, bidet) → not supported in home staging mode, warn "Versiroom est conçu pour le home staging mobilier. Les équipements sanitaires ne sont pas supportés dans ce mode."
+   - Curtains, drapes, blinds → risk of window hallucination, always filter these out
+   IMPORTANT: If the user explicitly asks for wall-mounted items (shelves, étagères, mirrors, frames, hooks, wall lamps, sconces, wall art), do NOT filter them out. Instead, set allowWallMounted to true and include them in the enrichedComment. Only filter wall-mounted items when the user did NOT ask for them.
 5. Keep the enriched comment under 50 words — it will be prepended to the existing furniture prompt
 6. Do NOT repeat what's already in the base style furniture prompt — only describe CHANGES
 
@@ -190,9 +192,11 @@ Respond in JSON format ONLY:
 {
   "enrichedComment": "...",
   "isExclusive": true/false,
+  "allowWallMounted": true/false,
   "warnings": ["warning in French", ...]
 }
 
+Set allowWallMounted to true ONLY when the user explicitly requests wall-mounted items (shelves, mirrors, frames, hooks, wall lamps). Otherwise false.
 Warnings must be in French. Each warning explains what was filtered and why.`
         },
         {
@@ -205,7 +209,7 @@ Warnings must be in French. Each warning explains what was filtered and why.`
 
     const content = response.choices[0]?.message?.content;
     if (!content) {
-      return { enrichedComment: comment, warnings: [], isExclusive: false };
+      return { enrichedComment: comment, warnings: [], isExclusive: false, allowWallMounted: false };
     }
 
     const parsed = JSON.parse(content);
@@ -213,10 +217,11 @@ Warnings must be in French. Each warning explains what was filtered and why.`
       enrichedComment: parsed.enrichedComment || comment,
       warnings: Array.isArray(parsed.warnings) ? parsed.warnings : [],
       isExclusive: parsed.isExclusive === true,
+      allowWallMounted: parsed.allowWallMounted === true,
     };
   } catch (err) {
     console.error("preprocessIterationComment failed:", err);
     // Fallback: return raw comment, no blocking
-    return { enrichedComment: comment, warnings: [], isExclusive: false };
+    return { enrichedComment: comment, warnings: [], isExclusive: false, allowWallMounted: false };
   }
 }

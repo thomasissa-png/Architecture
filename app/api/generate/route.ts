@@ -29,7 +29,7 @@ import {
  * Used by audit agents (Yann Duval, Lucas Moreau) to correlate generation quality with prompt version.
  * History: v1-v5 (Sprints 1-7), v6-v10 (Sprints 8-12), v11-v15 (Sprints 13-16), v16-v17 (Sprint 17),
  * v18 (current — Sprint 18+, post all fixes) */
-export const PROMPT_VERSION = "v22";
+export const PROMPT_VERSION = "v23";
 
 // ─── Timeout wrapper for external API calls ─────────────────────────
 const API_TIMEOUT_MS = 120_000;
@@ -226,7 +226,7 @@ function buildSurfacesFluxPrompt(surfacePrompt: string, roomTypeId?: string | nu
       "Preserve ceiling 3D geometry — vaults, beams, ribs keep shape. Ceiling light per style.",
       "Remove construction leftovers including electrical outlets, round black wall boxes, cable exits — blend into wall finish. Keep wall-mounted equipment in place: radiators, heaters, vents, switches.",
       "Empty room — no furniture, no appliances. Same windows and doors.",
-      "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
+      "Same camera angle, same lighting, no warm tint or yellow cast. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
     ].join(" ");
   }
 
@@ -237,7 +237,7 @@ function buildSurfacesFluxPrompt(surfacePrompt: string, roomTypeId?: string | nu
       "Floor-to-ceiling ceramic tiles in shower zone and behind vanity. Water-resistant stone or ceramic floor, matte non-slip. No wood. Recessed IP44 ceiling spotlights.",
       "Preserve ceiling 3D geometry. Remove construction leftovers including electrical outlets, round black wall boxes, cable exits — blend into wall finish. Keep wall equipment in place: radiators, heaters, vents, switches.",
       "Empty room — no fixtures, no objects. Same windows and doors.",
-      "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
+      "Same camera angle, same lighting, no warm tint or yellow cast. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
     ].join(" ");
   }
 
@@ -248,7 +248,7 @@ function buildSurfacesFluxPrompt(surfacePrompt: string, roomTypeId?: string | nu
       "Small ceramic tiles or vinyl floor, neutral tone. Washable matte paint or ceramic tiles on lower walls.",
       "Remove construction leftovers. Keep wall equipment in place: radiators, heaters, vents, switches.",
       "Empty room — no fixtures, no objects. Same windows and doors.",
-      "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
+      "Same camera angle, same lighting, no warm tint or yellow cast. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
     ].join(" ");
   }
 
@@ -260,7 +260,7 @@ function buildSurfacesFluxPrompt(surfacePrompt: string, roomTypeId?: string | nu
       "If ONE accent wall differs in color or texture, preserve it as-is — restyle plain walls only. If ALL walls share the same color, restyle ALL walls uniformly.",
       "Preserve ceiling 3D geometry. Remove construction leftovers including electrical outlets, round black wall boxes, cable exits — blend into wall finish. Keep wall equipment in place: radiators, heaters, vents, switches.",
       "Empty room — no furniture, no objects. Same windows and doors.",
-      "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
+      "Same camera angle, same lighting, no warm tint or yellow cast. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
     ].join(" ");
   }
 
@@ -272,7 +272,7 @@ function buildSurfacesFluxPrompt(surfacePrompt: string, roomTypeId?: string | nu
       "Preserve ceiling 3D geometry — vaults, beams, ribs keep shape. Clean plaster finish over raw concrete.",
       "Remove construction leftovers. Keep wall equipment in place: radiators, heaters, vents, switches.",
       "Empty room — no appliances, no objects. Same windows and doors.",
-      "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
+      "Same camera angle, same lighting, no warm tint or yellow cast. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
     ].join(" ");
   }
 
@@ -284,7 +284,7 @@ function buildSurfacesFluxPrompt(surfacePrompt: string, roomTypeId?: string | nu
       "Preserve ceiling 3D geometry — vaults, beams, ribs keep shape. Clean plaster finish over raw concrete.",
       "Remove construction leftovers. Keep wall equipment in place: radiators, heaters, vents, switches.",
       "Empty room — no shelving, no objects. Same windows and doors.",
-      "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
+      "Same camera angle, same lighting, no warm tint or yellow cast. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
     ].join(" ");
   }
 
@@ -295,7 +295,7 @@ function buildSurfacesFluxPrompt(surfacePrompt: string, roomTypeId?: string | nu
       "Durable floor — ceramic tiles, stone, or hard-wearing wood. Ceiling light per style.",
       "Remove construction leftovers. Keep wall equipment in place: radiators, heaters, vents, switches.",
       "Empty room — no furniture, no objects. Same windows and doors.",
-      "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
+      "Same camera angle, same lighting, no warm tint or yellow cast. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
     ].join(" ");
   }
 
@@ -310,7 +310,7 @@ function buildSurfacesFluxPrompt(surfacePrompt: string, roomTypeId?: string | nu
     "Keep all wall-mounted equipment: radiators, heaters, vents, thermostats, switches, outlets in exact position.",
     "Completely empty room — no furniture, no rugs, no textiles, no objects.",
     "Exact same number of windows and doors as the original. Same room geometry, same proportions.",
-    "Preserve existing light direction, shadow patterns, wall color temperature, light falloff, and camera angle.",
+    "Preserve existing light direction, shadow patterns, wall color temperature, light falloff, and camera angle. No warm tint or yellow cast — cool or neutral walls stay cool or neutral.",
     "Photo-realistic interior photograph, DSLR full-frame 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
   ].join(" ");
 }
@@ -445,7 +445,7 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: str
 function buildFurnitureFluxPrompt(furniturePrompt: string, roomTypeId?: string | null): string {
   const FLUX_STRUCTURE = "Walls, floor, ceiling identical to input. Shadows from furniture natural. No new openings.";
   const FLUX_EQUIPMENT = "Keep radiators, vents, switches visible.";
-  const FLUX_PHOTO = "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.";
+  const FLUX_PHOTO = "Same camera angle, same lighting, no warm tint or yellow cast. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.";
 
   // Kitchen: compact Flux furniture (~60 words)
   if (roomTypeId === "kitchen") {
@@ -554,7 +554,7 @@ function buildFurnitureFluxPrompt(furniturePrompt: string, roomTypeId?: string |
     "Freestanding only. No wall-mounted art, no framed paintings, no prints, no mirrors, no built-in shelving, no curtains.",
     "Walls, floor, ceiling identical to input. Shadows from furniture natural. No new openings.",
     "Keep radiators, vents, switches visible. Do not block radiators.",
-    "Same camera angle, same lighting. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
+    "Same camera angle, same lighting, no warm tint or yellow cast. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
   ].join(" ");
 }
 
@@ -606,7 +606,7 @@ function buildOutdoorSurfacesFluxPrompt(
     "Glass blocks and skylights keep their translucency.",
     "Preserve background vegetation. Only modify foreground ground surface.",
     "Maintain the exact wall and facade color temperature from the input — do not warm or cool the surfaces.",
-    "Preserve exact lighting conditions from input — same shadow hardness, direction, color temperature.",
+    "Preserve exact lighting conditions from input — same shadow hardness, direction, color temperature. No warm tint or yellow cast.",
     "Empty outdoor space — no furniture, no rugs, no objects.",
     "Same camera angle, same proportions.",
     "Photo-realistic outdoor photograph, DSLR full-frame 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
@@ -654,7 +654,7 @@ function buildOutdoorFurnitureFluxPrompt(
     "If exposed overhead structure (beams, pergola), consider one hanging plant or lantern if clearance allows.",
     "Ground surfaces LOCKED — same material, color, texture. Guard rails, walls, facades unchanged.",
     "Every piece casts realistic shadows consistent with existing natural light.",
-    "Preserve exact lighting from input — same shadow hardness, direction, color temperature.",
+    "Preserve exact lighting from input — same shadow hardness, direction, color temperature. No warm tint or yellow cast.",
     "Same camera angle, same proportions.",
     "Photo-realistic outdoor photograph, DSLR full-frame 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
   ]
@@ -1145,6 +1145,7 @@ export async function POST(request: NextRequest) {
         height: cached.meta.height,
         roomType: cached.meta.roomType,
         isOutdoor: cached.meta.isOutdoor,
+        allowWallMounted: preprocessResult.allowWallMounted,
       };
 
       let responsesPrompt: string;
