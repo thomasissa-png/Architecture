@@ -29,7 +29,7 @@ import {
  * Used by audit agents (Yann Duval, Lucas Moreau) to correlate generation quality with prompt version.
  * History: v1-v5 (Sprints 1-7), v6-v10 (Sprints 8-12), v11-v15 (Sprints 13-16), v16-v17 (Sprint 17),
  * v18 (current — Sprint 18+, post all fixes) */
-export const PROMPT_VERSION = "v23";
+export const PROMPT_VERSION = "v24";
 
 // ─── Timeout wrapper for external API calls ─────────────────────────
 const API_TIMEOUT_MS = 120_000;
@@ -420,9 +420,7 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: str
       "Center the dining table with chairs. If room is deep or has multiple zones, add a sideboard or buffet as background anchor.",
       "Place all objects naturally on the floor with correct perspective and scale. Cast realistic shadows matching existing light — soft for diffused, hard for direct sunlight.",
       "Respect furniture density implied by the style. If room appears small, reduce accent pieces.",
-      "Freestanding objects only. Do not add any wall-mounted art, framed paintings, prints, mirrors, or wall-mounted decorations. No built-in shelving, no curtains.",
-      STRUCTURE_LOCKED,
-      EQUIPMENT_PRESERVATION,
+      "Freestanding objects only — no wall art, no shelving, no curtains. Room structure LOCKED (walls, floor, ceiling, windows, radiators unchanged). Shadows from new furniture are expected.",
       CAMERA_AND_PHOTO,
     ].join(" ");
   }
@@ -430,13 +428,12 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: str
   // ── FALLBACK: generic for living_room, office, null ── (full directives)
   return [
     `Add the following furniture and decoration into this photo of a finished room: ${furniturePrompt}.`,
+    "The result should look like a professionally styled photograph for a luxury real estate listing — lived-in and aspirational, not a sterile furniture catalog.",
     "Distribute furniture across the FULL DEPTH and WIDTH of the room. If the room is deep or has multiple zones, place a primary group in the foreground AND a secondary group further back. If the room is also wide, add a lateral anchor on the opposite side.",
     "Place all objects naturally on the floor. Every piece must have correct perspective, scale, and cast realistic shadows matching the existing light. Match shadow hardness to lighting type.",
     "If the ceiling appears very high (>3m) or room is very large, scale up furniture proportionally.",
     "Respect furniture density implied by the style. If minimalist, leave large empty floor areas. If room appears small, reduce accent pieces.",
-    "Freestanding objects only. Do not add any wall-mounted art, framed paintings, prints, mirrors, or wall-mounted decorations of any kind. No built-in shelving, no curtains.",
-    STRUCTURE_LOCKED,
-    EQUIPMENT_PRESERVATION,
+    "Freestanding objects only — no wall art, no shelving, no curtains. Room structure LOCKED (walls, floor, ceiling, windows, radiators unchanged). Shadows from new furniture are expected.",
     "If the input has zero windows, the output must have zero windows.",
     CAMERA_AND_PHOTO,
   ].join(" ");
