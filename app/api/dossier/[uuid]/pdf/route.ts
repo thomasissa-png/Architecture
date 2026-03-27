@@ -6,7 +6,7 @@
  * Uses pdf-lib (lightweight, no binary dependencies).
  * Content:
  *   - Cover page: merchant branding, hero image, property info, description, map
- *   - Photo pages: before/after side by side (1 per room)
+ *   - Photo pages: before/after stacked vertically (1 per room, A4 portrait)
  *   - Footer: merchant coordinates + AI disclaimer
  * EU AI Act Art. 50: AI disclaimer on every page.
  */
@@ -30,8 +30,8 @@ import { translateRoomLabel } from "@/lib/constants";
 export const dynamic = "force-dynamic";
 
 // ─── Constants ───────────────────────────────────────────────────────
-const PAGE_WIDTH = 842; // A4 landscape width in points
-const PAGE_HEIGHT = 595; // A4 landscape height in points
+const PAGE_WIDTH = 595; // A4 portrait width in points
+const PAGE_HEIGHT = 842; // A4 portrait height in points
 const MARGIN = 40;
 const FOOTER_HEIGHT = 35;
 const AI_DISCLAIMER = "Visuels générés par IA à titre indicatif — Powered by Versiroom";
@@ -203,7 +203,7 @@ export async function GET(
 
   if (isDossierExpired(dossier)) {
     return NextResponse.json(
-      { error: "Ce dossier a expire." },
+      { error: "Ce dossier a expiré." },
       { status: 410 }
     );
   }
@@ -233,8 +233,13 @@ export async function GET(
 
   try {
     const pdfDoc = await PDFDocument.create();
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+    // Map merchant font to pdf-lib StandardFonts (no custom embed possible)
+    // Serif fonts (Playfair Display, Lora) -> TimesRoman, sans-serif -> Helvetica
+    const merchantFontName = hasMerchant ? profile?.police : null;
+    const isSerif = merchantFontName === "Playfair Display" || merchantFontName === "Lora";
+    const font = await pdfDoc.embedFont(isSerif ? StandardFonts.TimesRoman : StandardFonts.Helvetica);
+    const fontBold = await pdfDoc.embedFont(isSerif ? StandardFonts.TimesRomanBold : StandardFonts.HelveticaBold);
 
     const title = getDossierTitle(dossier);
     const dateStr = new Date(dossier.created_at).toLocaleDateString("fr-FR", {
@@ -706,14 +711,14 @@ export async function GET(
       haussmannien: "Style haussmannien",
     };
 
-    // ── Photo Pages (before/after side by side) ────────────────────
+    // ── Photo Pages (before/after stacked vertically — A4 portrait) ──
     for (const photo of completedPhotos) {
       const page = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
 
       // Room label + style in header
       const roomLabel = translateRoomLabel(photo.room_label, `Photo ${photo.photo_index + 1}`);
       const styleLabel = photo.style_id ? ` — ${STYLE_LABELS[photo.style_id] || photo.style_id}` : "";
-      safeDrawText(page,roomLabel + styleLabel, {
+      safeDrawText(page, roomLabel + styleLabel, {
         x: MARGIN,
         y: PAGE_HEIGHT - 35,
         size: 14,
@@ -721,19 +726,20 @@ export async function GET(
         color: rgb(primaryColor.r, primaryColor.g, primaryColor.b),
       });
 
-      // Image area dimensions (side by side)
-      const imgAreaWidth = (PAGE_WIDTH - MARGIN * 3) / 2;
-      const imgAreaHeight = PAGE_HEIGHT - 100;
-      const imgY = FOOTER_HEIGHT + 15;
+      // Image area dimensions (stacked: top = before, bottom = after)
+      const imgAreaWidth = PAGE_WIDTH - MARGIN * 2;
+      const imgAreaHeight = (PAGE_HEIGHT - 130) / 2; // 130 = header + labels + footer + spacing
+      const beforeY = PAGE_HEIGHT - 55; // top of before image area
+      const afterY = beforeY - imgAreaHeight - 30; // top of after image area (30pt gap for label)
 
-      // Before image
+      // Before image (top)
       if (photo.input_image_key) {
         try {
           const beforeImg = await embedImageFromStorage(pdfDoc, photo.input_image_key);
           if (beforeImg) {
             const dims = beforeImg.scaleToFit(imgAreaWidth, imgAreaHeight);
             const xOffset = MARGIN + (imgAreaWidth - dims.width) / 2;
-            const yOffset = imgY + (imgAreaHeight - dims.height) / 2;
+            const yOffset = beforeY - imgAreaHeight + (imgAreaHeight - dims.height) / 2;
             page.drawImage(beforeImg, {
               x: xOffset,
               y: yOffset,
@@ -746,23 +752,44 @@ export async function GET(
         }
       }
 
-      // "Avant home staging" label
-      safeDrawText(page,"Avant home staging", {
-        x: MARGIN + imgAreaWidth / 2 - 40,
-        y: imgY - 5,
+      // "Avant home staging" label (between the two images)
+      safeDrawText(page, "Avant home staging", {
+        x: MARGIN,
+        y: beforeY - imgAreaHeight - 12,
         size: 8,
         font: fontBold,
         color: rgb(0.5, 0.5, 0.5),
       });
 
-      // After image
+      // Horizontal separator line between before and after
+      const separatorColor = rgb(secondaryColor.r, secondaryColor.g, secondaryColor.b);
+      const sepY = afterY + imgAreaHeight + 4;
+      page.drawLine({
+        start: { x: MARGIN, y: sepY },
+        end: { x: PAGE_WIDTH - MARGIN, y: sepY },
+        thickness: 0.5,
+        color: separatorColor,
+        opacity: 0.2,
+      });
+
+      // "Après home staging" label
+      const afterLabelColor = rgb(secondaryColor.r, secondaryColor.g, secondaryColor.b);
+      safeDrawText(page, "Après home staging", {
+        x: MARGIN,
+        y: afterY + imgAreaHeight + 8,
+        size: 8,
+        font: fontBold,
+        color: afterLabelColor,
+      });
+
+      // After image (bottom)
       if (photo.output_image_key) {
         try {
           const afterImg = await embedImageFromStorage(pdfDoc, photo.output_image_key);
           if (afterImg) {
             const dims = afterImg.scaleToFit(imgAreaWidth, imgAreaHeight);
-            const xOffset = MARGIN * 2 + imgAreaWidth + (imgAreaWidth - dims.width) / 2;
-            const yOffset = imgY + (imgAreaHeight - dims.height) / 2;
+            const xOffset = MARGIN + (imgAreaWidth - dims.width) / 2;
+            const yOffset = afterY + (imgAreaHeight - dims.height) / 2;
             page.drawImage(afterImg, {
               x: xOffset,
               y: yOffset,
@@ -775,30 +802,10 @@ export async function GET(
         }
       }
 
-      // "Apres home staging" label
-      const afterLabelColor = rgb(secondaryColor.r, secondaryColor.g, secondaryColor.b);
-      safeDrawText(page,"Après home staging", {
-        x: MARGIN * 2 + imgAreaWidth + imgAreaWidth / 2 - 40,
-        y: imgY - 5,
-        size: 8,
-        font: fontBold,
-        color: afterLabelColor,
-      });
-
-      // Separator line
-      const separatorColor = rgb(secondaryColor.r, secondaryColor.g, secondaryColor.b);
-      page.drawLine({
-        start: { x: MARGIN + imgAreaWidth + MARGIN / 2, y: imgY },
-        end: { x: MARGIN + imgAreaWidth + MARGIN / 2, y: imgY + imgAreaHeight },
-        thickness: 0.5,
-        color: separatorColor,
-        opacity: 0.3,
-      });
-
       // Page number
       const pageNum = `${completedPhotos.indexOf(photo) + 1} / ${completedPhotos.length}`;
       const pageNumWidth = font.widthOfTextAtSize(pageNum, 7);
-      safeDrawText(page,pageNum, {
+      safeDrawText(page, pageNum, {
         x: PAGE_WIDTH / 2 - pageNumWidth / 2,
         y: PAGE_HEIGHT - 20,
         size: 7,
@@ -815,6 +822,117 @@ export async function GET(
         hasMerchant ? profile?.telephone || null : null,
         secondaryColor
       );
+    }
+
+    // ── Merchant Info Page (last page) ──────────────────────────────
+    if (hasMerchant && profile) {
+      const infoPage = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
+      let infoY = PAGE_HEIGHT - 80;
+
+      // Logo centered (re-fetch from storage for the info page)
+      const infoLogoData = profile.logo_storage_key ? await getMerchantLogo(profile.logo_storage_key) : null;
+      if (infoLogoData) {
+        try {
+          let logoImg;
+          try {
+            logoImg = await pdfDoc.embedJpg(infoLogoData);
+          } catch {
+            logoImg = await pdfDoc.embedPng(infoLogoData);
+          }
+          const logoDims = logoImg.scaleToFit(120, 80);
+          infoPage.drawImage(logoImg, {
+            x: PAGE_WIDTH / 2 - logoDims.width / 2,
+            y: infoY - logoDims.height,
+            width: logoDims.width,
+            height: logoDims.height,
+          });
+          infoY -= logoDims.height + 25;
+        } catch { /* logo embed failed, skip */ }
+      }
+
+      // Company name
+      if (profile.raison_sociale) {
+        const companyText = sanitizeForPdf(profile.raison_sociale);
+        const companyWidth = fontBold.widthOfTextAtSize(companyText, 20);
+        safeDrawText(infoPage, companyText, {
+          x: PAGE_WIDTH / 2 - companyWidth / 2,
+          y: infoY,
+          size: 20,
+          font: fontBold,
+          color: rgb(primaryColor.r, primaryColor.g, primaryColor.b),
+        });
+        infoY -= 35;
+      }
+
+      // Separator
+      infoPage.drawLine({
+        start: { x: PAGE_WIDTH / 2 - 60, y: infoY },
+        end: { x: PAGE_WIDTH / 2 + 60, y: infoY },
+        thickness: 1,
+        color: rgb(primaryColor.r, primaryColor.g, primaryColor.b),
+        opacity: 0.3,
+      });
+      infoY -= 30;
+
+      // Contact details centered
+      const contactLines: string[] = [];
+      if (profile.adresse) contactLines.push(profile.adresse);
+      if (profile.telephone) contactLines.push(`Tél. : ${profile.telephone}`);
+      if (profile.email_pro) contactLines.push(profile.email_pro);
+      if (profile.siret) contactLines.push(`SIRET : ${profile.siret}`);
+
+      for (const line of contactLines) {
+        const lineText = sanitizeForPdf(line);
+        const lineWidth = font.widthOfTextAtSize(lineText, 11);
+        safeDrawText(infoPage, lineText, {
+          x: PAGE_WIDTH / 2 - lineWidth / 2,
+          y: infoY,
+          size: 11,
+          font,
+          color: rgb(0.3, 0.3, 0.3),
+        });
+        infoY -= 18;
+      }
+
+      // QR code to online dossier
+      infoY -= 20;
+      try {
+        const qrUrl = `https://architecture-toum92.replit.app/dossier/${dossier.slug || uuid}`;
+        const qrPng = await QRCode.toBuffer(qrUrl, { width: 200, margin: 1, color: { dark: "#1C1C1E", light: "#FAFAF8" } });
+        const qrImg = await pdfDoc.embedPng(qrPng);
+        const qrSize = 80;
+        infoPage.drawImage(qrImg, {
+          x: PAGE_WIDTH / 2 - qrSize / 2,
+          y: infoY - qrSize,
+          width: qrSize,
+          height: qrSize,
+        });
+        infoY -= qrSize + 12;
+        const qrLabel = "Voir le dossier en ligne";
+        const qrLabelWidth = font.widthOfTextAtSize(qrLabel, 8);
+        safeDrawText(infoPage, qrLabel, {
+          x: PAGE_WIDTH / 2 - qrLabelWidth / 2,
+          y: infoY,
+          size: 8,
+          font,
+          color: rgb(0.5, 0.5, 0.5),
+        });
+      } catch { /* QR failed, skip */ }
+
+      // "Dossier généré par Versiroom" at bottom
+      const poweredBy = "Dossier généré par Versiroom — versiroom.fr";
+      const poweredByText = sanitizeForPdf(poweredBy);
+      const poweredByWidth = font.widthOfTextAtSize(poweredByText, 8);
+      safeDrawText(infoPage, poweredByText, {
+        x: PAGE_WIDTH / 2 - poweredByWidth / 2,
+        y: FOOTER_HEIGHT + 10,
+        size: 8,
+        font,
+        color: rgb(0.6, 0.6, 0.6),
+      });
+
+      // Footer
+      drawFooter(infoPage, font, fontBold, null, null, secondaryColor);
     }
 
     // ── Serialize PDF ──────────────────────────────────────────────
