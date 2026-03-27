@@ -886,6 +886,126 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Galerie avant/après par métier */}
+      <section id="galerie" className="py-16 sm:py-24 px-5 sm:px-8">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight mb-3">
+              Avant / Apr&egrave;s par m&eacute;tier
+            </h2>
+            <p className="text-muted font-light">
+              D&eacute;couvrez comment chaque profil utilise Versiroom
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Card Architecte */}
+            <div className="rounded-2xl border border-foreground/10 bg-background overflow-hidden">
+              <div className="aspect-[4/3] bg-foreground/5 relative flex items-center justify-center">
+                {/* [PLACEHOLDER — image avant/après architecte, à remplacer par ImageComparator ou fichier statique public/demo/] */}
+                <div className="text-center p-6">
+                  <div className="w-full h-full flex items-center justify-center text-muted/40">
+                    <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              <div className="p-5">
+                <p className="text-xs text-sage font-medium uppercase tracking-wider mb-1">Scandinave</p>
+                <p className="text-sm text-foreground font-medium mb-1">Claire, architecte d&apos;int&eacute;rieur</p>
+                <p className="text-xs text-muted font-light">
+                  &laquo;&nbsp;Un support de conversation avec mon client en 90 secondes au lieu de 3 jours de rendu 3D.&nbsp;&raquo;
+                </p>
+              </div>
+            </div>
+
+            {/* Card Marchand */}
+            <div className="rounded-2xl border border-foreground/10 bg-background overflow-hidden">
+              <div className="aspect-[4/3] bg-foreground/5 relative flex items-center justify-center">
+                {/* [PLACEHOLDER — image avant/après marchand, à remplacer par ImageComparator ou fichier statique public/demo/] */}
+                <div className="text-center p-6">
+                  <div className="w-full h-full flex items-center justify-center text-muted/40">
+                    <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              <div className="p-5">
+                <p className="text-xs text-sage font-medium uppercase tracking-wider mb-1">Contemporain</p>
+                <p className="text-sm text-foreground font-medium mb-1">Thomas, marchand de biens</p>
+                <p className="text-xs text-muted font-light">
+                  &laquo;&nbsp;3 visuels meubl&eacute;s en 10 minutes au lieu de 1 500&euro; chez un prestataire.&nbsp;&raquo;
+                </p>
+              </div>
+            </div>
+
+            {/* Card Particulier */}
+            <div className="rounded-2xl border border-foreground/10 bg-background overflow-hidden">
+              <div className="aspect-[4/3] bg-foreground/5 relative flex items-center justify-center">
+                {/* [PLACEHOLDER — image avant/après particulier, à remplacer par ImageComparator ou fichier statique public/demo/] */}
+                <div className="text-center p-6">
+                  <div className="w-full h-full flex items-center justify-center text-muted/40">
+                    <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              <div className="p-5">
+                <p className="text-xs text-sage font-medium uppercase tracking-wider mb-1">Japandi</p>
+                <p className="text-sm text-foreground font-medium mb-1">L&eacute;a, acheteuse particulier</p>
+                <p className="text-xs text-muted font-light">
+                  &laquo;&nbsp;Je veux voir &agrave; quoi MON salon ressemblerait, pas celui de quelqu&apos;un d&apos;autre sur Pinterest.&nbsp;&raquo;
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Teaser Mode Marchand */}
+      <section className="px-5 sm:px-8 pb-16 sm:pb-24">
+        <div className="max-w-4xl mx-auto bg-foreground/[0.02] border border-foreground/10 rounded-2xl p-8 sm:p-10 flex flex-col md:flex-row items-start gap-8">
+          {/* Icône */}
+          <div className="flex-shrink-0 w-14 h-14 rounded-xl bg-sage/10 flex items-center justify-center">
+            <svg className="w-7 h-7 text-sage" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+            </svg>
+          </div>
+          {/* Contenu */}
+          <div className="flex-1">
+            <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-3">
+              Mode Marchand — pour les pros de l&apos;immobilier
+            </h3>
+            <ul className="space-y-2 mb-5">
+              <li className="flex items-start gap-2.5 text-sm text-muted font-light">
+                <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                G&eacute;n&eacute;rez un dossier PDF complet avec vos visuels avant/apr&egrave;s
+              </li>
+              <li className="flex items-start gap-2.5 text-sm text-muted font-light">
+                <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                Cr&eacute;ez des annonces immobili&egrave;res pr&ecirc;tes &agrave; publier
+              </li>
+              <li className="flex items-start gap-2.5 text-sm text-muted font-light">
+                <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                Partagez un lien avec vos acqu&eacute;reurs — visite virtuelle en un clic
+              </li>
+            </ul>
+            <a
+              href="#pricing"
+              className="inline-flex items-center gap-2 bg-foreground text-background px-6 py-3 rounded-full text-sm font-medium hover:bg-foreground/85 active:scale-[0.99] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+            >
+              D&eacute;couvrir le pack Pro
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+              </svg>
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* Separator */}
       <div className="max-w-24 mx-auto border-t border-foreground/10" />
 
@@ -1435,9 +1555,18 @@ export default function Home() {
             </p>
           </div>
 
-          <p className="text-center text-sm text-muted font-light mb-10">
-            Payez uniquement ce que vous utilisez &mdash; sans abonnement.
-          </p>
+          {/* CTA gratuit bandeau */}
+          <div className="bg-sage/8 border border-sage/20 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 mb-10 max-w-2xl mx-auto">
+            <p className="text-sm text-foreground font-light text-center sm:text-left">
+              Essayez avec <strong className="font-semibold">3 photos gratuites</strong> &mdash; sans carte bancaire
+            </p>
+            <a
+              href="#outil"
+              className="flex-shrink-0 inline-flex items-center gap-2 bg-foreground text-background px-5 py-2.5 rounded-full text-sm font-medium hover:bg-foreground/85 active:scale-[0.99] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+            >
+              Essayer l&apos;outil
+            </a>
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 items-stretch max-w-4xl mx-auto">
             {/* Découverte */}
