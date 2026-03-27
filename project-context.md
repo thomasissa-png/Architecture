@@ -258,52 +258,60 @@
 | @copywriter | 2026-03-27 | docs/reviews/copy-audit-exportportail.md | Audit copy ExportPortail V2a : note 6,5/10. P0 : 3 points d'exclamation "Copié !" (violation brand-voice.md explicite). P1 (9 corrections) : disclaimer IA reformulé pour les acquéreurs LeBonCoin ("à titre indicatif" vs jargon juridique), placeholder "Description à venir" risqué si copié tel quel sur un portail, badges "Adapté" → "Raccourci", warning photos sans priorisation des pièces, notes portails avec jargon interne "non confirmées officiellement". P2 (7 corrections) : vocabulaire, casse des headers copiables. Aucune modification de logique applicative — uniquement des chaînes de texte. | P0 priorisé car les points d'exclamation sont la seule violation explicite de brand-voice.md dans ce composant. Disclaimer IA reformulé (P1) sans changer le fond juridique ("non contractuelles" conservé) : le texte est copié par Thomas dans ses annonces publiques, les acquéreurs doivent le comprendre sans formation. "Non confirmées officiellement" supprimé des notes portails : c'est du jargon interne HYPOTHÈSE (portal-formatter.ts) qui ne doit pas filtrer vers l'UI. Encodages Unicode \uXXXX non classés P0 : le rendu côté navigateur est correct, c'est une correction de qualité de code (à faire en même temps). |
 | @copywriter | 2026-03-27 | docs/copy/homepage-tarifs-copy.md | 6 blocs de copy prêts à implémenter : use-case cards 3 personas (titres ≤ 7 mots, sous-titres calibrés), captions galerie avant/après (3 personas × 2-3 styles), teaser Mode Marchand (3 bullets + CTA 4 mots), blocs "Ce pack est fait pour vous si..." (1 phrase par pack/persona), feature Mode Marchand développée en 3 lignes + note ROI "29€ au lieu de 200-500€", CTA gratuit haut de page tarifs. Tous les chiffres sourcés (200-500€, 29€, 90 secondes, 1 500€). | Calibration sur brand-voice.md + messaging-matrix.md avant production. Argument ROI Thomas ("200-500€ → 29€") placé en P0 sur la card et la feature tarifs — c'est le levier de conversion le plus documenté pour ce persona (homepage-tarifs-audit.md). Pas de chiffre ROI monétaire pour Claire (argument = délai, pas économie — données absentes) ni pour Léa (aucun chiffre vérifiable). Titres corrigés pour respecter la contrainte max 8 mots (version précédente en dépassait pour BLOC 1A). Vocabulary siloing strict : "planche/direction esthétique" pour Claire uniquement, "plaquette/acquéreur" pour Thomas uniquement, "mon salon/mon style" pour Léa uniquement. CTA Mode Marchand pointe vers ancre /pricing#mode-marchand (pas vers page inexistante). Note ROI pack Pro en style sobre (pas badge rouge) — cohérent avec le ton Versiroom. |
 | @ux | 2026-03-27 | docs/ux/homepage-restructure.md | Wireframe complet restructuration homepage + 3 pages personas (/architecte, /marchand, /particulier). 6 frictions identifiées et résolues : suppression galerie métier redondante, déplacement encart Mode Pro après CTA gratuit, renommage Mode Marchand→Mode Pro + Dossiers PDF→Dossiers de pré-commercialisation, upgrade lisibilité "Sans carte bancaire", sous-titre outil portant la garantie freemium, liens texte discrets remplaçant les cartes USE_CASES. Wireframes des 3 pages personas avec contenu adapté à chaque persona (ROI chiffré pour Thomas, "support de conversation" pour Claire, gratuit sans CB répété 2× pour Léa). | Galerie par métier supprimée (pas ajustée) car zéro information nouvelle — dupliquer le signal d'audience affaiblit la page au lieu de la renforcer (pattern confirmé par benchmarks SaaS 2026). Encart Mode Pro placé après le CTA gratuit (et non avant l'outil comme actuellement) : l'utilisateur est le plus réceptif à l'upgrade juste après avoir décidé d'essayer gratuitement — pas avant. Liens texte discrets retenus (vs cartes) pour ne pas concurrencer le CTA principal : Léa ne doit pas hésiter entre "cliquer sur la carte" et "essayer maintenant". Pages personas autonomes (pas de router depuis la homepage uniquement) car elles créent des cibles SEO dédiées — cohérent avec seo-strategy.md. |
-| @elon | 2026-03-27 | docs/reviews/elon-audit-ia-strategy.md | Audit strategique IA first principles. Score 7.2/10. 4 problemes critiques : (1) gpt-4.1 pas optimal — migrer vers GPT Image 1.5 (4x plus rapide, meilleur input_fidelity), (2) latence 90-120s vs Gepetto 15s = defaut fatal, (3) zero detection automatique de regression, (4) progression non mesurable sans benchmark fixe. 7 recommandations priorisees. Vision 6 mois : benchmark fixe + GPT Image 1.5 + metriques SSIM/CLIP + A/B testing prompts + LoRA fine-tune Flux 2 Dev. | GPT Image 1.5 recommande car modele image-dedie (vs gpt-4.1 = LLM avec capacites image). Benchmark fixe de 15 images = fondement de la regression ET de la progression (sans lui, on optimise a l'aveugle). Single-pass a tester car si input_fidelity="high" de GPT Image 1.5 suffit, latence /2. LoRA fine-tune = vision 10x car les centaines de paires (input, output) validees par Yann/Lucas sont un dataset de gold. Alt ecartee : rester sur gpt-4.1 (latence inacceptable vs marche). |
+| @ia | 2026-03-27 | docs/ia/prompt-triage-v24.md, docs/ia/migration-gpt-image-1.5.md, docs/ia/prompt-improvement-protocol.md, docs/ia/benchmark-specs.md | Triage 9 recommandations (5 APPLIQUER, 4 REPORTER). Migration GPT Image 1.5 documentée (4 lignes). Protocole prompts avec grille pondérée géométrie ×3. Benchmark 7 images specs. | Zéro régression = objectif n°1. Les 5 corrections appliquées sont ADDITIVES (ajout de précision, jamais de substitution). Les 4 reportées touchent des constantes globales (DSLR_LINE, LIGHT_PRESERVATION) partagées par tous les styles — risque trop élevé sans test. GPT Image 1.5 choisi car modèle image dédié (vs gpt-4.1 = LLM avec image en bonus). |
+| @fullstack | 2026-03-27 | app/page.tsx, app/pricing/page.tsx, app/architecte/page.tsx, app/marchand/page.tsx, app/particulier/page.tsx, 25+ fichiers renommages | Homepage restructurée : suppression galerie métier, encart Mode Pro après CTA gratuit, 3 pages personas SSG, pricing Pro 29€/mois avec badge "Prix de lancement", renommage Mode Marchand→Mode Pro (25+ fichiers). | Sections personas supprimées car redondantes avec pills hero — remplacées par pages dédiées (meilleur SEO). Pro en abonnement mensuel (vs one-shot) car Thomas 8-12 ops/an = usage régulier justifiant le recurring. 29€/mois cohérent avec pricing-strategy.md (110 abonnés = 3 028€ marge nette). |
+| @qa | 2026-03-27 | docs/qa/homepage-pricing-audit.md | Audit renommages + pricing : 0 P0, 5 P1 (PDF résiduel, pricing incohérent 3 vs 4 tiers, badge manquant, /mois manquant, wording compte). 3 P2 (UTF-8, comparatif). | 5 P1 tous corrigés immédiatement. P2 UTF-8 mineurs (non bloquants). |
+| @product-manager | 2026-03-27 | docs/product/pricing-strategy.md, docs/product/functional-specs.md, docs/product/roadmap.md | Pro 29€/mois (50 crédits, Mode Pro, dossiers pré-commercialisation). Crédits supplémentaires +20/+50/+100. F7 pages personas specs complètes. Seuil rentabilité 110 abonnés. | Abonnement retenu (vs packages) car fondateur le demande. 110 abonnés < 140 transactions one-shot = plus accessible. Crédits TTL 90j pour éviter accumulation infinie. |
+| @elon | 2026-03-27 | docs/reviews/elon-audit-ia-strategy.md | Score 7.2/10. 4 problèmes : mauvais modèle (gpt-4.1), latence fatale (131s vs 15s Gepetto), zéro détection régression, progression non mesurable. 7 recommandations. Vision : LoRA fine-tune Flux 2 Dev. | GPT Image 1.5 = quick win n°1 (latence /4). Benchmark fixe = fondement de tout (régression + progression). Alt écartée : rester sur gpt-4.1 (latence inacceptable vs marché). |
 
 ---
 
 ## Mémo de reprise — dernière session
 
-- **Date et heure de clôture** : 2026-03-27 (session 3 — 50 commits, 70 fichiers, 6842 insertions)
-- **Branch** : `claude/update-gradient-agents-rnmKh`
+- **Date et heure de clôture** : 2026-03-27 (session 4)
+- **Branch** : `claude/update-gradient-agents-IM310`
 - **Résumé de la session** :
-  - **Gradient Agents v2** : mise à jour depuis Agent-Team, 6 agents modifiés, agent @moi ajouté, CLAUDE.md fusionné
-  - **Sprint 22 — Audit visuel Yann+Lucas** (#31-42, 28 images) : Flux P2 désactivé (hallucinations #41/#42), itérations destructrices fixées, allowWallMounted, prises électriques, warm shift, grain photo. Prompts v24 validés par les 3 experts (indoor + outdoor)
-  - **Prompts v24** : mood sentences 12 styles indoor + 8 outdoor, atmosphere directive, condensation contraintes, corrections Camille (2 plafonds outdoor, textiles, fontaine murale)
-  - **5 agents métier créés** : interior-architect (Yann), ai-image-expert (Lucas), paysagiste (Camille v2), marchand-de-biens (Thomas), client-mandataire (Marc v2.1) — tous invocables par subagent_type
-  - **V2a Export Portails** : LeBonCoin/SeLoger/Bien'ici, composant ExportPortail, portal-formatter.ts, 36 tests unitaires + 16 E2E, Thomas 9.1→9.5/10
-  - **PDF portrait A4** : refonte layout fiche de bien pro, photos empilées, page marchand, QR code, DPE badge, liens tel/mailto cliquables. Marc 5.7→8.6/10
-  - **Section "Votre interlocuteur"** sur annonce + dossier publics (MerchantInfoBlock)
-  - **Propagation branding** : couleurs CSS vars + polices marchand sur pages web dossier/annonce, mapping PDF serif/sans-serif
-  - **Fix SIRET** : validation placeholder Pappers, fallback API gouv.fr
-  - **Homepage/Tarifs P0** : galerie avant/après 3 personas, teaser Mode Marchand, ROI Thomas "29€ vs 200-500€", blocs persona tarifs, page /examples
-  - **URLs slug** : annonces + dossiers avec noms lisibles, redirect 301 UUID→slug
-  - **Comparateur mobile** : touch-action:none
-  - **Footer** : composant réutilisable sur les 4 pages personas
-  - **Lint fixes** : 4 erreurs bloquant le build corrigées
-  - **QA pré-lancement** : GO, 0 P0, 7 P1 tous corrigés
+  - **Gradient Agents v3** : mise à jour depuis Agent-Team branche claude/extract-project-context-BrqhN, 13 agents mis à jour, CLAUDE.md fusionné
+  - **14 générations réelles v24** : 6 indoor (Contemporain, Bohème, Wabi-Sabi, Haussmannien, Méditerranéen, Cosy) + 7 outdoor + 1 erreur Provençal — images en production
+  - **Audits visuels réels** : Yann indoor batch 1 = 8.0/10 (Wabi-Sabi 8.5, Bohème 7.9, Contemporain 7.5). Camille outdoor = 7.8/10 (Cosy Balcon 8.4 → Bohème Garden 7.0)
+  - **Audit géométrie vraies photos chantier** : #43 Industrial 9.0, #44 Maximalist 9.5, #38 Cosy 8.5 — pipeline 2 passes VALIDÉ sur pièces vides
+  - **Prompts v25** : 5 corrections additives zéro-régression (Flos IC, no duplicate, plantes visuelles, lanternes, matériaux outdoor)
+  - **Migration GPT Image 1.5 codée** (v26) : 4 lignes dans route.ts, non déployée
+  - **Protocole amélioration prompts** : grille 10 critères pondérés (géométrie ×3 = critère n°1), PROMPT_CHANGELOG v1→v26, règles anti-régression, template triage
+  - **Benchmark v1** : 7 images réelles de production + scripts run.ts/compare.ts + baseline v24 mesurée (131s moy)
+  - **Homepage restructurée** : suppression sections redondantes, encart Mode Pro, 3 pages personas
+  - **Pricing Pro 29€/mois** : badge "Prix de lancement", 4 tiers cohérents homepage + /pricing
+  - **Renommages complets** : Mode Marchand → Mode Pro (25+ fichiers), QA validé 0 P0
+  - **Audit stratégique @elon** : score 7.2/10, migration GPT Image 1.5 = quick win n°1
 
-- **Travaux en cours** :
-  1. **Blog seed** — `npx tsx scripts/seed-blog.ts` à exécuter sur Replit
-  2. **Domaine versiroom.fr** — blocker SEO/GEO n°1, action fondateur
-  3. **SIRET/médiateur** — placeholders dans les pages légales, action fondateur
-  4. **Clés API prod** — Google OAuth, Stripe, Sentry, Pappers
-  5. **Images galerie homepage** — 3 vraies photos avant/après par persona (au lieu de la même image ×3)
+- **Travaux en cours (non déployés)** :
+  1. **Migration GPT Image 1.5** (v26) — code prêt, non déployé sur Replit. Déployer puis run benchmark pour comparer latence
+  2. **Benchmark post-v26** — relancer `npx tsx benchmarks/run.ts --version v26` après déploiement
+  3. **Audit @ia implémentation** — lancé, peut-être en cours ou timeout
+  4. **Bug config benchmark** — B02 wabi_sabi vs wabi-sabi (tiret vs underscore dans config.ts)
+
+- **Travaux reportés (sessions précédentes, toujours valides)** :
+  1. Blog seed — `npx tsx scripts/seed-blog.ts` sur Replit
+  2. Domaine versiroom.fr — blocker SEO/GEO n°1, action fondateur
+  3. SIRET/médiateur — placeholders pages légales
+  4. Clés API prod — Stripe, Google OAuth, Sentry, Pappers
+  5. F5 Mode Décorateur — specs prêtes, pas implémenté
 
 - **Prochaines actions recommandées** :
-  1. **F5 Mode Décorateur** — prochaine feature dans la roadmap (specs dans docs/product/functional-specs.md §F5)
-  2. **Seed blog** — `npx tsx scripts/seed-blog.ts` sur Replit. Action fondateur, 1 min.
-  3. **Domaine** — acheter versiroom.fr, configurer DNS. Action fondateur.
-  4. **Tester en prod** — générer des photos avec les prompts v24 et relancer Yann+Lucas pour mesurer le gain
+  1. **Déployer v26 sur Replit** puis run benchmark → comparer latence v24 (131s) vs v26 (objectif <40s)
+  2. **Fix bug B02** benchmark config (wabi_sabi → wabi-sabi)
+  3. **Test single-pass** GPT Image 1.5 si latence 2 passes encore trop haute
+  4. **Cron monitoring hebdo** (3 images benchmark)
+  5. **F5 Mode Décorateur** — prochaine feature dans la roadmap
 
-- **Blockers éventuels** :
-  - Domaine Replit = plafond SEO/GEO (tous les agents convergent)
-  - Blog vide en prod (seed non exécuté)
-  - Clés API prod non configurées (Stripe non fonctionnel)
+- **Blockers** :
+  - Déploiement Replit requis pour valider v26 (code poussé sur branche, pas sur main)
+  - Domaine Replit = plafond SEO/GEO
+  - Stripe non fonctionnel (clés non configurées)
 
 - **Commande de reprise suggérée** :
 ```
-@orchestrator Reprends le projet Versiroom. Session 27/03 (50 commits) : Sprint 22 audit visuel + prompts v24 validés Yann/Lucas/Camille, 5 agents métier créés, V2a export portails (Thomas 9.5), PDF portrait (Marc 8.6), branding propagé, homepage/tarifs P0, URLs slug, QA GO 0 P0. Priorités : (1) F5 Mode Décorateur, (2) Seed blog, (3) Domaine versiroom.fr, (4) Test prompts v24 en production.
+@orchestrator Reprends le projet Versiroom. Session 27/03b : Gradient Agents v3, 14 générations v24 testées (Yann 8.0, Camille 7.8, géométrie 9.0-9.5), prompts v25 (5 corrections additives), migration GPT Image 1.5 codée (v26, non déployée), protocole prompts + benchmark 7 images + baseline v24 (131s), homepage Mode Pro + pricing 29€/mois + 3 pages personas, audit @elon 7.2/10. Priorité : (1) déployer v26 et run benchmark, (2) cron monitoring, (3) F5 Mode Décorateur.
 ```
 ```
 @orchestrator Reprends le projet Versiroom. Session 26/03c marathon (50+ commits) : tous bugs prod corriges, QA 9.2/10, Thomas 8.8, Marc 9.4, SEO/GEO strategies + 3 landing pages + /comparatif + blog infra. Fix critique gallery (saveUserPhoto AVANT response Replit autoscale). Priorites : (1) Carte OSM page annonce (P0 Marc), (2) Comparateur mobile (touch events), (3) Seed blog sur Replit, (4) Domaine versiroom.fr, (5) Footer pages personas.

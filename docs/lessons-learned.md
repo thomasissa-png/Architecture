@@ -1,5 +1,17 @@
 # Lessons Learned — Versiroom
 
+## Session 2026-03-27b (Audit IA + benchmark + migration GPT Image 1.5)
+
+| Session | Date | Catégorie | Sévérité | Description | Correction appliquée | Recommandation framework | Statut |
+|---|---|---|---|---|---|---|---|
+| 27b | 2026-03-27 | problème | P1 | Audits visuels avec images Unsplash MEUBLÉES invalident le test de préservation géométrie — le modèle régénère au lieu d'éditer | Audit géométrie refait sur vraies photos de chantier (#37-44) → 8.5-9.5/10 | TOUJOURS utiliser des pièces VIDES pour tester la géométrie. Les images meublées ne testent que le style, pas la préservation. | appliqué |
+| 27b | 2026-03-27 | problème | P1 | Agents d'audit visuel timeout systématique (3+ images = >25 min, images PNG 2-3 MB) | Batch réduit à 3 images. Yann batch 1 OK (5 min), batch 2 timeout, Lucas timeout | Règle anti-timeout : max 3 images par agent d'audit visuel. Découper en batches. Si timeout, relancer (ne pas faire manuellement). | ouvert |
+| 27b | 2026-03-27 | problème | P0 | Agents textuels lourds (7 styles à auditer) timeout systématiquement (~28-35 min) | Abandonnés, remplacés par audits visuels sur images réelles | Règle : ne JAMAIS donner plus de 3-4 styles à auditer à un agent en une passe. Découper en batches de 3. | appliqué |
+| 27b | 2026-03-27 | pattern | - | Benchmark baseline v24 mesuré sur prod : latence moyenne 131s (107-161s) — données réelles, zéro invention | Rapport JSON commité dans benchmarks/history/ | Toujours mesurer la baseline AVANT de changer quoi que ce soit. Les données mesurées sont la seule source de vérité. | appliqué |
+| 27b | 2026-03-27 | recommandation | P0 | Latence 131s vs Gepetto 15s = 9x plus lent. Défaut fatal pour la rétention (@elon) | Migration GPT Image 1.5 codée (v26), non déployée | Migrer vers GPT Image 1.5 dès le prochain déploiement. Objectif : <40s. | ouvert |
+| 27b | 2026-03-27 | recommandation | P1 | Zéro détection automatique de régression — process 100% humain | Benchmark + scripts run.ts/compare.ts + seuils d'alerte implémentés | Cron hebdo sur 3 images benchmark. Exécuter benchmark avant chaque bump PROMPT_VERSION. | ouvert |
+| 27b | 2026-03-27 | préférence fondateur | - | [PRÉFÉRENCE FONDATEUR] : la préservation de la pièce d'origine (taille, angle, géométrie) est le critère n°1 absolu | Grille pondérée : géométrie ×3, éléments structurels ×3 (poids max) | Protocole prompts : G1 et G2 sont BLOQUANTS. Score <7 sur géométrie = NO-GO. | appliqué |
+
 ## Session 2026-03-27 (Sprint 22 + V2a + PDF portrait + agents)
 
 | Session | Date | Catégorie | Sévérité | Description | Correction appliquée | Recommandation framework | Statut |
