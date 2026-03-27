@@ -714,11 +714,13 @@ async function tryOpenAIResponses(
           size: size as "1024x1024" | "1536x1024" | "1024x1536",
         },
       ],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any),
     API_TIMEOUT_MS,
     "OpenAI Responses API"
   );
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const imageOutput = (response as any).output.find(
     (o: { type: string }) => o.type === "image_generation_call"
   );
@@ -849,11 +851,13 @@ async function tryOpenAIResponsesWithPrompt(
           size: size as "1024x1024" | "1536x1024" | "1024x1536",
         },
       ],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any),
     API_TIMEOUT_MS,
     "OpenAI Responses API"
   );
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const imageOutput = (response as any).output.find(
     (o: { type: string }) => o.type === "image_generation_call"
   );
