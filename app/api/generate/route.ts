@@ -420,7 +420,7 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: str
       "Center the dining table with chairs. If room is deep or has multiple zones, add a sideboard or buffet as background anchor.",
       "Place all objects naturally on the floor with correct perspective and scale. Cast realistic shadows matching existing light — soft for diffused, hard for direct sunlight.",
       "Respect furniture density implied by the style. If room appears small, reduce accent pieces.",
-      "Freestanding objects only — no wall art, no shelving, no curtains. Room structure LOCKED (walls, floor, ceiling, windows, radiators unchanged). Shadows from new furniture are expected.",
+      "Freestanding objects only — no wall art, no shelving, no curtains. Room structure LOCKED (walls, floor, ceiling, windows, radiators unchanged, not blocking radiators). Shadows from new furniture are expected.",
       CAMERA_AND_PHOTO,
     ].join(" ");
   }
@@ -433,7 +433,7 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: str
     "Place all objects naturally on the floor. Every piece must have correct perspective, scale, and cast realistic shadows matching the existing light. Match shadow hardness to lighting type.",
     "If the ceiling appears very high (>3m) or room is very large, scale up furniture proportionally.",
     "Respect furniture density implied by the style. If minimalist, leave large empty floor areas. If room appears small, reduce accent pieces.",
-    "Freestanding objects only — no wall art, no shelving, no curtains. Room structure LOCKED (walls, floor, ceiling, windows, radiators unchanged). Shadows from new furniture are expected.",
+    "Freestanding objects only — no wall art, no shelving, no curtains. Room structure LOCKED (walls, floor, ceiling, windows, radiators unchanged, not blocking radiators). Shadows from new furniture are expected.",
     "If the input has zero windows, the output must have zero windows.",
     CAMERA_AND_PHOTO,
   ].join(" ");
