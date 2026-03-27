@@ -1,0 +1,73 @@
+{
+  "version": "v24-production",
+  "date": "2026-03-27T17:43:16Z",
+  "note": "Baseline run against production (gpt-image-1, before GPT Image 1.5 migration)",
+  "results": [
+    {
+      "id": "B01",
+      "styleId": "scandinavian",
+      "success": true,
+      "duration_ms": 108166,
+      "has_pass1": false,
+      "has_output": true,
+      "alert_performance": false
+    },
+    {
+      "id": "B02",
+      "success": false,
+      "error": "style not found: wabi_sabi"
+    },
+    {
+      "id": "B03",
+      "styleId": "industrial",
+      "success": true,
+      "duration_ms": 107055,
+      "has_pass1": false,
+      "has_output": true,
+      "alert_performance": false
+    },
+    {
+      "id": "B04",
+      "styleId": "contemporary",
+      "success": true,
+      "duration_ms": 112659,
+      "has_pass1": false,
+      "has_output": true,
+      "alert_performance": false
+    },
+    {
+      "id": "B05",
+      "styleId": "cosy",
+      "success": true,
+      "duration_ms": 139829,
+      "has_pass1": false,
+      "has_output": true,
+      "alert_performance": false
+    },
+    {
+      "id": "B06",
+      "styleId": "contemporain_outdoor",
+      "success": true,
+      "duration_ms": 157691,
+      "has_pass1": false,
+      "has_output": true,
+      "alert_performance": true
+    },
+    {
+      "id": "B07",
+      "styleId": "cosy_balcon",
+      "success": true,
+      "duration_ms": 160707,
+      "has_pass1": false,
+      "has_output": true,
+      "alert_performance": true
+    }
+  ],
+  "summary": {
+    "total": 7,
+    "success": 6,
+    "failed": 1,
+    "avg_duration_ms": 131017,
+    "alerts": 2
+  }
+}
