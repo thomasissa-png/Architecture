@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * F4 — Mode Marchand: Main component.
+ * F4 — Mode Pro (ex Mode Marchand): Main component.
  *
  * Multi-step flow:
  * 1. Property info (name, address, surface, price, type)
@@ -242,7 +242,7 @@ export default function MerchantMode() {
   // ── Create dossier + upload + generate ──
   const handleGenerate = useCallback(async () => {
     if (!session?.user?.id) {
-      setError("Connectez-vous pour accéder au Mode Marchand.");
+      setError("Connectez-vous pour accéder au Mode Pro.");
       return;
     }
 

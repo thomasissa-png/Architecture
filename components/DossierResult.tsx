@@ -5,7 +5,7 @@ import StorageImage from "@/components/StorageImage";
 import { translateRoomLabel } from "@/lib/constants";
 
 /**
- * F4 — Mode Marchand: Dossier result display.
+ * F4 — Mode Pro (ex Mode Marchand): Dossier result display.
  * Shows completed before/after images with download and share options.
  * WhatsApp share uses navigator.share with image file (native pattern from ImageComparator).
  */

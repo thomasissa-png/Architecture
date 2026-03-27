@@ -55,7 +55,7 @@ const PACKS: Pack[] = [
       { text: "12 styles + mode personnalisé", active: true },
       { text: "1 itération par photo", active: true },
       { text: "Lien partageable 7 jours", active: true },
-      { text: "Mode Marchand", active: false },
+      { text: "Mode Pro", active: false },
     ],
     cta: "Acheter",
     highlight: false,
@@ -69,15 +69,14 @@ const PACKS: Pack[] = [
     perPhoto: "0,58",
     features: [
       { text: "3 itérations par photo", active: true },
-      { text: "Mode Marchand", active: true },
-      { text: "Dossiers PDF avant/après", active: true, sub: true },
-      { text: "Annonces immobilières prêtes à publier", active: true, sub: true },
-      { text: "Lien partageable acquéreurs 30 jours", active: true, sub: true },
+      { text: "Mode Pro", active: true },
+      { text: "Dossiers de pré-commercialisation", active: true, sub: true },
+      { text: "Liens partageables sans limite", active: true, sub: true },
     ],
-    cta: "Acheter",
+    cta: "S'abonner",
     highlight: true,
-    personaLine: "Ce pack est fait pour vous si vous êtes marchand de biens ou agent et gérez plusieurs opérations par an.",
-    roiNote: "29\u00A0€ au lieu de 200-500\u00A0€ chez un home stager",
+    personaLine: "Pour les architectes, marchands de biens et agences qui gèrent plusieurs projets par an.",
+    roiNote: "29\u00A0€/mois au lieu de 200-500\u00A0€ chez un home stager",
   },
 ];
 
@@ -271,8 +270,8 @@ function PricingContent() {
                       </svg>
                       {f.sub ? (
                         <span className="text-xs">{f.text}</span>
-                      ) : f.text === "Mode Marchand" && f.active ? (
-                        <span><strong className="font-medium text-foreground">Mode Marchand</strong></span>
+                      ) : f.text === "Mode Pro" && f.active ? (
+                        <span><strong className="font-medium text-foreground">Mode Pro</strong></span>
                       ) : (
                         f.text
                       )}

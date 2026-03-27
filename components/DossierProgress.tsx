@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * F4 — Mode Marchand: Batch generation progress display.
+ * F4 — Mode Pro (ex Mode Marchand): Batch generation progress display.
  * Shows per-photo status (pending, generating, completed, failed)
  * with a progress bar and timing.
  */

@@ -5,15 +5,15 @@ interface FooterProps {
 
 const LINKS = [
   { href: "/", label: "Accueil" },
-  { href: "/marchand", label: "Marchands" },
+  { href: "/marchand", label: "Professionnels" },
   { href: "/architecte", label: "Architectes" },
   { href: "/particulier", label: "Particuliers" },
   { href: "/examples", label: "Exemples" },
   { href: "/pricing", label: "Tarifs" },
   { href: "/blog", label: "Blog" },
-  { href: "/mentions-legales", label: "Mentions l\u00e9gales" },
+  { href: "/mentions-legales", label: "Mentions légales" },
   { href: "/cgv", label: "CGV" },
-  { href: "/confidentialite", label: "Confidentialit\u00e9" },
+  { href: "/confidentialite", label: "Confidentialité" },
   { href: "mailto:contact@versiroom.fr", label: "Contact" },
 ];
 

@@ -117,10 +117,10 @@ async function resilientFetch(
   throw new Error("La génération a échoué après plusieurs tentatives.");
 }
 
-const USE_CASES = [
-  { label: "Architectes", desc: "Partagez des pistes d\u2019inspiration" },
-  { label: "Marchands de biens", desc: "Précommercialisez vos opérations" },
-  { label: "Particuliers", desc: "Visualisez votre espace avant d\u2019acheter" },
+const AUDIENCE_PILLS = [
+  { label: "Architectes", href: "/architecte" },
+  { label: "Marchands de biens", href: "/marchand" },
+  { label: "Particuliers", href: "/particulier" },
 ];
 
 export default function Home() {
@@ -152,7 +152,7 @@ export default function Home() {
     }
   }, [authStatus]);
 
-  // F4 — Merchant mode state
+  // F4 — Pro mode state (ex Mode Marchand)
   const [isMerchantMode, setIsMerchantMode] = useState(false);
   const [dismissedAssociators, setDismissedAssociators] = useState<Set<number>>(new Set());
 
@@ -696,15 +696,16 @@ export default function Home() {
       {/* Hero */}
       <section className="pt-24 sm:pt-28 pb-8 sm:pb-10 px-5 sm:px-8">
         <div ref={heroRef} className="reveal max-w-4xl mx-auto text-center">
-          {/* Multi-audience pills */}
+          {/* Multi-audience pills — links to persona pages */}
           <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
-            {USE_CASES.map((uc) => (
-              <span
-                key={uc.label}
-                className="text-[11px] font-medium text-sage bg-sage/10 px-3 py-1.5 rounded-full"
+            {AUDIENCE_PILLS.map((p) => (
+              <a
+                key={p.label}
+                href={p.href}
+                className="text-[11px] font-medium text-sage bg-sage/10 px-3 py-1.5 rounded-full hover:bg-sage/20 transition-colors cursor-pointer"
               >
-                {uc.label}
-              </span>
+                {p.label}
+              </a>
             ))}
           </div>
 
@@ -868,115 +869,27 @@ export default function Home() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
             </svg>
           </a>
-          <p className="text-xs text-muted font-light mt-3">
-            3 g&eacute;n&eacute;rations offertes &middot; Sans carte bancaire
+          <p className="text-sm text-foreground/60 font-light mt-3">
+            3 générations offertes · Sans carte bancaire
           </p>
-        </div>
-      </section>
 
-      {/* Use cases */}
-      <section className="pb-10 px-5 sm:px-8">
-        <div className="max-w-3xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {USE_CASES.map((uc, i) => (
-            <div key={uc.label} className={`text-center p-6 rounded-2xl border border-foreground/10 bg-background/40 ${i === 0 ? "animate-fade-in-up" : i === 1 ? "animate-fade-in-up animate-delay-100" : "animate-fade-in-up animate-delay-200"}`}>
-              <p className="text-sm font-semibold text-foreground mb-1">{uc.label}</p>
-              <p className="text-xs text-muted font-light">{uc.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Galerie avant/après par métier */}
-      <section id="galerie" className="py-16 sm:py-24 px-5 sm:px-8">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight mb-3">
-              Avant / Apr&egrave;s par m&eacute;tier
-            </h2>
-            <p className="text-muted font-light">
-              D&eacute;couvrez comment chaque profil utilise Versiroom
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Card Architecte */}
-            <div className="rounded-2xl border border-foreground/10 bg-background overflow-hidden">
-              <div className="aspect-[4/3] bg-foreground/5 relative grid grid-cols-2">
-                <div className="relative">
-                  <img src="/imageavant.jpg" alt="Pièce avant home staging" className="w-full h-full object-cover" />
-                  <span className="absolute bottom-2 left-2 text-[10px] font-medium uppercase tracking-wider bg-foreground/70 text-background px-2 py-0.5 rounded">Avant</span>
-                </div>
-                <div className="relative">
-                  <img src="/imageapres.jpg" alt="Pièce après home staging scandinave" className="w-full h-full object-cover" />
-                  <span className="absolute bottom-2 right-2 text-[10px] font-medium uppercase tracking-wider bg-sage/90 text-white px-2 py-0.5 rounded">Après</span>
-                </div>
-              </div>
-              <div className="p-5">
-                <p className="text-xs text-sage font-medium uppercase tracking-wider mb-1">Scandinave</p>
-                <p className="text-sm text-foreground font-medium mb-1">Claire, architecte d&apos;int&eacute;rieur</p>
-                <p className="text-xs text-muted font-light">
-                  &laquo;&nbsp;Un support de conversation avec mon client en 90 secondes au lieu de 3 jours de rendu 3D.&nbsp;&raquo;
-                </p>
-              </div>
-            </div>
-
-            {/* Card Marchand */}
-            <div className="rounded-2xl border border-foreground/10 bg-background overflow-hidden">
-              <div className="aspect-[4/3] bg-foreground/5 relative grid grid-cols-2">
-                <div className="relative">
-                  <img src="/imageavant.jpg" alt="Pièce brute avant staging" className="w-full h-full object-cover" />
-                  <span className="absolute bottom-2 left-2 text-[10px] font-medium uppercase tracking-wider bg-foreground/70 text-background px-2 py-0.5 rounded">Avant</span>
-                </div>
-                <div className="relative">
-                  <img src="/imageapres.jpg" alt="Pièce meublée contemporain" className="w-full h-full object-cover" />
-                  <span className="absolute bottom-2 right-2 text-[10px] font-medium uppercase tracking-wider bg-sage/90 text-white px-2 py-0.5 rounded">Après</span>
-                </div>
-              </div>
-              <div className="p-5">
-                <p className="text-xs text-sage font-medium uppercase tracking-wider mb-1">Contemporain</p>
-                <p className="text-sm text-foreground font-medium mb-1">Thomas, marchand de biens</p>
-                <p className="text-xs text-muted font-light">
-                  &laquo;&nbsp;3 visuels meubl&eacute;s en 10 minutes au lieu de 1 500&euro; chez un prestataire.&nbsp;&raquo;
-                </p>
-              </div>
-            </div>
-
-            {/* Card Particulier */}
-            <div className="rounded-2xl border border-foreground/10 bg-background overflow-hidden">
-              <div className="aspect-[4/3] bg-foreground/5 relative grid grid-cols-2">
-                <div className="relative">
-                  <img src="/imageavant.jpg" alt="Salon vide avant décoration" className="w-full h-full object-cover" />
-                  <span className="absolute bottom-2 left-2 text-[10px] font-medium uppercase tracking-wider bg-foreground/70 text-background px-2 py-0.5 rounded">Avant</span>
-                </div>
-                <div className="relative">
-                  <img src="/imageapres.jpg" alt="Salon meublé japandi" className="w-full h-full object-cover" />
-                  <span className="absolute bottom-2 right-2 text-[10px] font-medium uppercase tracking-wider bg-sage/90 text-white px-2 py-0.5 rounded">Après</span>
-                </div>
-              </div>
-              <div className="p-5">
-                <p className="text-xs text-sage font-medium uppercase tracking-wider mb-1">Japandi</p>
-                <p className="text-sm text-foreground font-medium mb-1">L&eacute;a, acheteuse particulier</p>
-                <p className="text-xs text-muted font-light">
-                  &laquo;&nbsp;Je veux voir &agrave; quoi MON salon ressemblerait, pas celui de quelqu&apos;un d&apos;autre sur Pinterest.&nbsp;&raquo;
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Link to full examples page */}
-          <div className="text-center mt-8">
-            <a
-              href="/examples"
-              className="inline-block text-xs font-medium text-sage hover:text-sage-dark transition-colors underline underline-offset-4 decoration-sage/30 hover:decoration-sage/60"
-            >
-              Voir tous les exemples &rarr;
+          {/* Persona links — discret, sous le CTA */}
+          <div className="mt-6 flex flex-col sm:flex-row gap-2 sm:gap-6 items-center justify-center">
+            <a href="/architecte" className="text-xs text-muted hover:text-sage transition-colors">
+              Vous êtes architecte ? Voir les cas d'usage →
+            </a>
+            <a href="/marchand" className="text-xs text-muted hover:text-sage transition-colors">
+              Marchand de biens ? Voir le Mode Pro →
+            </a>
+            <a href="/particulier" className="text-xs text-muted hover:text-sage transition-colors">
+              Particulier ? Commencer gratuitement →
             </a>
           </div>
         </div>
       </section>
 
-      {/* Teaser Mode Marchand */}
-      <section className="px-5 sm:px-8 pb-16 sm:pb-24">
+      {/* Encart Mode Pro — positionné après le hero, avant l'outil */}
+      <section className="px-5 sm:px-8 pb-10 sm:pb-14">
         <div className="max-w-4xl mx-auto bg-foreground/[0.02] border border-foreground/10 rounded-2xl p-8 sm:p-10 flex flex-col md:flex-row items-start gap-8">
           {/* Icône */}
           <div className="flex-shrink-0 w-14 h-14 rounded-xl bg-sage/10 flex items-center justify-center">
@@ -986,31 +899,43 @@ export default function Home() {
           </div>
           {/* Contenu */}
           <div className="flex-1">
-            <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-3">
-              Mode Marchand — pour les pros de l&apos;immobilier
-            </h3>
+            <div className="flex items-center gap-3 mb-3">
+              <h3 className="text-lg sm:text-xl font-semibold text-foreground">
+                Mode Pro — pour les professionnels
+              </h3>
+              <span className="text-[10px] font-semibold text-sage bg-sage/10 px-2.5 py-1 rounded-full uppercase tracking-wider whitespace-nowrap">
+                Prix de lancement
+              </span>
+            </div>
+            <p className="text-sm text-muted font-light mb-5 leading-relaxed">
+              Vous utilisez Versiroom pour des projets clients ou des dossiers de vente ?
+              Le Mode Pro ajoute ce dont vous avez besoin — sans changer votre workflow.
+            </p>
             <ul className="space-y-2 mb-5">
               <li className="flex items-start gap-2.5 text-sm text-muted font-light">
                 <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                G&eacute;n&eacute;rez un dossier PDF complet avec vos visuels avant/apr&egrave;s
+                50 générations/mois
               </li>
               <li className="flex items-start gap-2.5 text-sm text-muted font-light">
                 <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                Cr&eacute;ez des annonces immobili&egrave;res pr&ecirc;tes &agrave; publier
+                Dossiers de pré-commercialisation (PDF avant/après)
               </li>
               <li className="flex items-start gap-2.5 text-sm text-muted font-light">
                 <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                Partagez un lien avec vos acqu&eacute;reurs — visite virtuelle en un clic
+                Liens partageables sans limite
               </li>
             </ul>
+            <p className="text-base font-semibold text-foreground mb-1">
+              29€/mois
+            </p>
+            <p className="text-xs text-muted font-light mb-5">
+              vs. 200 à 500€ par planche chez un home stager virtuel
+            </p>
             <a
               href="#pricing"
-              className="inline-flex items-center gap-2 bg-foreground text-background px-6 py-3 rounded-full text-sm font-medium hover:bg-foreground/85 active:scale-[0.99] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+              className="inline-flex items-center gap-2 text-sm text-sage font-medium hover:text-sage/80 transition-colors"
             >
-              D&eacute;couvrir le pack Pro
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-              </svg>
+              Voir le Mode Pro →
             </a>
           </div>
         </div>
@@ -1027,11 +952,11 @@ export default function Home() {
               Mettez en sc&egrave;ne votre espace
             </h2>
             <p className="text-muted font-light">
-              En trois &eacute;tapes simples
+              3 générations gratuites · Sans créer de compte
             </p>
           </div>
 
-          {/* F4 — Mode toggle: Standard / Marchand (visible only when authenticated) */}
+          {/* F4 — Mode toggle: Standard / Pro (visible only when authenticated) */}
           {session && (
           <div className="flex justify-center mb-8" data-testid="mode-toggle">
             <div className="inline-flex rounded-full bg-foreground/5 p-0.5">
@@ -1055,7 +980,7 @@ export default function Home() {
                 }`}
                 data-testid="mode-merchant"
               >
-                Mode Marchand
+                Mode Pro
               </button>
             </div>
           </div>
@@ -1555,36 +1480,23 @@ export default function Home() {
 
       {/* Pricing */}
       <section id="pricing" className="py-16 sm:py-24 px-5 sm:px-8 bg-background/40">
-        <div ref={pricingRef} className="reveal max-w-4xl mx-auto">
+        <div ref={pricingRef} className="reveal max-w-5xl mx-auto">
           <div className="text-center mb-14">
             <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight mb-3">
               Tarifs simples et transparents
             </h2>
             <p className="text-muted font-light">
-              Sans abonnement. Sans engagement.
+              Essayez gratuitement, 3 générations offertes sans carte bancaire
             </p>
           </div>
 
-          {/* CTA gratuit bandeau */}
-          <div className="bg-sage/8 border border-sage/20 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 mb-10 max-w-2xl mx-auto">
-            <p className="text-sm text-foreground font-light text-center sm:text-left">
-              Essayez avec <strong className="font-semibold">3 photos gratuites</strong> &mdash; sans carte bancaire
-            </p>
-            <a
-              href="#outil"
-              className="flex-shrink-0 inline-flex items-center gap-2 bg-foreground text-background px-5 py-2.5 rounded-full text-sm font-medium hover:bg-foreground/85 active:scale-[0.99] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
-            >
-              Essayer l&apos;outil
-            </a>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 items-stretch max-w-4xl mx-auto">
-            {/* Découverte */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 items-stretch max-w-5xl mx-auto">
+            {/* Gratuit */}
             <div className="flex flex-col border border-foreground/8 rounded-2xl p-7 text-center bg-background hover:border-foreground/15 transition-colors">
-              <p className="text-xs text-muted font-medium uppercase tracking-widest mb-4">D&eacute;couverte</p>
-              <p className="text-4xl font-bold text-foreground mb-0.5">4,90&euro;</p>
-              <p className="text-xs text-muted font-light mb-1">5 cr&eacute;dits &middot; 0,98&euro;/photo</p>
-              <p className="text-[11px] text-muted/60 font-light mb-6">TTC &middot; TVA 20% incluse</p>
+              <p className="text-xs text-muted font-medium uppercase tracking-widest mb-4">Gratuit</p>
+              <p className="text-4xl font-bold text-foreground mb-0.5">0€</p>
+              <p className="text-xs text-muted font-light mb-1">3 générations</p>
+              <p className="text-[11px] text-muted/60 font-light mb-6">Sans carte bancaire</p>
               <ul className="text-sm text-muted font-light space-y-2.5 text-left mb-8 flex-1">
                 <li className="flex items-start gap-2.5">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
@@ -1592,24 +1504,43 @@ export default function Home() {
                 </li>
                 <li className="flex items-start gap-2.5">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  T&eacute;l&eacute;chargement HD
+                  Téléchargement HD
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  Comparateur avant/après
+                </li>
+              </ul>
+              <div className="mt-auto">
+                <a href="#outil" className="block w-full text-center border border-foreground/15 text-foreground px-4 py-3 rounded-full text-sm font-medium hover:bg-foreground/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2">
+                  Essayer l'outil
+                </a>
+              </div>
+            </div>
+
+            {/* Découverte */}
+            <div className="flex flex-col border border-foreground/8 rounded-2xl p-7 text-center bg-background hover:border-foreground/15 transition-colors">
+              <p className="text-xs text-muted font-medium uppercase tracking-widest mb-4">Découverte</p>
+              <p className="text-4xl font-bold text-foreground mb-0.5">4,90€</p>
+              <p className="text-xs text-muted font-light mb-1">5 crédits · 0,98€/photo</p>
+              <p className="text-[11px] text-muted/60 font-light mb-6">TTC · TVA 20% incluse</p>
+              <ul className="text-sm text-muted font-light space-y-2.5 text-left mb-8 flex-1">
+                <li className="flex items-start gap-2.5">
+                  <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  12 styles disponibles
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  Téléchargement HD
                 </li>
                 <li className="flex items-start gap-2.5">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                   Partage &amp; comparateur
                 </li>
-                <li className="flex items-start gap-2.5 text-muted/40">
-                  <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M18 12H6" /></svg>
-                  <span className="line-through">It&eacute;rations</span>
-                </li>
               </ul>
-              <p className="text-xs text-muted/70 font-light italic mb-4 text-left">
-                Ce pack est fait pour vous si vous d&eacute;couvrez le home staging virtuel et voulez tester sur vos premi&egrave;res photos.
-              </p>
               <div className="mt-auto">
-                <p className="text-[11px] text-sage font-medium mb-3">3 g&eacute;n&eacute;rations offertes sans CB</p>
-                <a href="#outil" className="block w-full text-center border border-foreground/15 text-foreground px-4 py-3 rounded-full text-sm font-medium hover:bg-foreground/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2">
-                  Essayer l&apos;outil
+                <a href="/pricing" className="block w-full text-center border border-foreground/15 text-foreground px-4 py-3 rounded-full text-sm font-medium hover:bg-foreground/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2">
+                  Acheter
                 </a>
               </div>
             </div>
@@ -1617,30 +1548,23 @@ export default function Home() {
             {/* Starter */}
             <div className="flex flex-col border border-foreground/8 rounded-2xl p-7 text-center bg-background hover:border-foreground/15 transition-colors">
               <p className="text-xs text-muted font-medium uppercase tracking-widest mb-4">Starter</p>
-              <p className="text-4xl font-bold text-foreground mb-0.5">14,90&euro;</p>
-              <p className="text-xs text-muted font-light mb-1">20 cr&eacute;dits &middot; 0,75&euro;/photo</p>
-              <p className="text-[11px] text-muted/60 font-light mb-6">TTC &middot; TVA 20% incluse</p>
+              <p className="text-4xl font-bold text-foreground mb-0.5">14,90€</p>
+              <p className="text-xs text-muted font-light mb-1">20 crédits · 0,75€/photo</p>
+              <p className="text-[11px] text-muted/60 font-light mb-6">TTC · TVA 20% incluse</p>
               <ul className="text-sm text-muted font-light space-y-2.5 text-left mb-8 flex-1">
                 <li className="flex items-start gap-2.5">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  12 styles + mode personnalis&eacute;
+                  12 styles + mode personnalisé
                 </li>
                 <li className="flex items-start gap-2.5">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  1 it&eacute;ration par photo
+                  1 itération par photo
                 </li>
                 <li className="flex items-start gap-2.5">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                   Lien partageable 7 jours
                 </li>
-                <li className="flex items-start gap-2.5 text-muted/40">
-                  <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M18 12H6" /></svg>
-                  <span className="line-through">Mode Marchand</span>
-                </li>
               </ul>
-              <p className="text-xs text-muted/70 font-light italic mb-4 text-left">
-                Ce pack est fait pour vous si vous avez un projet en cours et voulez tester plusieurs styles avec des it&eacute;rations.
-              </p>
               <div className="mt-auto">
                 <a href="/pricing" className="block w-full text-center bg-foreground text-background px-4 py-3 rounded-full text-sm font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2">
                   Acheter
@@ -1648,42 +1572,35 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Pro — recommended */}
+            {/* Pro — recommended — 29€/mois */}
             <div className="flex flex-col border-2 border-sage/30 rounded-2xl p-7 text-center bg-background relative shadow-[0_8px_32px_rgba(125,155,118,0.12)]">
-              <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-sage text-white text-[11px] font-semibold px-4 py-1 rounded-full uppercase tracking-wider shadow-sm">Recommand&eacute;</span>
+              <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-sage text-white text-[11px] font-semibold px-4 py-1 rounded-full uppercase tracking-wider shadow-sm">Recommandé</span>
               <p className="text-xs text-sage font-medium uppercase tracking-widest mb-4">Pro</p>
-              <p className="text-4xl font-bold text-foreground mb-0.5">29&euro;</p>
-              <p className="text-xs text-muted font-light mb-1">50 cr&eacute;dits &middot; 0,58&euro;/photo</p>
-              <p className="text-[11px] text-muted/60 font-light mb-2">TTC &middot; TVA 20% incluse</p>
-              <p className="text-xs text-sage font-medium mb-6">29&euro; au lieu de 200-500&euro; chez un home stager</p>
+              <p className="text-4xl font-bold text-foreground mb-0.5">29€<span className="text-lg font-normal text-muted">/mois</span></p>
+              <p className="text-xs text-muted font-light mb-1">50 crédits/mois · 0,58€/photo</p>
+              <p className="text-[11px] text-muted/60 font-light mb-2">TTC · Prix de lancement</p>
+              <p className="text-xs text-sage font-medium mb-6">vs 200-500€ par planche chez un prestataire</p>
               <ul className="text-sm text-muted font-light space-y-2.5 text-left mb-4 flex-1">
                 <li className="flex items-start gap-2.5">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  3 it&eacute;rations par photo
+                  3 itérations par photo
                 </li>
                 <li className="flex items-start gap-2.5">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  <span><strong className="font-medium text-foreground">Mode Marchand</strong></span>
+                  <span><strong className="font-medium text-foreground">Mode Pro</strong></span>
                 </li>
                 <li className="flex items-start gap-2.5 pl-6">
                   <svg className="w-3.5 h-3.5 text-sage/70 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  <span className="text-xs">Dossiers PDF avant/apr&egrave;s</span>
+                  <span className="text-xs">Dossiers de pré-commercialisation</span>
                 </li>
                 <li className="flex items-start gap-2.5 pl-6">
                   <svg className="w-3.5 h-3.5 text-sage/70 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  <span className="text-xs">Annonces immobili&egrave;res pr&ecirc;tes &agrave; publier</span>
-                </li>
-                <li className="flex items-start gap-2.5 pl-6">
-                  <svg className="w-3.5 h-3.5 text-sage/70 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  <span className="text-xs">Lien partageable acqu&eacute;reurs 30 jours</span>
+                  <span className="text-xs">Liens partageables sans limite</span>
                 </li>
               </ul>
-              <p className="text-xs text-muted/70 font-light italic mb-4 text-left">
-                Ce pack est fait pour vous si vous &ecirc;tes marchand de biens ou agent et g&eacute;rez plusieurs op&eacute;rations par an.
-              </p>
               <div className="mt-auto">
                 <a href="/pricing" className="block w-full text-center bg-sage text-white px-4 py-3 rounded-full text-sm font-semibold hover:bg-sage/85 transition-colors shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2">
-                  Acheter
+                  S'abonner
                 </a>
               </div>
             </div>
@@ -1691,7 +1608,7 @@ export default function Home() {
           </div>
 
           <p className="text-center text-[11px] text-muted/60 font-light mt-8">
-            TVA r&eacute;cup&eacute;rable pour les professionnels assujettis.
+            TVA récupérable pour les professionnels assujettis.
           </p>
         </div>
       </section>
