@@ -61,7 +61,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const heroPhoto = photos.find((p) => p.status === "completed" && p.output_image_key);
   const ogImages = heroPhoto?.output_image_key
     ? [{ url: `${BASE_URL}/api/logs/image?path=${encodeURIComponent(heroPhoto.output_image_key)}`, width: 1200, height: 630, alt: title }]
-    : undefined;
+    : [{ url: `${BASE_URL}/imageapres.jpg`, width: 1200, height: 630, alt: "Versiroom — Home staging virtuel par IA" }];
 
   return {
     title: `${title} — Versiroom`,

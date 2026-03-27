@@ -884,13 +884,25 @@ export async function GET(
       for (const line of contactLines) {
         const lineText = sanitizeForPdf(line);
         const lineWidth = font.widthOfTextAtSize(lineText, 11);
+        const lineX = PAGE_WIDTH / 2 - lineWidth / 2;
         safeDrawText(infoPage, lineText, {
-          x: PAGE_WIDTH / 2 - lineWidth / 2,
+          x: lineX,
           y: infoY,
           size: 11,
           font,
           color: rgb(0.3, 0.3, 0.3),
         });
+        // Add clickable link for phone and email
+        if (line.startsWith("Tél.") && profile.telephone) {
+          const cleanPhone = profile.telephone.replace(/[^+\d]/g, "");
+          addLinkAnnotation(infoPage, pdfDoc, {
+            x: lineX, y: infoY - 2, width: lineWidth, height: 14,
+          }, `tel:${cleanPhone}`);
+        } else if (line.includes("@")) {
+          addLinkAnnotation(infoPage, pdfDoc, {
+            x: lineX, y: infoY - 2, width: lineWidth, height: 14,
+          }, `mailto:${line}`);
+        }
         infoY -= 18;
       }
 
