@@ -551,8 +551,9 @@ export async function GET(
       const textX = MARGIN + qrSize + 14;
       let contactTextY = contactBlockY + contactBlockH - 14;
 
-      // Phone number in big bold text (if available)
+      // Phone number in big bold text (if available) — clickable tel: link
       if (merchantTel) {
+        const telTextWidth = fontBold.widthOfTextAtSize(sanitizeForPdf(merchantTel), 16);
         safeDrawText(coverPage, merchantTel, {
           x: textX,
           y: contactTextY,
@@ -560,6 +561,14 @@ export async function GET(
           font: fontBold,
           color: rgb(primaryColor.r, primaryColor.g, primaryColor.b),
         });
+        // Clickable annotation over the phone number
+        const telDigits = merchantTel.replace(/[^+\d]/g, "");
+        addLinkAnnotation(coverPage, pdfDoc, {
+          x: textX,
+          y: contactTextY - 2,
+          width: telTextWidth,
+          height: 18,
+        }, `tel:${telDigits}`);
         contactTextY -= 18;
       }
 
@@ -591,6 +600,7 @@ export async function GET(
       let fallbackY = contactBlockY + contactBlockH - 14;
 
       if (merchantTel) {
+        const telTextWidth = fontBold.widthOfTextAtSize(sanitizeForPdf(merchantTel), 16);
         safeDrawText(coverPage, merchantTel, {
           x: MARGIN,
           y: fallbackY,
@@ -598,6 +608,13 @@ export async function GET(
           font: fontBold,
           color: rgb(primaryColor.r, primaryColor.g, primaryColor.b),
         });
+        const telDigits = merchantTel.replace(/[^+\d]/g, "");
+        addLinkAnnotation(coverPage, pdfDoc, {
+          x: MARGIN,
+          y: fallbackY - 2,
+          width: telTextWidth,
+          height: 18,
+        }, `tel:${telDigits}`);
         fallbackY -= 20;
       }
 

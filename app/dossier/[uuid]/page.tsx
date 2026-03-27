@@ -53,6 +53,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     ? `${title} — ${details.join(", ")}. Visuels meublés par Versiroom.`
     : `${title} — Visuels meublés par Versiroom.`;
 
+  // Hero image for OG preview (first completed photo)
+  const BASE_URL = "https://architecture-toum92.replit.app";
+  const photos = await getDossierPhotos(dossier.uuid);
+  const heroPhoto = photos.find((p) => p.status === "completed" && p.output_image_key);
+  const ogImages = heroPhoto?.output_image_key
+    ? [{ url: `${BASE_URL}/api/logs/image?path=${encodeURIComponent(heroPhoto.output_image_key)}`, width: 1200, height: 630, alt: title }]
+    : undefined;
+
   return {
     title: `${title} — Versiroom`,
     description,
@@ -61,6 +69,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description,
       type: "website",
       siteName: "Versiroom",
+      images: ogImages,
     },
   };
 }
@@ -229,11 +238,15 @@ export default async function DossierPage({ params }: PageProps) {
             <span className="text-xs bg-foreground text-background px-3 py-1.5 rounded-xl font-medium">
               {dossier.bien_prix ? formatPrice(dossier.bien_prix) : "Prix sur demande"}
             </span>
-            {dossier.prix_moyen_m2 && (
+            {dossier.prix_moyen_m2 ? (
               <span className="text-xs bg-sage/10 text-sage px-3 py-1.5 rounded-xl font-medium">
                 {dossier.prix_moyen_m2.toLocaleString("fr-FR")} €/m² (quartier)
               </span>
-            )}
+            ) : dossier.bien_prix && dossier.bien_surface && dossier.bien_surface > 0 ? (
+              <span className="text-xs border border-foreground/10 text-muted px-3 py-1.5 rounded-full font-medium">
+                {Math.round(dossier.bien_prix / dossier.bien_surface).toLocaleString("fr-FR")} €/m²
+              </span>
+            ) : null}
             {linkedProperty?.dpe_classe && (() => {
               const DPE_BADGE_COLORS: Record<string, string> = {
                 A: "bg-[#319834] text-white",
