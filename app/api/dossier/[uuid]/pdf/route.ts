@@ -12,7 +12,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { PDFDocument, rgb, StandardFonts, PDFPage, PDFFont } from "pdf-lib";
+import { PDFDocument, rgb, StandardFonts, PDFPage, PDFFont, PDFName, PDFString, PDFArray } from "pdf-lib";
 import * as QRCode from "qrcode";
 import { getImage, saveImage } from "@/lib/db";
 import {
@@ -104,6 +104,36 @@ const DPE_COLORS: Record<string, { r: number; g: number; b: number }> = {
   F: { r: 0xe5 / 255, g: 0x53 / 255, b: 0x12 / 255 },
   G: { r: 0xd7 / 255, g: 0x22 / 255, b: 0x1f / 255 },
 };
+
+/** Add a clickable URI link annotation over a rectangular area on a PDF page */
+function addLinkAnnotation(
+  page: PDFPage,
+  pdfDoc: PDFDocument,
+  rect: { x: number; y: number; width: number; height: number },
+  uri: string
+) {
+  const context = pdfDoc.context;
+  const actionDict = context.obj({
+    Type: "Action",
+    S: "URI",
+    URI: PDFString.of(uri),
+  });
+  const annotDict = context.obj({
+    Type: "Annot",
+    Subtype: "Link",
+    Rect: [rect.x, rect.y, rect.x + rect.width, rect.y + rect.height],
+    A: actionDict,
+    Border: [0, 0, 0],
+  });
+  const annotRef = context.register(annotDict);
+
+  const existingAnnots = page.node.lookup(PDFName.of("Annots"));
+  if (existingAnnots instanceof PDFArray) {
+    existingAnnots.push(annotRef);
+  } else {
+    page.node.set(PDFName.of("Annots"), context.obj([annotRef]));
+  }
+}
 
 async function generateQRCodePng(url: string): Promise<Buffer> {
   return QRCode.toBuffer(url, {
