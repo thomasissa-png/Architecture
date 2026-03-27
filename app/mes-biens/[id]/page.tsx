@@ -307,17 +307,17 @@ export default function PropertyDetailPage() {
           if (patchRes.ok) {
             const patchData = await patchRes.json();
             setProperty(patchData.property);
-            setToastMsg("Description generee avec succes.");
+            setToastMsg("Description g\u00e9n\u00e9r\u00e9e avec succ\u00e8s.");
           }
         } else {
-          setToastMsg("La description n\u2019a pas pu etre generee. Reessayez.");
+          setToastMsg("La description n\u2019a pas pu \u00eatre g\u00e9n\u00e9r\u00e9e. R\u00e9essayez.");
         }
       } else {
         const errData = await res.json().catch(() => ({}));
-        setToastMsg(errData.error || "Erreur lors de la generation de la description.");
+        setToastMsg(errData.error || "Erreur lors de la g\u00e9n\u00e9ration de la description.");
       }
     } catch {
-      setToastMsg("Erreur reseau. Verifiez votre connexion.");
+      setToastMsg("Erreur r\u00e9seau. V\u00e9rifiez votre connexion.");
     } finally {
       setIsRegeneratingDesc(false);
     }
