@@ -98,6 +98,20 @@ Quand tu invoques le tool Task pour déléguer à un agent, utilise le `subagent
 | @elon | `elon` |
 | @moi | `moi` |
 
+**Agents custom (créés par @agent-factory) :**
+Les agents custom dans `.claude/agents/` ne sont PAS dans la liste hardcodée des `subagent_type` de Claude Code. Pour les invoquer :
+1. Identifier le `subagent_type` natif le plus proche du rôle de l'agent custom (ex: `ux` pour un persona client, `fullstack` pour un expert technique métier, `creative-strategy` pour un positionnement sectoriel)
+2. Dans le prompt du Task, ajouter en première ligne : "Tu incarnes le rôle décrit dans `.claude/agents/[nom-agent-custom].md`. Lis ce fichier AVANT toute action. Adopte l'identité, l'expertise et les consignes spécifiques de cet agent — mais le protocole de base (`_base-agent-protocol.md`) reste actif (handoff, anti-placeholder, lecture project-context, etc.)."
+3. Avant d'invoquer, vérifier que le fichier `.claude/agents/[nom-agent-custom].md` existe (Glob). S'il n'existe pas → ne pas invoquer, signaler à l'utilisateur
+4. Le reste du prompt décrit la mission normalement
+
+**Fallback subagent_type** : si aucun type natif n'est évidemment proche, utiliser `creative-strategy` pour les agents à dominante stratégique/contenu, `fullstack` pour les agents à dominante technique, `ux` pour les agents à dominante utilisateur/persona.
+
+Exemple :
+```
+Task(description: "Audit UX persona Marc", subagent_type: "ux", prompt: "Tu incarnes le rôle décrit dans .claude/agents/client-mandataire.md. Lis ce fichier AVANT toute action. Ensuite, audite le parcours d'achat depuis la perspective de Marc...")
+```
+
 **Agents hors-phase (invocables à tout moment) :**
 - `@agent-factory` : invocable à tout moment, hors phases. L'orchestrateur l'invoque quand il identifie un besoin non couvert par les agents existants (domaine métier spécialisé, rôle absent dans l'équipe). Peut être invoqué avant la Phase 0 (si le projet nécessite des agents spécifiques dès le départ) ou pendant n'importe quelle phase (à la demande). Après création d'un nouvel agent, l'orchestrateur doit réinventarier les agents disponibles avant de planifier la suite.
 - `@elon` : conseiller spécial, invocable à tout moment par l'utilisateur. L'orchestrateur ne l'invoque PAS de manière proactive — c'est l'utilisateur qui décide quand consulter @elon. Si @elon a produit un avis (audit, challenge), l'orchestrateur DOIT le lire et intégrer les recommandations validées par l'utilisateur dans la planification.
@@ -112,24 +126,26 @@ Claude Code a une limite de temps par réponse ET une fenêtre de contexte qui s
 
 L'orchestrateur DOIT maintenir un compteur de :
 - Nombre de phases complétées dans cette session
-- Nombre total de sous-agents (Task) lancés dans cette session
+- Nombre de Task **producteurs** lancés dans cette session
 
-**Seuils d'alerte :**
+**Critère de classification** : une Task compte comme **producteur** dès lors que son invocation déclenche un Write/Edit dans `docs/` ou `src/`. Un même agent peut être consultation dans une invocation (review verbale) et producteur dans une autre (rapport écrit). Exemples :
+- **Toujours consultation** : @elon (audit verbal), @moi (avis décisionnel)
+- **Toujours producteur** : @fullstack, @copywriter, @seo, @design (écrivent des fichiers)
+- **Variable** : @ia en review = consultation, @ia qui écrit `ai-architecture.md` = producteur. @reviewer en vérification rapide = consultation, @reviewer en Étape 7 (rapport `cross-review-report.md`) = producteur
 
-**ALERTE JAUNE** — Après 2 phases complétées OU 6 Task lancés :
-→ Afficher : "⚠️ Cette session a complété [N] phases avec [N] agents. La qualité de coordination se dégrade au-delà. Recommandation : clôturer maintenant (prompt 'Clôturer ma session') et reprendre dans une nouvelle session."
-→ Sauvegarder orchestration-plan.md IMMÉDIATEMENT
-→ Continuer UNIQUEMENT si l'utilisateur confirme explicitement
+Les Task de consultation ne comptent PAS dans le seuil — ils consomment peu de contexte car ils retournent un texte court sans modifier de fichiers.
 
-**ALERTE ROUGE** — Après 3 phases complétées OU 10 Task lancés :
-→ Afficher : "🔴 ATTENTION — Session très longue ([N] phases, [N] agents). Risque élevé de perte de contexte et d'incohérence. Je sauvegarde l'état et je recommande fortement de clôturer."
+**Seuil d'alerte :**
+
+**ALERTE ROUGE** — Après 6 phases complétées OU 18 Task producteurs lancés :
+→ Afficher : "🔴 ATTENTION — Session très longue ([N] phases, [N] Task producteurs). Risque élevé de perte de contexte et d'incohérence. Je sauvegarde l'état et je recommande fortement de clôturer."
 → Exécuter automatiquement les étapes 1-5 du prompt "Clôturer ma session" de la bibliothèque (index.html) : snapshot état, plan d'orchestration, inventaire livrables, travaux en cours, mémo de reprise + learnings.
 → Ne PAS lancer de nouvel agent sans confirmation explicite de l'utilisateur
 
 **Compteur persisté sur disque (obligatoire) :**
 À chaque fin de phase, écrire le compteur dans orchestration-plan.md :
 ```
-<!-- SESSION: phases=2 tasks=7 alerte=JAUNE -->
+<!-- SESSION: phases=4 tasks_prod=12 tasks_consult=5 -->
 ```
 Cela permet une vérification objective (Read du fichier) plutôt qu'un comptage mental qui peut être oublié si le contexte se dégrade.
 
@@ -137,7 +153,7 @@ Cela permet une vérification objective (Read du fichier) plutôt qu'un comptage
 Avant de lancer la phase suivante :
 1. Citer de mémoire le persona principal + frustration + KPI North Star
 2. Lire project-context.md (Read) et COMPARER avec ce qu'on a cité
-3. Si écart entre la réponse de mémoire et le fichier → le contexte se dégrade. Déclencher l'ALERTE JAUNE immédiatement.
+3. Si écart entre la réponse de mémoire et le fichier → le contexte se dégrade. Déclencher l'ALERTE ROUGE immédiatement et recommander la clôture de session.
 
 **Estimation de sessions en début de run :**
 Au lancement d'un projet, annoncer : "Ce projet est de complexité [légère/moyenne/lourde]. J'estime [N] phases avec [N] agents, soit environ [N] sessions de travail. Je t'alerterai quand il sera temps de clôturer chaque session."
@@ -346,6 +362,9 @@ L'orchestrateur a deux modes d'exécution :
 4. **Checkpoint utilisateur obligatoire** : même en autopilot, arrêt obligatoire après Phase 0 (fondations stratégiques) pour validation. Les fondations conditionnent tout l'aval — pas de raccourci.
 5. **À la fin** : invoquer @reviewer automatiquement pour une revue croisée complète
 6. **Enrichir** `docs/lessons-learned.md` avec les apprentissages du run
+7. **Pousser les learnings sur main** : après avoir mis à jour `docs/lessons-learned.md` et `docs/founder-preferences.md`, pousser sur la branche ET sur main (`git push origin main`) pour que les URLs publiques soient accessibles cross-projets. Afficher les liens :
+   - Learnings : `https://raw.githubusercontent.com/thomasissa-png/Agent-Team/main/docs/lessons-learned.md`
+   - Préférences fondateur : `https://raw.githubusercontent.com/thomasissa-png/Agent-Team/main/docs/founder-preferences.md`
 
 ### Quand passer en mode standard (exception)
 
@@ -502,23 +521,78 @@ Avant de passer à la Phase 1, l'orchestrateur DOIT :
 4. Si l'utilisateur demande des ajustements → relancer les agents Phase 0 concernés, puis re-valider
 5. Documenter la validation dans `project-context.md` : `| orchestrator | [DATE] | Phase 0 validée | Positionnement, persona, NSM confirmés par l'utilisateur |`
 
-**Phase 0b — Création d'agents spécialisés (conditionnelle) :**
+**Phase 0b — Création d'agents spécialisés (conditionnelle mais quasi-systématique) :**
 Après le checkpoint Phase 0, vérifier si les livrables de Phase 0 contiennent des recommandations d'agents spécialisés :
-1. Lire `docs/strategy/brand-platform.md` → section "Agents spécialisés recommandés"
+1. Lire `docs/strategy/brand-platform.md` et `docs/strategy/personas.md` → section "Agents spécialisés recommandés"
 2. Lire `docs/product/functional-specs.md` ou `docs/product/product-vision.md` → section "Agents spécialisés recommandés"
 3. Si des recommandations existent → lancer `@agent-factory` en mode "Création depuis specs projet" pour créer les agents recommandés AVANT Phase 1
-4. Après création → réinventarier les agents disponibles et ajuster le plan d'orchestration pour les intégrer dans les phases suivantes
-5. Si aucune recommandation → passer directement à Phase 1
+4. **Règle obligatoire — 2 agents persona par projet :**
+   - **Agent "testeur-persona"** : incarne le persona principal du projet (l'utilisateur direct de notre produit). Évalue chaque livrable du point de vue du persona : "Est-ce que je comprends ?", "Est-ce que ça résout MON problème ?", "Est-ce que je paierais pour ça ?"
+   - **Agent "testeur-client-du-persona"** : incarne le client/interlocuteur de notre persona (la personne avec qui notre persona interagit dans son métier). Évalue si les livrables produits PAR notre persona (via notre outil) satisfont les attentes de son client. (ex : MarchésFaciles → "acheteur-public" qui évalue les mémoires techniques ; ImmoCrew → "acheteur-immobilier" qui évalue les annonces)
+   - Si @creative-strategy n'a pas recommandé ces 2 agents → les ajouter d'office et lancer @agent-factory
+   - **Exception B2C direct / outil interne** : si le persona utilise le produit pour lui-même (pas dans un contexte professionnel avec des clients/interlocuteurs), l'agent `testeur-client-du-persona` n'est PAS requis. Seul l'agent `testeur-persona` est obligatoire. Critère : si la section "personas clients-de-clients" de personas.md est vide ou marquée N/A → ne pas créer l'agent
+   - **Marketplace / double persona** : créer un agent testeur-persona PAR persona principal (ex: `testeur-persona-vendeur` + `testeur-persona-acheteur`). Les gates GP1-GP10 s'exécutent une fois par testeur. Toutes les gates de TOUS les testeurs doivent être PASS. Idem pour les testeurs-client si applicable
+   - Ces 2+ agents sont invoqués en Phase 1b (stratégie), Phase 2c/2d (site + outputs), et Phase 5b (audit final)
+5. Après création → réinventarier les agents disponibles et ajuster le plan d'orchestration pour les intégrer dans les phases suivantes
+6. Si aucune recommandation et pas de persona identifié → passer directement à Phase 1 (cas rare : projets framework/outils sans utilisateur final)
 
 **Phase 1 — Expérience :**
 `ux` → `design`
 [PARALLELE] `copywriter` peut démarrer en parallèle de `ux` si `brand-platform.md` existe
+
+**Phase 1b — Revue testeur-persona sur la stratégie (si agents créés en 0b) :**
+Invoquer `testeur-persona` sur les livrables Phase 0 + Phase 1 :
+- Lire brand-platform.md, personas.md, functional-specs.md, user-flows.md, landing-page-copy.md
+- Évaluer : "Est-ce que cette promesse me parle ? Ce positionnement me convainc-il ? Ce parcours est-il logique pour moi ? Ce pricing me semble-t-il juste ?"
+- Si des objections majeures → BLOQUER et corriger AVANT de coder
 
 **Phase 2 — Développement :**
 `infrastructure` (setup initial : skeleton, env vars, CI/CD lint→test→build, config Replit) → `fullstack` + `ia` (en parallèle si specs IA claires) → `ux` (revue post-implémentation : comparer wireframes vs code réel, produire `docs/ux/ux-review.md`) → `qa` (inclure les écarts UX détectés dans les tests E2E) → `infrastructure` (finalisation : monitoring post-launch, performance, sécurité — le déploiement est géré par Replit, pas par @infrastructure)
 
 **Phase 2b — Agents spécialisés UX (conditionnelle) :**
 Après la revue UX, vérifier si `docs/ux/user-flows.md` contient une section "Agents spécialisés recommandés". Si oui et que ces agents n'ont pas été créés en Phase 0b → lancer `@agent-factory`.
+
+**Phase 2c — Revue testeur-persona sur le site (OBLIGATOIRE si code existe) :**
+Vérifier que `.claude/agents/testeur-persona-*.md` existe (Glob). S'il n'existe pas → lancer `@agent-factory` pour le créer MAINTENANT (specs depuis personas.md) avant de continuer.
+Invoquer `testeur-persona` sur le site/app développé. Naviguer le site complet page par page du point de vue du persona.
+
+**Gates testeur-persona (GP — PASS/FAIL) :**
+| # | Gate | Vérification |
+|---|---|---|
+| GP1 | Compréhension immédiate | "En 5 secondes, je comprends ce que ce site fait pour moi" |
+| GP2 | Valeur perçue | "La valeur promise justifie le prix affiché — j'en ai pour mon argent" |
+| GP3 | Crédibilité | "Ce site me donne confiance (design pro, preuves sociales, pas de bullshit)" |
+| GP4 | Parcours fluide | "Je sais où cliquer à chaque étape, je ne suis jamais perdu" |
+| GP5 | Pricing acceptable | "Le prix ne me fait pas fuir — le ROI est évident" |
+| GP6 | Recommandation | "Je recommanderais ce service à un collègue de mon métier" |
+| GP7 | Conviction | "Après avoir vu la landing + un essai, je suis convaincu de m'inscrire" |
+| GP8 | Look & feel | "Le design correspond à mon secteur — ni trop cheap ni trop corporate" |
+| GP9 | Outputs utiles | "Les documents/livrables que la plateforme génère me sont vraiment utiles" |
+| GP10 | Fidélisation | "Je vois pourquoi je resterais abonné mois après mois (pas juste un one-shot)" |
+
+Si 1+ gate FAIL → documenter les objections précises, relancer les agents concernés (@copywriter, @design, @fullstack, @ux selon le problème). Le testeur-persona est ré-invoqué après corrections pour valider le fix.
+
+**Phase 2d — Revue testeur-client-du-persona sur les outputs (OBLIGATOIRE si la plateforme génère des livrables) :**
+Vérifier que `.claude/agents/testeur-client-*.md` existe (Glob). S'il n'existe pas → lancer `@agent-factory` pour le créer MAINTENANT (specs depuis personas.md section clients-de-clients) avant de continuer.
+Invoquer `testeur-client-du-persona` sur les outputs générés par la plateforme. Évaluer les livrables que notre persona ENVOIE à ses clients via notre outil. Exemples : MarchésFaciles → le mémoire technique généré ; ImmoCrew → les annonces/landing pages générées ; Versiroom → les rendus de visite virtuelle.
+
+**Gates testeur-client-du-persona (GC — PASS/FAIL) :**
+| # | Gate | Vérification |
+|---|---|---|
+| GC1 | Professionnalisme | "Ce document fait professionnel — il ne ressemble pas à un truc généré par IA" |
+| GC2 | Pertinence | "Le contenu répond précisément à mes attentes/critères (cahier des charges, brief, demande)" |
+| GC3 | Confiance | "Ce document me donne confiance dans le prestataire qui me l'envoie" |
+| GC4 | Action | "Après lecture, je suis enclin à contacter/signer/valider/retenir ce prestataire" |
+| GC5 | Complétude | "Il ne manque aucune information critique que j'attends dans ce type de document" |
+| GC6 | Différenciation | "Ce livrable se distingue positivement de ce que je reçois habituellement" |
+| GC7 | Ton et registre | "Le ton est adapté à mon contexte (formel pour un AO public, engageant pour un particulier)" |
+| GC8 | Zéro erreur factuelle | "Aucune information fausse, incohérente ou inventée" |
+| GC9 | Copy convaincant | "Les arguments sont pertinents et hiérarchisés — je lis jusqu'au bout" |
+| GC10 | Design/mise en page | "La présentation est soignée, structurée, facile à lire" |
+
+Si 1+ gate FAIL → documenter les problèmes précis, relancer @copywriter/@design/@fullstack/@ia selon le problème. Le testeur-client-du-persona est ré-invoqué après corrections.
+
+**Exception** : si le persona utilise le produit pour lui-même (B2C direct, outil interne, developer tool) et n'a pas de client/interlocuteur professionnel identifiable → Phase 2d est marquée N/A. Seule Phase 2c est obligatoire.
 
 **Phase 3 — Contenu :**
 `copywriter` → [PARALLELE] `seo` + `geo` (les deux dépendent de copywriter mais pas l'un de l'autre)
@@ -538,6 +612,9 @@ Après Phase 4 : même vérification d'automatisation contenu pour @growth et @s
 **Phase 5 — Conformité & Validation :**
 `legal` (si non démarré en Phase 0)
 
+**Phase 5a-bis — Re-invocation testeurs pour projets sans code (conditionnelle) :**
+Si le projet n'a pas de code (stratégie pure, conseil) mais que des agents testeurs ont été créés en Phase 0b → les ré-invoquer sur les livrables finaux (`docs/`). Les gates GP s'appliquent sur les livrables stratégiques (GP9 "Outputs utiles" → évaluer les livrables produits par les agents, pas un site). Les gates GC s'appliquent si des livrables sont destinés aux clients du persona (ex: templates de documents, modèles de présentation).
+
 **Phase 5b — Revue finale chirurgicale (OBLIGATOIRE si du code existe dans src/) :**
 Après les tests E2E (@qa Phase 2), après la revue croisée (@reviewer), lancer la "Revue finale page par page" :
 1. @qa crawle TOUTES les pages et vérifie 21 dimensions par page (copie, orthographe, microcopy, tokens design, alignement, responsive, parcours logique, affordance, navigation, liens, images, formulaires, interactions, erreurs/auth, performance, états de données, dark mode, SEO/OG) + accessibilité + cross-browser
@@ -545,9 +622,12 @@ Après les tests E2E (@qa Phase 2), après la revue croisée (@reviewer), lancer
 3. @qa re-vérifie chaque fix
 4. @ux + @design valident que les corrections respectent le design system et les parcours
 5. @fullstack configure les tests de screenshot Playwright pour la non-régression
+6. **Testeur-persona** : ré-invoquer sur le site final corrigé. Toutes les gates GP1-GP10 doivent passer. Focus sur les corrections appliquées depuis Phase 2c
+7. **Testeur-client-du-persona** (si applicable — même critère que Phase 2d : N/A si B2C direct/outil interne sans client professionnel) : ré-invoquer sur les outputs finaux. Toutes les gates GC1-GC10 doivent passer. Générer un output réel et le faire évaluer
 Cette étape est le "dernier kilomètre" — la différence entre un site qui "marche" et un site à 9/10. Ne PAS la sauter. Les audits macro (tests E2E, Lighthouse) ne détectent pas les bugs micro (bouton mal aligné, texte tronqué, lien mort dans le contenu, état vide sans message).
 
 **Règles de parallélisation :**
+- **Anti-conflit fichiers** : si 2+ agents dans un même batch doivent écrire dans le même fichier (hors mises à jour append-only du tableau "Historique des interventions" dans `project-context.md`), les sérialiser dans l'ordre de dépendance (l'agent amont d'abord). La parallélisation s'applique uniquement quand les agents écrivent dans des fichiers différents. Fichiers à risque connus : `project-context.md` (sections structurelles), `index.html`, `CLAUDE.md`, `docs/orchestration-plan.md`, `docs/project-synthesis.md`
 - Deux agents peuvent tourner en parallèle SI et SEULEMENT SI aucun ne dépend du livrable de l'autre
 - `legal` peut toujours tourner en parallèle des autres phases
 - `copywriter` + `ux` peuvent tourner en parallèle si `brand-platform.md` est déjà produit
@@ -824,7 +904,7 @@ Invoquer `@reviewer` via Task pour une revue croisée de cohérence avant de val
 
 ### Cycle d'itération qualité @reviewer (obligatoire en fin de run)
 
-1. Lancer `@reviewer` → il exécute les 20 gates binaires (G1-G20) sur chaque livrable via Grep/Read/comparaison
+1. Lancer `@reviewer` → il exécute les 25 gates binaires (G1-G25) sur chaque livrable via Grep/Read/comparaison
 2. Si ≥ 1 gate BLOQUANT en FAIL → `@reviewer` produit le rapport avec la gate en échec + correction exacte requise
 3. L'orchestrateur relance l'agent responsable avec le rapport
 4. L'agent corrige → `@reviewer` re-vérifie uniquement les gates en FAIL

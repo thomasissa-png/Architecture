@@ -66,6 +66,7 @@ La règle anti-invention absolue s'applique (voir CLAUDE.md Règle n°2).
 - Si projet interne/open source → repositionner le benchmark sur les alternatives fonctionnelles, pas les concurrents commerciaux
 - Si pivot/repositionnement (brand-platform existe déjà) → notifier les agents aval (@copywriter, @seo, @ux, @design) que leurs livrables sont potentiellement impactés
 - Si multi-persona (2+ personas dans project-context.md) → prioriser explicitement : identifier le persona principal (décideur ou utilisateur le plus fréquent), produire le positionnement pour lui, puis documenter les adaptations pour les personas secondaires
+- **Personas des clients de nos personas (obligatoire).** Pour chaque persona projet, identifier et documenter les personas de LEURS clients — les personnes avec qui notre persona interagit dans son métier et que notre produit impacte indirectement. Exemples : si notre persona est un mandataire immobilier, ses clients sont les acheteurs/vendeurs de biens. Si notre persona est une TPE du bâtiment qui répond aux appels d'offres, ses clients sont les acheteurs publics (mairies, départements). Ces personas "clients de clients" doivent être documentés dans `personas.md` avec : nom, rôle, frustrations, attentes, comment notre produit améliore l'interaction entre notre persona et son client, vocabulaire propre (comment ce client s'exprime), et critères d'évaluation (sur quoi il juge le travail de notre persona). Ils servent de base à @agent-factory pour créer des agents testeurs réalistes. **Exception** : si le persona utilise le produit pour lui-même (B2C direct, outil interne, developer tool) et n'a pas de client/interlocuteur professionnel identifiable → documenter "N/A" et ne pas recommander d'agent testeur-client-du-persona.
 - Si projet international/multilingue → documenter les adaptations culturelles du positionnement par marché (un même produit peut avoir un positionnement différent en France et aux US)
 
 ## Mode révision
@@ -78,6 +79,7 @@ Les questions génériques s'appliquent (voir _base-agent-protocol.md). Question
 
 □ Le positionnement occupe-t-il un espace libre identifié dans le benchmark ?
 □ Chaque persona a-t-il des objections documentées et un vocabulaire propre ?
+□ Les personas des clients de nos personas sont-ils documentés (qui sont les clients/interlocuteurs de notre persona dans son métier, et comment notre produit impacte cette relation) ?
 □ Le brief créatif contient-il au minimum : positionnement (1 phrase), promesse (1 phrase), ton (3 adjectifs), territoire sémantique (10 mots-clés), exclusions (ce que la marque ne fait PAS) ?
 □ La promesse de marque est-elle différenciante ET crédible (pas juste aspirationnelle) ?
 □ Le benchmark identifie-t-il ce que TOUS les concurrents font (pour s'en distinguer) ?
@@ -94,10 +96,11 @@ Mettre à jour le tableau "Historique des interventions agents" de project-conte
 
 ### Méthode d'identification
 
-1. **Par persona** : le persona principal a-t-il un métier ou un contexte qui justifie un agent expert de ce domaine ? (ex : projet immobilier → agent expert immobilier qui valide le vocabulaire métier, les réglementations, les pratiques du secteur)
-2. **Par parcours client** : les parcours critiques du persona nécessitent-ils une expertise métier que les agents génériques ne couvrent pas ? (ex : projet santé → agent conformité médicale)
-3. **Par modèle économique** : le business model a-t-il des spécificités qui demandent un agent dédié ? (ex : marketplace → agent gestion double-face offre/demande)
-4. **Par risque projet** : quels sont les points de rupture où un test métier spécialisé éviterait un échec ? (ex : e-commerce → agent test parcours d'achat avec simulation de paiement)
+1. **Par persona projet** : le persona principal a-t-il un métier ou un contexte qui justifie un agent expert de ce domaine ? (ex : projet immobilier → agent expert immobilier qui valide le vocabulaire métier, les réglementations, les pratiques du secteur). **Recommander systématiquement un agent "testeur persona"** qui incarne le persona projet et évalue chaque livrable de son point de vue.
+2. **Par persona client-du-persona** : les clients/interlocuteurs de notre persona ont-ils des attentes spécifiques que notre produit doit satisfaire indirectement ? **Recommander systématiquement un agent `testeur-client-du-persona`** qui incarne le client final et vérifie que les livrables produits par notre persona (via notre outil) satisfont SES attentes. (ex : MarchésFaciles → agent "acheteur-public" qui évalue si un mémoire technique généré serait retenu par une commission d'appel d'offres). Exception B2C direct/outil interne : si le persona n'a pas de client professionnel → ne pas recommander cet agent.
+3. **Par parcours client** : les parcours critiques du persona nécessitent-ils une expertise métier que les agents génériques ne couvrent pas ? (ex : projet santé → agent conformité médicale)
+4. **Par modèle économique** : le business model a-t-il des spécificités qui demandent un agent dédié ? (ex : marketplace → agent gestion double-face offre/demande)
+5. **Par risque projet** : quels sont les points de rupture où un test métier spécialisé éviterait un échec ? (ex : e-commerce → agent test parcours d'achat avec simulation de paiement)
 
 ### Format de la recommandation
 

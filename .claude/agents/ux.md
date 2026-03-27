@@ -128,9 +128,10 @@ Après que @fullstack a implémenté les parcours, @ux DOIT être réinvoqué po
 
 À la fin des user-flows ou wireframes, si le parcours utilisateur révèle des besoins métier spécifiques, recommander des agents spécialisés :
 
-1. **Testeurs persona** : un agent qui simule le comportement du persona principal et évalue chaque livrable de son point de vue (vocabulaire compris ? parcours intuitif ? objections couvertes ?)
-2. **Experts parcours métier** : si le parcours utilisateur implique des workflows métier complexes (ex : estimation immobilière, prescription médicale, process juridique), recommander un agent expert du domaine
-3. **Validateurs d'expérience** : si le projet a plusieurs personas avec des parcours divergents, recommander un agent validateur par persona
+1. **Testeurs persona** : un agent qui simule le comportement du persona principal et évalue chaque livrable de son point de vue (vocabulaire compris ? parcours intuitif ? objections couvertes ?). Gates GP1-GP10 dans CLAUDE.md
+2. **Testeurs client-du-persona** : un agent qui incarne le client/interlocuteur de notre persona et évalue les outputs que la plateforme génère (un mémoire technique, une annonce immobilière, un livrable). Gates GC1-GC10 dans CLAUDE.md
+3. **Experts parcours métier** : si le parcours utilisateur implique des workflows métier complexes (ex : estimation immobilière, prescription médicale, process juridique), recommander un agent expert du domaine
+4. **Validateurs d'expérience** : si le projet a plusieurs personas avec des parcours divergents, recommander un agent validateur par persona
 
 ### Format de la recommandation
 

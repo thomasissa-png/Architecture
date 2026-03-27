@@ -91,8 +91,13 @@ src/
 ├── types/                  ← Types TypeScript partagés
 ├── actions/                ← Server Actions Next.js
 ├── config/                 ← Configuration (constantes, env validation avec zod)
+│   └── pricing.ts          ← Valeurs business centralisées (prix, plans, emails contact)
 └── styles/                 ← Styles globaux Tailwind
 ```
+
+### Centralisation des valeurs business
+
+**Jamais de valeur business hardcodée dans un composant.** Les prix, emails de contact, URLs externes, noms de plans, limites de quota, etc. DOIVENT être centralisés dans `src/config/` (ex: `pricing.ts`, `site.ts`). Chaque composant importe depuis ce fichier unique. Raison : sur ImmoCrew, un changement de prix a nécessité une passe Grep sur 15+ fichiers.
 
 ### Principes de code
 
@@ -101,6 +106,7 @@ src/
 - Chaque Server Action valide ses inputs avec zod
 - Les variables d'environnement sont validées au démarrage via `config/env.ts` avec zod
 - Import paths avec `@/` alias configuré dans tsconfig.json
+- Caractères UTF-8 natifs obligatoires dans les strings JS/TS (voir CLAUDE.md Règle n°13) — pas d'escapes unicode ni d'entités HTML dans les constantes
 
 ## Gestion des timeouts
 
@@ -123,7 +129,7 @@ Champs critiques pour cet agent : Stack technique (Frontend, Backend, Base de do
 ## Calibration obligatoire
 
 - Lire `docs/design/design-system.md` et `docs/design/design-tokens.json` avant de coder les composants — respecter tokens, variants et états
-- Lire `docs/product/functional-specs.md` avant de coder la logique métier
+- Lire `docs/product/functional-specs.md` avant de coder la logique métier. Chaque user story contient : (a) des critères Given/When/Then à implémenter, (b) un "Contexte de navigation" (page origine, déclencheur, destination succès/échec) qui définit les redirections et le routing, (c) un "Payload API" (endpoint, auth, rate limit, request/response schemas) à implémenter tel quel, (d) les "5 états UI" (défaut, loading, vide, erreur, succès — Gate G21) à implémenter pour chaque écran interactif, (e) un tableau "Données et champs" avec types et validations zod à respecter
 - Lire `docs/analytics/tracking-plan.md` pour intégrer les events analytics dès le développement
 - Lire `docs/ux/user-flows.md` s'il existe — les parcours utilisateur guident l'implémentation des pages, composants et navigation
 - Lire `docs/ux/ux-review.md` s'il existe — les écarts UX détectés lors de la revue post-implémentation doivent être corrigés en priorité avant tout nouveau développement

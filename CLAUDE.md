@@ -840,7 +840,7 @@ Dans certains cas, avancer nécessite de poser une hypothèse. C'est acceptable 
 
 Claude Code a une limite de temps par réponse ET une fenêtre de contexte qui se dégrade sur les sessions longues. Un agent qui essaie de tout produire en une seule passe **sera coupé en plein travail** et le livrable sera perdu. Cette règle s'applique à TOUS les agents.
 
-**Limite de session** : l'orchestrateur maintient un compteur de phases/agents et alerte l'utilisateur quand la session risque de dégénérer (voir orchestrator.md — Compteur de session obligatoire). Seuils : ALERTE JAUNE après 2 phases / 6 agents, ALERTE ROUGE après 3 phases / 10 agents. Un projet complet doit être découpé en plusieurs sessions.
+**Limite de session** : l'orchestrateur maintient un compteur de phases et de Task **producteurs** (ceux qui déclenchent un Write/Edit dans `docs/` ou `src/`) et alerte l'utilisateur quand la session risque de dégénérer (voir orchestrator.md — Compteur de session obligatoire). Seuil : ALERTE ROUGE après 6 phases / 18 Task producteurs (seule alerte, pas de JAUNE). Les Task de consultation (review verbale, avis sans fichier) ne comptent pas. Un projet complet doit être découpé en plusieurs sessions.
 
 ### Principes anti-timeout
 
@@ -885,8 +885,10 @@ Si un agent a été interrompu par un timeout :
 8. En mode révision : justifier chaque changement, ne pas tout réécrire
 9. **Après chaque livrable** : mettre à jour le tableau "Historique des interventions agents" dans `project-context.md` avec : agent, date, fichiers produits, décisions clés, **et justification des choix (pourquoi cette décision, quelles alternatives écartées)**
 10. **Respecter les règles anti-timeout** (voir Règle absolue numéro 3) — découper les livrables, sauvegarder au fur et à mesure, ne jamais accumuler sans écrire
-11. **Objectif qualité : 100% gates PASS.** Chaque livrable sera évalué par @reviewer via 20 gates binaires (PASS/FAIL) réparties en BLOQUANT et REQUIS. Le seuil de validation est : 100% gates BLOQUANT PASS + 100% gates REQUIS PASS. Viser l'excellence dès la première passe pour éviter les itérations correctives
+11. **Objectif qualité : 100% gates PASS.** Chaque livrable sera évalué par @reviewer via 25 gates binaires G1-G25 (PASS/FAIL) réparties en BLOQUANT et REQUIS. Le seuil de validation est : 100% gates BLOQUANT PASS + 100% gates REQUIS PASS. Viser l'excellence dès la première passe pour éviter les itérations correctives
 12. **Mise à jour du nom de branche obligatoire.** À chaque changement de branche de développement, l'ancienne référence de branche DOIT être remplacée par la nouvelle dans TOUS les fichiers qui la mentionnent : `index.html` (prompts d'installation frontend), `INSTALL.md`, `install.sh`, `update.sh`, et `project-context.md` (mémo de reprise). Utiliser `Grep` sur l'ancien nom de branche pour s'assurer qu'aucune référence n'a été oubliée. Cette mise à jour est la responsabilité de l'agent qui effectue le changement de branche (typiquement @orchestrator ou l'agent principal de la session)
+13. **Caractères UTF-8 obligatoires dans le code.** Dans les fichiers TSX/JSX/JS, utiliser les vrais caractères UTF-8 (é, è, à, ç, ê, î, ô, û, ë, ï, ù) dans les constantes et strings. Ne JAMAIS utiliser `\u00E9` ni `&eacute;` dans les strings JavaScript. Les entités HTML sont acceptables uniquement dans le JSX rendu directement. Signalé comme P0 sur 2 projets distincts.
+14. **Zéro mention de concurrent par nom dans les livrables client-facing.** Ne JAMAIS mentionner de concurrent par nom dans le code frontend, le copy, le contenu marketing, le SEO ou tout contenu visible par l'utilisateur final. Utiliser des catégories génériques ("freelance marketing", "outil avec templates", "plateforme SaaS"). Exception : les livrables internes (benchmarks concurrentiels, audits stratégiques, analyses de marché) DOIVENT nommer les concurrents pour être actionnables.
 
 ## Protocole de test du framework
 
@@ -926,9 +928,9 @@ Un `project-context.md` fictif mais réaliste est disponible dans `tests/project
 Le contrôle qualité s'effectue en **deux temps** avec des responsabilités distinctes :
 
 1. **Vérification rapide par l'orchestrateur** (après chaque phase) : exécuter les gates BLOQUANT sur chaque livrable. Si 1+ gate BLOQUANT = FAIL → relance corrective immédiate de l'agent avant de passer à la phase suivante. Objectif : éliminer les livrables insuffisants au fil de l'eau.
-2. **Audit complet par @reviewer** (en fin de run, Étape 7) : exécuter les 20 gates (BLOQUANT + REQUIS + CONDITIONNEL) via Grep/Read/comparaison — pas de jugement subjectif. Boucle d'itération si besoin (max 3 passes). Les verdicts sont inscrits dans le tableau "Performance des agents".
+2. **Audit complet par @reviewer** (en fin de run, Étape 7) : exécuter les 25 gates (BLOQUANT + REQUIS + CONDITIONNEL) via Grep/Read/comparaison — pas de jugement subjectif. Boucle d'itération si besoin (max 3 passes). Les verdicts sont inscrits dans le tableau "Performance des agents".
 
-### Les 20 gates binaires (PASS/FAIL)
+### Les 25 gates binaires (PASS/FAIL)
 
 Chaque livrable dans `docs/` est évalué par ces gates. Classification :
 - **BLOQUANT** : 1 FAIL = NO-GO immédiat, relance obligatoire
@@ -990,6 +992,36 @@ Chaque livrable dans `docs/` est évalué par ces gates. Classification :
 | G24 | Registre tu/vous uniforme dans le livrable (0 alternance non justifiée) | REQUIS | Pour copy/contenu : Grep `tu \|ton \|votre \|vous ` — vérifier cohérence |
 | G25 | Chaque KPI/métrique a une formule de calcul explicite ET un seuil d'alerte défini | REQUIS | Pour analytics/KPI : chaque KPI a (formule ou trigger) + seuil. Grep `formule\|calcul\|seuil\|alerte` |
 
+**GATES TESTEUR-PERSONA (s'appliquent si agents testeurs créés — voir orchestrator.md Phases 1b, 2c, 2d, 5b)**
+
+| # | Gate | Classe | Vérification |
+|---|---|---|---|
+| GP1 | Compréhension immédiate | BLOQUANT | "En 5 secondes, je comprends ce que ce site fait pour moi" |
+| GP2 | Valeur perçue | BLOQUANT | "La valeur promise justifie le prix affiché — j'en ai pour mon argent" |
+| GP3 | Crédibilité | BLOQUANT | "Ce site me donne confiance (design pro, preuves sociales, pas de bullshit)" |
+| GP4 | Parcours fluide | BLOQUANT | "Je sais où cliquer à chaque étape, je ne suis jamais perdu" |
+| GP5 | Pricing acceptable | REQUIS | "Le prix ne me fait pas fuir — le ROI est évident" |
+| GP6 | Recommandation | REQUIS | "Je recommanderais ce service à un collègue de mon métier" |
+| GP7 | Conviction | BLOQUANT | "Après avoir vu la landing + un essai, je suis convaincu de m'inscrire" |
+| GP8 | Look & feel | REQUIS | "Le design correspond à mon secteur — ni trop cheap ni trop corporate" |
+| GP9 | Outputs utiles | BLOQUANT | "Les documents/livrables que la plateforme génère me sont vraiment utiles" |
+| GP10 | Fidélisation | REQUIS | "Je vois pourquoi je resterais abonné mois après mois" |
+
+| # | Gate | Classe | Vérification |
+|---|---|---|---|
+| GC1 | Professionnalisme | BLOQUANT | "Ce document fait professionnel — pas généré par IA" |
+| GC2 | Pertinence | BLOQUANT | "Le contenu répond précisément à mes attentes/critères" |
+| GC3 | Confiance | BLOQUANT | "Ce document me donne confiance dans le prestataire" |
+| GC4 | Action | BLOQUANT | "Après lecture, je suis enclin à contacter/signer/retenir ce prestataire" |
+| GC5 | Complétude | REQUIS | "Il ne manque aucune information critique" |
+| GC6 | Différenciation | REQUIS | "Ce livrable se distingue positivement de ce que je reçois habituellement" |
+| GC7 | Ton et registre | REQUIS | "Le ton est adapté à mon contexte" |
+| GC8 | Zéro erreur factuelle | BLOQUANT | "Aucune information fausse, incohérente ou inventée" |
+| GC9 | Copy convaincant | REQUIS | "Les arguments sont pertinents et hiérarchisés" |
+| GC10 | Design/mise en page | REQUIS | "La présentation est soignée, structurée, facile à lire" |
+
+**Conditions d'application** : les gates GP/GC s'appliquent uniquement si les agents testeur-persona et testeur-client-du-persona ont été créés (Phase 0b). Si non créés → N/A. **Marketplace** : si double persona (vendeur + acheteur), créer un testeur par persona — les gates s'exécutent une fois par testeur, toutes doivent passer. **B2C direct** : gates GC = N/A si le persona n'a pas de client professionnel.
+
 ### Verdict
 
 - **GO** : 100% gates BLOQUANT PASS + 100% gates REQUIS PASS
@@ -1012,10 +1044,8 @@ Les grilles persona (/10, 9 dimensions, seuil 9/10) et B2B (/10, 7 dimensions, s
 
 **Condition GO finale** : 100% gates BLOQUANT PASS + 100% gates REQUIS PASS + gates persona PASS (>= 9/10) + gates B2B PASS (>= 9/10, si applicable).
 
-**Condition GO finale** : 100% gates BLOQUANT PASS + 100% gates REQUIS PASS + gates persona PASS (>= 9/10) + gates B2B PASS (>= 9/10, si applicable).
-
 **Règle (orchestrateur)** : si 1+ gate BLOQUANT FAIL → relancer immédiatement l'agent avec le détail des gates échouées. Ne pas attendre la fin du run.
-**Règle (reviewer)** : en fin de run, exécuter les 20 gates sur chaque livrable. Tout livrable avec 1+ gate BLOQUANT ou REQUIS FAIL déclenche une boucle d'itération (max 3 passes). Voir `orchestrator.md` Étape 7.
+**Règle (reviewer)** : en fin de run, exécuter les 25 gates sur chaque livrable. Tout livrable avec 1+ gate BLOQUANT ou REQUIS FAIL déclenche une boucle d'itération (max 3 passes). Voir `orchestrator.md` Étape 7.
 
 ## Mémoire organisationnelle — Apprentissage inter-projets
 

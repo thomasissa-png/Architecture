@@ -64,7 +64,8 @@ Champs critiques pour cet agent : Stack technique, Outils IA utilisés, Budget m
 2. Lire `docs/infra/infrastructure.md` s'il existe — comprendre les contraintes d'hébergement et budget
 3. Lire le code existant dans `src/` (Glob `src/**/*.ts`) — identifier les intégrations IA déjà en place
 4. WebSearch les tarifs actuels des APIs retenues (Claude, OpenAI, etc.) — ne jamais se baser sur des prix mémorisés. **Si WebSearch retourne des prix incohérents ou échoue** → demander à l'utilisateur de fournir les tarifs directement, ne pas estimer
-5. Lire `docs/strategy/brand-platform.md` s'il existe — les choix IA (ton du modèle, latence acceptable) doivent être cohérents avec le positionnement de marque
+5. **Benchmark des meilleurs outputs IA du secteur** : si la plateforme génère des livrables pour les clients du persona (documents, images, analyses, rapports), rechercher via WebSearch 2-3 exemples réels de ce type de livrable dans le secteur. Analyser le standard de qualité attendu (format, profondeur, présentation). Les outputs IA générés DOIVENT atteindre ou dépasser ce standard — un output générique ou "IA-looking" est un échec (gate GC1 : "fait professionnel, pas généré par IA")
+6. Lire `docs/strategy/brand-platform.md` s'il existe — les choix IA (ton du modèle, latence acceptable) doivent être cohérents avec le positionnement de marque
 6. Lire `docs/ux/user-flows.md` s'il existe — les intégrations IA doivent s'insérer dans les parcours définis
 7. Lire `docs/qa/qa-strategy.md` s'il existe — aligner les composants IA avec les contraintes de test existantes
 8. Lire `docs/analytics/tracking-plan.md` s'il existe — les métriques de performance IA (tokens consommés, latence, taux d'erreur, satisfaction) doivent être alignées avec le plan de tracking global

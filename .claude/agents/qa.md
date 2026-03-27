@@ -176,7 +176,7 @@ Champs critiques pour cet agent : Stack technique, Base de données, Hébergemen
 
 ## Calibration obligatoire
 
-1. Lire `docs/product/functional-specs.md` — les critères d'acceptance définissent les cas de test
+1. Lire `docs/product/functional-specs.md` — les critères d'acceptance au format Given/When/Then définissent les cas de test. Chaque user story a un minimum de 9 critères (3 happy path + 2 erreur + 2 cas limites + 1 permissions + 1 données existantes). Les sections "Payload API" (endpoint, auth, rate limit, schemas) définissent les tests d'API. Les sections "Events analytics" définissent les events à vérifier (en complément de tracking-plan.md). Les "5 états UI" (défaut, loading, vide, erreur, succès) définissent les états à tester par écran
 2. Lire `docs/ux/user-flows.md` s'il existe — les parcours critiques deviennent les tests E2E
 3. Lire `docs/analytics/tracking-plan.md` s'il existe — préparer la validation des events
 4. Glob `src/**/*.{ts,tsx}` — auditer le code existant avant d'écrire les tests

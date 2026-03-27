@@ -52,6 +52,21 @@ Si un livrable amont référencé dans la calibration n'existe pas :
 
 ---
 
+## Calibration par les meilleures références marché (standard)
+
+Quand un agent produit un livrable destiné à l'utilisateur final ou aux clients du persona (landing page, annonce, mémoire technique, email, rapport, document généré par la plateforme), il DOIT :
+
+1. **Avant de produire** : lire `docs/strategy/competitive-benchmark.md` s'il existe. Identifier les standards de qualité du secteur (format, longueur, structure, niveau de détail, ton)
+2. **WebSearch de référence** : rechercher 2-3 exemples réels du type de livrable à produire dans le secteur du projet (ex: "meilleur mémoire technique appel d'offres BTP", "annonce immobilière premium exemple", "landing page SaaS conversion élevée"). Analyser ce qui fait leur qualité : structure, arguments, preuves, mise en page, CTA
+3. **Objectif : battre la référence marché, pas juste produire un livrable correct.** Le livrable généré doit être au niveau des meilleurs du secteur, pas au niveau moyen. Le testeur-client-du-persona (gates GC1-GC10) évaluera si le livrable "se distingue positivement de ce que je reçois habituellement" (GC6)
+4. **Documenter la référence** dans le handoff : "Références marché consultées : [URLs]. Standard identifié : [ce qui fait la qualité dans ce secteur]."
+
+**Condition d'application** : cette règle s'applique quand l'agent produit un output visible par un tiers (client, prospect, partenaire, acheteur public). Elle ne s'applique PAS aux livrables internes (specs, audits, stratégies).
+
+**Partie variable** : chaque agent peut préciser les types de références pertinents pour son domaine.
+
+---
+
 ## Gestion des timeouts (standard)
 
 Claude Code a une limite de temps par réponse. Un agent qui essaie de tout produire en une seule passe **sera coupé en plein travail** et le livrable sera perdu.
@@ -165,7 +180,7 @@ Quand on passe un livrable existant à améliorer :
 
 ## Auto-évaluation (standard)
 
-**Objectif qualité : 100% gates PASS.** Chaque livrable sera évalué par @reviewer via 20 gates binaires (PASS/FAIL) — voir CLAUDE.md. Un livrable avec ≥ 1 gate BLOQUANT en FAIL sera renvoyé pour corrections (max 3 itérations). Les gates sont vérifiables objectivement (Grep, Read, comparaison) — pas de jugement subjectif.
+**Objectif qualité : 100% gates PASS.** Chaque livrable sera évalué par @reviewer via 25 gates binaires G1-G25 (PASS/FAIL) — voir CLAUDE.md. Un livrable avec ≥ 1 gate BLOQUANT en FAIL sera renvoyé pour corrections (max 3 itérations). Les gates sont vérifiables objectivement (Grep, Read, comparaison) — pas de jugement subjectif.
 
 Avant de livrer, répondre mentalement à ces questions :
 

@@ -49,7 +49,8 @@ Champs critiques pour cet agent : Persona principal, Ton de marque, Promesse uni
 
 1. Lire les champs Persona, Ton de marque, 3 mots qui définissent/ne définissent pas la marque
 2. Rechercher 2-3 concurrents du secteur pour analyser leur registre via WebSearch
-3. Définir : niveau de langage / champ lexical dominant / ce qui est interdit dans ce secteur
+3. **Benchmark des meilleurs outputs** : rechercher 2-3 exemples réels du type de livrable à produire (landing page du secteur, annonce, email de prospection) via WebSearch. Analyser ce qui fait leur qualité : structure, arguments, preuves sociales, CTA, longueur. L'objectif n'est pas de copier mais de comprendre le standard du marché pour le dépasser. Documenter les références dans le handoff
+4. Définir : niveau de langage / champ lexical dominant / ce qui est interdit dans ce secteur
 4. Lire `docs/strategy/brand-platform.md` et `docs/strategy/personas.md` s'ils existent — le brand voice DOIT découler du brand platform
 5. Lire `docs/seo/keyword-map.md` s'il existe — intégrer les mots-clés cibles dans le copy sans sacrifier la fluidité. **Si absent** : signaler à @seo et produire le copy sans optimisation SEO. Marquer les zones où les mots-clés devraient être insérés avec `[MOT-CLÉ SEO À INTÉGRER]`
 6. **Si du copy existe déjà** (site en ligne, docs, emails) : auditer le contenu existant avant de produire pour préserver le capital de marque existant ou justifier explicitement les ruptures de ton. Utiliser Grep pour identifier les chaînes de texte dans `src/` et produire un mapping fichier-source → texte-à-remplacer pour @fullstack
