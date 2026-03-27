@@ -55,6 +55,11 @@ const faqItems = [
     answer:
       "Oui. Avec l'abonnement Pro, vous pouvez personnaliser vos dossiers de pré-commercialisation avec votre logo et vos coordonnées depuis votre profil. Le dossier PDF brandé est prêt à envoyer à vos acquéreurs.",
   },
+  {
+    question: "Que faites-vous de mes photos ?",
+    answer:
+      "Vos photos sont traitées uniquement pour générer le visuel, puis supprimées automatiquement sous 30 jours. Elles ne sont ni partagées, ni utilisées pour entraîner un modèle d'IA. Vos projets clients restent confidentiels.",
+  },
 ];
 
 const jsonLd = {
@@ -70,12 +75,30 @@ const jsonLd = {
   })),
 };
 
+const jsonLdApp = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "Versiroom",
+  applicationCategory: "BusinessApplication",
+  operatingSystem: "Web",
+  offers: {
+    "@type": "Offer",
+    price: "29",
+    priceCurrency: "EUR",
+    description: "Abonnement Pro — 50 crédits/mois",
+  },
+};
+
 export default function MarchandPage() {
   return (
     <div className="min-h-screen bg-background">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdApp) }}
       />
 
       {/* Header */}
@@ -120,7 +143,7 @@ export default function MarchandPage() {
             Lien partageable acquéreurs · Sans limite de durée.
           </p>
           <a
-            href="/pricing"
+            href="/#outil"
             className="inline-flex items-center gap-2 bg-sage text-white px-8 py-3.5 rounded-full text-sm font-semibold hover:bg-sage/85 transition-all duration-200 active:scale-[0.98] shadow-sm"
           >
             Créer mon dossier Pro
@@ -131,24 +154,27 @@ export default function MarchandPage() {
           <p className="text-sm text-foreground/60 font-light mt-4">
             Prix de lancement · 50 crédits/mois inclus
           </p>
+          <p className="text-xs text-foreground/40 font-light mt-1">
+            1 crédit = 1 visuel généré
+          </p>
         </div>
       </section>
 
       {/* Avant / Après */}
       <section className="pb-4 sm:pb-6 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto">
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 rounded-2xl overflow-hidden">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 rounded-2xl overflow-hidden">
             <div className="relative aspect-[4/3]">
-              <img src="/imageavant.jpg" alt="Pièce vide avant Versiroom" className="w-full h-full object-cover" />
+              <img src="/imageavant.jpg" alt="T3 brut à Bordeaux avant home staging Versiroom" className="w-full h-full object-cover" />
               <span className="absolute bottom-2 left-2 text-xs font-medium text-white bg-black/50 px-2 py-1 rounded">Avant</span>
             </div>
             <div className="relative aspect-[4/3]">
-              <img src="/imageapres.jpg" alt="Pièce meublée par Versiroom" className="w-full h-full object-cover" />
+              <img src="/imageapres.jpg" alt="T3 meublé en style Scandinave par Versiroom" className="w-full h-full object-cover" />
               <span className="absolute bottom-2 left-2 text-xs font-medium text-white bg-black/50 px-2 py-1 rounded">Après</span>
             </div>
           </div>
           <p className="text-xs text-muted font-light text-center mt-3">
-            Pièce brute → visuel meublé en 90 secondes. Prêt pour vos plaquettes et portails.
+            T3 brut, Bordeaux — Style Scandinave, généré par Versiroom en 90 secondes.
           </p>
         </div>
       </section>
@@ -243,7 +269,7 @@ export default function MarchandPage() {
             La solution Versiroom
           </h2>
           <p className="text-muted font-light text-center mb-12 max-w-xl mx-auto">
-            Un pipeline IA en 2 passes qui préserve la géométrie exacte de votre bien.
+            Notre IA préserve la géométrie exacte de votre bien : angles, volumes, proportions.
           </p>
           <div className="space-y-6">
             {[
@@ -353,6 +379,9 @@ export default function MarchandPage() {
       {/* CTA final */}
       <section className="pb-20 sm:pb-32 px-5 sm:px-8">
         <div className="max-w-xl mx-auto text-center">
+          <p className="text-xs text-muted font-light mb-6">
+            Conçu pour les professionnels de l'immobilier. Visuels utilisés en dossiers de pré-commercialisation.
+          </p>
           <p className="text-lg font-semibold text-foreground mb-3">
             Prêt à accélérer votre commercialisation ?
           </p>

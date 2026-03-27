@@ -48,12 +48,17 @@ const faqItems = [
   {
     question: "Ça fonctionne sur un chantier brut ?",
     answer:
-      "Oui, c'est le cas d'usage principal. La passe surfaces traite d'abord les finitions (murs, sol, plafond), puis la passe mobilier ajoute l'ameublement. Une pièce en béton brut devient un intérieur fini et meublé. Hauteur sous plafond, poutres apparentes, voûtes : la géométrie est préservée.",
+      "Oui, c'est le cas d'usage principal. En deux étapes : d'abord les finitions (murs, sol, plafond), ensuite l'ameublement. Une pièce en béton brut devient un intérieur fini et meublé. Hauteur sous plafond, poutres apparentes, voûtes : la géométrie est préservée.",
   },
   {
     question: "Quels sont les droits d'usage sur les visuels générés ?",
     answer:
       "Les visuels vous appartiennent. Vous pouvez les utiliser librement dans vos présentations client, votre site, vos réseaux sociaux, vos dossiers de présentation. Aucune restriction d'usage commercial.",
+  },
+  {
+    question: "Que faites-vous de mes photos ?",
+    answer:
+      "Vos photos sont traitées uniquement pour générer le visuel, puis supprimées automatiquement sous 30 jours. Elles ne sont ni partagées, ni utilisées pour entraîner un modèle d'IA. Vos projets clients restent confidentiels.",
   },
 ];
 
@@ -116,7 +121,7 @@ export default function ArchitectePage() {
             <span className="font-light text-muted">En 90 secondes, montrez-leur.</span>
           </h1>
           <p className="text-lg sm:text-xl text-muted font-light leading-relaxed max-w-2xl mx-auto mb-8">
-            Un support de conversation avec votre client dès le premier RDV,
+            Une planche d'ambiance pour votre client dès le premier RDV,
             sans attendre 48h le rendu 3D.
           </p>
           <a
@@ -137,18 +142,18 @@ export default function ArchitectePage() {
       {/* Avant / Après */}
       <section className="pb-4 sm:pb-6 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto">
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 rounded-2xl overflow-hidden">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 rounded-2xl overflow-hidden">
             <div className="relative aspect-[4/3]">
-              <img src="/imageavant.jpg" alt="Pièce vide avant Versiroom" className="w-full h-full object-cover" />
+              <img src="/imageavant.jpg" alt="Appartement en chantier avant Versiroom" className="w-full h-full object-cover" />
               <span className="absolute bottom-2 left-2 text-xs font-medium text-white bg-black/50 px-2 py-1 rounded">Avant</span>
             </div>
             <div className="relative aspect-[4/3]">
-              <img src="/imageapres.jpg" alt="Pièce meublée par Versiroom" className="w-full h-full object-cover" />
+              <img src="/imageapres.jpg" alt="Appartement meublé en style Scandinave par Versiroom" className="w-full h-full object-cover" />
               <span className="absolute bottom-2 left-2 text-xs font-medium text-white bg-black/50 px-2 py-1 rounded">Après</span>
             </div>
           </div>
           <p className="text-xs text-muted font-light text-center mt-3">
-            Photo de chantier → support de conversation client. Style Scandinave, généré en 90 secondes.
+            Appartement en chantier — Style Scandinave, généré par Versiroom en 90 secondes.
           </p>
         </div>
       </section>
@@ -228,7 +233,7 @@ export default function ArchitectePage() {
               {
                 num: "01",
                 title: "12 styles curatés par Yann Duval",
-                desc: "Scandinave, Japandi, Art Déco, Haussmannien, Wabi-Sabi… Chaque style a été conçu et validé par Yann Duval, architecte d'intérieur, 20 ans d'expérience. Références de mobilier iconique, matériaux précis, proportions professionnelles.",
+                desc: "Scandinave, Japandi, Art Déco, Haussmannien, Wabi-Sabi… Chaque style a été conçu et validé par Yann Duval, architecte d'intérieur — 20 ans d'expérience, collaborateur d'ateliers de référence internationaux. Références de mobilier iconique, matériaux précis, proportions professionnelles.",
               },
               {
                 num: "02",
@@ -263,6 +268,45 @@ export default function ArchitectePage() {
       {/* Separator */}
       <div className="max-w-24 mx-auto border-t border-foreground/10" />
 
+      {/* Comment ça marche */}
+      <section className="py-16 sm:py-24 px-5 sm:px-8">
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-12">
+            Comment ça marche
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+            {[
+              {
+                step: "1",
+                title: "Photographiez",
+                desc: "Prenez en photo le chantier depuis votre iPad Pro sur chantier, MacBook au bureau, iPhone en déplacement.",
+              },
+              {
+                step: "2",
+                title: "Choisissez",
+                desc: "Sélectionnez un style parmi 12 ambiances curatées par Yann Duval. Ou décrivez votre propre direction.",
+              },
+              {
+                step: "3",
+                title: "Partagez",
+                desc: "Envoyez la planche d'ambiance à votre client par email ou WhatsApp. 90 secondes.",
+              },
+            ].map((item) => (
+              <div key={item.step}>
+                <div className="w-10 h-10 rounded-full bg-foreground/5 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-sm font-semibold text-foreground">{item.step}</span>
+                </div>
+                <p className="text-sm font-semibold text-foreground mb-2">{item.title}</p>
+                <p className="text-xs text-muted font-light leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Separator */}
+      <div className="max-w-24 mx-auto border-t border-foreground/10" />
+
       {/* FAQ */}
       <section className="py-16 sm:py-24 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto">
@@ -287,6 +331,9 @@ export default function ArchitectePage() {
       {/* CTA final */}
       <section className="pb-20 sm:pb-32 px-5 sm:px-8">
         <div className="max-w-xl mx-auto text-center">
+          <p className="text-xs text-muted font-light mb-6">
+            Conçu avec et pour des architectes d'intérieur indépendants.
+          </p>
           <p className="text-lg font-semibold text-foreground mb-3">
             Prêt à gagner du temps sur vos présentations client ?
           </p>
@@ -310,6 +357,9 @@ export default function ArchitectePage() {
               Voir les tarifs Pro
             </a>
           </div>
+          <p className="text-xs text-foreground/40 font-light mt-4">
+            Aussi disponible à l'usage, sans abonnement — à partir de 4,90 €
+          </p>
         </div>
       </section>
 

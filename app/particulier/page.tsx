@@ -46,6 +46,11 @@ const faqItems = [
     answer:
       "Oui. Versiroom utilise une technologie IA qui préserve la géométrie exacte de votre pièce : les murs, les fenêtres, la lumière, l'angle de la photo. Seules les finitions (couleur des murs, sol) et le mobilier changent. C'est votre pièce, dans le style que vous avez choisi.",
   },
+  {
+    question: "Que faites-vous de mes photos ?",
+    answer:
+      "Vos photos sont traitées uniquement pour générer le visuel. Elles ne sont ni partagées, ni utilisées pour entraîner une IA. Elles sont supprimées automatiquement sous 30 jours.",
+  },
 ];
 
 const jsonLd = {
@@ -128,7 +133,7 @@ export default function ParticulierPage() {
       {/* Avant / Après */}
       <section className="pb-4 sm:pb-6 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto">
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 rounded-2xl overflow-hidden">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 rounded-2xl overflow-hidden">
             <div className="relative aspect-[4/3]">
               <img src="/imageavant.jpg" alt="Pièce vide avant Versiroom" className="w-full h-full object-cover" />
               <span className="absolute bottom-2 left-2 text-xs font-medium text-white bg-black/50 px-2 py-1 rounded">Avant</span>
@@ -139,7 +144,7 @@ export default function ParticulierPage() {
             </div>
           </div>
           <p className="text-xs text-muted font-light text-center mt-3">
-            Votre pièce vide → votre pièce meublée. Résultat en 90 secondes, depuis votre iPhone.
+            Salon vide → Salon Scandinave — généré en 90 secondes avec Versiroom.
           </p>
         </div>
       </section>
@@ -235,7 +240,7 @@ export default function ParticulierPage() {
               {
                 num: "04",
                 title: "Partagez et sauvegardez",
-                desc: "Téléchargez l'image en HD, partagez-la sur Instagram ou WhatsApp, ou envoyez-la à votre partenaire pour choisir ensemble.",
+                desc: "Téléchargez l'image en HD, partagez-la sur Instagram ou WhatsApp, ou envoyez-la à votre partenaire. Finies les disputes sur la couleur du mur. Utilisez le visuel comme référence pour choisir exactement les bons meubles.",
               },
             ].map((item) => (
               <div key={item.num} className="flex gap-5 items-start">
@@ -282,11 +287,17 @@ export default function ParticulierPage() {
       {/* CTA final */}
       <section className="pb-20 sm:pb-32 px-5 sm:px-8">
         <div className="max-w-xl mx-auto text-center">
-          <p className="text-lg font-semibold text-foreground mb-3">
-            Envie de voir votre future déco ?
+          <p className="text-xs text-muted font-light mb-6">
+            Déjà utilisé pour meubler des centaines de pièces en France.
           </p>
-          <p className="text-sm text-muted font-light mb-8">
-            3 générations offertes, sans carte bancaire, résultat en 90 secondes.
+          <p className="text-lg font-semibold text-foreground mb-3">
+            Votre salon en Scandinave, en 90 secondes.
+          </p>
+          <p className="text-sm text-muted font-light mb-4">
+            3 générations offertes, sans carte bancaire.
+          </p>
+          <p className="text-xs text-muted font-light mb-8">
+            Ensuite à partir de 4,90 €
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a
