@@ -67,7 +67,7 @@ const jsonLd = {
 const comparatifData = [
   {
     critere: "Prix",
-    versiroom: "Gratuit (3 cr\u00E9dits) puis 9,90 \u20AC (15 cr\u00E9dits)",
+    versiroom: "Gratuit (3 crédits) puis 9,90 € (15 crédits)",
     gepetto: "Sur devis",
     interieurAI: "Des 1,25 \u20AC/photo",
     renovateClub: "9,99 \u20AC/mois illimite",

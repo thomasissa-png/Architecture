@@ -45,7 +45,7 @@ export const OUTDOOR_STYLES: Record<string, OutdoorStyle> = {
     emoji: "\uD83E\uDED2",
     description: "Tomettes terre cuite, table fer forgé, oliviers",
     surfacePrompt:
-      "Mediterranean outdoor: reclaimed Proven\u00E7al terracotta tiles 30x30cm with natural irregular patina and slightly raised grout joints in light ochre mortar, low dry-stone rendered wall coping in warm limestone, preserve all existing walls facades and guard rails unchanged, open sky preserved as-is.",
+      "Mediterranean outdoor: reclaimed Provençal terracotta tiles 30x30cm with natural irregular patina and slightly raised grout joints in light ochre mortar, low dry-stone rendered wall coping in warm limestone, preserve all existing walls facades and guard rails unchanged, open sky preserved as-is.",
     furniturePrompt:
       "A sun-warmed courtyard where wrought iron and terracotta age together under olive branches. Mediterranean outdoor furniture: round wrought-iron table 120cm in aged antique white finish with visible dark oxidized metal showing through paint wear on edges, 4 matching bistro armchairs with woven rush seats, two glazed terracotta planters 90cm diameter with standard-trained olive trees 150cm overall height, three smaller terracotta pots 25-30cm with rosemary and lavender along the wall base, ceramic lanterns 25cm tall on table surface with unlit pillar candles, outdoor-rated woven polypropylene table runner 40x120cm in natural ecru with fringe edge. Warm convivial atmosphere.",
   },
@@ -67,9 +67,9 @@ export const OUTDOOR_STYLES: Record<string, OutdoorStyle> = {
     emoji: "\uD83C\uDFE1",
     description: "Pierre calcaire, fer forgé, lavande, cyprès",
     surfacePrompt:
-      "Proven\u00E7al outdoor: warm aged limestone walls with natural patina and subtle weathering, terracotta floor tiles with irregular edges and warm tones laid in traditional staggered bond, open sky preserved as-is.",
+      "Provençal outdoor: warm aged limestone walls with natural patina and subtle weathering, terracotta floor tiles with irregular edges and warm tones laid in traditional staggered bond, open sky preserved as-is.",
     furniturePrompt:
-      "A timeless Proven\u00E7al terrace bathed in dry heat — stone, iron, and lavender, nothing more. Proven\u00E7al outdoor furniture: wrought iron table 120cm with glass top, 4 wrought iron chairs with cream seat cushions (outdoor-rated), large terracotta pot 90cm with Italian cypress 180cm, lavender rows in weathered stone troughs 60cm, freestanding stone fountain basin 50cm on low plinth with copper spout (dry in daylight), Proven\u00E7al blue ceramic vase 30cm on table, olive branch arrangement in rustic ceramic pitcher, outdoor flat-weave polypropylene rug 200x300cm in warm ochre.",
+      "A timeless Provençal terrace bathed in dry heat — stone, iron, and lavender, nothing more. Provençal outdoor furniture: wrought iron table 120cm with glass top, 4 wrought iron chairs with cream seat cushions (outdoor-rated), large terracotta pot 90cm with Italian cypress 180cm, lavender rows in weathered stone troughs 60cm, freestanding stone fountain basin 50cm on low plinth with copper spout (dry in daylight), Provençal blue ceramic vase 30cm on table, olive branch arrangement in rustic ceramic pitcher, outdoor flat-weave polypropylene rug 200x300cm in warm ochre.",
   },
 
   industriel_urbain: {
