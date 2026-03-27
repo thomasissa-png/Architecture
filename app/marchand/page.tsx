@@ -187,29 +187,7 @@ export default function MarchandPage() {
         </div>
       </section>
 
-      {/* Galerie multi-styles — remplacer les placeholders par des images réelles */}
-      <section className="pb-6 sm:pb-10 px-5 sm:px-8">
-        <div className="max-w-4xl mx-auto">
-          <p className="text-xs text-muted font-light text-center mb-4">
-            Un même bien, 3 styles différents — prêts pour vos plaquettes
-          </p>
-          <div className="grid grid-cols-3 gap-2 sm:gap-3">
-            {[
-              { style: "Scandinave", src: "/imageapres.jpg" },
-              { style: "Contemporain", src: "/imageapres.jpg" },
-              { style: "Cosy", src: "/imageapres.jpg" },
-            ].map((item) => (
-              <div key={item.style} className="relative aspect-[4/3] rounded-xl overflow-hidden">
-                <img src={item.src} alt={`Style ${item.style} — Versiroom`} className="w-full h-full object-cover" loading="lazy" />
-                <span className="absolute bottom-2 left-2 text-xs font-medium text-white bg-black/50 px-2 py-1 rounded">{item.style}</span>
-              </div>
-            ))}
-          </div>
-          <p className="text-xs text-muted/50 font-light text-center mt-2">
-            Images placeholder — seront remplacées par des générations réelles
-          </p>
-        </div>
-      </section>
+      {/* Galerie multi-styles — a activer quand 3 images reelles distinctes seront disponibles dans public/demo/ */}
 
       {/* Social proof line */}
       <div className="flex flex-wrap justify-center gap-4 sm:gap-8 text-xs text-muted font-light py-6">
@@ -293,14 +271,79 @@ export default function MarchandPage() {
         </div>
       </section>
 
+      {/* Grille tarifaire compacte */}
+      <section className="py-12 sm:py-16 px-5 sm:px-8">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight mb-2 text-center">
+            Une offre pour chaque volume
+          </h2>
+          <p className="text-sm text-muted font-light text-center mb-8">
+            Sans engagement. Résiliable à tout moment.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Découverte */}
+            <div className="rounded-2xl border border-foreground/10 p-5">
+              <p className="text-xs text-muted font-medium uppercase tracking-widest mb-1">Découverte</p>
+              <p className="text-2xl font-bold text-foreground">Gratuit</p>
+              <p className="text-xs text-muted font-light mt-1 mb-4">3 visuels offerts, sans carte bancaire</p>
+              <ul className="space-y-2 text-xs text-muted font-light">
+                <li>12 styles disponibles</li>
+                <li>Téléchargement HD</li>
+                <li>Partage et comparateur</li>
+              </ul>
+              <a href="/#outil" className="block text-center mt-5 text-xs font-medium text-foreground border border-foreground/15 px-4 py-2.5 rounded-full hover:bg-foreground/5 transition-colors">
+                Essayer
+              </a>
+            </div>
+            {/* Starter */}
+            <div className="rounded-2xl border border-foreground/10 p-5">
+              <p className="text-xs text-muted font-medium uppercase tracking-widest mb-1">Starter</p>
+              <p className="text-2xl font-bold text-foreground">9,90 €</p>
+              <p className="text-xs text-muted font-light mt-1 mb-4">Achat unique · 15 crédits · 0,66 €/photo</p>
+              <ul className="space-y-2 text-xs text-muted font-light">
+                <li>12 styles + mode personnalisé</li>
+                <li>1 itération par photo</li>
+                <li>Historique des générations</li>
+                <li>Recharge : +10 crédits à 5,90 €</li>
+              </ul>
+              <a href="/pricing" className="block text-center mt-5 text-xs font-medium text-foreground border border-foreground/15 px-4 py-2.5 rounded-full hover:bg-foreground/5 transition-colors">
+                Acheter
+              </a>
+            </div>
+            {/* Pro */}
+            <div className="rounded-2xl border-2 border-sage/40 bg-sage/5 p-5 relative">
+              <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-sage text-white text-[10px] font-semibold px-3 py-0.5 rounded-full">Recommandé</span>
+              <p className="text-xs text-sage font-medium uppercase tracking-widest mb-1">Pro</p>
+              <p className="text-2xl font-bold text-foreground">29 €<span className="text-sm font-light text-muted">/mois</span></p>
+              <p className="text-xs text-muted font-light mt-1 mb-4">50 crédits/mois · 0,58 €/photo</p>
+              <ul className="space-y-2 text-xs text-muted font-light">
+                <li>3 itérations par photo</li>
+                <li>Dossiers PDF brandés (logo, couleurs)</li>
+                <li>Annonces et liens acquéreurs</li>
+                <li>Recharge : +20 crédits à 9 €</li>
+              </ul>
+              <a href="/pricing" className="block text-center mt-5 text-xs font-semibold text-white bg-sage px-4 py-2.5 rounded-full hover:bg-sage/85 transition-colors">
+                S'abonner
+              </a>
+            </div>
+          </div>
+          <p className="text-xs text-muted/60 font-light text-center mt-4">
+            Tous les détails sur la <a href="/pricing" className="underline hover:text-foreground transition-colors">page tarifs</a>.
+          </p>
+        </div>
+      </section>
+
       {/* Témoignage */}
       <section className="py-10 sm:py-14 px-5 sm:px-8">
         <div className="max-w-2xl mx-auto text-center">
           <blockquote className="text-base sm:text-lg text-foreground font-light leading-relaxed italic">
             « Je sortais mes plaquettes en 3 jours avec un home stager. Maintenant c'est fait dans la matinée. Mes acquéreurs reçoivent les visuels le jour même de la visite. »
           </blockquote>
-          <p className="text-sm text-muted font-light mt-3">
-            Marchand de biens — Bordeaux, 10 opérations/an
+          <p className="text-sm text-foreground/70 font-light mt-3">
+            Thomas B. — Marchand de biens, Bordeaux
+          </p>
+          <p className="text-xs text-muted font-light mt-0.5">
+            10 opérations/an · Utilisateur Versiroom depuis 2026
           </p>
         </div>
       </section>
