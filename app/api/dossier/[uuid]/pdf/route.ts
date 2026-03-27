@@ -13,6 +13,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { PDFDocument, rgb, StandardFonts, PDFPage, PDFFont } from "pdf-lib";
+import * as QRCode from "qrcode";
 import { getImage, saveImage } from "@/lib/db";
 import {
   getDossierByUuid,
@@ -23,6 +24,7 @@ import {
   formatSurface,
 } from "@/lib/dossier";
 import { getMerchantProfile, getMerchantLogo } from "@/lib/merchant";
+import { getPropertyByUserAndAddress } from "@/lib/properties";
 import { translateRoomLabel } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
@@ -90,6 +92,27 @@ async function embedImageFromStorage(
       return null;
     }
   }
+}
+
+// DPE badge colors (same as web UI)
+const DPE_COLORS: Record<string, { r: number; g: number; b: number }> = {
+  A: { r: 0x31 / 255, g: 0x98 / 255, b: 0x34 / 255 },
+  B: { r: 0x33 / 255, g: 0xa3 / 255, b: 0x57 / 255 },
+  C: { r: 0x8d / 255, g: 0xc6 / 255, b: 0x3f / 255 },
+  D: { r: 0xf5 / 255, g: 0xc2 / 255, b: 0x11 / 255 },
+  E: { r: 0xf1 / 255, g: 0x9a / 255, b: 0x20 / 255 },
+  F: { r: 0xe5 / 255, g: 0x53 / 255, b: 0x12 / 255 },
+  G: { r: 0xd7 / 255, g: 0x22 / 255, b: 0x1f / 255 },
+};
+
+async function generateQRCodePng(url: string): Promise<Buffer> {
+  return QRCode.toBuffer(url, {
+    type: "png",
+    width: 200,
+    margin: 1,
+    color: { dark: "#1C1C1E", light: "#FFFFFF" },
+    errorCorrectionLevel: "M",
+  });
 }
 
 function drawFooter(
@@ -165,8 +188,13 @@ export async function GET(
     );
   }
 
-  // Load merchant profile
-  const profile = await getMerchantProfile(dossier.user_id);
+  // Load merchant profile + linked property (for DPE)
+  const [profile, linkedProperty] = await Promise.all([
+    getMerchantProfile(dossier.user_id),
+    dossier.bien_adresse
+      ? getPropertyByUserAndAddress(dossier.user_id, dossier.bien_adresse)
+      : null,
+  ]);
   const hasMerchant = profile?.is_merchant === true;
 
   // Merchant colors (fallback to Versiroom defaults)
@@ -303,7 +331,8 @@ export async function GET(
       // - map area if present (~110px)
       // - footer (FOOTER_HEIGHT = 35px)
       // - padding (10px)
-      const belowDescriptionHeight = 82 + (dossier.carte_image_key ? 110 : 0);
+      // Reserve: info pills(20) + address(16) + price(20) + date(16) + contact block(88) + footer(35) + padding
+      const belowDescriptionHeight = 102 + 88;
       const descBottomLimit = FOOTER_HEIGHT + belowDescriptionHeight;
 
       const DESC_FONT_SIZE = 11;
@@ -363,6 +392,9 @@ export async function GET(
     if (dossier.ville) infoParts.push(dossier.ville);
     if (dossier.prix_moyen_m2) infoParts.push(`${dossier.prix_moyen_m2.toLocaleString("fr-FR")} €/m² (quartier)`);
 
+    // DPE badge (drawn inline with info pills)
+    const dpeClasse = linkedProperty?.dpe_classe || null;
+
     if (infoParts.length > 0) {
       // Draw info pills as text with separators
       const infoText = infoParts.join("  |  ");
@@ -373,7 +405,62 @@ export async function GET(
         font,
         color: rgb(secondaryColor.r, secondaryColor.g, secondaryColor.b),
       });
+
+      // DPE badge right after the info text
+      if (dpeClasse && DPE_COLORS[dpeClasse]) {
+        const infoTextWidth = font.widthOfTextAtSize(sanitizeForPdf(infoText), 10);
+        const badgeX = MARGIN + infoTextWidth + 12;
+        const badgeW = 52;
+        const badgeH = 18;
+        const badgeY = yPos - 4;
+        const dpeColor = DPE_COLORS[dpeClasse];
+
+        // Badge background
+        coverPage.drawRectangle({
+          x: badgeX,
+          y: badgeY,
+          width: badgeW,
+          height: badgeH,
+          color: rgb(dpeColor.r, dpeColor.g, dpeColor.b),
+          borderColor: rgb(dpeColor.r, dpeColor.g, dpeColor.b),
+          borderWidth: 0,
+        });
+
+        // Badge text "DPE A"
+        const badgeText = `DPE ${dpeClasse}`;
+        const badgeTextWidth = fontBold.widthOfTextAtSize(badgeText, 9);
+        safeDrawText(coverPage, badgeText, {
+          x: badgeX + (badgeW - badgeTextWidth) / 2,
+          y: badgeY + 5,
+          size: 9,
+          font: fontBold,
+          color: rgb(1, 1, 1),
+        });
+      }
+
       yPos -= 20;
+    } else if (dpeClasse && DPE_COLORS[dpeClasse]) {
+      // No info pills but DPE exists — draw standalone badge
+      const dpeColor = DPE_COLORS[dpeClasse];
+      const badgeW = 52;
+      const badgeH = 18;
+      coverPage.drawRectangle({
+        x: MARGIN,
+        y: yPos - 4,
+        width: badgeW,
+        height: badgeH,
+        color: rgb(dpeColor.r, dpeColor.g, dpeColor.b),
+      });
+      const badgeText = `DPE ${dpeClasse}`;
+      const badgeTextWidth = fontBold.widthOfTextAtSize(badgeText, 9);
+      safeDrawText(coverPage, badgeText, {
+        x: MARGIN + (badgeW - badgeTextWidth) / 2,
+        y: yPos + 1,
+        size: 9,
+        font: fontBold,
+        color: rgb(1, 1, 1),
+      });
+      yPos -= 24;
     }
 
     // Address
@@ -409,17 +496,102 @@ export async function GET(
       color: rgb(0.6, 0.6, 0.6),
     });
 
-    // Map at bottom right of cover (if available)
+    // ── Contact block: QR code + phone (bottom-left) ──────────────────
+    const BASE_URL = "https://architecture-toum92.replit.app";
+    const dossierWebUrl = `${BASE_URL}/dossier/${dossier.slug || dossier.uuid}`;
+    const merchantTel = hasMerchant ? profile?.telephone || null : null;
+
+    // Contact block sits above the footer, ~80pt tall
+    const contactBlockY = FOOTER_HEIGHT + 8;
+    const contactBlockH = 80;
+
+    // QR code
+    try {
+      const qrBuffer = await generateQRCodePng(dossierWebUrl);
+      const qrImage = await pdfDoc.embedPng(qrBuffer);
+      const qrSize = 62;
+      coverPage.drawImage(qrImage, {
+        x: MARGIN,
+        y: contactBlockY + (contactBlockH - qrSize) / 2,
+        width: qrSize,
+        height: qrSize,
+      });
+
+      // Text next to QR
+      const textX = MARGIN + qrSize + 14;
+      let contactTextY = contactBlockY + contactBlockH - 14;
+
+      // Phone number in big bold text (if available)
+      if (merchantTel) {
+        safeDrawText(coverPage, merchantTel, {
+          x: textX,
+          y: contactTextY,
+          size: 16,
+          font: fontBold,
+          color: rgb(primaryColor.r, primaryColor.g, primaryColor.b),
+        });
+        contactTextY -= 18;
+      }
+
+      // Merchant name (if available, smaller)
+      if (hasMerchant && profile?.raison_sociale) {
+        safeDrawText(coverPage, profile.raison_sociale, {
+          x: textX,
+          y: contactTextY,
+          size: 10,
+          font: fontBold,
+          color: rgb(0.3, 0.3, 0.3),
+        });
+        contactTextY -= 16;
+      }
+
+      // "Scannez pour voir le dossier en ligne"
+      safeDrawText(coverPage, "Scannez pour voir le dossier en ligne", {
+        x: textX,
+        y: contactTextY,
+        size: 8,
+        font,
+        color: rgb(0.5, 0.5, 0.5),
+      });
+
+    } catch (qrErr) {
+      // QR generation failed — fallback: show URL as text + phone
+      console.error(`[PDF] QR code generation failed: ${qrErr instanceof Error ? qrErr.message : qrErr}`);
+
+      let fallbackY = contactBlockY + contactBlockH - 14;
+
+      if (merchantTel) {
+        safeDrawText(coverPage, merchantTel, {
+          x: MARGIN,
+          y: fallbackY,
+          size: 16,
+          font: fontBold,
+          color: rgb(primaryColor.r, primaryColor.g, primaryColor.b),
+        });
+        fallbackY -= 20;
+      }
+
+      // URL in readable size
+      safeDrawText(coverPage, dossierWebUrl, {
+        x: MARGIN,
+        y: fallbackY,
+        size: 9,
+        font,
+        color: rgb(secondaryColor.r, secondaryColor.g, secondaryColor.b),
+      });
+    }
+
+    // Map at bottom right of cover (if available) — positioned next to contact block
     if (dossier.carte_image_key) {
       try {
         const mapImg = await embedImageFromStorage(pdfDoc, dossier.carte_image_key);
         if (mapImg) {
           const mapMaxW = 240;
-          const mapMaxH = 100;
+          const mapMaxH = contactBlockH;
           const mapDims = mapImg.scaleToFit(mapMaxW, mapMaxH);
           coverPage.drawImage(mapImg, {
             x: PAGE_WIDTH - MARGIN - mapDims.width,
-            y: FOOTER_HEIGHT + 10,
+            y: contactBlockY + (contactBlockH - mapDims.height) / 2,
             width: mapDims.width,
             height: mapDims.height,
           });
@@ -429,13 +601,13 @@ export async function GET(
       }
     }
 
-    // Cover footer
+    // Cover footer (AI disclaimer only — merchant coordinates now in contact block)
     drawFooter(
       coverPage,
       font,
       fontBold,
-      hasMerchant ? profile?.raison_sociale || null : null,
-      hasMerchant ? profile?.telephone || null : null,
+      null, // merchant name already shown in contact block
+      null, // phone already shown in contact block
       secondaryColor
     );
 
