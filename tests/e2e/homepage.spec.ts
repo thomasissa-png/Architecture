@@ -44,25 +44,20 @@ test.describe("Homepage", () => {
     await expect(footer.locator('a[href="/confidentialite"]')).toBeVisible();
   });
 
-  test("pricing section displays 4 packs with correct prices TTC", async ({
+  test("pricing section displays 3 packs with correct prices TTC", async ({
     page,
   }) => {
     const pricing = page.locator("#pricing");
 
-    // 4 pricing cards
-    const cards = pricing.locator(
-      ":scope > div > div:last-child > div.border"
-    );
-    // Fallback: just check prices are visible in the pricing section
-    await expect(pricing).toContainText("Gratuit");
-    await expect(pricing).toContainText("9,90");
-    await expect(pricing).toContainText("29");
+    // 3 pricing cards: Découverte (0€), Starter (9,90€), Pro (29€/mois)
+    await expect(pricing).toContainText("0€");
+    await expect(pricing).toContainText("9,90€");
+    await expect(pricing).toContainText("29€");
 
     // Pack names
     await expect(pricing).toContainText("Découverte");
     await expect(pricing).toContainText("Starter");
     await expect(pricing).toContainText("Pro");
-    await expect(pricing).toContainText("Studio");
 
     // TTC mention
     await expect(pricing).toContainText("TTC");

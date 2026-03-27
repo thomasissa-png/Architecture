@@ -43,8 +43,9 @@ test.describe("Pricing page — /pricing", () => {
   });
 
   test("displays credit counts per pack", async ({ page }) => {
-    await expect(page.locator("text=5 crédits")).toBeVisible();
-    await expect(page.locator("text=20 crédits")).toBeVisible();
+    // Découverte = 3 générations, Starter = 15 crédits, Pro = 50 crédits
+    await expect(page.locator("text=3 générations")).toBeVisible();
+    await expect(page.locator("text=15 crédits")).toBeVisible();
     await expect(page.locator("text=50 crédits")).toBeVisible();
   });
 
@@ -59,9 +60,11 @@ test.describe("Pricing page — /pricing", () => {
     await expect(page.locator("text=Recommandé")).toBeVisible();
   });
 
-  test("each pack has an Acheter button", async ({ page }) => {
-    const buyButtons = page.locator("button", { hasText: "Acheter" });
-    await expect(buyButtons).toHaveCount(3);
+  test("each pack has a CTA (Essayer link, Acheter button, S'abonner button)", async ({ page }) => {
+    // Découverte = "Essayer" (link), Starter = "Acheter" (button), Pro = "S'abonner" (button)
+    await expect(page.locator('a', { hasText: "Essayer" })).toBeVisible();
+    await expect(page.locator("button", { hasText: "Acheter" })).toBeVisible();
+    await expect(page.locator("button", { hasText: "S'abonner" })).toBeVisible();
   });
 
   test("retractation checkbox is present", async ({ page }) => {

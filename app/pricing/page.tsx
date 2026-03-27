@@ -168,7 +168,7 @@ function PricingContent() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-foreground/5">
+      <header role="banner" className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-foreground/5">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 py-3 sm:py-4 flex items-center justify-between">
           <a
             href="/"
@@ -176,7 +176,7 @@ function PricingContent() {
           >
             Versiroom
           </a>
-          <nav className="flex items-center gap-4 sm:gap-6">
+          <nav aria-label="Navigation principale" className="flex items-center gap-4 sm:gap-6">
             <a
               href="/#outil"
               className="text-xs text-muted font-light hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm"
@@ -439,7 +439,7 @@ function PricingContent() {
           </p>
 
           {/* FAQ */}
-          <div className="max-w-2xl mx-auto mt-16">
+          <div aria-label="Questions fréquentes" role="region" className="max-w-2xl mx-auto mt-16">
             <h2 className="text-lg font-semibold text-foreground text-center mb-8">Questions fréquentes</h2>
             <div className="space-y-4">
               {[

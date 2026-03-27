@@ -69,8 +69,8 @@ const comparatifData = [
     critere: "Prix",
     versiroom: "Gratuit (3 crédits) puis 9,90 € (15 crédits)",
     gepetto: "Sur devis",
-    interieurAI: "Des 1,25 \u20AC/photo",
-    renovateClub: "9,99 \u20AC/mois illimite",
+    interieurAI: "Des 1,25 €/photo",
+    renovateClub: "9,99 €/mois illimite",
   },
   {
     critere: "Nombre de styles",
@@ -146,24 +146,24 @@ export default function ComparatifPage() {
       />
 
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-foreground/5">
+      <header role="banner" className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-foreground/5">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 py-3 sm:py-4 flex items-center justify-between">
           <a
             href="/"
-            className="text-xl font-semibold text-foreground tracking-tighter"
+            className="text-xl font-semibold text-foreground tracking-tighter focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm"
           >
             Versiroom
           </a>
-          <nav className="flex items-center gap-4 sm:gap-6">
+          <nav aria-label="Navigation principale" className="flex items-center gap-4 sm:gap-6">
             <a
               href="/pricing"
-              className="text-xs text-muted font-light hover:text-foreground transition-colors"
+              className="text-xs text-muted font-light hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm"
             >
               Tarifs
             </a>
             <a
               href="/#outil"
-              className="text-xs font-medium text-background bg-foreground px-4 py-2 rounded-full hover:bg-foreground/85 transition-colors"
+              className="text-xs font-medium text-background bg-foreground px-4 min-h-[44px] flex items-center rounded-full hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
             >
               Essayer
             </a>
@@ -273,7 +273,7 @@ export default function ComparatifPage() {
                 esth&eacute;tiques et oriente la discussion. Les{" "}
                 <a
                   href="/architecte"
-                  className="text-sage underline underline-offset-2 hover:text-foreground transition-colors"
+                  className="text-sage underline underline-offset-2 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm"
                 >
                   12 styles curat&eacute;s par des architectes d&apos;int&eacute;rieur
                 </a>{" "}
@@ -292,7 +292,7 @@ export default function ComparatifPage() {
                 pr&eacute;-commercialisation. Le{" "}
                 <a
                   href="/marchand"
-                  className="text-sage underline underline-offset-2 hover:text-foreground transition-colors"
+                  className="text-sage underline underline-offset-2 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm"
                 >
                   Mode Pro
                 </a>{" "}
@@ -312,7 +312,7 @@ export default function ComparatifPage() {
                 SES pi&egrave;ces avant d&apos;acheter ses meubles. Avec{" "}
                 <a
                   href="/particulier"
-                  className="text-sage underline underline-offset-2 hover:text-foreground transition-colors"
+                  className="text-sage underline underline-offset-2 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm"
                 >
                   3 g&eacute;n&eacute;rations gratuites
                 </a>
@@ -402,7 +402,7 @@ export default function ComparatifPage() {
       <div className="max-w-24 mx-auto border-t border-foreground/10" />
 
       {/* FAQ */}
-      <section className="py-16 sm:py-24 px-5 sm:px-8">
+      <section aria-label="Questions fréquentes" className="py-16 sm:py-24 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-10 text-center">
             Questions fr&eacute;quentes
@@ -434,7 +434,7 @@ export default function ComparatifPage() {
           </p>
           <a
             href="/#outil"
-            className="inline-flex items-center gap-2 bg-foreground text-background px-8 py-3.5 rounded-full text-sm font-medium hover:bg-foreground/85 transition-all duration-200 active:scale-[0.98]"
+            className="inline-flex items-center gap-2 bg-foreground text-background px-8 py-3.5 rounded-full text-sm font-medium hover:bg-foreground/85 transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
           >
             Essayer Versiroom gratuitement
             <svg
@@ -454,25 +454,25 @@ export default function ComparatifPage() {
           <div className="flex flex-wrap items-center justify-center gap-4 mt-8 text-xs text-muted font-light">
             <a
               href="/architecte"
-              className="text-sage underline underline-offset-2 hover:text-foreground transition-colors"
+              className="text-sage underline underline-offset-2 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm"
             >
               Architectes
             </a>
             <a
               href="/marchand"
-              className="text-sage underline underline-offset-2 hover:text-foreground transition-colors"
+              className="text-sage underline underline-offset-2 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm"
             >
               Marchands de biens
             </a>
             <a
               href="/particulier"
-              className="text-sage underline underline-offset-2 hover:text-foreground transition-colors"
+              className="text-sage underline underline-offset-2 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm"
             >
               Particuliers
             </a>
             <a
               href="/blog"
-              className="text-sage underline underline-offset-2 hover:text-foreground transition-colors"
+              className="text-sage underline underline-offset-2 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm"
             >
               Blog
             </a>

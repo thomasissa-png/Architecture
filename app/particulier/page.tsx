@@ -281,7 +281,7 @@ export default function ParticulierPage() {
       <div className="max-w-24 mx-auto border-t border-foreground/10" />
 
       {/* FAQ */}
-      <section className="py-16 sm:py-24 px-5 sm:px-8">
+      <section aria-label="Questions fréquentes" className="py-16 sm:py-24 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-10 text-center">
             Questions fréquentes
@@ -325,7 +325,7 @@ export default function ParticulierPage() {
             </a>
             <a
               href="/pricing"
-              className="text-xs text-muted font-light underline hover:text-foreground transition-colors"
+              className="text-xs text-muted font-light underline hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm"
             >
               Voir les packs
             </a>
