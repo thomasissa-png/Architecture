@@ -26,13 +26,13 @@ test.describe("Architecte persona page — /architecte", () => {
 
     const h1 = page.locator("h1");
     await expect(h1).toBeVisible();
-    await expect(h1).toContainText("architecte");
+    await expect(h1).toContainText("90 secondes");
   });
 
   test("hero contains CTA link to /#outil", async ({ page }) => {
     const ctaLink = page.locator('a[href="/#outil"]').first();
     await expect(ctaLink).toBeVisible();
-    await expect(ctaLink).toContainText("Essayer");
+    await expect(ctaLink).toContainText("planche");
   });
 
   test("FAQ section displays 3 questions", async ({ page }) => {
@@ -97,13 +97,13 @@ test.describe("Marchand persona page — /marchand", () => {
 
     const h1 = page.locator("h1");
     await expect(h1).toBeVisible();
-    await expect(h1).toContainText("marchand");
+    await expect(h1).toContainText("pré-commercialisation");
   });
 
-  test("hero contains CTA link to /#outil", async ({ page }) => {
-    const ctaLink = page.locator('a[href="/#outil"]').first();
+  test("hero contains CTA link to pricing (Pro subscription)", async ({ page }) => {
+    const ctaLink = page.locator('a[href="/pricing"]').first();
     await expect(ctaLink).toBeVisible();
-    await expect(ctaLink).toContainText("Essayer");
+    await expect(ctaLink).toContainText("Abonnement Pro");
   });
 
   test("problem section mentions price pain point (200-500 EUR)", async ({
@@ -157,10 +157,10 @@ test.describe("Particulier persona page — /particulier", () => {
 
     const h1 = page.locator("h1");
     await expect(h1).toBeVisible();
-    await expect(h1).toContainText("coration");
+    await expect(h1).toContainText("appartement");
   });
 
-  test("hero mentions gratuit and sans inscription", async ({ page }) => {
+  test("hero mentions gratuit and iPhone", async ({ page }) => {
     await expect(page.locator("text=Gratuit")).toBeVisible();
   });
 
