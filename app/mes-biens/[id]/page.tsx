@@ -113,7 +113,7 @@ export default function PropertyDetailPage() {
   const [selectedForDossier, setSelectedForDossier] = useState<Set<string>>(new Set());
   const [coverPhotoId, setCoverPhotoId] = useState<string | null>(null);
   const [isCreatingDossier, setIsCreatingDossier] = useState(false);
-  const [dossierResult, setDossierResult] = useState<{ uuid: string; pdfUrl: string } | null>(null);
+  const [dossierResult, setDossierResult] = useState<{ uuid: string; slug?: string; identifier?: string; pdfUrl: string } | null>(null);
 
   // Modal refs for focus trap
   const associateModalRef = useRef<HTMLDivElement>(null);
@@ -1139,14 +1139,24 @@ export default function PropertyDetailPage() {
               {dossierResult ? (
                 <div className="text-center py-8">
                   <p className="text-sm text-sage font-medium mb-4">Dossier cr&#233;&#233; avec succ&#232;s.</p>
-                  <a
-                    href={dossierResult.pdfUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-block text-xs bg-foreground text-background px-4 py-2 rounded-full font-medium hover:bg-foreground/85 transition-colors"
-                  >
-                    T&#233;l&#233;charger le PDF
-                  </a>
+                  <div className="flex flex-col items-center gap-2">
+                    <a
+                      href={`/dossier/${dossierResult.identifier || dossierResult.slug || dossierResult.uuid}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block text-xs bg-foreground text-background px-4 py-2 rounded-full font-medium hover:bg-foreground/85 transition-colors"
+                    >
+                      Voir le dossier
+                    </a>
+                    <a
+                      href={dossierResult.pdfUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block text-xs text-muted hover:text-foreground transition-colors font-light"
+                    >
+                      T&#233;l&#233;charger le PDF
+                    </a>
+                  </div>
                 </div>
               ) : (
                 <>
