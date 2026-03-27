@@ -1,5 +1,15 @@
 # Lessons Learned — Versiroom
 
+## Session 2026-03-27c (Landing pages personas + refonte pricing)
+
+| Session | Date | Catégorie | Sévérité | Description | Correction appliquée | Recommandation framework | Statut |
+|---|---|---|---|---|---|---|---|
+| 27c | 2026-03-27 | problème | P0 | Apostrophes `'` non échappées dans le JSX reviennent à CHAQUE session (15 occurrences sur 5 fichiers cette session) | Passe globale `'` → `&apos;` sur 5 fichiers | Règle @fullstack : dans le JSX rendu (entre balises HTML), TOUJOURS utiliser `&apos;` pour les apostrophes. Les strings JS (`const`, objets) gardent `'`. Vérifier AVANT commit. | ouvert |
+| 27c | 2026-03-27 | problème | P1 | Galeries multi-styles avec images placeholder identiques (3x même image) détruisent la crédibilité — pire qu'aucune galerie | Galeries commentées en attendant vraies images | Ne JAMAIS afficher une galerie avec des images identiques labellées comme différents styles. Commenter la section jusqu'à avoir le contenu réel. | appliqué |
+| 27c | 2026-03-27 | problème | P1 | Témoignages fictifs utilisant les noms de persona (Thomas B., Claire D., Léa M.) détectés par les audits comme "faux" | Remplacés par témoignages anonymisés ou chiffres factuels | Ne JAMAIS utiliser les noms des personas comme témoignages. Anonymiser (métier + ville) ou utiliser des chiffres factuels. | appliqué |
+| 27c | 2026-03-27 | pattern | - | Itération audit→fix→re-audit avec persona agents (Thomas/Claire/Léa) en parallèle = progression rapide (5.5→9.05 en 5 rounds) | - | Pattern efficace : 3 audits persona en parallèle, corrections consolidées, re-audit. Max 5 rounds. | appliqué |
+| 27c | 2026-03-27 | préférence fondateur | - | [PRÉFÉRENCE FONDATEUR] : 3 tiers pricing max (Découverte gratuit / Starter one-shot / Pro abonnement). Seul le Pro est en abonnement. Recharge au prix du tier. | pricing-strategy.md v3 | Modèle hybride : one-shot pour usage ponctuel (Léa), abonnement pour usage récurrent (Thomas). | appliqué |
+
 ## Session 2026-03-27b (Audit IA + benchmark + migration GPT Image 1.5)
 
 | Session | Date | Catégorie | Sévérité | Description | Correction appliquée | Recommandation framework | Statut |
