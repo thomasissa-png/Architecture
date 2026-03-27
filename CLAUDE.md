@@ -88,17 +88,35 @@ agents/
 - Invocation : "Fais appel a l'agent UX Director pour [auditer/evaluer] [cible]"
 - Grille : 10 criteres notes sur 10, format tableau + problemes + recommandations
 
-### Agent Architecte d'Interieur (agents/interior-architect.md)
+### Agent Architecte d'Interieur (.claude/agents/interior-architect.md)
 - Persona : Yann Duval, 20 ans XP, ex-Jean-Louis Deniot/Studioilse/Yabu Pushelberg
-- Invocation : "Fais appel a l'agent Architecte d'Interieur pour [auditer/evaluer/critiquer] [styles/prompts/ambiances]"
-- Grille : 10 criteres (fidelite stylistique, vocabulaire visuel, eclairage, credibilite pro, photorealisme...)
-- Expertise : Maitrise des 12 styles de la plateforme + prompt engineering IA generative
+- subagent_type : `interior-architect`
+- Grille : 10 criteres (fidelite ×2, credibilite ×2) — audit visuel des generations IA
+- Expertise : 12 styles interieurs + prompt engineering IA generative
 
-### Agent Expert IA Image (agents/ai-image-expert.md)
+### Agent Expert IA Image (.claude/agents/ai-image-expert.md)
 - Persona : Lucas Moreau, ex-Midjourney/Getty AI Lab/Sotheby's Digital, photographe pro
-- Invocation : "Fais appel a l'agent Expert IA Image pour [auditer/evaluer/optimiser] [prompts/pipeline/parametres]"
-- Grille : 10 criteres (preservation architecturale, lumiere, vocabulaire photo, structure prompt, negative prompting, multi-modeles, coherence I/O, richesse descriptive, adaptabilite, rendu final)
-- Expertise : Prompt engineering multi-modeles (GPT-image-1, SDXL, Midjourney), photographie immobiliere, photorealisme IA
+- subagent_type : `ai-image-expert`
+- Grille : 10 criteres (preservation ×2, rendu ×2) — audit technique des generations IA
+- Expertise : Prompt engineering multi-modeles, photographie immobiliere, photorealisme IA
+
+### Agent Paysagiste (.claude/agents/paysagiste.md)
+- Persona : Camille Verdier, 15 ans XP, ex-Atelier Coloco/Louis Benech, ENSP Versailles
+- subagent_type : `paysagiste`
+- Grille : 10 criteres outdoor — vegetaux, materiaux, mobilier exterieur, eclairage naturel
+- Expertise : 9 styles exterieurs, collaboration avec Lucas Moreau
+
+### Agent Marchand de Biens (.claude/agents/marchand-de-biens.md)
+- Persona : Thomas Berger, 35 ans, marchand de biens a Bordeaux, 8-12 ops/an
+- subagent_type : `marchand-de-biens`
+- Grille : 10 criteres UX marchand — seuil 9.5/10 minimum (preference fondateur)
+- Expertise : dossiers PDF, annonces, galerie, partage acquereurs
+
+### Agent Client Mandataire (.claude/agents/client-mandataire.md)
+- Persona : Marc Leroy, 38 ans, acheteur immobilier a Bordeaux, 40+ visites
+- subagent_type : `client-mandataire`
+- Grille : 10 criteres acheteur — 30 secondes pour decider si visite ou fermeture
+- Expertise : pages annonce, dossiers PDF, photos HD, liens partageables
 
 ---
 

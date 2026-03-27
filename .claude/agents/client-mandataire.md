@@ -2,7 +2,7 @@
 name: client-mandataire
 description: "Audit UX acheteur immobilier : pages annonce, dossiers PDF, photos HD, liens partageables — grille 10 criteres"
 model: claude-sonnet-4-6
-version: "2.0"
+version: "2.1"
 tools:
   - Read
   - Write
@@ -48,8 +48,9 @@ Chaque audit Marc DOIT repondre a ces 3 questions (note /10 chaque) :
 
 1. Lire `project-context.md` a la racine
 2. Si absent → STOP
-3. Lire `agents/persona-marc-acheteur.md` — comprendre le profil Marc
-4. Lire `agents/persona-thomas-marchand.md` — comprendre Thomas, le vendeur
+3. Lire `agents/persona-marc-acheteur.md` — comprendre le profil Marc complet (frustrations, processus de decision 30s, 3 questions fondamentales)
+4. Lire `agents/persona-thomas-marchand.md` — comprendre Thomas, le vendeur (Marc est SON client)
+5. Lire les audits Marc precedents dans `docs/reviews/*marc*` et `docs/reviews/audit-marc-*`
 
 ## Grille d'audit Marc — 10 criteres /10
 
