@@ -761,7 +761,7 @@ export default function Home() {
                     className="absolute inset-0 w-full h-full object-cover"
                   />
                 </div>
-                <span className="absolute bottom-2.5 left-2.5 text-xs font-medium text-gray-400 bg-white/80 backdrop-blur-sm px-2.5 py-1 rounded-full">
+                <span className="absolute bottom-2.5 left-2.5 text-xs font-medium text-muted bg-background/80 backdrop-blur-sm px-2.5 py-1 rounded-full">
                   AVANT
                 </span>
               </div>
@@ -847,7 +847,7 @@ export default function Home() {
                     className="absolute inset-0 w-full h-full object-cover"
                   />
                 </div>
-                <span className="absolute bottom-2.5 left-2.5 text-xs font-medium text-sage bg-white/80 backdrop-blur-sm px-2.5 py-1 rounded-full">
+                <span className="absolute bottom-2.5 left-2.5 text-xs font-medium text-sage bg-background/80 backdrop-blur-sm px-2.5 py-1 rounded-full">
                   APR&Egrave;S
                 </span>
               </div>
@@ -1248,7 +1248,7 @@ export default function Home() {
                       </div>
                       <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-500 ${done ? "opacity-0" : "opacity-100"}`}>
                         {active ? (
-                          <div className="bg-white/90 backdrop-blur-sm rounded-xl px-4 py-2.5 flex items-center gap-3 shadow-sm">
+                          <div className="bg-background/90 backdrop-blur-sm rounded-xl px-4 py-2.5 flex items-center gap-3 shadow-sm">
                             <div className="flex gap-1">
                               <div className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
                               <div className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
@@ -1257,7 +1257,7 @@ export default function Home() {
                             <span className="text-xs text-muted font-light">G&eacute;n&eacute;ration&hellip;</span>
                           </div>
                         ) : done ? null : (
-                          <div className="bg-white/80 backdrop-blur-sm rounded-xl px-4 py-2 shadow-sm">
+                          <div className="bg-background/80 backdrop-blur-sm rounded-xl px-4 py-2 shadow-sm">
                             <span className="text-xs text-muted font-light">En attente</span>
                           </div>
                         )}
@@ -1350,7 +1350,7 @@ export default function Home() {
                               className="w-full h-full object-cover blur-sm brightness-95 transition-all duration-700"
                             />
                             <div className="absolute inset-0 flex flex-col items-center justify-center">
-                              <div className="bg-white/90 backdrop-blur-sm rounded-xl px-5 py-4 shadow-sm text-center max-w-xs">
+                              <div className="bg-background/90 backdrop-blur-sm rounded-xl px-5 py-4 shadow-sm text-center max-w-xs">
                                 <div className="flex justify-center gap-1 mb-3">
                                   <div className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
                                   <div className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
