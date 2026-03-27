@@ -51,9 +51,15 @@ interface PappersResponse {
   code_naf?: string;
 }
 
+function hasPappersKey(): boolean {
+  const key = process.env.PAPPERS_API_KEY;
+  // Reject missing, empty, or placeholder values
+  return !!key && key.length > 5 && key !== "..." && !key.startsWith("your_");
+}
+
 async function lookupViaPappers(siret: string): Promise<CompanyResult | null> {
   const apiKey = process.env.PAPPERS_API_KEY;
-  if (!apiKey) return null;
+  if (!apiKey || !hasPappersKey()) return null;
 
   try {
     const res = await fetch(
@@ -111,7 +117,7 @@ interface PappersSearchResult {
 
 async function searchByName(query: string): Promise<CompanyResult[]> {
   const apiKey = process.env.PAPPERS_API_KEY;
-  if (!apiKey) return [];
+  if (!apiKey || !hasPappersKey()) return [];
 
   try {
     const res = await fetch(
@@ -301,15 +307,23 @@ export async function POST(request: NextRequest) {
   if (body.query && body.query.trim().length >= 2) {
     const q = body.query.trim();
 
-    // Try Pappers first (if API key configured), then free gouv.fr fallback
-    let results = await searchByName(q);
-    if (results.length === 0) {
+    let results: CompanyResult[] = [];
+
+    if (hasPappersKey()) {
+      // Pappers available — try it first, fallback to gouv.fr
+      results = await searchByName(q);
+      if (results.length === 0) {
+        results = await searchByNameGouv(q);
+      }
+    } else {
+      // No Pappers key — go directly to gouv.fr (free, no key needed)
+      console.log("[lookup-siret] No valid PAPPERS_API_KEY, using gouv.fr directly");
       results = await searchByNameGouv(q);
     }
 
     if (results.length === 0) {
       return NextResponse.json(
-        { error: "Aucune entreprise trouvée. Essayez un autre nom ou entrez le SIRET directement.", results: [] },
+        { error: "Aucune entreprise trouvee. Essayez un autre nom ou entrez le SIRET directement.", results: [] },
         { status: 404 }
       );
     }
@@ -327,7 +341,6 @@ export async function POST(request: NextRequest) {
   }
 
   // Try Pappers first, then INSEE
-  const pappersApiKey = process.env.PAPPERS_API_KEY;
   let pappersReachable = false;
   let inseeReachable = false;
 
@@ -336,8 +349,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(pappersResult);
   }
   // Pappers returned null — either no API key, network error, or SIRET not found
-  // We consider Pappers "reachable" only if the key is configured (actual 404 vs no key)
-  pappersReachable = !!pappersApiKey;
+  // We consider Pappers "reachable" only if the key is valid (actual 404 vs placeholder key)
+  pappersReachable = hasPappersKey();
 
   const inseeResult = await lookupViaInsee(siret);
   if (inseeResult) {

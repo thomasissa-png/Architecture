@@ -151,17 +151,27 @@ export default function ComptePage() {
         body: JSON.stringify({ query: q }),
       });
 
-      const data = await res.json();
+      let data: { results?: Array<{ raisonSociale: string; adresse: string; formeJuridique: string; siret: string }>; error?: string };
+      try {
+        data = await res.json();
+      } catch {
+        setSiretError("Erreur serveur. Reessayez dans quelques instants.");
+        setCompanyResults([]);
+        setShowResults(false);
+        return;
+      }
+
       if (data.results && data.results.length > 0) {
         setCompanyResults(data.results);
         setShowResults(true);
+        setSiretError(null);
       } else {
         setCompanyResults([]);
         setShowResults(true);
-        setSiretError(data.error || "Aucune entreprise trouvée.");
+        setSiretError(data.error || "Aucune entreprise trouvee.");
       }
     } catch {
-      setSiretError("Erreur de connexion. Réessayez.");
+      setSiretError("Erreur de connexion. Reessayez.");
     } finally {
       setIsSearching(false);
     }
