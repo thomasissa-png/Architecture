@@ -711,8 +711,8 @@ async function tryOpenAIResponses(
           model: "gpt-image-1.5",
           input_fidelity: "high",
           size: size as "1024x1024" | "1536x1024" | "1024x1536",
-        } as Record<string, unknown>,
-      ],
+        },
+      ] as unknown as Array<Record<string, unknown>>,
     }),
     API_TIMEOUT_MS,
     "OpenAI Responses API"
@@ -845,8 +845,8 @@ async function tryOpenAIResponsesWithPrompt(
           model: "gpt-image-1.5",
           input_fidelity: "high",
           size: size as "1024x1024" | "1536x1024" | "1024x1536",
-        } as Record<string, unknown>,
-      ],
+        },
+      ] as unknown as Array<Record<string, unknown>>,
     }),
     API_TIMEOUT_MS,
     "OpenAI Responses API"
