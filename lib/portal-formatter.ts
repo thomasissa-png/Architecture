@@ -70,7 +70,7 @@ export interface AnnonceData {
 // ─── Constants ───────────────────────────────────────────────────────
 
 export const AI_DISCLAIMER =
-  "\u2014 Visuels g\u00e9n\u00e9r\u00e9s par intelligence artificielle \u00e0 des fins de projection, non contractuels.";
+  "— Photos d'intérieur générées par IA, à titre indicatif, non contractuelles.";
 // 87 chars
 
 export const PORTAL_CONFIGS: Record<PortalId, PortalConfig> = {
@@ -90,7 +90,7 @@ export const PORTAL_CONFIGS: Record<PortalId, PortalConfig> = {
     photosMaxCount: null,
     hasStructuredFields: true,
     notes:
-      "Limites non confirm\u00e9es officiellement \u2014 \u00e0 v\u00e9rifier dans le backoffice SeLoger Pro",
+      "Limites indicatives — à confirmer dans votre espace SeLoger Pro",
   },
   bienici: {
     id: "bienici",
@@ -100,7 +100,7 @@ export const PORTAL_CONFIGS: Record<PortalId, PortalConfig> = {
     photosMaxCount: null,
     hasStructuredFields: true,
     notes:
-      "Limites non confirm\u00e9es officiellement \u2014 \u00e0 v\u00e9rifier dans le backoffice Bien'ici Pro",
+      "Limites indicatives — à confirmer dans votre espace Bien'ici Pro",
   },
 };
 

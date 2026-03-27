@@ -61,8 +61,8 @@ function slugify(text: string): string {
 /** Character counter color based on usage percentage. */
 function counterColor(current: number, max: number): string {
   const pct = current / max;
-  if (pct > 0.95) return "text-red-500";
-  if (pct > 0.8) return "text-orange-500";
+  if (pct > 0.95) return "text-red-600";
+  if (pct > 0.8) return "text-amber-600";
   return "text-muted";
 }
 
@@ -226,14 +226,14 @@ export default function ExportPortail({
       data-testid="export-portail-section"
     >
       <h3 className="text-sm font-medium text-foreground mb-4">
-        Exporter pour un portail immo
+        Exporter votre annonce
       </h3>
 
       {/* Dropdown */}
       <div className="relative mb-4" data-testid="export-portail-dropdown">
         <button
           onClick={() => setDropdownOpen(!dropdownOpen)}
-          className="w-full sm:w-auto inline-flex items-center justify-between gap-2 text-sm bg-foreground/5 text-foreground px-4 py-3 rounded-xl font-light hover:bg-foreground/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 min-w-[220px]"
+          className="w-full sm:w-auto inline-flex items-center justify-between gap-2 text-sm bg-foreground/5 text-foreground px-4 py-3 rounded-xl font-light hover:bg-foreground/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 min-w-56"
           aria-haspopup="listbox"
           aria-expanded={dropdownOpen}
         >
@@ -255,7 +255,7 @@ export default function ExportPortail({
 
         {dropdownOpen && (
           <div
-            className="absolute z-30 mt-1 w-full sm:w-[220px] bg-background border border-foreground/10 rounded-xl shadow-lg overflow-hidden"
+            className="absolute z-30 mt-1 w-full sm:w-56 bg-background border border-foreground/10 rounded-xl shadow-lg overflow-hidden"
             role="listbox"
           >
             {PORTAL_IDS.map((id) => (
@@ -281,8 +281,8 @@ export default function ExportPortail({
             >
               <span className="inline-block w-2 h-2 rounded-full bg-foreground/10 mr-2" />
               Logic-Immo
-              <span className="ml-2 text-[10px] text-muted/40 font-light">
-                bient\u00f4t
+              <span className="ml-2 text-xs text-muted/40 font-light">
+                bientôt
               </span>
             </div>
           </div>
@@ -292,8 +292,7 @@ export default function ExportPortail({
       {/* Preview — only shown when a portal is selected */}
       {exported && (
         <div
-          className="space-y-4"
-          style={{ animation: "fadeInUp 300ms cubic-bezier(0.16, 1, 0.3, 1) both" }}
+          className="space-y-4 animate-fade-in-up"
           data-testid="export-portail-preview"
         >
           {/* Title zone */}
@@ -304,7 +303,7 @@ export default function ExportPortail({
               </span>
               <span
                 className={`text-xs font-light ${counterColor(exported.title.charCount, exported.title.maxChars)}`}
-                data-testid="export-portail-char-counter"
+                data-testid="export-portail-char-counter-title"
               >
                 {exported.title.charCount}/{exported.title.maxChars}
               </span>
@@ -313,19 +312,19 @@ export default function ExportPortail({
               {exported.title.text}
             </p>
             {exported.title.truncated && (
-              <span className="inline-block mt-2 text-[10px] text-orange-500 bg-orange-500/10 px-2 py-0.5 rounded-full font-medium">
-                Titre adapt\u00e9
+              <span className="inline-block mt-2 text-xs text-amber-600 bg-amber-600/10 px-2 py-0.5 rounded-full font-medium">
+                Titre raccourci pour ce portail
               </span>
             )}
             <div className="mt-3">
               <button
                 onClick={handleCopyTitle}
-                className="text-xs text-sage hover:text-sage/80 transition-colors font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded-md px-2 py-1"
+                className="text-xs text-sage hover:text-sage/80 transition-colors font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded-md px-2 py-3"
               >
                 {copied === "title"
-                  ? "Copi\u00e9 !"
+                  ? "Copié"
                   : copied === "title-fail"
-                    ? "Copie impossible"
+                    ? "Copie échouée — sélectionnez le texte manuellement"
                     : "Copier le titre"}
               </button>
             </div>
@@ -339,7 +338,7 @@ export default function ExportPortail({
               </span>
               <span
                 className={`text-xs font-light ${counterColor(exported.description.charCount, exported.description.maxChars)}`}
-                data-testid="export-portail-char-counter"
+                data-testid="export-portail-char-counter-desc"
               >
                 {exported.description.charCount}/{exported.description.maxChars}
               </span>
@@ -348,19 +347,19 @@ export default function ExportPortail({
               {exported.description.text}
             </div>
             {exported.description.truncated && (
-              <span className="inline-block mt-2 text-[10px] text-orange-500 bg-orange-500/10 px-2 py-0.5 rounded-full font-medium">
-                Description adapt\u00e9e
+              <span className="inline-block mt-2 text-xs text-amber-600 bg-amber-600/10 px-2 py-0.5 rounded-full font-medium">
+                Description raccourcie — vérifiez la fin
               </span>
             )}
             <div className="mt-3">
               <button
                 onClick={handleCopyDescription}
-                className="text-xs text-sage hover:text-sage/80 transition-colors font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded-md px-2 py-1"
+                className="text-xs text-sage hover:text-sage/80 transition-colors font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded-md px-2 py-3"
               >
                 {copied === "desc"
-                  ? "Copi\u00e9 !"
+                  ? "Copié"
                   : copied === "desc-fail"
-                    ? "Copie impossible"
+                    ? "Copie échouée — sélectionnez le texte manuellement"
                     : "Copier la description"}
               </button>
             </div>
@@ -370,7 +369,7 @@ export default function ExportPortail({
           {exported.structuredFields.length > 0 && (
             <div className="bg-foreground/[0.02] border border-foreground/5 rounded-xl p-4">
               <span className="text-xs font-medium text-foreground uppercase tracking-wider block mb-3">
-                Champs \u00e0 remplir dans le formulaire
+                Champs à remplir dans le formulaire
               </span>
               <ul className="space-y-1.5">
                 {exported.structuredFields.map((field) => (
@@ -405,7 +404,7 @@ export default function ExportPortail({
               </svg>
               <span className="font-light">
                 {exported.portal.label} accepte {exported.portal.photosMaxCount} photos max
-                {" "}&mdash; les {exported.photosIncluded} premi\u00e8res seront incluses dans le ZIP
+                {" "}&mdash; les {exported.photosIncluded} premières seront incluses dans le ZIP
               </span>
             </div>
           )}
@@ -417,7 +416,7 @@ export default function ExportPortail({
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
               </svg>
               <span className="font-light">
-                Description incompl\u00e8te &mdash; \u00e0 compl\u00e9ter avant publication
+                Description manquante — à rédiger avant publication
               </span>
             </div>
           )}
