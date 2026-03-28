@@ -12,6 +12,7 @@ interface PhotoStatus {
   roomLabel: string | null;
   status: "pending" | "generating" | "completed" | "failed";
   errorMessage?: string | null;
+  outputImageKey?: string | null;
 }
 
 interface DossierProgressProps {
@@ -108,22 +109,32 @@ export default function DossierProgress({
               {photo.roomLabel || `Photo ${photo.photoIndex + 1}`}
             </span>
 
-            {/* Status text */}
-            <div className="shrink-0 text-right">
-              <span className={`text-xs font-light ${
-                photo.status === "completed" ? "text-sage" :
-                photo.status === "failed" ? "text-red-400" :
-                photo.status === "generating" ? "text-sage" :
-                "text-muted/60"
-              }`}>
-                {photo.status === "completed" && "Prêt"}
-                {photo.status === "generating" && "En cours..."}
-                {photo.status === "failed" && "Échec"}
-                {photo.status === "pending" && "En attente"}
-              </span>
-              {photo.status === "failed" && photo.errorMessage && (
-                <p className="text-[11px] text-muted font-light mt-0.5 max-w-[200px]">{photo.errorMessage}</p>
+            {/* Status text + thumbnail */}
+            <div className="shrink-0 flex items-center gap-2">
+              {photo.status === "completed" && photo.outputImageKey && (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={`/api/logs/image?path=${encodeURIComponent(photo.outputImageKey)}`}
+                  alt=""
+                  className="w-12 h-12 rounded-lg object-cover border border-foreground/5"
+                />
               )}
+              <div className="text-right">
+                <span className={`text-xs font-light ${
+                  photo.status === "completed" ? "text-sage" :
+                  photo.status === "failed" ? "text-red-400" :
+                  photo.status === "generating" ? "text-sage" :
+                  "text-muted/60"
+                }`}>
+                  {photo.status === "completed" && "Prêt"}
+                  {photo.status === "generating" && "En cours..."}
+                  {photo.status === "failed" && "Échec"}
+                  {photo.status === "pending" && "En attente"}
+                </span>
+                {photo.status === "failed" && photo.errorMessage && (
+                  <p className="text-[11px] text-muted font-light mt-0.5 max-w-[200px]">{photo.errorMessage}</p>
+                )}
+              </div>
             </div>
           </div>
         ))}

@@ -16,6 +16,8 @@ import { useSession } from "next-auth/react";
 import UploadZone from "@/components/UploadZone";
 import StylePicker, { StyleOption, STYLES } from "@/components/StylePicker";
 import { ROOM_TYPE_LIST } from "@/lib/room-types";
+import { OUTDOOR_STYLE_LIST } from "@/lib/outdoor-styles";
+import { OUTDOOR_SUBTYPE_LIST } from "@/lib/outdoor-subtypes";
 import DossierProgress from "@/components/DossierProgress";
 import DossierResult from "@/components/DossierResult";
 import { processImage } from "@/lib/image-utils";
@@ -30,6 +32,7 @@ interface PhotoEntry {
   customPromptOverride: string; // per-photo custom prompt when style = "custom"
   isOutdoor: boolean;
   outdoorStyleId: string | null;
+  outdoorSubtype: string | null;
 }
 
 interface DossierPhotoStatus {
@@ -138,6 +141,7 @@ export default function MerchantMode() {
           customPromptOverride: "",
           isOutdoor: false,
           outdoorStyleId: null,
+          outdoorSubtype: null,
         };
       });
       return next;
@@ -321,6 +325,8 @@ export default function MerchantMode() {
             styleId: p.entry?.styleOverride?.id || globalStyle?.id || "custom",
             customPrompt: p.entry?.customPromptOverride || customPrompt || "",
             isOutdoor: p.entry?.isOutdoor || false,
+            outdoorStyleId: p.entry?.outdoorStyleId || null,
+            outdoorSubtype: p.entry?.outdoorSubtype || null,
             photoIndex: p.index,
           })),
         }),
@@ -817,65 +823,135 @@ export default function MerchantMode() {
                     Photo {index + 1}
                   </p>
 
-                  {/* Room type dropdown */}
-                  <div>
-                    <label className="text-[11px] text-muted font-light block mb-1">
-                      Pièce
-                    </label>
-                    <select
-                      value={entry.roomTypeId || ""}
-                      onChange={(e) => updatePhotoEntry(index, { roomTypeId: e.target.value || null })}
-                      className="w-full text-sm font-light border border-foreground/10 rounded-lg px-3 py-2 bg-background focus:border-foreground focus:outline-none transition-colors"
-                      data-testid={`merchant-annotate-room-${index}`}
+                  {/* Indoor / Outdoor toggle */}
+                  <div className="flex gap-1 p-0.5 bg-foreground/5 rounded-lg" data-testid={`merchant-annotate-mode-${index}`}>
+                    <button
+                      onClick={() => updatePhotoEntry(index, {
+                        isOutdoor: false,
+                        outdoorStyleId: null,
+                        outdoorSubtype: null,
+                        roomTypeId: null,
+                        styleOverride: null,
+                        customPromptOverride: "",
+                      })}
+                      className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 ${
+                        !entry.isOutdoor
+                          ? "bg-background text-foreground shadow-sm"
+                          : "text-muted hover:text-foreground"
+                      }`}
                     >
-                      <option value="">Non spécifié</option>
-                      {ROOM_TYPE_LIST.map((rt) => (
-                        <option key={rt.id} value={rt.id}>
-                          {rt.emoji} {rt.label}
-                        </option>
-                      ))}
-                    </select>
+                      Intérieur
+                    </button>
+                    <button
+                      onClick={() => updatePhotoEntry(index, {
+                        isOutdoor: true,
+                        roomTypeId: null,
+                        styleOverride: null,
+                        customPromptOverride: "",
+                      })}
+                      className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 ${
+                        entry.isOutdoor
+                          ? "bg-background text-foreground shadow-sm"
+                          : "text-muted hover:text-foreground"
+                      }`}
+                    >
+                      Extérieur
+                    </button>
                   </div>
 
-                  {/* Style override dropdown */}
+                  {/* Room type / Outdoor subtype dropdown */}
+                  <div>
+                    <label className="text-[11px] text-muted font-light block mb-1">
+                      {entry.isOutdoor ? "Type d\u0027espace" : "Pièce"}
+                    </label>
+                    {entry.isOutdoor ? (
+                      <select
+                        value={entry.outdoorSubtype || ""}
+                        onChange={(e) => updatePhotoEntry(index, { outdoorSubtype: e.target.value || null })}
+                        className="w-full text-sm font-light border border-foreground/10 rounded-lg px-3 py-2 bg-background focus:border-foreground focus:outline-none transition-colors"
+                        data-testid={`merchant-annotate-subtype-${index}`}
+                      >
+                        <option value="">Non spécifié</option>
+                        {OUTDOOR_SUBTYPE_LIST.map((st) => (
+                          <option key={st.id} value={st.id}>
+                            {st.emoji} {st.label}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <select
+                        value={entry.roomTypeId || ""}
+                        onChange={(e) => updatePhotoEntry(index, { roomTypeId: e.target.value || null })}
+                        className="w-full text-sm font-light border border-foreground/10 rounded-lg px-3 py-2 bg-background focus:border-foreground focus:outline-none transition-colors"
+                        data-testid={`merchant-annotate-room-${index}`}
+                      >
+                        <option value="">Non spécifié</option>
+                        {ROOM_TYPE_LIST.map((rt) => (
+                          <option key={rt.id} value={rt.id}>
+                            {rt.emoji} {rt.label}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+
+                  {/* Style override dropdown — indoor or outdoor */}
                   <div>
                     <label className="text-[11px] text-muted font-light block mb-1">
                       Style
                     </label>
-                    <select
-                      value={entry.styleOverride?.id || ""}
-                      onChange={(e) => {
-                        const styleId = e.target.value;
-                        if (!styleId) {
-                          updatePhotoEntry(index, { styleOverride: null, customPromptOverride: "" });
-                        } else if (styleId === "custom") {
-                          // Sentinel custom style — prompt in customPromptOverride
-                          updatePhotoEntry(index, {
-                            styleOverride: { id: "custom", name: "Personnalisé", description: "", surfacePrompt: "", furniturePrompt: "", palette: [] },
-                          });
-                        } else {
-                          const style = STYLES.find((s) => s.id === styleId) || null;
-                          updatePhotoEntry(index, { styleOverride: style, customPromptOverride: "" });
-                        }
-                      }}
-                      className="w-full text-sm font-light border border-foreground/10 rounded-lg px-3 py-2 bg-background focus:border-foreground focus:outline-none transition-colors"
-                      data-testid={`merchant-annotate-style-${index}`}
-                    >
-                      <option value="">Style global</option>
-                      {STYLES.map((s) => (
-                        <option key={s.id} value={s.id}>
-                          {s.name}
-                        </option>
-                      ))}
-                      <option value="custom">Personnalis&eacute;</option>
-                    </select>
+                    {entry.isOutdoor ? (
+                      <select
+                        value={entry.outdoorStyleId || ""}
+                        onChange={(e) => {
+                          const val = e.target.value || null;
+                          updatePhotoEntry(index, { outdoorStyleId: val });
+                        }}
+                        className="w-full text-sm font-light border border-foreground/10 rounded-lg px-3 py-2 bg-background focus:border-foreground focus:outline-none transition-colors"
+                        data-testid={`merchant-annotate-outdoor-style-${index}`}
+                      >
+                        <option value="">Style global</option>
+                        {OUTDOOR_STYLE_LIST.map((os) => (
+                          <option key={os.id} value={os.id}>
+                            {os.emoji} {os.label}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <select
+                        value={entry.styleOverride?.id || ""}
+                        onChange={(e) => {
+                          const styleId = e.target.value;
+                          if (!styleId) {
+                            updatePhotoEntry(index, { styleOverride: null, customPromptOverride: "" });
+                          } else if (styleId === "custom") {
+                            updatePhotoEntry(index, {
+                              styleOverride: { id: "custom", name: "Personnalisé", description: "", surfacePrompt: "", furniturePrompt: "", palette: [] },
+                            });
+                          } else {
+                            const style = STYLES.find((s) => s.id === styleId) || null;
+                            updatePhotoEntry(index, { styleOverride: style, customPromptOverride: "" });
+                          }
+                        }}
+                        className="w-full text-sm font-light border border-foreground/10 rounded-lg px-3 py-2 bg-background focus:border-foreground focus:outline-none transition-colors"
+                        data-testid={`merchant-annotate-style-${index}`}
+                      >
+                        <option value="">Style global</option>
+                        {STYLES.map((s) => (
+                          <option key={s.id} value={s.id}>
+                            {s.name}
+                          </option>
+                        ))}
+                        <option value="custom">Personnalisé</option>
+                      </select>
+                    )}
                   </div>
 
-                  {/* Custom prompt textarea (when "Personnalise" selected) */}
-                  {entry.styleOverride?.id === "custom" && (
+                  {/* Custom prompt textarea (when "Personnalise" selected, indoor only) */}
+                  {!entry.isOutdoor && entry.styleOverride?.id === "custom" && (
                     <div>
                       <label className="text-[11px] text-muted font-light block mb-1">
-                        D&eacute;crivez le style souhait&eacute;
+                        Décrivez le style souhaité
                       </label>
                       <textarea
                         value={entry.customPromptOverride}
@@ -1125,6 +1201,7 @@ export default function MerchantMode() {
                   roomLabel: p.roomLabel,
                   status: p.status,
                   errorMessage: p.errorMessage,
+                  outputImageKey: p.outputImageKey,
                 }))
               : files.map((_, i) => ({
                   id: i,
