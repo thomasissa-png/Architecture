@@ -1174,10 +1174,11 @@ export default function Home() {
               selectedOutdoorStyle={selectedOutdoorStyle}
               onSelectOutdoorStyle={setSelectedOutdoorStyle}
             />
+          </div>
 
-            {/* Multi-photo mode: per-photo type de pièce + style + personnalisé */}
+          {/* Multi-photo mode: per-photo config (OUTSIDE the hidden step-style div) */}
             {files.length > 1 && (
-              <div className={`mb-10 scroll-mt-20 animate-fade-in-up ${files.length === 0 ? "hidden" : ""}`}>
+              <div className="mb-10 scroll-mt-20 animate-fade-in-up">
                 <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
                   Configurez chaque photo
                 </h3>
@@ -1203,7 +1204,6 @@ export default function Home() {
                               const m = new Map(perPhotoOutdoor);
                               m.set(index, false);
                               setPerPhotoOutdoor(m);
-                              // Reset room type + style when switching
                               const rm = new Map(perPhotoRoomTypes); rm.delete(index); setPerPhotoRoomTypes(rm);
                               const sm = new Map(perPhotoStyles); sm.delete(index); setPerPhotoStyles(sm);
                             }}
@@ -1226,7 +1226,7 @@ export default function Home() {
                           </button>
                         </div>
 
-                        {/* Type de pièce (indoor) / Sous-type (outdoor) */}
+                        {/* Type de pièce / sous-type */}
                         <div>
                           <label className="text-[11px] text-muted font-light block mb-1">
                             {isPhotoOutdoor ? "Type d\u0027espace" : "Type de pièce"}
@@ -1238,7 +1238,6 @@ export default function Home() {
                               if (e.target.value) m.set(index, e.target.value); else m.delete(index);
                               setPerPhotoRoomTypes(m);
                             }}
-                            aria-label={`Type pour la photo ${index + 1}`}
                             className="w-full text-xs font-light bg-foreground/5 border-0 rounded-lg px-3 py-2 text-foreground min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                           >
                             <option value="">Non spécifié</option>
@@ -1268,7 +1267,6 @@ export default function Home() {
                                 setPerPhotoCustomPrompts(cm);
                               }
                             }}
-                            aria-label={`Style pour la photo ${index + 1}`}
                             className="w-full text-xs font-light bg-foreground/5 border-0 rounded-lg px-3 py-2 text-foreground min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                           >
                             <option value="">Choisir un style</option>
@@ -1284,7 +1282,7 @@ export default function Home() {
                           </select>
                         </div>
 
-                        {/* Custom prompt textarea */}
+                        {/* Custom prompt */}
                         {isCustom && (
                           <textarea
                             value={perPhotoCustomPrompts.get(index) || ""}
@@ -1304,7 +1302,6 @@ export default function Home() {
                 </div>
               </div>
             )}
-          </div>
 
           {/* Step 2c: Options (furniture toggle) */}
           {canGenerate && results.length === 0 && !isGenerating && (
