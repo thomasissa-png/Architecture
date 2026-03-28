@@ -194,7 +194,7 @@ export async function PATCH(
       const credits = await getUserCredits(session.user.id);
       if (credits < 1) {
         return NextResponse.json(
-          { error: "Credits insuffisants pour regenerer." },
+          { error: "Plus de visuels disponibles pour regénérer." },
           { status: 402 }
         );
       }
@@ -212,7 +212,7 @@ export async function PATCH(
       const decremented = await decrementCredit(session.user.id);
       if (!decremented) {
         return NextResponse.json(
-          { error: "Credits insuffisants." },
+          { error: "Plus de visuels disponibles." },
           { status: 402 }
         );
       }
@@ -259,7 +259,7 @@ export async function PATCH(
       if (credits < pendingPhotos.length) {
         return NextResponse.json(
           {
-            error: `Credits insuffisants. ${pendingPhotos.length} credits necessaires, ${credits} disponibles.`,
+            error: `Plus de visuels disponibles. ${pendingPhotos.length} credits necessaires, ${credits} disponibles.`,
             creditsNeeded: pendingPhotos.length,
             creditsAvailable: credits,
           },
@@ -416,7 +416,7 @@ async function processBatchGeneration(
         // Decrement credit for this photo
         const decremented = await decrementCredit(userId);
         if (!decremented) {
-          throw new Error("Credits insuffisants.");
+          throw new Error("Plus de visuels disponibles.");
         }
 
         await updateDossierPhotoStatus(photo.id, "generating");

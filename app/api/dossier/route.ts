@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
   const credits = await getUserCredits(session.user.id);
   if (credits < 1) {
     return NextResponse.json(
-      { error: "Credits insuffisants. Rechargez pour continuer." },
+      { error: "Plus de visuels disponibles. Rechargez pour continuer." },
       { status: 402 }
     );
   }

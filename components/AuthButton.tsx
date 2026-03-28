@@ -119,8 +119,8 @@ export default function AuthButton() {
           )}
         </span>
         {credits !== null && (
-          <span className="text-xs text-muted font-light hidden sm:inline">
-            {credits} cr.
+          <span className="text-xs text-muted font-light">
+            {credits} visuel{credits !== 1 ? "s" : ""}
           </span>
         )}
       </button>

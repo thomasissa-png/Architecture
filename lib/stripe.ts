@@ -18,9 +18,14 @@ export function getStripe(): Stripe {
 }
 
 export const PACKS = [
-  { id: "decouverte", name: "Decouverte", credits: 5, priceCents: 490 },
-  { id: "starter", name: "Starter", credits: 20, priceCents: 1490 },
-  { id: "pro", name: "Pro", credits: 50, priceCents: 2900 },
+  { id: "starter", name: "Starter", credits: 15, priceCents: 990, mode: "payment" as const },
+  { id: "pro", name: "Pro", credits: 50, priceCents: 2900, mode: "subscription" as const },
+  // Recharges Starter
+  { id: "recharge-starter-10", name: "Recharge Starter +10", credits: 10, priceCents: 590, mode: "payment" as const },
+  { id: "recharge-starter-25", name: "Recharge Starter +25", credits: 25, priceCents: 1290, mode: "payment" as const },
+  // Recharges Pro
+  { id: "recharge-pro-20", name: "Recharge Pro +20", credits: 20, priceCents: 900, mode: "payment" as const },
+  { id: "recharge-pro-50", name: "Recharge Pro +50", credits: 50, priceCents: 1900, mode: "payment" as const },
 ] as const;
 
 export type PackId = (typeof PACKS)[number]["id"];

@@ -1044,7 +1044,7 @@ export async function POST(request: NextRequest) {
     const decremented = await decrementCredit(session.user.id);
     if (!decremented) {
       return NextResponse.json(
-        { error: "Crédits insuffisants. Rechargez un pack pour continuer." },
+        { error: "Plus de visuels disponibles. Rechargez pour continuer." },
         { status: 402 }
       );
     }

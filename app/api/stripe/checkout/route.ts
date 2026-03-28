@@ -9,7 +9,7 @@ export async function POST(request: Request) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id || !session?.user?.email) {
       return NextResponse.json(
-        { error: "Vous devez etre connecte pour acheter des credits." },
+        { error: "Vous devez être connecté pour acheter des visuels." },
         { status: 401 }
       );
     }
@@ -38,8 +38,11 @@ export async function POST(request: Request) {
       process.env.NEXT_PUBLIC_BASE_URL ||
       "https://architecture-toum92.replit.app";
 
-    const checkoutSession = await getStripe().checkout.sessions.create({
-      mode: "payment",
+    const isSubscription = pack.mode === "subscription";
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const checkoutConfig: any = {
+      mode: isSubscription ? "subscription" : "payment",
       payment_method_types: ["card"],
       customer_email: session.user.email,
       line_items: [
@@ -48,9 +51,10 @@ export async function POST(request: Request) {
             currency: "eur",
             unit_amount: pack.priceCents,
             product_data: {
-              name: `Versiroom — Pack ${pack.name}`,
-              description: `${pack.credits} credits de generation IA`,
+              name: `Versiroom — ${pack.name}`,
+              description: `${pack.credits} visuels${isSubscription ? "/mois" : ""}`,
             },
+            ...(isSubscription ? { recurring: { interval: "month" as const } } : {}),
           },
           quantity: 1,
         },
@@ -63,7 +67,9 @@ export async function POST(request: Request) {
       },
       success_url: `${baseUrl}/?checkout=success&pack=${pack.id}`,
       cancel_url: `${baseUrl}/pricing?checkout=cancelled`,
-    });
+    };
+
+    const checkoutSession = await getStripe().checkout.sessions.create(checkoutConfig);
 
     // Record pending purchase
     try {
