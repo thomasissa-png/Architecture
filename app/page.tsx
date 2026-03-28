@@ -851,7 +851,7 @@ export default function Home() {
             </svg>
           </a>
           <p className="text-sm text-foreground/60 font-light mt-3">
-            3 générations offertes · Sans carte bancaire · <a href="#pricing" className="underline hover:text-foreground transition-colors">Tarifs à partir de 9,90 €</a>
+            3 générations offertes · Sans carte bancaire · <a href="#pricing" className="underline hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm">Tarifs à partir de 9,90 €</a>
           </p>
 
           {/* Persona cards — 3 profils */}

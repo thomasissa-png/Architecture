@@ -37,7 +37,7 @@ export default function Footer({ currentPage }: FooterProps) {
             </a>
           </p>
         </div>
-        <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
+        <nav aria-label="Navigation footer" className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
           {filteredLinks.map((link) => (
             <a
               key={link.href}
@@ -48,7 +48,7 @@ export default function Footer({ currentPage }: FooterProps) {
             </a>
           ))}
           <span>&copy; Versiroom 2026</span>
-        </div>
+        </nav>
       </div>
     </footer>
   );

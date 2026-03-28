@@ -54,7 +54,7 @@ const jsonLd = [
     logo: `${BASE_URL}/logo.png`,
     description:
       "Home staging virtuel par IA pour architectes d'intérieur, marchands de biens et particuliers. Pipeline 2 passes qui préserve la géométrie de la pièce originale.",
-    foundingDate: "2025",
+    foundingDate: "2026",
     knowsAbout: [
       "home staging virtuel",
       "home staging par IA",
