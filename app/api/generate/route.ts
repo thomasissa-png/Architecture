@@ -31,7 +31,7 @@ import {
  * v18 (Sprint 18+), v24 (prompts validés Yann/Lucas/Camille 8.0/7.8),
  * v25 (5 corrections additives: Flos IC, no duplicate, plantes visuelles, lanternes, matériaux),
  * v26 (migration gpt-image-1 → gpt-image-1.5, latence /4 attendue) */
-export const PROMPT_VERSION = "v29";
+export const PROMPT_VERSION = "v30";
 
 // ─── Timeout wrapper for external API calls ─────────────────────────
 const API_TIMEOUT_MS = 120_000;
@@ -227,6 +227,7 @@ function buildSurfacesFluxPrompt(surfacePrompt: string, roomTypeId?: string | nu
       `${surfacePrompt}, finished empty kitchen interior.`,
       "Ceramic or stone floor tiles — no wood, no parquet. Subway tile or smooth splashback behind work area.",
       "Preserve ceiling 3D geometry — vaults, beams, ribs keep shape. Ceiling light per style.",
+      "Wall geometry stays identical — same angles, corners, depth. Color and texture change only.",
       "Remove construction leftovers including electrical outlets, round black wall boxes, cable exits — blend into wall finish. Keep wall-mounted equipment in place: radiators, heaters, vents, switches.",
       "Empty room — no furniture, no appliances. Same windows and doors.",
       "Same camera angle, same lighting, no warm tint or yellow cast. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
@@ -238,7 +239,8 @@ function buildSurfacesFluxPrompt(surfacePrompt: string, roomTypeId?: string | nu
     return [
       `${surfacePrompt}, finished empty bathroom interior.`,
       "Floor-to-ceiling ceramic tiles in shower zone and behind vanity. Water-resistant stone or ceramic floor, matte non-slip. No wood. Recessed IP44 ceiling spotlights.",
-      "Preserve ceiling 3D geometry. Remove construction leftovers including electrical outlets, round black wall boxes, cable exits — blend into wall finish. Keep wall equipment in place: radiators, heaters, vents, switches.",
+      "Preserve ceiling 3D geometry. Wall geometry stays identical — same angles, corners, depth. Color and texture change only.",
+      "Remove construction leftovers including electrical outlets, round black wall boxes, cable exits — blend into wall finish. Keep wall equipment in place: radiators, heaters, vents, switches.",
       "Empty room — no fixtures, no objects. Same windows and doors.",
       "Same camera angle, same lighting, no warm tint or yellow cast. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
     ].join(" ");
@@ -249,6 +251,7 @@ function buildSurfacesFluxPrompt(surfacePrompt: string, roomTypeId?: string | nu
     return [
       `${surfacePrompt}, finished empty WC interior.`,
       "Small ceramic tiles or vinyl floor, neutral tone. Washable matte paint or ceramic tiles on lower walls.",
+      "Wall geometry stays identical — same angles, corners, depth. Color and texture change only.",
       "Remove construction leftovers. Keep wall equipment in place: radiators, heaters, vents, switches.",
       "Empty room — no fixtures, no objects. Same windows and doors.",
       "Same camera angle, same lighting, no warm tint or yellow cast. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
@@ -273,6 +276,7 @@ function buildSurfacesFluxPrompt(surfacePrompt: string, roomTypeId?: string | nu
       `${surfacePrompt}, finished empty laundry room.`,
       "White or light grey ceramic floor tiles, matte finish. Washable matte white walls.",
       "Preserve ceiling 3D geometry — vaults, beams, ribs keep shape. Clean plaster finish over raw concrete.",
+      "Wall geometry stays identical — same angles, corners, depth. Color and texture change only.",
       "Remove construction leftovers. Keep wall equipment in place: radiators, heaters, vents, switches.",
       "Empty room — no appliances, no objects. Same windows and doors.",
       "Same camera angle, same lighting, no warm tint or yellow cast. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
@@ -285,6 +289,7 @@ function buildSurfacesFluxPrompt(surfacePrompt: string, roomTypeId?: string | nu
       `${surfacePrompt}, finished empty cellar.`,
       "Concrete or stone floor as-is or with sealant. Clean matte white or grey paint over masonry.",
       "Preserve ceiling 3D geometry — vaults, beams, ribs keep shape. Clean plaster finish over raw concrete.",
+      "Wall geometry stays identical — same angles, corners, depth. Color and texture change only.",
       "Remove construction leftovers. Keep wall equipment in place: radiators, heaters, vents, switches.",
       "Empty room — no shelving, no objects. Same windows and doors.",
       "Same camera angle, same lighting, no warm tint or yellow cast. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
@@ -296,6 +301,7 @@ function buildSurfacesFluxPrompt(surfacePrompt: string, roomTypeId?: string | nu
     return [
       `${surfacePrompt}, finished empty entryway interior.`,
       "Durable floor — ceramic tiles, stone, or hard-wearing wood. Ceiling light per style.",
+      "Wall geometry stays identical — same angles, corners, depth. Color and texture change only.",
       "Remove construction leftovers. Keep wall equipment in place: radiators, heaters, vents, switches.",
       "Empty room — no furniture, no objects. Same windows and doors.",
       "Same camera angle, same lighting, no warm tint or yellow cast. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
@@ -397,6 +403,7 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: str
     return [
       `Add the following laundry equipment to this photo of a finished room: ${furniturePrompt}.`,
       "Functional layout — washing machine, storage cabinet, drying rack, laundry basket. No decorative objects, no luxury items.",
+      "If the room appears compact (under 4m2 visible floor), skip the folding table and drying rack — keep only washing machine, cabinet, and basket.",
       "Place all elements with correct perspective and scale. Use door frame (204cm) as scale reference. Cast realistic shadows matching existing light.",
       STRUCTURE_LOCKED,
       EQUIPMENT_PRESERVATION,
@@ -453,7 +460,7 @@ function buildFurnitureFluxPrompt(furniturePrompt: string, roomTypeId?: string |
     return [
       `${furniturePrompt}, placed in this finished kitchen interior.`,
       "Built-in cabinetry against walls, island with stools if space allows. Pendant above work area.",
-      "Correct perspective and scale. Realistic shadows matching existing light.",
+      "Door frame = 204cm as scale reference. Correct perspective and scale. Realistic shadows matching existing light.",
       FLUX_STRUCTURE,
       FLUX_EQUIPMENT,
       "No curtains.",
@@ -479,7 +486,7 @@ function buildFurnitureFluxPrompt(furniturePrompt: string, roomTypeId?: string |
     return [
       `${furniturePrompt}, placed in this finished small WC room.`,
       "Minimal items — toilet, hand basin, mirror. Very small space, do not overcrowd.",
-      "Correct perspective and scale. Realistic shadows.",
+      "Door frame = 204cm as scale reference. Correct perspective and scale. Realistic shadows.",
       FLUX_STRUCTURE,
       FLUX_EQUIPMENT,
       FLUX_PHOTO,
@@ -491,7 +498,7 @@ function buildFurnitureFluxPrompt(furniturePrompt: string, roomTypeId?: string |
     return [
       `${furniturePrompt}, placed in this finished bedroom interior.`,
       "Freestanding only — bed, nightstands, rug, wardrobe as background anchor. No wall art, no curtains.",
-      "Correct perspective and scale. Realistic shadows matching existing light. Calm atmosphere.",
+      "Door frame = 204cm as scale reference. Correct perspective and scale. Realistic shadows matching existing light. Calm atmosphere.",
       FLUX_STRUCTURE,
       FLUX_EQUIPMENT,
       "Same number of windows.",
@@ -504,7 +511,7 @@ function buildFurnitureFluxPrompt(furniturePrompt: string, roomTypeId?: string |
     return [
       `${furniturePrompt}, placed in this finished entryway.`,
       "Small space — do not overcrowd. Console, mirror on console, coat rack, bench, runner rug. Freestanding only, no curtains.",
-      "Correct perspective and scale. Realistic shadows.",
+      "Door frame = 204cm as scale reference. Correct perspective and scale. Realistic shadows.",
       FLUX_STRUCTURE,
       FLUX_EQUIPMENT,
       FLUX_PHOTO,
@@ -516,7 +523,7 @@ function buildFurnitureFluxPrompt(furniturePrompt: string, roomTypeId?: string |
     return [
       `${furniturePrompt}, placed in this finished laundry room.`,
       "Functional — washing machine, storage, drying rack. No decorative items.",
-      "Correct perspective and scale. Realistic shadows.",
+      "Door frame = 204cm as scale reference. Correct perspective and scale. Realistic shadows.",
       FLUX_STRUCTURE,
       FLUX_EQUIPMENT,
       FLUX_PHOTO,
@@ -528,7 +535,7 @@ function buildFurnitureFluxPrompt(furniturePrompt: string, roomTypeId?: string |
     return [
       `${furniturePrompt}, placed in this finished cellar.`,
       "Functional storage — shelving, boxes, utility light. No luxury furniture.",
-      "Correct perspective and scale. Realistic shadows.",
+      "Door frame = 204cm as scale reference. Correct perspective and scale. Realistic shadows.",
       FLUX_STRUCTURE,
       FLUX_EQUIPMENT,
       FLUX_PHOTO,
@@ -540,7 +547,7 @@ function buildFurnitureFluxPrompt(furniturePrompt: string, roomTypeId?: string |
     return [
       `${furniturePrompt}, placed in this finished dining room interior.`,
       "Center table with chairs. Sideboard as background anchor if room is deep. Freestanding only, no wall art, no framed paintings, no curtains.",
-      "Correct perspective and scale. Realistic shadows matching existing light.",
+      "Door frame = 204cm as scale reference. Correct perspective and scale. Realistic shadows matching existing light.",
       FLUX_STRUCTURE,
       FLUX_EQUIPMENT,
       FLUX_PHOTO,
