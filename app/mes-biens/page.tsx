@@ -55,6 +55,21 @@ export default function MesBiensPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
 
+  // Search + sort
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<"recent" | "ville">("recent");
+
+  // Filtered + sorted properties
+  const filteredProperties = properties
+    .filter(p => !searchQuery ||
+      (p.address_normalized || p.address_raw || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (p.city || "").toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .sort((a, b) => sortBy === "ville"
+      ? (a.city || "").localeCompare(b.city || "")
+      : 0
+    );
+
   // Address autocomplete
   const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -213,7 +228,7 @@ export default function MesBiensPage() {
 
           <button
             onClick={() => setShowCreateForm(!showCreateForm)}
-            className="text-xs bg-foreground text-background px-4 py-2 rounded-full font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+            className="text-xs bg-foreground text-background px-4 py-2 min-h-[44px] flex items-center rounded-full font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
           >
             + Nouveau bien
           </button>
@@ -235,13 +250,16 @@ export default function MesBiensPage() {
                   onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
                   onBlur={() => setTimeout(() => setShowSuggestions(false), 300)}
                   placeholder="12 rue de la Paix, 75002 Paris"
-                  className="w-full text-sm font-light bg-background border border-foreground/10 rounded-xl px-3 py-2 text-foreground placeholder:text-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                  aria-expanded={showSuggestions && suggestions.length > 0}
+                  aria-autocomplete="list"
+                  className="w-full text-sm font-light bg-background border border-foreground/10 rounded-xl px-3 py-2 min-h-[44px] text-foreground placeholder:text-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                 />
                 {showSuggestions && suggestions.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-background border border-foreground/10 rounded-xl shadow-lg overflow-hidden">
+                  <div role="listbox" className="absolute top-full left-0 right-0 z-10 mt-1 bg-background border border-foreground/10 rounded-xl shadow-lg overflow-hidden">
                     {suggestions.map((s, i) => (
                       <button
                         key={i}
+                        role="option"
                         onMouseDown={() => selectSuggestion(s)}
                         className="w-full text-left text-xs font-light px-3 py-2 min-h-[44px] flex items-center hover:bg-foreground/5 transition-colors"
                       >
@@ -257,7 +275,7 @@ export default function MesBiensPage() {
                 <select
                   value={newType}
                   onChange={(e) => setNewType(e.target.value)}
-                  className="w-full text-sm font-light bg-background border border-foreground/10 rounded-xl px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                  className="w-full text-sm font-light bg-background border border-foreground/10 rounded-xl px-3 py-2 min-h-[44px] text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                 >
                   <option value="">Sélectionner</option>
                   {Object.entries(TYPE_LABELS).map(([key, label]) => (
@@ -273,7 +291,7 @@ export default function MesBiensPage() {
                   value={newSurface}
                   onChange={(e) => setNewSurface(e.target.value)}
                   placeholder="65"
-                  className="w-full text-sm font-light bg-background border border-foreground/10 rounded-xl px-3 py-2 text-foreground placeholder:text-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                  className="w-full text-sm font-light bg-background border border-foreground/10 rounded-xl px-3 py-2 min-h-[44px] text-foreground placeholder:text-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                 />
               </div>
 
@@ -284,7 +302,7 @@ export default function MesBiensPage() {
                   value={newRooms}
                   onChange={(e) => setNewRooms(e.target.value)}
                   placeholder="3"
-                  className="w-full text-sm font-light bg-background border border-foreground/10 rounded-xl px-3 py-2 text-foreground placeholder:text-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                  className="w-full text-sm font-light bg-background border border-foreground/10 rounded-xl px-3 py-2 min-h-[44px] text-foreground placeholder:text-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                 />
               </div>
 
@@ -295,7 +313,7 @@ export default function MesBiensPage() {
                   value={newPrice}
                   onChange={(e) => setNewPrice(e.target.value)}
                   placeholder="250000"
-                  className="w-full text-sm font-light bg-background border border-foreground/10 rounded-xl px-3 py-2 text-foreground placeholder:text-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                  className="w-full text-sm font-light bg-background border border-foreground/10 rounded-xl px-3 py-2 min-h-[44px] text-foreground placeholder:text-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                 />
               </div>
             </div>
@@ -308,7 +326,7 @@ export default function MesBiensPage() {
               <button
                 onClick={handleCreate}
                 disabled={isCreating || !newAddress.trim()}
-                className="text-xs bg-sage text-white px-4 py-2 rounded-full font-medium hover:bg-sage/85 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                className="text-xs bg-sage text-white px-4 py-2 min-h-[44px] flex items-center rounded-full font-medium hover:bg-sage/85 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
               >
                 {isCreating ? "Création..." : "Créer le bien"}
               </button>
@@ -334,17 +352,40 @@ export default function MesBiensPage() {
         {/* Property list */}
         {properties.length === 0 && !showCreateForm ? (
           <div className="text-center py-16">
-            <p className="text-muted font-light text-sm">Aucun bien enregistré.</p>
+            <p className="text-sm text-muted font-light">Aucun bien enregistré.</p>
+            <p className="text-xs text-muted/60 font-light mt-2">
+              Ajoutez vos biens pour générer des visuels meublés et créer vos dossiers de pré-commercialisation.
+            </p>
             <button
               onClick={() => setShowCreateForm(true)}
-              className="inline-block mt-4 text-xs bg-foreground text-background px-4 py-2 rounded-full font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+              className="inline-flex items-center mt-4 text-xs bg-foreground text-background px-4 py-2 min-h-[44px] rounded-full font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
             >
               Ajouter mon premier bien
             </button>
           </div>
         ) : (
+          <>
+          {/* Search + sort bar */}
+          {properties.length > 0 && (
+            <div className="flex gap-3 items-center mb-6">
+              <input
+                type="text"
+                placeholder="Rechercher par adresse ou ville..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="flex-1 px-4 py-2.5 min-h-[44px] border border-foreground/10 rounded-xl text-sm font-light focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
+              />
+              <button
+                onClick={() => setSortBy(s => s === "recent" ? "ville" : "recent")}
+                className="text-xs text-muted border border-foreground/10 px-3 py-2 min-h-[44px] rounded-xl hover:text-foreground hover:border-foreground/20 transition-colors flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 shrink-0"
+              >
+                {sortBy === "recent" ? "↕ Par ville" : "↕ Plus récent"}
+              </button>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" data-testid="biens-list">
-            {properties.map((property) => (
+            {filteredProperties.map((property) => (
               <a
                 key={property.id}
                 href={`/mes-biens/${property.id}`}
@@ -401,9 +442,9 @@ export default function MesBiensPage() {
                   <div className="flex gap-2 mt-2 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                     {(property.dossier_count ?? 0) > 0 && (
                       <a
-                        href="/mes-dossiers"
+                        href={`/mes-biens/${property.id}`}
                         onClick={(e) => e.stopPropagation()}
-                        className="text-xs text-muted border border-foreground/10 px-3 py-1.5 rounded-full hover:text-foreground hover:border-foreground/20 transition-colors min-h-[36px] flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                        className="text-xs text-muted border border-foreground/10 px-3 py-1.5 rounded-full hover:text-foreground hover:border-foreground/20 transition-colors min-h-[44px] flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                       >
                         Voir le dossier
                       </a>
@@ -414,7 +455,7 @@ export default function MesBiensPage() {
                         onClick={(e) => e.stopPropagation()}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs text-sage border border-sage/20 px-3 py-1.5 rounded-full hover:bg-sage/5 transition-colors min-h-[36px] flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                        className="text-xs text-sage border border-sage/20 px-3 py-1.5 rounded-full hover:bg-sage/5 transition-colors min-h-[44px] flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                       >
                         Voir l&apos;annonce ↗
                       </a>
@@ -424,6 +465,7 @@ export default function MesBiensPage() {
               </a>
             ))}
           </div>
+          </>
         )}
       </main>
     </div>
