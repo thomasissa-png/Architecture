@@ -31,7 +31,7 @@ import {
  * v18 (Sprint 18+), v24 (prompts validés Yann/Lucas/Camille 8.0/7.8),
  * v25 (5 corrections additives: Flos IC, no duplicate, plantes visuelles, lanternes, matériaux),
  * v26 (migration gpt-image-1 → gpt-image-1.5, latence /4 attendue) */
-export const PROMPT_VERSION = "v27";
+export const PROMPT_VERSION = "v28";
 
 // ─── Timeout wrapper for external API calls ─────────────────────────
 const API_TIMEOUT_MS = 120_000;
@@ -104,6 +104,7 @@ function getOutputSize(
 const DSLR_LINE = "DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Subtle photographic film grain must be visible at 100% zoom — not smooth CGI rendering. Natural lens vignetting darkening the corners by 5-10%. No text or watermarks.";
 const CEILING_PRESERVATION = "Preserve ceiling 3D geometry — vaults, beams, ribs keep shape. Refinish ceiling surface: smooth plaster over raw concrete, formwork marks, seams. Beams keep 3D shape but receive clean painted finish.";
 const LIGHT_PRESERVATION = "Preserve existing light direction, shadow positions, and relative intensity. Maintain wall color temperature from input. Do not artificially brighten darker areas. Do not add any warm tint or yellow cast — if the input walls are cool-toned or neutral, the output walls must remain the same temperature.";
+const WALL_PRESERVATION = "Wall geometry must stay identical: same angles, same corners, same depth. Wall finishing means changing color and texture only — never add or remove volume, never round corners, never change wall thickness.";
 const CAMERA_PRESERVATION = "Same camera angle, lens distortion, vanishing points, field of view, orientation.";
 
 // ── Pass 1: Surface finishing ────────────────────────────────────────
@@ -209,6 +210,7 @@ function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string
     "Refinish the floor and repaint or replaster the walls. For the ceiling light fixture, follow the style description above exactly.",
     "If the input has ONE accent wall (different color or texture from the other walls), preserve that accent wall as-is — apply the style's wall color to the remaining walls. If ALL walls share the same color, apply the style's wall color to ALL walls uniformly.",
     CEILING_PRESERVATION,
+    WALL_PRESERVATION,
     "Remove all visible construction elements: dangling cables, exposed wiring, junction boxes without covers, cable conduits, temporary fixtures, electrical outlets, round black wall boxes, and cable exits. They must blend seamlessly into the wall finish.",
     "Do not add baseboards or moldings unless clearly present in the input photo.",
     "Preserve all wall-mounted fixed equipment visible in the input: radiators, heaters, vents, thermostats, electrical panels, switches, and outlets must remain in their exact position, size, and appearance.",
@@ -329,8 +331,8 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: str
   if (roomTypeId === "kitchen") {
     return [
       `Add the following kitchen elements to this photo of a finished room: ${furniturePrompt}.`,
-      "Built-in cabinetry and countertops against walls, island or peninsula with stools if space allows. Pendant light above work area.",
-      "Place all elements with correct perspective and scale on the existing floor. Cast realistic shadows matching existing light.",
+      "Built-in cabinetry and countertops against walls. Add island or peninsula with stools ONLY if the kitchen is wide enough (visible floor area suggests >10m2). If the kitchen appears compact, skip the island entirely.",
+      "Place all elements with correct perspective and scale on the existing floor. Use door frames and window sills as scale references. Cast realistic shadows matching existing light.",
       STRUCTURE_LOCKED,
       EQUIPMENT_PRESERVATION,
       "No curtains.",
@@ -369,7 +371,7 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: str
     return [
       `Add the following bedroom furniture to this photo of a finished room: ${furniturePrompt}.`,
       "Freestanding furniture only — bed, nightstands, rug beside bed, wardrobe or dresser as background anchor. No wall-mounted art, no built-in shelving, no curtains.",
-      "Place all objects naturally on the floor with correct perspective and scale. Cast realistic shadows matching existing light.",
+      "Scale bed to room: if compact room, use 140cm bed instead of 160cm, skip bench at foot. Place all objects naturally on the floor with correct perspective and scale. Use door frame height (204cm) as reference. Cast realistic shadows matching existing light.",
       "Calm atmosphere — respect furniture density implied by the style.",
       STRUCTURE_LOCKED,
       EQUIPMENT_PRESERVATION,
@@ -382,8 +384,8 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: str
   if (roomTypeId === "entryway") {
     return [
       `Add the following entryway furniture to this photo of a finished room: ${furniturePrompt}.`,
-      "Small space — do not overcrowd. Freestanding items only: console, mirror propped on console, coat rack, small bench, runner rug. No wall-mounted art, no curtains.",
-      "Place all objects with correct perspective and scale. Cast realistic shadows matching existing light.",
+      "Small space — do not overcrowd. Scale console to visible wall width — never wider than 60% of the available wall. Freestanding items only: console, mirror propped on console, coat rack, small bench, runner rug. No wall-mounted art, no curtains.",
+      "Place all objects with correct perspective and scale. Use door frame (204cm tall) as scale reference. Cast realistic shadows matching existing light.",
       STRUCTURE_LOCKED,
       EQUIPMENT_PRESERVATION,
       CAMERA_AND_PHOTO,
@@ -419,9 +421,9 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: str
   if (roomTypeId === "dining_room") {
     return [
       `Add the following furniture and decoration into this photo of a finished room: ${furniturePrompt}.`,
-      "Center the dining table with chairs. If room is deep or has multiple zones, add a sideboard or buffet as background anchor.",
-      "Place all objects naturally on the floor with correct perspective and scale. Cast realistic shadows matching existing light — soft for diffused, hard for direct sunlight.",
-      "Respect furniture density implied by the style. If room appears small, reduce accent pieces.",
+      "Center the dining table with chairs. If room is deep or has multiple zones, add a sideboard or buffet as background anchor. If the room appears compact, use a round table 120cm with 4 chairs instead of a rectangular 180cm table with 6 chairs.",
+      "Place all objects naturally on the floor with correct perspective and scale. Use door frame (204cm) and window sill as scale references. Cast realistic shadows matching existing light — soft for diffused, hard for direct sunlight.",
+      "Respect furniture density implied by the style. If room appears small, reduce accent pieces. Furniture must never appear to touch or crowd the walls.",
       "Freestanding objects only — no wall art, no shelving, no curtains. Room structure LOCKED (walls, floor, ceiling, windows, radiators unchanged, not blocking radiators). Shadows from new furniture are expected.",
       CAMERA_AND_PHOTO,
     ].join(" ");
@@ -432,8 +434,8 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: str
     `Add the following furniture and decoration into this photo of a finished room: ${furniturePrompt}.`,
     "The result should look like a professionally styled photograph for a luxury real estate listing — lived-in and aspirational, not a sterile furniture catalog.",
     "Distribute furniture across the FULL DEPTH and WIDTH of the room. If the room is deep or has multiple zones, place a primary group in the foreground AND a secondary group further back. If the room is also wide, add a lateral anchor on the opposite side.",
-    "Place all objects naturally on the floor. Every piece must have correct perspective, scale, and cast realistic shadows matching the existing light. Match shadow hardness to lighting type.",
-    "If the ceiling appears very high (>3m) or room is very large, scale up furniture proportionally.",
+    "Place all objects naturally on the floor. Use visible architectural cues as absolute scale references — a standard interior door is 204cm tall, a door handle sits at 100cm, a window sill at 90cm. Every piece of furniture must be proportional to these references. Cast realistic shadows matching the existing light. Match shadow hardness to lighting type.",
+    "Adapt furniture size to the actual room volume: if the ceiling appears very high (>3m) or room is very large, scale up furniture proportionally. If the room appears compact or narrow (visible wall-to-wall distance seems less than 4m), scale DOWN — use a 180cm sofa instead of 230cm, an 80cm coffee table instead of 120cm, a 160x230cm rug instead of 200x300cm. Furniture must never appear to touch or crowd the walls.",
     "Respect furniture density implied by the style. If minimalist, leave large empty floor areas. If room appears small, reduce accent pieces.",
     "Freestanding objects only — no wall art, no shelving, no curtains. No duplicate items — each piece of furniture appears only once unless the style explicitly calls for a pair. Room structure LOCKED (walls, floor, ceiling, windows, radiators unchanged, not blocking radiators). Shadows from new furniture are expected.",
     "If the input has zero windows, the output must have zero windows.",
