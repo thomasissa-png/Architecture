@@ -372,7 +372,7 @@ export default function ComptePage() {
                   </p>
                   <p className="text-xs text-muted/60 font-light mt-1">
                     Disponible avec l&apos;abonnement Pro (29&nbsp;&#8364;/mois).{" "}
-                    <a href="/pricing" className="underline hover:text-sage transition-colors">Voir les tarifs</a>
+                    <a href="/pricing?buy=pro" className="underline hover:text-sage transition-colors">Voir les tarifs</a>
                   </p>
                 </div>
               </label>
