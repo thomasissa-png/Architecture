@@ -278,10 +278,18 @@ Workflow d'audit :
 Demande type : "Fais appel aux agents Architecte d'Interieur, Expert IA Image et Paysagiste pour auditer toutes les generations depuis le dernier audit. Telecharge les images dans /tmp/audit-images/ et analyse-les visuellement. Donne la note de chaque generation, identifie les patterns recurrents, et propose un plan d'amelioration prioritaire."`;
 
   return (
-    <div className="px-6 py-6 md:px-8 font-[Inter,sans-serif] max-w-[1400px] mx-auto">
-      <h1 className="text-2xl font-semibold text-foreground mb-4">
-        Versiroom Admin
-      </h1>
+    <div className="min-h-screen bg-background">
+      {/* Header identique au reste du site */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-foreground/5">
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 py-3 sm:py-4 flex items-center justify-between">
+          <a href="/" className="text-xl font-semibold text-foreground tracking-tighter focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm">
+            Versiroom
+          </a>
+          <span className="text-xs text-muted font-light">Administration</span>
+        </div>
+      </header>
+
+      <div className="pt-20 px-5 sm:px-8 max-w-6xl mx-auto pb-10">
 
       {/* Onglets */}
       <div className="flex gap-1 mb-6 border-b border-foreground/10">
@@ -603,6 +611,7 @@ Demande type : "Fais appel aux agents Architecte d'Interieur, Expert IA Image et
 
       </>)}
 
+      </div>{/* ferme le container pt-20 */}
       <Footer currentPage="/admin" />
     </div>
   );
