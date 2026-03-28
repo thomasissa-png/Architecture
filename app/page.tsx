@@ -9,6 +9,8 @@ import RefineModal from "@/components/RefineModal";
 import VersionSelector from "@/components/VersionSelector";
 import RoomTypePicker from "@/components/RoomTypePicker";
 import OutdoorSubtypePicker from "@/components/OutdoorSubtypePicker";
+import { ROOM_TYPE_LIST } from "@/lib/room-types";
+import { OUTDOOR_SUBTYPE_LIST } from "@/lib/outdoor-subtypes";
 import { processImage, isLikelyInterior } from "@/lib/image-utils";
 import { OUTDOOR_STYLES } from "@/lib/outdoor-styles";
 import { useSession } from "next-auth/react";
@@ -123,6 +125,9 @@ export default function Home() {
   const [selectedStyle, setSelectedStyle] = useState<StyleOption | null>(null);
   const [customPrompt, setCustomPrompt] = useState("");
   const [perPhotoStyles, setPerPhotoStyles] = useState<Map<number, string>>(new Map());
+  const [perPhotoRoomTypes, setPerPhotoRoomTypes] = useState<Map<number, string>>(new Map());
+  const [perPhotoCustomPrompts, setPerPhotoCustomPrompts] = useState<Map<number, string>>(new Map());
+  const [perPhotoOutdoor, setPerPhotoOutdoor] = useState<Map<number, boolean>>(new Map());
   const [withFurniture, setWithFurniture] = useState(true);
   const [selectedRoomType, setSelectedRoomType] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -278,6 +283,9 @@ export default function Home() {
   // Reset per-photo style overrides when files change
   useEffect(() => {
     setPerPhotoStyles(new Map());
+    setPerPhotoRoomTypes(new Map());
+    setPerPhotoCustomPrompts(new Map());
+    setPerPhotoOutdoor(new Map());
   }, [files]);
 
   // Abort controller for cancelling in-flight requests
@@ -390,18 +398,38 @@ export default function Home() {
 
       const batchResults = await Promise.allSettled(
         chunk.map(async (img) => {
-          // Per-photo style override (indoor only, non-custom)
+          // Per-photo overrides (style, room type, custom prompt)
           let imgSurfacePrompt = surfacePrompt;
           let imgFurniturePrompt = furniturePrompt;
           let imgStyleId = effectiveStyleId;
+          let imgRoomType = selectedRoomType;
+          let imgCustomPrompt = customPrompt;
           const overrideStyleId = perPhotoStyles.get(img.fileIndex);
-          if (overrideStyleId && !isOutdoor) {
+          const overrideRoomType = perPhotoRoomTypes.get(img.fileIndex);
+          const overrideCustomPrompt = perPhotoCustomPrompts.get(img.fileIndex);
+          const imgIsOutdoor = perPhotoOutdoor.get(img.fileIndex) || isOutdoor;
+          if (overrideStyleId === "custom" && overrideCustomPrompt) {
+            imgStyleId = "custom";
+            imgCustomPrompt = overrideCustomPrompt;
+            imgSurfacePrompt = "";
+            imgFurniturePrompt = "";
+          } else if (overrideStyleId && !imgIsOutdoor) {
             const overrideStyle = STYLES.find((s) => s.id === overrideStyleId);
             if (overrideStyle) {
               imgSurfacePrompt = overrideStyle.surfacePrompt;
               imgFurniturePrompt = overrideStyle.furniturePrompt;
               imgStyleId = overrideStyle.id;
             }
+          } else if (overrideStyleId && imgIsOutdoor) {
+            const outdoorStyle = OUTDOOR_STYLES.find((s) => s.id === overrideStyleId);
+            if (outdoorStyle) {
+              imgSurfacePrompt = outdoorStyle.surfacePrompt;
+              imgFurniturePrompt = outdoorStyle.furniturePrompt;
+              imgStyleId = outdoorStyle.id;
+            }
+          }
+          if (overrideRoomType) {
+            imgRoomType = overrideRoomType;
           }
 
           const response = await resilientFetch("/api/generate", {
@@ -411,14 +439,15 @@ export default function Home() {
               image: img.base64,
               surfacePrompt: imgSurfacePrompt,
               furniturePrompt: imgFurniturePrompt,
+              customPrompt: imgCustomPrompt || undefined,
               styleId: imgStyleId,
               withFurniture,
               width: img.width,
               height: img.height,
               sessionId: getSessionId(),
-              roomType: selectedRoomType,
-              isOutdoor,
-              outdoorSubtype: isOutdoor ? outdoorSubtype : undefined,
+              roomType: imgRoomType,
+              isOutdoor: imgIsOutdoor,
+              outdoorSubtype: imgIsOutdoor ? (overrideRoomType || outdoorSubtype) : undefined,
             }),
           }, controller.signal);
 
@@ -511,6 +540,9 @@ export default function Home() {
     setSelectedStyle(null);
     setCustomPrompt("");
     setPerPhotoStyles(new Map());
+    setPerPhotoRoomTypes(new Map());
+    setPerPhotoCustomPrompts(new Map());
+    setPerPhotoOutdoor(new Map());
     setSelectedRoomType(null);
     setResults([]);
     setError(null);
@@ -709,9 +741,11 @@ export default function Home() {
 
   const canGenerate =
     files.length > 0 &&
-    (isOutdoor
-      ? selectedOutdoorStyle !== null
-      : selectedStyle !== null || customPrompt.trim().length > 0);
+    (files.length > 1
+      ? perPhotoStyles.size === files.length && Array.from(perPhotoStyles.values()).every(v => v !== "")
+      : isOutdoor
+        ? selectedOutdoorStyle !== null
+        : selectedStyle !== null || customPrompt.trim().length > 0);
 
   return (
     <div className="min-h-screen bg-background">
@@ -1041,15 +1075,13 @@ export default function Home() {
 
           {/* F4 — Merchant Mode */}
           {isMerchantMode && (
-            <div className="animate-fade-in-up mb-10">
+            <div className="animate-fade-in-up">
               <MerchantMode />
-              <div className="max-w-24 mx-auto border-t border-foreground/10 my-8" />
-              <p className="text-xs text-muted font-light text-center mb-6">Ou générez des visuels à la volée :</p>
             </div>
           )}
 
-          {/* Standard Mode — toujours visible (même en Pro) */}
-          {(
+          {/* Standard Mode */}
+          {!isMerchantMode && (
           <>
           <StepIndicator currentStep={currentStep} />
 
@@ -1061,8 +1093,8 @@ export default function Home() {
             <UploadZone files={files} onFilesChange={setFiles} />
           </div>
 
-          {/* Step 2a: Type d'espace (intérieur/extérieur + sous-type) — revealed after upload */}
-          <div id="step-space-type" className={`mb-10 scroll-mt-20 transition-all duration-700 ${files.length === 0 ? "hidden" : "animate-fade-in-up"}`}>
+          {/* Step 2a: Type d'espace (intérieur/extérieur + sous-type) — hidden when multi-photo (per-photo mode takes over) */}
+          <div id="step-space-type" className={`mb-10 scroll-mt-20 transition-all duration-700 ${files.length === 0 || files.length > 1 ? "hidden" : "animate-fade-in-up"}`}>
             <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
               01 — Type d&apos;espace
             </h3>
@@ -1127,8 +1159,8 @@ export default function Home() {
             )}
           </div>
 
-          {/* Step 2b: Style — revealed after upload */}
-          <div id="step-style" className={`mb-10 scroll-mt-20 transition-all duration-700 ${files.length === 0 ? "hidden" : "animate-fade-in-up animate-delay-300"}`}>
+          {/* Step 2b: Style — hidden when multi-photo */}
+          <div id="step-style" className={`mb-10 scroll-mt-20 transition-all duration-700 ${files.length === 0 || files.length > 1 ? "hidden" : "animate-fade-in-up animate-delay-300"}`}>
             <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
               02 — Style
             </h3>
@@ -1143,42 +1175,132 @@ export default function Home() {
               onSelectOutdoorStyle={setSelectedOutdoorStyle}
             />
 
-            {/* Per-photo style override (indoor, multi-photo only) */}
-            {files.length > 1 && !isOutdoor && (
-              <div className="mt-6 pt-6 border-t border-foreground/5 animate-fade-in-up">
-                <p className="text-xs text-muted font-light mb-4">
-                  Style par photo <span className="opacity-60">(optionnel — par défaut, toutes utilisent le style ci-dessus)</span>
-                </p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {files.map((file, index) => (
-                    <div key={`per-photo-${index}-${file.name}`} className="border border-foreground/5 rounded-xl p-2.5">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={filePreviewUrls[index]}
-                        alt={`Photo ${index + 1}`}
-                        className="w-full aspect-[4/3] object-cover rounded-lg mb-2"
-                      />
-                      <select
-                        value={perPhotoStyles.get(index) || ""}
-                        onChange={(e) => {
-                          const newMap = new Map(perPhotoStyles);
-                          if (e.target.value) {
-                            newMap.set(index, e.target.value);
-                          } else {
-                            newMap.delete(index);
-                          }
-                          setPerPhotoStyles(newMap);
-                        }}
-                        aria-label={`Style pour la photo ${index + 1}`}
-                        className="w-full text-xs font-light bg-foreground/5 border-0 rounded-lg px-2 py-1.5 text-foreground min-h-[36px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
-                      >
-                        <option value="">Style global</option>
-                        {STYLES.map((s) => (
-                          <option key={s.id} value={s.id}>{s.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                  ))}
+            {/* Multi-photo mode: per-photo type de pièce + style + personnalisé */}
+            {files.length > 1 && (
+              <div className={`mb-10 scroll-mt-20 animate-fade-in-up ${files.length === 0 ? "hidden" : ""}`}>
+                <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
+                  Configurez chaque photo
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {files.map((file, index) => {
+                    const photoStyle = perPhotoStyles.get(index) || "";
+                    const isCustom = photoStyle === "custom";
+                    const isPhotoOutdoor = perPhotoOutdoor.get(index) || false;
+                    return (
+                      <div key={`per-photo-${index}-${file.name}`} className="border border-foreground/5 rounded-2xl p-4 space-y-3">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={filePreviewUrls[index]}
+                          alt={`Photo ${index + 1}`}
+                          className="w-full aspect-[4/3] object-cover rounded-xl"
+                        />
+
+                        {/* Toggle Intérieur / Extérieur */}
+                        <div className="flex rounded-full bg-foreground/5 p-0.5">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const m = new Map(perPhotoOutdoor);
+                              m.set(index, false);
+                              setPerPhotoOutdoor(m);
+                              // Reset room type + style when switching
+                              const rm = new Map(perPhotoRoomTypes); rm.delete(index); setPerPhotoRoomTypes(rm);
+                              const sm = new Map(perPhotoStyles); sm.delete(index); setPerPhotoStyles(sm);
+                            }}
+                            className={`flex-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${!isPhotoOutdoor ? "bg-foreground text-background" : "text-muted"}`}
+                          >
+                            Intérieur
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const m = new Map(perPhotoOutdoor);
+                              m.set(index, true);
+                              setPerPhotoOutdoor(m);
+                              const rm = new Map(perPhotoRoomTypes); rm.delete(index); setPerPhotoRoomTypes(rm);
+                              const sm = new Map(perPhotoStyles); sm.delete(index); setPerPhotoStyles(sm);
+                            }}
+                            className={`flex-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${isPhotoOutdoor ? "bg-foreground text-background" : "text-muted"}`}
+                          >
+                            Extérieur
+                          </button>
+                        </div>
+
+                        {/* Type de pièce (indoor) / Sous-type (outdoor) */}
+                        <div>
+                          <label className="text-[11px] text-muted font-light block mb-1">
+                            {isPhotoOutdoor ? "Type d\u0027espace" : "Type de pièce"}
+                          </label>
+                          <select
+                            value={perPhotoRoomTypes.get(index) || ""}
+                            onChange={(e) => {
+                              const m = new Map(perPhotoRoomTypes);
+                              if (e.target.value) m.set(index, e.target.value); else m.delete(index);
+                              setPerPhotoRoomTypes(m);
+                            }}
+                            aria-label={`Type pour la photo ${index + 1}`}
+                            className="w-full text-xs font-light bg-foreground/5 border-0 rounded-lg px-3 py-2 text-foreground min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                          >
+                            <option value="">Non spécifié</option>
+                            {isPhotoOutdoor
+                              ? OUTDOOR_SUBTYPE_LIST.map((st) => (
+                                  <option key={st.id} value={st.id}>{st.label}</option>
+                                ))
+                              : ROOM_TYPE_LIST.map((rt) => (
+                                  <option key={rt.id} value={rt.id}>{rt.label}</option>
+                                ))
+                            }
+                          </select>
+                        </div>
+
+                        {/* Style */}
+                        <div>
+                          <label className="text-[11px] text-muted font-light block mb-1">Style</label>
+                          <select
+                            value={photoStyle}
+                            onChange={(e) => {
+                              const m = new Map(perPhotoStyles);
+                              if (e.target.value) m.set(index, e.target.value); else m.delete(index);
+                              setPerPhotoStyles(m);
+                              if (e.target.value !== "custom") {
+                                const cm = new Map(perPhotoCustomPrompts);
+                                cm.delete(index);
+                                setPerPhotoCustomPrompts(cm);
+                              }
+                            }}
+                            aria-label={`Style pour la photo ${index + 1}`}
+                            className="w-full text-xs font-light bg-foreground/5 border-0 rounded-lg px-3 py-2 text-foreground min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                          >
+                            <option value="">Choisir un style</option>
+                            {isPhotoOutdoor
+                              ? OUTDOOR_STYLES.map((s) => (
+                                  <option key={s.id} value={s.id}>{s.name}</option>
+                                ))
+                              : STYLES.map((s) => (
+                                  <option key={s.id} value={s.id}>{s.name}</option>
+                                ))
+                            }
+                            <option value="custom">Personnalisé</option>
+                          </select>
+                        </div>
+
+                        {/* Custom prompt textarea */}
+                        {isCustom && (
+                          <textarea
+                            value={perPhotoCustomPrompts.get(index) || ""}
+                            onChange={(e) => {
+                              const m = new Map(perPhotoCustomPrompts);
+                              m.set(index, e.target.value);
+                              setPerPhotoCustomPrompts(m);
+                            }}
+                            placeholder="Décrivez le style souhaité..."
+                            rows={2}
+                            className="w-full text-xs font-light border border-foreground/10 rounded-lg px-3 py-2 resize-none focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
