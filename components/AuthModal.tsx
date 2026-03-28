@@ -30,6 +30,7 @@ interface AuthModalProps {
 type Mode = "login" | "register";
 
 export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalProps) {
+  const isPurchaseContext = callbackUrl?.includes("?buy=") || callbackUrl?.includes("&buy=");
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -235,9 +236,11 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
               {mode === "login" ? "Connexion" : "Créer un compte"}
             </h2>
             <p className="text-sm text-muted font-light">
-              {mode === "login"
-                ? "Retrouvez vos créations et vos visuels."
-                : "Gratuit — 3 visuels offerts sans CB."}
+              {isPurchaseContext
+                ? "Créez votre compte pour finaliser votre achat."
+                : mode === "login"
+                  ? "Retrouvez vos créations et vos visuels."
+                  : "Gratuit — 3 visuels offerts sans CB."}
             </p>
           </div>
 

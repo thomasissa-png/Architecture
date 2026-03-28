@@ -104,6 +104,7 @@ function PricingContent() {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [pendingPackId, setPendingPackId] = useState<string | null>(null);
   const [checkboxError, setCheckboxError] = useState(false);
+  const [checkboxHighlight, setCheckboxHighlight] = useState(false);
   const retractationRef = useRef<HTMLLabelElement>(null);
 
   const checkoutCancelled = searchParams.get("checkout") === "cancelled";
@@ -115,8 +116,10 @@ function PricingContent() {
       if (retractationAccepted) {
         handleBuy(buyParam);
       } else {
-        setError("Cochez la clause ci-dessous puis cliquez sur le bouton de votre offre pour finaliser votre achat.");
+        // Highlight doux au lieu d'un message d'erreur rouge — l'utilisateur vient d'arriver
         retractationRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+        setCheckboxHighlight(true);
+        setTimeout(() => setCheckboxHighlight(false), 3000);
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -357,7 +360,7 @@ function PricingContent() {
 
           {/* Retractation checkbox — visible avant d'acheter */}
           <div className="max-w-xl mx-auto mt-8">
-            <label ref={retractationRef} className={`flex items-start gap-3 cursor-pointer group rounded-xl p-3 -m-3 transition-colors ${checkboxError ? "border border-red-400 bg-red-50/50" : "border border-transparent"}`}>
+            <label ref={retractationRef} className={`flex items-start gap-3 cursor-pointer group rounded-xl p-3 -m-3 transition-colors ${checkboxError ? "border border-red-400 bg-red-50/50" : checkboxHighlight ? "border border-sage/40 bg-sage/5" : "border border-transparent"}`}>
               <input
                 type="checkbox"
                 checked={retractationAccepted}
