@@ -78,7 +78,7 @@ export default function MesDossiersPage() {
     }
 
     fetchDossiers();
-  }, [authStatus]);
+  }, [authStatus, router]);
 
   function formatDate(dateStr: string): string {
     try {

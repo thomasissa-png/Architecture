@@ -1170,7 +1170,7 @@ export default function PropertyDetailPage() {
 
                   {photos.length === 0 ? (
                     <p className="text-sm text-muted font-light py-8 text-center">
-                      Associez d'abord des photos à ce bien.
+                      Associez d&apos;abord des photos à ce bien.
                     </p>
                   ) : (
                     <>
