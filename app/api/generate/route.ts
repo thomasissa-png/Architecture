@@ -31,7 +31,7 @@ import {
  * v18 (Sprint 18+), v24 (prompts validés Yann/Lucas/Camille 8.0/7.8),
  * v25 (5 corrections additives: Flos IC, no duplicate, plantes visuelles, lanternes, matériaux),
  * v26 (migration gpt-image-1 → gpt-image-1.5, latence /4 attendue) */
-export const PROMPT_VERSION = "v28";
+export const PROMPT_VERSION = "v29";
 
 // ─── Timeout wrapper for external API calls ─────────────────────────
 const API_TIMEOUT_MS = 120_000;
@@ -344,7 +344,8 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: str
     return [
       `Add the following bathroom fixtures and accessories to this photo of a finished room: ${furniturePrompt}.`,
       "Wall-mounted vanity and mirror expected. Other items (stool, basket, plant) freestanding.",
-      "Place all elements with correct perspective and scale. Use door frame (204cm) as scale reference. Cast realistic shadows matching existing light.",
+      "Bathrooms are typically small — scale ALL fixtures to fit within the visible floor area. If the room appears compact (one wall visible is under 2m), use a 60cm vanity instead of 80cm, skip the stool and basket, keep only essentials (shower, vanity, mirror, towel ladder). The shower enclosure must NOT extend beyond one-third of any visible wall.",
+      "Use ceiling height (~250cm), tile size, and visible plumbing as scale references. Every fixture must leave at least 60cm clear passage width between it and the opposite wall or fixture. Cast realistic shadows matching existing light.",
       STRUCTURE_LOCKED,
       EQUIPMENT_PRESERVATION,
       "No curtains.",
@@ -464,8 +465,8 @@ function buildFurnitureFluxPrompt(furniturePrompt: string, roomTypeId?: string |
   if (roomTypeId === "bathroom") {
     return [
       `${furniturePrompt}, placed in this finished bathroom interior.`,
-      "Wall-mounted vanity and mirror expected. Other items freestanding.",
-      "Correct perspective and scale. Realistic shadows matching existing light.",
+      "Wall-mounted vanity and mirror expected. Other items freestanding. Scale to room: if compact, 60cm vanity, skip stool/basket. Shower max one-third of wall. 60cm clear passage minimum.",
+      "Use ceiling (~250cm) and tile size as scale references. Realistic shadows matching existing light.",
       FLUX_STRUCTURE,
       FLUX_EQUIPMENT,
       "No curtains.",
