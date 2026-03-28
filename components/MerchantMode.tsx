@@ -344,7 +344,7 @@ export default function MerchantMode() {
       // Rendre le message 403 plus clair pour l'utilisateur
       const displayMsg = msg.includes("Pack Pro") || msg.includes("reserve aux")
         ? "Accès Pro requis. Contactez l'administrateur pour activer votre compte."
-        : msg || "Une erreur est survenue. Réessayez — vos crédits n'ont pas été consommés.";
+        : msg || "Une erreur est survenue. Réessayez — vos visuels n'ont pas été consommés.";
       setError(displayMsg);
       setIsGenerating(false);
       setCurrentStep("review");
@@ -368,7 +368,7 @@ export default function MerchantMode() {
 
       if (!res.ok) {
         const data = await res.json();
-        setError(data.error || "Une erreur est survenue. Réessayez — vos crédits n'ont pas été consommés.");
+        setError(data.error || "Une erreur est survenue. Réessayez — vos visuels n'ont pas été consommés.");
         return;
       }
 
@@ -388,7 +388,7 @@ export default function MerchantMode() {
         })));
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Une erreur est survenue. Réessayez — vos crédits n'ont pas été consommés.");
+      setError(err instanceof Error ? err.message : "Une erreur est survenue. Réessayez — vos visuels n'ont pas été consommés.");
     } finally {
       setIsRegenerating(null);
     }
@@ -894,7 +894,7 @@ export default function MerchantMode() {
                 Photos du bien
               </h3>
               <p className="text-xs text-muted/60 font-light">
-                Jusqu&apos;à {MAX_PHOTOS} photos — 1 crédit par photo
+                Jusqu&apos;à {MAX_PHOTOS} photos — 1 visuel par photo
               </p>
             </div>
           </div>
@@ -955,7 +955,7 @@ export default function MerchantMode() {
                 Étape suivante
               </button>
               <span className="text-xs text-muted font-light">
-                {files.length} photo{files.length > 1 ? "s" : ""} — {files.length} crédit{files.length > 1 ? "s" : ""}
+                {files.length} photo{files.length > 1 ? "s" : ""} — {files.length} visuel{files.length > 1 ? "s" : ""}
               </span>
             </div>
           )}
@@ -1050,7 +1050,7 @@ export default function MerchantMode() {
                   {files.length} photo{files.length > 1 ? "s" : ""}
                 </span>
                 <span className="text-sm text-sage font-medium">
-                  {creditsNeeded} crédit{creditsNeeded > 1 ? "s" : ""}
+                  {creditsNeeded} visuel{creditsNeeded > 1 ? "s" : ""}
                 </span>
               </div>
 
@@ -1083,11 +1083,11 @@ export default function MerchantMode() {
             className="w-full py-4 bg-sage text-white rounded-xl font-medium text-base hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
             data-testid="merchant-generate"
           >
-            {isGenerating ? "Génération en cours..." : `Générer le dossier (${creditsNeeded} crédit${creditsNeeded > 1 ? "s" : ""})`}
+            {isGenerating ? "Génération en cours..." : `Générer le dossier (${creditsNeeded} visuel${creditsNeeded > 1 ? "s" : ""})`}
           </button>
 
           <p className="text-center text-xs text-muted/60 font-light">
-            Si une photo échoue, le crédit correspondant est automatiquement restitué.
+            Si une photo échoue, le visuel correspondant est automatiquement restitué.
           </p>
         </div>
       )}

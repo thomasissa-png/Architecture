@@ -236,8 +236,8 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
             </h2>
             <p className="text-sm text-muted font-light">
               {mode === "login"
-                ? "Retrouvez vos créations et vos crédits."
-                : "Gratuit — 3 générations offertes sans CB."}
+                ? "Retrouvez vos créations et vos visuels."
+                : "Gratuit — 3 visuels offerts sans CB."}
             </p>
           </div>
 

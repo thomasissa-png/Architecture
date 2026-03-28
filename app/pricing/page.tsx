@@ -38,13 +38,13 @@ const PACKS: Pack[] = [
       { text: "12 styles disponibles", active: true },
       { text: "Téléchargement HD", active: true },
       { text: "Partage & comparateur", active: true },
-      { text: "Itérations (ajuster le résultat après génération)", active: false },
+      { text: "Itérations (ajuster le résultat)", active: false },
       { text: "Mode Pro (dossiers, PDF, annonces)", active: false },
     ],
     cta: "Essayer",
     highlight: false,
     note: "Sans carte bancaire",
-    personaLine: "Testez la qualité Versiroom sur vos propres photos. 3 générations offertes.",
+    personaLine: "Testez la qualité Versiroom sur vos propres photos. 3 visuels offerts.",
   },
   {
     id: "starter",
@@ -55,14 +55,14 @@ const PACKS: Pack[] = [
     features: [
       { text: "12 styles + mode personnalisé", active: true },
       { text: "1 itération par photo", active: true },
-      { text: "Historique des générations", active: true },
-      { text: "Crédits sans expiration", active: true },
-      { text: "Recharge : +10 crédits à 5,90 €", active: true },
+      { text: "Historique des visuels", active: true },
+      { text: "Visuels sans expiration", active: true },
+      { text: "Recharge : +10 visuels à 5,90 €", active: true },
       { text: "Mode Pro", active: false },
     ],
     cta: "Acheter",
     highlight: false,
-    personaLine: "Achat unique — vos crédits n'expirent pas. Idéal pour un projet ponctuel de décoration ou un bien isolé à valoriser.",
+    personaLine: "Achat unique — vos visuels n'expirent pas. Idéal pour un projet ponctuel de décoration ou un bien isolé à valoriser.",
   },
   {
     id: "pro",
@@ -77,7 +77,7 @@ const PACKS: Pack[] = [
       { text: "PDF brandé avec votre logo", active: true },
       { text: "Annonces & liens partageables illimités", active: true },
       { text: "Sans engagement — résiliable en 1 clic", active: true },
-      { text: "Recharge : +20 crédits à 9 €", active: true },
+      { text: "Recharge : +20 visuels à 9 €", active: true },
     ],
     cta: "S'abonner",
     highlight: true,
@@ -229,6 +229,9 @@ function PricingContent() {
             </a>
           </div>
 
+          {/* Equivalence visuel */}
+          <p className="text-sm text-muted font-light text-center mb-8">1 visuel = 1 photo uploadée, meublée dans le style de votre choix.</p>
+
           {/* Packs grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-4xl mx-auto items-stretch">
             {PACKS.map((pack) => (
@@ -258,7 +261,7 @@ function PricingContent() {
                 <p className="text-xs text-muted font-light mb-1">
                   {pack.id === "decouverte"
                     ? `${pack.credits} photos offertes`
-                    : `${pack.credits} crédits · ${pack.perPhoto} €/photo`}
+                    : `${pack.credits} visuels · ${pack.perPhoto} €/visuel`}
                 </p>
                 {pack.id === "starter" && <p className="text-xs text-sage font-medium mb-1">Achat unique — sans abonnement</p>}
                 <p className={`text-xs text-muted font-light ${pack.roiNote ? "mb-2" : "mb-6"}`}>
@@ -384,7 +387,7 @@ function PricingContent() {
 
           {/* Section recharge */}
           <div className="max-w-2xl mx-auto mt-10 p-6 rounded-2xl border border-foreground/5 bg-foreground/[0.02]">
-            <h3 className="text-sm font-semibold text-foreground mb-2">Besoin de plus de crédits ?</h3>
+            <h3 className="text-sm font-semibold text-foreground mb-2">Besoin de plus de visuels ?</h3>
             <p className="text-xs text-muted font-light mb-4">Rechargez à tout moment au prix de votre offre.</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="p-4 rounded-xl border border-foreground/10">
@@ -395,7 +398,7 @@ function PricingContent() {
                     disabled={loadingPack !== null}
                     className="w-full flex items-center justify-between text-xs text-muted font-light px-3 py-2.5 rounded-lg border border-foreground/10 hover:bg-foreground/5 transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    <span>+10 crédits</span>
+                    <span>+10 visuels</span>
                     <span className="font-medium text-foreground">5,90 €</span>
                   </button>
                   <button
@@ -403,7 +406,7 @@ function PricingContent() {
                     disabled={loadingPack !== null}
                     className="w-full flex items-center justify-between text-xs text-muted font-light px-3 py-2.5 rounded-lg border border-foreground/10 hover:bg-foreground/5 transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    <span>+25 crédits</span>
+                    <span>+25 visuels</span>
                     <span className="font-medium text-foreground">12,90 €</span>
                   </button>
                 </div>
@@ -416,7 +419,7 @@ function PricingContent() {
                     disabled={loadingPack !== null}
                     className="w-full flex items-center justify-between text-xs text-muted font-light px-3 py-2.5 rounded-lg border border-sage/20 hover:bg-sage/10 transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    <span>+20 crédits</span>
+                    <span>+20 visuels</span>
                     <span className="font-medium text-foreground">9 €</span>
                   </button>
                   <button
@@ -424,7 +427,7 @@ function PricingContent() {
                     disabled={loadingPack !== null}
                     className="w-full flex items-center justify-between text-xs text-muted font-light px-3 py-2.5 rounded-lg border border-sage/20 hover:bg-sage/10 transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    <span>+50 crédits</span>
+                    <span>+50 visuels</span>
                     <span className="font-medium text-foreground">19 €</span>
                   </button>
                 </div>
@@ -434,7 +437,7 @@ function PricingContent() {
 
           {/* Free trial note */}
           <p className="text-center text-[11px] text-muted font-light mt-8">
-            3 générations offertes sans carte bancaire · TVA récupérable
+            3 visuels offerts sans carte bancaire · TVA récupérable
             pour les professionnels assujettis.
           </p>
 
@@ -443,10 +446,10 @@ function PricingContent() {
             <h2 className="text-lg font-semibold text-foreground text-center mb-8">Questions fréquentes</h2>
             <div className="space-y-4">
               {[
-                { q: "Mes crédits Starter expirent-ils ?", a: "Non. Les crédits Starter sont valables à vie, sans limite de temps." },
-                { q: "Les crédits Pro non utilisés sont-ils reportés ?", a: "Non, les 50 crédits Pro sont renouvelés chaque mois. Les crédits non utilisés ne sont pas cumulables." },
+                { q: "Mes visuels Starter expirent-ils ?", a: "Non. Les visuels Starter sont valables à vie, sans limite de temps." },
+                { q: "Les visuels Pro non utilisés sont-ils reportés ?", a: "Non, les 50 visuels Pro sont renouvelés chaque mois. Les visuels non utilisés ne sont pas cumulables." },
                 { q: "Comment résilier mon abonnement Pro ?", a: "En 1 clic depuis votre compte, rubrique Abonnement. La résiliation prend effet à la fin du mois en cours." },
-                { q: "Je peux changer d'offre ?", a: "Oui, vous pouvez passer de Starter à Pro à tout moment. Vos crédits Starter restent disponibles en plus de votre abonnement Pro." },
+                { q: "Je peux changer d'offre ?", a: "Oui, vous pouvez passer de Starter à Pro à tout moment. Vos visuels Starter restent disponibles en plus de votre abonnement Pro." },
                 { q: "Je reçois une facture ?", a: "Oui, une facture TTC est envoyée automatiquement par email après chaque achat ou renouvellement." },
                 { q: "Le paiement est-il sécurisé ?", a: "Oui. Tous les paiements sont traités par Stripe, leader mondial du paiement en ligne. Vos données bancaires ne transitent jamais par nos serveurs." },
               ].map((faq) => (

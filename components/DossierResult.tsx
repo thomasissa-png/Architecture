@@ -227,7 +227,7 @@ export default function DossierResult({
       {failedPhotos.length > 0 && (
         <div className="space-y-2">
           <p className="text-sm text-red-400 font-medium">
-            {failedPhotos.length} photo{failedPhotos.length > 1 ? "s" : ""} en échec — crédit restitué automatiquement
+            {failedPhotos.length} photo{failedPhotos.length > 1 ? "s" : ""} en échec — visuel restitué automatiquement
           </p>
           {failedPhotos.map((photo) => (
             <div
@@ -248,7 +248,7 @@ export default function DossierResult({
                   disabled={isRegenerating === photo.id}
                   className="text-xs text-red-500 font-medium hover:text-red-700 transition-colors disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/50"
                 >
-                  {isRegenerating === photo.id ? "..." : "Relancer (1 crédit)"}
+                  {isRegenerating === photo.id ? "..." : "Relancer (1 visuel)"}
                 </button>
               )}
             </div>

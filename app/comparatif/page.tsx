@@ -41,7 +41,7 @@ const faqItems = [
   {
     question: "Combien coûte le home staging virtuel par IA ?",
     answer:
-      "Les prix varient selon les outils. En France, les tarifs vont de 9,90 euros pour 15 photos en achat unique (Versiroom Starter) à 29 euros par mois pour 50 générations (Versiroom Pro). Renovate Club propose un forfait illimité à 9,99 euros par mois. InterieurAI propose un tarif à la photo dès 1,25 euro. Gepetto fonctionne sur devis. À titre de comparaison, un home stager humain facture entre 200 et 500 euros par planche, avec un délai de 48 à 72 heures.",
+      "Les prix varient selon les outils. En France, les tarifs vont de 9,90 euros pour 15 visuels en achat unique (Versiroom Starter) à 29 euros par mois pour 50 visuels (Versiroom Pro). Renovate Club propose un forfait illimité à 9,99 euros par mois. InterieurAI propose un tarif à la photo dès 1,25 euro. Gepetto fonctionne sur devis. À titre de comparaison, un home stager humain facture entre 200 et 500 euros par planche, avec un délai de 48 à 72 heures.",
   },
   {
     question:
@@ -67,7 +67,7 @@ const jsonLd = {
 const comparatifData = [
   {
     critere: "Prix",
-    versiroom: "Gratuit (3 crédits) puis 9,90 € (15 crédits)",
+    versiroom: "Gratuit (3 visuels) puis 9,90 € (15 visuels)",
     gepetto: "Sur devis",
     interieurAI: "Dès 1,25 €/photo",
     renovateClub: "9,99 €/mois illimité",
@@ -130,7 +130,7 @@ const comparatifData = [
   },
   {
     critere: "Essai gratuit",
-    versiroom: "3 générations gratuites",
+    versiroom: "3 visuels gratuits",
     gepetto: "Sur devis",
     interieurAI: "Essai gratuit",
     renovateClub: "1 photo gratuite",
@@ -314,7 +314,7 @@ export default function ComparatifPage() {
                   href="/particulier"
                   className="text-sage underline underline-offset-2 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm"
                 >
-                  3 générations gratuites
+                  3 visuels gratuits
                 </a>
                 , elle teste le Scandinave, le Japandi ou le Contemporain
                 directement sur ses photos, sans engagement. Le rendu est
@@ -429,7 +429,7 @@ export default function ComparatifPage() {
             Prêt à essayer ?
           </p>
           <p className="text-sm text-muted font-light mb-8">
-            3 générations offertes, sans carte bancaire,
+            3 visuels offerts, sans carte bancaire,
             résultat en 90 secondes.
           </p>
           <a

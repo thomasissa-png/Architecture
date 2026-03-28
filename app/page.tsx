@@ -851,7 +851,7 @@ export default function Home() {
             </svg>
           </a>
           <p className="text-sm text-foreground/60 font-light mt-3">
-            3 générations offertes · Sans carte bancaire · <a href="#pricing" className="underline hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm">Tarifs à partir de 9,90 €</a>
+            3 visuels offerts · Sans carte bancaire · <a href="#pricing" className="underline hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm">Tarifs à partir de 9,90 €</a>
           </p>
 
           {/* Persona cards — 3 profils */}
@@ -922,7 +922,7 @@ export default function Home() {
               Mettez en scène votre espace
             </h2>
             <p className="text-muted font-light">
-              3 générations gratuites · Sans créer de compte
+              3 visuels gratuits · Sans créer de compte
             </p>
           </div>
 
@@ -1384,13 +1384,13 @@ export default function Home() {
                               </p>
                               <div className="mt-2 bg-foreground/5 border border-foreground/10 rounded-xl p-4 max-w-sm mx-auto">
                                 <p className="text-xs text-muted font-light mb-2">
-                                  Pour continuer à affiner, rechargez un pack de crédits.
+                                  Pour continuer à affiner, continuez avec un pack — à partir de 9,90 €.
                                 </p>
                                 <a
                                   href="#pricing"
                                   className="text-xs text-sage font-medium hover:text-sage/80 transition-colors underline underline-offset-4"
                                 >
-                                  Recharger mes crédits
+                                  Voir les offres
                                 </a>
                               </div>
                             </>
@@ -1456,7 +1456,7 @@ export default function Home() {
               Tarifs simples et transparents
             </h2>
             <p className="text-muted font-light">
-              Essayez gratuitement, 3 générations offertes sans carte bancaire
+              Essayez gratuitement, 3 visuels offerts sans carte bancaire
             </p>
           </div>
 
@@ -1465,7 +1465,7 @@ export default function Home() {
             <div className="flex flex-col border border-foreground/8 rounded-2xl p-7 text-center bg-background hover:border-foreground/15 transition-colors">
               <p className="text-xs text-muted font-medium uppercase tracking-widest mb-4">Découverte</p>
               <p className="text-4xl font-bold text-foreground mb-0.5">0 €</p>
-              <p className="text-xs text-muted font-light mb-1">3 crédits · 0 €/photo</p>
+              <p className="text-xs text-muted font-light mb-1">3 visuels · 0 €/visuel</p>
               <p className="text-[11px] text-muted/60 font-light mb-6">Sans carte bancaire</p>
               <ul className="text-sm text-muted font-light space-y-2.5 text-left mb-8 flex-1">
                 <li className="flex items-start gap-2.5">
@@ -1500,7 +1500,7 @@ export default function Home() {
             <div className="flex flex-col border border-foreground/8 rounded-2xl p-7 text-center bg-background hover:border-foreground/15 transition-colors">
               <p className="text-xs text-muted font-medium uppercase tracking-widest mb-4">Starter</p>
               <p className="text-4xl font-bold text-foreground mb-0.5">9,90 €</p>
-              <p className="text-xs text-muted font-light mb-1">15 crédits · 0,66 €/photo</p>
+              <p className="text-xs text-muted font-light mb-1">15 visuels · 0,66 €/visuel</p>
               <p className="text-[11px] text-sage font-medium mb-1">Achat unique — sans abonnement</p>
               <p className="text-[11px] text-muted/60 font-light mb-6">TTC · TVA 20% incluse</p>
               <ul className="text-sm text-muted font-light space-y-2.5 text-left mb-8 flex-1">
@@ -1514,11 +1514,11 @@ export default function Home() {
                 </li>
                 <li className="flex items-start gap-2.5">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  Historique des générations
+                  Historique des visuels
                 </li>
                 <li className="flex items-start gap-2.5">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  Recharge : +10 crédits à 5,90 €
+                  Recharge : +10 visuels à 5,90 €
                 </li>
                 <li className="flex items-start gap-2.5 opacity-40 line-through">
                   <svg className="w-4 h-4 text-muted/30 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M18 12H6" /></svg>
@@ -1537,7 +1537,7 @@ export default function Home() {
               <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-sage text-white text-[11px] font-semibold px-4 py-1 rounded-full tracking-wider shadow-sm">Recommandé</span>
               <p className="text-xs text-sage font-medium uppercase tracking-widest mb-4">Pro</p>
               <p className="text-4xl font-bold text-foreground mb-0.5">29 €<span className="text-base font-normal text-muted">/mois</span></p>
-              <p className="text-xs text-muted font-light mb-1">50 crédits/mois · 0,58 €/photo</p>
+              <p className="text-xs text-muted font-light mb-1">50 visuels/mois · 0,58 €/visuel</p>
               <p className="text-[11px] text-muted/60 font-light mb-2">TTC · TVA 20% incluse</p>
               <p className="text-xs text-sage font-medium mb-6">29 €/mois au lieu de 200-500 € chez un home stager</p>
               <ul className="text-sm text-muted font-light space-y-2.5 text-left mb-4 flex-1">
@@ -1563,7 +1563,7 @@ export default function Home() {
                 </li>
                 <li className="flex items-start gap-2.5">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  Recharge : +20 crédits à 9 €
+                  Recharge : +20 visuels à 9 €
                 </li>
               </ul>
               <div className="mt-auto">

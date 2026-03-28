@@ -90,7 +90,7 @@ const jsonLdApp = {
     "@type": "Offer",
     price: "29",
     priceCurrency: "EUR",
-    description: "Abonnement Pro — 50 crédits/mois",
+    description: "Abonnement Pro — 50 visuels/mois",
   },
 };
 
@@ -163,7 +163,7 @@ export default function MarchandPage() {
             </svg>
           </a>
           <p className="text-sm text-foreground/60 font-light mt-4">
-            50 crédits/mois inclus · 1 crédit = 1 visuel
+            50 visuels/mois inclus
           </p>
         </div>
       </section>
@@ -299,12 +299,12 @@ export default function MarchandPage() {
             <div className="rounded-2xl border border-foreground/10 p-5">
               <p className="text-xs text-muted font-medium uppercase tracking-widest mb-1">Starter</p>
               <p className="text-2xl font-bold text-foreground">9,90 €</p>
-              <p className="text-xs text-muted font-light mt-1 mb-4">Achat unique · 15 crédits · 0,66 €/photo</p>
+              <p className="text-xs text-muted font-light mt-1 mb-4">Achat unique · 15 visuels · 0,66 €/visuel</p>
               <ul className="space-y-2 text-xs text-muted font-light">
                 <li>12 styles + mode personnalisé</li>
                 <li>1 itération par photo</li>
-                <li>Historique des générations</li>
-                <li>Recharge : +10 crédits à 5,90 €</li>
+                <li>Historique des visuels</li>
+                <li>Recharge : +10 visuels à 5,90 €</li>
               </ul>
               <a href="/pricing#starter" className="mt-5 text-xs font-medium text-foreground border border-foreground/15 px-4 min-h-[44px] flex items-center justify-center rounded-full hover:bg-foreground/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2">
                 Acheter le Starter
@@ -315,12 +315,12 @@ export default function MarchandPage() {
               <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-sage text-white text-[10px] font-semibold px-3 py-0.5 rounded-full">Recommandé</span>
               <p className="text-xs text-sage font-medium uppercase tracking-widest mb-1">Pro</p>
               <p className="text-2xl font-bold text-foreground">29 €<span className="text-sm font-light text-muted">/mois</span></p>
-              <p className="text-xs text-muted font-light mt-1 mb-4">50 crédits/mois · 0,58 €/photo</p>
+              <p className="text-xs text-muted font-light mt-1 mb-4">50 visuels/mois · 0,58 €/visuel</p>
               <ul className="space-y-2 text-xs text-muted font-light">
                 <li>3 itérations par photo</li>
                 <li>Dossiers PDF brandés (logo, couleurs)</li>
                 <li>Annonces et liens acquéreurs</li>
-                <li>Recharge : +20 crédits à 9 €</li>
+                <li>Recharge : +20 visuels à 9 €</li>
               </ul>
               <a href="/pricing#pro" className="mt-5 text-xs font-semibold text-white bg-sage px-4 min-h-[44px] flex items-center justify-center rounded-full hover:bg-sage/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2">
                 S&apos;abonner au Pro
@@ -483,10 +483,10 @@ export default function MarchandPage() {
             Prêt à accélérer votre commercialisation ?
           </p>
           <p className="text-sm text-muted font-light mb-4">
-            Abonnement Pro — 29 €/mois · Dossiers de pré-commercialisation · 50 crédits/mois
+            Abonnement Pro — 29 €/mois · Dossiers de pré-commercialisation · 50 visuels/mois
           </p>
           <p className="text-xs text-muted font-light mb-8">
-            3 générations offertes, sans carte bancaire.
+            3 visuels offerts, sans carte bancaire.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a

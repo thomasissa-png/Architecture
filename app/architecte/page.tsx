@@ -144,7 +144,7 @@ export default function ArchitectePage() {
             </svg>
           </a>
           <p className="text-sm text-foreground/60 font-light mt-4">
-            Sans carte bancaire · 3 générations offertes
+            Sans carte bancaire · 3 visuels offerts
           </p>
         </div>
       </section>
@@ -400,10 +400,10 @@ export default function ArchitectePage() {
             Votre prochain client veut voir. Montrez-lui en 90 secondes.
           </p>
           <p className="text-sm text-muted font-light mb-4">
-            3 générations offertes, sans carte bancaire, résultat en 90 secondes.
+            3 visuels offerts, sans carte bancaire, résultat en 90 secondes.
           </p>
           <p className="text-xs text-muted font-light mb-8">
-            Abonnement Pro — 29 €/mois · 50 générations complètes/mois · HD téléchargeable · Sans filigrane · Droits commerciaux inclus
+            Abonnement Pro — 29 €/mois · 50 visuels/mois · HD téléchargeable · Sans filigrane · Droits commerciaux inclus
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a
@@ -420,7 +420,7 @@ export default function ArchitectePage() {
             </a>
           </div>
           <a href="/pricing" className="block text-xs text-sage font-medium mt-4 hover:underline transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm">
-            Préférez tester sans engagement ? 9,90 € · 15 générations · achat unique.
+            Préférez tester sans engagement ? 9,90 € · 15 visuels · achat unique.
           </a>
         </div>
       </section>
