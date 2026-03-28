@@ -67,8 +67,7 @@ export default function MerchantMode() {
   const [existingProperties, setExistingProperties] = useState<Array<{ id: string; address_raw: string | null; address_normalized: string | null; property_type: string | null; surface_m2: number | null; room_count: number | null; sale_price: number | null; city: string | null; latitude: number | null; longitude: number | null; description_generated: string | null; description_final: string | null }>>([]);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
 
-  // Property info
-  const [bienNom, setBienNom] = useState("");
+  // Property info (bienNom supprime — auto-genere depuis type/surface/ville)
   const [bienAdresse, setBienAdresse] = useState("");
   const [bienSurface, setBienSurface] = useState("");
   const [bienPrix, setBienPrix] = useState("");
@@ -155,7 +154,6 @@ export default function MerchantMode() {
     const prop = existingProperties.find((p) => p.id === propertyId);
     if (!prop) return;
     setSelectedPropertyId(propertyId);
-    setBienNom(prop.address_normalized || prop.address_raw || "");
     setBienAdresse(prop.address_normalized || prop.address_raw || "");
     setBienType(prop.property_type || "");
     setBienSurface(prop.surface_m2 ? String(prop.surface_m2) : "");
@@ -267,7 +265,7 @@ export default function MerchantMode() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          bienNom: bienNom.trim() || null,
+          bienNom: autoNom || null,
           bienAdresse: bienAdresse.trim() || null,
           bienSurface: bienSurface ? Number(bienSurface) : null,
           bienPrix: bienPrix ? Number(bienPrix) : null,
@@ -349,7 +347,7 @@ export default function MerchantMode() {
       setIsGenerating(false);
       setCurrentStep("review");
     }
-  }, [session, files, photoEntries, globalStyle, customPrompt, bienNom, bienAdresse, bienSurface, bienPrix, bienType, bienNbPieces, enrichedLat, enrichedLon, enrichedCity, enrichedPostcode, enrichedPrixM2, enrichedDescription, enrichedCarteKey, startPolling]);
+  }, [session, files, photoEntries, globalStyle, customPrompt, autoNom, bienAdresse, bienSurface, bienPrix, bienType, bienNbPieces, enrichedLat, enrichedLon, enrichedCity, enrichedPostcode, enrichedPrixM2, enrichedDescription, enrichedCarteKey, startPolling]);
 
   // ── Regenerate single photo ──
   const handleRegenerate = useCallback(async (photoId: number) => {
@@ -487,16 +485,22 @@ export default function MerchantMode() {
   }, [bienSurface, bienType, bienNbPieces]);
 
   // ── Derived ──
-  // Structured title: "[Type] [Surface] m² — [Adresse], [Ville]"
+  // Auto-generated name: "[Type] — [Surface] m² — [Ville]"
+  const autoNom = [
+    bienType && BIEN_TYPES.find((t) => t.id === bienType)?.label,
+    bienSurface && `${bienSurface} m²`,
+    enrichedCity,
+  ].filter(Boolean).join(" — ") || "Mon bien";
+
+  // Full title for display (richer, includes address)
   const bienTitle = (() => {
-    if (bienNom.trim()) return bienNom.trim();
     const type = bienType ? bienType.charAt(0).toUpperCase() + bienType.slice(1) : null;
     const surface = bienSurface ? `${bienSurface} m²` : null;
     const city = enrichedCity?.trim() || null;
     const adresse = bienAdresse?.trim() || null;
     const location = adresse && city ? `${adresse}, ${city}` : adresse || city || null;
     const propertyDesc = [type, surface].filter(Boolean).join(" ");
-    if (propertyDesc && location) return `${propertyDesc} \u2014 ${location}`;
+    if (propertyDesc && location) return `${propertyDesc} — ${location}`;
     if (propertyDesc) return propertyDesc;
     if (location) return location;
     return "Dossier de présentation";
@@ -533,7 +537,10 @@ export default function MerchantMode() {
               </p>
             </div>
             <button
-              onClick={() => setCurrentStep("photos")}
+              onClick={() => {
+                setCurrentStep("annotate");
+                merchantRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
               className="text-xs text-muted font-light hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded"
             >
               Retour
@@ -627,20 +634,6 @@ export default function MerchantMode() {
           <div className="border-b border-foreground/5" />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="text-xs font-medium text-foreground mb-1.5 block">
-                Nom du bien
-              </label>
-              <input
-                type="text"
-                value={bienNom}
-                onChange={(e) => setBienNom(e.target.value)}
-                placeholder="Ex : T3 rénové avec vue"
-                className="w-full px-4 py-3 border border-foreground/10 rounded-xl text-sm font-light focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
-                data-testid="merchant-bien-nom"
-              />
-            </div>
-
             <div>
               <label className="text-xs font-medium text-foreground mb-1.5 block">
                 Surface (m²)
@@ -759,13 +752,16 @@ export default function MerchantMode() {
           ) : null}
 
           {/* Next button */}
-          <div className="pt-4">
+          <div className="pt-4 flex items-center gap-3">
             <button
-              onClick={() => setCurrentStep("annotate")}
-              className="w-full sm:w-auto px-8 py-3 bg-foreground text-background rounded-xl font-medium text-sm hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+              onClick={() => {
+                setCurrentStep("review");
+                merchantRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+              className="px-8 py-3 bg-foreground text-background rounded-xl font-medium text-sm hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
               data-testid="merchant-next-annotate"
             >
-              Annoter les photos
+              Valider les infos
             </button>
           </div>
         </div>
@@ -777,14 +773,17 @@ export default function MerchantMode() {
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-1">
-                Pièce et style par photo
+                Pièce et style
               </h3>
               <p className="text-xs text-muted/60 font-light">
-                Assignez un type de pièce et un style à chaque photo. Par défaut, toutes utilisent le style global.
+                Assignez un type de pièce et un style à chaque photo.
               </p>
             </div>
             <button
-              onClick={() => setCurrentStep("info")}
+              onClick={() => {
+                setCurrentStep("photos");
+                merchantRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
               className="text-xs text-muted font-light hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded"
             >
               Retour
@@ -802,12 +801,12 @@ export default function MerchantMode() {
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={previewUrls[index]}
-                      alt={entry.roomLabel || `Photo ${index + 1}`}
+                      alt={`Photo ${index + 1}`}
                       className="w-full h-full object-cover"
                     />
                   </div>
                   <p className="text-xs text-foreground font-medium truncate">
-                    {entry.roomLabel || `Photo ${index + 1}`}
+                    Photo {index + 1}
                   </p>
 
                   {/* Room type dropdown */}
@@ -948,11 +947,14 @@ export default function MerchantMode() {
           {files.length > 0 && (
             <div className="flex items-center gap-3 pt-4">
               <button
-                onClick={() => setCurrentStep("info")}
+                onClick={() => {
+                  setCurrentStep("annotate");
+                  merchantRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
                 className="px-8 py-3 bg-foreground text-background rounded-xl font-medium text-sm hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
                 data-testid="merchant-next-photos"
               >
-                Étape suivante
+                Annoter les photos
               </button>
               <span className="text-xs text-muted font-light">
                 {files.length} photo{files.length > 1 ? "s" : ""} — {files.length} visuel{files.length > 1 ? "s" : ""}
