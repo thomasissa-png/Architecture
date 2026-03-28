@@ -158,6 +158,45 @@ export default function Home() {
     }
   }, []);
 
+  // --- Direct checkout from homepage pricing ---
+  const [pendingPackId, setPendingPackId] = useState<string | null>(null);
+  const [loadingPack, setLoadingPack] = useState<string | null>(null);
+
+  // After auth, auto-buy the pending pack
+  useEffect(() => {
+    if (pendingPackId && session?.user?.id) {
+      handleBuyDirect(pendingPackId);
+      setPendingPackId(null);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session, pendingPackId]);
+
+  async function handleBuyDirect(packId: string) {
+    if (!session?.user?.id) {
+      setPendingPackId(packId);
+      setAuthModalOpen(true);
+      return;
+    }
+    setLoadingPack(packId);
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ packId }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Erreur lors du paiement.");
+      }
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch {
+      setLoadingPack(null);
+    }
+  }
+
   // F4 — Pro mode state (ex Mode Marchand)
   const [isMerchantMode, setIsMerchantMode] = useState(false);
   const [dismissedAssociators, setDismissedAssociators] = useState<Set<number>>(new Set());
@@ -1562,9 +1601,13 @@ export default function Home() {
                 </li>
               </ul>
               <div className="mt-auto">
-                <a href="/pricing?buy=starter" className="block w-full text-center bg-foreground text-background px-4 py-3 rounded-full text-sm font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2">
-                  Acheter
-                </a>
+                <button
+                  onClick={() => handleBuyDirect("starter")}
+                  disabled={loadingPack !== null}
+                  className="block w-full text-center bg-foreground text-background px-4 py-3 rounded-full text-sm font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 disabled:opacity-40"
+                >
+                  {loadingPack === "starter" ? "Redirection..." : "Acheter"}
+                </button>
               </div>
             </div>
 
@@ -1603,9 +1646,13 @@ export default function Home() {
                 </li>
               </ul>
               <div className="mt-auto">
-                <a href="/pricing?buy=pro" className="block w-full text-center bg-sage text-white px-4 py-3 rounded-full text-sm font-semibold hover:bg-sage/85 transition-colors shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2">
-                  S&apos;abonner
-                </a>
+                <button
+                  onClick={() => handleBuyDirect("pro")}
+                  disabled={loadingPack !== null}
+                  className="block w-full text-center bg-sage text-white px-4 py-3 rounded-full text-sm font-semibold hover:bg-sage/85 transition-colors shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 disabled:opacity-40"
+                >
+                  {loadingPack === "pro" ? "Redirection..." : "S'abonner"}
+                </button>
               </div>
             </div>
 
