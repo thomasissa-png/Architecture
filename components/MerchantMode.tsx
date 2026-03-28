@@ -361,6 +361,7 @@ export default function MerchantMode() {
       setIsGenerating(false);
       setCurrentStep("review");
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session, files, photoEntries, globalStyle, customPrompt, autoNom, bienAdresse, bienSurface, bienPrix, bienType, bienNbPieces, enrichedLat, enrichedLon, enrichedCity, enrichedPostcode, enrichedPrixM2, enrichedDescription, enrichedCarteKey, startPolling]);
 
   // ── Regenerate single photo ──
