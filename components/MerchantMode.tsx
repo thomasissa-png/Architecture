@@ -635,7 +635,7 @@ export default function MerchantMode() {
                 type="text"
                 value={bienNom}
                 onChange={(e) => setBienNom(e.target.value)}
-                placeholder="Ex : T3 renove avec vue"
+                placeholder="Ex : T3 rénové avec vue"
                 className="w-full px-4 py-3 border border-foreground/10 rounded-xl text-sm font-light focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
                 data-testid="merchant-bien-nom"
               />
@@ -657,7 +657,7 @@ export default function MerchantMode() {
 
             <div>
               <label className="text-xs font-medium text-foreground mb-1.5 block">
-                Nombre de pieces
+                Nombre de pièces
               </label>
               <input
                 type="number"
@@ -671,7 +671,7 @@ export default function MerchantMode() {
 
             <div>
               <label className="text-xs font-medium text-foreground mb-1.5 block">
-                Prix ({"\u20AC"})
+                Prix (€)
               </label>
               <input
                 type="number"
@@ -682,7 +682,7 @@ export default function MerchantMode() {
                 data-testid="merchant-bien-prix"
               />
               <p className="text-xs text-muted/50 font-light mt-1">
-                Prix de commercialisation en euros (ex : 350000 pour 350 000 {"\u20AC"})
+                Prix de commercialisation en euros (ex : 350000 pour 350 000 €)
               </p>
             </div>
           </div>
