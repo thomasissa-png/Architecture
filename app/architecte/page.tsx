@@ -146,6 +146,12 @@ export default function ArchitectePage() {
           <p className="text-sm text-foreground/60 font-light mt-4">
             Sans carte bancaire · 3 visuels offerts
           </p>
+          <p className="text-xs text-foreground/50 font-light mt-3">
+            Utilisez Versiroom régulièrement ?{" "}
+            <a href="/pricing?buy=pro" className="text-sage font-medium hover:underline">
+              Pro à 29 €/mois →
+            </a>
+          </p>
         </div>
       </section>
 

@@ -146,6 +146,18 @@ export default function Home() {
     }
   }, [authStatus]);
 
+  // Checkout success feedback
+  const [checkoutSuccess, setCheckoutSuccess] = useState(false);
+  const [checkoutPack, setCheckoutPack] = useState<string | null>(null);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("checkout") === "success") {
+      setCheckoutSuccess(true);
+      setCheckoutPack(params.get("pack"));
+    }
+  }, []);
+
   // F4 — Pro mode state (ex Mode Marchand)
   const [isMerchantMode, setIsMerchantMode] = useState(false);
   const [dismissedAssociators, setDismissedAssociators] = useState<Set<number>>(new Set());
@@ -917,6 +929,17 @@ export default function Home() {
       {/* Tool Section */}
       <section id="outil" className="pt-12 sm:pt-16 pb-12 sm:pb-16 px-5 sm:px-8 scroll-mt-16">
         <div ref={toolRef} className="reveal max-w-5xl mx-auto">
+          {/* Checkout success feedback */}
+          {checkoutSuccess && (
+            <div className="mb-8 max-w-3xl mx-auto bg-sage/10 border border-sage/20 rounded-2xl px-5 py-4 text-center">
+              <p className="text-sm font-medium text-foreground">
+                Paiement confirmé — vos visuels sont disponibles.
+              </p>
+              <p className="text-xs text-muted font-light mt-1">
+                {checkoutPack === "pro" ? "Abonnement Pro activé · 50 visuels/mois" : "Pack ajouté à votre compte"}
+              </p>
+            </div>
+          )}
           <div className="text-center mb-10">
             <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight mb-3">
               Mettez en scène votre espace
@@ -1206,7 +1229,20 @@ export default function Home() {
           )}
 
           {/* Error */}
-          {error && (
+          {error && error.includes("Plus de visuels") ? (
+            <div className="mb-12 bg-sage/5 border border-sage/20 rounded-2xl p-6 text-center">
+              <p className="text-sm text-foreground font-medium">{error}</p>
+              <a
+                href="/pricing"
+                className="inline-flex items-center gap-1.5 mt-3 text-sm text-sage font-medium hover:underline transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded"
+              >
+                Voir les offres
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </a>
+            </div>
+          ) : error ? (
             <div className="mb-12 bg-red-50/50 border border-red-200/60 rounded-2xl p-6 text-center">
               <p className="text-red-600/80 text-sm">{error}</p>
               <button
@@ -1216,7 +1252,7 @@ export default function Home() {
                 Réessayer
               </button>
             </div>
-          )}
+          ) : null}
 
           {/* Step 3: Results */}
           {results.length > 0 && (

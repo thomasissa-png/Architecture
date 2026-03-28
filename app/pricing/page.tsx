@@ -73,6 +73,7 @@ const PACKS: Pack[] = [
     features: [
       { text: "3 itérations par photo", active: true },
       { text: "Mode Pro complet", active: true },
+      { text: "Planches d'ambiance pour présentations client", active: true },
       { text: "Dossiers de pré-commercialisation", active: true },
       { text: "PDF brandé avec votre logo", active: true },
       { text: "Annonces & liens partageables illimités", active: true },
