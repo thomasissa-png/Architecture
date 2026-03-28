@@ -233,18 +233,18 @@ export default function ExportPortail({
 
   return (
     <div
-      className="mt-6 pt-6 border-t border-foreground/5"
+      className="mt-4 pt-4"
       data-testid="export-portail-section"
     >
       <h3 className="text-sm font-medium text-foreground mb-4">
         Exporter votre annonce
       </h3>
 
-      {/* Dropdown */}
-      <div className="relative mb-4" data-testid="export-portail-dropdown">
+      {/* Portal selector */}
+      <div className="mb-4" data-testid="export-portail-dropdown">
         <button
           onClick={() => setDropdownOpen(!dropdownOpen)}
-          className="w-full sm:w-auto inline-flex items-center justify-between gap-2 text-sm bg-foreground/5 text-foreground px-4 py-3 rounded-xl font-light hover:bg-foreground/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 min-w-56"
+          className="w-full sm:w-auto inline-flex items-center justify-between gap-2 text-sm bg-foreground/5 text-foreground px-4 py-3 rounded-xl font-light hover:bg-foreground/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 min-h-[44px] min-w-56"
           aria-haspopup="listbox"
           aria-expanded={dropdownOpen}
         >
@@ -264,16 +264,17 @@ export default function ExportPortail({
           </svg>
         </button>
 
+        {/* Inline list — renders below the button, pushes content down (no absolute/z-index issues in scrollable modal) */}
         {dropdownOpen && (
           <div
-            className="absolute z-30 mt-1 w-full sm:w-56 bg-background border border-foreground/10 rounded-xl shadow-lg overflow-hidden"
+            className="mt-2 w-full sm:w-56 bg-background border border-foreground/10 rounded-xl shadow-lg overflow-hidden"
             role="listbox"
           >
             {PORTAL_IDS.map((id) => (
               <button
                 key={id}
                 onClick={() => handleSelectPortal(id)}
-                className={`w-full text-left px-4 py-2.5 text-sm hover:bg-foreground/5 transition-colors ${
+                className={`w-full text-left px-4 py-2.5 text-sm hover:bg-foreground/5 transition-colors min-h-[44px] ${
                   selectedPortal === id
                     ? "bg-sage/5 text-sage font-medium"
                     : "text-foreground font-light"
@@ -287,7 +288,7 @@ export default function ExportPortail({
             ))}
             {/* Logic-Immo — disabled */}
             <div
-              className="w-full text-left px-4 py-2.5 text-sm text-muted/50 cursor-not-allowed"
+              className="w-full text-left px-4 py-2.5 text-sm text-muted/50 cursor-not-allowed min-h-[44px] flex items-center"
               title="Disponible prochainement"
             >
               <span className="inline-block w-2 h-2 rounded-full bg-foreground/10 mr-2" />

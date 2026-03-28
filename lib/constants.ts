@@ -22,6 +22,8 @@ export const STYLE_LABELS: Record<string, string> = {
 export const ROOM_TYPE_LABELS: Record<string, string> = {
   living_room: "Salon",
   bedroom: "Chambre",
+  bedroom_adults: "Chambre",
+  bedroom_children: "Chambre enfant",
   kitchen: "Cuisine",
   bathroom: "Salle de bain",
   office: "Bureau",

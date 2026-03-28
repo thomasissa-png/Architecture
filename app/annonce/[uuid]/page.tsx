@@ -16,7 +16,7 @@ import { getUserPhotos } from "@/lib/user-photos";
 import { getMerchantProfile } from "@/lib/merchant";
 import { hasProAccess } from "@/lib/credits";
 import AnnoncePublicView from "@/components/AnnoncePublicView";
-import ExportPortail from "@/components/ExportPortail";
+import ExportPortailModal from "@/components/ExportPortailModal";
 import AnnonceGallery from "@/components/AnnonceGallery";
 import ContactSticky from "@/components/ContactSticky";
 import MerchantInfoBlock from "@/components/MerchantInfoBlock";
@@ -169,9 +169,10 @@ export default async function AnnoncePage({ params }: PageProps) {
 
   // Sort room groups in a logical visit order
   const ROOM_ORDER = [
-    "living_room", "bedroom", "kitchen", "bathroom",
-    "dining_room", "office", "hallway", "terrace",
-    "balcony", "garden", "other",
+    "living_room", "dining_room", "kitchen",
+    "bedroom", "bedroom_adults", "bedroom_children",
+    "bathroom", "wc", "office", "entryway", "hallway",
+    "laundry", "cellar", "terrace", "balcony", "garden", "other",
   ];
   const sortedRoomEntries = Object.entries(photosByRoom).sort(
     ([a], [b]) => {
@@ -312,31 +313,33 @@ export default async function AnnoncePage({ params }: PageProps) {
           )}
         </div>
 
-        {/* V2a — Export pre-formatted for portals (Pro owners only) — above gallery for visibility */}
+        {/* V2a — Export pre-formatted for portals (Pro owners only) — modal trigger */}
         {isOwner && hasPro && completedPhotos.length > 0 && (
-          <ExportPortail
-            title={title}
-            description={description || ""}
-            surface={property.surface_m2}
-            roomCount={property.room_count}
-            price={property.sale_price}
-            city={property.city || ""}
-            propertyType={property.property_type || "Bien immobilier"}
-            isCopro={!!(property.nb_lots_copro && property.nb_lots_copro > 0)}
-            coproLots={property.nb_lots_copro}
-            coproChargesAnnuelles={property.charges_copro_annuelles}
-            dpeClasse={property.dpe_classe}
-            gesClasse={property.ges_classe}
-            merchantName={hasMerchant ? merchant?.raison_sociale : null}
-            merchantPhone={hasMerchant ? merchant?.telephone : null}
-            photos={completedPhotos.map((p) => ({
-              id: p.id,
-              outputImageKey: p.output_image_key!,
-              roomType: p.room_type || "other",
-              roomLabel: p.room_label || ROOM_TYPE_LABELS[p.room_type || ""] || "Photo",
-            }))}
-            annonceUuid={annonce.slug || annonce.uuid}
-          />
+          <div className="mb-6">
+            <ExportPortailModal
+              title={title}
+              description={description || ""}
+              surface={property.surface_m2}
+              roomCount={property.room_count}
+              price={property.sale_price}
+              city={property.city || ""}
+              propertyType={property.property_type || "Bien immobilier"}
+              isCopro={!!(property.nb_lots_copro && property.nb_lots_copro > 0)}
+              coproLots={property.nb_lots_copro}
+              coproChargesAnnuelles={property.charges_copro_annuelles}
+              dpeClasse={property.dpe_classe}
+              gesClasse={property.ges_classe}
+              merchantName={hasMerchant ? merchant?.raison_sociale : null}
+              merchantPhone={hasMerchant ? merchant?.telephone : null}
+              photos={completedPhotos.map((p) => ({
+                id: p.id,
+                outputImageKey: p.output_image_key!,
+                roomType: p.room_type || "other",
+                roomLabel: p.room_label || ROOM_TYPE_LABELS[p.room_type || ""] || "Photo",
+              }))}
+              annonceUuid={annonce.slug || annonce.uuid}
+            />
+          </div>
         )}
 
         {/* CTA — Call to action above fold (Marc P1) */}
@@ -643,7 +646,7 @@ export default async function AnnoncePage({ params }: PageProps) {
 
         {/* Footer */}
         <div
-          className="mt-12 pt-6 border-t text-center pb-20"
+          className="mt-12 pt-6 border-t text-center pb-28"
           style={{ borderColor: "var(--brand-secondary, rgba(28,28,30,0.05))" }}
         >
           {hasMerchant && (merchant?.raison_sociale || merchant?.telephone || merchant?.email_pro) && (
