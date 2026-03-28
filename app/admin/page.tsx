@@ -69,50 +69,25 @@ function LogImage({ path, label }: { path: string; label: string }) {
 
   if (errorInfo) {
     return (
-      <div style={{ textAlign: "center", flex: "1 1 auto", minWidth: 150, maxWidth: 300 }}>
-        <div style={{ fontSize: 11, color: "#888", marginBottom: 4 }}>{label}</div>
-        <div
-          style={{
-            maxWidth: 300,
-            height: 180,
-            borderRadius: 8,
-            border: "1px solid #eee",
-            background: "#f5f5f3",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 4,
-            fontSize: 13,
-            color: "#aaa",
-            fontStyle: "italic",
-          }}
-        >
+      <div className="text-center flex-auto min-w-[150px] max-w-[300px]">
+        <div className="text-[11px] text-foreground/50 mb-1">{label}</div>
+        <div className="max-w-[300px] h-[180px] rounded-lg border border-foreground/10 bg-foreground/[0.03] flex flex-col items-center justify-center gap-1 text-[13px] text-foreground/40 italic">
           <span>{errorInfo}</span>
-          <span style={{ fontSize: 10, color: "#ccc" }}>{extractFilename(path)}</span>
+          <span className="text-[10px] text-foreground/20">{extractFilename(path)}</span>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ textAlign: "center", flex: "1 1 auto", minWidth: 150, maxWidth: 300 }}>
-      <div style={{ fontSize: 11, color: "#888", marginBottom: 4 }}>{label}</div>
+    <div className="text-center flex-auto min-w-[150px] max-w-[300px]">
+      <div className="text-[11px] text-foreground/50 mb-1">{label}</div>
       <img
         src={src}
         alt={label}
         onError={() => handleError()}
         onClick={() => window.open(src, "_blank")}
-        style={{
-          maxWidth: 300,
-          width: "100%",
-          height: "auto",
-          maxHeight: 250,
-          objectFit: "contain",
-          borderRadius: 8,
-          border: "1px solid #eee",
-          cursor: "pointer",
-        }}
+        className="max-w-[300px] w-full h-auto max-h-[250px] object-contain rounded-lg border border-foreground/10 cursor-pointer hover:opacity-90 transition-opacity"
       />
     </div>
   );
@@ -134,16 +109,9 @@ function CopyButton({ text, label }: { text: string; label?: string }) {
     <button
       onClick={handleCopy}
       title={label || "Copier"}
-      style={{
-        padding: "2px 8px",
-        background: copied ? "#7D9B76" : "#eee",
-        color: copied ? "#fff" : "#555",
-        border: "none",
-        borderRadius: 4,
-        fontSize: 11,
-        cursor: "pointer",
-        transition: "all 0.2s",
-      }}
+      className={`px-2 py-0.5 rounded text-[11px] cursor-pointer transition-all ${
+        copied ? "bg-sage text-white" : "bg-foreground/5 text-foreground/60 hover:bg-foreground/10"
+      }`}
     >
       {copied ? "Copié" : label || "Copier"}
     </button>
@@ -396,34 +364,24 @@ Demande type : "Fais appel aux agents Architecte d'Interieur, Expert IA Image et
       <div className="mb-5 bg-sage/10 border border-sage/30 rounded-xl overflow-hidden">
         <div
           onClick={() => setShowAuditPrompt(!showAuditPrompt)}
-          style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", cursor: "pointer" }}
+          className="flex items-center gap-2.5 px-4 py-3 cursor-pointer"
         >
-          <span style={{ fontSize: 16 }}>&#x1f9d1;&#x200d;&#x1f3a8;</span>
-          <span style={{ fontSize: 13, fontWeight: 600, color: "#3d5a38" }}>
+          <span className="text-base">&#x1f9d1;&#x200d;&#x1f3a8;</span>
+          <span className="text-[13px] font-semibold text-sage-800">
             Prompt d&apos;audit agents (Yann Duval + Lucas Moreau + Camille Verdier)
           </span>
-          <span style={{ marginLeft: "auto", fontSize: 12, color: "#7D9B76" }}>
+          <span className="ml-auto text-xs text-sage">
             {showAuditPrompt ? "Masquer" : "Copier le prompt pour lancer un audit"}
           </span>
         </div>
         {showAuditPrompt && (
-          <div style={{ padding: "0 16px 16px" }}>
-            <pre
-              style={{
-                background: "#fff", padding: 16, borderRadius: 8, fontSize: 12,
-                whiteSpace: "pre-wrap", wordBreak: "break-word", lineHeight: 1.6,
-                border: "1px solid #dde8db", color: "#1C1C1E", maxHeight: 400, overflow: "auto",
-                overflowX: "auto",
-              }}
-            >
+          <div className="px-4 pb-4">
+            <pre className="bg-white p-4 rounded-lg text-xs whitespace-pre-wrap break-words leading-relaxed border border-sage/20 text-foreground max-h-[400px] overflow-auto">
               {auditPromptText}
             </pre>
             <button
               onClick={() => { navigator.clipboard.writeText(auditPromptText); }}
-              style={{
-                marginTop: 8, padding: "6px 16px", background: "#7D9B76", color: "#fff",
-                border: "none", borderRadius: 6, fontSize: 12, fontWeight: 500, cursor: "pointer",
-              }}
+              className="mt-2 px-4 py-1.5 bg-sage text-white rounded-md text-xs font-medium cursor-pointer hover:opacity-90 transition-opacity"
             >
               Copier dans le presse-papier
             </button>
@@ -432,7 +390,7 @@ Demande type : "Fais appel aux agents Architecte d'Interieur, Expert IA Image et
       </div>
 
       {/* Storage diagnostic */}
-      <div style={{ marginBottom: 20, display: "flex", alignItems: "center", gap: 12 }}>
+      <div className="mb-5 flex items-center gap-3">
         <button
           onClick={async () => {
             setStorageChecking(true);
@@ -447,16 +405,12 @@ Demande type : "Fais appel aux agents Architecte d'Interieur, Expert IA Image et
             }
           }}
           disabled={storageChecking}
-          style={{
-            padding: "6px 16px", background: "#1C1C1E", color: "#fff", border: "none",
-            borderRadius: 6, fontSize: 12, fontWeight: 500, cursor: storageChecking ? "wait" : "pointer",
-            opacity: storageChecking ? 0.6 : 1,
-          }}
+          className={`px-4 py-1.5 bg-foreground text-white rounded-md text-xs font-medium cursor-pointer transition-opacity ${storageChecking ? "opacity-60 cursor-wait" : "hover:opacity-90"}`}
         >
           {storageChecking ? "Test en cours..." : "Tester Object Storage"}
         </button>
         {storageStatus.checked && (
-          <span style={{ fontSize: 12, color: storageStatus.ok ? "#3d5a38" : "#c00" }}>
+          <span className={`text-xs ${storageStatus.ok ? "text-sage-800" : "text-red-600"}`}>
             {storageStatus.ok ? "OK" : `Erreur : ${storageStatus.detail}`}
           </span>
         )}
@@ -464,15 +418,12 @@ Demande type : "Fais appel aux agents Architecte d'Interieur, Expert IA Image et
 
       {/* Version filter */}
       {availableVersions.length > 0 && (
-        <div style={{ marginBottom: 20, display: "flex", alignItems: "center", gap: 12 }}>
-          <label style={{ fontSize: 13, fontWeight: 500, color: "#555" }}>Filtrer par version de prompt :</label>
+        <div className="mb-5 flex items-center gap-3">
+          <label className="text-[13px] font-medium text-foreground/60">Filtrer par version de prompt :</label>
           <select
             value={versionFilter}
             onChange={(e) => setVersionFilter(e.target.value)}
-            style={{
-              padding: "6px 12px", border: "1px solid #ddd", borderRadius: 6,
-              fontSize: 13, color: "#1C1C1E", background: "#fff", cursor: "pointer",
-            }}
+            className="px-3 py-1.5 border border-foreground/15 rounded-md text-[13px] text-foreground bg-white cursor-pointer"
           >
             <option value="">Toutes les versions</option>
             {availableVersions.map((v) => (
@@ -480,14 +431,14 @@ Demande type : "Fais appel aux agents Architecte d'Interieur, Expert IA Image et
             ))}
           </select>
           {versionFilter && (
-            <span style={{ fontSize: 12, color: "#888" }}>
+            <span className="text-xs text-foreground/50">
               {logs.length} generation{logs.length > 1 ? "s" : ""}
             </span>
           )}
         </div>
       )}
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <div className="flex flex-col gap-4">
         {logs.map((log) => {
           const expanded = expandedId === log.id;
           const date = new Date(log.created_at);
@@ -496,100 +447,61 @@ Demande type : "Fais appel aux agents Architecte d'Interieur, Expert IA Image et
           return (
             <div
               key={log.id}
-              style={{
-                border: "1px solid #e0e0e0",
-                borderRadius: 12,
-                background: log.success ? "#fff" : "#fff5f5",
-                overflow: "hidden",
-              }}
+              className={`border rounded-xl overflow-hidden ${log.success ? "border-foreground/10 bg-white" : "border-red-200 bg-red-50/50"}`}
             >
               {/* Header row */}
               <div
                 onClick={() => setExpandedId(expanded ? null : log.id)}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 16,
-                  padding: "12px 20px",
-                  cursor: "pointer",
-                  flexWrap: "wrap",
-                }}
+                className="flex items-center gap-4 px-5 py-3 cursor-pointer flex-wrap"
               >
-                <span style={{ fontSize: 13, fontWeight: 700, color: "#1C1C1E", minWidth: 40 }}>#{log.id}</span>
-                <span style={{ fontSize: 13, color: "#888", minWidth: 150 }}>{timeStr}</span>
-                <span
-                  style={{
-                    background: "#7D9B76",
-                    color: "#fff",
-                    padding: "2px 10px",
-                    borderRadius: 6,
-                    fontSize: 13,
-                    fontWeight: 500,
-                  }}
-                >
+                <span className="text-[13px] font-bold text-foreground min-w-[40px]">#{log.id}</span>
+                <span className="text-[13px] text-foreground/50 min-w-[150px]">{timeStr}</span>
+                <span className="bg-sage text-white px-2.5 py-0.5 rounded-md text-[13px] font-medium">
                   {log.style_id || "custom"}
                 </span>
                 {log.is_iteration && (
-                  <span
-                    style={{
-                      background: "#e8a838",
-                      color: "#fff",
-                      padding: "2px 8px",
-                      borderRadius: 6,
-                      fontSize: 11,
-                      fontWeight: 600,
-                    }}
-                  >
+                  <span className="bg-amber-500 text-white px-2 py-0.5 rounded-md text-[11px] font-semibold">
                     ITÉRATION{log.iteration_number ? ` #${log.iteration_number}` : ""}
                   </span>
                 )}
-                <span
-                  style={{
-                    background: log.prompt_version ? "#4a6fa5" : "#ccc",
-                    color: "#fff",
-                    padding: "2px 8px",
-                    borderRadius: 6,
-                    fontSize: 11,
-                    fontWeight: 600,
-                  }}
-                >
+                <span className={`text-white px-2 py-0.5 rounded-md text-[11px] font-semibold ${log.prompt_version ? "bg-blue-600/70" : "bg-foreground/20"}`}>
                   {log.prompt_version || "—"}
                 </span>
-                <span style={{ fontSize: 13, color: "#555" }}>
+                <span className="text-[13px] text-foreground/60">
                   {log.duration_ms ? `${(log.duration_ms / 1000).toFixed(1)}s` : "—"}
                   {log.pass1_duration_ms && log.pass2_duration_ms
                     ? ` (P1: ${(log.pass1_duration_ms / 1000).toFixed(1)}s + P2: ${(log.pass2_duration_ms / 1000).toFixed(1)}s)`
                     : ""}
                 </span>
-                <span style={{ fontSize: 13, color: "#555" }}>
+                <span className="text-[13px] text-foreground/60">
                   {log.input_width}x{log.input_height}
                 </span>
-                <span style={{ fontSize: 13, color: log.success ? "#7D9B76" : "#c00", fontWeight: 600 }}>
+                <span className={`text-[13px] font-semibold ${log.success ? "text-sage" : "text-red-600"}`}>
                   {log.success ? "OK" : "ERREUR"}
                 </span>
                 {log.is_replay && (
-                  <span style={{ background: "#4a90d9", color: "#fff", padding: "2px 8px", borderRadius: 6, fontSize: 11, fontWeight: 600 }}>
+                  <span className="bg-blue-500 text-white px-2 py-0.5 rounded-md text-[11px] font-semibold">
                     REPLAY{log.replay_source_id ? ` de #${log.replay_source_id}` : ""}
                   </span>
                 )}
                 {log.replay_label && (
-                  <span style={{ background: "#eee", color: "#555", padding: "2px 8px", borderRadius: 6, fontSize: 11 }}>
+                  <span className="bg-foreground/5 text-foreground/60 px-2 py-0.5 rounded-md text-[11px]">
                     {log.replay_label}
                   </span>
                 )}
                 {log.pixel_diff_pct != null && (
-                  <span style={{ fontSize: 11, color: "#888" }}>
+                  <span className="text-[11px] text-foreground/50">
                     diff: {log.pixel_diff_pct}% | color: {log.color_shift_score?.toFixed(1)}
                   </span>
                 )}
-                <span style={{ marginLeft: "auto", fontSize: 12, color: "#aaa" }}>{expanded ? "▲" : "▼"}</span>
+                <span className="ml-auto text-xs text-foreground/30">{expanded ? "▲" : "▼"}</span>
               </div>
 
               {/* Expanded details */}
               {expanded && (
-                <div style={{ padding: "0 20px 20px", borderTop: "1px solid #eee" }}>
+                <div className="px-5 pb-5 border-t border-foreground/5">
                   {/* Images */}
-                  <div style={{ display: "flex", gap: 12, marginTop: 16, flexWrap: "wrap" }}>
+                  <div className="flex gap-3 mt-4 flex-wrap">
                     {log.input_image_path && (
                       <LogImage path={log.input_image_path} label="Input" />
                     )}
@@ -600,78 +512,55 @@ Demande type : "Fais appel aux agents Architecte d'Interieur, Expert IA Image et
                       <LogImage path={log.output_image_path} label="Output (final)" />
                     )}
                     {!log.input_image_path && !log.pass1_image_path && !log.output_image_path && (
-                      <div style={{ fontSize: 13, color: "#aaa", fontStyle: "italic" }}>Aucune image sauvegardee</div>
+                      <div className="text-[13px] text-foreground/40 italic">Aucune image sauvegardee</div>
                     )}
                   </div>
 
                   {/* Models */}
-                  <div style={{ marginTop: 16, fontSize: 13, color: "#555" }}>
+                  <div className="mt-4 text-[13px] text-foreground/60">
                     <strong>Modeles :</strong> P1: {log.pass1_model || "—"} / P2: {log.pass2_model || "—"}
                   </div>
 
                   {/* Error */}
                   {log.error_message && (
-                    <div style={{ marginTop: 12, padding: 12, background: "#fff0f0", borderRadius: 8, fontSize: 13, color: "#c00" }}>
+                    <div className="mt-3 p-3 bg-red-50 rounded-lg text-[13px] text-red-600">
                       {log.error_message}
                     </div>
                   )}
 
-                  {/* Prompts */}
                   {/* User comment (iterations) */}
                   {log.user_comment_raw && (
-                    <div style={{ marginTop: 16, padding: 12, background: "#fff8e6", borderRadius: 8, border: "1px solid #f0d98c" }}>
-                      <div style={{ fontSize: 12, fontWeight: 600, color: "#1C1C1E", marginBottom: 4 }}>Commentaire utilisateur</div>
-                      <div style={{ fontSize: 13, color: "#555" }}>{log.user_comment_raw}</div>
+                    <div className="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-200">
+                      <div className="text-xs font-semibold text-foreground mb-1">Commentaire utilisateur</div>
+                      <div className="text-[13px] text-foreground/60">{log.user_comment_raw}</div>
                     </div>
                   )}
 
                   {/* Session ID */}
                   {log.session_id && (
-                    <div style={{ marginTop: 8, fontSize: 11, color: "#aaa" }}>
+                    <div className="mt-2 text-[11px] text-foreground/30">
                       Session : {log.session_id}
                     </div>
                   )}
 
                   {log.built_prompt_pass1 && (
-                    <div style={{ marginTop: 16 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: "#1C1C1E" }}>Prompt Passe 1 (surfaces)</span>
+                    <div className="mt-4">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs font-semibold text-foreground">Prompt Passe 1 (surfaces)</span>
                         <CopyButton text={log.built_prompt_pass1} />
                       </div>
-                      <pre
-                        style={{
-                          background: "#f5f5f3",
-                          padding: 12,
-                          borderRadius: 8,
-                          fontSize: 12,
-                          whiteSpace: "pre-wrap",
-                          wordBreak: "break-word",
-                          maxHeight: 200,
-                          overflow: "auto",
-                        }}
-                      >
+                      <pre className="bg-foreground/[0.03] p-3 rounded-lg text-xs whitespace-pre-wrap break-words max-h-[200px] overflow-auto">
                         {log.built_prompt_pass1}
                       </pre>
                     </div>
                   )}
                   {log.built_prompt_pass2 && (
-                    <div style={{ marginTop: 12 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: "#1C1C1E" }}>Prompt Passe 2 (mobilier)</span>
+                    <div className="mt-3">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs font-semibold text-foreground">Prompt Passe 2 (mobilier)</span>
                         <CopyButton text={log.built_prompt_pass2} />
                       </div>
-                      <pre
-                        style={{
-                          background: "#f5f5f3",
-                          padding: 12,
-                          borderRadius: 8,
-                          fontSize: 12,
-                          whiteSpace: "pre-wrap",
-                          wordBreak: "break-word",
-                          maxHeight: 200,
-                          overflow: "auto",
-                        }}
-                      >
+                      <pre className="bg-foreground/[0.03] p-3 rounded-lg text-xs whitespace-pre-wrap break-words max-h-[200px] overflow-auto">
                         {log.built_prompt_pass2}
                       </pre>
                     </div>
@@ -690,6 +579,10 @@ Demande type : "Fais appel aux agents Architecte d'Interieur, Expert IA Image et
           );
         })}
       </div>
+
+      </>)}
+
+      <Footer currentPage="/admin" />
     </div>
   );
 }
@@ -732,10 +625,7 @@ function ReplayButton({ logId, styleId, adminPassword, onReplayDone }: { logId: 
     return (
       <button
         onClick={() => setOpen(true)}
-        style={{
-          marginTop: 16, padding: "6px 16px", background: "#4a90d9", color: "#fff",
-          border: "none", borderRadius: 6, fontSize: 12, fontWeight: 500, cursor: "pointer",
-        }}
+        className="mt-4 px-4 py-1.5 bg-blue-500 text-white rounded-md text-xs font-medium cursor-pointer hover:opacity-90 transition-opacity"
       >
         Rejouer avec les prompts actuels
       </button>
@@ -743,8 +633,8 @@ function ReplayButton({ logId, styleId, adminPassword, onReplayDone }: { logId: 
   }
 
   return (
-    <div style={{ marginTop: 16, padding: 16, background: "#f0f6ff", borderRadius: 8, border: "1px solid #c4d8f0" }}>
-      <div style={{ fontSize: 13, fontWeight: 600, color: "#1C1C1E", marginBottom: 8 }}>
+    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+      <div className="text-[13px] font-semibold text-foreground mb-2">
         Replay de #{logId} ({styleId})
       </div>
       <input
@@ -752,28 +642,25 @@ function ReplayButton({ logId, styleId, adminPassword, onReplayDone }: { logId: 
         value={label}
         onChange={(e) => setLabel(e.target.value)}
         placeholder="Label (ex: sprint20-fix-lumiere)"
-        style={{ width: "100%", padding: "6px 10px", border: "1px solid #ccc", borderRadius: 6, fontSize: 12, marginBottom: 8, boxSizing: "border-box" }}
+        className="w-full px-2.5 py-1.5 border border-foreground/15 rounded-md text-xs mb-2"
       />
-      <div style={{ display: "flex", gap: 8 }}>
+      <div className="flex gap-2">
         <button
           onClick={handleReplay}
           disabled={loading}
-          style={{
-            padding: "6px 16px", background: loading ? "#999" : "#4a90d9", color: "#fff",
-            border: "none", borderRadius: 6, fontSize: 12, fontWeight: 500, cursor: loading ? "wait" : "pointer",
-          }}
+          className={`px-4 py-1.5 text-white rounded-md text-xs font-medium transition-opacity ${loading ? "bg-foreground/40 cursor-wait" : "bg-blue-500 cursor-pointer hover:opacity-90"}`}
         >
           {loading ? "Generation en cours..." : "Lancer le replay"}
         </button>
         <button
           onClick={() => setOpen(false)}
-          style={{ padding: "6px 12px", background: "#eee", color: "#555", border: "none", borderRadius: 6, fontSize: 12, cursor: "pointer" }}
+          className="px-3 py-1.5 bg-foreground/5 text-foreground/60 rounded-md text-xs cursor-pointer hover:bg-foreground/10 transition-colors"
         >
           Annuler
         </button>
       </div>
       {result && (
-        <div style={{ marginTop: 8, fontSize: 12, color: result.startsWith("Erreur") ? "#c00" : "#3d5a38" }}>
+        <div className={`mt-2 text-xs ${result.startsWith("Erreur") ? "text-red-600" : "text-sage-800"}`}>
           {result}
         </div>
       )}
