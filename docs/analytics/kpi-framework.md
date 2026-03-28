@@ -47,10 +47,9 @@ MARGE NETTE = REVENUS - COÛTS
 │   │   └── taux_conversion_payant (utilisateur gratuit → acheteur)
 │   │
 │   └── prix_moyen_package
-│       ├── Starter 4,90€ (0 itération — entrée de gamme Léa)
-│       ├── Pro 14,90€ (1 itération — Claire projet unique)
-│       ├── Business 29€ (3 itérations — Thomas opération)
-│       └── Studio 69€ (5 itérations — gros volumes)
+│       ├── Découverte GRATUIT (3 crédits — test qualité)
+│       ├── Starter 9,90€ one-shot (15 crédits — Léa usage ponctuel)
+│       └── Pro 29€/mois abonnement (50 crédits/mois — Thomas, Claire récurrents)
 │
 └── COÛTS = coût_IA + coût_infra + coût_acquisition
     ├── coût_IA : ~0,15-0,30€/génération (2 passes OpenAI gpt-4.1)

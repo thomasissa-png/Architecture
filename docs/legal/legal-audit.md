@@ -27,11 +27,11 @@
 - **B2B (Claire, Thomas en société)** : afficher **HT + TVA séparément** est la norme. Pour un site mixte B2C/B2B, afficher le TTC avec mention "HT pour les professionnels récupérant la TVA".
 
 **Application au pricing Versiroom :**
-- Pack Découverte 4,90€ TTC → HT : 4,08€
-- Pack Starter 14,90€ TTC → HT : 12,42€
-- Pack Pro 29€ TTC → HT : 24,17€
-- Pack Studio 69€ TTC → HT : 57,50€
-- F4 Dossier Marchand 29€ TTC → HT : 24,17€
+- Découverte : GRATUIT (3 crédits, sans CB)
+- Starter : 9,90€ TTC one-shot → HT : 8,25€ (15 crédits)
+- Pro : 29€/mois TTC abonnement → HT : 24,17€ (50 crédits/mois)
+- Recharge Starter : 5,90€ TTC → HT : 4,92€ (+10 crédits)
+- Recharge Pro : 9€ TTC → HT : 7,50€ (+20 crédits)
 - F5 Dossier Décorateur 9€ TTC → HT : 7,50€
 
 > La pricing-strategy.md mentionne "Prix HT" dans son tableau — **à corriger** : afficher le TTC sur la page publique et préciser que la TVA est récupérable pour les pros.
@@ -223,7 +223,7 @@ Mentions obligatoires dans la politique de confidentialité :
 - Décisions prises : TVA 20% B2C TTC obligatoire — exception rétractation contenu numérique conditionne une case à cocher au checkout — watermark IA sur téléchargements — mention "Simulation" sur PDF F4
 - Points d'attention :
   - **P0 — checkout Stripe** : ajouter case à cocher "Je comprends que l'exécution commence immédiatement et renonce à mon droit de rétractation" avant confirmation paiement
-  - **P0 — pricing page** : afficher les prix TTC (4,90€ / 14,90€ / 29€ / 69€ TTC, mention HT pour pros)
+  - **P0 — pricing page** : afficher les prix TTC (Starter 9,90€ TTC, Pro 29€/mois TTC, mention HT pour pros)
   - **P0 — footer** : lien CGV + Mentions légales + Politique de confidentialité avant toute ouverture paiement
   - **P1 — téléchargement images** : watermark discret ou métadonnées EXIF "Généré par IA — Versiroom"
   - **P1 — cron nettoyage** : supprimer images input après 30j, pass1+output après 90j dans Replit Object Storage

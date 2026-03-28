@@ -52,8 +52,8 @@
 **Persona** : Thomas / Claire
 **Story** : En tant qu'utilisateur dont les crédits sont épuisés, je veux acheter un package de crédits en quelques clics, afin de reprendre mes générations immédiatement sans quitter l'application.
 **Critères d'acceptation** :
-- [ ] CA-1 : 4 packages disponibles — Starter 4,90€ / Pro 14,90€ / Business 29€ / Studio 69€ — affichés dans une modal ou page dédiée.
-- [ ] CA-2 : Clic sur un package → redirection vers Stripe Checkout (mode `payment`, pas `subscription`).
+- [ ] CA-1 : 3 tiers disponibles — Découverte GRATUIT / Starter 9,90€ one-shot / Pro 29€/mois abonnement — affichés sur /pricing.
+- [ ] CA-2 : Clic sur Starter → Stripe Checkout mode `payment`. Clic sur Pro → Stripe Checkout mode `subscription`.
 - [ ] CA-3 : Après paiement validé, le webhook `checkout.session.completed` crédite les crédits en base PG (jamais côté client).
 - [ ] CA-4 : L'idempotency key est vérifiée sur l'INSERT crédits — un webhook rejoué ne double-crédite pas le compte.
 **KPI** : `taux_conversion_free_paid` — cible 8-12% — kpi-framework.md Section 3 Revenu.

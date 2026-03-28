@@ -102,7 +102,7 @@ Reach = % des utilisateurs actifs touchés (1-10). Impact = 1 (faible) / 2 (moye
 **Dépendances critiques Auth + Abonnement Pro :**
 - La table `users` (Clerk ou équivalent) doit exister avant tout gating de feature.
 - La table `credits` doit distinguer 2 stocks : `credits_monthly` (50/mois, réinitialisés par webhook `invoice.paid`) et `credits_extra` (rachetés, TTL 90j). Consommer d'abord les `credits_monthly`, puis les `credits_extra`.
-- Stripe mode `subscription` pour l'abonnement Pro 29€/mois. Stripe mode `payment` pour les packs one-shot (Découverte 4,90€, Starter 14,90€) et les packs de rachat (9€, 19€, 34€).
+- Stripe mode `payment` pour Starter 9,90€ one-shot. Stripe mode `subscription` pour Pro 29€/mois. Packs de rachat : Starter +10 crédits = 5,90€, Pro +20 crédits = 9€.
 - Webhook `invoice.paid` → renouvellement crédits mensuels. Webhook `customer.subscription.deleted` → suspension accès Mode Pro + invalidation liens partagés sans TTL.
 - Le `sessionId` actuel (sans auth) dans F1 doit migrer vers `userId` après auth — prévoir la migration sans casser les sessions en cours.
 
@@ -214,11 +214,11 @@ subscription_status TEXT DEFAULT 'inactive'  -- active | past_due | inactive
 
 ### Hypothèse 1 — [HYPOTHÈSE] Les utilisateurs paient sans essai gratuit obligatoire
 
-**Risque** : le marché du home staging IA est habitué aux modèles freemium avec essai gratuit (Renovate Club est illimité à 9,99€/mois). Un package one-shot à 4,90€ sans essai préalable pourrait avoir un taux de conversion faible.
+**Risque** : le marché du home staging IA est habitué aux modèles freemium avec essai gratuit (Renovate Club est illimité à 9,99€/mois). Le plan Découverte (3 générations gratuites) adresse ce risque, mais le passage à Starter 9,90€ reste une friction.
 
-**Impact si faux** : le MRR 5K€ nécessite 140-150 packs/mois. Si le taux de conversion visiteur → achat est <1%, il faut 15 000 visiteurs/mois pour atteindre l'objectif.
+**Impact si faux** : le KPI North Star 3 000€/mois nécessite ~110 abonnés Pro. Si le taux de conversion gratuit → payant est <5%, il faut un volume de trafic élevé.
 
-**Validation** : lancer Auth + Crédits avec 1 génération gratuite incluse (sans CB) + 3 générations supplémentaires dans le pack Starter à 4,90€. Mesurer le taux de conversion gratuit → payant sur les 30 premiers jours. Seuil d'alarme : <5% de conversion.
+**Validation** : mesurer le taux de conversion Découverte → Starter et Découverte → Pro sur les 30 premiers jours. Seuil d'alarme : <5% de conversion globale gratuit → payant.
 
 ### Hypothèse 2 — [HYPOTHÈSE] L'abonnement Pro 29€/mois justifie son prix vs les concurrents
 

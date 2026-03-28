@@ -215,8 +215,8 @@ Pinterest, Instagram, les catalogues IKEA — tout le monde voit des belles phot
 
 ### Prix et conversion
 - Plan gratuit (N générations) = obligation pour Léa — sans frein à l'essai
-- Package Starter (one-shot, ~4,90€) = première transaction Thomas et Claire
-- Pas d'abonnement mensuel au lancement — les personas ont des pics de besoin, pas un usage linéaire
+- Starter 9,90€ one-shot = première transaction Léa et Claire (ponctuel)
+- Pro 29€/mois = seul abonnement, pour Thomas et Claire récurrents
 
 ---
 

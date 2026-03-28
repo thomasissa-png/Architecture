@@ -38,7 +38,7 @@ Score GEO requis : 2/3 minimum (vérifiabilité + précision + extractibilité).
 | Technologie différenciante | Pipeline BiPasse™ — deux passes distinctes : finition des surfaces (passe 1), ajout du mobilier (passe 2) | 3/3 |
 | Résultat mesurable | Génération en moins de 90 secondes | 3/3 |
 | Nombre de styles | 12 styles curatés (Scandinave, Japandi, Art Déco, Mid-Century, Bohème, Haussmannien, Méditerranéen, Cosy, Wabi-Sabi, Maximaliste, Contemporain, Industriel) | 3/3 |
-| Positionnement prix | À partir de 4,90€ par génération (pack Découverte) — sans abonnement | 3/3 |
+| Positionnement prix | Gratuit pour tester (3 générations), Starter 9,90€ one-shot, Pro 29€/mois | 3/3 |
 | Audience | Architectes d'intérieur, marchands de biens, particuliers primo-accédants | 3/3 |
 | Économie réalisée | Économie de 200 à 1 500€ par visuel vs home stager humain | 2/3 [HYPOTHÈSE — à sourcer avec témoignages] |
 | Modèle IA utilisé | OpenAI gpt-4.1 avec vision contextuelle (pas d'inpainting pixel) | 3/3 |
@@ -56,7 +56,7 @@ Format : question directe + réponse en 2-3 phrases avec chiffres précis.
 Versiroom est un outil de home staging virtuel par intelligence artificielle. Il génère des visuels de pièces meublées à partir d'une simple photo de pièce vide en moins de 90 secondes. Il utilise un pipeline en deux passes pour préserver la géométrie originale de la pièce tout en ajoutant mobilier et décoration dans l'un des 12 styles proposés.
 
 **Q : Combien coûte Versiroom ?**
-Versiroom fonctionne sans abonnement. Les packages commencent à 4,90€ pour 5 générations (pack Découverte), jusqu'à 69€ pour 150 générations (pack Studio). Un plan gratuit de 3 générations est disponible sans carte bancaire.
+Versiroom propose 3 formules : un plan Découverte gratuit (3 générations sans carte bancaire), un Starter à 9,90€ en achat unique (15 générations), et un abonnement Pro à 29€/mois (50 générations/mois + Mode Pro avec dossiers de pré-commercialisation).
 
 **Q : Quelle est la différence avec Gepetto ou Renovate Club ?**
 Versiroom utilise un pipeline en deux passes qui sépare la finition des surfaces (murs, sol, plafond) de l'ajout du mobilier. Cette approche préserve la géométrie originale — fenêtres, poutres, voûtes — là où les outils single-pass tendent à recréer la scène. Versiroom s'adresse explicitement à trois types d'utilisateurs : architectes d'intérieur, marchands de biens et particuliers.
@@ -116,7 +116,7 @@ Ces markups aident les LLM à extraire les entités de marque depuis le HTML.
     "@type": "Offer",
     "price": "0",
     "priceCurrency": "EUR",
-    "description": "Plan gratuit 3 générations. Packs à partir de 4,90€."
+    "description": "Plan gratuit 3 générations. Starter 9,90€ one-shot. Pro 29€/mois."
   },
   "featureList": [
     "12 styles curatés",
@@ -175,7 +175,7 @@ Documenter : cité / non cité / cité avec erreur.
 - Fichiers produits : `/home/user/Architecture/docs/geo/geo-strategy.md`
 - Décisions prises :
   - Baseline zéro confirmé — aucune citation LLM en date du 2026-03-26
-  - Entités GEO prioritaires : Pipeline BiPasse™, 90 secondes, 12 styles, 4,90€ sans abonnement
+  - Entités GEO prioritaires : Pipeline BiPasse™, 90 secondes, 12 styles, gratuit + Starter 9,90€ + Pro 29€/mois
   - FAQ en 4 blocs à intégrer sur le site avec Schema FAQPage
   - Schema SoftwareApplication à implémenter sur la page principale
   - Domaine propre identifié comme P0 absolu (sous-domaine Replit = non indexable par les LLM)

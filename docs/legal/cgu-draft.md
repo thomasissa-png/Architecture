@@ -73,10 +73,9 @@ Versiroom fonctionne sur un modèle de **packages de crédits à usage unique** 
 
 | Pack | Prix TTC | Crédits inclus | Prix par crédit |
 |------|----------|----------------|-----------------|
-| **Découverte** | 4,90 € TTC | 5 crédits | 0,98 €/crédit |
-| **Starter** | 14,90 € TTC | 20 crédits | 0,75 €/crédit |
-| **Pro** | 29 € TTC | 50 crédits | 0,58 €/crédit |
-| **Studio** | 69 € TTC | 150 crédits | 0,46 €/crédit |
+| **Découverte** | GRATUIT | 3 crédits | — (offert) |
+| **Starter** | 9,90 € TTC (one-shot) | 15 crédits | 0,66 €/crédit |
+| **Pro** | 29 €/mois TTC (abonnement) | 50 crédits/mois | 0,58 €/crédit |
 
 TVA 20% incluse dans tous les prix TTC affichés. Prix HT récupérable pour les professionnels assujettis à la TVA (Claire et Thomas en société récupèrent la TVA sur leur déclaration).
 

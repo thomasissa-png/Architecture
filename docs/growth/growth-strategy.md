@@ -17,7 +17,7 @@ Coût acquisition par canal : estimé ci-dessous, aucune donnée terrain disponi
 
 | Métrique | Claire (Architecte) | Thomas (Marchand) | Léa (Acheteuse) |
 |---|---|---|---|
-| **Package d'entrée naturel** | Pro 29€ (50 crédits) | Studio 69€ (150 crédits) ou F4 29€/dossier | Découverte 4,90€ ou Starter 14,90€ |
+| **Package d'entrée naturel** | Pro 29€/mois (50 crédits/mois) | Pro 29€/mois (50 crédits/mois) + Mode Pro (dossiers) | Starter 9,90€ one-shot (15 crédits) |
 | **Fréquence d'achat estimée** | [HYPOTHESE : 1 pack/mois — 2-3 opérations mois] | [HYPOTHESE : 1 pack/opération, 8-12 ops/an = 1 pack/mois en pic] | [HYPOTHESE : 1 pack unique, renouvellement si déménagement] |
 | **Panier moyen** | 29€ | 50€ (mix Studio + F4 dossier) | 9,90€ (mix Découverte + Starter) |
 | **Durée de vie estimée** | [HYPOTHESE : 12 mois — usage récurrent tant que le cabinet tourne] | [HYPOTHESE : 6 mois actifs/an — saisonnalité immo] | [HYPOTHESE : 2-3 mois — pic autour de l'emménagement] |

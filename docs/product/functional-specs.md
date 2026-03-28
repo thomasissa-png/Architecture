@@ -877,15 +877,15 @@ Produits réels (IKEA, Leroy Merlin). Shopping list avec prix/liens. Export PDF/
 
 > Crédits rachetés valables 90 jours. Non cumulables avec les crédits mensuels (file séparée).
 
-#### Packages one-shot — non-abonnés
+#### 3 tiers (pricing-strategy.md v3, décision fondateur 2026-03-27)
 
-| Pack | Prix TTC | Crédits | Prix/crédit | Coût API/crédit | Marge brute totale | % marge |
+| Tier | Prix TTC | Crédits | Prix/crédit | Coût API/crédit | Marge brute | % marge |
 |---|---|---|---|---|---|---|
-| **Découverte** | 4,90€ | 5 | 0,98€ | 0,10€ | 4,40€ | 90% |
-| **Starter** | 14,90€ | 20 | 0,745€ | 0,10€ | 12,90€ | 87% |
-| ~~**Studio**~~ | ~~69€~~ | ~~150~~ | — | — | — | **SUPPRIMÉ 2026-03-25** |
+| **Découverte** | GRATUIT | 3 | — | 0,10€ | -0,30€ | Acquisition |
+| **Starter** | 9,90€ one-shot | 15 | 0,66€ | 0,10€ | 8,40€ | 85% |
+| **Pro** | 29€/mois abo. | 50/mois | 0,58€ | 0,10€ | 24€ | 83% |
 
-> Les prix sont TTC (TVA 20% incluse). Les pros (Claire, Thomas) récupèrent la TVA sur les abonnements Pro.
+> Recharges : Starter +10 crédits = 5,90€. Pro +20 crédits = 9€. Voir pricing-strategy.md v3 pour le détail complet.
 
 ### 7.3 Feature gating par offre (mis à jour 2026-03-27)
 
