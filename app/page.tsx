@@ -1144,7 +1144,7 @@ export default function Home() {
             />
 
             {/* Per-photo style override (indoor, multi-photo only) */}
-            {files.length > 1 && !isOutdoor && (selectedStyle || customPrompt.trim()) && (
+            {files.length > 1 && !isOutdoor && (
               <div className="mt-6 pt-6 border-t border-foreground/5 animate-fade-in-up">
                 <p className="text-xs text-muted font-light mb-4">
                   Style par photo <span className="opacity-60">(optionnel — par défaut, toutes utilisent le style ci-dessus)</span>

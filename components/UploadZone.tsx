@@ -9,7 +9,7 @@ interface UploadZoneProps {
   maxFiles?: number;
 }
 
-const DEFAULT_MAX_FILES = 5;
+const DEFAULT_MAX_FILES = 3;
 const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 
 export default function UploadZone({ files, onFilesChange, maxFiles }: UploadZoneProps) {
