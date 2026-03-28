@@ -276,7 +276,7 @@
 ## Mémo de reprise — dernière session
 
 - **Date et heure de clôture** : 2026-03-28 (session 27c)
-- **Branch** : `claude/extract-project-context-7APhH`
+- **Branch** : `claude/update-gradient-agents-JekRd`
 - **Résumé de la session** :
   - **3 landing pages personas** (/marchand, /architecte, /particulier) : 5 rounds d'itération audit→corrections→re-audit avec Thomas (9.05/10), Claire (8.1/10), Léa (7.05/10). Avant/après visuel, FAQ 6-8 questions, témoignages anonymisés, social proof factuel, RGPD UE, focus-visible, ARIA roles, touch targets 44px.
   - **Refonte pricing v3** : 3 tiers (Découverte gratuit / Starter 9,90€ one-shot / Pro 29€/mois abonnement). Seul le Pro en abonnement. Recharges au prix du tier. Cohérence mise à jour sur 10+ fichiers (pricing, homepage, 3 landing, CGV, comparatif, JSON-LD, tests E2E).
