@@ -1041,13 +1041,15 @@ export default function Home() {
 
           {/* F4 — Merchant Mode */}
           {isMerchantMode && (
-            <div className="animate-fade-in-up">
+            <div className="animate-fade-in-up mb-10">
               <MerchantMode />
+              <div className="max-w-24 mx-auto border-t border-foreground/10 my-8" />
+              <p className="text-xs text-muted font-light text-center mb-6">Ou générez des visuels à la volée :</p>
             </div>
           )}
 
-          {/* Standard Mode */}
-          {!isMerchantMode && (
+          {/* Standard Mode — toujours visible (même en Pro) */}
+          {(
           <>
           <StepIndicator currentStep={currentStep} />
 
