@@ -186,6 +186,8 @@ export default function MesDossiersPage() {
                   <a
                     key={dossier.uuid}
                     href={`/dossier/${dossier.slug || dossier.uuid}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="block p-5 rounded-2xl border border-foreground/5 hover:border-foreground/10 hover:bg-foreground/5 transition-all group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
                     data-testid="dossier-card"
                   >
