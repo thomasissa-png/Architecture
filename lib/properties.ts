@@ -9,6 +9,7 @@
 import { getPool, ensureTable } from "@/lib/db";
 import { ensureUserPhotosTable } from "@/lib/user-photos";
 import { ensureDossierTables } from "@/lib/dossier";
+import { ensureAnnonceTable } from "@/lib/annonce";
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -45,6 +46,7 @@ export interface Property {
   nb_lots_copro: number | null;
   photo_count?: number;
   dossier_count?: number;
+  annonce_uuid?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -98,8 +100,8 @@ export async function ensurePropertiesTable(): Promise<void> {
   if (propertiesTableEnsured) return;
   await ensureTable();
   // Ensure dependent tables exist — subqueries in getPropertiesByUser/getPropertyById
-  // reference user_photos and dossiers tables.
-  await Promise.all([ensureUserPhotosTable(), ensureDossierTables()]);
+  // reference user_photos, dossiers, and annonces tables.
+  await Promise.all([ensureUserPhotosTable(), ensureDossierTables(), ensureAnnonceTable()]);
 
   const db = getPool();
   await db.query(`
@@ -199,7 +201,8 @@ export async function getPropertiesByUser(userId: string): Promise<Property[]> {
   const result = await db.query(
     `SELECT p.*,
       (SELECT COUNT(*) FROM user_photos up WHERE up.property_id = p.id) as photo_count,
-      (SELECT COUNT(*) FROM dossiers d WHERE d.bien_adresse = p.address_raw AND d.user_id = p.user_id) as dossier_count
+      (SELECT COUNT(*) FROM dossiers d WHERE d.bien_adresse = p.address_raw AND d.user_id = p.user_id) as dossier_count,
+      (SELECT COALESCE(a.slug, a.uuid) FROM annonces a WHERE a.property_id = p.id::text AND a.user_id = p.user_id AND a.status = 'active' AND a.expires_at > NOW() ORDER BY a.created_at DESC LIMIT 1) as annonce_uuid
     FROM properties p
     WHERE p.user_id = $1
     ORDER BY p.updated_at DESC`,
@@ -210,6 +213,7 @@ export async function getPropertiesByUser(userId: string): Promise<Property[]> {
     ...row,
     photo_count: parseInt(row.photo_count, 10),
     dossier_count: parseInt(row.dossier_count, 10),
+    annonce_uuid: row.annonce_uuid || null,
   })) as Property[];
 }
 

@@ -26,6 +26,7 @@ interface Property {
   dvf_median_price_m2: number | null;
   photo_count?: number;
   dossier_count?: number;
+  annonce_uuid?: string | null;
   created_at: string;
 }
 
@@ -378,15 +379,47 @@ export default function MesBiensPage() {
                   )}
                 </div>
 
-                <div className="flex items-center gap-3 mt-3 text-xs text-muted font-light">
+                <div className="flex items-center gap-3 mt-3 pt-3 border-t border-foreground/5 text-xs text-muted font-light">
                   <span>{property.photo_count || 0} photo{(property.photo_count || 0) !== 1 ? "s" : ""}</span>
+                  <span>·</span>
                   <span>{property.dossier_count || 0} dossier{(property.dossier_count || 0) !== 1 ? "s" : ""}</span>
+                  {property.annonce_uuid && (
+                    <>
+                      <span>·</span>
+                      <span className="text-sage font-medium">Annonce active</span>
+                    </>
+                  )}
                 </div>
 
                 {property.dvf_median_price_m2 && (
                   <p className="text-xs text-sage font-light mt-2">
                     {property.dvf_median_price_m2.toLocaleString("fr-FR")} €/m² (quartier)
                   </p>
+                )}
+
+                {((property.dossier_count ?? 0) > 0 || property.annonce_uuid) && (
+                  <div className="flex gap-2 mt-2 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                    {(property.dossier_count ?? 0) > 0 && (
+                      <a
+                        href="/mes-dossiers"
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-xs text-muted border border-foreground/10 px-3 py-1.5 rounded-full hover:text-foreground hover:border-foreground/20 transition-colors min-h-[36px] flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                      >
+                        Voir le dossier
+                      </a>
+                    )}
+                    {property.annonce_uuid && (
+                      <a
+                        href={`/annonce/${property.annonce_uuid}`}
+                        onClick={(e) => e.stopPropagation()}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-sage border border-sage/20 px-3 py-1.5 rounded-full hover:bg-sage/5 transition-colors min-h-[36px] flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                      >
+                        Voir l&apos;annonce ↗
+                      </a>
+                    )}
+                  </div>
                 )}
               </a>
             ))}
