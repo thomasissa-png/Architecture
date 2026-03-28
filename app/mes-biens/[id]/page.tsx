@@ -42,6 +42,7 @@ interface Property {
   nb_lots_copro: number | null;
   photo_count?: number;
   dossier_count?: number;
+  last_dossier_path?: string | null;
   created_at: string;
 }
 
@@ -982,14 +983,17 @@ export default function PropertyDetailPage() {
                 ))}
               </div>
 
-              {/* Dossier + Annonce — voir existants + créer/regénérer */}
+              {/* Dossier + Annonce — actions contextuelles */}
               <div className="mt-6 flex flex-wrap gap-2">
-                {(property?.dossier_count ?? 0) > 0 && (
+                {/* Dossier */}
+                {property?.last_dossier_path && (
                   <a
-                    href="/mes-dossiers"
+                    href={`/dossier/${property.last_dossier_path}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="text-xs border border-foreground/15 text-foreground px-4 py-2.5 rounded-full font-medium hover:bg-foreground/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 inline-flex items-center gap-1"
                   >
-                    Voir les dossiers ({property.dossier_count})
+                    Voir le dossier ↗
                   </a>
                 )}
                 <button
@@ -1002,8 +1006,10 @@ export default function PropertyDetailPage() {
                   className="text-xs bg-foreground text-background px-4 py-2.5 rounded-full font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                   data-testid="create-dossier-btn"
                 >
-                  {(property?.dossier_count ?? 0) > 0 ? "Nouveau dossier" : "Créer un dossier"}
+                  {(property?.dossier_count ?? 0) > 0 ? "Regénérer le dossier" : "Générer le dossier"}
                 </button>
+
+                {/* Annonce */}
                 {activeAnnonceUuid && (
                   <a
                     href={`/annonce/${activeAnnonceUuid}`}
@@ -1020,7 +1026,7 @@ export default function PropertyDetailPage() {
                   className="text-xs bg-sage text-white px-4 py-2.5 rounded-full font-medium hover:bg-sage/85 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                   data-testid="create-annonce-btn"
                 >
-                  {isCreatingAnnonce ? "Création..." : activeAnnonceUuid ? "Regénérer l\u0027annonce" : "Créer une annonce"}
+                  {isCreatingAnnonce ? "Création..." : activeAnnonceUuid ? "Regénérer l'annonce" : "Créer une annonce"}
                 </button>
                 {activeAnnonceUuid && (
                   <button
