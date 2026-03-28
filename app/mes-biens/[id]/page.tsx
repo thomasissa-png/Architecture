@@ -982,8 +982,16 @@ export default function PropertyDetailPage() {
                 ))}
               </div>
 
-              {/* Dossier + Annonce creation */}
-              <div className="mt-6 flex gap-2">
+              {/* Dossier + Annonce — voir existants + créer/regénérer */}
+              <div className="mt-6 flex flex-wrap gap-2">
+                {(property?.dossier_count ?? 0) > 0 && (
+                  <a
+                    href="/mes-dossiers"
+                    className="text-xs border border-foreground/15 text-foreground px-4 py-2.5 rounded-full font-medium hover:bg-foreground/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 inline-flex items-center gap-1"
+                  >
+                    Voir les dossiers ({property.dossier_count})
+                  </a>
+                )}
                 <button
                   onClick={() => {
                     setShowDossierModal(true);
@@ -994,15 +1002,25 @@ export default function PropertyDetailPage() {
                   className="text-xs bg-foreground text-background px-4 py-2.5 rounded-full font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                   data-testid="create-dossier-btn"
                 >
-                  Créer un dossier
+                  {(property?.dossier_count ?? 0) > 0 ? "Nouveau dossier" : "Créer un dossier"}
                 </button>
+                {activeAnnonceUuid && (
+                  <a
+                    href={`/annonce/${activeAnnonceUuid}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs border border-sage/30 text-sage px-4 py-2.5 rounded-full font-medium hover:bg-sage/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 inline-flex items-center gap-1"
+                  >
+                    Voir l&apos;annonce ↗
+                  </a>
+                )}
                 <button
                   onClick={handleCreateAnnonce}
                   disabled={isCreatingAnnonce || photos.length === 0}
                   className="text-xs bg-sage text-white px-4 py-2.5 rounded-full font-medium hover:bg-sage/85 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                   data-testid="create-annonce-btn"
                 >
-                  {isCreatingAnnonce ? "Création..." : "Créer une annonce"}
+                  {isCreatingAnnonce ? "Création..." : activeAnnonceUuid ? "Regénérer l\u0027annonce" : "Créer une annonce"}
                 </button>
                 {activeAnnonceUuid && (
                   <button

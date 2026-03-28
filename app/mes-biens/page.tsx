@@ -454,7 +454,7 @@ export default function MesBiensPage() {
                 )}
 
                 {((property.dossier_count ?? 0) > 0 || property.annonce_uuid) && (
-                  <div className="flex gap-2 mt-2 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                  <div className="flex gap-2 mt-2">
                     {(property.dossier_count ?? 0) > 0 && (
                       <a
                         href={`/mes-biens/${property.id}`}
