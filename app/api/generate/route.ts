@@ -114,7 +114,7 @@ function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string
     return [
       `Edit this photo of a room. Apply this surface finish: ${surfacePrompt}.`,
       "Ceramic or natural stone floor tiles — NOT wood, NOT parquet. Subway tile or smooth splashback behind work area.",
-      CEILING_PRESERVATION,
+      CEILING_PRESERVATION, WALL_PRESERVATION,
       "For the ceiling light fixture, follow the style description above exactly.",
       "Remove construction leftovers: dangling cables, junction boxes, exposed wiring, electrical outlets, round black wall boxes, cable exits — blend into wall finish. Keep all fixed wall equipment: radiators, switches, vents in exact position.",
       "Room stays COMPLETELY EMPTY — no furniture, no appliances, no objects. Same number of windows and doors.",
@@ -128,7 +128,7 @@ function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string
     return [
       `Edit this photo of a room. Apply this surface finish: ${surfacePrompt}.`,
       "Floor-to-ceiling ceramic tiles in shower zone and behind vanity area. Water-resistant floor — ceramic or stone tiles, matte non-slip. No wood flooring. Recessed IP44 ceiling spotlights.",
-      CEILING_PRESERVATION,
+      CEILING_PRESERVATION, WALL_PRESERVATION,
       "Remove construction leftovers: dangling cables, junction boxes, exposed wiring, electrical outlets, round black wall boxes, cable exits — blend into wall finish. Keep all fixed wall equipment in exact position: radiators, heaters, vents, switches.",
       "Room stays COMPLETELY EMPTY — no fixtures, no objects. Same number of windows and doors.",
       `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
@@ -141,7 +141,7 @@ function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string
     return [
       `Edit this photo of a room. Apply this surface finish: ${surfacePrompt}.`,
       "Waterproof floor — small ceramic tiles or vinyl in neutral tone. Washable matte paint or ceramic tiles on lower half of walls.",
-      CEILING_PRESERVATION,
+      CEILING_PRESERVATION, WALL_PRESERVATION,
       "Remove construction leftovers including electrical outlets, round black wall boxes, cable exits — blend into wall finish. Keep all fixed wall equipment in exact position: radiators, heaters, vents, switches.",
       "Room stays COMPLETELY EMPTY — no fixtures, no objects. Same number of windows and doors.",
       `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
@@ -155,7 +155,7 @@ function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string
       `Edit this photo of a room. Apply this surface finish: ${surfacePrompt}.`,
       "Warm-toned flooring suitable for bare feet. For the ceiling light fixture, follow the style description above exactly.",
       "If the input has ONE accent wall (different color or texture from the other walls), preserve that accent wall as-is — apply the style's wall color to the remaining walls. If ALL walls share the same color, apply the style's wall color to ALL walls uniformly.",
-      CEILING_PRESERVATION,
+      CEILING_PRESERVATION, WALL_PRESERVATION,
       "Remove construction leftovers: dangling cables, junction boxes, exposed wiring, electrical outlets, round black wall boxes, cable exits — blend into wall finish. Keep all fixed wall equipment in exact position: radiators, heaters, vents, switches.",
       "Room stays COMPLETELY EMPTY — no furniture, no objects. Same number of windows and doors.",
       `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
@@ -168,7 +168,7 @@ function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string
     return [
       `Edit this photo of a room. Apply this surface finish: ${surfacePrompt}.`,
       "Waterproof easy-to-clean floor — white or light grey ceramic tiles matte finish. Walls in washable matte white paint.",
-      CEILING_PRESERVATION,
+      CEILING_PRESERVATION, WALL_PRESERVATION,
       "Remove construction leftovers including electrical outlets, round black wall boxes, cable exits — blend into wall finish. Keep all fixed wall equipment in exact position: radiators, heaters, vents, switches.",
       "Room stays COMPLETELY EMPTY — no appliances, no objects. Same number of windows and doors.",
       `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
@@ -181,7 +181,7 @@ function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string
     return [
       `Edit this photo of a room. Apply this surface finish: ${surfacePrompt}.`,
       "Concrete or stone floor kept as-is or with simple sealant. Clean matte white or light grey paint over existing masonry.",
-      CEILING_PRESERVATION,
+      CEILING_PRESERVATION, WALL_PRESERVATION,
       "Remove construction leftovers including electrical outlets, round black wall boxes, cable exits — blend into wall finish. Keep all fixed wall equipment in exact position: radiators, heaters, vents, switches.",
       "Room stays COMPLETELY EMPTY — no shelving, no objects. Same number of windows and doors.",
       `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
@@ -194,7 +194,7 @@ function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string
     return [
       `Edit this photo of a room. Apply this surface finish: ${surfacePrompt}.`,
       "Durable floor finish suitable for an entrance — ceramic tiles, natural stone, or hard-wearing wood.",
-      CEILING_PRESERVATION,
+      CEILING_PRESERVATION, WALL_PRESERVATION,
       "For the ceiling light fixture, follow the style description above exactly.",
       "Remove construction leftovers including electrical outlets, round black wall boxes, cable exits — blend into wall finish. Keep all fixed wall equipment in exact position: radiators, heaters, vents, switches.",
       "Room stays COMPLETELY EMPTY — no furniture, no objects. Same number of windows and doors.",
@@ -209,8 +209,7 @@ function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string
     `Apply this surface finish: ${surfacePrompt}.`,
     "Refinish the floor and repaint or replaster the walls. For the ceiling light fixture, follow the style description above exactly.",
     "If the input has ONE accent wall (different color or texture from the other walls), preserve that accent wall as-is — apply the style's wall color to the remaining walls. If ALL walls share the same color, apply the style's wall color to ALL walls uniformly.",
-    CEILING_PRESERVATION,
-    WALL_PRESERVATION,
+    CEILING_PRESERVATION, WALL_PRESERVATION,
     "Remove all visible construction elements: dangling cables, exposed wiring, junction boxes without covers, cable conduits, temporary fixtures, electrical outlets, round black wall boxes, and cable exits. They must blend seamlessly into the wall finish.",
     "Do not add baseboards or moldings unless clearly present in the input photo.",
     "Preserve all wall-mounted fixed equipment visible in the input: radiators, heaters, vents, thermostats, electrical panels, switches, and outlets must remain in their exact position, size, and appearance.",
@@ -313,7 +312,7 @@ function buildSurfacesFluxPrompt(surfacePrompt: string, roomTypeId?: string | nu
     "Do not add baseboards or moldings unless clearly present in the input photo.",
     "Keep all wall-mounted equipment: radiators, heaters, vents, thermostats, switches, outlets in exact position.",
     "Completely empty room — no furniture, no rugs, no textiles, no objects.",
-    "Exact same number of windows and doors as the original. Same room geometry, same proportions.",
+    "Wall geometry identical: same angles, corners, depth — color and texture change only. Exact same number of windows and doors as the original. Same room geometry, same proportions.",
     "Preserve existing light direction, shadow patterns, wall color temperature, light falloff, and camera angle. No warm tint or yellow cast — cool or neutral walls stay cool or neutral.",
     "Photo-realistic interior photograph, DSLR full-frame 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
   ].join(" ");
@@ -345,7 +344,7 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: str
     return [
       `Add the following bathroom fixtures and accessories to this photo of a finished room: ${furniturePrompt}.`,
       "Wall-mounted vanity and mirror expected. Other items (stool, basket, plant) freestanding.",
-      "Place all elements with correct perspective and scale. Cast realistic shadows matching existing light.",
+      "Place all elements with correct perspective and scale. Use door frame (204cm) as scale reference. Cast realistic shadows matching existing light.",
       STRUCTURE_LOCKED,
       EQUIPMENT_PRESERVATION,
       "No curtains.",
@@ -358,7 +357,7 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: str
     return [
       `Add the following WC fixtures to this photo of a finished room: ${furniturePrompt}.`,
       "Very small space — minimal items only. Wall-hung or floor toilet, compact hand basin with mirror above.",
-      "Place all elements with correct perspective and scale. Cast realistic shadows matching existing light.",
+      "Place all elements with correct perspective and scale. Use door frame (204cm) as scale reference. Cast realistic shadows matching existing light.",
       STRUCTURE_LOCKED,
       EQUIPMENT_PRESERVATION,
       "No curtains.",
@@ -397,7 +396,7 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: str
     return [
       `Add the following laundry equipment to this photo of a finished room: ${furniturePrompt}.`,
       "Functional layout — washing machine, storage cabinet, drying rack, laundry basket. No decorative objects, no luxury items.",
-      "Place all elements with correct perspective and scale. Cast realistic shadows matching existing light.",
+      "Place all elements with correct perspective and scale. Use door frame (204cm) as scale reference. Cast realistic shadows matching existing light.",
       STRUCTURE_LOCKED,
       EQUIPMENT_PRESERVATION,
       "No curtains.",
@@ -410,7 +409,7 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: str
     return [
       `Add the following cellar furnishing to this photo of a finished room: ${furniturePrompt}.`,
       "Functional storage — shelving unit, storage boxes, utility light. Wine rack if space allows. No luxury furniture, no decorative objects.",
-      "Place all elements with correct perspective and scale. Cast realistic shadows matching existing light.",
+      "Place all elements with correct perspective and scale. Use door frame (204cm) as scale reference. Cast realistic shadows matching existing light.",
       STRUCTURE_LOCKED,
       EQUIPMENT_PRESERVATION,
       CAMERA_AND_PHOTO,
@@ -551,7 +550,7 @@ function buildFurnitureFluxPrompt(furniturePrompt: string, roomTypeId?: string |
   return [
     `${furniturePrompt}, placed naturally across the full depth of this finished room interior.`,
     "Distribute furniture in depth and width: primary group in foreground, secondary group in the back if space allows, lateral anchor on the opposite side if room is wide.",
-    "Shadow hardness matches lighting: soft for diffused, hard for direct sunlight. Scale furniture up if ceiling is very high.",
+    "Shadow hardness matches lighting: soft for diffused, hard for direct sunlight. Scale furniture to room: if compact (<4m wide), use smaller pieces (180cm sofa, 80cm table). Scale up if ceiling is very high. Door frame = 204cm as reference.",
     "Freestanding only. No wall-mounted art, no framed paintings, no prints, no mirrors, no built-in shelving, no curtains.",
     "Walls, floor, ceiling identical to input. Shadows from furniture natural. No new openings.",
     "Keep radiators, vents, switches visible. Do not block radiators.",
