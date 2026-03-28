@@ -27,6 +27,7 @@ interface PhotoEntry {
   roomLabel: string;
   roomTypeId: string | null;
   styleOverride: StyleOption | null; // null = use global style
+  customPromptOverride: string; // per-photo custom prompt when style = "custom"
   isOutdoor: boolean;
   outdoorStyleId: string | null;
 }
@@ -108,6 +109,9 @@ export default function MerchantMode() {
   // Poll interval ref
   const pollRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Scroll anchor ref
+  const merchantRef = useRef<HTMLDivElement>(null);
+
   // ── Timer ──
   useEffect(() => {
     if (!isGenerating) {
@@ -131,6 +135,7 @@ export default function MerchantMode() {
           roomLabel: "",
           roomTypeId: null,
           styleOverride: null,
+          customPromptOverride: "",
           isOutdoor: false,
           outdoorStyleId: null,
         };
@@ -215,6 +220,7 @@ export default function MerchantMode() {
           }
           setIsGenerating(false);
           setCurrentStep("results");
+          merchantRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
           // Auto-open dossier page in new tab (primary action)
           const dossierPath = dossier.slug || dossier.uuid || uuid;
           window.open(`/dossier/${dossierPath}`, '_blank');
@@ -258,6 +264,7 @@ export default function MerchantMode() {
     setError(null);
     setCurrentStep("generating");
     setIsGenerating(true);
+    merchantRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
 
     try {
       // Step 1: Create dossier
@@ -312,6 +319,7 @@ export default function MerchantMode() {
             roomLabel: p.entry?.roomLabel || `Photo ${p.index + 1}`,
             roomTypeId: p.entry?.roomTypeId || null,
             styleId: p.entry?.styleOverride?.id || globalStyle?.id || "custom",
+            customPrompt: p.entry?.customPromptOverride || customPrompt || "",
             isOutdoor: p.entry?.isOutdoor || false,
             photoIndex: p.index,
           })),
@@ -510,7 +518,7 @@ export default function MerchantMode() {
   // ─── RENDER ────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-8" data-testid="merchant-mode">
+    <div ref={merchantRef} className="space-y-8" data-testid="merchant-mode">
       {/* Error banner */}
       {error && (
         <div className="p-4 rounded-2xl bg-red-50 border border-red-100 text-sm text-red-600 font-light" data-testid="merchant-error">
@@ -524,7 +532,7 @@ export default function MerchantMode() {
         </div>
       )}
 
-      {/* ── Step: Property Info (step 2 — after photos) ── */}
+      {/* ── Step: Property Info (optional — accessible from review) ── */}
       {currentStep === "info" && (
         <div className="space-y-6 animate-fade-in-up" data-testid="merchant-step-info">
           <div className="flex items-center justify-between">
@@ -533,12 +541,12 @@ export default function MerchantMode() {
                 Informations du bien
               </h3>
               <p className="text-xs text-muted/60 font-light mb-1">
-                Sélectionnez un bien existant ou saisissez une nouvelle adresse.
+                Facultatif — ces infos enrichissent le dossier PDF et la fiche de partage.
               </p>
             </div>
             <button
               onClick={() => {
-                setCurrentStep("annotate");
+                setCurrentStep("review");
                 merchantRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
               }}
               className="text-xs text-muted font-light hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded"
@@ -773,10 +781,10 @@ export default function MerchantMode() {
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-1">
-                Pièce et style
+                Pièce et style par photo
               </h3>
               <p className="text-xs text-muted/60 font-light">
-                Assignez un type de pièce et un style à chaque photo.
+                Choisissez le type de pièce et le style pour chaque photo.
               </p>
             </div>
             <button
@@ -839,10 +847,15 @@ export default function MerchantMode() {
                       onChange={(e) => {
                         const styleId = e.target.value;
                         if (!styleId) {
-                          updatePhotoEntry(index, { styleOverride: null });
+                          updatePhotoEntry(index, { styleOverride: null, customPromptOverride: "" });
+                        } else if (styleId === "custom") {
+                          // Sentinel custom style — prompt in customPromptOverride
+                          updatePhotoEntry(index, {
+                            styleOverride: { id: "custom", name: "Personnalisé", description: "", surfacePrompt: "", furniturePrompt: "", palette: [] },
+                          });
                         } else {
                           const style = STYLES.find((s) => s.id === styleId) || null;
-                          updatePhotoEntry(index, { styleOverride: style });
+                          updatePhotoEntry(index, { styleOverride: style, customPromptOverride: "" });
                         }
                       }}
                       className="w-full text-sm font-light border border-foreground/10 rounded-lg px-3 py-2 bg-background focus:border-foreground focus:outline-none transition-colors"
@@ -854,8 +867,26 @@ export default function MerchantMode() {
                           {s.name}
                         </option>
                       ))}
+                      <option value="custom">Personnalis&eacute;</option>
                     </select>
                   </div>
+
+                  {/* Custom prompt textarea (when "Personnalise" selected) */}
+                  {entry.styleOverride?.id === "custom" && (
+                    <div>
+                      <label className="text-[11px] text-muted font-light block mb-1">
+                        D&eacute;crivez le style souhait&eacute;
+                      </label>
+                      <textarea
+                        value={entry.customPromptOverride}
+                        onChange={(e) => updatePhotoEntry(index, { customPromptOverride: e.target.value })}
+                        placeholder="Ex : Style campagne chic avec poutres apparentes et tomettes..."
+                        rows={2}
+                        className="w-full text-sm font-light border border-foreground/10 rounded-lg px-3 py-2 bg-background focus:border-foreground focus:outline-none transition-colors resize-none placeholder:text-foreground/30"
+                        data-testid={`merchant-annotate-custom-prompt-${index}`}
+                      />
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -874,6 +905,7 @@ export default function MerchantMode() {
                   // Need global style for photos without override
                   setCurrentStep("style");
                 }
+                merchantRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
               }}
               className="px-8 py-3 bg-foreground text-background rounded-xl font-medium text-sm hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
               data-testid="merchant-next-annotate-continue"
@@ -907,41 +939,6 @@ export default function MerchantMode() {
             onFilesChange={setFiles}
             maxFiles={MAX_PHOTOS}
           />
-
-          {/* Per-photo labels */}
-          {files.length > 0 && (
-            <div className="space-y-3">
-              <p className="text-xs text-muted font-medium">
-                Nommez chaque pièce (facultatif)
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {files.map((file, index) => (
-                  <div key={index} className="flex items-center gap-3 p-3 rounded-xl border border-foreground/5">
-                    {/* Thumbnail */}
-                    <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={previewUrls[index]}
-                        alt=""
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    {/* Label input */}
-                    <input
-                      type="text"
-                      value={photoEntries[index]?.roomLabel || ""}
-                      onChange={(e) =>
-                        updatePhotoEntry(index, { roomLabel: e.target.value })
-                      }
-                      placeholder={`Photo ${index + 1} — ex: Salon, Chambre 1`}
-                      className="flex-1 text-sm font-light border-0 bg-transparent focus:outline-none placeholder:text-foreground/30"
-                      data-testid={`merchant-photo-label-${index}`}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
 
           {/* Navigation */}
           {files.length > 0 && (
@@ -977,7 +974,10 @@ export default function MerchantMode() {
               </p>
             </div>
             <button
-              onClick={() => setCurrentStep("annotate")}
+              onClick={() => {
+                setCurrentStep("annotate");
+                merchantRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
               className="text-xs text-muted font-light hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded"
             >
               Retour
@@ -1002,7 +1002,10 @@ export default function MerchantMode() {
           {(globalStyle || customPrompt.trim()) && (
             <div className="flex items-center gap-3 pt-4">
               <button
-                onClick={() => setCurrentStep("review")}
+                onClick={() => {
+                  setCurrentStep("review");
+                  merchantRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
                 className="px-8 py-3 bg-foreground text-background rounded-xl font-medium text-sm hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
                 data-testid="merchant-next-review"
               >
@@ -1024,6 +1027,7 @@ export default function MerchantMode() {
               onClick={() => {
                 const allHaveOverride = photoEntries.every((e) => e.styleOverride !== null);
                 setCurrentStep(allHaveOverride ? "annotate" : "style");
+                merchantRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
               }}
               className="text-xs text-muted font-light hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded"
             >
@@ -1033,16 +1037,28 @@ export default function MerchantMode() {
 
           <div className="border border-foreground/10 rounded-2xl p-5 space-y-4">
             {/* Property summary */}
-            <div>
-              <h4 className="text-base font-semibold text-foreground">
-                {bienTitle}
-              </h4>
-              <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted font-light mt-1">
-                {bienAdresse && <span>{bienAdresse}</span>}
-                {bienType && <span className="capitalize">{bienType}</span>}
-                {bienSurface && <span>{bienSurface} m²</span>}
-                {bienPrix && <span>{Number(bienPrix).toLocaleString("fr-FR")} €</span>}
+            <div className="flex items-start justify-between">
+              <div>
+                <h4 className="text-base font-semibold text-foreground">
+                  {bienTitle}
+                </h4>
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted font-light mt-1">
+                  {bienAdresse && <span>{bienAdresse}</span>}
+                  {bienType && <span className="capitalize">{bienType}</span>}
+                  {bienSurface && <span>{bienSurface} m²</span>}
+                  {bienPrix && <span>{Number(bienPrix).toLocaleString("fr-FR")} €</span>}
+                </div>
               </div>
+              <button
+                onClick={() => {
+                  setCurrentStep("info");
+                  merchantRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
+                className="text-xs text-sage font-medium hover:text-sage/80 transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded"
+                data-testid="merchant-edit-info"
+              >
+                {bienAdresse ? "Modifier" : "Ajouter les infos du bien"}
+              </button>
             </div>
 
             {/* Photos summary */}
