@@ -24,7 +24,7 @@ export async function GET(request: Request) {
     const queryParams = version ? [version] : [];
 
     const result = await pool.query(`
-      SELECT id, created_at, style_id, model_used, pass1_model, pass2_model,
+      SELECT id, created_at, ip, style_id, model_used, pass1_model, pass2_model,
              duration_ms, pass1_duration_ms, pass2_duration_ms,
              success, error_message,
              input_width, input_height,

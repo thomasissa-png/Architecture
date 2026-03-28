@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 interface LogEntry {
   id: number;
   created_at: string;
+  ip: string | null;
   style_id: string;
   model_used: string;
   pass1_model: string;
@@ -482,6 +483,7 @@ Demande type : "Fais appel aux agents Architecte d'Interieur, Expert IA Image et
                 className="flex items-center gap-4 px-5 py-3 cursor-pointer flex-wrap"
               >
                 <span className="text-[13px] font-bold text-foreground min-w-[40px]">#{log.id}</span>
+                {log.ip && <span className="text-[11px] text-muted/50 font-light">{log.ip}</span>}
                 <span className="text-[13px] text-foreground/50 min-w-[150px]">{timeStr}</span>
                 <span className="bg-sage text-white px-2.5 py-0.5 rounded-md text-[13px] font-medium">
                   {log.style_id || "custom"}
