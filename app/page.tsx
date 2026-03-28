@@ -1274,7 +1274,7 @@ export default function Home() {
                             <option value="">Choisir un style</option>
                             {isPhotoOutdoor
                               ? OUTDOOR_STYLE_LIST.map((s) => (
-                                  <option key={s.id} value={s.id}>{s.name}</option>
+                                  <option key={s.id} value={s.id}>{s.label}</option>
                                 ))
                               : STYLES.map((s) => (
                                   <option key={s.id} value={s.id}>{s.name}</option>
