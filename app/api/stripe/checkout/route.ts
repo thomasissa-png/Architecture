@@ -15,20 +15,12 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { packId, retractationAccepted } = body;
+    const { packId } = body;
 
     const pack = getPackById(packId);
     if (!pack) {
       return NextResponse.json(
         { error: "Pack invalide." },
-        { status: 400 }
-      );
-    }
-
-    // Server-side validation of retractation acceptance (Art. L221-28)
-    if (retractationAccepted !== true) {
-      return NextResponse.json(
-        { error: "Vous devez accepter la clause de rétractation avant de procéder au paiement." },
         { status: 400 }
       );
     }
@@ -63,7 +55,6 @@ export async function POST(request: Request) {
         userId: session.user.id,
         packId: pack.id,
         credits: String(pack.credits),
-        retractation_accepted: retractationAccepted ? "true" : "false",
       },
       success_url: `${baseUrl}/?checkout=success&pack=${pack.id}`,
       cancel_url: `${baseUrl}/pricing?checkout=cancelled`,

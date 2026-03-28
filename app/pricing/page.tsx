@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useState, useEffect, useRef, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import AuthButton from "@/components/AuthButton";
 import AuthModal from "@/components/AuthModal";
@@ -100,12 +100,8 @@ function PricingContent() {
   const searchParams = useSearchParams();
   const [loadingPack, setLoadingPack] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [retractationAccepted, setRetractationAccepted] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [pendingPackId, setPendingPackId] = useState<string | null>(null);
-  const [checkboxError, setCheckboxError] = useState(false);
-  const [checkboxHighlight, setCheckboxHighlight] = useState(false);
-  const retractationRef = useRef<HTMLLabelElement>(null);
 
   const checkoutCancelled = searchParams.get("checkout") === "cancelled";
 
@@ -113,32 +109,15 @@ function PricingContent() {
   useEffect(() => {
     const buyParam = searchParams.get("buy");
     if (buyParam && session?.user?.id) {
-      if (retractationAccepted) {
-        handleBuy(buyParam);
-      } else {
-        // Highlight doux au lieu d'un message d'erreur rouge — l'utilisateur vient d'arriver
-        retractationRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-        setCheckboxHighlight(true);
-        setTimeout(() => setCheckboxHighlight(false), 3000);
-      }
+      handleBuy(buyParam);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session, searchParams, retractationAccepted]);
+  }, [session, searchParams]);
 
   async function handleBuy(packId: string) {
     if (!session?.user?.id) {
       setPendingPackId(packId);
       setAuthModalOpen(true);
-      return;
-    }
-
-    if (!retractationAccepted) {
-      setError(
-        "Veuillez accepter la clause de rétractation avant de continuer."
-      );
-      setCheckboxError(true);
-      retractationRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-      setTimeout(() => setCheckboxError(false), 3000);
       return;
     }
 
@@ -149,7 +128,7 @@ function PricingContent() {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ packId, retractationAccepted }),
+        body: JSON.stringify({ packId }),
       });
 
       if (!res.ok) {
@@ -237,24 +216,6 @@ function PricingContent() {
           <p className="text-sm text-muted font-light text-center mb-8">1 visuel = 1 photo uploadée, meublée dans le style de votre choix.</p>
 
           {/* Packs grid */}
-          {/* Rétractation — AVANT les cartes pour que l'utilisateur coche avant de cliquer */}
-          <div className="max-w-xl mx-auto mb-6">
-            <label ref={retractationRef} className={`flex items-start gap-3 cursor-pointer group rounded-xl p-3 transition-colors ${checkboxError ? "border border-red-400 bg-red-50/50" : checkboxHighlight ? "border border-sage/40 bg-sage/5" : "border border-foreground/5 hover:border-foreground/10"}`}>
-              <input
-                type="checkbox"
-                checked={retractationAccepted}
-                onChange={(e) => {
-                  setRetractationAccepted(e.target.checked);
-                  if (e.target.checked) { setError(null); setCheckboxError(false); }
-                }}
-                className="mt-0.5 w-5 h-5 min-w-[20px] rounded border-foreground/20 text-sage focus:ring-sage/50 focus-visible:ring-sage/50 cursor-pointer"
-              />
-              <span className="text-xs text-muted font-light leading-relaxed group-hover:text-foreground/70 transition-colors">
-                J&apos;accepte que l&apos;exécution du service commence immédiatement et renonce à mon droit de rétractation de 14 jours (art. L. 221-28 Code de la consommation).
-              </span>
-            </label>
-          </div>
-
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-4xl mx-auto items-stretch">
             {PACKS.map((pack) => (
               <div
@@ -376,7 +337,6 @@ function PricingContent() {
             ))}
           </div>
 
-          {/* Ancienne checkbox supprimée — déplacée au-dessus des cartes */}
 
           {/* Comparaison ROI */}
           <div className="max-w-xl mx-auto mt-10 text-center space-y-1.5">
