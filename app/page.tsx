@@ -12,7 +12,7 @@ import OutdoorSubtypePicker from "@/components/OutdoorSubtypePicker";
 import { ROOM_TYPE_LIST } from "@/lib/room-types";
 import { OUTDOOR_SUBTYPE_LIST } from "@/lib/outdoor-subtypes";
 import { processImage, isLikelyInterior } from "@/lib/image-utils";
-import { OUTDOOR_STYLES } from "@/lib/outdoor-styles";
+import { OUTDOOR_STYLES, OUTDOOR_STYLE_LIST } from "@/lib/outdoor-styles";
 import { useSession } from "next-auth/react";
 import AuthButton from "@/components/AuthButton";
 import AuthModal from "@/components/AuthModal";
@@ -421,7 +421,7 @@ export default function Home() {
               imgStyleId = overrideStyle.id;
             }
           } else if (overrideStyleId && imgIsOutdoor) {
-            const outdoorStyle = OUTDOOR_STYLES.find((s) => s.id === overrideStyleId);
+            const outdoorStyle = OUTDOOR_STYLES[overrideStyleId];
             if (outdoorStyle) {
               imgSurfacePrompt = outdoorStyle.surfacePrompt;
               imgFurniturePrompt = outdoorStyle.furniturePrompt;
@@ -1273,7 +1273,7 @@ export default function Home() {
                           >
                             <option value="">Choisir un style</option>
                             {isPhotoOutdoor
-                              ? OUTDOOR_STYLES.map((s) => (
+                              ? OUTDOOR_STYLE_LIST.map((s) => (
                                   <option key={s.id} value={s.id}>{s.name}</option>
                                 ))
                               : STYLES.map((s) => (
