@@ -306,7 +306,7 @@ export default function MarchandPage() {
                 <li>Historique des visuels</li>
                 <li>Recharge : +10 visuels à 5,90 €</li>
               </ul>
-              <a href="/pricing#starter" className="mt-5 text-xs font-medium text-foreground border border-foreground/15 px-4 min-h-[44px] flex items-center justify-center rounded-full hover:bg-foreground/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2">
+              <a href="/pricing?buy=starter" className="mt-5 text-xs font-medium text-foreground border border-foreground/15 px-4 min-h-[44px] flex items-center justify-center rounded-full hover:bg-foreground/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2">
                 Acheter le Starter
               </a>
             </div>
@@ -322,7 +322,7 @@ export default function MarchandPage() {
                 <li>Annonces et liens acquéreurs</li>
                 <li>Recharge : +20 visuels à 9 €</li>
               </ul>
-              <a href="/pricing#pro" className="mt-5 text-xs font-semibold text-white bg-sage px-4 min-h-[44px] flex items-center justify-center rounded-full hover:bg-sage/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2">
+              <a href="/pricing?buy=pro" className="mt-5 text-xs font-semibold text-white bg-sage px-4 min-h-[44px] flex items-center justify-center rounded-full hover:bg-sage/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2">
                 S&apos;abonner au Pro
               </a>
             </div>
@@ -490,7 +490,7 @@ export default function MarchandPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a
-              href="/pricing"
+              href="/pricing?buy=pro"
               className="inline-flex items-center justify-center gap-2 bg-sage text-white px-8 py-3.5 rounded-full text-sm font-semibold hover:bg-sage/85 transition-all duration-200 active:scale-[0.98] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
             >
               S&apos;abonner au Mode Pro

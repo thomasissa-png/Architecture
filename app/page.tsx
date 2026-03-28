@@ -1526,7 +1526,7 @@ export default function Home() {
                 </li>
               </ul>
               <div className="mt-auto">
-                <a href="/pricing" className="block w-full text-center bg-foreground text-background px-4 py-3 rounded-full text-sm font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2">
+                <a href="/pricing?buy=starter" className="block w-full text-center bg-foreground text-background px-4 py-3 rounded-full text-sm font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2">
                   Acheter
                 </a>
               </div>
@@ -1567,7 +1567,7 @@ export default function Home() {
                 </li>
               </ul>
               <div className="mt-auto">
-                <a href="/pricing" className="block w-full text-center bg-sage text-white px-4 py-3 rounded-full text-sm font-semibold hover:bg-sage/85 transition-colors shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2">
+                <a href="/pricing?buy=pro" className="block w-full text-center bg-sage text-white px-4 py-3 rounded-full text-sm font-semibold hover:bg-sage/85 transition-colors shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2">
                   S&apos;abonner
                 </a>
               </div>

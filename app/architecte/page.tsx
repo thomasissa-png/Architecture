@@ -419,7 +419,7 @@ export default function ArchitectePage() {
               Voir les tarifs Pro
             </a>
           </div>
-          <a href="/pricing" className="block text-xs text-sage font-medium mt-4 hover:underline transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm">
+          <a href="/pricing?buy=starter" className="block text-xs text-sage font-medium mt-4 hover:underline transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm">
             Préférez tester sans engagement ? 9,90 € · 15 visuels · achat unique.
           </a>
         </div>

@@ -161,7 +161,7 @@ export default function AuthButton() {
             </div>
             {credits !== null && credits <= 3 && (
               <a
-                href="/pricing"
+                href="/pricing?buy=starter"
                 className="block mt-2 text-center text-xs bg-sage/10 text-sage px-3 py-1.5 rounded-full font-medium hover:bg-sage/20 transition-colors"
                 onClick={() => setMenuOpen(false)}
               >
