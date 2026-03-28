@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Footer from "@/components/Footer";
 
 interface LogEntry {
   id: number;
@@ -149,6 +150,18 @@ function CopyButton({ text, label }: { text: string; label?: string }) {
   );
 }
 
+interface UserEntry {
+  id: string;
+  email: string;
+  name: string | null;
+  role: string;
+  credits_remaining: number;
+  created_at: string;
+  purchase_count: number;
+  total_spent_cents: number;
+  generation_count: number;
+}
+
 export default function AdminPage() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -162,6 +175,10 @@ export default function AdminPage() {
   const [storageChecking, setStorageChecking] = useState(false);
   const [versionFilter, setVersionFilter] = useState<string>("");
   const [availableVersions, setAvailableVersions] = useState<string[]>([]);
+  const [activeTab, setActiveTab] = useState<"generations" | "users">("generations");
+  const [users, setUsers] = useState<UserEntry[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [usersError, setUsersError] = useState<string | null>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -215,28 +232,22 @@ export default function AdminPage() {
 
   if (!authenticated) {
     return (
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", fontFamily: "Inter, sans-serif", background: "#FAFAF8" }}>
-        <form onSubmit={handleLogin} style={{ background: "#fff", padding: "40px 48px", borderRadius: 16, border: "1px solid #e0e0e0", textAlign: "center", maxWidth: 360, width: "100%" }}>
-          <h1 style={{ fontSize: 20, fontWeight: 600, color: "#1C1C1E", marginBottom: 8 }}>Versiroom Admin</h1>
-          <p style={{ fontSize: 13, color: "#888", marginBottom: 24 }}>Acces restreint</p>
+      <div className="flex items-center justify-center min-h-screen font-[Inter,sans-serif] bg-background">
+        <form onSubmit={handleLogin} className="bg-white px-12 py-10 rounded-2xl border border-foreground/10 text-center max-w-[360px] w-full">
+          <h1 className="text-xl font-semibold text-foreground mb-2">Versiroom Admin</h1>
+          <p className="text-[13px] text-foreground/50 mb-6">Acces restreint</p>
           <input
             type="password"
             value={password}
             onChange={(e) => { setPassword(e.target.value); setAuthError(false); }}
             placeholder="Mot de passe"
             autoFocus
-            style={{
-              width: "100%", padding: "10px 14px", border: `1px solid ${authError ? "#c00" : "#ddd"}`, borderRadius: 8,
-              fontSize: 14, outline: "none", marginBottom: 16, boxSizing: "border-box",
-            }}
+            className={`w-full px-3.5 py-2.5 border rounded-lg text-sm outline-none mb-4 ${authError ? "border-red-600" : "border-foreground/15"}`}
           />
-          {authError && <p style={{ fontSize: 12, color: "#c00", marginBottom: 12 }}>Mot de passe incorrect</p>}
+          {authError && <p className="text-xs text-red-600 mb-3">Mot de passe incorrect</p>}
           <button
             type="submit"
-            style={{
-              width: "100%", padding: "10px 0", background: "#1C1C1E", color: "#fff", border: "none",
-              borderRadius: 8, fontSize: 14, fontWeight: 500, cursor: "pointer",
-            }}
+            className="w-full py-2.5 bg-foreground text-white rounded-lg text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity"
           >
             Connexion
           </button>
@@ -245,9 +256,9 @@ export default function AdminPage() {
     );
   }
 
-  if (loading) return <div style={{ padding: 40, fontFamily: "Inter, sans-serif" }}>Chargement...</div>;
-  if (error) return <div style={{ padding: 40, fontFamily: "Inter, sans-serif", color: "#c00" }}>Erreur : {error}</div>;
-  if (logs.length === 0) return <div style={{ padding: 40, fontFamily: "Inter, sans-serif" }}>Aucune generation loguee.</div>;
+  if (loading) return <div className="p-10 font-[Inter,sans-serif] text-foreground/60">Chargement...</div>;
+  if (error) return <div className="p-10 font-[Inter,sans-serif] text-red-600">Erreur : {error}</div>;
+  if (logs.length === 0 && activeTab === "generations") return <div className="p-10 font-[Inter,sans-serif] text-foreground/60">Aucune generation loguee.</div>;
 
   const auditPromptText = `Fais appel aux agents Architecte d'Interieur (Yann Duval), Expert IA Image (Lucas Moreau) et Paysagiste (Camille Verdier, pour les generations outdoor) pour auditer les generations recentes de production.
 
@@ -276,14 +287,113 @@ Workflow d'audit :
 
 Demande type : "Fais appel aux agents Architecte d'Interieur, Expert IA Image et Paysagiste pour auditer toutes les generations depuis le dernier audit. Telecharge les images dans /tmp/audit-images/ et analyse-les visuellement. Donne la note de chaque generation, identifie les patterns recurrents, et propose un plan d'amelioration prioritaire."`;
 
+  // Fetch users when tab switches to "users"
+  useEffect(() => {
+    if (activeTab !== "users" || !authenticated) return;
+    if (users.length > 0) return; // already loaded
+    setUsersLoading(true);
+    setUsersError(null);
+    fetch(`/api/admin/users?token=${encodeURIComponent(password)}`)
+      .then(async (r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then((data) => {
+        if (data.error) setUsersError(data.error);
+        else setUsers(data.users || []);
+      })
+      .catch((e) => setUsersError(e.message))
+      .finally(() => setUsersLoading(false));
+  }, [activeTab, authenticated, password, users.length]);
+
   return (
-    <div style={{ padding: "24px 32px", fontFamily: "Inter, sans-serif", maxWidth: 1400, margin: "0 auto" }}>
-      <h1 style={{ fontSize: 24, fontWeight: 600, marginBottom: 16, color: "#1C1C1E" }}>
-        Versiroom — Logs de generation ({logs.length})
+    <div className="px-6 py-6 md:px-8 font-[Inter,sans-serif] max-w-[1400px] mx-auto">
+      <h1 className="text-2xl font-semibold text-foreground mb-4">
+        Versiroom Admin
       </h1>
 
+      {/* Onglets */}
+      <div className="flex gap-1 mb-6 border-b border-foreground/10">
+        <button
+          onClick={() => setActiveTab("generations")}
+          className={`px-5 py-2.5 text-sm font-medium rounded-t-lg transition-colors ${
+            activeTab === "generations"
+              ? "bg-foreground text-white"
+              : "text-foreground/50 hover:text-foreground/80 hover:bg-foreground/5"
+          }`}
+        >
+          Generations ({logs.length})
+        </button>
+        <button
+          onClick={() => setActiveTab("users")}
+          className={`px-5 py-2.5 text-sm font-medium rounded-t-lg transition-colors ${
+            activeTab === "users"
+              ? "bg-foreground text-white"
+              : "text-foreground/50 hover:text-foreground/80 hover:bg-foreground/5"
+          }`}
+        >
+          Utilisateurs
+        </button>
+      </div>
+
+      {/* === Tab: Users === */}
+      {activeTab === "users" && (
+        <div>
+          {usersLoading && <p className="text-foreground/50 text-sm">Chargement des utilisateurs...</p>}
+          {usersError && <p className="text-red-600 text-sm">Erreur : {usersError}</p>}
+          {!usersLoading && !usersError && users.length === 0 && (
+            <p className="text-foreground/50 text-sm">Aucun utilisateur enregistre.</p>
+          )}
+          {!usersLoading && users.length > 0 && (
+            <div className="overflow-x-auto rounded-xl border border-foreground/10">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-foreground/[0.03] text-left text-foreground/60 text-xs uppercase tracking-wider">
+                    <th className="px-4 py-3 font-medium">Email</th>
+                    <th className="px-4 py-3 font-medium">Nom</th>
+                    <th className="px-4 py-3 font-medium">Role</th>
+                    <th className="px-4 py-3 font-medium text-right">Credits</th>
+                    <th className="px-4 py-3 font-medium text-right">Generations</th>
+                    <th className="px-4 py-3 font-medium text-right">Achats</th>
+                    <th className="px-4 py-3 font-medium text-right">Depense</th>
+                    <th className="px-4 py-3 font-medium">Inscription</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-foreground/5">
+                  {users.map((u) => (
+                    <tr key={u.id} className="hover:bg-foreground/[0.02] transition-colors">
+                      <td className="px-4 py-3 text-foreground font-medium">{u.email}</td>
+                      <td className="px-4 py-3 text-foreground/70">{u.name || "—"}</td>
+                      <td className="px-4 py-3">
+                        <span className={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${
+                          u.role === "admin" ? "bg-sage/20 text-sage" : u.role === "pro" ? "bg-blue-100 text-blue-700" : "bg-foreground/5 text-foreground/60"
+                        }`}>
+                          {u.role}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right text-foreground/70 tabular-nums">{u.credits_remaining}</td>
+                      <td className="px-4 py-3 text-right text-foreground/70 tabular-nums">{u.generation_count}</td>
+                      <td className="px-4 py-3 text-right text-foreground/70 tabular-nums">{u.purchase_count}</td>
+                      <td className="px-4 py-3 text-right text-foreground/70 tabular-nums">
+                        {u.total_spent_cents > 0 ? `${(u.total_spent_cents / 100).toFixed(2)} \u20AC` : "—"}
+                      </td>
+                      <td className="px-4 py-3 text-foreground/50 text-xs">
+                        {new Date(u.created_at).toLocaleDateString("fr-FR")}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* === Tab: Generations === */}
+      {activeTab === "generations" && (<>
+
       {/* Audit prompt banner */}
-      <div style={{ marginBottom: 20, background: "#f0f4ee", border: "1px solid #c8d8c4", borderRadius: 12, overflow: "hidden" }}>
+      <div className="mb-5 bg-sage/10 border border-sage/30 rounded-xl overflow-hidden">
         <div
           onClick={() => setShowAuditPrompt(!showAuditPrompt)}
           style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", cursor: "pointer" }}
