@@ -237,6 +237,24 @@ function PricingContent() {
           <p className="text-sm text-muted font-light text-center mb-8">1 visuel = 1 photo uploadée, meublée dans le style de votre choix.</p>
 
           {/* Packs grid */}
+          {/* Rétractation — AVANT les cartes pour que l'utilisateur coche avant de cliquer */}
+          <div className="max-w-xl mx-auto mb-6">
+            <label ref={retractationRef} className={`flex items-start gap-3 cursor-pointer group rounded-xl p-3 transition-colors ${checkboxError ? "border border-red-400 bg-red-50/50" : checkboxHighlight ? "border border-sage/40 bg-sage/5" : "border border-foreground/5 hover:border-foreground/10"}`}>
+              <input
+                type="checkbox"
+                checked={retractationAccepted}
+                onChange={(e) => {
+                  setRetractationAccepted(e.target.checked);
+                  if (e.target.checked) { setError(null); setCheckboxError(false); }
+                }}
+                className="mt-0.5 w-5 h-5 min-w-[20px] rounded border-foreground/20 text-sage focus:ring-sage/50 focus-visible:ring-sage/50 cursor-pointer"
+              />
+              <span className="text-xs text-muted font-light leading-relaxed group-hover:text-foreground/70 transition-colors">
+                J&apos;accepte que l&apos;exécution du service commence immédiatement et renonce à mon droit de rétractation de 14 jours (art. L. 221-28 Code de la consommation).
+              </span>
+            </label>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-4xl mx-auto items-stretch">
             {PACKS.map((pack) => (
               <div
@@ -358,23 +376,7 @@ function PricingContent() {
             ))}
           </div>
 
-          {/* Retractation checkbox — visible avant d'acheter */}
-          <div className="max-w-xl mx-auto mt-8">
-            <label ref={retractationRef} className={`flex items-start gap-3 cursor-pointer group rounded-xl p-3 -m-3 transition-colors ${checkboxError ? "border border-red-400 bg-red-50/50" : checkboxHighlight ? "border border-sage/40 bg-sage/5" : "border border-transparent"}`}>
-              <input
-                type="checkbox"
-                checked={retractationAccepted}
-                onChange={(e) => {
-                  setRetractationAccepted(e.target.checked);
-                  if (e.target.checked) { setError(null); setCheckboxError(false); }
-                }}
-                className="mt-0.5 w-5 h-5 min-w-[20px] rounded border-foreground/20 text-sage focus:ring-sage/50 focus-visible:ring-sage/50 cursor-pointer"
-              />
-              <span className="text-xs text-muted font-light leading-relaxed group-hover:text-foreground/70 transition-colors">
-                {"J'accepte que l'exécution du service numérique commence immédiatement et renonce expressément à mon droit de rétractation de 14 jours conformément à l'article L. 221-28 du Code de la consommation."}
-              </span>
-            </label>
-          </div>
+          {/* Ancienne checkbox supprimée — déplacée au-dessus des cartes */}
 
           {/* Comparaison ROI */}
           <div className="max-w-xl mx-auto mt-10 text-center space-y-1.5">
