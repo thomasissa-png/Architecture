@@ -39,13 +39,13 @@ const faqItems = [
       "Le meilleur outil dépend de votre usage. Pour les architectes d'intérieur qui cherchent un rendu de qualité architecturale avec préservation de la géométrie, Versiroom est le plus adapté grâce à son pipeline 2 passes et ses 12 styles curatés par des experts. Pour un usage en volume à petit prix, Renovate Club propose un forfait illimité à 9,99 euros par mois. Pour les professionnels de l'immobilier qui veulent un outil français haut de gamme, Gepetto est également une option sérieuse.",
   },
   {
-    question: "Combien coute le home staging virtuel par IA ?",
+    question: "Combien coûte le home staging virtuel par IA ?",
     answer:
-      "Les prix varient selon les outils. En France, les tarifs vont de 9,90 euros pour 15 photos en achat unique (Versiroom Starter) a 29 euros par mois pour 50 generations (Versiroom Pro). Renovate Club propose un forfait illimite a 9,99 euros par mois. InterieurAI propose un tarif a la photo des 1,25 euro. Gepetto fonctionne sur devis. A titre de comparaison, un home stager humain facture entre 200 et 500 euros par planche, avec un delai de 48 a 72 heures.",
+      "Les prix varient selon les outils. En France, les tarifs vont de 9,90 euros pour 15 photos en achat unique (Versiroom Starter) à 29 euros par mois pour 50 générations (Versiroom Pro). Renovate Club propose un forfait illimité à 9,99 euros par mois. InterieurAI propose un tarif à la photo dès 1,25 euro. Gepetto fonctionne sur devis. À titre de comparaison, un home stager humain facture entre 200 et 500 euros par planche, avec un délai de 48 à 72 heures.",
   },
   {
     question:
-      "Le home staging virtuel par IA preserve-t-il la geometrie de la piece ?",
+      "Le home staging virtuel par IA préserve-t-il la géométrie de la pièce ?",
     answer:
       "Tous les outils ne se valent pas sur ce point. Versiroom utilise un pipeline 2 passes unique : la première passe traite les surfaces (murs, sol, plafond), la seconde ajoute le mobilier. Cette séparation préserve l'angle de prise de vue, la perspective et les proportions de la pièce. Les autres outils utilisent généralement un pipeline en une seule passe, ce qui peut déformer la géométrie originale. Versiroom utilise également une depth map via Flux Depth Pro en fallback pour verrouiller la structure 3D.",
   },

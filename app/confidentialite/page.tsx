@@ -10,12 +10,12 @@ export const metadata: Metadata = {
 export default function Confidentialite() {
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-foreground/10/40 py-6 px-5 sm:px-8">
+      <header className="border-b border-foreground/10 py-6 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <a href="/" className="text-xl font-semibold text-foreground tracking-tighter">
+          <a href="/" className="text-xl font-semibold text-foreground tracking-tighter focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm">
             Versiroom
           </a>
-          <a href="/" className="text-xs text-muted font-light hover:text-foreground transition-colors">
+          <a href="/" className="text-xs text-muted font-light hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm">
             Retour
           </a>
         </div>
