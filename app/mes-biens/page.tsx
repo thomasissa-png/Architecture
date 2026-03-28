@@ -202,14 +202,14 @@ export default function MesBiensPage() {
           <a href="/" className="text-xl font-semibold text-foreground tracking-tighter">
             Versiroom
           </a>
-          <nav className="flex items-center gap-2 sm:gap-6">
-            <a href="/mes-biens" className="text-xs text-sage font-medium">
+          <nav className="flex items-center gap-3 sm:gap-6">
+            <a href="/mes-biens" className="text-xs text-sage font-medium min-h-[44px] flex items-center">
               Mes biens
             </a>
-            <a href="/ma-galerie" className="text-xs text-muted font-light hover:text-foreground transition-colors">
+            <a href="/ma-galerie" className="text-xs text-muted font-light hover:text-foreground transition-colors min-h-[44px] flex items-center">
               Ma galerie
             </a>
-            <a href="/mes-dossiers" className="text-xs text-muted font-light hover:text-foreground transition-colors">
+            <a href="/mes-dossiers" className="text-xs text-muted font-light hover:text-foreground transition-colors min-h-[44px] flex items-center">
               Mes dossiers
             </a>
             <AuthButton />
@@ -384,12 +384,27 @@ export default function MesBiensPage() {
             </div>
           )}
 
+          {filteredProperties.length === 0 && searchQuery && (
+            <div className="text-center py-10">
+              <p className="text-sm text-muted font-light">Aucun bien ne correspond à votre recherche.</p>
+              <button
+                onClick={() => setSearchQuery("")}
+                className="text-xs text-sage font-medium mt-3 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded-sm"
+              >
+                Effacer la recherche
+              </button>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" data-testid="biens-list">
             {filteredProperties.map((property) => (
-              <a
+              <div
                 key={property.id}
-                href={`/mes-biens/${property.id}`}
-                className="block bg-foreground/[0.02] border border-foreground/5 rounded-2xl p-5 hover:border-sage/30 transition-all group"
+                onClick={() => window.location.href = `/mes-biens/${property.id}`}
+                className="bg-foreground/[0.02] border border-foreground/5 rounded-2xl p-5 hover:border-sage/30 transition-all group cursor-pointer"
+                role="link"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === "Enter" && (window.location.href = `/mes-biens/${property.id}`)}
                 data-testid="bien-card"
               >
                 <h3 className="text-sm font-medium text-foreground group-hover:text-sage transition-colors truncate">
@@ -462,7 +477,7 @@ export default function MesBiensPage() {
                     )}
                   </div>
                 )}
-              </a>
+              </div>
             ))}
           </div>
           </>
