@@ -109,7 +109,7 @@ function CopyButton({ text, label }: { text: string; label?: string }) {
     <button
       onClick={handleCopy}
       title={label || "Copier"}
-      className={`px-2 py-0.5 rounded text-[11px] cursor-pointer transition-all ${
+      className={`px-2 py-0.5 rounded text-[11px] cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-1 ${
         copied ? "bg-sage text-white" : "bg-foreground/5 text-foreground/60 hover:bg-foreground/10"
       }`}
     >
@@ -170,9 +170,12 @@ export default function AdminPage() {
   useEffect(() => {
     if (!authenticated) return;
     setLoading(true);
-    const params = new URLSearchParams({ token: password });
+    const params = new URLSearchParams();
     if (versionFilter) params.set("version", versionFilter);
-    fetch(`/api/logs?${params.toString()}`)
+    const logsUrl = params.toString() ? `/api/logs?${params.toString()}` : "/api/logs";
+    fetch(logsUrl, {
+      headers: { Authorization: `Bearer ${password}` },
+    })
       .then(async (r) => {
         if (!r.ok) {
           const text = await r.text().catch(() => "");
@@ -198,24 +201,45 @@ export default function AdminPage() {
       .finally(() => setLoading(false));
   }, [authenticated, versionFilter, password]);
 
+  // Fetch users when tab switches to "users"
+  useEffect(() => {
+    if (activeTab !== "users" || !authenticated) return;
+    if (users.length > 0) return; // already loaded
+    setUsersLoading(true);
+    setUsersError(null);
+    fetch("/api/admin/users", {
+      headers: { Authorization: `Bearer ${password}` },
+    })
+      .then(async (r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then((data) => {
+        if (data.error) setUsersError(data.error);
+        else setUsers(data.users || []);
+      })
+      .catch((e) => setUsersError(e.message))
+      .finally(() => setUsersLoading(false));
+  }, [activeTab, authenticated, password, users.length]);
+
   if (!authenticated) {
     return (
       <div className="flex items-center justify-center min-h-screen font-[Inter,sans-serif] bg-background">
         <form onSubmit={handleLogin} className="bg-white px-12 py-10 rounded-2xl border border-foreground/10 text-center max-w-[360px] w-full">
           <h1 className="text-xl font-semibold text-foreground mb-2">Versiroom Admin</h1>
-          <p className="text-[13px] text-foreground/50 mb-6">Acces restreint</p>
+          <p className="text-[13px] text-foreground/50 mb-6">Accès restreint</p>
           <input
             type="password"
             value={password}
             onChange={(e) => { setPassword(e.target.value); setAuthError(false); }}
             placeholder="Mot de passe"
             autoFocus
-            className={`w-full px-3.5 py-2.5 border rounded-lg text-sm outline-none mb-4 ${authError ? "border-red-600" : "border-foreground/15"}`}
+            className={`w-full px-3.5 py-2.5 border rounded-lg text-sm outline-none mb-4 focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-1 ${authError ? "border-red-600" : "border-foreground/15"}`}
           />
           {authError && <p className="text-xs text-red-600 mb-3">Mot de passe incorrect</p>}
           <button
             type="submit"
-            className="w-full py-2.5 bg-foreground text-white rounded-lg text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity"
+            className="w-full py-2.5 bg-foreground text-white rounded-lg text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-1"
           >
             Connexion
           </button>
@@ -224,9 +248,7 @@ export default function AdminPage() {
     );
   }
 
-  if (loading) return <div className="p-10 font-[Inter,sans-serif] text-foreground/60">Chargement...</div>;
-  if (error) return <div className="p-10 font-[Inter,sans-serif] text-red-600">Erreur : {error}</div>;
-  if (logs.length === 0 && activeTab === "generations") return <div className="p-10 font-[Inter,sans-serif] text-foreground/60">Aucune generation loguee.</div>;
+  const showEmptyGenerations = !loading && !error && logs.length === 0 && activeTab === "generations";
 
   const auditPromptText = `Fais appel aux agents Architecte d'Interieur (Yann Duval), Expert IA Image (Lucas Moreau) et Paysagiste (Camille Verdier, pour les generations outdoor) pour auditer les generations recentes de production.
 
@@ -255,25 +277,6 @@ Workflow d'audit :
 
 Demande type : "Fais appel aux agents Architecte d'Interieur, Expert IA Image et Paysagiste pour auditer toutes les generations depuis le dernier audit. Telecharge les images dans /tmp/audit-images/ et analyse-les visuellement. Donne la note de chaque generation, identifie les patterns recurrents, et propose un plan d'amelioration prioritaire."`;
 
-  // Fetch users when tab switches to "users"
-  useEffect(() => {
-    if (activeTab !== "users" || !authenticated) return;
-    if (users.length > 0) return; // already loaded
-    setUsersLoading(true);
-    setUsersError(null);
-    fetch(`/api/admin/users?token=${encodeURIComponent(password)}`)
-      .then(async (r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
-      .then((data) => {
-        if (data.error) setUsersError(data.error);
-        else setUsers(data.users || []);
-      })
-      .catch((e) => setUsersError(e.message))
-      .finally(() => setUsersLoading(false));
-  }, [activeTab, authenticated, password, users.length]);
-
   return (
     <div className="px-6 py-6 md:px-8 font-[Inter,sans-serif] max-w-[1400px] mx-auto">
       <h1 className="text-2xl font-semibold text-foreground mb-4">
@@ -284,19 +287,19 @@ Demande type : "Fais appel aux agents Architecte d'Interieur, Expert IA Image et
       <div className="flex gap-1 mb-6 border-b border-foreground/10">
         <button
           onClick={() => setActiveTab("generations")}
-          className={`px-5 py-2.5 text-sm font-medium rounded-t-lg transition-colors ${
+          className={`px-5 py-2.5 text-sm font-medium rounded-t-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-1 ${
             activeTab === "generations"
-              ? "bg-foreground text-white"
+              ? "border-b-2 border-foreground -mb-px text-foreground"
               : "text-foreground/50 hover:text-foreground/80 hover:bg-foreground/5"
           }`}
         >
-          Generations ({logs.length})
+          Générations ({logs.length})
         </button>
         <button
           onClick={() => setActiveTab("users")}
-          className={`px-5 py-2.5 text-sm font-medium rounded-t-lg transition-colors ${
+          className={`px-5 py-2.5 text-sm font-medium rounded-t-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-1 ${
             activeTab === "users"
-              ? "bg-foreground text-white"
+              ? "border-b-2 border-foreground -mb-px text-foreground"
               : "text-foreground/50 hover:text-foreground/80 hover:bg-foreground/5"
           }`}
         >
@@ -310,7 +313,7 @@ Demande type : "Fais appel aux agents Architecte d'Interieur, Expert IA Image et
           {usersLoading && <p className="text-foreground/50 text-sm">Chargement des utilisateurs...</p>}
           {usersError && <p className="text-red-600 text-sm">Erreur : {usersError}</p>}
           {!usersLoading && !usersError && users.length === 0 && (
-            <p className="text-foreground/50 text-sm">Aucun utilisateur enregistre.</p>
+            <p className="text-foreground/50 text-sm">Aucun utilisateur enregistré.</p>
           )}
           {!usersLoading && users.length > 0 && (
             <div className="overflow-x-auto rounded-xl border border-foreground/10">
@@ -320,10 +323,10 @@ Demande type : "Fais appel aux agents Architecte d'Interieur, Expert IA Image et
                     <th className="px-4 py-3 font-medium">Email</th>
                     <th className="px-4 py-3 font-medium">Nom</th>
                     <th className="px-4 py-3 font-medium">Role</th>
-                    <th className="px-4 py-3 font-medium text-right">Credits</th>
-                    <th className="px-4 py-3 font-medium text-right">Generations</th>
+                    <th className="px-4 py-3 font-medium text-right">Visuels</th>
+                    <th className="px-4 py-3 font-medium text-right">Générations</th>
                     <th className="px-4 py-3 font-medium text-right">Achats</th>
-                    <th className="px-4 py-3 font-medium text-right">Depense</th>
+                    <th className="px-4 py-3 font-medium text-right">Dépensé</th>
                     <th className="px-4 py-3 font-medium">Inscription</th>
                   </tr>
                 </thead>
@@ -360,6 +363,17 @@ Demande type : "Fais appel aux agents Architecte d'Interieur, Expert IA Image et
       {/* === Tab: Generations === */}
       {activeTab === "generations" && (<>
 
+      {loading && (
+        <div className="py-16 text-center text-foreground/60 text-sm">Chargement...</div>
+      )}
+      {!loading && error && (
+        <div className="py-16 text-center text-red-600 text-sm">Erreur : {error}</div>
+      )}
+      {showEmptyGenerations && (
+        <div className="py-16 text-center text-foreground/60 text-sm">Aucune génération loguée.</div>
+      )}
+
+      {!loading && !error && logs.length > 0 && (<>
       {/* Audit prompt banner */}
       <div className="mb-5 bg-sage/10 border border-sage/30 rounded-xl overflow-hidden">
         <div
@@ -367,7 +381,7 @@ Demande type : "Fais appel aux agents Architecte d'Interieur, Expert IA Image et
           className="flex items-center gap-2.5 px-4 py-3 cursor-pointer"
         >
           <span className="text-base">&#x1f9d1;&#x200d;&#x1f3a8;</span>
-          <span className="text-[13px] font-semibold text-sage-800">
+          <span className="text-[13px] font-semibold text-sage">
             Prompt d&apos;audit agents (Yann Duval + Lucas Moreau + Camille Verdier)
           </span>
           <span className="ml-auto text-xs text-sage">
@@ -381,7 +395,7 @@ Demande type : "Fais appel aux agents Architecte d'Interieur, Expert IA Image et
             </pre>
             <button
               onClick={() => { navigator.clipboard.writeText(auditPromptText); }}
-              className="mt-2 px-4 py-1.5 bg-sage text-white rounded-md text-xs font-medium cursor-pointer hover:opacity-90 transition-opacity"
+              className="mt-2 px-4 py-1.5 bg-sage text-white rounded-md text-xs font-medium cursor-pointer hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-1"
             >
               Copier dans le presse-papier
             </button>
@@ -395,7 +409,9 @@ Demande type : "Fais appel aux agents Architecte d'Interieur, Expert IA Image et
           onClick={async () => {
             setStorageChecking(true);
             try {
-              const res = await fetch(`/api/logs/storage-check?token=${encodeURIComponent(password)}`);
+              const res = await fetch("/api/logs/storage-check", {
+                headers: { Authorization: `Bearer ${password}` },
+              });
               const data = await res.json();
               setStorageStatus({ checked: true, ok: data.status === "ok", detail: data.detail || data.message });
             } catch (err) {
@@ -405,12 +421,12 @@ Demande type : "Fais appel aux agents Architecte d'Interieur, Expert IA Image et
             }
           }}
           disabled={storageChecking}
-          className={`px-4 py-1.5 bg-foreground text-white rounded-md text-xs font-medium cursor-pointer transition-opacity ${storageChecking ? "opacity-60 cursor-wait" : "hover:opacity-90"}`}
+          className={`px-4 py-1.5 bg-foreground text-white rounded-md text-xs font-medium cursor-pointer transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-1 ${storageChecking ? "opacity-60 cursor-wait" : "hover:opacity-90"}`}
         >
           {storageChecking ? "Test en cours..." : "Tester Object Storage"}
         </button>
         {storageStatus.checked && (
-          <span className={`text-xs ${storageStatus.ok ? "text-sage-800" : "text-red-600"}`}>
+          <span className={`text-xs ${storageStatus.ok ? "text-sage" : "text-red-600"}`}>
             {storageStatus.ok ? "OK" : `Erreur : ${storageStatus.detail}`}
           </span>
         )}
@@ -423,7 +439,7 @@ Demande type : "Fais appel aux agents Architecte d'Interieur, Expert IA Image et
           <select
             value={versionFilter}
             onChange={(e) => setVersionFilter(e.target.value)}
-            className="px-3 py-1.5 border border-foreground/15 rounded-md text-[13px] text-foreground bg-white cursor-pointer"
+            className="px-3 py-1.5 border border-foreground/15 rounded-md text-[13px] text-foreground bg-white cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-1"
           >
             <option value="">Toutes les versions</option>
             {availableVersions.map((v) => (
@@ -432,7 +448,7 @@ Demande type : "Fais appel aux agents Architecte d'Interieur, Expert IA Image et
           </select>
           {versionFilter && (
             <span className="text-xs text-foreground/50">
-              {logs.length} generation{logs.length > 1 ? "s" : ""}
+              {logs.length} génération{logs.length > 1 ? "s" : ""}
             </span>
           )}
         </div>
@@ -512,13 +528,13 @@ Demande type : "Fais appel aux agents Architecte d'Interieur, Expert IA Image et
                       <LogImage path={log.output_image_path} label="Output (final)" />
                     )}
                     {!log.input_image_path && !log.pass1_image_path && !log.output_image_path && (
-                      <div className="text-[13px] text-foreground/40 italic">Aucune image sauvegardee</div>
+                      <div className="text-[13px] text-foreground/40 italic">Aucune image sauvegardée</div>
                     )}
                   </div>
 
                   {/* Models */}
                   <div className="mt-4 text-[13px] text-foreground/60">
-                    <strong>Modeles :</strong> P1: {log.pass1_model || "—"} / P2: {log.pass2_model || "—"}
+                    <strong>Modèles :</strong> P1: {log.pass1_model || "—"} / P2: {log.pass2_model || "—"}
                   </div>
 
                   {/* Error */}
@@ -570,7 +586,7 @@ Demande type : "Fais appel aux agents Architecte d'Interieur, Expert IA Image et
                   {log.success && log.input_image_path && !log.is_replay && (
                     <ReplayButton logId={log.id} styleId={log.style_id} adminPassword={password} onReplayDone={() => {
                       // Refresh logs
-                      fetch(`/api/logs?token=${encodeURIComponent(password)}`).then(r => r.json()).then(data => { if (data.logs) setLogs(data.logs); });
+                      fetch("/api/logs", { headers: { Authorization: `Bearer ${password}` } }).then(r => r.json()).then(data => { if (data.logs) setLogs(data.logs); });
                     }} />
                   )}
                 </div>
@@ -579,6 +595,8 @@ Demande type : "Fais appel aux agents Architecte d'Interieur, Expert IA Image et
           );
         })}
       </div>
+
+      </>)}
 
       </>)}
 
@@ -609,7 +627,7 @@ function ReplayButton({ logId, styleId, adminPassword, onReplayDone }: { logId: 
       });
       const data = await res.json();
       if (res.ok) {
-        setResult(`Replay #${data.replayId} cree (${(data.durationMs / 1000).toFixed(1)}s)${data.metrics ? ` — diff: ${data.metrics.pixelDiffPct}%` : ""}`);
+        setResult(`Replay #${data.replayId} créé (${(data.durationMs / 1000).toFixed(1)}s)${data.metrics ? ` — diff: ${data.metrics.pixelDiffPct}%` : ""}`);
         onReplayDone();
       } else {
         setResult(`Erreur: ${data.error}`);
@@ -625,7 +643,7 @@ function ReplayButton({ logId, styleId, adminPassword, onReplayDone }: { logId: 
     return (
       <button
         onClick={() => setOpen(true)}
-        className="mt-4 px-4 py-1.5 bg-blue-500 text-white rounded-md text-xs font-medium cursor-pointer hover:opacity-90 transition-opacity"
+        className="mt-4 px-4 py-1.5 bg-blue-500 text-white rounded-md text-xs font-medium cursor-pointer hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-1"
       >
         Rejouer avec les prompts actuels
       </button>
@@ -642,25 +660,25 @@ function ReplayButton({ logId, styleId, adminPassword, onReplayDone }: { logId: 
         value={label}
         onChange={(e) => setLabel(e.target.value)}
         placeholder="Label (ex: sprint20-fix-lumiere)"
-        className="w-full px-2.5 py-1.5 border border-foreground/15 rounded-md text-xs mb-2"
+        className="w-full px-2.5 py-1.5 border border-foreground/15 rounded-md text-xs mb-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-1"
       />
       <div className="flex gap-2">
         <button
           onClick={handleReplay}
           disabled={loading}
-          className={`px-4 py-1.5 text-white rounded-md text-xs font-medium transition-opacity ${loading ? "bg-foreground/40 cursor-wait" : "bg-blue-500 cursor-pointer hover:opacity-90"}`}
+          className={`px-4 py-1.5 text-white rounded-md text-xs font-medium transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-1 ${loading ? "bg-foreground/40 cursor-wait" : "bg-blue-500 cursor-pointer hover:opacity-90"}`}
         >
-          {loading ? "Generation en cours..." : "Lancer le replay"}
+          {loading ? "Génération en cours..." : "Lancer le replay"}
         </button>
         <button
           onClick={() => setOpen(false)}
-          className="px-3 py-1.5 bg-foreground/5 text-foreground/60 rounded-md text-xs cursor-pointer hover:bg-foreground/10 transition-colors"
+          className="px-3 py-1.5 bg-foreground/5 text-foreground/60 rounded-md text-xs cursor-pointer hover:bg-foreground/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-1"
         >
           Annuler
         </button>
       </div>
       {result && (
-        <div className={`mt-2 text-xs ${result.startsWith("Erreur") ? "text-red-600" : "text-sage-800"}`}>
+        <div className={`mt-2 text-xs ${result.startsWith("Erreur") ? "text-red-600" : "text-sage"}`}>
           {result}
         </div>
       )}
