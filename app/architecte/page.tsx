@@ -197,7 +197,7 @@ export default function ArchitectePage() {
       </div>
 
       {/* Le problème */}
-      <section className="pb-16 sm:pb-24 px-5 sm:px-8">
+      <section className="pb-10 sm:pb-14 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-8 text-center">
             Le problème que vous connaissez
@@ -254,12 +254,12 @@ export default function ArchitectePage() {
       <div className="max-w-24 mx-auto border-t border-foreground/10" />
 
       {/* La solution */}
-      <section className="py-16 sm:py-24 px-5 sm:px-8">
+      <section className="py-10 sm:py-14 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-4 text-center">
             La solution Versiroom
           </h2>
-          <p className="text-muted font-light text-center mb-12 max-w-xl mx-auto">
+          <p className="text-muted font-light text-center mb-8 max-w-xl mx-auto">
             Un support de conversation visuel généré en 90 secondes, pas un rendu final.
           </p>
           <div className="space-y-6">
@@ -309,9 +309,9 @@ export default function ArchitectePage() {
       <div className="max-w-24 mx-auto border-t border-foreground/10" />
 
       {/* Comment ça marche */}
-      <section className="py-16 sm:py-24 px-5 sm:px-8">
+      <section className="py-10 sm:py-14 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-12">
+          <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-8">
             Comment ça marche
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
@@ -345,7 +345,7 @@ export default function ArchitectePage() {
       </section>
 
       {/* Cas d'usage types */}
-      <section className="py-10 sm:py-14 px-5 sm:px-8">
+      <section className="py-8 sm:py-10 px-5 sm:px-8">
         <div className="max-w-2xl mx-auto text-center">
           <p className="text-xs text-muted font-light mb-6 uppercase tracking-widest">Cas d&apos;usage types</p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left">
@@ -367,9 +367,9 @@ export default function ArchitectePage() {
       <div className="max-w-24 mx-auto border-t border-foreground/10" />
 
       {/* FAQ */}
-      <section aria-label="Questions fréquentes" className="py-16 sm:py-24 px-5 sm:px-8">
+      <section aria-label="Questions fréquentes" className="py-10 sm:py-14 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-10 text-center">
+          <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-6 text-center">
             Questions fréquentes
           </h2>
           <div className="space-y-1">
@@ -391,7 +391,7 @@ export default function ArchitectePage() {
       </section>
 
       {/* CTA final */}
-      <section className="pb-20 sm:pb-32 px-5 sm:px-8">
+      <section className="pb-14 sm:pb-20 px-5 sm:px-8">
         <div className="max-w-xl mx-auto text-center">
           <p className="text-xs text-muted font-light mb-6">
             12 styles conçus par un expert reconnu. Technologie testée sur des pièces réelles en conditions de chantier. Gratuit pour commencer.

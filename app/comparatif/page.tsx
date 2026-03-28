@@ -172,7 +172,7 @@ export default function ComparatifPage() {
       </header>
 
       {/* Hero */}
-      <section className="pt-28 sm:pt-36 pb-16 sm:pb-24 px-5 sm:px-8">
+      <section className="pt-28 sm:pt-36 pb-10 sm:pb-14 px-5 sm:px-8">
         <div className="max-w-4xl mx-auto text-center">
           <p className="text-xs text-sage font-medium uppercase tracking-widest mb-4">
             Comparatif 2026
@@ -192,7 +192,7 @@ export default function ComparatifPage() {
       </section>
 
       {/* Tableau comparatif */}
-      <section className="pb-16 sm:pb-24 px-5 sm:px-8">
+      <section className="pb-10 sm:pb-14 px-5 sm:px-8">
         <div className="max-w-5xl mx-auto overflow-x-auto">
           <table className="w-full min-w-[700px] border-collapse text-sm">
             <thead>
@@ -254,9 +254,9 @@ export default function ComparatifPage() {
       <div className="max-w-24 mx-auto border-t border-foreground/10" />
 
       {/* Pour qui est fait Versiroom ? */}
-      <section className="py-16 sm:py-24 px-5 sm:px-8">
+      <section className="py-10 sm:py-14 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-10 text-center">
+          <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-8 text-center">
             Pour qui est fait Versiroom ?
           </h2>
           <div className="space-y-8">
@@ -330,9 +330,9 @@ export default function ComparatifPage() {
       <div className="max-w-24 mx-auto border-t border-foreground/10" />
 
       {/* Ce qui distingue Versiroom */}
-      <section className="py-16 sm:py-24 px-5 sm:px-8">
+      <section className="py-10 sm:py-14 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-10 text-center">
+          <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-8 text-center">
             Ce qui distingue Versiroom
           </h2>
           <div className="space-y-6">
@@ -402,9 +402,9 @@ export default function ComparatifPage() {
       <div className="max-w-24 mx-auto border-t border-foreground/10" />
 
       {/* FAQ */}
-      <section aria-label="Questions fréquentes" className="py-16 sm:py-24 px-5 sm:px-8">
+      <section aria-label="Questions fréquentes" className="py-10 sm:py-14 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-10 text-center">
+          <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-6 text-center">
             Questions fréquentes
           </h2>
           <div className="space-y-8">
@@ -423,7 +423,7 @@ export default function ComparatifPage() {
       </section>
 
       {/* CTA final */}
-      <section className="pb-20 sm:pb-32 px-5 sm:px-8">
+      <section className="pb-14 sm:pb-20 px-5 sm:px-8">
         <div className="max-w-xl mx-auto text-center">
           <p className="text-lg font-semibold text-foreground mb-3">
             Prêt à essayer ?

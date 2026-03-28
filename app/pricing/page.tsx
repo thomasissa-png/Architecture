@@ -189,7 +189,7 @@ function PricingContent() {
       </header>
 
       {/* Content */}
-      <section className="pt-28 sm:pt-32 pb-20 sm:pb-32 px-5 sm:px-8">
+      <section className="pt-28 sm:pt-32 pb-14 sm:pb-20 px-5 sm:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-14">
             <h1 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight mb-3">

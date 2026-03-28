@@ -181,7 +181,7 @@ export default function ParticulierPage() {
       </div>
 
       {/* Le problème */}
-      <section className="pb-16 sm:pb-24 px-5 sm:px-8">
+      <section className="pb-10 sm:pb-14 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-8 text-center">
             Le problème, c&apos;est Pinterest
@@ -233,12 +233,12 @@ export default function ParticulierPage() {
       <div className="max-w-24 mx-auto border-t border-foreground/10" />
 
       {/* La solution */}
-      <section className="py-16 sm:py-24 px-5 sm:px-8">
+      <section className="py-10 sm:py-14 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-4 text-center">
             Essayez avant d&apos;acheter
           </h2>
-          <p className="text-muted font-light text-center mb-12 max-w-xl mx-auto">
+          <p className="text-muted font-light text-center mb-8 max-w-xl mx-auto">
             Scandinave, Japandi, Bohème, Cosy… testez-les tous sur votre pièce.
             Même vide, même sombre, même petite — ça marche.
           </p>
@@ -280,7 +280,7 @@ export default function ParticulierPage() {
       </section>
 
       {/* Témoignage */}
-      <section className="py-10 sm:py-14 px-5 sm:px-8">
+      <section className="py-8 sm:py-10 px-5 sm:px-8">
         <div className="max-w-2xl mx-auto text-center">
           <blockquote className="text-base sm:text-lg text-foreground font-light leading-relaxed italic">
             « J&apos;ai testé 4 ambiances sur mon salon vide en 10 minutes, directement depuis mon iPhone. Mon copain a enfin compris pourquoi je voulais du Japandi — il a voté pour le Scandinave, on a comparé. »
@@ -295,9 +295,9 @@ export default function ParticulierPage() {
       <div className="max-w-24 mx-auto border-t border-foreground/10" />
 
       {/* FAQ */}
-      <section aria-label="Questions fréquentes" className="py-16 sm:py-24 px-5 sm:px-8">
+      <section aria-label="Questions fréquentes" className="py-10 sm:py-14 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-10 text-center">
+          <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-6 text-center">
             Questions fréquentes
           </h2>
           <div className="space-y-1">
@@ -319,7 +319,7 @@ export default function ParticulierPage() {
       </section>
 
       {/* CTA final */}
-      <section className="pb-20 sm:pb-32 px-5 sm:px-8">
+      <section className="pb-14 sm:pb-20 px-5 sm:px-8">
         <div className="max-w-xl mx-auto text-center">
           <p className="text-lg font-semibold text-foreground mb-3">
             Votre pièce. Le style que vous cherchez. En 90 secondes.

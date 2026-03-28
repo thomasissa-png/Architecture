@@ -1449,7 +1449,7 @@ export default function Home() {
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="py-16 sm:py-24 px-5 sm:px-8 bg-background/40">
+      <section id="pricing" className="py-10 sm:py-14 px-5 sm:px-8 bg-background/40">
         <div ref={pricingRef} className="reveal max-w-5xl mx-auto">
           <div className="text-center mb-14">
             <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight mb-3">
