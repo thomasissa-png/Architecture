@@ -392,9 +392,31 @@ Moyenne — 5 agents (reviewer, Yann, Lucas, fullstack, reviewer), 2 features su
 - **Auth modal bottom sheet** mobile
 - **Hero images statiques** : /imageavant.jpg + /imageapres.jpg dans repo
 
-### Travaux EN COURS
-- **Carte OSM sur page annonce** : identifie P0 par Marc, pas encore implemente
-- **Comparateur mobile** : curseur touch ne fonctionne pas (events touch manquants)
-- **Blog seed** : `npx tsx scripts/seed-blog.ts` a executer sur Replit
+---
+
+## Session 2026-03-28 — Audit complet + parcours achat + prompts v27-v30
+
+### Phases TERMINÉES
+- **Gradient Agents update** depuis Agent-Team (21 agents)
+- **Pricing docs v3** : 9 fichiers mis à jour
+- **Homepage personas** : 3 cartes compactes (Thomas 9.5/10)
+- **Landing pages** : /architecte 8.1→9.5, /particulier 7.05→9.5
+- **Audit complet site** : 6 rapports, 20 pages + 31 composants, P0+P1+P2 corrigés
+- **Vocabulaire "visuel"** : 12 fichiers, 70 occurrences (crédit/génération→visuel)
+- **Parcours achat** : checkout direct, subscription Pro, 4 recharges, feedback post-achat
+- **Page annonce** : 5 bugs (z-index, labels FR, grille, modal export, sticky)
+- **Mes biens** : recherche/tri, boutons contextuels dossier/annonce
+- **MerchantMode** : 7 UX fixes (flow, scroll, custom, outdoor, miniatures)
+- **Admin backoffice** : refonte Tailwind + tab Utilisateurs + P0 QA
+- **Prompts v27-v30** : action:edit, échelle architecturale, SDB dimensions, tous trous comblés
+- **Style par photo** en mode normal (multi-upload)
+- **Spacing** réduit 35% sur 6 pages
+
+### Travaux EN COURS (reportés prochaine session)
+- **CGV** : mettre à jour pour refléter l'abonnement Pro (pas que one-shot)
+- **Comparateur mobile** : curseur touch ne fonctionne pas
+- **Blog seed** : `npx tsx scripts/seed-blog.ts` à exécuter sur Replit
 - **Domaine versiroom.fr** : blocker SEO/GEO n°1, action fondateur
-- **Footer pages personas** : manquant sur /marchand /architecte /particulier
+- **Clés API prod** : Stripe, Google OAuth, Sentry (action fondateur)
+- **Images galerie landing pages** : 3-6 visuels réels pour activer les galeries commentées
+- **Tester v30 en prod** : générer sur toutes tailles de pièces pour valider l'échelle

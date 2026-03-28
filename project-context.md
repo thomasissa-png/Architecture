@@ -167,6 +167,15 @@
 | @ux | 2026-03-27 | docs/reviews/ux-audit-exportportail.md | Score 6.5/10 pour Thomas. P0-1 : composant au bas de page (après 12 blocs), Thomas ne le trouve pas sans scroller toute la page. P0-2 : 3 boutons de copie (titre/description/tout) sans hiérarchie claire crée une hésitation. P1-1 : compteurs de caractères anxiogènes sans interprétation contextualisée. P1-2 : bouton ZIP sans explication sur l'origine des photos Versiroom. P2 : warning "Description incomplète" passif, pas de lien d'action direct. | Audit du point de vue Thomas (niveau tech moyen, workflow iPhone→Canva→portail). La visibilité est la friction principale : sur mobile, le composant est invisible sans scroll total. Alternatives étudiées pour le placement : lien ancre dans le header owner, ou déplacement avant la galerie photos (moins intrusif pour les visiteurs). |
 | @creative-strategy | 2026-03-25 | docs/strategy/messaging-matrix.md | Grille persona × étape funnel × canal. 9 cases détaillées (message, preuve, objection, vocabulaire, CTA) + 6 cases secondaires résumées. Tableau synthèse cross-canal (5 canaux × 3 personas). Bloc objections cross-canal réutilisables (7 objections avec réponses dans les mots du persona). | Cases priorisées sur l'impact conversion (découverte + considération + décision pour les 3 personas, onboarding pour Claire et Thomas). Léa limitée à 2 cases détaillées : son parcours décision est court (plan gratuit → paywall) et son LTV est faible — concentration sur la découverte et la viralité. Vocabulaire persona strict appliqué : aucun croisement entre registre Claire (planche, direction esthétique) et Léa (vibe, Insta-worthy). Claims factuels uniquement (90 secondes, 12 styles, 1 000-4 000 € économie/opération) — aucun chiffre inventé. |
 | @copywriter | 2026-03-25 | docs/copy/brand-voice.md (Section 4 ajoutée) | 2 variantes de titre hero par persona (6 titres), 2 objets email par persona (6 objets), 4 accroches social (LinkedIn Claire×2, Thomas×2, Instagram Léa×2), tableau CTAs validés par étape funnel. Section 4 ajoutée en Edit dans brand-voice.md existant. | Variantes construites strictement sur le vocabulaire persona issu de messaging-matrix.md et personas.md — aucun croisement de registre. Aucun chiffre inventé : tous issus de la value-proposition.md (90 secondes, 12 styles, 1 000-4 000€, 48-72h, 200-500€). Deux angles par persona : un ancré sur la frustration (avant), un sur le bénéfice (après). Ton uniformément sobre — pas de superlatifs, pas de points d'exclamation. |
+| @orchestrator | 2026-03-28 | 9 docs pricing mis à jour, homepage personas cards, landing pages itérées | Pricing v3 propagé dans 9 docs. 3 cartes personas homepage (Option A creative-strategy, Thomas 9.1→9.5). /architecte 8.1→9.5, /particulier 7.05→9.5. | Pricing v3 = source de vérité unique (pricing-strategy.md). Les anciens prix dans les docs créaient un drift factuel. Les cartes personas compactes dans le hero (pas de section dédiée) car le fondateur a dit "trop gros" pour l'ancien encart. |
+| @ux + @fullstack | 2026-03-28 | 6 rapports audit site complet, corrections P0/P1/P2 sur 20+ fichiers | Audit 20 pages + 31 composants en 6 batches parallèles. Corrections : entités HTML→UTF-8, focus-visible, touch targets 44px, accents FR, liens morts, border class invalide. | Découpage en batches de 4-5 fichiers max — les audits à 14 fichiers timeout systématiquement. |
+| @copywriter | 2026-03-28 | Vocabulaire "visuel" unifié (12 fichiers, 70 occurrences) | Remplacement global crédit/génération→visuel dans tout le frontend. "crédit" réservé CGV, "génération" réservé états machine. | "Crédit" est un terme bancaire abstrait. "Visuel" est le terme métier de Claire et Thomas. Benchmark : les concurrents FR illimités contournent le problème. |
+| @fullstack | 2026-03-28 | Parcours achat direct (checkout sans redirect), subscription Pro, 4 recharges | lib/stripe.ts sync pricing v3 (Starter 990cts/15, Pro 2900cts/50), mode subscription pour Pro, 4 packs recharge. Checkout direct depuis homepage (handleBuyDirect). Suppression checkbox rétractation (Stripe gère). | Le parcours était cassé : anciens prix backend, Pro en one-shot, recharges inexistantes ("Pack invalide"), zéro feedback post-achat. Thomas 5.3/10 avant corrections. |
+| @fullstack | 2026-03-28 | Page annonce : 5 bugs fixés (z-index, labels FR, grille, modal export, sticky) | ExportPortail→modal, room labels FR (bedroom_children→Chambre enfant), galerie flat quand 1 photo/pièce, ContactSticky z-index. | Les photos s'empilaient verticalement car chaque pièce avait 1 seule photo → grille de 1 élément par groupe. Fix : flatten quand majorité de groupes à 1 photo. |
+| @fullstack | 2026-03-28 | Mes biens : recherche/tri, boutons dossier/annonce contextuels, liens directs | Recherche par adresse/ville, tri récent/ville. "Voir le dossier ↗" lien direct (plus de liste globale). Boutons contextuels (Générer/Regénérer). | Thomas 8.65→9.5. Le lien "Voir les dossiers" pointait vers la liste globale = friction. Les boutons doivent refléter l'état (existe/n'existe pas). |
+| @fullstack | 2026-03-28 | MerchantMode : 7 corrections UX (flow, scroll, custom, outdoor, miniatures) | Flow réordonné (photos→annotate→générer, infos bien optionnelles). Scroll fix via merchantRef. Custom style textarea. Toggle intérieur/extérieur par photo. Miniatures résultat "Prêt". | Le fondateur voulait générer les photos d'abord, remplir les infos après. Le mode outdoor était hardcodé false. |
+| @fullstack | 2026-03-28 | Admin backoffice refonte complète + tab Utilisateurs | Tailwind (0 style inline), header Versiroom, onglets, tab users (email, rôle, visuels, dépenses, dates). P0 hooks order, focus-visible, accents, sage-800. | L'admin utilisait des styles inline, pas de header/footer, pas de tab users. QA a trouvé violation Rules of Hooks (useEffect après return conditionnel). |
+| @ia + Yann + Lucas | 2026-03-28 | Prompts v27→v30 (action:edit, échelle, SDB, tous trous comblés) | v27: action:"edit" sur gpt-image-1.5. v28: ancrage échelle 204cm + scaling DOWN. v29: SDB dimensions explicites (douche 80-90cm, miroir 70x90cm, passage 60cm). v30: propagation tous builders Flux + outdoor. | La migration gpt-image-1→1.5 sans action:"edit" causait la perte de géométrie. Les dimensions absolues en cm sans référence spatiale ne fonctionnent pas — il faut des ancrages architecturaux (porte 204cm, plafond 250cm). Les SDB sont les pièces les plus variables (facteur 6x). |
 | @product-manager | 2026-03-25 | docs/product/roadmap.md | Priorisation RICE 4 features : Auth/Crédits/Stripe (6,38 NOW), QA (4,80 NOW), F4 Marchand (1,58 NEXT), F5 Décorateur (0,75 LATER). Chemin critique documenté. Site unique recommandé (pas de sous-domaine). Clerk recommandé vs Auth.js. Stripe mode payment one-shot. 3 hypothèses à valider avec seuils d'alarme chiffrés. | Ordre de livraison Auth→QA→F4→F5 confirmé (cohérent avec décision fondateur 2026-03-24). Site unique retenu car contrainte solo développeur — 2 codebases = risque opérationnel inacceptable. QA avant F4/F5 car le batch marchand est fragile sans filet. Clerk préféré car setup 2j vs 3-4j Auth.js, webhook natif pour sync Stripe. Les 3 hypothèses couvrent les risques conversion, pricing et différenciation qualitative — toutes marquées [HYPOTHÈSE]. |
 | @product-manager | 2026-03-25 | docs/product/backlog.md | 15 user stories au format JTBD réparties en 4 epics (Auth/QA/F4/F5) avec critères d'acceptation testables, KPI associés depuis kpi-framework.md, priorité P0/P1/P2. Décisions : déduction crédit côté serveur après succès 2 passes uniquement ; gating F4/F5 vérifié côté serveur (pas seulement UI) ; idempotency key sur INSERT crédits Stripe ; Puppeteer pour PDF F4 avec validation Replit staging obligatoire avant commit ; liens catalogues F5 dynamiques uniquement. | Backlog focalisé sur les 4 stories critiques par epic (anti-scope creep). Format JTBD choisi pour clarté de la valeur utilisateur. KPIs mappés depuis kpi-framework.md pour chaque story. Règle anti-invention respectée : tous les chiffres issus de roadmap.md et kpi-framework.md. |
 | @product-manager | 2026-03-25 | docs/product/pricing-strategy.md | Benchmark 8 concurrents (prix, modèle, inclus). Packages crédits 4 tiers (Gratuit 3 crédits, Découverte 4,90€/5, Starter 14,90€/20, Pro 29€/50, Studio 69€/150). F4 Mode Marchand : 29€/dossier fixe. F5 Mode Décorateur : 9€/dossier fixe. Plan gratuit 3 générations sans CB (aligné REimagineHome). Pack Pro mis en avant comme ancrage. KPI North Star atteint à 140 transactions/mois (scénario Base). 5 hypothèses explicitement marquées. | Packages one-shot confirmés vs abonnement (décision fondateur). 3 générations gratuites retenues vs 1 (Pedra) ou 5 : 1 insuffisant pour démontrer la qualité 2 passes sur 3 styles différents (usage naturel Claire) ; 5 = coût acquisition en crédits offerts trop élevé. 29€ pour F4 aligné sur le prix perçu vs home stager humain (200-500€/planche) et sur l'ancrage Pack Pro — pas un chiffre arbitraire. 9€ F5 = micro-transaction impulsif pour Léa, note de frais anecdotique pour Claire. Volume discount F4 marqué [HYPOTHÈSE] — aucune validation terrain. |
@@ -277,44 +286,49 @@
 
 ## Mémo de reprise — dernière session
 
-- **Date et heure de clôture** : 2026-03-28 (session 27c)
+- **Date et heure de clôture** : 2026-03-28 (session 28)
 - **Branch** : `claude/update-gradient-agents-JekRd`
 - **Résumé de la session** :
-  - **3 landing pages personas** (/marchand, /architecte, /particulier) : 5 rounds d'itération audit→corrections→re-audit avec Thomas (9.05/10), Claire (8.1/10), Léa (7.05/10). Avant/après visuel, FAQ 6-8 questions, témoignages anonymisés, social proof factuel, RGPD UE, focus-visible, ARIA roles, touch targets 44px.
-  - **Refonte pricing v3** : 3 tiers (Découverte gratuit / Starter 9,90€ one-shot / Pro 29€/mois abonnement). Seul le Pro en abonnement. Recharges au prix du tier. Cohérence mise à jour sur 10+ fichiers (pricing, homepage, 3 landing, CGV, comparatif, JSON-LD, tests E2E).
-  - **Page /pricing** : refonte complète 3 colonnes, badge "Recommandé", section recharge interactive, section ROI comparatif home stager, FAQ 6 questions, bandeau sécurité Stripe, checkbox rétractation remontée. Thomas 9.7/10.
-  - **Homepage** : encart Mode Pro massif → 3 encarts personas compacts (architecte/marchand/particulier).
-  - **QA** : 6 erreurs de build corrigées (apostrophes JSX, TypeScript gpt-image-1.5, pixelmatch). Règle P0 enregistrée : tsc + lint AVANT chaque commit. QA finale 11/11 checks PASS.
-  - **Fix profil** : police preview temps réel + preconnect Google Fonts.
+  - **Session massive** (~50 commits) : audit complet du site (20 pages, 31 composants), corrections P0/P1/P2 exhaustives, parcours d'achat reconstruit de zéro, prompts IA v27→v30.
+  - **Audit complet site** : 6 rapports dans docs/reviews/full-site-audit-*.md. Tous les P0 et P1 corrigés.
+  - **Parcours d'achat** : lib/stripe.ts sync pricing v3 (était sur les anciens prix), Pro en mode subscription (était one-shot), 4 packs recharge ajoutés, checkout direct depuis homepage (plus de redirect /pricing), suppression checkbox rétractation (Stripe gère), feedback post-achat.
+  - **Vocabulaire** : "crédit/génération" → "visuel" unifié sur 12 fichiers (70 occurrences). Terme commercial unique.
+  - **Prompts IA** : v27 (action:edit gpt-image-1.5), v28 (échelle architecturale 204cm + scaling DOWN), v29 (SDB dimensions explicites), v30 (tous trous comblés — Flux builders, outdoor, laundry/cellar).
+  - **Homepage** : 3 cartes personas compactes (Thomas 9.5/10), spacing réduit 35%.
+  - **Landing pages** : /architecte 8.1→9.5, /particulier 7.05→9.5 (pills styles, copy reécrit, a11y).
+  - **Page annonce** : 5 bugs (z-index, labels FR, grille photos, ExportPortail→modal, sticky).
+  - **Mes biens** : recherche/tri, boutons dossier/annonce contextuels avec liens directs.
+  - **MerchantMode** : 7 fixes (flow réordonné, scroll, custom style, outdoor par photo, miniatures résultat).
+  - **Admin backoffice** : refonte Tailwind complète + tab Utilisateurs + P0 QA (hooks order, focus-visible, accents).
+  - **Style par photo** en mode normal (multi-upload).
 
 - **Travaux en cours** :
-  1. **Images galerie multi-styles** — galeries commentées sur les 3 landing pages, en attente de 3-6 visuels réels (styles différents). Quand disponibles : commiter dans `public/demo/`, décommenter les sections galerie, remplacer les src.
-  2. **Anciens prix dans les docs** — les fichiers docs/ (kpi-framework, roadmap, backlog, functional-specs, legal, geo, growth) contiennent encore les anciens prix (4,90€/14,90€). À mettre à jour lors de la prochaine révision de chaque livrable. Le code fonctionnel est déjà correct.
-  3. **Focus-visible et ARIA** incomplets sur /architecte et /particulier (header links, CTA hero — partiellement corrigés, QA a flaggé des manques résiduels).
+  1. **Tester v30 en prod** — les corrections d'échelle (v28-v30) n'ont pas été validées visuellement. Générer sur salon, chambre, SDB, cuisine de tailles variées.
+  2. **CGV** — le texte mentionne "sans abonnement" mais le Pro est maintenant un abonnement. À mettre à jour.
+  3. **Images galerie landing pages** — galeries commentées, en attente de 3-6 visuels réels dans public/demo/.
 
 - **Travaux reportés (sessions précédentes, toujours valides)** :
-  1. Migration GPT Image 1.5 (v26 codée, non déployée) — déployer puis benchmark
-  2. Blog seed — `npx tsx scripts/seed-blog.ts` sur Replit
-  3. Domaine versiroom.fr — blocker SEO/GEO n°1, action fondateur
-  4. SIRET/médiateur — placeholders pages légales
-  5. Clés API prod — Stripe, Google OAuth, Sentry
-  6. F5 Mode Décorateur — specs prêtes, pas implémenté
+  1. Blog seed — `npx tsx scripts/seed-blog.ts` sur Replit
+  2. Domaine versiroom.fr — blocker SEO/GEO n°1, action fondateur
+  3. SIRET/médiateur — placeholders pages légales
+  4. Clés API prod — Stripe, Google OAuth, Sentry (action fondateur)
+  5. F5 Mode Décorateur — specs prêtes, pas implémenté
+  6. Comparateur mobile — curseur touch events manquants
 
 - **Prochaines actions recommandées** :
-  1. **Générer 3-6 images galerie** via l'outil en production (Japandi, Bohème, Cosy, Art Déco, Haussmannien) → commiter dans `public/demo/` → activer les galeries sur les 3 landing pages. C'est le seul blocage vers 10/10.
-  2. **Corriger les focus-visible/ARIA résiduels** sur /architecte et /particulier (QA flaggé).
-  3. **Déployer v26 sur Replit** puis benchmark latence (objectif <40s vs 131s actuel).
-  4. **Mettre à jour les docs** avec les nouveaux prix (pricing-strategy.md v3 est la référence).
+  1. **Déployer sur Replit + tester v30** : générer 5+ photos sur des pièces de tailles variées (petit studio, grand salon, SDB compacte, cuisine ouverte, extérieur). Valider que l'échelle mobilier est cohérente. Si pas OK → audit Yann+Lucas pour re-calibrer.
+  2. **CGV** : mettre à jour le modèle économique (abonnement Pro, pas seulement one-shot). @legal pour la rédaction.
+  3. **Clés API Stripe** : configurer dans Replit Secrets pour activer le parcours d'achat réel.
+  4. **Images galerie** : générer via l'outil en prod, commiter dans public/demo/, activer les galeries sur les 3 landing pages.
 
 - **Blockers** :
-  - Déploiement Replit requis pour valider v26
-  - Images galerie = fondateur doit générer via l'outil
-  - Domaine Replit = plafond SEO/GEO
-  - Stripe non fonctionnel (clés non configurées)
+  - Déploiement Replit requis pour tester v30 + parcours achat
+  - Clés Stripe non configurées = parcours d'achat en mode test uniquement
+  - Domaine versiroom.fr = plafond SEO/GEO
 
 - **Commande de reprise suggérée** :
 ```
-@orchestrator Reprends le projet Versiroom. Session 27c : refonte pricing 3 tiers (Découverte gratuit, Starter 9,90€ one-shot, Pro 29€/mois), /pricing 9.7/10 Thomas, 3 landing pages personas itérées 5x (Thomas 9.05, Claire 8.1, Léa 7.05), homepage nettoyée (3 encarts personas), QA finale 11/11 PASS. Priorités : (1) générer images galerie multi-styles et activer les galeries commentées, (2) focus-visible/ARIA résiduels /architecte et /particulier, (3) déployer v26 GPT Image 1.5 + benchmark, (4) F5 Mode Décorateur.
+@orchestrator Reprends le projet Versiroom. Session 28 : audit complet site (6 rapports, P0/P1/P2 corrigés), parcours achat reconstruit (checkout direct, subscription Pro, 4 recharges), vocabulaire "visuel" unifié, prompts v27→v30 (action:edit, échelle architecturale, SDB dimensions). Priorités : (1) déployer Replit + tester v30 sur toutes tailles de pièces, (2) CGV abonnement Pro, (3) clés Stripe + test achat réel, (4) images galerie landing pages.
 ```
 
 ---
