@@ -413,7 +413,7 @@ export default function ArchitectePage() {
               Générer ma première planche gratuitement
             </a>
             <a
-              href="/pricing"
+              href="/pricing?buy=pro"
               className="inline-flex items-center justify-center gap-2 border border-foreground/15 text-foreground px-6 py-3.5 rounded-full text-sm font-medium hover:bg-foreground/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
             >
               Voir les tarifs Pro

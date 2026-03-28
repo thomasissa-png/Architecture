@@ -486,7 +486,7 @@ export default function PropertyDetailPage() {
         setToastMsg(
           <span>
             Cette fonctionnalité est réservée au Pack Pro.{" "}
-            <a href="/pricing" className="underline font-semibold">Voir les tarifs</a>
+            <a href="/pricing?buy=pro" className="underline font-semibold">Voir les tarifs</a>
           </span>
         );
       } else {

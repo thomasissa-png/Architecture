@@ -204,7 +204,7 @@ export default function AuthButton() {
 
           <div className="px-2 py-1">
             <a
-              href="/pricing"
+              href="/pricing?buy=starter"
               className="block px-3 py-2 text-sm text-muted font-light hover:text-foreground hover:bg-foreground/5 rounded-xl transition-colors"
               onClick={() => setMenuOpen(false)}
             >
