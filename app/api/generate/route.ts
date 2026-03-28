@@ -30,7 +30,8 @@ import {
  * History: v1-v5 (Sprints 1-7), v6-v10 (Sprints 8-12), v11-v15 (Sprints 13-16), v16-v17 (Sprint 17),
  * v18 (Sprint 18+), v24 (prompts validés Yann/Lucas/Camille 8.0/7.8),
  * v25 (5 corrections additives: Flos IC, no duplicate, plantes visuelles, lanternes, matériaux),
- * v26 (migration gpt-image-1 → gpt-image-1.5, latence /4 attendue) */
+ * v26 (migration gpt-image-1 → gpt-image-1.5, latence /4 attendue),
+ * v30 (audit @ia: wall preservation bedroom Flux, scaling DOWN laundry/cellar/outdoor, dimensions kitchen/office, outdoor scale refs) */
 export const PROMPT_VERSION = "v30";
 
 // ─── Timeout wrapper for external API calls ─────────────────────────
@@ -264,7 +265,8 @@ function buildSurfacesFluxPrompt(surfacePrompt: string, roomTypeId?: string | nu
       `${surfacePrompt}, finished empty bedroom interior.`,
       "Warm-toned flooring for bare feet. Ceiling light per style.",
       "If ONE accent wall differs in color or texture, preserve it as-is — restyle plain walls only. If ALL walls share the same color, restyle ALL walls uniformly.",
-      "Preserve ceiling 3D geometry. Remove construction leftovers including electrical outlets, round black wall boxes, cable exits — blend into wall finish. Keep wall equipment in place: radiators, heaters, vents, switches.",
+      "Preserve ceiling 3D geometry. Wall geometry stays identical — same angles, corners, depth. Color and texture change only.",
+      "Remove construction leftovers including electrical outlets, round black wall boxes, cable exits — blend into wall finish. Keep wall equipment in place: radiators, heaters, vents, switches.",
       "Empty room — no furniture, no objects. Same windows and doors.",
       "Same camera angle, same lighting, no warm tint or yellow cast. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
     ].join(" ");
@@ -417,6 +419,7 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: str
     return [
       `Add the following cellar furnishing to this photo of a finished room: ${furniturePrompt}.`,
       "Functional storage — shelving unit, storage boxes, utility light. Wine rack if space allows. No luxury furniture, no decorative objects.",
+      "If the room appears compact or narrow, use a single shelving unit and skip the wine rack.",
       "Place all elements with correct perspective and scale. Use door frame (204cm) as scale reference. Cast realistic shadows matching existing light.",
       STRUCTURE_LOCKED,
       EQUIPMENT_PRESERVATION,
@@ -522,7 +525,7 @@ function buildFurnitureFluxPrompt(furniturePrompt: string, roomTypeId?: string |
   if (roomTypeId === "laundry") {
     return [
       `${furniturePrompt}, placed in this finished laundry room.`,
-      "Functional — washing machine, storage, drying rack. No decorative items.",
+      "Functional — washing machine, storage, drying rack. No decorative items. If compact (<4m2), skip folding table and drying rack.",
       "Door frame = 204cm as scale reference. Correct perspective and scale. Realistic shadows.",
       FLUX_STRUCTURE,
       FLUX_EQUIPMENT,
@@ -534,7 +537,7 @@ function buildFurnitureFluxPrompt(furniturePrompt: string, roomTypeId?: string |
   if (roomTypeId === "cellar") {
     return [
       `${furniturePrompt}, placed in this finished cellar.`,
-      "Functional storage — shelving, boxes, utility light. No luxury furniture.",
+      "Functional storage — shelving, boxes, utility light. No luxury furniture. If compact or narrow, single shelving unit only, skip wine rack.",
       "Door frame = 204cm as scale reference. Correct perspective and scale. Realistic shadows.",
       FLUX_STRUCTURE,
       FLUX_EQUIPMENT,
@@ -632,9 +635,11 @@ function buildOutdoorFurnitureResponsesPrompt(
     `Add outdoor furniture and decoration to this photo of a finished outdoor space: ${furniturePrompt}.`,
     subtypeOverride ? subtypeOverride : "",
     "Distribute furniture naturally across the available floor space. If space is large, create a primary seating group and a secondary accent further back.",
+    "Use visible architectural cues as scale references — a standard guard rail is 100cm tall, a French door is 215cm tall, a floor tile 60x60cm. All furniture must be proportional to these references.",
     "All lighting fixtures must be OFF in daylight — unlit lanterns with cold wax candle stub visible (no flame, no glow, no warm light), unlit string lights with dark glass bulbs, no glowing filaments, no visible flames anywhere.",
     "All cushions, rugs, and textiles must be outdoor-rated weather-resistant (Sunbrella-type acrylic or waterproof polyester). No indoor fabric textures.",
     "Scale all plants to match the space: on a balcony or small terrace (under 15m2) no plant exceeds 120cm total height. On a garden or large terrace, potted trees must not exceed 200cm.",
+    "If the outdoor space appears compact (under ~10m2 visible floor), scale down: use a 120cm bistro table instead of 160cm dining, skip large sofas, limit to 2 chairs instead of 4.",
     "Do not place opaque structures (screens, shelving, A-frames) directly in front of full-height windows or glass doors.",
     "If the space has exposed overhead structure (beams, pergola, rafters), consider hanging one trailing plant or lantern from it to activate the vertical dimension — only if clearance allows.",
     "Ground surfaces are LOCKED — same material, color, texture. Guard rails, walls, facades unchanged.",
@@ -655,9 +660,11 @@ function buildOutdoorFurnitureFluxPrompt(
     `${furniturePrompt}, placed naturally across the available floor space of this finished outdoor area.`,
     subtypeOverride ? subtypeOverride : "",
     "Primary seating group in foreground, secondary accent further back if space allows.",
+    "Guard rail = 100cm, French door = 215cm as scale references.",
     "All lighting fixtures OFF in daylight — unlit lanterns with cold wax candle (no flame, no glow), unlit string lights with dark bulbs, no glowing filaments.",
     "All textiles outdoor-rated: Sunbrella or waterproof polyester, no indoor fabrics.",
     "Scale plants to space: balcony max 120cm, garden max 200cm potted tree height.",
+    "If space appears compact (<10m2), scale down: 120cm table, 2 chairs max.",
     "No opaque structures (screens, shelving, A-frames) in front of full-height windows or glass doors.",
     "If exposed overhead structure (beams, pergola), consider one hanging plant or lantern if clearance allows.",
     "Ground surfaces LOCKED — same material, color, texture. Guard rails, walls, facades unchanged.",

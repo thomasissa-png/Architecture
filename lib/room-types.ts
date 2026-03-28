@@ -85,7 +85,7 @@ export const ROOM_TYPES: Record<string, RoomType> = {
     roomSurfaceOverride:
       "Additionally for this kitchen: ceramic or natural stone floor tiles suited for a kitchen. IMPORTANT OVERRIDE: the floor MUST be ceramic tiles or natural stone — NOT wood, NOT parquet, NOT herringbone wood. Subway tile or smooth splashback on the wall behind the work area.",
     roomFurnitureOverride:
-      "Kitchen furnishing: countertop work surface 60cm deep with integrated sink, upper and lower cabinetry in neutral finish, built-in oven and cooktop, two or three bar stools at an island or peninsula if space allows, pendant light above the work area, cutting board and ceramic jar with utensils on the counter, small herb pots (basil, rosemary) on a shelf or windowsill, fruit bowl on the counter. Functional and organized layout. No armchairs, no lounge chairs, no floor lamps.",
+      "Kitchen furnishing: countertop work surface 60cm deep with integrated sink, upper cabinetry 70cm tall mounted at 140cm from floor in neutral finish, lower cabinetry 85cm tall in matching finish, built-in oven 60cm wide and cooktop 60cm wide, two or three bar stools 75cm seat height at an island or peninsula if space allows, pendant light 30cm diameter above the work area, cutting board and ceramic jar 15cm with utensils on the counter, small herb pots 12cm (basil, rosemary) on a shelf or windowsill, fruit bowl 25cm on the counter. Functional and organized layout. No armchairs, no lounge chairs, no floor lamps.",
     roomNegativeOverride:
       "sofa, coffee table, TV unit, bed, wardrobe, floor lamp, arc lamp, area rug, armchair, lounge chair",
   },
@@ -97,7 +97,7 @@ export const ROOM_TYPES: Record<string, RoomType> = {
     description: "Mobilier adapté : bureau, fauteuil, bibliotheque",
     roomSurfaceOverride: "",
     roomFurnitureOverride:
-      "Home office furniture: desk 140cm wide with clean lines, ergonomic desk chair with padded seat, desk lamp with adjustable arm, open bookshelf or storage unit as background anchor 160cm tall, small plant on the desk, organized desk accessories (pen holder, notebook, monitor or laptop), comfortable reading chair in a corner if space allows, area rug 160x230cm under the desk area. Productive but inviting atmosphere — not a corporate office.",
+      "Home office furniture: desk 140cm wide 70cm deep 75cm tall with clean lines, ergonomic desk chair 65cm wide 45cm seat height with padded seat, desk lamp 45cm tall with adjustable arm, open bookshelf 80cm wide or storage unit as background anchor 160cm tall, small plant 20cm on the desk, organized desk accessories (pen holder, notebook, monitor or laptop), comfortable reading chair 70cm wide in a corner if space allows, area rug 160x230cm under the desk area. Productive but inviting atmosphere — not a corporate office.",
     roomNegativeOverride:
       "sofa, coffee table, TV unit, bed, wardrobe, dining table",
   },
