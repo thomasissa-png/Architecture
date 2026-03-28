@@ -1005,7 +1005,7 @@ export default function Home() {
               Mettez en scène votre espace
             </h2>
             <p className="text-muted font-light">
-              3 visuels gratuits · Sans créer de compte
+              {session?.user ? "Générez vos visuels meublés" : "3 visuels gratuits · Sans créer de compte"}
             </p>
           </div>
 
