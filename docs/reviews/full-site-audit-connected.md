@@ -1,136 +1,286 @@
-# Audit Pages Connectées — Versiroom
+# Audit UX — Pages connectées Versiroom — Batch 1
 
-## Synthèse
+> Agent : @ux — 2026-03-28
+> Périmètre : 5 pages connectées principales
+> Pricing de référence : Découverte GRATUIT / Starter 9,90€ one-shot / Pro 29€/mois
 
-| Page | P0 | P1 | P2 |
+---
+
+## Synthèse globale
+
+| Page | Score | P0 | P1 | P2 |
+|---|---|---|---|---|
+| Ma galerie | 7.5/10 | 1 | 3 | 2 |
+| Mes biens | 8/10 | 0 | 2 | 3 |
+| Fiche bien [id] | 7/10 | 2 | 4 | 2 |
+| Mes dossiers | 7.5/10 | 1 | 2 | 2 |
+| Mon compte | 8/10 | 0 | 2 | 3 |
+
+---
+
+## Page 1 — Ma galerie (`app/ma-galerie/page.tsx`)
+
+**Score : 7.5/10**
+
+### État vide
+- PASS : message "Aucune photo pour le moment." + CTA "Générer ma première photo" → `/#outil`. Correct.
+- P1 : état vide filtré absent. Si un filtre actif retourne 0 résultats, le message reste "Aucune photo pour le moment" — l'utilisateur ne sait pas que c'est le filtre qui est responsable.
+
+### Accents français
+- P0 : entités HTML dans du JSX rendu — `&#233;` (é), `&#232;` (è), `&#224;` (à) dans le JSX. Règle CLAUDE.md §13 : utiliser les vrais caractères UTF-8 dans les strings JavaScript.
+  - Ligne 287 : `g&#233;n&#233;r&#233;e` → `générée`
+  - Ligne 329 : `Non class&#233;es` → `Non classées`
+  - Ligne 389 : `Non class&#233;e` → `Non classée`
+  - Ligne 412 : `Associer &#224; un bien :` → `Associer à un bien :`
+  - Ligne 497 : `Ext&#233;rieur` → `Extérieur`
+  - Ligne 507 : `Associ&#233;e &#224; :` → `Associée à :`
+  - Ligne 511 : `Associer &#224; un bien :` → `Associer à un bien :`
+
+### Pricing
+- PASS : aucune mention de prix sur cette page. Non concerné.
+
+### Focus-visible / touch targets
+- PASS : tous les boutons principaux ont `focus-visible:ring-2 focus-visible:ring-sage/50`.
+- P1 : le bouton "Associer" en overlay carte (ligne 400) a une cible `px-2 py-1` — hauteur estimée ~28px, sous le seuil 44px.
+  - Correction : ajouter `min-h-[44px]` au bouton Associer en overlay.
+- P2 : les boutons de la dropdown d'association (ligne 415) ont `py-1.5` → ~30px. Ajouter `min-h-[44px]`.
+
+### Apostrophes JSX
+- PASS : pas d'apostrophes dans du texte JSX entre balises (les apostrophes dans les strings JS sont correctes — "Aujourd'hui" ligne 25 est dans une fonction JS, pas du JSX).
+
+### Mobile responsive
+- PASS : grille `grid-cols-2 sm:grid-cols-3 lg:grid-cols-4`. Modal détail `max-w-3xl w-full max-h-[90vh] overflow-y-auto`.
+- P2 : la dropdown d'association `absolute top-10 right-0 sm:right-2` peut dépasser le viewport sur mobile. `max-w-[calc(100vw-2rem)]` est présent — acceptable.
+
+### Navigation / liens retour
+- P1 : pas de lien retour ni breadcrumb. Si Thomas arrive depuis une fiche bien, il n'a pas de retour contextuel. La nav header suffit pour le cas nominal, mais l'ajout d'un breadcrumb serait plus conforme aux standards H1.
+
+---
+
+## Page 2 — Mes biens (`app/mes-biens/page.tsx`)
+
+**Score : 8/10**
+
+### État vide
+- PASS : message "Aucun bien enregistré." + bouton "Ajouter mon premier bien" qui ouvre le formulaire inline. CTA clair et actionnable.
+
+### Accents français
+- P1 : entités HTML dans du JSX :
+  - Ligne 207 : `enregistr&#233;` → `enregistré`
+  - Ligne 259 : `S&#233;lectionner` → `Sélectionner`
+  - Ligne 267 : `m&#178;` → `m²`
+  - Ligne 279 : `pi&#232;ces` → `pièces`
+  - Ligne 289 : `&#8364;` → `€`
+  - Lignes 369, 371, 374, 380 : mêmes problèmes dans les cartes de biens.
+
+### Pricing
+- PASS : aucune mention de prix sur cette page.
+
+### Focus-visible / touch targets
+- PASS : bouton "+ Nouveau bien" et bouton "Créer le bien" ont `focus-visible:ring-2`.
+- P2 : bouton "Annuler" (ligne 322) : `px-4 py-2` → hauteur ~36px. Passer à `py-2.5`.
+- P2 : suggestions d'autocomplétion adresse (ligne 241) : `px-3 py-2` → ~36px. Ajouter `min-h-[44px]`.
+
+### Apostrophes JSX
+- PASS : apostrophes dans strings JS, pas dans du JSX rendu entre balises. OK.
+
+### Mobile responsive
+- PASS : grille `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`. Formulaire en `grid-cols-1 sm:grid-cols-2`. OK.
+
+### Navigation / liens retour
+- P1 : le logo Versiroom fait office de retour vers `/` mais ce n'est pas évident sur mobile. Pas bloquant, mais un lien "← Accueil" en pied de page serait utile.
+- P2 : après création de bien, redirection `window.location.href` (ligne 143) — perd l'état. Préférer `router.push`. Impact mineur.
+
+### Autres
+- P1 : `ProGate` doit afficher le pricing v3 (29€/mois) pour les non-Pro. Vérifier que le composant ProGate affiche bien "À partir de 29€/mois" et non un ancien tarif.
+
+---
+
+## Page 3 — Fiche bien `[id]` (`app/mes-biens/[id]/page.tsx`)
+
+**Score : 7/10**
+
+### État vide (0 photos associées)
+- P1 : aucun empty state explicite pour la section photos quand `photos.length === 0`. Le composant `InlineGenerator` est proposé mais sans texte d'accompagnement.
+  - Correction : ajouter avant `InlineGenerator` : `<p className="text-sm text-muted font-light mb-4">Aucune photo générée pour ce bien. Commencez par générer des visuels ci-dessous.</p>`.
+
+### Accents français
+- P0 : ligne 445 : `setToastMsg("Erreur lors de l\u2019archivage.")` — Unicode escape `\u2019` dans une string JS.
+  - Correction : `"Erreur lors de l'archivage."`
+- P0 : ligne 493 : `"Erreur lors de la création de l\u2019annonce."` — même problème.
+  - Correction : `"Erreur lors de la création de l'annonce."`
+- P1 : entités HTML dans JSX — lignes 597–614 : `m&#178;`, `pi&#232;ces`, `&#8364;` → remplacer par `m²`, `pièces`, `€`.
+
+### Pricing
+- P1 : ligne 486-489 — le toast d'erreur 403 mentionne "Pack Pro" (`Cette fonctionnalité est réservée au Pack Pro`). Terminologie v3 incorrecte.
+  - Correction : `"Cette fonctionnalité est réservée à l'abonnement Pro (29€/mois)."`
+
+### Focus-visible / touch targets
+- PASS : modales avec focus trap correct (Escape, Tab, focus premier élément).
+- P1 : boutons "Modifier la description" (ligne 655) et "Regénérer" (ligne 660) : `text-xs font-light hover:underline` — pas de `focus-visible:ring`.
+  - Correction : ajouter `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded`.
+- P1 : `handleDeleteProperty` (ligne 454) utilise `window.confirm()` — non accessible (pas de focus trap, non stylé, bloqué sur certains navigateurs mobile).
+  - Correction : remplacer par un composant `<ConfirmModal>` avec focus trap.
+
+### Apostrophes JSX
+- PASS : `l&apos;annonce` dans du JSX est correctement encodé.
+
+### Mobile responsive
+- PASS : grille `grid-cols-1 lg:grid-cols-3` pour le header. Section infos complémentaires en `grid-cols-2 sm:grid-cols-4`.
+- P2 : breadcrumb tronque l'adresse à 40 chars — correct sur mobile, mais sur desktop l'adresse entière serait utile.
+
+### Navigation / liens retour
+- PASS : breadcrumb `Mes biens / [adresse]` présent (ligne 573). Excellent.
+
+---
+
+## Page 4 — Mes dossiers (`app/mes-dossiers/page.tsx`)
+
+**Score : 7.5/10**
+
+### État vide
+- P0 : CTA "Créer un dossier" (ligne 169) pointe vers `/` (accueil). Thomas ne comprend pas comment créer un dossier depuis `/` — il faut aller dans une fiche bien. CTA trompeur.
+  - Correction : href `/mes-biens`, texte "Créer depuis une fiche bien".
+
+### Accents français
+- PASS : tous les caractères sont en UTF-8 natif. `Terminé` (ligne 38) est correct. OK.
+
+### Pricing
+- PASS : aucune mention de prix. `ProGate` gère l'accès.
+
+### Focus-visible / touch targets
+- P1 : bouton "Copier le lien" (ligne 232) : `px-1.5 py-1` → hauteur ~28px. Sous le seuil 44px.
+  - Correction : `min-h-[44px] px-3 py-2`.
+- PASS : les cartes dossiers sont des `<a>` avec surface de clic complète.
+
+### Apostrophes JSX
+- PASS : `Créez votre premier dossier en Mode Pro.` — pas d'apostrophe problématique dans du JSX.
+
+### Mobile responsive
+- PASS : layout en stack vertical `space-y-3`. Responsive correct.
+- P2 : sur mobile, `dossier.bien_adresse` est tronqué `max-w-[200px]` (ligne 214). Acceptable.
+
+### Navigation / liens retour
+- P1 : pas de lien retour depuis Mes dossiers vers Mes biens. Ajouter un lien contextuel.
+
+### Autres
+- P2 : le status `"generating"` affiche "En cours" sans indicateur de progression ni ETA. Thomas ne sait pas si le dossier est bloqué.
+
+---
+
+## Page 5 — Mon compte (`app/compte/page.tsx`)
+
+**Score : 8/10**
+
+### État vide (profil non rempli)
+- PASS : checkbox décochée par défaut. Formulaire marchand masqué. État initial propre.
+
+### Accents français
+- PASS : tous les caractères sont en UTF-8 natif dans le JSX. `l&apos;immobilier` (ligne 369) et `d&apos;entreprise` (ligne 389) sont correctement encodés (apostrophes dans du JSX entre balises).
+- P1 : strings dans les handlers SIRET sans accents :
+  - Ligne 121 : `"Service de verification indisponible. Reessayez..."` → `"Service de vérification indisponible. Réessayez dans quelques instants."`
+  - Ligne 171 : `"Aucune entreprise trouvee."` → `"Aucune entreprise trouvée."`
+  - Ligne 158 : `"Erreur serveur. Reessayez dans quelques instants."` → `"Erreur serveur. Réessayez dans quelques instants."`
+
+### Pricing
+- PASS : aucune mention de prix. Le CTA post-save vers `/mes-biens` est cohérent.
+
+### Focus-visible / touch targets
+- PASS : boutons Rechercher et Enregistrer ont `focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2`. Excellent.
+- P1 : `input[type="color"]` (lignes 623, 649) : `w-10 h-10` = 40×40px — sous le seuil 44px.
+  - Correction : `w-11 h-11` (44px).
+- P2 : `input[type="checkbox"]` (ligne 363) : `w-5 h-5` = 20px. La zone de clic du label adjacent compense — acceptable.
+
+### Apostrophes JSX
+- PASS : `l&apos;immobilier`, `d&apos;entreprise`, `Aperçu` — tous corrects.
+- P2 : ligne 402 : `focus:outline-none` et `focus-visible:border-foreground` mélangés sur certains inputs. Uniformiser en `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50`.
+
+### Mobile responsive
+- PASS : `grid-cols-1 sm:grid-cols-2` partout. Header `max-w-4xl`. OK.
+
+### Navigation / liens retour
+- P1 : header `/compte` utilise `sticky` (ligne 330) au lieu de `fixed top-0 left-0 right-0` — incohérence avec toutes les autres pages connectées qui utilisent `fixed`.
+  - Correction : `fixed top-0 left-0 right-0 z-50` + `pt-24` sur `<main>` (remplacer `py-8 sm:py-12` par `pt-24 pb-12 px-5 sm:px-8`).
+
+---
+
+## Récapitulatif des corrections prioritaires
+
+### P0 — Blocants (3 issues)
+
+| # | Page | Problème | Correction |
 |---|---|---|---|
-| `/ma-galerie` | 1 | 3 | 3 |
-| `/mes-biens` | 0 | 2 | 3 |
-| `/mes-biens/[id]` | 1 | 4 | 4 |
-| `/mes-dossiers` | 1 | 2 | 2 |
-| `/compte` | 0 | 3 | 3 |
+| P0-1 | Ma galerie | Entités HTML `&#NNN;` dans JSX rendu — viole règle UTF-8 CLAUDE.md §13 | Remplacer par vrais caractères : `é`, `è`, `à`, `²` |
+| P0-2 | Fiche bien | `\u2019` dans strings JS (lignes 445, 493) | Écrire directement l'apostrophe UTF-8 `'` |
+| P0-3 | Mes dossiers | CTA "Créer un dossier" → `/` : destination trompeuse pour Thomas | href `/mes-biens`, texte "Créer depuis une fiche bien" |
+
+### P1 — Haute priorité (14 issues)
+
+| # | Page | Problème | Correction |
+|---|---|---|---|
+| P1-1 | Ma galerie | État vide filtré non différencié | Détecter filtre actif → "Aucun résultat pour ce filtre. [Réinitialiser]" |
+| P1-2 | Ma galerie | Bouton "Associer" overlay : cible <44px | Ajouter `min-h-[44px]` |
+| P1-3 | Mes biens | Entités HTML dans JSX (enregistré, Sélectionner, m², pièces, €) | Remplacer par UTF-8 |
+| P1-4 | Mes biens | ProGate : vérifier pricing v3 affiché | Confirmer affichage "29€/mois" |
+| P1-5 | Fiche bien | Entités HTML dans JSX (m², pièces, €) | Remplacer par UTF-8 |
+| P1-6 | Fiche bien | Toast 403 : "Pack Pro" ≠ terminologie v3 | → "abonnement Pro (29€/mois)" |
+| P1-7 | Fiche bien | Boutons Modifier/Regénérer sans focus-visible | Ajouter `focus-visible:ring-2 focus-visible:ring-sage/50 rounded` |
+| P1-8 | Fiche bien | `window.confirm()` pour suppression : non accessible | Remplacer par `<ConfirmModal>` avec focus trap |
+| P1-9 | Fiche bien | Empty state photos sans texte d'accompagnement | Ajouter phrase avant InlineGenerator |
+| P1-10 | Mes dossiers | Bouton "Copier le lien" : cible <44px | `min-h-[44px] px-3 py-2` |
+| P1-11 | Mon compte | Strings SIRET sans accents (verification, trouvee) | → "vérification", "trouvée", "Réessayez" |
+| P1-12 | Mon compte | `input[type="color"]` : 40×40px < 44px | `w-11 h-11` |
+| P1-13 | Mon compte | Header `sticky` ≠ `fixed` des autres pages | `fixed top-0 left-0 right-0 z-50` + `pt-24` sur main |
+| P1-14 | Mes dossiers | Pas de lien retour vers Mes biens | Ajouter lien contextuel dans empty state ou nav |
+
+### P2 — Basse priorité (12 issues)
+
+- Ma galerie : cibles dropdown association <44px
+- Ma galerie : dropdown peut déborder sur mobile (partiellement géré)
+- Mes biens : bouton "Annuler" py-2 → py-2.5
+- Mes biens : suggestions autocomplete <44px
+- Mes biens : `window.location.href` → `router.push`
+- Fiche bien : breadcrumb tronqué à 40 chars sur desktop
+- Mes dossiers : adresse tronquée max-w-[200px] sur mobile
+- Mes dossiers : status "generating" sans ETA
+- Mon compte : checkbox 20px (compensé par label)
+- Mon compte : mélange `focus:` / `focus-visible:` sur inputs SIRET
+- Mon compte : aperçu branding non scrollable si raison sociale longue
 
 ---
 
-## `/ma-galerie` — findings
+## Tests UX — Parcours Thomas (marchand de biens)
 
-### P0
-
-| # | Critère | Problème | Code exact | Correction |
-|---|---|---|---|---|
-| P0-1 | Accents FR dans JSX | `&#233;` `&#232;` `&#224;` encodés en entités HTML dans des strings JS — violation règle globale | `"g&#233;n&#233;r&#233;e"` (l.287), `"Non class&#233;e"` (l.389), `"G&#233;n&#233;rer ma premi&#232;re photo"` (l.341), `"Associ&#233;e &#224;"` (l.507), etc. | Remplacer par les vrais caractères UTF-8 : `"générée"`, `"Non classée"`, `"Associée à"` |
-
-### P1
-
-| # | Critère | Problème | Code exact | Correction |
-|---|---|---|---|---|
-| P1-1 | Touch target 44px — bouton "Associer" | `px-2 py-1` sur mobile = ~28px de hauteur. Visible en permanence mobile mais trop petit | `className="... bg-background/90 text-foreground text-xs px-2 py-1 rounded-lg"` (l.400) | Passer à `px-3 py-2.5 min-h-[44px]` |
-| P1-2 | État vide filtré non distinct | Si les filtres produisent 0 résultat, le même état vide générique s'affiche ("Aucune photo pour le moment.") sans indiquer que c'est dû au filtre | L.335–344 : aucune distinction entre "galerie vide" et "filtre sans résultat" | Ajouter : `{filterStyle || filterRoomType || filterAssociated ? "Aucune photo ne correspond à ces filtres." : "Aucune photo pour le moment."}` + bouton "Effacer les filtres" |
-| P1-3 | Aria-label manquant sur carte photo | `.group.relative` cliquable (l.348–424) n'a ni `role="button"` ni `aria-label` — navigation clavier impossible | `<div className="group relative ... cursor-pointer" onClick={() => setSelectedPhoto(photo)}>` (l.349) | Remplacer par `<button>` ou ajouter `role="button" tabIndex={0} aria-label={...} onKeyDown={e => e.key==='Enter' && setSelectedPhoto(photo)}` |
-
-### P2
-
-| # | Critère | Problème | Code exact | Correction |
-|---|---|---|---|---|
-| P2-1 | `aria-label` absent sur modal | Le dialog a `role="dialog"` et `aria-modal="true"` mais pas `aria-labelledby` | L.439–441 | Ajouter `aria-labelledby="modal-title"` + `id="modal-title"` sur le h2 (l.445) |
-| P2-2 | `room_type` brut affiché | Dans le modal détail, `room_type` est affiché tel quel (`living_room`, `bedroom`...) sans label lisible | `<span className="bg-foreground/5 px-2 py-1 rounded-lg">{selectedPhoto.room_type}</span>` (l.494) | Utiliser un dictionnaire `ROOM_LABELS` ou importer depuis `lib/constants` |
-| P2-3 | Pas de focus visible sur la photo-card `<div>` | Le `cursor-pointer` sur un `<div>` non-focusable exclut la navigation clavier (redondant avec P1-3 mais distinct : le `focus-visible:ring` ne s'applique pas aux divs) | L.349 | Idem P1-3 : passer en `<button>` pour bénéficier du focus natif |
+| Test | Critère | Statut |
+|---|---|---|
+| Thomas peut créer un bien et générer un visuel | Formulaire création + génération inline fonctionnels | ✅ |
+| Charge cognitive ≤ 3 actions par écran clé | Mes biens (1 action), Fiche bien (~6 sections = dense) | ⚠️ |
+| Time-to-value : inscription → premier dossier ≤ 5 étapes | Compte → Mes biens → Fiche → Générer → Dossier = 5 étapes | ⚠️ |
+| Edge case : CTA "Créer un dossier" sans bien | CTA pointe vers `/` : incompréhensible pour Thomas | ❌ P0-3 |
+| Accessibilité WCAG 2.2 AA | focus-visible présent sur éléments majeurs, 3 cibles <44px | ⚠️ |
+| Pricing v3 cohérent | "Pack Pro" dans toast 403 ≠ v3 | ❌ P1-6 |
 
 ---
 
-## `/mes-biens` — findings
+## Handoff → @fullstack
 
-### P0
+**Fichiers produits :**
+- `/home/user/Architecture/docs/reviews/full-site-audit-connected.md`
 
-Aucun P0.
+**Corrections à implémenter par priorité :**
 
-### P1
+P0 (immédiat) :
+1. `app/ma-galerie/page.tsx` : remplacer toutes les entités HTML `&#NNN;` par vrais caractères UTF-8
+2. `app/mes-biens/[id]/page.tsx` lignes 445 et 493 : `\u2019` → apostrophe directe `'`
+3. `app/mes-dossiers/page.tsx` ligne 169 : href `/` → `/mes-biens`, texte → "Créer depuis une fiche bien"
 
-| # | Critère | Problème | Code exact | Correction |
-|---|---|---|---|---|
-| P1-1 | Touch target 44px — bouton "Annuler" du formulaire | `px-4 py-2` = ~32px hauteur. Cible trop petite sur mobile | `className="text-xs text-muted font-light px-4 py-2 rounded-full hover:text-foreground"` (l.322) | Ajouter `min-h-[44px]` ou `py-3` |
-| P1-2 | Accents FR encodés dans les strings | `&#233;` `&#178;` `&#232;` utilisés dans des textes JS/JSX — violation règle globale | `"enregistr&#233;"` (l.207), `"S&#233;lectionner"` (l.259), `"Surface (m&#178;)"` (l.267), `"Nombre de pi&#232;ces"` (l.279), `"Prix de vente (&#8364;)"` (l.289), `"m&#178;"` (l.370), `"pi&#232;ces"` (l.376), `"&#8364;/m&#178;"` (l.387) | Remplacer par vrais caractères UTF-8 |
+P1 (prioritaire) :
+4. `app/mes-biens/page.tsx` : entités HTML → UTF-8
+5. `app/mes-biens/[id]/page.tsx` : entités HTML + toast 403 "Pack Pro" → "abonnement Pro (29€/mois)" + focus-visible sur Modifier/Regénérer + ConfirmModal pour suppression + empty state photos
+6. `app/mes-dossiers/page.tsx` : bouton "Copier le lien" min-h-[44px]
+7. `app/compte/page.tsx` : strings SIRET sans accents → UTF-8 + input color w-11 h-11 + header sticky → fixed + pt-24 sur main
 
-### P2
-
-| # | Critère | Problème | Code exact | Correction |
-|---|---|---|---|---|
-| P2-1 | État loading authentification vs données fusionné | `authStatus === "loading" \|\| isLoading` dans le même return (l.151) : pas de distinction entre "auth en cours" (pas de nav) et "données en cours" (nav disponible) — incohérent avec `/ma-galerie` qui les distingue | L.151 | Séparer en deux états : auth loading sans nav, data loading avec nav complet (cohérence inter-pages) |
-| P2-2 | Pas de `focus-visible` sur le bouton "Ajouter mon premier bien" (empty state) | `className="inline-block mt-4 text-xs bg-foreground text-background px-4 py-2 rounded-full ..."` (l.337) — manque `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2` | L.337 | Ajouter les classes focus-visible |
-| P2-3 | Pas d'état erreur sur fetchProperties | Si l'API `/api/properties` échoue, `setIsLoading(false)` est appelé mais aucun message d'erreur n'est affiché — la page affiche l'état vide au lieu d'un message d'erreur | L.60–72 : `catch` ne fait que `console.error` | Ajouter un state `error` et afficher un message actionnable |
-
----
-
-## `/mes-biens/[id]` — findings
-
-### P0
-
-| # | Critère | Problème | Code exact | Correction |
-|---|---|---|---|---|
-| P0-1 | `window.confirm()` pour action destructive | La suppression du bien utilise `window.confirm()` — bloqué dans certains contextes (iframes Replit), non stylable, inaccessible aux screen readers | `if (!window.confirm("Supprimer ce bien ?..."))` (l.455) | Remplacer par une modal de confirmation avec focus trap, boutons "Supprimer" / "Annuler", et `role="alertdialog"` |
-
-### P1
-
-| # | Critère | Problème | Code exact | Correction |
-|---|---|---|---|---|
-| P1-1 | Accents encodés en entités dans strings JS | `\u00e9` `\u2019` `\u00ea` utilisés dans `setToastMsg()` — violation règle globale | `"Description g\u00e9n\u00e9r\u00e9e avec succ\u00e8s."` (l.310), `"La description n\u2019a pas pu \u00eatre g\u00e9n\u00e9r\u00e9e."` (l.313), etc. | Remplacer par vrais caractères UTF-8 : `"Description générée avec succès."` etc. |
-| P1-2 | Touch targets < 44px sur boutons inline description | `px-3 py-1.5` = ~30px hauteur | `"text-xs bg-sage text-white px-3 py-1.5 rounded-full"` (l.629, 675) et `"text-xs text-muted font-light px-3 py-1.5 rounded-full"` (l.634) | Passer à `py-2.5 min-h-[44px]` |
-| P1-3 | `focus-visible` absent sur boutons "Modifier" / "Regénérer" | Les boutons textuels (l.651, 662) n'ont pas de `focus-visible:ring` — navigation clavier sans retour visuel | `className="text-xs text-sage font-light mt-1 hover:underline"` (l.655) | Ajouter `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded` |
-| P1-4 | Pas de lien retour "Mes biens" visible au mobile | Le breadcrumb (l.573–579) est en `text-xs` peu visible et n'a pas de touch target 44px — le seul retour est la nav header | `<a href="/mes-biens" className="text-xs text-muted font-light hover:text-foreground"` (l.574) | Ajouter un bouton retour explicite `← Mes biens` avec `min-h-[44px]` en mobile, ou agrandir le target du breadcrumb |
-
-### P2
-
-| # | Critère | Problème | Code exact | Correction |
-|---|---|---|---|---|
-| P2-1 | `_blank` sans `rel="noreferrer"` sur window.open | `window.open(\`/dossier/...\`, '_blank')` (l.421) et `window.open(\`/annonce/...\`, '_blank')` (l.483) — sécurité et performance (pas de `noopener noreferrer`) | L.421, L.483 | `window.open(..., '_blank', 'noopener,noreferrer')` |
-| P2-2 | État "Bien non trouvé" sans lien retour accessible | L'état `error` (l.524–535) a un lien retour mais le composant global affiche un spinner `animate-pulse` identique à l'état loading (l.537–543) — impossible de distinguer "en cours" de "introuvable" | L.537–543 | L'état `!property` après fin du loading devrait rediriger vers `/mes-biens` ou afficher une page 404 explicite |
-| P2-3 | `setTéléphone` — nom de state avec accent | La variable `setTéléphone` (l.38) contient un caractère accentué — non bloquant mais anti-convention JS et source de bugs potentiels dans certains bundlers | `const [telephone, setTéléphone] = useState("")` (l.38 de `compte/page.tsx`) | Renommer en `setTelephone` |
-| P2-4 | `focus-visible` absent sur checkboxes compInfo | Les checkboxes Ascenseur, Parking, Cave (l.779, 795, 806) utilisent `focus:ring-sage/50` au lieu de `focus-visible:ring-sage/50` — ring visible même au clic souris | `className="w-4 h-4 rounded border-foreground/20 text-sage focus:ring-sage/50"` | Remplacer `focus:ring` par `focus-visible:ring` |
-
----
-
-## `/mes-dossiers` — findings
-
-### P0
-
-| # | Critère | Problème | Code exact | Correction |
-|---|---|---|---|---|
-| P0-1 | Redirection `window.location.href = "/"` côté client sans guard SSR | `if (!session)` déclenche une redirection JS côté client (l.104–112). Sur un réseau lent, l'utilisateur voit brièvement "Redirection en cours..." sans navigation React — perte du contexte de scroll et de l'historique browser | L.104–112 | Remplacer par `redirect("/")` côté serveur ou `useRouter().push("/")` dans un `useEffect` — ne jamais forcer `window.location.href` dans le JSX synchrone |
-
-### P1
-
-| # | Critère | Problème | Code exact | Correction |
-|---|---|---|---|---|
-| P1-1 | Touch target 44px — bouton "Copier le lien" | `px-1.5 py-1` = ~24px hauteur. Trop petit sur mobile dans un contexte de liste dense | `className="text-[11px] text-muted ... px-1.5 py-1"` (l.232) | `px-3 py-2.5 min-h-[44px]` ou positionner hors du flux de la card |
-| P1-2 | Empty state ne crée pas réellement un dossier | Le CTA "Créer un dossier" (l.168) renvoie vers `/` (page d'accueil) sans ancre vers la section de génération — Thomas doit retrouver l'outil lui-même | `<a href="/">Créer un dossier</a>` (l.169) | Changer en `href="/#outil"` pour scroller directement à l'outil |
-
-### P2
-
-| # | Critère | Problème | Code exact | Correction |
-|---|---|---|---|---|
-| P2-1 | Pas d'état erreur affiché si `navigator.clipboard` échoue | Le `.then()` sur `navigator.clipboard.writeText` (l.227) ne gère pas le `.catch()` — si les permissions clipboard sont refusées, l'UI reste sur "Copier le lien" sans feedback | L.227–230 | Ajouter `.catch(() => setCopiedUuid("error"))` et afficher "Échec de la copie" |
-| P2-2 | `focus-visible` absent sur la card `<a>` dossier | `className="block p-5 rounded-2xl border ... hover:border-foreground/10"` (l.184) — manque `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50` | L.184 | Ajouter les classes focus-visible sur la card |
-
----
-
-## `/compte` — findings
-
-### P0
-
-Aucun P0.
-
-### P1
-
-| # | Critère | Problème | Code exact | Correction |
-|---|---|---|---|---|
-| P1-1 | Variable state avec accent | `const [telephone, setTéléphone] = useState("")` (l.38) — nom de setter avec caractère accentué, anti-convention JS | L.38 | Renommer `setTéléphone` → `setTelephone` partout |
-| P1-2 | `focus-visible` absent sur inputs de couleur hex | Les deux `<input type="text">` pour les codes hex (l.632, 657) n'ont pas de `focus-visible:ring` — seul `focus-visible:border-foreground` est défini, border invisible sur certains thèmes | `className="flex-1 px-3 py-2 border ... focus-visible:border-foreground focus:outline-none"` (l.636, 660) | Ajouter `focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2` |
-| P1-3 | Pas de feedback erreur d'upload logo visible durablement | `setSaveMessage` est défini en cas d'erreur upload (l.252) mais `saveMessage` n'est pas auto-dismissed avec timeout — l'erreur reste affichée indéfiniment jusqu'à la prochaine action | L.246–262 : aucun `setTimeout(() => setSaveMessage(null), ...)` sur le path erreur logo | Ajouter un `setTimeout(() => setSaveMessage(null), 5000)` après les `setSaveMessage({ type: "error", ... })` |
-
-### P2
-
-| # | Critère | Problème | Code exact | Correction |
-|---|---|---|---|---|
-| P2-1 | Pricing v3 non référencé | La page `/compte` ne mentionne pas les plans ni les limites associées (ex : branding disponible en Pro/Business). Thomas ne sait pas à quel plan correspond cette feature | L.367–374 : checkbox merchant sans mention du plan requis | Ajouter une note inline sous la checkbox : `"Disponible à partir du plan Pro (29€/mois)"` avec lien vers `/pricing` |
-| P2-2 | `focus-visible` absent sur input `type="color"` | Les `<input type="color">` (l.621, 647) n'ont ni `focus-visible:ring` ni `aria-label` distinct de leur `<label>` parent | L.621 : `className="w-10 h-10 rounded-lg border ... cursor-pointer p-0.5"` | Ajouter `focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2` + `aria-label="Sélecteur de couleur principale"` |
-| P2-3 | CTA "Voir mes biens" conditionnel mal placé | Le lien "Voir mes biens" (l.745–751) s'affiche uniquement si `saveMessage?.type === "success"` — il disparaît au bout de 3s avec le message. Après 3s, aucun CTA de navigation vers la prochaine étape | L.744–751 | Afficher ce lien en permanence sous le bouton Enregistrer (pas conditionné au message de succès), car c'est la prochaine étape logique du parcours Thomas |
+**Points d'attention :**
+- Créer un composant `<ConfirmModal>` réutilisable (remplace window.confirm — P1-8, et permettra d'éviter la pattern à l'avenir)
+- Vérifier que `ProGate` affiche le pricing v3 (29€/mois) et non un ancien tarif
+- L'incohérence header sticky vs fixed sur `/compte` cause un glitch de scroll sur iOS Safari
