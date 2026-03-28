@@ -343,7 +343,7 @@ Demande type : "Fais appel aux agents Architecte d'Interieur, Expert IA Image et
                       <td className="px-4 py-3 text-right text-foreground/70 tabular-nums">{u.generation_count}</td>
                       <td className="px-4 py-3 text-right text-foreground/70 tabular-nums">{u.purchase_count}</td>
                       <td className="px-4 py-3 text-right text-foreground/70 tabular-nums">
-                        {u.total_spent_cents > 0 ? `${(u.total_spent_cents / 100).toFixed(2)} \u20AC` : "—"}
+                        {u.total_spent_cents > 0 ? `${(u.total_spent_cents / 100).toFixed(2)} €` : "—"}
                       </td>
                       <td className="px-4 py-3 text-foreground/50 text-xs">
                         {new Date(u.created_at).toLocaleDateString("fr-FR")}
