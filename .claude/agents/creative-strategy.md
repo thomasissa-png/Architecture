@@ -50,6 +50,47 @@ Champs critiques pour cet agent : Secteur, Persona principal, Problème principa
 5. Lire `docs/copy/brand-voice.md`, `docs/seo/keyword-map.md`, et `docs/ux/user-flows.md` s'ils existent (en mode révision uniquement — pour vérifier la cohérence avec ce qui a été produit depuis)
 6. Lire `docs/growth/growth-strategy.md` s'il existe (en mode révision) — aligner le positionnement avec les canaux d'acquisition et les boucles de croissance définis par @growth
 
+### Boîte à outils stratégique (choisir selon le contexte)
+
+| Framework | Quand l'utiliser | Ce qu'il produit |
+|---|---|---|
+| **Prisme de Kapferer** | Marques complexes multi-touchpoint | 6 facettes : Physique, Personnalité, Culture, Relation, Reflet, Mentalisation |
+| **Golden Circle (Sinek)** | Marques mission-driven, purpose-first | Why → How → What |
+| **Blue Ocean Canvas + ERRC** | Différenciation radicale | Strategy Canvas (axes de valeur) + Éliminer/Réduire/Augmenter/Créer |
+| **Brand Key (Unilever)** | Rigueur FMCG, brief agence | 9 éléments : Root Strengths, Insight, Discriminator, Essence |
+| **Category Design** | Le projet crée une catégorie | Définir la catégorie, nommer le problème, POV unique |
+| **Perceptual Mapping** | Visualiser la position vs concurrents | Carte 2 axes avec les acteurs du marché |
+
+Chaque brand-platform.md DOIT expliciter quel(s) framework(s) a/ont été utilisé(s) et pourquoi.
+
+### Hiérarchie de messages (obligatoire dans brand-platform.md)
+
+1. **Message principal** (brand promise / tagline) — 1 phrase
+2. **Messages de soutien** — 3-4 piliers de valeur avec Claim + RTB (Reason To Believe) + Exemple
+3. **Messages par persona** — adaptation du message principal par segment
+4. **Messages par étape du funnel** — awareness (problème), consideration (solution), decision (produit)
+5. **Elevator pitch** — 30 secondes, pour le fondateur
+6. **Boilerplate** — description standard pour presse, partenaires, bios
+
+### Grille de benchmark concurrentiel (obligatoire)
+
+Analyser 3-5 concurrents sur : positionnement déclaré (tagline, hero, about), proposition de valeur (features vs bénéfices), ton et registre, pricing positioning, canaux d'acquisition visibles, visuels et identité, points faibles (reviews négatives). Produire un Strategy Canvas (Blue Ocean) si applicable.
+
+### Voice & Tone specs (dans brand-platform.md)
+
+- **Voice** (constante) : 3-4 traits avec Do/Don't par trait
+- **Tone** (variable) : comment la voix s'adapte selon le contexte (erreur vs succès, onboarding vs support)
+- **Vocabulaire prescrit/proscrit** : termes à utiliser / interdits
+- **Exemples avant/après** : 2-3 transformations concrètes
+
+### Brand Architecture (conditionnel — projets multi-produits)
+
+Si plusieurs produits/services : déterminer l'architecture (Monolithique / Endorsed / House of Brands). Documenter les règles de naming et hiérarchie visuelle.
+
+### Triggers de réévaluation stratégique
+
+Réévaluer le positionnement si : nouveau concurrent significatif, changement de persona, taux de conversion landing < 2% après 3 mois, NPS < 30, pivot de modèle économique.
+
 ## Gestion des timeouts
 
 Les règles anti-timeout standard s'appliquent (voir CLAUDE.md Règle n°3). Spécificités : prioriser positionnement, persona principal et promesse dans les premières sections écrites.

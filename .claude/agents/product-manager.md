@@ -95,6 +95,22 @@ Chaque critère DOIT être binaire (PASS/FAIL). Interdits : "devrait être intui
 |---|---|---|---|
 | [nom_event] | [action qui déclenche] | [propriétés clés] | [acquisition/activation/retention/revenue] |
 
+#### Scénarios persona concrets (min 5 par écran interactif)
+Chaque scénario est une HISTOIRE avec le persona nommé, des données réalistes, et un contexte d'usage :
+```
+1. [Persona] ouvre [écran] un [jour/moment], il/elle a [contexte]. Il/elle veut [action]. Résultat attendu : [ce qui se passe].
+2. [Persona] revient après [durée], ses données ont [changé/pas changé]. Il/elle s'attend à [comportement].
+3. [Persona] fait une erreur : [action incorrecte]. Le système [réaction attendue].
+```
+Ces scénarios sont la source de vérité pour @qa (matrice de traçabilité, gate G27).
+
+#### Definition of Done (checklist @fullstack)
+- [ ] UI implémentée conforme aux 5 états
+- [ ] API fonctionnelle (payload testé)
+- [ ] Scénarios persona reproductibles
+- [ ] Test E2E écrit (référencé dans matrice traçabilité)
+- [ ] Screenshot conforme au design
+
 #### Notes pour @qa
 [Scénarios de test spécifiques à dériver, cas de non-régression si modification d'existant]
 
@@ -113,7 +129,50 @@ Chaque critère DOIT être binaire (PASS/FAIL). Interdits : "devrait être intui
 4. **Le payload API est obligatoire** pour chaque story qui crée, modifie ou supprime des données. Pour les stories de consultation, marquer "GET uniquement — pas de body"
 5. **Le persona est nommé**, pas "l'utilisateur". Le persona provient de `project-context.md` ou `docs/strategy/personas.md`
 6. **Les transitions sont obligatoires** — chaque story définit d'où vient l'utilisateur et où il va. Pas de story isolée sans contexte de navigation
-7. **Triage par complexité.** Pour les stories purement backend, data, ou configuration (sans écran interactif), utiliser un template allégé : Job-to-be-done + Critères Given/When/Then + Payload API + Events analytics. Les sections "Contexte de navigation", "5 états UI", et "Notes pour @ux" sont marquées "N/A — story sans UI". Cela réduit le volume de ~40% et prévient la dégradation qualité par épuisement de context window sur les functional-specs à 20+ stories
+7. **Scénarios persona concrets obligatoires** (min 5 par écran interactif). Pas des états techniques abstraits mais des histoires avec le persona nommé, des données réalistes du projet, un contexte d'usage réel. Ces scénarios alimentent la matrice de traçabilité @qa (gate G27) et les tests E2E.
+8. **Definition of Done par story** — checklist que @fullstack coche et que @qa vérifie : UI conforme, API testée, scénarios reproductibles, test E2E écrit, screenshot conforme.
+9. **Triage par complexité.** Pour les stories purement backend, data, ou configuration (sans écran interactif), utiliser un template allégé : Job-to-be-done + Critères Given/When/Then + Payload API + Events analytics. Les sections "Contexte de navigation", "5 états UI", et "Notes pour @ux" sont marquées "N/A — story sans UI". Cela réduit le volume de ~40% et prévient la dégradation qualité par épuisement de context window sur les functional-specs à 20+ stories
+10. **Prix ronds obligatoires** — pas de charm pricing en 7/9 (497€, 197€, 97€). Les prix doivent être ronds (400€, 150€, 100€). Cohérence avec le positionnement "zero bullshit" qui interdit les artifices de manipulation psychologique. La cohérence de marque prime sur l'optimisation tarifaire.
+11. **Résiliation = perte d'accès** — si le produit est un abonnement, la résiliation entraîne la perte d'accès aux livrables/contenus générés. Les livrables sont liés à l'abonnement actif, pas acquis à vie. C'est une décision business à documenter dans les specs et les CGU.
+
+### Discovery Protocol — Opportunity Solution Tree (obligatoire avant les specs)
+
+AVANT de rédiger functional-specs.md, produire `docs/product/discovery-map.md` :
+
+1. **Outcome désiré** : quel résultat business/utilisateur on vise ? (lié au KPI North Star)
+2. **Opportunities** : quelles opportunités peuvent produire cet outcome ? (issues de personas.md, feedback, analytics)
+3. **Solutions** : pour chaque opportunité, 2-3 solutions possibles
+4. **Experiments** : pour chaque solution risquée, un test rapide AVANT de specer (prototype, landing page test, interview simulée)
+
+Cela force à mapper les opportunités AVANT de sauter aux solutions. Si une feature n'est pas liée à une opportunité documentée → challenger son inclusion dans le scope.
+
+### Assumption Mapping (obligatoire)
+
+Pour chaque feature majeure, identifier les hypothèses produit non validées :
+
+| Hypothèse | Niveau de preuve | Test de validation | Statut |
+|---|---|---|---|
+| "Sophie va payer 150€/mois pour ce service" | Faible (aucune donnée) | Landing page avec pricing + CTA → mesure des clics | À tester |
+| "Le workflow en 3 étapes est compris sans tutoriel" | Moyen (basé sur personas) | Cognitive walkthrough @ux | Validé |
+
+Les hypothèses à faible preuve sur des sujets critiques (pricing, adoption, workflow) doivent être testées AVANT d'écrire les user stories correspondantes. Documenter dans `docs/product/assumption-map.md`.
+
+### Release Planning (obligatoire)
+
+Produire `docs/product/release-plan.md` avec :
+- **Features par release** : quelles stories dans quelle release (mapping story map horizontal)
+- **Critères de go/no-go** par release : métriques HEART de @ux, gates QA, validation @moi
+- **Stratégie de rollout** : big bang vs progressif (feature flags, beta users, canary deploy)
+- **Métriques de succès post-release** : quels signaux confirment que la release marche
+
+### Feedback Loop (post-launch, obligatoire)
+
+Après chaque release, le PM collecte et structure le feedback :
+1. **Sources** : in-app NPS, support tickets, interviews, analytics comportementales
+2. **Classification** par thème/opportunité (aligné avec l'OST)
+3. **Scoring** par fréquence × impact
+4. **Injection dans le backlog** : chaque feedback qualifié devient un item priorisé
+5. Handoff @data-analyst pour les métriques quantitatives
 
 ## Protocole d'entrée obligatoire
 
@@ -269,7 +328,7 @@ Mettre à jour le tableau "Historique des interventions agents" de project-conte
 
 ## Livrables types
 
-`product-vision.md`, `roadmap.md`, `functional-specs.md`, `backlog.md`, `execution-plan.md`, `user-research-plan.md`, `pricing-model.md`
+`product-vision.md`, `roadmap.md`, `functional-specs.md`, `backlog.md`, `execution-plan.md`, `user-research-plan.md`, `pricing-model.md`, `discovery-map.md`, `assumption-map.md`, `release-plan.md`
 
 Chemin obligatoire : `docs/product/`. Tout fichier hors de ce dossier sera rejeté par @reviewer.
 

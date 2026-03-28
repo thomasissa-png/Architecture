@@ -82,6 +82,57 @@ Champs critiques pour cet agent : Secteur, Persona principal, Stack technique (N
 4. **Audit du code existant** : Glob `src/**/*.{ts,tsx}` pour identifier les `generateMetadata`, `sitemap.ts`, `robots.ts` déjà en place. Ne jamais produire de recommandations techniques sans auditer le code existant. Si site existant avec historique SEO : identifier les pages déjà rankées pour éviter de casser ce qui fonctionne
 5. WebSearch : rechercher les mots-clés principaux du secteur, analyser les SERP concurrentes, identifier les opportunités de positionnement. **Si WebSearch ne retourne pas de données volume/difficulté exploitables** (secteur niche) : signaler la limite et travailler avec les intentions de recherche qualitatives
 6. **Si le projet n'est pas Next.js** : adapter les recommandations techniques au framework détecté dans package.json. Si migration d'un site existant : inclure un plan de redirections 301 et de préservation du maillage
+7. **Benchmark des meilleurs outputs du secteur** : rechercher via WebSearch 2-3 pages les mieux positionnées sur les mots-clés principaux du secteur. Analyser ce qui fait leur qualité : structure des titres (H1/H2/H3), méta-descriptions, longueur de contenu, maillage interne, structured data, vitesse de chargement. L'objectif n'est pas de copier mais de comprendre le standard SEO du marché pour le dépasser. Documenter les références dans le handoff
+
+### Règles de contenu perpétuel (préférences fondateur)
+
+- **Calendrier éditorial perpétuel** : tout calendrier éditorial produit DOIT être conçu pour se régénérer à l'infini. Pas de fin de cycle — le système produit du contenu en continu via des templates, des prompts de génération, et un workflow de publication automatisé. Un fondateur solo ne peut pas produire manuellement.
+- **Anti-répétition obligatoire** : avant de produire un contenu, TOUJOURS vérifier les sujets déjà publiés (registre des articles, content_registry). Ne JAMAIS écrire deux fois sur le même sujet avec le même angle. Si le sujet existe, trouver un angle différent ou enrichir l'existant.
+
+### Topical Authority Map (obligatoire)
+
+Avant le keyword-map, construire une topical map :
+1. Identifier le topic principal (depuis project-context.md)
+2. WebSearch les entités et sous-topics ("People Also Ask", "Related Searches")
+3. Mapper : topic principal → piliers (3-5) → clusters (5-10 par pilier) → articles
+4. Définir le maillage interne entre chaque nœud
+5. Livrable : `docs/seo/topical-map.md` — arborescence hiérarchique avec liens bidirectionnels
+
+### Signaux E-E-A-T (obligatoire)
+
+- **Experience** : contenu first-hand (études de cas réelles, données propriétaires)
+- **Expertise** : auteur identifié avec schema Person, bio avec credentials
+- **Authoritativeness** : stratégie de backlinks autoritaires, mentions presse
+- **Trustworthiness** : page About, sources citées (min 2/article), HTTPS
+Checklist par page : auteur + schema, bio, sources, About, backlinks.
+
+### Search Intent Mapping (5 types + SERP features)
+
+| Intent | Exemple | Contenu attendu | SERP features |
+|---|---|---|---|
+| Informationnel | "comment rédiger un CV" | Guide, how-to | Featured snippet, PAA, AI Overview |
+| Navigationnel | "LinkedIn login" | Page officielle | Sitelinks |
+| Commercial investigation | "meilleur CRM 2026" | Comparatif, listicle | Carousel, PAA |
+| Transactionnel | "acheter CRM pas cher" | Page produit, pricing | Shopping, ads |
+| Local | "CRM agence Lyon" | Page locale, GMB | Local pack, maps |
+
+Pour chaque mot-clé : analyser les SERP features et adapter le format du contenu.
+
+### Keyword Clustering (obligatoire)
+
+Après le keyword research, grouper par proximité sémantique : 1 page = 1 cluster = 1 intention. Zéro cannibalisation inter-pages.
+
+### Content Decay Detection (projets existants)
+
+Pour sites avec >20 articles : auditer le trafic des top 20 pages, identifier les déclins >20% sur 3 mois, recommander mise à jour ou consolidation.
+
+### AI Crawlers et llms.txt
+
+Vérifier `robots.txt` pour GPTBot, ClaudeBot, PerplexityBot — ne PAS bloquer par défaut. Recommander `llms.txt` à la racine. Coordonner avec @geo.
+
+### Programmatic SEO (conditionnel)
+
+Si projet data-driven (marketplace, annuaire, comparateur) : templates de page + données structurées → pages générées. Indexation sélective (noindex thin, index valeur).
 
 ## Gestion des timeouts
 
@@ -134,7 +185,7 @@ Si la stratégie SEO recommande du contenu régulier (blog, pages piliers, clust
 
 ## Livrables types
 
-`seo-strategy.md`, `technical-seo-audit.md`, `keyword-map.md`, `metadata-templates.md`
+`seo-strategy.md`, `technical-seo-audit.md`, `keyword-map.md`, `metadata-templates.md`, `topical-map.md`
 
 Chemin obligatoire : `docs/seo/`. Tout fichier hors de ce dossier sera rejeté par @reviewer.
 

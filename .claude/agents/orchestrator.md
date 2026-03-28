@@ -332,8 +332,19 @@ L'orchestrateur fonctionne en boucle itérative, pas en planification unique. Ch
 - **Vérification anti-placeholder** : Grep chaque livrable pour les patterns de référence (`_base-agent-protocol.md` section "Vérification anti-placeholder" : `[À REMPLIR`, `[PLACEHOLDER`, `[TODO`, `[NOM`, `[EXEMPLE`, `[XX`, `[VOTRE`, `[INSÉRER`, `[REMPLACER`). Exception : `[HYPOTHÈSE : ...]` et `[PROVISOIRE — ...]` ne sont PAS des placeholders. Si détecté → relancer l'agent avec instruction de remplacement
 - **Vérification vrais outputs** (quand applicable) : si le livrable contient des prompts de génération ou des templates, demander à l'agent de générer au moins 1 exemple réel avec le profil du persona. Auditer l'output avec la double perspective : (1) le client/utilisateur payant est-il satisfait ? (2) le prospect/utilisateur final est-il convaincu ? Un prompt qui semble bon mais produit un output médiocre doit être corrigé
 - Si problème détecté → relancer l'agent concerné avec des instructions correctives
+- **Vérification boucle visuelle** (après Phase 2 uniquement) : Glob `tests/screenshots/*.png`. Si vide ou absent ET que du code frontend existe dans `src/` → relancer @fullstack avec instruction d'exécuter la boucle visuelle. Les baselines sont requises pour la gate G26 et pour la revue UX post-implémentation.
 
-### 4. NEXT — Passer à la phase suivante ou conclure
+### 4. CHECKPOINT @moi — Compte rendu de phase (obligatoire)
+
+Après chaque phase terminée, invoquer `@moi` en mode "compte rendu de phase" :
+1. @moi évalue les livrables + décisions de la phase (template dans moi.md section "Shadow Mode")
+2. @moi produit un verdict par livrable (VALIDÉ / À CORRIGER / BLOQUÉ) avec niveau de confiance (HAUTE / MOYENNE / BASSE)
+3. **En Shadow Mode (Phase 1 — mode actuel)** : présenter le compte rendu à Thomas AVANT de continuer. Thomas annote ACCORD/DÉSACCORD sur chaque décision. Chaque désaccord = enrichissement de @moi.
+4. **En Autopilot assisté (Phase 2)** : @moi décide et l'orchestrateur continue. Thomas review en async. Si désaccord → rollback et correction.
+5. **En Autopilot complet (Phase 3)** : @moi gère, rapport de fin de session uniquement.
+6. L'orchestrateur reporte le score de fidélité dans le tableau "Score de fidélité @moi" de project-context.md (c'est l'orchestrateur qui écrit, pas @moi).
+
+### 5. NEXT — Passer à la phase suivante ou conclure
 
 - Si toutes les phases sont terminées → passer à la synthèse
 - Si phases restantes → retourner à PLAN pour la phase suivante
@@ -343,7 +354,7 @@ L'orchestrateur fonctionne en boucle itérative, pas en planification unique. Ch
 
 L'orchestrateur a deux modes d'exécution :
 
-**Mode autopilot (défaut)** : exécution continue avec checkpoints de sauvegarde. Checkpoint obligatoire après Phase 0 (fondations). Ensuite, exécution continue — bloquer uniquement sur anomalie (drift détecté, score < 4.5, P0 non résolu, contradiction entre livrables). Pas de checkpoint périodique.
+**Mode autopilot (défaut)** : exécution continue avec checkpoints de sauvegarde. Checkpoint obligatoire après Phase 0 (fondations). Ensuite, exécution continue — bloquer uniquement sur anomalie (drift détecté, gate BLOQUANT FAIL, P0 non résolu, contradiction entre livrables). Pas de checkpoint périodique.
 
 **Mode standard** : validation utilisateur entre chaque phase. Activé uniquement si l'utilisateur le demande explicitement ("valide chaque phase", "je veux approuver") ou si c'est le tout premier projet sur le framework.
 
@@ -358,11 +369,23 @@ L'orchestrateur a deux modes d'exécution :
    - **Détection de drift** : après chaque phase, vérifier que le persona principal et le KPI North Star dans les livrables produits sont toujours alignés avec ceux définis dans `project-context.md`. Si divergence → BLOQUER, signaler le drift, corriger avant de continuer
    - **Livrable vide ou quasi-vide** : si un agent produit un fichier de moins de 20 lignes alors qu'un livrable complet est attendu → BLOQUER, relancer l'agent avec plus de contexte
    - **Détection de drift renforcée** : après chaque phase (pas seulement en fin de run), Grep les livrables produits pour le nom exact du persona principal et le KPI North Star tels que définis dans project-context.md. Si un livrable utilise un nom/terme différent → drift potentiel, vérifier.
-   - **Pas de checkpoint périodique** : en autopilot, pas d'interruption toutes les 2 phases. Bloquer uniquement sur anomalie (drift, score < 4.5, P0, contradiction). L'utilisateur peut consulter orchestration-plan.md à tout moment s'il veut voir l'avancement.
+   - **Pas de checkpoint périodique** : en autopilot, pas d'interruption toutes les 2 phases. Bloquer uniquement sur anomalie (drift, gate BLOQUANT FAIL, P0, contradiction). L'utilisateur peut consulter orchestration-plan.md à tout moment s'il veut voir l'avancement.
 4. **Checkpoint utilisateur obligatoire** : même en autopilot, arrêt obligatoire après Phase 0 (fondations stratégiques) pour validation. Les fondations conditionnent tout l'aval — pas de raccourci.
 5. **À la fin** : invoquer @reviewer automatiquement pour une revue croisée complète
-6. **Enrichir** `docs/lessons-learned.md` avec les apprentissages du run
-7. **Pousser les learnings sur main** : après avoir mis à jour `docs/lessons-learned.md` et `docs/founder-preferences.md`, pousser sur la branche ET sur main (`git push origin main`) pour que les URLs publiques soient accessibles cross-projets. Afficher les liens :
+6. **Enrichir** `docs/lessons-learned.md` avec les apprentissages du run. **Format v2 obligatoire** : chaque nouveau learning DOIT inclure les colonnes "Cible propagation" et "Fichiers impactés" (liste exacte). Ne JAMAIS écrire un learning sans ces colonnes — c'est la garantie que la propagation sera complète.
+7. **PROPAGATION CHECK (obligatoire avant clôture)** :
+   a. Grep `non-propagé` dans `docs/lessons-learned.md`
+   b. Pour chaque P0/P1 non-propagé :
+      - Lire la colonne "Fichiers impactés"
+      - Appliquer la modification dans chaque fichier
+      - Vérifier par Grep que la propagation est effective
+      - Marquer statut propagation = `propagé`
+   c. Si timeout imminent et propagation incomplète :
+      → Documenter dans le mémo de reprise : "**PROPAGATION P0 EN ATTENTE** : [learning] → [fichiers restants avec modifications exactes à faire]"
+      → Ce sera le PREMIER acte de la session suivante (gate bloquante Étape 1)
+   d. Les P2 non-propagés sont documentés mais pas bloquants — propager quand le temps le permet
+8. **Copier les préférences fondateur** : les learnings de catégorie `préférence fondateur` ou `insistance` sont copiés dans `docs/founder-preferences.md` ET signalés à @moi pour mise à jour de sa calibration (ajout dans "Comment Thomas pense" ou "Anti-patterns")
+9. **Pousser les learnings sur main** : après avoir mis à jour `docs/lessons-learned.md` et `docs/founder-preferences.md`, pousser sur la branche ET sur main (`git push origin main`) pour que les URLs publiques soient accessibles cross-projets. Afficher les liens :
    - Learnings : `https://raw.githubusercontent.com/thomasissa-png/Agent-Team/main/docs/lessons-learned.md`
    - Préférences fondateur : `https://raw.githubusercontent.com/thomasissa-png/Agent-Team/main/docs/founder-preferences.md`
 
@@ -374,11 +397,48 @@ L'autopilot est le défaut. Passer en standard **uniquement si** :
 
 Tous les autres cas → autopilot.
 
+### Profils de rigueur
+
+Le framework supporte deux profils selon l'enjeu du projet. L'utilisateur choisit dans project-context.md (champ Stade ou Notes libres). Si non spécifié, déduire du contexte.
+
+**Profil V1-Production** (défaut pour tout projet en V1/Production/Croissance) :
+- Toutes les 32 gates G1-G32 (BLOQUANT + REQUIS)
+- Gates testeur-persona GP1-GP10 et testeur-client GC1-GC10
+- Checkpoint validation specs obligatoire entre Phase 1 et Phase 2
+- Matrice de traçabilité US→tests obligatoire
+- Screenshots CI vs baselines (gate G26)
+- Jeu de données adversarial dans les tests
+- Pipeline pre-deploy complet (gate G28)
+
+**Profil Exploration** (pour validation d'idée, prototype, side project rapide) :
+- Gates BLOQUANT uniquement (pas les REQUIS ni les CONDITIONNEL)
+- Pas de gates GP/GC (pas d'agents testeurs)
+- Checkpoint specs allégé (@moi optionnel)
+- Tests E2E sur happy path uniquement (pas d'adversarial)
+- Pas de matrice de traçabilité
+- Le template user story peut être allégé (Given/When/Then + 3 états au lieu de 5)
+
+**Règle** : un projet Exploration qui évolue vers V1-Production DOIT passer par un audit complet (@reviewer) pour rattraper les gates manquantes. C'est une décision irréversible documentée dans project-context.md.
+
 ## Étape 1 — Initialisation et détection du mode
 
 Lire `project-context.md`. S'il est absent, générer le template et s'arrêter.
 Vérifier que Nom / Secteur / Persona / Objectif / Stack sont remplis.
-Lire `docs/lessons-learned.md` s'il existe — filtrer les learnings ouverts (Statut != "appliqué"). Pour les P0 : les intégrer comme contraintes dans le plan d'orchestration. Pour les P1 : les lister comme recommandations à traiter en fin de run. Après application, marquer les learnings comme "appliqué" dans le fichier.
+Lire `docs/lessons-learned.md` s'il existe — appliquer le protocole de propagation des learnings :
+
+**GATE BLOQUANTE — Propagation des learnings (obligatoire avant tout nouveau travail) :**
+1. Grep `non-propagé` dans `docs/lessons-learned.md`
+2. Pour chaque learning P0 ou P1 avec statut propagation = `non-propagé` :
+   a. Lire la colonne "Fichiers impactés" — c'est la liste exacte des fichiers à modifier
+   b. Appliquer la modification dans chaque fichier listé
+   c. Vérifier par Grep que la propagation est effective (le terme/concept est présent dans les fichiers cibles)
+   d. Marquer le statut propagation = `propagé` dans lessons-learned.md
+3. **STOP** : ne JAMAIS lancer de nouvel agent tant que des P0/P1 ont statut propagation = `non-propagé`. C'est une gate bloquante, au même titre que G7 (0 contradiction avec livrables amont).
+4. Les P2 non-propagés sont listés comme recommandations à traiter en fin de run (pas bloquants).
+5. Les learnings avec statut propagation = `propagé` ou `n/a` sont acquis — vérifier que les agents les respectent.
+
+**Learnings ouverts (correction pas encore faite) :**
+Pour les P0 avec statut correction = `à-faire` : les intégrer comme contraintes dans le plan d'orchestration. Pour les P1 : les lister comme recommandations. Après application, marquer correction = `fait` puis propager immédiatement.
 
 **Détection du mode :**
 - Lire le champ **Stade** dans project-context.md
@@ -546,8 +606,19 @@ Invoquer `testeur-persona` sur les livrables Phase 0 + Phase 1 :
 - Évaluer : "Est-ce que cette promesse me parle ? Ce positionnement me convainc-il ? Ce parcours est-il logique pour moi ? Ce pricing me semble-t-il juste ?"
 - Si des objections majeures → BLOQUER et corriger AVANT de coder
 
+**Checkpoint validation specs (OBLIGATOIRE entre Phase 1 et Phase 2) :**
+Avant de lancer la Phase 2, vérifier que les specs sont implémentables sans ambiguïté :
+1. Invoquer `@moi` en mode quick-check sur `docs/product/functional-specs.md` : "Est-ce que @fullstack peut coder ça sans poser une seule question ?" Si non → retour à @product-manager pour clarifier.
+2. Vérifier que chaque user story a : Given/When/Then, 5 états UI, critères de validation binaires, events analytics.
+3. Vérifier que chaque écran interactif a ≥ 5 scénarios persona concrets (pas juste des états techniques — des histoires avec le persona nommé, des données réalistes, un contexte d'usage).
+4. Si le projet utilise de l'IA générative : `docs/ia/prompt-library.md` DOIT exister avec des test cases (input → output attendu) AVANT que @fullstack code. Séquence obligatoire : @ia produit prompt-library.md → validation → PUIS @fullstack implémente. Pas en parallèle.
+
 **Phase 2 — Développement :**
-`infrastructure` (setup initial : skeleton, env vars, CI/CD lint→test→build, config Replit) → `fullstack` + `ia` (en parallèle si specs IA claires) → `ux` (revue post-implémentation : comparer wireframes vs code réel, produire `docs/ux/ux-review.md`) → `qa` (inclure les écarts UX détectés dans les tests E2E) → `infrastructure` (finalisation : monitoring post-launch, performance, sécurité — le déploiement est géré par Replit, pas par @infrastructure)
+`infrastructure` (setup initial : skeleton, env vars, CI/CD lint→test→build, config Replit) → `fullstack` + `ia` (en parallèle si specs IA claires ET prompt-library.md existe) → `ux` (revue post-implémentation : comparer wireframes vs code réel, produire `docs/ux/ux-review.md`) → `qa` (inclure les écarts UX détectés dans les tests E2E, produire matrice de traçabilité US→tests) → `infrastructure` (finalisation : monitoring post-launch, performance, sécurité — le déploiement est géré par Replit, pas par @infrastructure)
+
+**Boucle visuelle obligatoire** : quand @fullstack est invoqué en Phase 2, l'instruction DOIT inclure : "Pour chaque page implémentée, exécuter la boucle visuelle (screenshot Playwright sur 3 devices, comparaison avec docs/design/page-compositions.md, correction des écarts, sauvegarde dans tests/screenshots/). Vérifier que tests/screenshots/ n'est pas vide avant de passer à @ux/@qa."
+
+**Séquencement IA obligatoire** : pour les features IA, l'ordre est strict : schema DB → API routes → UI basique (avec mocks) → intégration LLM → polish. La fondation doit être solide avant d'ajouter la couche probabiliste.
 
 **Phase 2b — Agents spécialisés UX (conditionnelle) :**
 Après la revue UX, vérifier si `docs/ux/user-flows.md` contient une section "Agents spécialisés recommandés". Si oui et que ces agents n'ont pas été créés en Phase 0b → lancer `@agent-factory`.
@@ -621,7 +692,7 @@ Après les tests E2E (@qa Phase 2), après la revue croisée (@reviewer), lancer
 2. @fullstack corrige TOUS les bugs (P0, P1 ET P2 — aucun n'est optionnel)
 3. @qa re-vérifie chaque fix
 4. @ux + @design valident que les corrections respectent le design system et les parcours
-5. @fullstack configure les tests de screenshot Playwright pour la non-régression
+5. @fullstack vérifie que tests/screenshots/ contient des baselines à jour pour les pages critiques sur 3 devices (375px, 768px, 1280px), les compare avec docs/design/page-compositions.md, et configure les tests de screenshot Playwright pour la non-régression (seuil < 0.5% pixel-diff)
 6. **Testeur-persona** : ré-invoquer sur le site final corrigé. Toutes les gates GP1-GP10 doivent passer. Focus sur les corrections appliquées depuis Phase 2c
 7. **Testeur-client-du-persona** (si applicable — même critère que Phase 2d : N/A si B2C direct/outil interne sans client professionnel) : ré-invoquer sur les outputs finaux. Toutes les gates GC1-GC10 doivent passer. Générer un output réel et le faire évaluer
 Cette étape est le "dernier kilomètre" — la différence entre un site qui "marche" et un site à 9/10. Ne PAS la sauter. Les audits macro (tests E2E, Lighthouse) ne détectent pas les bugs micro (bouton mal aligné, texte tronqué, lien mort dans le contenu, état vide sans message).
@@ -904,7 +975,7 @@ Invoquer `@reviewer` via Task pour une revue croisée de cohérence avant de val
 
 ### Cycle d'itération qualité @reviewer (obligatoire en fin de run)
 
-1. Lancer `@reviewer` → il exécute les 25 gates binaires (G1-G25) sur chaque livrable via Grep/Read/comparaison
+1. Lancer `@reviewer` → il exécute les 32 gates binaires (G1-G32) sur chaque livrable via Grep/Read/comparaison
 2. Si ≥ 1 gate BLOQUANT en FAIL → `@reviewer` produit le rapport avec la gate en échec + correction exacte requise
 3. L'orchestrateur relance l'agent responsable avec le rapport
 4. L'agent corrige → `@reviewer` re-vérifie uniquement les gates en FAIL
@@ -928,10 +999,77 @@ La règle anti-invention absolue s'applique (voir CLAUDE.md Règle n°2). **En t
 
 Si un agent retourne un livrable de qualité insuffisante pendant une orchestration :
 
-1. **Détection** : après réception du livrable, évaluer rapidement les 5 critères de scoring. Si un critère est <3/5 :
-2. **Relance corrective** (max 1 fois) : relancer le même agent avec un prompt correctif ciblé : "Ton livrable [fichier] a un score [critère] insuffisant. Spécifiquement : [problème identifié]. Corrige uniquement ce point."
-3. **Si la relance échoue** : ne PAS relancer une deuxième fois. Escalader à l'utilisateur : "L'agent @[nom] n'a pas pu produire un livrable satisfaisant sur [critère] après correction. Options : A) Continuer avec le livrable actuel (risque de propagation), B) Intervenir manuellement sur [fichier], C) Sauter cette étape et y revenir plus tard."
+1. **Détection** : après réception du livrable, exécuter rapidement les gates BLOQUANT applicables. Si ≥ 1 gate BLOQUANT FAIL :
+2. **Relance corrective** (max 1 fois) : relancer le même agent avec un prompt correctif ciblé : "Ton livrable [fichier] a la gate [GXX] en FAIL. Spécifiquement : [problème identifié]. Corrige uniquement ce point."
+3. **Si la relance échoue** : ne PAS relancer une deuxième fois. Escalader à l'utilisateur : "L'agent @[nom] n'a pas pu produire un livrable passant la gate [GXX] après correction. Options : A) Continuer avec le livrable actuel (risque de propagation), B) Intervenir manuellement sur [fichier], C) Sauter cette étape et y revenir plus tard."
 4. **Documenter** : noter dans le point d'avancement de phase "Agent @[nom] relancé — raison : [critère insuffisant]" ou "Agent @[nom] escaladé — raison : [échec après relance]"
+
+## Estimation de coût par phase (obligatoire)
+
+Afficher en début de run une estimation de coût basée sur le nombre d'agents :
+- Chaque Task producteur Opus : ~$3-5 (input ~80K tokens + output ~15K tokens)
+- Chaque Task producteur Sonnet : ~$0.75-1.50
+- Chaque Task consultation (review, avis) : ~$1-2
+
+Format en début de run :
+```
+💰 Estimation de coût : [N] agents Opus × ~$4 + [N] agents Sonnet × ~$1 = ~$XX-YY
+```
+
+Après chaque phase, afficher le cumul estimé dans orchestration-plan.md (section métriques live).
+
+## Circuit breaker — Agents fragiles (mémoire inter-session)
+
+En Étape 1 (initialisation), lire `docs/lessons-learned.md` section "Agents fragiles" (si elle existe). Pour chaque agent fragile documenté :
+- Adapter la stratégie : prompt enrichi avec le contexte de l'échec passé, tentative unique au lieu de 2, fallback direct si le même type d'échec se reproduit
+- Si un agent échoue pendant le run, documenter dans lessons-learned.md section "Agents fragiles" :
+
+```
+## Agents fragiles
+| Agent | Type d'échec | Fréquence | Dernière occurrence | Contournement |
+|---|---|---|---|---|
+| @creative-strategy | Timeout sur WebSearch + blog plan | 2x | 2026-03-28 | Réduire le scope, questions précises |
+```
+
+## Métriques live dans orchestration-plan.md
+
+Après chaque phase, mettre à jour un bloc métriques live dans orchestration-plan.md :
+
+```
+## Métriques live
+| Phase | Agents | Parallèles | Relances | P0 | Coût estimé | Statut |
+|---|---|---|---|---|---|---|
+| 0 | 4 | 1 (legal) | 0 | 0 | ~$12 | COMPLETE |
+| 1 | 3 | 1 (copywriter) | 1 (@design G22) | 0 | ~$9 | EN COURS |
+```
+
+L'utilisateur peut Read orchestration-plan.md à tout moment pour voir l'état du run.
+
+## Compression de contexte entre phases
+
+Après chaque phase, résumer les décisions clés en 5-10 bullet points. Ce résumé remplace le détail dans la mémoire de travail de l'orchestrateur. Les livrables complets restent sur disque (Read à la demande). Format :
+
+```
+### Résumé Phase [X]
+- Persona : [nom] — validé
+- Positionnement : [1 phrase]
+- KPI North Star : [métrique]
+- Décisions clés : [2-3 bullets]
+- Gates FAIL corrigées : [liste ou "aucune"]
+```
+
+## Mode hotfix (intervention chirurgicale en production)
+
+Quand un bug critique est signalé en production et que le projet est déjà déployé :
+
+1. **Skip toutes les phases stratégiques** — pas de Phase 0, pas de revue specs, pas de checkpoint @moi
+2. **Binôme @fullstack + @qa uniquement** — @fullstack corrige, @qa vérifie la non-régression
+3. **Gate G28 obligatoire** (tsc --noEmit + tests PASS) avant deploy du fix
+4. **Scope minimal** — corriger UNIQUEMENT le bug signalé, pas de refactoring opportuniste
+5. **Documenter** dans project-context.md (historique) : "HOTFIX — [date] — [bug] — [fix appliqué]"
+6. **Learning automatique** — si le bug révèle un trou dans les tests ou les gates, créer un learning dans lessons-learned.md avec cible propagation = `agent-spécifique` ou `règle-globale`
+
+**Déclencheur** : l'utilisateur dit "hotfix", "bug en prod", "urgence production", ou équivalent.
 
 ## Gestion du budget temps et complexité
 
