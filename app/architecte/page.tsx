@@ -56,9 +56,9 @@ const faqItems = [
       "Les visuels vous appartiennent. Vous pouvez les utiliser librement dans vos présentations client, votre site, vos réseaux sociaux, vos dossiers de présentation. Aucune restriction d'usage commercial.",
   },
   {
-    question: "Que faites-vous de mes photos ?",
+    question: "Mes photos de chantier restent-elles strictement confidentielles ?",
     answer:
-      "Vos photos sont traitées uniquement pour générer le visuel, puis supprimées automatiquement sous 30 jours. Elles ne sont ni partagées, ni utilisées pour entraîner un modèle d'IA. Hébergement en Union européenne, conforme RGPD. Vos projets clients restent strictement confidentiels.",
+      "Vos photos ne sont jamais vues par d'autres utilisateurs, ni utilisées pour entraîner un modèle d'IA, ni partagées avec des tiers. Chaque photo est traitée en circuit fermé, uniquement pour générer votre visuel, puis supprimée automatiquement sous 30 jours. Hébergement en Union européenne, conforme RGPD. Vos projets clients restent strictement confidentiels.",
   },
   {
     question: "Et si le résultat ne me convient pas ?",
@@ -154,11 +154,11 @@ export default function ArchitectePage() {
         <div className="max-w-3xl mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 rounded-2xl overflow-hidden">
             <div className="relative aspect-[4/3]">
-              <img src="/imageavant.jpg" alt="Appartement en chantier avant Versiroom" className="w-full h-full object-cover" loading="eager" />
+              <img src="/imageavant.jpg" alt="Salon vide en chantier brut — avant home staging virtuel par Versiroom" className="w-full h-full object-cover" loading="eager" />
               <span className="absolute bottom-2 left-2 text-xs font-medium text-white bg-black/50 px-2 py-1 rounded">Avant</span>
             </div>
             <div className="relative aspect-[4/3]">
-              <img src="/imageapres.jpg" alt="Appartement meublé en style Scandinave par Versiroom" className="w-full h-full object-cover" loading="eager" />
+              <img src="/imageapres.jpg" alt="Salon meublé en style Scandinave — canapé lin, plancher chêne, suspension PH5, généré par Versiroom en 90 secondes" className="w-full h-full object-cover" loading="eager" />
               <span className="absolute bottom-2 left-2 text-xs font-medium text-white bg-black/50 px-2 py-1 rounded">Après</span>
               <span className="absolute top-2 right-2 text-[10px] font-light text-white/70 bg-black/30 px-2 py-0.5 rounded">Visualisation IA</span>
             </div>
@@ -169,15 +169,29 @@ export default function ArchitectePage() {
         </div>
       </section>
 
-      {/* Galerie multi-styles — à activer quand 3 images réelles distinctes seront disponibles dans public/demo/ */}
+      {/* Palette des styles — en attendant la galerie avec images réelles */}
+      <section className="pb-8 sm:pb-12 px-5 sm:px-8">
+        <div className="max-w-3xl mx-auto text-center">
+          <p className="text-xs text-muted font-light mb-4">12 ambiances conçues par un architecte d&apos;intérieur</p>
+          <div className="flex flex-wrap justify-center gap-2">
+            {["Scandinave", "Japandi", "Bohème", "Cosy", "Contemporain",
+              "Industriel", "Art Déco", "Mid-Century", "Méditerranéen",
+              "Wabi-Sabi", "Maximaliste", "Haussmannien"].map((style) => (
+              <span key={style} className="text-xs font-light text-foreground/70 border border-foreground/10 rounded-full px-3 py-1.5">
+                {style}
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Social proof line */}
       <div className="flex flex-wrap justify-center gap-6 sm:gap-10 text-xs text-muted font-light py-6">
-        <span>12 styles curatés</span>
+        <span>12 styles curatés par Yann Duval (ex-Deniot, Studioilse)</span>
         <span>·</span>
         <span>Résultat en 90 secondes</span>
         <span>·</span>
-        <span>HD gratuit, sans filigrane</span>
+        <span>HD sans filigrane</span>
         <span>·</span>
         <span>Gratuit pour commencer</span>
       </div>
@@ -263,7 +277,7 @@ export default function ArchitectePage() {
               {
                 num: "03",
                 title: "Partage instantané",
-                desc: "Envoyez les visuels par email, WhatsApp ou lien partageable. Votre client reçoit le dossier de présentation directement sur son téléphone, sans télécharger d'application.",
+                desc: "Envoyez les visuels par email, WhatsApp ou lien partageable. Votre client les reçoit directement sur son téléphone, sans application à installer.",
               },
               {
                 num: "04",
@@ -305,7 +319,7 @@ export default function ArchitectePage() {
               {
                 step: "1",
                 title: "Photographiez",
-                desc: "Prenez en photo le chantier depuis votre iPad Pro sur chantier, MacBook au bureau, iPhone en déplacement.",
+                desc: "Photographiez la pièce depuis votre téléphone ou tablette sur chantier — ou uploadez une photo existante depuis votre ordinateur.",
               },
               {
                 step: "2",
@@ -314,8 +328,8 @@ export default function ArchitectePage() {
               },
               {
                 step: "3",
-                title: "Partagez",
-                desc: "Envoyez par email, WhatsApp ou copiez le lien. Votre client reçoit le visuel sur son téléphone. 90 secondes.",
+                title: "Présentez",
+                desc: "Envoyez 2 ou 3 directions à votre client par email ou WhatsApp. Il répond sur ce qu&apos;il préfère. Vous orientez le brief en 10 minutes, pas en 10 jours.",
               },
             ].map((item) => (
               <div key={item.step}>
@@ -330,15 +344,22 @@ export default function ArchitectePage() {
         </div>
       </section>
 
-      {/* Témoignage */}
+      {/* Cas d'usage types */}
       <section className="py-10 sm:py-14 px-5 sm:px-8">
         <div className="max-w-2xl mx-auto text-center">
-          <blockquote className="text-base sm:text-lg text-foreground font-light leading-relaxed italic">
-            « C&apos;est devenu mon réflexe du premier rendez-vous. Je photographie la pièce, je génère 3 ambiances, et mon client choisit sa direction en 10 minutes au lieu d&apos;attendre une semaine. »
-          </blockquote>
-          <p className="text-sm text-muted font-light mt-3">
-            Architecte d&apos;intérieur DPLG — Paris, 12 ans d&apos;expérience
-          </p>
+          <p className="text-xs text-muted font-light mb-6 uppercase tracking-widest">Cas d&apos;usage types</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left">
+            {[
+              { context: "Premier RDV client", action: "3 ambiances générées sur tablette, directement sur chantier" },
+              { context: "Validation direction", action: "Envoi WhatsApp des 2 styles retenus avant le brief" },
+              { context: "Brief de déco", action: "Planches d&apos;ambiance intégrées au dossier de présentation" },
+            ].map((c) => (
+              <div key={c.context} className="p-4 rounded-xl bg-foreground/[0.03] border border-foreground/8">
+                <p className="text-xs text-sage font-medium uppercase tracking-widest mb-1">{c.context}</p>
+                <p className="text-sm text-foreground font-light">{c.action}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 

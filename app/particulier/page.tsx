@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   keywords: [
     "décoration intérieure IA",
     "visualiser décoration",
-    "home staging particulier",
+    "visualiser déco appartement",
     "inspiration déco IA",
     "déco intérieure virtuelle",
     "meublé par IA gratuit",
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     locale: "fr_FR",
     siteName: "Versiroom",
     url: `${BASE_URL}/particulier`,
-    images: [{ url: `${BASE_URL}/imageapres.jpg`, width: 1200, height: 630, alt: "Versiroom — Home staging virtuel par IA" }],
+    images: [{ url: `${BASE_URL}/imageapres.jpg`, width: 1200, height: 630, alt: "Versiroom — Visualiser sa déco par IA" }],
   },
   alternates: {
     canonical: `${BASE_URL}/particulier`,
@@ -34,7 +34,7 @@ const faqItems = [
   {
     question: "Est-ce vraiment gratuit ?",
     answer:
-      "Oui, vous avez 3 générations offertes — ça représente 3 visuels complets, assez pour tester 3 styles dans votre pièce principale. Sans carte bancaire et sans inscription. Si vous voulez aller plus loin, le pack Starter à 9,90 € vous donne 15 générations en achat unique — pas d'abonnement, pas de renouvellement automatique.",
+      "Oui. 3 visuels complets offerts, sans carte bancaire, sans inscription. C'est assez pour tester Scandinave, Japandi et Bohème sur votre salon. Si vous voulez continuer, le pack Starter à 9,90 € donne accès à 15 générations en achat unique — pas d'abonnement, pas de renouvellement automatique.",
   },
   {
     question: "Comment ça marche concrètement ?",
@@ -155,22 +155,36 @@ export default function ParticulierPage() {
         </div>
       </section>
 
-      {/* Galerie multi-styles — à activer quand 3 images réelles distinctes seront disponibles dans public/demo/ */}
+      {/* Palette des styles — en attendant la galerie avec images réelles */}
+      <section className="pb-8 sm:pb-12 px-5 sm:px-8">
+        <div className="max-w-3xl mx-auto text-center">
+          <p className="text-xs text-muted font-light mb-4">12 ambiances pour trouver votre style</p>
+          <div className="flex flex-wrap justify-center gap-2">
+            {["Scandinave", "Japandi", "Bohème", "Cosy", "Contemporain",
+              "Industriel", "Art Déco", "Mid-Century", "Méditerranéen",
+              "Wabi-Sabi", "Maximaliste", "Haussmannien"].map((style) => (
+              <span key={style} className="text-xs font-light text-foreground/70 border border-foreground/10 rounded-full px-3 py-1.5">
+                {style}
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Social proof line */}
       <div className="flex flex-wrap justify-center gap-6 sm:gap-10 text-xs text-muted font-light py-6">
+        <span>3 essais gratuits · Sans CB</span>
+        <span>·</span>
         <span>12 styles curatés</span>
         <span>·</span>
         <span>Résultat en 90 secondes</span>
-        <span>·</span>
-        <span>HD gratuit, sans filigrane</span>
       </div>
 
       {/* Le problème */}
       <section className="pb-16 sm:pb-24 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-8 text-center">
-            Vous avez sûrement vécu ça
+            Le problème, c&apos;est Pinterest
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
             {[
@@ -225,8 +239,8 @@ export default function ParticulierPage() {
             Essayez avant d&apos;acheter
           </h2>
           <p className="text-muted font-light text-center mb-12 max-w-xl mx-auto">
-            Voyez à quoi votre pièce ressemblerait dans 12 styles différents.
-            Même si votre pièce est encore vide, ça marche parfaitement.
+            Scandinave, Japandi, Bohème, Cosy… testez-les tous sur votre pièce.
+            Même vide, même sombre, même petite — ça marche.
           </p>
           <div className="space-y-6">
             {[
@@ -247,8 +261,8 @@ export default function ParticulierPage() {
               },
               {
                 num: "04",
-                title: "Partagez et sauvegardez",
-                desc: "Finies les disputes sur la couleur du mur. Partagez sur votre story Insta, montrez à vos amis, ou envoyez à votre partenaire pour avoir son avis. Le visuel est net, sans filigrane — prêt à publier.",
+                title: "Prêt à publier sur Instagram",
+                desc: "Le visuel est net, HD, sans filigrane. Téléchargez, partagez sur votre story Insta, épinglez sur Pinterest, ou envoyez à votre partenaire pour avoir son avis.",
               },
             ].map((item) => (
               <div key={item.num} className="flex gap-5 items-start">
@@ -269,10 +283,10 @@ export default function ParticulierPage() {
       <section className="py-10 sm:py-14 px-5 sm:px-8">
         <div className="max-w-2xl mx-auto text-center">
           <blockquote className="text-base sm:text-lg text-foreground font-light leading-relaxed italic">
-            « J&apos;ai testé 4 styles sur mon salon vide en 10 minutes. Mon copain a enfin compris pourquoi je voulais du Japandi. »
+            « J&apos;ai testé 4 ambiances sur mon salon vide en 10 minutes, directement depuis mon iPhone. Mon copain a enfin compris pourquoi je voulais du Japandi — il a voté pour le Scandinave, on a comparé. »
           </blockquote>
           <p className="text-sm text-muted font-light mt-3">
-            Julie, 29 ans — Bordeaux, nouvel appartement
+            Julie, 29 ans — Nantes, T3 livré en janvier
           </p>
         </div>
       </section>
@@ -308,7 +322,7 @@ export default function ParticulierPage() {
       <section className="pb-20 sm:pb-32 px-5 sm:px-8">
         <div className="max-w-xl mx-auto text-center">
           <p className="text-lg font-semibold text-foreground mb-3">
-            Votre salon en Scandinave, en 90 secondes.
+            Votre pièce. Le style que vous cherchez. En 90 secondes.
           </p>
           <p className="text-sm text-muted font-light mb-6">
             Rendu photo-réaliste, pas un filtre. Testé sur des vraies pièces — salons, chambres, studios.
@@ -325,7 +339,7 @@ export default function ParticulierPage() {
             </a>
             <a
               href="/pricing"
-              className="text-xs text-muted font-light underline hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm"
+              className="text-xs text-muted font-light underline hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm min-h-[44px] inline-flex items-center px-2"
             >
               Voir les packs
             </a>
