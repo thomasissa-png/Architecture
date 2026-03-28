@@ -868,7 +868,7 @@ export default function Home() {
               <p className="text-xs text-muted font-light leading-relaxed">
                 Un support de conversation prêt avant le premier RDV — sans attendre 3 jours un rendu.
               </p>
-              <span className="text-xs text-sage font-medium mt-1 group-hover:translate-x-0.5 transition-transform duration-200 inline-block">
+              <span className="text-sm text-sage font-medium mt-1 group-hover:translate-x-0.5 transition-transform duration-200 inline-block">
                 Voir les cas d&apos;usage →
               </span>
             </a>
@@ -882,10 +882,10 @@ export default function Home() {
                 Marchands de biens
               </p>
               <p className="text-xs text-muted font-light leading-relaxed">
-                Des visuels de pré-commercialisation en 10 minutes, sans home stager ni délai.
+                Des visuels et dossiers PDF de pré-commercialisation en 10 minutes — sans prestataire.
               </p>
-              <span className="text-xs text-sage font-medium mt-1 group-hover:translate-x-0.5 transition-transform duration-200 inline-block">
-                Voir le Mode Pro →
+              <span className="text-sm text-sage font-medium mt-1 group-hover:translate-x-0.5 transition-transform duration-200 inline-block">
+                Découvrir le Mode Pro →
               </span>
             </a>
 
@@ -900,7 +900,7 @@ export default function Home() {
               <p className="text-xs text-muted font-light leading-relaxed">
                 Votre pièce dans le style que vous choisissez — pas le salon de quelqu&apos;un d&apos;autre.
               </p>
-              <span className="text-xs text-sage font-medium mt-1 group-hover:translate-x-0.5 transition-transform duration-200 inline-block">
+              <span className="text-sm text-sage font-medium mt-1 group-hover:translate-x-0.5 transition-transform duration-200 inline-block">
                 Commencer gratuitement →
               </span>
             </a>
