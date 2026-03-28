@@ -1,7 +1,7 @@
 # Préférences Fondateur — Thomas Issa
 
 > Source de vérité pour @moi. Mis à jour après chaque session.
-> Accessible cross-projets via : https://raw.githubusercontent.com/thomasissa-png/Agent-Team/main/docs/founder-preferences.md
+> Lien raw stable : https://raw.githubusercontent.com/thomasissa-png/Architecture/main/docs/founder-preferences.md
 
 ## Observations cumulées
 
