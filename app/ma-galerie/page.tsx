@@ -10,7 +10,7 @@ import { useSession } from "next-auth/react";
 import { useState, useEffect, useCallback, useRef } from "react";
 import AuthButton from "@/components/AuthButton";
 import AuthModal from "@/components/AuthModal";
-import { STYLE_LABELS } from "@/lib/constants";
+import { STYLE_LABELS, translateRoomLabel } from "@/lib/constants";
 
 /** Format relatif intelligent : "Aujourd'hui", "Hier", "Il y a 3 jours", puis "15 mars" au-dela de 7 jours */
 function formatRelativeDate(dateStr: string): string {
@@ -311,12 +311,16 @@ export default function GaleriePage() {
               <option value="">Toutes les pièces</option>
               <option value="living_room">Salon</option>
               <option value="bedroom">Chambre</option>
+              <option value="bedroom_adults">Chambre adulte</option>
+              <option value="bedroom_children">Chambre enfant</option>
               <option value="kitchen">Cuisine</option>
               <option value="bathroom">Salle de bain</option>
               <option value="office">Bureau</option>
               <option value="dining_room">Salle à manger</option>
               <option value="entryway">Entrée</option>
+              <option value="wc">WC</option>
               <option value="laundry">Buanderie</option>
+              <option value="cellar">Cave</option>
             </select>
 
             <select
@@ -492,7 +496,7 @@ export default function GaleriePage() {
               {/* Meta info */}
               <div className="flex flex-wrap gap-2 text-xs font-light text-muted">
                 {selectedPhoto.room_type && (
-                  <span className="bg-foreground/5 px-2 py-1 rounded-lg">{selectedPhoto.room_type}</span>
+                  <span className="bg-foreground/5 px-2 py-1 rounded-lg">{translateRoomLabel(selectedPhoto.room_type)}</span>
                 )}
                 {selectedPhoto.is_outdoor && (
                   <span className="bg-foreground/5 px-2 py-1 rounded-lg">Extérieur</span>
