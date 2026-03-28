@@ -31,7 +31,7 @@ import {
  * v18 (Sprint 18+), v24 (prompts validés Yann/Lucas/Camille 8.0/7.8),
  * v25 (5 corrections additives: Flos IC, no duplicate, plantes visuelles, lanternes, matériaux),
  * v26 (migration gpt-image-1 → gpt-image-1.5, latence /4 attendue) */
-export const PROMPT_VERSION = "v26";
+export const PROMPT_VERSION = "v27";
 
 // ─── Timeout wrapper for external API calls ─────────────────────────
 const API_TIMEOUT_MS = 120_000;
@@ -710,6 +710,7 @@ async function tryOpenAIResponses(
         {
           type: "image_generation",
           model: "gpt-image-1.5",
+          action: "edit",
           input_fidelity: "high",
           size: size as "1024x1024" | "1536x1024" | "1024x1536",
         },
@@ -847,6 +848,7 @@ async function tryOpenAIResponsesWithPrompt(
         {
           type: "image_generation",
           model: "gpt-image-1.5",
+          action: "edit",
           input_fidelity: "high",
           size: size as "1024x1024" | "1536x1024" | "1024x1536",
         },
