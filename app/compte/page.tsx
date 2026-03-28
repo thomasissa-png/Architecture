@@ -370,6 +370,10 @@ export default function ComptePage() {
                   <p className="text-xs text-muted font-light mt-0.5">
                     Active le branding personnalisé sur vos dossiers de pré-commercialisation.
                   </p>
+                  <p className="text-xs text-muted/60 font-light mt-1">
+                    Disponible avec l&apos;abonnement Pro (29&nbsp;&#8364;/mois).{" "}
+                    <a href="/pricing" className="underline hover:text-sage transition-colors">Voir les tarifs</a>
+                  </p>
                 </div>
               </label>
             </div>
@@ -622,7 +626,8 @@ export default function ComptePage() {
                           type="color"
                           value={couleurPrincipale}
                           onChange={(e) => setCouleurPrincipale(e.target.value)}
-                          className="w-10 h-10 rounded-lg border border-foreground/5 cursor-pointer p-0.5"
+                          className="w-10 h-10 rounded-lg border border-foreground/5 cursor-pointer p-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+                          aria-label="Sélecteur couleur principale"
                           data-testid="merchant-couleur-principale"
                         />
                         <input
@@ -646,7 +651,8 @@ export default function ComptePage() {
                           type="color"
                           value={couleurSecondaire}
                           onChange={(e) => setCouleurSecondaire(e.target.value)}
-                          className="w-10 h-10 rounded-lg border border-foreground/5 cursor-pointer p-0.5"
+                          className="w-10 h-10 rounded-lg border border-foreground/5 cursor-pointer p-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+                          aria-label="Sélecteur couleur secondaire"
                           data-testid="merchant-couleur-secondaire"
                         />
                         <input
@@ -741,14 +747,12 @@ export default function ComptePage() {
                   )}
                 </div>
 
-                {saveMessage?.type === "success" && (
-                  <a
-                    href="/mes-biens"
-                    className="block w-full text-center bg-foreground text-background px-4 py-3 rounded-full text-sm font-medium hover:bg-foreground/85 active:scale-[0.99] transition-all duration-200 animate-fade-in-up"
-                  >
-                    Voir mes biens
-                  </a>
-                )}
+                <a
+                  href="/mes-biens"
+                  className="block w-full text-center bg-foreground text-background px-4 py-3 rounded-full text-sm font-medium hover:bg-foreground/85 active:scale-[0.99] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+                >
+                  Voir mes biens
+                </a>
               </div>
             )}
           </div>

@@ -91,7 +91,7 @@ export default function ProGate({ children, featureName }: ProGateProps) {
 
         {/* Pricing highlight */}
         <div className="bg-foreground/[0.02] border border-foreground/5 rounded-2xl p-6 mb-6 text-left max-w-sm mx-auto">
-          <p className="text-sm font-semibold text-foreground mb-3">Pack Pro inclut :</p>
+          <p className="text-sm font-semibold text-foreground mb-3">Pack Pro (29&nbsp;&#8364;/mois) inclut :</p>
           <ul className="space-y-2 text-sm text-muted font-light">
             <li className="flex items-start gap-2">
               <svg className="w-3.5 h-3.5 text-sage mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -103,7 +103,7 @@ export default function ProGate({ children, featureName }: ProGateProps) {
               <svg className="w-3.5 h-3.5 text-sage mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
               </svg>
-              Dossiers de présentation brandés
+              Dossiers de pré-commercialisation brandés
             </li>
             <li className="flex items-start gap-2">
               <svg className="w-3.5 h-3.5 text-sage mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>

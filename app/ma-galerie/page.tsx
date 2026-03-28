@@ -414,7 +414,7 @@ export default function GaleriePage() {
                       <button
                         key={p.id}
                         onClick={() => handleAssociate(photo.id, p.id)}
-                        className="w-full text-left text-xs font-light px-2 py-1.5 hover:bg-foreground/5 rounded-lg transition-colors"
+                        className="w-full text-left text-xs font-light px-2 py-1.5 min-h-[44px] flex items-center hover:bg-foreground/5 rounded-lg transition-colors"
                       >
                         {p.address_normalized || p.address_raw || p.city || "Bien sans adresse"}
                       </button>
@@ -438,11 +438,12 @@ export default function GaleriePage() {
               ref={detailModalRef}
               role="dialog"
               aria-modal="true"
+              aria-labelledby="modal-title"
               className="bg-background rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-foreground">
+                <h2 id="modal-title" className="text-lg font-semibold text-foreground">
                   {STYLE_LABELS[selectedPhoto.style_id || ""] || selectedPhoto.style_id || "Photo"}
                 </h2>
                 <button

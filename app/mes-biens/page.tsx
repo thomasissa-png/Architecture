@@ -8,6 +8,7 @@
 
 import { useSession } from "next-auth/react";
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
 import AuthButton from "@/components/AuthButton";
 import ProGate from "@/components/ProGate";
 import { TYPE_LABELS } from "@/lib/constants";
@@ -39,6 +40,7 @@ interface AddressSuggestion {
 
 export default function MesBiensPage() {
   const { data: session, status: authStatus } = useSession();
+  const router = useRouter();
   const [properties, setProperties] = useState<Property[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -140,7 +142,7 @@ export default function MesBiensPage() {
 
       const data = await res.json();
       // Redirect to the new property page
-      window.location.href = `/mes-biens/${data.property.id}`;
+      router.push(`/mes-biens/${data.property.id}`);
     } catch {
       setCreateError("Erreur réseau.");
     } finally {
@@ -240,7 +242,7 @@ export default function MesBiensPage() {
                       <button
                         key={i}
                         onMouseDown={() => selectSuggestion(s)}
-                        className="w-full text-left text-xs font-light px-3 py-2 hover:bg-foreground/5 transition-colors"
+                        className="w-full text-left text-xs font-light px-3 py-2 min-h-[44px] flex items-center hover:bg-foreground/5 transition-colors"
                       >
                         {s.label}
                       </button>
@@ -320,7 +322,7 @@ export default function MesBiensPage() {
                   setCreateError(null);
                   setSuggestions([]);
                 }}
-                className="text-xs text-muted font-light px-4 py-2 rounded-full hover:text-foreground transition-colors"
+                className="text-xs text-muted font-light px-4 py-2 min-h-[44px] rounded-full hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
               >
                 Annuler
               </button>
@@ -334,7 +336,7 @@ export default function MesBiensPage() {
             <p className="text-muted font-light text-sm">Aucun bien enregistré.</p>
             <button
               onClick={() => setShowCreateForm(true)}
-              className="inline-block mt-4 text-xs bg-foreground text-background px-4 py-2 rounded-full font-medium hover:bg-foreground/85 transition-colors"
+              className="inline-block mt-4 text-xs bg-foreground text-background px-4 py-2 rounded-full font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
             >
               Ajouter mon premier bien
             </button>

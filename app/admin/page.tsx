@@ -18,9 +18,15 @@ interface LogEntry {
   input_height: number;
   built_prompt_pass1: string | null;
   built_prompt_pass2: string | null;
+  surface_prompt: string | null;
+  furniture_prompt: string | null;
   input_image_path: string | null;
   pass1_image_path: string | null;
   output_image_path: string | null;
+  is_iteration: boolean | null;
+  iteration_number: number | null;
+  session_id: string | null;
+  user_comment_raw: string | null;
   is_replay: boolean | null;
   replay_source_id: number | null;
   replay_label: string | null;
@@ -108,6 +114,38 @@ function LogImage({ path, label }: { path: string; label: string }) {
         }}
       />
     </div>
+  );
+}
+
+function CopyButton({ text, label }: { text: string; label?: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch { /* noop */ }
+  };
+
+  return (
+    <button
+      onClick={handleCopy}
+      title={label || "Copier"}
+      style={{
+        padding: "2px 8px",
+        background: copied ? "#7D9B76" : "#eee",
+        color: copied ? "#fff" : "#555",
+        border: "none",
+        borderRadius: 4,
+        fontSize: 11,
+        cursor: "pointer",
+        transition: "all 0.2s",
+      }}
+    >
+      {copied ? "Copié" : label || "Copier"}
+    </button>
   );
 }
 
@@ -265,6 +303,7 @@ Demande type : "Fais appel aux agents Architecte d'Interieur, Expert IA Image et
                 background: "#fff", padding: 16, borderRadius: 8, fontSize: 12,
                 whiteSpace: "pre-wrap", wordBreak: "break-word", lineHeight: 1.6,
                 border: "1px solid #dde8db", color: "#1C1C1E", maxHeight: 400, overflow: "auto",
+                overflowX: "auto",
               }}
             >
               {auditPromptText}
@@ -288,7 +327,7 @@ Demande type : "Fais appel aux agents Architecte d'Interieur, Expert IA Image et
           onClick={async () => {
             setStorageChecking(true);
             try {
-              const res = await fetch("/api/logs/storage-check");
+              const res = await fetch(`/api/logs/storage-check?token=${encodeURIComponent(password)}`);
               const data = await res.json();
               setStorageStatus({ checked: true, ok: data.status === "ok", detail: data.detail || data.message });
             } catch (err) {
@@ -366,6 +405,7 @@ Demande type : "Fais appel aux agents Architecte d'Interieur, Expert IA Image et
                   flexWrap: "wrap",
                 }}
               >
+                <span style={{ fontSize: 13, fontWeight: 700, color: "#1C1C1E", minWidth: 40 }}>#{log.id}</span>
                 <span style={{ fontSize: 13, color: "#888", minWidth: 150 }}>{timeStr}</span>
                 <span
                   style={{
@@ -379,6 +419,20 @@ Demande type : "Fais appel aux agents Architecte d'Interieur, Expert IA Image et
                 >
                   {log.style_id || "custom"}
                 </span>
+                {log.is_iteration && (
+                  <span
+                    style={{
+                      background: "#e8a838",
+                      color: "#fff",
+                      padding: "2px 8px",
+                      borderRadius: 6,
+                      fontSize: 11,
+                      fontWeight: 600,
+                    }}
+                  >
+                    ITÉRATION{log.iteration_number ? ` #${log.iteration_number}` : ""}
+                  </span>
+                )}
                 <span
                   style={{
                     background: log.prompt_version ? "#4a6fa5" : "#ccc",
@@ -453,9 +507,27 @@ Demande type : "Fais appel aux agents Architecte d'Interieur, Expert IA Image et
                   )}
 
                   {/* Prompts */}
+                  {/* User comment (iterations) */}
+                  {log.user_comment_raw && (
+                    <div style={{ marginTop: 16, padding: 12, background: "#fff8e6", borderRadius: 8, border: "1px solid #f0d98c" }}>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: "#1C1C1E", marginBottom: 4 }}>Commentaire utilisateur</div>
+                      <div style={{ fontSize: 13, color: "#555" }}>{log.user_comment_raw}</div>
+                    </div>
+                  )}
+
+                  {/* Session ID */}
+                  {log.session_id && (
+                    <div style={{ marginTop: 8, fontSize: 11, color: "#aaa" }}>
+                      Session : {log.session_id}
+                    </div>
+                  )}
+
                   {log.built_prompt_pass1 && (
                     <div style={{ marginTop: 16 }}>
-                      <div style={{ fontSize: 12, fontWeight: 600, color: "#1C1C1E", marginBottom: 4 }}>Prompt Passe 1 (surfaces)</div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: "#1C1C1E" }}>Prompt Passe 1 (surfaces)</span>
+                        <CopyButton text={log.built_prompt_pass1} />
+                      </div>
                       <pre
                         style={{
                           background: "#f5f5f3",
@@ -474,7 +546,10 @@ Demande type : "Fais appel aux agents Architecte d'Interieur, Expert IA Image et
                   )}
                   {log.built_prompt_pass2 && (
                     <div style={{ marginTop: 12 }}>
-                      <div style={{ fontSize: 12, fontWeight: 600, color: "#1C1C1E", marginBottom: 4 }}>Prompt Passe 2 (mobilier)</div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: "#1C1C1E" }}>Prompt Passe 2 (mobilier)</span>
+                        <CopyButton text={log.built_prompt_pass2} />
+                      </div>
                       <pre
                         style={{
                           background: "#f5f5f3",

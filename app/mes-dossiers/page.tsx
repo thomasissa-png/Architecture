@@ -186,7 +186,7 @@ export default function MesDossiersPage() {
                   <a
                     key={dossier.uuid}
                     href={`/dossier/${dossier.slug || dossier.uuid}`}
-                    className="block p-5 rounded-2xl border border-foreground/5 hover:border-foreground/10 hover:bg-foreground/5 transition-all group"
+                    className="block p-5 rounded-2xl border border-foreground/5 hover:border-foreground/10 hover:bg-foreground/5 transition-all group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
                     data-testid="dossier-card"
                   >
                     <div className="flex items-start justify-between gap-4">
@@ -229,6 +229,8 @@ export default function MesDossiersPage() {
                             navigator.clipboard.writeText(url).then(() => {
                               setCopiedUuid(dossier.uuid);
                               setTimeout(() => setCopiedUuid(null), 2000);
+                            }).catch(() => {
+                              /* Clipboard non disponible — silencieux */
                             });
                           }}
                           className="text-[11px] text-muted hover:text-foreground font-light transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded px-1.5 py-1 min-h-[44px] inline-flex items-center"

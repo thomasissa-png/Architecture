@@ -419,7 +419,7 @@ export default function PropertyDetailPage() {
         setDossierResult(data.dossier);
         // Auto-open dossier page in new tab (primary action)
         const dossierPath = data.dossier.identifier || data.dossier.slug || data.dossier.uuid;
-        window.open(`/dossier/${dossierPath}`, '_blank');
+        window.open(`/dossier/${dossierPath}`, '_blank', 'noopener,noreferrer');
       } else {
         const data = await res.json();
         setToastMsg(data.error || "Erreur lors de la création du dossier.");
@@ -481,7 +481,7 @@ export default function PropertyDetailPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        window.open(`/annonce/${data.identifier || data.uuid}`, '_blank');
+        window.open(`/annonce/${data.identifier || data.uuid}`, '_blank', 'noopener,noreferrer');
       } else if (res.status === 403) {
         setToastMsg(
           <span>
@@ -779,7 +779,7 @@ export default function PropertyDetailPage() {
                   data-testid="ascenseur-checkbox"
                   checked={compInfo.ascenseur}
                   onChange={(e) => setCompInfo((p) => ({ ...p, ascenseur: e.target.checked }))}
-                  className="w-4 h-4 rounded border-foreground/20 text-sage focus:ring-sage/50"
+                  className="w-4 h-4 rounded border-foreground/20 text-sage focus-visible:ring-sage/50"
                 />
                 <span className="text-xs font-light text-foreground">Ascenseur</span>
               </label>
@@ -795,7 +795,7 @@ export default function PropertyDetailPage() {
                   data-testid="parking-checkbox"
                   checked={compInfo.parking}
                   onChange={(e) => setCompInfo((p) => ({ ...p, parking: e.target.checked }))}
-                  className="w-4 h-4 rounded border-foreground/20 text-sage focus:ring-sage/50"
+                  className="w-4 h-4 rounded border-foreground/20 text-sage focus-visible:ring-sage/50"
                 />
                 <span className="text-xs font-light text-foreground">Parking</span>
               </label>
@@ -807,7 +807,7 @@ export default function PropertyDetailPage() {
                   data-testid="cave-checkbox"
                   checked={compInfo.cave}
                   onChange={(e) => setCompInfo((p) => ({ ...p, cave: e.target.checked }))}
-                  className="w-4 h-4 rounded border-foreground/20 text-sage focus:ring-sage/50"
+                  className="w-4 h-4 rounded border-foreground/20 text-sage focus-visible:ring-sage/50"
                 />
                 <span className="text-xs font-light text-foreground">Cave</span>
               </label>
