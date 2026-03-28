@@ -5,18 +5,21 @@ const LOGIN_MAX_ATTEMPTS = 5;
 const LOGIN_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
 
 const loginAttempts = new Map<string, { count: number; firstAttempt: number }>();
+let lastCleanup = Date.now();
 
-// Cleanup stale entries every 5 minutes to prevent memory leak
-setInterval(() => {
+function cleanupStaleEntries() {
   const now = Date.now();
-  for (const [ip, entry] of loginAttempts) {
+  if (now - lastCleanup < 5 * 60 * 1000) return;
+  lastCleanup = now;
+  loginAttempts.forEach((entry, ip) => {
     if (now - entry.firstAttempt > LOGIN_WINDOW_MS) {
       loginAttempts.delete(ip);
     }
-  }
-}, 5 * 60 * 1000);
+  });
+}
 
 function isRateLimited(ip: string): boolean {
+  cleanupStaleEntries();
   const now = Date.now();
   const entry = loginAttempts.get(ip);
 
