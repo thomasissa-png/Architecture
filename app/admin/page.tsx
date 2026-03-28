@@ -378,7 +378,10 @@ Demande type : "Fais appel aux agents Architecte d'Interieur, Expert IA Image et
       <div className="mb-5 bg-sage/10 border border-sage/30 rounded-xl overflow-hidden">
         <div
           onClick={() => setShowAuditPrompt(!showAuditPrompt)}
-          className="flex items-center gap-2.5 px-4 py-3 cursor-pointer"
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setShowAuditPrompt(!showAuditPrompt); } }}
+          className="flex items-center gap-2.5 px-4 py-3 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-1"
         >
           <span className="text-base">&#x1f9d1;&#x200d;&#x1f3a8;</span>
           <span className="text-[13px] font-semibold text-sage">
