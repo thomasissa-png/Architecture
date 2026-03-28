@@ -178,6 +178,12 @@
 | @growth | 2026-03-25 | docs/growth/growth-strategy.md | Unit economics par persona (LTV/CAC), top 3 canaux par persona, boucle virale (watermark + referral + galerie), projection M1-M6 en 3 scénarios. ALERTE : Léa non rentable en paid (LTV/CAC 1,4x) — canal viral + SEO uniquement. North Star 3 000€/mois atteint en scénario Base vers M8-M9 ou Optimiste M5-M6. | Paid écarté avant M5 : aucune donnée terrain pour calibrer le CAC réel. Léa exclue du paid : LTV ~20€ incompatible avec un CAC paid estimé à 14€ minimum. Watermark retenu comme levier viral P0 car activable sans auth (< 1 semaine). Referral à préparer maintenant pour activer au lancement Auth (M2). Canaux gratuits (SEO, LinkedIn outreach, Pinterest organique) prioritaires sur les 4 premiers mois. |
 | @seo | 2026-03-25 | docs/seo/seo-audit.md | Score global 38/100. 5 KO critiques : sitemap.ts absent, robots.ts absent, JSON-LD absent, maillage interne absent (0 page cluster existante), domaine Replit (autorité nulle). H1 inversé (logo texte en H1, titre hero en H2). page.tsx est "use client" — contenu non SSR. | Audit code source direct (layout.tsx, page.tsx, next.config.mjs). P0 sitemap+robots : code fourni clé en main dans metadata-templates.md, impact immédiat dès prochain crawl Google. P1 metadata layout.tsx : alignement sur template Section 3 (metadataBase manquant = URLs OG relatives non résolues). P2 JSON-LD : Rich Results bloqués sans les 3 schémas. P3 H1/H2 swap. P4 dossier public/ à créer (absent du projet). Domaine Replit signalé comme frein SEO structurel — arbitrage @infrastructure requis. |
 | @geo | 2026-03-26 | docs/geo/geo-strategy.md | Baseline zéro confirmé (aucune citation LLM sur 5 requêtes testées). Entités GEO prioritaires : Pipeline BiPasse™, 90 secondes, 12 styles, 4,90€ sans abonnement. 4 blocs FAQ Schema FAQPage à implémenter. Schema SoftwareApplication. Domaine propre en P0 absolu (sous-domaine Replit = non indexable). Product Hunt + journaldelagence.com = sources tierces prioritaires. Page /comparatif = convergence SEO/GEO. Monitoring mensuel : 5 prompts × 4 LLM. | Baseline zéro stratégie : création d'autorité depuis zéro — prioriser FAQ citables, comparatif factuel, structured data. Domaine Replit écarté pour l'indexation LLM : les LLM construisent leur connaissance depuis les sources indexées par Google, et les sous-domaines Replit ont une autorité nulle. Product Hunt retenu comme levier prioritaire car fortement indexé par ChatGPT et Perplexity. Page /comparatif préférée à un article de blog : les LLM citent les comparatifs factuels avec chiffres (format extractible) davantage que les articles narratifs. Claims GEO stabilisés autour du Pipeline BiPasse™ car c'est le seul différenciateur que les concurrents ne peuvent pas revendiquer. |
+| @orchestrator | 2026-03-27c | 3 landing pages personas (/marchand, /architecte, /particulier) — 5 rounds audit→fix→re-audit | 5 rounds itératifs Thomas (5.8→9.05), Claire (6.35→8.1), Léa (5.5→7.05). Avant/après visuel, FAQ 6-8 questions, social proof, témoignages anonymisés, RGPD UE, focus-visible, ARIA roles, touch targets 44px. | Itération persona en parallèle (3 audits simultanés) = progression rapide. Les faux témoignages (noms de persona) détruisent la crédibilité — anonymiser. Les galeries avec images identiques sont pires qu'aucune galerie — commenter jusqu'à avoir le contenu réel. |
+| @product-manager | 2026-03-27c | docs/product/pricing-strategy.md v3 — Refonte complète 3 tiers | 3 tiers : Découverte (gratuit 3 crédits), Starter (9,90€ one-shot 15 crédits), Pro (29€/mois 50 crédits). Recharges au prix du tier. Seul le Pro en abonnement. Feature gating : Mode Pro = Pro only. | Décision fondateur : 4 tiers = trop, simplifier à 3. Starter en one-shot (pas abonnement) car Léa et Claire ont un usage ponctuel. Pro en abonnement pour Thomas (usage récurrent). Alt écartée : Starter en abonnement (cannibalise le Pro). |
+| @creative-strategy | 2026-03-27c | docs/strategy/pricing-audit.md — Audit positionnement + conversion nouveau pricing | Validation 3 tiers cohérent marché (Pedra 29€, Renovate Club 9,99€). Mapping persona→tier. Starter = stepping stone. Recommandations copy /pricing. | 3 tiers = standard marché premium. Le Starter ne doit pas être trop généreux (sinon personne ne monte au Pro). |
+| @fullstack | 2026-03-27c | Refonte /pricing (3 colonnes, recharges interactives, ROI, FAQ 6 questions, rétractation), maj 3 landing pages + homepage + CGV + comparatif | /pricing refait avec badge Recommandé, section recharge avec boutons d'achat, section ROI comparatif home stager. Cohérence prix mise à jour sur 6 fichiers. Homepage : encart Mode Pro → 3 encarts personas. | Encart Mode Pro trop imposant (fondateur). 3 encarts personas = plus simple, redirigent vers les pages dédiées. |
+| @qa | 2026-03-27c | Audit QA final 10 checks (build, apostrophes, pricing cohérence, UTF-8, focus-visible, touch targets, ARIA, git) | Build propre (tsc + lint = 0 erreurs). 15 apostrophes corrigées. JSON-LD pricing à jour. Focus-visible et ARIA sur /marchand, /pricing. Touch targets 44px. | Le fondateur ne doit JAMAIS tester le build — 6 erreurs consécutives inacceptable. Règle P0 : tsc + lint AVANT chaque commit. |
+| Thomas (marchand) | 2026-03-27c | Audit /pricing final 9.7/10, audit /marchand 9.05/10 | /pricing : checkbox rétractation remontée, "Gratuit" au lieu de "0€", FAQ 6 questions, bandeau sécurité Stripe. /marchand : témoignage fictif → chiffres factuels, ROI 348€/an vs 12 000€. | Les témoignages avec noms de persona sont détectés comme faux. Les chiffres factuels (12/90s/0,58€) sont plus crédibles qu'un faux verbatim. |
 | @ux | 2026-03-25 | docs/reviews/f4-audit-thomas.md | Note globale 6.1/10. Top 3 critères défaillants : Retrouvabilité 3/10 (aucune liste de dossiers), Prix/valeur 4/10 (crédits sans valeur EUR), Qualité pro 5/10 (page partageable insuffisante pour acquéreurs). 5 frictions classées par impact, 10 suggestions P0→P3. P0 : "Mes dossiers" + prix EUR dans récapitulatif. P1 : ordre flow (photos avant infos), bouton WhatsApp, messages d'erreur actionnables. | Simulation de parcours mental depuis le persona Thomas (code source lu pour MerchantMode.tsx, DossierProgress.tsx, DossierResult.tsx, DossierPublicView.tsx, app/dossier/[uuid]/page.tsx). Méthode persona walk-through sans test utilisateur réel (pas de données terrain disponibles). Retrouvabilité identifiée comme friction structurelle la plus grave (8-12 opérations/an × lien perdu = churne immédiat). Ordre info→photos jugé contre-intuitif car Thomas arrive toujours avec ses photos, jamais avec ses infos de prix préparées. |
 | @design | 2026-03-25 | docs/design/design-audit.md | Audit 10 critères — note globale 7.4/10. P1 BLOQUANT : emojis StylePicker incompatibles avec le brief (registre grand-public). P2 MAJEUR : text-muted non tokenisé, WCAG invérifiable. P3 MAJEUR : SVG hero schématiques sous le niveau "architecture-grade". P4 MOYEN : shadow-lg bouton sticky hors-système. P5 MINEUR : badges AVANT/APRÈS text-[10px] sous seuil accessibilité. | Emojis comme identifiants de style : pratique en dev mais opposé au positionnement "sobre, précis" du brief. Le creative-brief interdit explicitement les emojis hors réseaux sociaux. Pastilles couleur ou pictogrammes vectoriels retenus comme alternative. WCAG prioritaire car text-muted est utilisé massivement sur toute la page — sans token défini, un refactor UI pourrait casser le contraste sans qu'on le détecte. |
 | @ux | 2026-03-25 | docs/ux/ux-audit.md | Audit UX 10 critères (moyenne 7.5/10). Top 5 : P1 CRITIQUE blocs formulaire toujours visibles (révélation progressive manquante), P2 HAUTE absence bouton Annuler (AbortController non exposé), P3 HAUTE absence preview visuelle par style, P4 MOYENNE limite itérations opaque + chemin upgrade inexistant, P5 MOYENNE incohérence "11 styles" vs 12 + badge modèle technique. | P1 : le code révèle que tous les blocs sont rendus dès le chargement (pas de conditional rendering sur files.length). P2 : AbortController existe mais aucun bouton exposé — correction rapide à fort impact. P3 : emojis seuls insuffisants pour distinguer styles proches — convergence avec l'audit @design P1. Révélation progressive retenue vs wizard multi-page (trop lourd pour MVP one-page). |
@@ -268,53 +274,44 @@
 
 ## Mémo de reprise — dernière session
 
-- **Date et heure de clôture** : 2026-03-27 (session 4)
-- **Branch** : `claude/update-gradient-agents-IM310`
+- **Date et heure de clôture** : 2026-03-28 (session 27c)
+- **Branch** : `claude/extract-project-context-7APhH`
 - **Résumé de la session** :
-  - **Gradient Agents v3** : mise à jour depuis Agent-Team branche claude/extract-project-context-BrqhN, 13 agents mis à jour, CLAUDE.md fusionné
-  - **14 générations réelles v24** : 6 indoor (Contemporain, Bohème, Wabi-Sabi, Haussmannien, Méditerranéen, Cosy) + 7 outdoor + 1 erreur Provençal — images en production
-  - **Audits visuels réels** : Yann indoor batch 1 = 8.0/10 (Wabi-Sabi 8.5, Bohème 7.9, Contemporain 7.5). Camille outdoor = 7.8/10 (Cosy Balcon 8.4 → Bohème Garden 7.0)
-  - **Audit géométrie vraies photos chantier** : #43 Industrial 9.0, #44 Maximalist 9.5, #38 Cosy 8.5 — pipeline 2 passes VALIDÉ sur pièces vides
-  - **Prompts v25** : 5 corrections additives zéro-régression (Flos IC, no duplicate, plantes visuelles, lanternes, matériaux outdoor)
-  - **Migration GPT Image 1.5 codée** (v26) : 4 lignes dans route.ts, non déployée
-  - **Protocole amélioration prompts** : grille 10 critères pondérés (géométrie ×3 = critère n°1), PROMPT_CHANGELOG v1→v26, règles anti-régression, template triage
-  - **Benchmark v1** : 7 images réelles de production + scripts run.ts/compare.ts + baseline v24 mesurée (131s moy)
-  - **Homepage restructurée** : suppression sections redondantes, encart Mode Pro, 3 pages personas
-  - **Pricing Pro 29€/mois** : badge "Prix de lancement", 4 tiers cohérents homepage + /pricing
-  - **Renommages complets** : Mode Marchand → Mode Pro (25+ fichiers), QA validé 0 P0
-  - **Audit stratégique @elon** : score 7.2/10, migration GPT Image 1.5 = quick win n°1
+  - **3 landing pages personas** (/marchand, /architecte, /particulier) : 5 rounds d'itération audit→corrections→re-audit avec Thomas (9.05/10), Claire (8.1/10), Léa (7.05/10). Avant/après visuel, FAQ 6-8 questions, témoignages anonymisés, social proof factuel, RGPD UE, focus-visible, ARIA roles, touch targets 44px.
+  - **Refonte pricing v3** : 3 tiers (Découverte gratuit / Starter 9,90€ one-shot / Pro 29€/mois abonnement). Seul le Pro en abonnement. Recharges au prix du tier. Cohérence mise à jour sur 10+ fichiers (pricing, homepage, 3 landing, CGV, comparatif, JSON-LD, tests E2E).
+  - **Page /pricing** : refonte complète 3 colonnes, badge "Recommandé", section recharge interactive, section ROI comparatif home stager, FAQ 6 questions, bandeau sécurité Stripe, checkbox rétractation remontée. Thomas 9.7/10.
+  - **Homepage** : encart Mode Pro massif → 3 encarts personas compacts (architecte/marchand/particulier).
+  - **QA** : 6 erreurs de build corrigées (apostrophes JSX, TypeScript gpt-image-1.5, pixelmatch). Règle P0 enregistrée : tsc + lint AVANT chaque commit. QA finale 11/11 checks PASS.
+  - **Fix profil** : police preview temps réel + preconnect Google Fonts.
 
-- **Travaux en cours (non déployés)** :
-  1. **Migration GPT Image 1.5** (v26) — code prêt, non déployé sur Replit. Déployer puis run benchmark pour comparer latence
-  2. **Benchmark post-v26** — relancer `npx tsx benchmarks/run.ts --version v26` après déploiement
-  3. **Audit @ia implémentation** — lancé, peut-être en cours ou timeout
-  4. **Bug config benchmark** — B02 wabi_sabi vs wabi-sabi (tiret vs underscore dans config.ts)
+- **Travaux en cours** :
+  1. **Images galerie multi-styles** — galeries commentées sur les 3 landing pages, en attente de 3-6 visuels réels (styles différents). Quand disponibles : commiter dans `public/demo/`, décommenter les sections galerie, remplacer les src.
+  2. **Anciens prix dans les docs** — les fichiers docs/ (kpi-framework, roadmap, backlog, functional-specs, legal, geo, growth) contiennent encore les anciens prix (4,90€/14,90€). À mettre à jour lors de la prochaine révision de chaque livrable. Le code fonctionnel est déjà correct.
+  3. **Focus-visible et ARIA** incomplets sur /architecte et /particulier (header links, CTA hero — partiellement corrigés, QA a flaggé des manques résiduels).
 
 - **Travaux reportés (sessions précédentes, toujours valides)** :
-  1. Blog seed — `npx tsx scripts/seed-blog.ts` sur Replit
-  2. Domaine versiroom.fr — blocker SEO/GEO n°1, action fondateur
-  3. SIRET/médiateur — placeholders pages légales
-  4. Clés API prod — Stripe, Google OAuth, Sentry, Pappers
-  5. F5 Mode Décorateur — specs prêtes, pas implémenté
+  1. Migration GPT Image 1.5 (v26 codée, non déployée) — déployer puis benchmark
+  2. Blog seed — `npx tsx scripts/seed-blog.ts` sur Replit
+  3. Domaine versiroom.fr — blocker SEO/GEO n°1, action fondateur
+  4. SIRET/médiateur — placeholders pages légales
+  5. Clés API prod — Stripe, Google OAuth, Sentry
+  6. F5 Mode Décorateur — specs prêtes, pas implémenté
 
 - **Prochaines actions recommandées** :
-  1. **Déployer v26 sur Replit** puis run benchmark → comparer latence v24 (131s) vs v26 (objectif <40s)
-  2. **Fix bug B02** benchmark config (wabi_sabi → wabi-sabi)
-  3. **Test single-pass** GPT Image 1.5 si latence 2 passes encore trop haute
-  4. **Cron monitoring hebdo** (3 images benchmark)
-  5. **F5 Mode Décorateur** — prochaine feature dans la roadmap
+  1. **Générer 3-6 images galerie** via l'outil en production (Japandi, Bohème, Cosy, Art Déco, Haussmannien) → commiter dans `public/demo/` → activer les galeries sur les 3 landing pages. C'est le seul blocage vers 10/10.
+  2. **Corriger les focus-visible/ARIA résiduels** sur /architecte et /particulier (QA flaggé).
+  3. **Déployer v26 sur Replit** puis benchmark latence (objectif <40s vs 131s actuel).
+  4. **Mettre à jour les docs** avec les nouveaux prix (pricing-strategy.md v3 est la référence).
 
 - **Blockers** :
-  - Déploiement Replit requis pour valider v26 (code poussé sur branche, pas sur main)
+  - Déploiement Replit requis pour valider v26
+  - Images galerie = fondateur doit générer via l'outil
   - Domaine Replit = plafond SEO/GEO
   - Stripe non fonctionnel (clés non configurées)
 
 - **Commande de reprise suggérée** :
 ```
-@orchestrator Reprends le projet Versiroom. Session 27/03b : Gradient Agents v3, 14 générations v24 testées (Yann 8.0, Camille 7.8, géométrie 9.0-9.5), prompts v25 (5 corrections additives), migration GPT Image 1.5 codée (v26, non déployée), protocole prompts + benchmark 7 images + baseline v24 (131s), homepage Mode Pro + pricing 29€/mois + 3 pages personas, audit @elon 7.2/10. Priorité : (1) déployer v26 et run benchmark, (2) cron monitoring, (3) F5 Mode Décorateur.
-```
-```
-@orchestrator Reprends le projet Versiroom. Session 26/03c marathon (50+ commits) : tous bugs prod corriges, QA 9.2/10, Thomas 8.8, Marc 9.4, SEO/GEO strategies + 3 landing pages + /comparatif + blog infra. Fix critique gallery (saveUserPhoto AVANT response Replit autoscale). Priorites : (1) Carte OSM page annonce (P0 Marc), (2) Comparateur mobile (touch events), (3) Seed blog sur Replit, (4) Domaine versiroom.fr, (5) Footer pages personas.
+@orchestrator Reprends le projet Versiroom. Session 27c : refonte pricing 3 tiers (Découverte gratuit, Starter 9,90€ one-shot, Pro 29€/mois), /pricing 9.7/10 Thomas, 3 landing pages personas itérées 5x (Thomas 9.05, Claire 8.1, Léa 7.05), homepage nettoyée (3 encarts personas), QA finale 11/11 PASS. Priorités : (1) générer images galerie multi-styles et activer les galeries commentées, (2) focus-visible/ARIA résiduels /architecte et /particulier, (3) déployer v26 GPT Image 1.5 + benchmark, (4) F5 Mode Décorateur.
 ```
 
 ---
