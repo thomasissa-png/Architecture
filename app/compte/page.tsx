@@ -33,7 +33,7 @@ export default function ComptePage() {
   const [siret, setSiret] = useState("");
   const [raisonSociale, setRaisonSociale] = useState("");
   const [adresse, setAdresse] = useState("");
-  const [telephone, setTéléphone] = useState("");
+  const [telephone, setTelephone] = useState("");
   const [emailPro, setEmailPro] = useState("");
   const [formeJuridique, setFormeJuridique] = useState("");
   const [couleurPrincipale, setCouleurPrincipale] = useState("#1C1C1E");
@@ -77,7 +77,7 @@ export default function ComptePage() {
         setSiret(profile.siret || "");
         setRaisonSociale(profile.raison_sociale || "");
         setAdresse(profile.adresse || "");
-        setTéléphone(profile.telephone || "");
+        setTelephone(profile.telephone || "");
         setEmailPro(profile.email_pro || "");
         setFormeJuridique(profile.forme_juridique || "");
         setCouleurPrincipale(profile.couleur_principale || "#1C1C1E");
@@ -537,7 +537,7 @@ export default function ComptePage() {
                       <input
                         type="tel"
                         value={telephone}
-                        onChange={(e) => setTéléphone(e.target.value)}
+                        onChange={(e) => setTelephone(e.target.value)}
                         placeholder="06 12 34 56 78"
                         className="w-full px-4 py-3 border border-foreground/10 rounded-xl text-sm font-light focus-visible:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
                         data-testid="merchant-telephone"
@@ -633,7 +633,7 @@ export default function ComptePage() {
                               setCouleurPrincipale(e.target.value);
                             }
                           }}
-                          className="flex-1 px-3 py-2 border border-foreground/10 rounded-xl text-sm font-mono font-light focus-visible:border-foreground focus:outline-none"
+                          className="flex-1 px-3 py-2 border border-foreground/10 rounded-xl text-sm font-mono font-light focus-visible:border-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
                         />
                       </div>
                     </div>
@@ -657,7 +657,7 @@ export default function ComptePage() {
                               setCouleurSecondaire(e.target.value);
                             }
                           }}
-                          className="flex-1 px-3 py-2 border border-foreground/10 rounded-xl text-sm font-mono font-light focus-visible:border-foreground focus:outline-none"
+                          className="flex-1 px-3 py-2 border border-foreground/10 rounded-xl text-sm font-mono font-light focus-visible:border-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
                         />
                       </div>
                     </div>

@@ -104,6 +104,7 @@ export default function PropertyDetailPage() {
 
   // Delete property
   const [isDeletingProperty, setIsDeletingProperty] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Inline generator
   const [showGenerator, setShowGenerator] = useState(false);
@@ -307,17 +308,17 @@ export default function PropertyDetailPage() {
           if (patchRes.ok) {
             const patchData = await patchRes.json();
             setProperty(patchData.property);
-            setToastMsg("Description g\u00e9n\u00e9r\u00e9e avec succ\u00e8s.");
+            setToastMsg("Description générée avec succès.");
           }
         } else {
-          setToastMsg("La description n\u2019a pas pu \u00eatre g\u00e9n\u00e9r\u00e9e. R\u00e9essayez.");
+          setToastMsg("La description n'a pas pu être générée. Réessayez.");
         }
       } else {
         const errData = await res.json().catch(() => ({}));
-        setToastMsg(errData.error || "Erreur lors de la g\u00e9n\u00e9ration de la description.");
+        setToastMsg(errData.error || "Erreur lors de la génération de la description.");
       }
     } catch {
-      setToastMsg("Erreur r\u00e9seau. V\u00e9rifiez votre connexion.");
+      setToastMsg("Erreur réseau. Vérifiez votre connexion.");
     } finally {
       setIsRegeneratingDesc(false);
     }
@@ -442,7 +443,7 @@ export default function PropertyDetailPage() {
         setToastMsg("Annonce archivée.");
       } else {
         const data = await res.json();
-        setToastMsg(data.error || "Erreur lors de l\u2019archivage.");
+        setToastMsg(data.error || "Erreur lors de l'archivage.");
       }
     } catch {
       setToastMsg("Erreur réseau.");
@@ -452,7 +453,7 @@ export default function PropertyDetailPage() {
   };
 
   const handleDeleteProperty = async () => {
-    if (!window.confirm("Supprimer ce bien ? Cette action est irréversible. Les photos associées seront dissociées.")) return;
+    setShowDeleteConfirm(false);
     setIsDeletingProperty(true);
     try {
       const res = await fetch(`/api/properties/${propertyId}`, { method: "DELETE" });
@@ -490,7 +491,7 @@ export default function PropertyDetailPage() {
         );
       } else {
         const data = await res.json();
-        setToastMsg(data.error || "Erreur lors de la création de l\u2019annonce.");
+        setToastMsg(data.error || "Erreur lors de la création de l'annonce.");
       }
     } catch {
       setToastMsg("Erreur réseau.");
@@ -571,7 +572,7 @@ export default function PropertyDetailPage() {
       <main className="pt-24 pb-16 px-5 sm:px-8 max-w-6xl mx-auto" data-testid="bien-detail">
         {/* Breadcrumb */}
         <div className="mb-6">
-          <a href="/mes-biens" className="text-xs text-muted font-light hover:text-foreground transition-colors">
+          <a href="/mes-biens" className="text-xs text-muted font-light hover:text-foreground transition-colors min-h-[44px] inline-flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded">
             Mes biens
           </a>
           <span className="text-xs text-muted/50 mx-2">/</span>
@@ -594,22 +595,22 @@ export default function PropertyDetailPage() {
               )}
               {property.surface_m2 && (
                 <span className="text-xs bg-foreground/5 text-foreground px-3 py-1 rounded-xl font-light">
-                  {property.surface_m2} m&#178;
+                  {property.surface_m2} m²
                 </span>
               )}
               {property.room_count && (
                 <span className="text-xs bg-foreground/5 text-foreground px-3 py-1 rounded-xl font-light">
-                  {property.room_count} pi&#232;ces
+                  {property.room_count} pièces
                 </span>
               )}
               {property.dvf_median_price_m2 && (
                 <span className="text-xs bg-sage/10 text-sage px-3 py-1 rounded-xl font-light">
-                  {property.dvf_median_price_m2.toLocaleString("fr-FR")} &#8364;/m&#178;
+                  {property.dvf_median_price_m2.toLocaleString("fr-FR")} €/m²
                 </span>
               )}
               {property.sale_price && (
                 <span className="text-xs bg-foreground text-background px-3 py-1 rounded-xl font-medium">
-                  {property.sale_price.toLocaleString("fr-FR")} &#8364;
+                  {property.sale_price.toLocaleString("fr-FR")} €
                 </span>
               )}
             </div>
@@ -652,14 +653,14 @@ export default function PropertyDetailPage() {
                     setEditDesc(description);
                     setIsEditingDesc(true);
                   }}
-                  className="text-xs text-sage font-light mt-1 hover:underline"
+                  className="text-xs text-sage font-light mt-1 hover:underline min-h-[44px] inline-flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded"
                 >
                   Modifier la description
                 </button>
                 <button
                   onClick={handleRegenerateDescription}
                   disabled={isRegeneratingDesc}
-                  className="text-xs text-muted/50 font-light mt-1 ml-3 hover:text-sage hover:underline transition-colors disabled:opacity-50"
+                  className="text-xs text-muted/50 font-light mt-1 ml-3 hover:text-sage hover:underline transition-colors disabled:opacity-50 min-h-[44px] inline-flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded"
                 >
                   {isRegeneratingDesc ? "Régénération..." : "Regénérer"}
                 </button>
@@ -850,7 +851,7 @@ export default function PropertyDetailPage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
             <div>
               <label htmlFor="charges-copro" className="block text-xs font-medium text-foreground mb-1">
-                Charges copro (&#8364;/an)
+                Charges copro (€/an)
               </label>
               <input
                 id="charges-copro"
@@ -865,7 +866,7 @@ export default function PropertyDetailPage() {
             </div>
             <div>
               <label htmlFor="taxe-fonciere" className="block text-xs font-medium text-foreground mb-1">
-                Taxe foncière (&#8364;/an)
+                Taxe foncière (€/an)
               </label>
               <input
                 id="taxe-fonciere"
@@ -941,7 +942,7 @@ export default function PropertyDetailPage() {
 
           {photos.length === 0 ? (
             <div className="text-center py-12 bg-foreground/[0.02] rounded-2xl border border-foreground/5">
-              <p className="text-muted font-light text-sm">Aucune photo associ&#233;e &#224; ce bien.</p>
+              <p className="text-muted font-light text-sm">Aucune photo associée à ce bien.</p>
               <p className="text-xs text-muted/50 font-light mt-1">
                 Associez des photos depuis votre galerie ou générez-en de nouvelles.
               </p>
@@ -993,7 +994,7 @@ export default function PropertyDetailPage() {
                   className="text-xs bg-foreground text-background px-4 py-2.5 rounded-full font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                   data-testid="create-dossier-btn"
                 >
-                  Cr&#233;er un dossier
+                  Créer un dossier
                 </button>
                 <button
                   onClick={handleCreateAnnonce}
@@ -1010,7 +1011,7 @@ export default function PropertyDetailPage() {
                     className="text-xs border border-red-300 text-red-600 px-4 py-2.5 rounded-full font-medium hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300/50"
                     data-testid="archive-annonce-btn"
                   >
-                    {isArchivingAnnonce ? "Archivage..." : "Archiver l\u2019annonce"}
+                    {isArchivingAnnonce ? "Archivage..." : "Archiver l'annonce"}
                   </button>
                 )}
               </div>
@@ -1062,13 +1063,13 @@ export default function PropertyDetailPage() {
                     Aucune photo disponible.
                   </p>
                   <p className="text-xs text-muted/50 font-light mt-1">
-                    G&#233;n&#233;rez d&apos;abord des visuels dans le mode Standard.
+                    Générez d&apos;abord des visuels dans le mode Standard.
                   </p>
                 </div>
               ) : (
                 <>
                   <p className="text-xs text-muted font-light mb-3">
-                    {selectedForAssoc.size} photo{selectedForAssoc.size !== 1 ? "s" : ""} s&#233;lectionn&#233;e{selectedForAssoc.size !== 1 ? "s" : ""}
+                    {selectedForAssoc.size} photo{selectedForAssoc.size !== 1 ? "s" : ""} sélectionnée{selectedForAssoc.size !== 1 ? "s" : ""}
                   </p>
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-4">
                     {unassociatedPhotos.map((photo) => (
@@ -1127,7 +1128,7 @@ export default function PropertyDetailPage() {
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
             <div ref={dossierModalRef} role="dialog" aria-modal="true" aria-label="Créer un dossier" className="bg-background rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-foreground">Cr&#233;er un dossier</h2>
+                <h2 className="text-lg font-semibold text-foreground">Créer un dossier</h2>
                 <button
                   onClick={() => setShowDossierModal(false)}
                   className="text-muted hover:text-foreground w-10 h-10 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full hover:bg-foreground/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
@@ -1141,7 +1142,7 @@ export default function PropertyDetailPage() {
 
               {dossierResult ? (
                 <div className="text-center py-8">
-                  <p className="text-sm text-sage font-medium mb-4">Dossier cr&#233;&#233; avec succ&#232;s.</p>
+                  <p className="text-sm text-sage font-medium mb-4">Dossier créé avec succès.</p>
                   <div className="flex flex-col items-center gap-2">
                     <a
                       href={`/dossier/${dossierResult.identifier || dossierResult.slug || dossierResult.uuid}`}
@@ -1157,19 +1158,19 @@ export default function PropertyDetailPage() {
                       rel="noopener noreferrer"
                       className="inline-block text-xs text-muted hover:text-foreground transition-colors font-light"
                     >
-                      T&#233;l&#233;charger le PDF
+                      Télécharger le PDF
                     </a>
                   </div>
                 </div>
               ) : (
                 <>
                   <p className="text-xs text-muted font-light mb-3">
-                    S&#233;lectionnez les photos &#224; inclure dans le dossier. Cliquez sur la couverture souhait&#233;e.
+                    Sélectionnez les photos à inclure dans le dossier. Cliquez sur la couverture souhaitée.
                   </p>
 
                   {photos.length === 0 ? (
                     <p className="text-sm text-muted font-light py-8 text-center">
-                      Associez d&#8217;abord des photos &#224; ce bien.
+                      Associez d'abord des photos à ce bien.
                     </p>
                   ) : (
                     <>
@@ -1240,13 +1241,47 @@ export default function PropertyDetailPage() {
         {/* Delete property — bottom of page, discrete */}
         <div className="mt-16 pt-8 border-t border-foreground/5">
           <button
-            onClick={handleDeleteProperty}
+            onClick={() => setShowDeleteConfirm(true)}
             disabled={isDeletingProperty}
             className="text-xs text-red-400 font-light hover:text-red-500 transition-colors disabled:opacity-50"
           >
             {isDeletingProperty ? "Suppression..." : "Supprimer ce bien"}
           </button>
         </div>
+
+        {/* Delete confirmation modal */}
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div
+              role="alertdialog"
+              aria-modal="true"
+              aria-labelledby="delete-confirm-title"
+              aria-describedby="delete-confirm-desc"
+              className="bg-background rounded-2xl max-w-sm w-full p-6"
+            >
+              <h2 id="delete-confirm-title" className="text-sm font-semibold text-foreground mb-2">
+                Supprimer ce bien ?
+              </h2>
+              <p id="delete-confirm-desc" className="text-xs text-muted font-light mb-6">
+                Cette action est irréversible. Les photos associées seront dissociées.
+              </p>
+              <div className="flex gap-2 justify-end">
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="text-xs text-muted font-light px-4 py-2 rounded-full hover:text-foreground transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={handleDeleteProperty}
+                  className="text-xs bg-red-500 text-white px-4 py-2 rounded-full font-medium hover:bg-red-600 transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300/50 focus-visible:ring-offset-2"
+                >
+                  Supprimer
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

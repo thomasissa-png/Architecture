@@ -7,6 +7,7 @@
 
 import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import AuthButton from "@/components/AuthButton";
 import ProGate from "@/components/ProGate";
 
@@ -45,6 +46,7 @@ const STATUS_LABELS: Record<string, { label: string; className: string }> = {
 
 export default function MesDossiersPage() {
   const { data: session, status: authStatus } = useSession();
+  const router = useRouter();
   const [dossiers, setDossiers] = useState<Dossier[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -59,7 +61,7 @@ export default function MesDossiersPage() {
         const res = await fetch("/api/dossier");
         if (!res.ok) {
           if (res.status === 401) {
-            window.location.href = "/";
+            router.push("/");
             return;
           }
           throw new Error("Erreur lors du chargement des dossiers.");
@@ -102,7 +104,7 @@ export default function MesDossiersPage() {
   // Not authenticated — redirect to home
   if (!session) {
     if (typeof window !== "undefined") {
-      window.location.href = "/";
+      router.push("/");
     }
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -166,7 +168,7 @@ export default function MesDossiersPage() {
                 Aucun dossier. Créez votre premier dossier en Mode Pro.
               </p>
               <a
-                href="/"
+                href="/#outil"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-foreground text-background rounded-full text-sm font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
               >
                 Créer un dossier
@@ -229,7 +231,7 @@ export default function MesDossiersPage() {
                               setTimeout(() => setCopiedUuid(null), 2000);
                             });
                           }}
-                          className="text-[11px] text-muted hover:text-foreground font-light transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded px-1.5 py-1"
+                          className="text-[11px] text-muted hover:text-foreground font-light transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded px-1.5 py-1 min-h-[44px] inline-flex items-center"
                           title="Copier le lien de partage"
                         >
                           {copiedUuid === dossier.uuid ? "Copié" : "Copier le lien"}

@@ -306,7 +306,7 @@ export default function MarchandPage() {
                 <li>Historique des générations</li>
                 <li>Recharge : +10 crédits à 5,90 €</li>
               </ul>
-              <a href="/pricing?pack=starter" className="mt-5 text-xs font-medium text-foreground border border-foreground/15 px-4 min-h-[44px] flex items-center justify-center rounded-full hover:bg-foreground/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2">
+              <a href="/pricing#starter" className="mt-5 text-xs font-medium text-foreground border border-foreground/15 px-4 min-h-[44px] flex items-center justify-center rounded-full hover:bg-foreground/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2">
                 Acheter le Starter
               </a>
             </div>
@@ -322,7 +322,7 @@ export default function MarchandPage() {
                 <li>Annonces et liens acquéreurs</li>
                 <li>Recharge : +20 crédits à 9 €</li>
               </ul>
-              <a href="/pricing?pack=pro" className="mt-5 text-xs font-semibold text-white bg-sage px-4 min-h-[44px] flex items-center justify-center rounded-full hover:bg-sage/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2">
+              <a href="/pricing#pro" className="mt-5 text-xs font-semibold text-white bg-sage px-4 min-h-[44px] flex items-center justify-center rounded-full hover:bg-sage/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2">
                 S&apos;abonner au Pro
               </a>
             </div>

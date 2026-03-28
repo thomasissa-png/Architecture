@@ -45,20 +45,20 @@ export default async function BlogIndexPage() {
         <div className="max-w-6xl mx-auto px-5 sm:px-8 py-3 sm:py-4 flex items-center justify-between">
           <a
             href="/"
-            className="text-xl font-semibold text-foreground tracking-tighter"
+            className="text-xl font-semibold text-foreground tracking-tighter focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm"
           >
             Versiroom
           </a>
           <nav className="flex items-center gap-4 sm:gap-6">
             <a
               href="/pricing"
-              className="text-xs text-muted font-light hover:text-foreground transition-colors"
+              className="text-xs text-muted font-light hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm"
             >
               Tarifs
             </a>
             <a
               href="/#outil"
-              className="text-xs font-medium text-background bg-foreground px-4 py-2 rounded-full hover:bg-foreground/85 transition-colors"
+              className="text-xs font-medium text-background bg-foreground px-4 py-2 rounded-full hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
             >
               Essayer
             </a>
@@ -120,11 +120,11 @@ export default async function BlogIndexPage() {
                 </svg>
               </div>
               <p className="text-sm font-semibold text-foreground mb-2">
-                Bient&ocirc;t disponible
+                Bientôt disponible
               </p>
               <p className="text-sm text-muted font-light max-w-md mx-auto">
-                Nous pr&eacute;parons des articles sur le home staging virtuel,
-                l&apos;inspiration d&eacute;co et les bonnes pratiques pour
+                Nous préparons des articles sur le home staging virtuel,
+                l&apos;inspiration déco et les bonnes pratiques pour
                 architectes, marchands de biens et particuliers.
               </p>
             </div>

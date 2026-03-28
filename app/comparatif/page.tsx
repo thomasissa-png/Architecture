@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     title:
       "Comparatif home staging IA 2026 : Versiroom vs Gepetto vs InterieurAI",
     description:
-      "Comparez les meilleurs outils de home staging virtuel par IA en France : prix, styles, technologie, preservation geometrie.",
+      "Comparez les meilleurs outils de home staging virtuel par IA en France : prix, styles, technologie, préservation géométrie.",
     type: "website",
     locale: "fr_FR",
     siteName: "Versiroom",
@@ -36,7 +36,7 @@ const faqItems = [
   {
     question: "Quel est le meilleur outil de home staging virtuel IA ?",
     answer:
-      "Le meilleur outil depend de votre usage. Pour les architectes d'interieur qui cherchent un rendu de qualite architecturale avec preservation de la geometrie, Versiroom est le plus adapte grace a son pipeline 2 passes et ses 12 styles curetes par des experts. Pour un usage en volume a petit prix, Renovate Club propose un forfait illimite a 9,99 euros par mois. Pour les professionnels de l'immobilier qui veulent un outil francais haut de gamme, Gepetto est egalement une option serieuse.",
+      "Le meilleur outil dépend de votre usage. Pour les architectes d'intérieur qui cherchent un rendu de qualité architecturale avec préservation de la géométrie, Versiroom est le plus adapté grâce à son pipeline 2 passes et ses 12 styles curatés par des experts. Pour un usage en volume à petit prix, Renovate Club propose un forfait illimité à 9,99 euros par mois. Pour les professionnels de l'immobilier qui veulent un outil français haut de gamme, Gepetto est également une option sérieuse.",
   },
   {
     question: "Combien coute le home staging virtuel par IA ?",
@@ -47,7 +47,7 @@ const faqItems = [
     question:
       "Le home staging virtuel par IA preserve-t-il la geometrie de la piece ?",
     answer:
-      "Tous les outils ne se valent pas sur ce point. Versiroom utilise un pipeline 2 passes unique : la premiere passe traite les surfaces (murs, sol, plafond), la seconde ajoute le mobilier. Cette separation preserve l'angle de prise de vue, la perspective et les proportions de la piece. Les autres outils utilisent generalement un pipeline en une seule passe, ce qui peut deformer la geometrie originale. Versiroom utilise egalement une depth map via Flux Depth Pro en fallback pour verrouiller la structure 3D.",
+      "Tous les outils ne se valent pas sur ce point. Versiroom utilise un pipeline 2 passes unique : la première passe traite les surfaces (murs, sol, plafond), la seconde ajoute le mobilier. Cette séparation préserve l'angle de prise de vue, la perspective et les proportions de la pièce. Les autres outils utilisent généralement un pipeline en une seule passe, ce qui peut déformer la géométrie originale. Versiroom utilise également une depth map via Flux Depth Pro en fallback pour verrouiller la structure 3D.",
   },
 ];
 
@@ -69,8 +69,8 @@ const comparatifData = [
     critere: "Prix",
     versiroom: "Gratuit (3 crédits) puis 9,90 € (15 crédits)",
     gepetto: "Sur devis",
-    interieurAI: "Des 1,25 €/photo",
-    renovateClub: "9,99 €/mois illimite",
+    interieurAI: "Dès 1,25 €/photo",
+    renovateClub: "9,99 €/mois illimité",
   },
   {
     critere: "Nombre de styles",
@@ -82,16 +82,16 @@ const comparatifData = [
   {
     critere: "Technologie",
     versiroom: "Pipeline 2 passes (GPT-4.1 vision)",
-    gepetto: "IA proprietaire",
-    interieurAI: "IA proprietaire",
-    renovateClub: "IA proprietaire",
+    gepetto: "IA propriétaire",
+    interieurAI: "IA propriétaire",
+    renovateClub: "IA propriétaire",
   },
   {
-    critere: "Preservation geometrie",
+    critere: "Préservation géométrie",
     versiroom: "Oui (depth map + 2 passes)",
-    gepetto: "Non documente",
-    interieurAI: "Mentionnee",
-    renovateClub: "Non documente",
+    gepetto: "Non documenté",
+    interieurAI: "Mentionnée",
+    renovateClub: "Non documenté",
   },
   {
     critere: "Cible principale",
@@ -125,12 +125,12 @@ const comparatifData = [
     critere: "Made in France",
     versiroom: "Oui",
     gepetto: "Oui (Bordeaux)",
-    interieurAI: "Non documente",
+    interieurAI: "Non documenté",
     renovateClub: "Oui",
   },
   {
     critere: "Essai gratuit",
-    versiroom: "3 generations gratuites",
+    versiroom: "3 générations gratuites",
     gepetto: "Sur devis",
     interieurAI: "Essai gratuit",
     renovateClub: "1 photo gratuite",
@@ -178,14 +178,14 @@ export default function ComparatifPage() {
             Comparatif 2026
           </p>
           <h1 className="text-3xl sm:text-5xl font-bold text-foreground tracking-tight mb-5 leading-tight">
-            Comparatif home staging virtuel IA 2026 &mdash; Versiroom vs
+            Comparatif home staging virtuel IA 2026 — Versiroom vs
             Gepetto vs InterieurAI
           </h1>
           <p className="text-lg sm:text-xl text-muted font-light leading-relaxed max-w-3xl mx-auto">
-            Le march&eacute; du home staging virtuel par IA en France compte
-            plusieurs acteurs avec des positionnements diff&eacute;rents. Voici
-            un comparatif factuel pour choisir l&apos;outil adapt&eacute;
-            &agrave; vos besoins, que vous soyez architecte d&apos;int&eacute;rieur,
+            Le marché du home staging virtuel par IA en France compte
+            plusieurs acteurs avec des positionnements différents. Voici
+            un comparatif factuel pour choisir l&apos;outil adapté
+            à vos besoins, que vous soyez architecte d&apos;intérieur,
             marchand de biens ou particulier.
           </p>
         </div>
@@ -198,7 +198,7 @@ export default function ComparatifPage() {
             <thead>
               <tr className="border-b-2 border-foreground/15">
                 <th className="text-left py-4 px-4 text-xs font-semibold text-foreground uppercase tracking-wider">
-                  Crit&egrave;re
+                  Critère
                 </th>
                 <th className="text-left py-4 px-4 text-xs font-semibold text-sage uppercase tracking-wider">
                   Versiroom
@@ -242,8 +242,8 @@ export default function ComparatifPage() {
             </tbody>
           </table>
           <p className="text-xs text-muted font-light mt-4 italic">
-            Donn&eacute;es collect&eacute;es en mars 2026 sur les sites
-            publics des concurrents. &laquo; Non document&eacute; &raquo;
+            Données collectées en mars 2026 sur les sites
+            publics des concurrents. « Non documenté »
             signifie que l&apos;information n&apos;est pas disponible
             publiquement.
           </p>
@@ -262,23 +262,23 @@ export default function ComparatifPage() {
           <div className="space-y-8">
             <div>
               <h3 className="text-sm font-semibold text-foreground mb-2">
-                Pour les architectes d&apos;int&eacute;rieur
+                Pour les architectes d&apos;intérieur
               </h3>
               <p className="text-sm text-muted font-light leading-relaxed">
-                Claire, architecte DPLG &agrave; Lyon, utilise Versiroom pour
-                g&eacute;n&eacute;rer 2 &agrave; 3 ambiances diff&eacute;rentes
-                en 90 secondes et les envoyer &agrave; son client avant le
+                Claire, architecte DPLG à Lyon, utilise Versiroom pour
+                générer 2 à 3 ambiances différentes
+                en 90 secondes et les envoyer à son client avant le
                 premier rendez-vous. Au lieu d&apos;attendre 2-3 jours par
                 planche de rendu 3D, elle explore rapidement les directions
-                esth&eacute;tiques et oriente la discussion. Les{" "}
+                esthétiques et oriente la discussion. Les{" "}
                 <a
                   href="/architecte"
                   className="text-sage underline underline-offset-2 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm"
                 >
-                  12 styles curat&eacute;s par des architectes d&apos;int&eacute;rieur
+                  12 styles curatés par des architectes d&apos;intérieur
                 </a>{" "}
-                incluent des r&eacute;f&eacute;rences de mobilier iconique
-                (Eames, PH5, Wegner) et des proportions valid&eacute;es.
+                incluent des références de mobilier iconique
+                (Eames, PH5, Wegner) et des proportions validées.
               </p>
             </div>
             <div>
@@ -286,10 +286,10 @@ export default function ComparatifPage() {
                 Pour les marchands de biens
               </h3>
               <p className="text-sm text-muted font-light leading-relaxed">
-                Thomas, marchand de biens &agrave; Bordeaux, photographie ses
-                biens bruts juste apr&egrave;s l&apos;achat et g&eacute;n&egrave;re
-                des visuels meubl&eacute;s pour ses plaquettes de
-                pr&eacute;-commercialisation. Le{" "}
+                Thomas, marchand de biens à Bordeaux, photographie ses
+                biens bruts juste après l&apos;achat et génère
+                des visuels meublés pour ses plaquettes de
+                pré-commercialisation. Le{" "}
                 <a
                   href="/marchand"
                   className="text-sage underline underline-offset-2 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm"
@@ -298,8 +298,8 @@ export default function ComparatifPage() {
                 </a>{" "}
                 lui permet de créer des dossiers de pré-commercialisation avec
                 annonces partageables et QR code. Au lieu de payer 200-500
-                euros par planche &agrave; un home stager humain, il
-                g&eacute;n&egrave;re ses visuels en quelques minutes.
+                euros par planche à un home stager humain, il
+                génère ses visuels en quelques minutes.
               </p>
             </div>
             <div>
@@ -307,19 +307,19 @@ export default function ComparatifPage() {
                 Pour les particuliers
               </h3>
               <p className="text-sm text-muted font-light leading-relaxed">
-                L&eacute;a vient d&apos;acheter son premier appartement et veut
-                visualiser diff&eacute;rents styles de d&eacute;coration dans
-                SES pi&egrave;ces avant d&apos;acheter ses meubles. Avec{" "}
+                Léa vient d&apos;acheter son premier appartement et veut
+                visualiser différents styles de décoration dans
+                SES pièces avant d&apos;acheter ses meubles. Avec{" "}
                 <a
                   href="/particulier"
                   className="text-sage underline underline-offset-2 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm"
                 >
-                  3 g&eacute;n&eacute;rations gratuites
+                  3 générations gratuites
                 </a>
                 , elle teste le Scandinave, le Japandi ou le Contemporain
                 directement sur ses photos, sans engagement. Le rendu est
-                suffisamment r&eacute;aliste pour partager sur Instagram ou
-                envoyer &agrave; ses proches.
+                suffisamment réaliste pour partager sur Instagram ou
+                envoyer à ses proches.
               </p>
             </div>
           </div>
@@ -342,16 +342,16 @@ export default function ComparatifPage() {
               </span>
               <div>
                 <p className="text-sm font-semibold text-foreground mb-1">
-                  Pipeline 2 passes &mdash; pr&eacute;servation de la
-                  g&eacute;om&eacute;trie
+                  Pipeline 2 passes — préservation de la
+                  géométrie
                 </p>
                 <p className="text-sm text-muted font-light leading-relaxed">
-                  Contrairement aux outils qui g&eacute;n&egrave;rent tout en
+                  Contrairement aux outils qui génèrent tout en
                   une seule passe, Versiroom traite d&apos;abord les surfaces
                   (murs, sol, plafond, luminaire) puis ajoute le mobilier dans
-                  un second temps. Cette s&eacute;paration pr&eacute;serve
+                  un second temps. Cette séparation préserve
                   l&apos;angle de prise de vue, la perspective, les proportions
-                  et la lumi&egrave;re naturelle de la pi&egrave;ce originale.
+                  et la lumière naturelle de la pièce originale.
                   En fallback, une depth map (Flux Depth Pro) verrouille la
                   structure 3D.
                 </p>
@@ -366,12 +366,12 @@ export default function ComparatifPage() {
                   Mode Pro — dossiers de pré-commercialisation et annonces partageables
                 </p>
                 <p className="text-sm text-muted font-light leading-relaxed">
-                  Aucun concurrent ne propose de g&eacute;n&eacute;rer un
-                  dossier de pr&eacute;-commercialisation complet avec visuels
-                  meubl&eacute;s, donn&eacute;es DVF du quartier et page
+                  Aucun concurrent ne propose de générer un
+                  dossier de pré-commercialisation complet avec visuels
+                  meublés, données DVF du quartier et page
                   d&apos;annonce partageable avec QR code. Ce mode est
-                  con&ccedil;u pour les marchands de biens qui ont besoin
-                  d&apos;un support professionnel imm&eacute;diat, pas juste
+                  conçu pour les marchands de biens qui ont besoin
+                  d&apos;un support professionnel immédiat, pas juste
                   d&apos;une image.
                 </p>
               </div>
@@ -382,14 +382,14 @@ export default function ComparatifPage() {
               </span>
               <div>
                 <p className="text-sm font-semibold text-foreground mb-1">
-                  Enrichissement automatique &mdash; quartier et donn&eacute;es
+                  Enrichissement automatique — quartier et données
                   DVF
                 </p>
                 <p className="text-sm text-muted font-light leading-relaxed">
                   Versiroom enrichit automatiquement les annonces avec les
-                  donn&eacute;es publiques du quartier (prix au m&sup2;,
-                  &eacute;volution du march&eacute; local). Cette
-                  fonctionnalit&eacute; n&apos;existe chez aucun concurrent du
+                  données publiques du quartier (prix au m&sup2;,
+                  évolution du marché local). Cette
+                  fonctionnalité n&apos;existe chez aucun concurrent du
                   home staging virtuel par IA.
                 </p>
               </div>
@@ -405,7 +405,7 @@ export default function ComparatifPage() {
       <section aria-label="Questions fréquentes" className="py-16 sm:py-24 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-10 text-center">
-            Questions fr&eacute;quentes
+            Questions fréquentes
           </h2>
           <div className="space-y-8">
             {faqItems.map((item) => (
@@ -426,11 +426,11 @@ export default function ComparatifPage() {
       <section className="pb-20 sm:pb-32 px-5 sm:px-8">
         <div className="max-w-xl mx-auto text-center">
           <p className="text-lg font-semibold text-foreground mb-3">
-            Pr&ecirc;t &agrave; essayer ?
+            Prêt à essayer ?
           </p>
           <p className="text-sm text-muted font-light mb-8">
-            3 g&eacute;n&eacute;rations offertes, sans carte bancaire,
-            r&eacute;sultat en 90 secondes.
+            3 générations offertes, sans carte bancaire,
+            résultat en 90 secondes.
           </p>
           <a
             href="/#outil"

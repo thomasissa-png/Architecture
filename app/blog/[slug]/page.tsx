@@ -111,20 +111,20 @@ export default async function BlogPostPage({ params }: PageProps) {
         <div className="max-w-6xl mx-auto px-5 sm:px-8 py-3 sm:py-4 flex items-center justify-between">
           <a
             href="/"
-            className="text-xl font-semibold text-foreground tracking-tighter"
+            className="text-xl font-semibold text-foreground tracking-tighter focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm"
           >
             Versiroom
           </a>
           <nav className="flex items-center gap-4 sm:gap-6">
             <a
               href="/blog"
-              className="text-xs text-muted font-light hover:text-foreground transition-colors"
+              className="text-xs text-muted font-light hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm"
             >
               Blog
             </a>
             <a
               href="/#outil"
-              className="text-xs font-medium text-background bg-foreground px-4 py-2 rounded-full hover:bg-foreground/85 transition-colors"
+              className="text-xs font-medium text-background bg-foreground px-4 py-2 rounded-full hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
             >
               Essayer
             </a>
@@ -174,7 +174,7 @@ export default async function BlogPostPage({ params }: PageProps) {
               Envie de tester ?
             </p>
             <p className="text-sm text-muted font-light mb-6">
-              3 g&eacute;n&eacute;rations offertes, sans carte bancaire.
+              3 générations offertes, sans carte bancaire.
             </p>
             <a
               href="/#outil"

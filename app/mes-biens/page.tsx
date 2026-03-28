@@ -204,7 +204,7 @@ export default function MesBiensPage() {
           <div>
             <h1 className="text-2xl font-semibold text-foreground tracking-tight">Mes biens</h1>
             <p className="text-sm text-muted font-light mt-1">
-              {properties.length} bien{properties.length !== 1 ? "s" : ""} enregistr&#233;{properties.length !== 1 ? "s" : ""}
+              {properties.length} bien{properties.length !== 1 ? "s" : ""} enregistré{properties.length !== 1 ? "s" : ""}
             </p>
           </div>
 
@@ -256,7 +256,7 @@ export default function MesBiensPage() {
                   onChange={(e) => setNewType(e.target.value)}
                   className="w-full text-sm font-light bg-background border border-foreground/10 rounded-xl px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                 >
-                  <option value="">S&#233;lectionner</option>
+                  <option value="">Sélectionner</option>
                   {Object.entries(TYPE_LABELS).map(([key, label]) => (
                     <option key={key} value={key}>{label}</option>
                   ))}
@@ -264,7 +264,7 @@ export default function MesBiensPage() {
               </div>
 
               <div>
-                <label className="block text-xs text-muted font-light mb-1">Surface (m&#178;)</label>
+                <label className="block text-xs text-muted font-light mb-1">Surface (m²)</label>
                 <input
                   type="number"
                   value={newSurface}
@@ -275,7 +275,7 @@ export default function MesBiensPage() {
               </div>
 
               <div>
-                <label className="block text-xs text-muted font-light mb-1">Nombre de pi&#232;ces</label>
+                <label className="block text-xs text-muted font-light mb-1">Nombre de pièces</label>
                 <input
                   type="number"
                   value={newRooms}
@@ -286,7 +286,7 @@ export default function MesBiensPage() {
               </div>
 
               <div>
-                <label className="block text-xs text-muted font-light mb-1">Prix de vente (&#8364;)</label>
+                <label className="block text-xs text-muted font-light mb-1">Prix de vente (€)</label>
                 <input
                   type="number"
                   value={newPrice}
@@ -331,7 +331,7 @@ export default function MesBiensPage() {
         {/* Property list */}
         {properties.length === 0 && !showCreateForm ? (
           <div className="text-center py-16">
-            <p className="text-muted font-light text-sm">Aucun bien enregistr&#233;.</p>
+            <p className="text-muted font-light text-sm">Aucun bien enregistré.</p>
             <button
               onClick={() => setShowCreateForm(true)}
               className="inline-block mt-4 text-xs bg-foreground text-background px-4 py-2 rounded-full font-medium hover:bg-foreground/85 transition-colors"
@@ -366,12 +366,12 @@ export default function MesBiensPage() {
                   )}
                   {property.surface_m2 && (
                     <span className="text-xs bg-foreground/5 text-muted px-2 py-0.5 rounded-lg">
-                      {property.surface_m2} m&#178;
+                      {property.surface_m2} m²
                     </span>
                   )}
                   {property.room_count && (
                     <span className="text-xs bg-foreground/5 text-muted px-2 py-0.5 rounded-lg">
-                      {property.room_count} pi&#232;ces
+                      {property.room_count} pièces
                     </span>
                   )}
                 </div>
@@ -383,7 +383,7 @@ export default function MesBiensPage() {
 
                 {property.dvf_median_price_m2 && (
                   <p className="text-xs text-sage font-light mt-2">
-                    {property.dvf_median_price_m2.toLocaleString("fr-FR")} &#8364;/m&#178; (quartier)
+                    {property.dvf_median_price_m2.toLocaleString("fr-FR")} €/m² (quartier)
                   </p>
                 )}
               </a>

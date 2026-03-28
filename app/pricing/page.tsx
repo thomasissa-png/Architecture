@@ -82,7 +82,7 @@ const PACKS: Pack[] = [
     cta: "S'abonner",
     highlight: true,
     personaLine: "Pour les marchands de biens, architectes multi-projets et agences.",
-    roiNote: "8 biens \u00d7 5 photos \u00d7 300 \u20ac/planche = 12 000 \u20ac/an chez un home stager. Versiroom Pro : 348 \u20ac/an.",
+    roiNote: "8 biens × 5 photos × 300 €/planche = 12 000 €/an chez un home stager. Versiroom Pro : 348 €/an.",
   },
 ];
 
