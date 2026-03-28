@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import StepIndicator from "@/components/StepIndicator";
 import UploadZone from "@/components/UploadZone";
-import StylePicker, { StyleOption } from "@/components/StylePicker";
+import StylePicker, { StyleOption, STYLES } from "@/components/StylePicker";
 import ImageComparator from "@/components/ImageComparator";
 import RefineModal from "@/components/RefineModal";
 import VersionSelector from "@/components/VersionSelector";
@@ -122,6 +122,7 @@ export default function Home() {
   const [files, setFiles] = useState<File[]>([]);
   const [selectedStyle, setSelectedStyle] = useState<StyleOption | null>(null);
   const [customPrompt, setCustomPrompt] = useState("");
+  const [perPhotoStyles, setPerPhotoStyles] = useState<Map<number, string>>(new Map());
   const [withFurniture, setWithFurniture] = useState(true);
   const [selectedRoomType, setSelectedRoomType] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -274,6 +275,11 @@ export default function Home() {
     };
   }, [filePreviewUrls]);
 
+  // Reset per-photo style overrides when files change
+  useEffect(() => {
+    setPerPhotoStyles(new Map());
+  }, [files]);
+
   // Abort controller for cancelling in-flight requests
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -384,14 +390,28 @@ export default function Home() {
 
       const batchResults = await Promise.allSettled(
         chunk.map(async (img) => {
+          // Per-photo style override (indoor only, non-custom)
+          let imgSurfacePrompt = surfacePrompt;
+          let imgFurniturePrompt = furniturePrompt;
+          let imgStyleId = effectiveStyleId;
+          const overrideStyleId = perPhotoStyles.get(img.fileIndex);
+          if (overrideStyleId && !isOutdoor) {
+            const overrideStyle = STYLES.find((s) => s.id === overrideStyleId);
+            if (overrideStyle) {
+              imgSurfacePrompt = overrideStyle.surfacePrompt;
+              imgFurniturePrompt = overrideStyle.furniturePrompt;
+              imgStyleId = overrideStyle.id;
+            }
+          }
+
           const response = await resilientFetch("/api/generate", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               image: img.base64,
-              surfacePrompt,
-              furniturePrompt,
-              styleId: effectiveStyleId,
+              surfacePrompt: imgSurfacePrompt,
+              furniturePrompt: imgFurniturePrompt,
+              styleId: imgStyleId,
               withFurniture,
               width: img.width,
               height: img.height,
@@ -455,7 +475,7 @@ export default function Home() {
         scrollToElement("step-results");
       }
     }
-  }, [files, selectedStyle, customPrompt, withFurniture, filePreviewUrls, isOutdoor, selectedOutdoorStyle, outdoorSubtype, selectedRoomType]);
+  }, [files, selectedStyle, customPrompt, withFurniture, filePreviewUrls, isOutdoor, selectedOutdoorStyle, outdoorSubtype, selectedRoomType, perPhotoStyles]);
 
   const handleRetry = useCallback(() => {
     setResults([]);
@@ -490,6 +510,7 @@ export default function Home() {
     setFiles([]);
     setSelectedStyle(null);
     setCustomPrompt("");
+    setPerPhotoStyles(new Map());
     setSelectedRoomType(null);
     setResults([]);
     setError(null);
@@ -1119,6 +1140,46 @@ export default function Home() {
               selectedOutdoorStyle={selectedOutdoorStyle}
               onSelectOutdoorStyle={setSelectedOutdoorStyle}
             />
+
+            {/* Per-photo style override (indoor, multi-photo only) */}
+            {files.length > 1 && !isOutdoor && (selectedStyle || customPrompt.trim()) && (
+              <div className="mt-6 pt-6 border-t border-foreground/5 animate-fade-in-up">
+                <p className="text-xs text-muted font-light mb-4">
+                  Style par photo <span className="opacity-60">(optionnel — par défaut, toutes utilisent le style ci-dessus)</span>
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {files.map((file, index) => (
+                    <div key={`per-photo-${index}-${file.name}`} className="border border-foreground/5 rounded-xl p-2.5">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={filePreviewUrls[index]}
+                        alt={`Photo ${index + 1}`}
+                        className="w-full aspect-[4/3] object-cover rounded-lg mb-2"
+                      />
+                      <select
+                        value={perPhotoStyles.get(index) || ""}
+                        onChange={(e) => {
+                          const newMap = new Map(perPhotoStyles);
+                          if (e.target.value) {
+                            newMap.set(index, e.target.value);
+                          } else {
+                            newMap.delete(index);
+                          }
+                          setPerPhotoStyles(newMap);
+                        }}
+                        aria-label={`Style pour la photo ${index + 1}`}
+                        className="w-full text-xs font-light bg-foreground/5 border-0 rounded-lg px-2 py-1.5 text-foreground min-h-[36px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+                      >
+                        <option value="">Style global</option>
+                        {STYLES.map((s) => (
+                          <option key={s.id} value={s.id}>{s.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Step 2c: Options (furniture toggle) */}
