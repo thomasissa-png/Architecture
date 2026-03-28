@@ -248,7 +248,7 @@ export default function MerchantMode() {
   }, []);
 
   // ── Create dossier + upload + generate ──
-  const handleGenerate = useCallback(async () => {
+  async function handleGenerate() {
     if (!session?.user?.id) {
       setError("Connectez-vous pour accéder au Mode Pro.");
       return;
@@ -361,8 +361,7 @@ export default function MerchantMode() {
       setIsGenerating(false);
       setCurrentStep("review");
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session, files, photoEntries, globalStyle, customPrompt, autoNom, bienAdresse, bienSurface, bienPrix, bienType, bienNbPieces, enrichedLat, enrichedLon, enrichedCity, enrichedPostcode, enrichedPrixM2, enrichedDescription, enrichedCarteKey]);
+  }
 
   // ── Regenerate single photo ──
   const handleRegenerate = useCallback(async (photoId: number) => {
