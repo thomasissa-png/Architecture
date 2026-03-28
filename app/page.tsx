@@ -854,17 +854,57 @@ export default function Home() {
             3 générations offertes · Sans carte bancaire · <a href="#pricing" className="underline hover:text-foreground transition-colors">Tarifs à partir de 9,90 €</a>
           </p>
 
-          {/* Persona links — discret, sous le CTA */}
-          <div className="mt-6 flex flex-col sm:flex-row gap-2 sm:gap-6 items-center justify-center">
-            <a href="/architecte" className="text-xs text-muted hover:text-sage transition-colors">
-              Vous êtes architecte ? Voir les cas d&apos;usage →
+          {/* Persona cards — 3 profils */}
+          <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-3xl mx-auto text-left">
+
+            {/* Architectes */}
+            <a
+              href="/architecte"
+              className="group flex flex-col gap-1.5 bg-foreground/[0.03] border border-foreground/8 rounded-xl px-5 py-4 hover:bg-foreground/[0.06] hover:border-foreground/15 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+            >
+              <p className="text-sm font-medium text-foreground leading-snug">
+                Architectes d&apos;intérieur
+              </p>
+              <p className="text-xs text-muted font-light leading-relaxed">
+                Un support de conversation prêt avant le premier RDV — sans attendre 3 jours un rendu.
+              </p>
+              <span className="text-xs text-sage font-medium mt-1 group-hover:translate-x-0.5 transition-transform duration-200 inline-block">
+                Voir les cas d&apos;usage →
+              </span>
             </a>
-            <a href="/marchand" className="text-xs text-muted hover:text-sage transition-colors">
-              Marchand de biens ? Voir le Mode Pro →
+
+            {/* Marchands de biens */}
+            <a
+              href="/marchand"
+              className="group flex flex-col gap-1.5 bg-foreground/[0.03] border border-foreground/8 rounded-xl px-5 py-4 hover:bg-foreground/[0.06] hover:border-foreground/15 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+            >
+              <p className="text-sm font-medium text-foreground leading-snug">
+                Marchands de biens
+              </p>
+              <p className="text-xs text-muted font-light leading-relaxed">
+                Des visuels de pré-commercialisation en 10 minutes, sans home stager ni délai.
+              </p>
+              <span className="text-xs text-sage font-medium mt-1 group-hover:translate-x-0.5 transition-transform duration-200 inline-block">
+                Voir le Mode Pro →
+              </span>
             </a>
-            <a href="/particulier" className="text-xs text-muted hover:text-sage transition-colors">
-              Particulier ? Commencer gratuitement →
+
+            {/* Particuliers */}
+            <a
+              href="/particulier"
+              className="group flex flex-col gap-1.5 bg-foreground/[0.03] border border-foreground/8 rounded-xl px-5 py-4 hover:bg-foreground/[0.06] hover:border-foreground/15 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+            >
+              <p className="text-sm font-medium text-foreground leading-snug">
+                Particuliers
+              </p>
+              <p className="text-xs text-muted font-light leading-relaxed">
+                Votre pièce dans le style que vous choisissez — pas le salon de quelqu&apos;un d&apos;autre.
+              </p>
+              <span className="text-xs text-sage font-medium mt-1 group-hover:translate-x-0.5 transition-transform duration-200 inline-block">
+                Commencer gratuitement →
+              </span>
             </a>
+
           </div>
         </div>
       </section>
