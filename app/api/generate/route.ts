@@ -815,7 +815,7 @@ async function tryFluxDepth(
           height,
           steps: 25,
           guidance,
-          output_format: "png",
+          output_format: "jpg",
         },
       }
     ),
@@ -926,7 +926,7 @@ async function tryFluxDepthWithPrompt(
           height,
           steps: 25,
           guidance: 15,
-          output_format: "png",
+          output_format: "jpg",
         },
       }
     ),
