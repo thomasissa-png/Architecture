@@ -31,7 +31,7 @@ export const STYLES: StyleOption[] = [
     palette: ["#E8E8E8", "#4A4A4A", "#C0B283"],
     preview: "/api/demo?style=contemporary&image=after",
     surfacePrompt:
-      "Contemporary modern: very light warm grey walls barely tinted from the original keeping the same overall brightness as the input photo, light grey engineered stone flooring with matte finish, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs, minimal recessed or flush-mount ceiling light in brushed chrome",
+      "Contemporary modern: very light neutral grey walls barely tinted from the original keeping the same overall brightness as the input photo, light grey engineered stone flooring with matte finish, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs, minimal recessed or flush-mount ceiling light in brushed chrome",
     furniturePrompt:
       "A refined editorial interior with sculptural accents and restrained luxury. Contemporary furniture: large low-profile L-shaped sectional sofa in charcoal premium bouclé with slim brushed steel legs 280cm, sculptural smoked glass coffee table on brushed brass pedestal base 110cm, heathered grey thick wool area rug 250x350cm, brushed brass floor lamp with asymmetric flat disc shade 30cm diameter on slim curved stem (Flos IC-style), single large abstract canvas sitting on the floor leaning against the baseboard NOT hung on the wall, architectural coffee table books in a neat stack, tall matte white sculptural ceramic object on a slim black metal pedestal, potted architectural snake plant in matte black cylinder planter, two charcoal and cream geometric cushions",
   },
@@ -86,7 +86,7 @@ export const STYLES: StyleOption[] = [
     palette: ["#C17F59", "#6B705C", "#E8D5B7"],
     preview: "/api/demo?style=bohemian&image=after",
     surfacePrompt:
-      "Bohemian: soft warm off-white walls keeping the same overall brightness as the input photo, warm honey-toned wood plank flooring with matte finish, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs, woven rattan pendant light in natural tone",
+      "Bohemian: soft off-white walls keeping the same overall brightness as the input photo, warm honey-toned wood plank flooring with matte finish, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs, woven rattan pendant light in natural tone",
     furniturePrompt:
       "A warm nomadic retreat layered with textiles, plants, and worldly treasures — relaxed and deeply personal. Bohemian furniture: deep relaxed linen sofa with slouchy cushions in natural ecru with layered kilim and mudcloth cushions in terracotta rust and indigo 220cm wide, round kilim-upholstered pouf 50cm diameter as signature floor seat, round reclaimed wood coffee table with organic edge 90cm diameter, faded vintage Persian rug layered over natural jute rug 200x300cm, rattan peacock chair with sheepskin throw draped over, two trailing pothos in terracotta pots and one monstera in a woven basket, small brass Moroccan-style pierced lantern on the floor, wooden tray with pillar candles and dried pampas grass on the table, tall freestanding natural wood tripod plant stand with trailing pothos",
   },
