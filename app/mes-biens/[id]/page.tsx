@@ -7,6 +7,7 @@
 import React from "react";
 import { useSession } from "next-auth/react";
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useScrollLock } from "@/lib/hooks/useScrollLock";
 import { useParams } from "next/navigation";
 import AuthButton from "@/components/AuthButton";
 import InlineGenerator from "@/components/InlineGenerator";
@@ -112,6 +113,7 @@ export default function PropertyDetailPage() {
 
   // Dossier creation
   const [showDossierModal, setShowDossierModal] = useState(false);
+  useScrollLock(showAssociateModal || showDossierModal);
   const [selectedForDossier, setSelectedForDossier] = useState<Set<string>>(new Set());
   const [coverPhotoId, setCoverPhotoId] = useState<string | null>(null);
   const [isCreatingDossier, setIsCreatingDossier] = useState(false);
@@ -134,7 +136,6 @@ export default function PropertyDetailPage() {
   useEffect(() => {
     const isOpen = showAssociateModal || showDossierModal;
     if (!isOpen) return;
-    document.body.style.overflow = "hidden";
 
     const modalRef = showAssociateModal ? associateModalRef : dossierModalRef;
     const closeModal = () => {
@@ -166,7 +167,6 @@ export default function PropertyDetailPage() {
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "";
     };
   }, [showAssociateModal, showDossierModal]);
 

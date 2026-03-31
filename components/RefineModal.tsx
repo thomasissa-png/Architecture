@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useScrollLock } from "@/lib/hooks/useScrollLock";
 
 interface RefineModalProps {
   isOpen: boolean;
@@ -75,20 +76,7 @@ export default function RefineModal({
   }, [isOpen, isLoading, onClose]);
 
   // Prevent body scroll when modal is open — preserve scroll position
-  const savedScrollY = useRef(0);
-  useEffect(() => {
-    if (isOpen) {
-      savedScrollY.current = window.scrollY;
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-      // Restore scroll position after modal closes to prevent jump
-      window.scrollTo(0, savedScrollY.current);
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isOpen]);
+  useScrollLock(isOpen);
 
   const handleSubmit = useCallback(() => {
     const trimmed = comment.trim();

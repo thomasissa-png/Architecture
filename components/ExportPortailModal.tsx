@@ -9,6 +9,7 @@
  */
 
 import { useState, useEffect, useCallback } from "react";
+import { useScrollLock } from "@/lib/hooks/useScrollLock";
 import ExportPortail from "@/components/ExportPortail";
 
 interface ExportPortailModalProps {
@@ -54,16 +55,7 @@ export default function ExportPortailModal(props: ExportPortailModalProps) {
   }, [isOpen, handleClose]);
 
   // Prevent body scroll when modal is open
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isOpen]);
+  useScrollLock(isOpen);
 
   return (
     <>

@@ -8,6 +8,7 @@
 
 import { useSession } from "next-auth/react";
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useScrollLock } from "@/lib/hooks/useScrollLock";
 import AuthButton from "@/components/AuthButton";
 import AuthModal from "@/components/AuthModal";
 import { STYLE_LABELS, translateRoomLabel } from "@/lib/constants";
@@ -71,6 +72,7 @@ export default function GaleriePage() {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const detailModalRef = useRef<HTMLDivElement>(null);
+  useScrollLock(!!selectedPhoto);
 
   // Toast auto-dismiss
   useEffect(() => {
@@ -83,7 +85,6 @@ export default function GaleriePage() {
   // Focus trap + Escape + scroll lock for detail modal
   useEffect(() => {
     if (!selectedPhoto) return;
-    document.body.style.overflow = "hidden";
 
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") { setSelectedPhoto(null); return; }
@@ -109,7 +110,6 @@ export default function GaleriePage() {
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "";
     };
   }, [selectedPhoto]);
 

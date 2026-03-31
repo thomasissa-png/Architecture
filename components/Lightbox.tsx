@@ -6,6 +6,7 @@
  */
 
 import { useCallback, useEffect, useState, useRef } from "react";
+import { useScrollLock } from "@/lib/hooks/useScrollLock";
 
 interface LightboxProps {
   photos: { src: string; alt: string }[];
@@ -37,13 +38,7 @@ export default function Lightbox({ photos, startIndex, onClose }: LightboxProps)
   }, [onClose, goPrev, goNext]);
 
   // Lock body scroll
-  useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, []);
+  useScrollLock(true);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;

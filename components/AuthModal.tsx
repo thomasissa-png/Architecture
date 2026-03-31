@@ -20,6 +20,7 @@
 
 import { signIn } from "next-auth/react";
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useScrollLock } from "@/lib/hooks/useScrollLock";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -99,14 +100,7 @@ export default function AuthModal({ isOpen, onClose, callbackUrl, onAuthSuccess 
   }, [isOpen, onClose]);
 
   // Prevent body scroll
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => { document.body.style.overflow = ""; };
-  }, [isOpen]);
+  useScrollLock(isOpen);
 
   const handleGoogleSignIn = useCallback(async () => {
     setIsLoading(true);
