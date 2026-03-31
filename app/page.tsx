@@ -924,10 +924,10 @@ export default function Home() {
             </a>
             {session ? (
               <a
-                href="/mes-biens"
+                href="#outil"
                 className="hidden sm:inline text-xs bg-foreground text-background px-3 py-2 rounded-full font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
               >
-                Mes biens
+                Nouveau visuel
               </a>
             ) : (
               <a
