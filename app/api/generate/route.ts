@@ -35,8 +35,9 @@ import {
  * v18 (Sprint 18+), v24 (prompts validés Yann/Lucas/Camille 8.0/7.8),
  * v25 (5 corrections additives: Flos IC, no duplicate, plantes visuelles, lanternes, matériaux),
  * v26 (migration gpt-image-1 → gpt-image-1.5, latence /4 attendue),
- * v30 (audit @ia: wall preservation bedroom Flux, scaling DOWN laundry/cellar/outdoor, dimensions kitchen/office, outdoor scale refs) */
-export const PROMPT_VERSION = "v30";
+ * v30 (audit @ia: wall preservation bedroom Flux, scaling DOWN laundry/cellar/outdoor, dimensions kitchen/office, outdoor scale refs),
+ * v31 (audit Lucas v30: distribution spatiale remontee position 2, ancrage sol contact shadows, preservation lumiere passe 2, echelle conditionnelle) */
+export const PROMPT_VERSION = "v31";
 
 // ─── Timeout wrapper for external API calls ─────────────────────────
 const API_TIMEOUT_MS = 120_000;
@@ -388,8 +389,8 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: str
     return [
       `Add the following bedroom furniture to this photo of a finished room: ${furniturePrompt}.`,
       "Freestanding furniture only — bed, nightstands, rug beside bed, wardrobe or dresser as background anchor. No wall-mounted art, no built-in shelving, no curtains.",
-      "Scale bed to room: if compact room, use 140cm bed instead of 160cm, skip bench at foot. Place all objects naturally on the floor with correct perspective and scale. Use door frame height (204cm) as reference. Cast realistic shadows matching existing light.",
-      "Calm atmosphere — respect furniture density implied by the style.",
+      "Every piece must appear firmly grounded on the floor with visible contact shadows. Scale bed to room: if compact room, use 140cm bed instead of 160cm, skip bench at foot. Place all objects naturally with correct perspective and scale. Use door frame height (204cm) as reference.",
+      "Preserve existing light direction and color temperature. Calm atmosphere — respect furniture density implied by the style.",
       STRUCTURE_LOCKED,
       EQUIPMENT_PRESERVATION,
       "The output must have the exact same number of windows as the input.",
@@ -441,8 +442,8 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: str
     return [
       `Add the following furniture and decoration into this photo of a finished room: ${furniturePrompt}.`,
       "Center the dining table with chairs. If room is deep or has multiple zones, add a sideboard or buffet as background anchor. If the room appears compact, use a round table 120cm with 4 chairs instead of a rectangular 180cm table with 6 chairs.",
-      "Place all objects naturally on the floor with correct perspective and scale. Use door frame (204cm) and window sill as scale references. Cast realistic shadows matching existing light — soft for diffused, hard for direct sunlight.",
-      "Respect furniture density implied by the style. If room appears small, reduce accent pieces. Furniture must never appear to touch or crowd the walls.",
+      "Every piece must appear firmly grounded on the floor with visible contact shadows. Place all objects naturally with correct perspective and scale. Use door frame (204cm) and window sill as scale references. Cast realistic shadows matching existing light — soft for diffused, hard for direct sunlight.",
+      "Preserve existing light direction and color temperature. Respect furniture density implied by the style. If room appears small, reduce accent pieces. Furniture must never appear to touch or crowd the walls.",
       "Freestanding objects only — no wall art, no shelving, no curtains. Room structure LOCKED (walls, floor, ceiling, windows, radiators unchanged, not blocking radiators). Shadows from new furniture are expected.",
       CAMERA_AND_PHOTO,
     ].join(" ");
@@ -451,9 +452,11 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: str
   // ── FALLBACK: generic for living_room, office, null ── (condensed ~180 words)
   return [
     `Add the following furniture and decoration into this photo of a finished room: ${furniturePrompt}.`,
-    "Result should look like a luxury real estate listing photo — lived-in, not a sterile catalog.",
     "Distribute furniture across FULL DEPTH and WIDTH: primary group foreground, secondary group further back if space allows, lateral anchor on opposite side if room is wide.",
-    "Scale references: door = 204cm, handle = 100cm, sill = 90cm. Scale furniture to room volume — if compact (<4m wide), use 180cm sofa, 80cm table, 160x230cm rug. Scale up if ceiling >3m. Furniture must not touch walls. Match shadow hardness to lighting type.",
+    "Every piece must appear firmly grounded on the floor with visible contact shadows — especially furniture placed in the back of the room. Match shadow hardness to lighting type: soft for diffused, hard-edged for direct sunlight.",
+    "Result should look like a luxury real estate listing photo — lived-in, not a sterile catalog.",
+    "Scale references: door = 204cm, handle = 100cm, sill = 90cm. Scale furniture to room volume — if compact (<4m wide), use smaller pieces than described in the style. Scale up if ceiling >3m. Furniture must not touch walls.",
+    "Preserve existing light direction and color temperature from the input photo. No warm tint or yellow cast.",
     "Respect style density. If minimalist, leave large empty floor areas. If room small, reduce accent pieces. No duplicate items unless style calls for a pair.",
     "Freestanding only — no wall art, no shelving, no curtains. Room structure LOCKED (walls, floor, ceiling, windows, radiators unchanged). Do not block radiators. If input has zero windows, output has zero windows.",
     CAMERA_AND_PHOTO,
@@ -508,7 +511,7 @@ function buildFurnitureFluxPrompt(furniturePrompt: string, roomTypeId?: string |
     return [
       `${furniturePrompt}, placed in this finished bedroom interior.`,
       "Freestanding only — bed, nightstands, rug, wardrobe as background anchor. No wall art, no curtains.",
-      "Door frame = 204cm as scale reference. Correct perspective and scale. Realistic shadows matching existing light. Calm atmosphere.",
+      "Every piece firmly grounded with contact shadows. Door frame = 204cm as scale reference. Scale bed to room size. Preserve existing light direction and color temperature. Calm atmosphere.",
       FLUX_STRUCTURE,
       FLUX_EQUIPMENT,
       "Same number of windows.",
@@ -556,8 +559,8 @@ function buildFurnitureFluxPrompt(furniturePrompt: string, roomTypeId?: string |
   if (roomTypeId === "dining_room") {
     return [
       `${furniturePrompt}, placed in this finished dining room interior.`,
-      "Center table with chairs. Sideboard as background anchor if room is deep. Freestanding only, no wall art, no framed paintings, no curtains.",
-      "Door frame = 204cm as scale reference. Correct perspective and scale. Realistic shadows matching existing light.",
+      "Center table with chairs. Sideboard as background anchor if room is deep. Every piece firmly grounded with contact shadows. Freestanding only, no wall art, no framed paintings, no curtains.",
+      "Door frame = 204cm as scale reference. Correct perspective and scale. Preserve existing light direction and color temperature.",
       FLUX_STRUCTURE,
       FLUX_EQUIPMENT,
       FLUX_PHOTO,
@@ -568,11 +571,12 @@ function buildFurnitureFluxPrompt(furniturePrompt: string, roomTypeId?: string |
   return [
     `${furniturePrompt}, placed naturally across the full depth of this finished room interior.`,
     "Distribute furniture in depth and width: primary group in foreground, secondary group in the back if space allows, lateral anchor on the opposite side if room is wide.",
-    "Shadow hardness matches lighting: soft for diffused, hard for direct sunlight. Scale furniture to room: if compact (<4m wide), use smaller pieces (180cm sofa, 80cm table). Scale up if ceiling is very high. Door frame = 204cm as reference.",
+    "Every piece firmly grounded on the floor with contact shadows — especially back-of-room furniture. Shadow hardness matches lighting: soft for diffused, hard for direct sunlight.",
+    "Scale furniture to room: if compact (<4m wide), use smaller pieces than described. Scale up if ceiling is very high. Door frame = 204cm as reference.",
     "Freestanding only. No wall-mounted art, no framed paintings, no prints, no mirrors, no built-in shelving, no curtains.",
     "Walls, floor, ceiling identical to input. Shadows from furniture natural. No new openings.",
     "Keep radiators, vents, switches visible. Do not block radiators.",
-    "Same camera angle, same lighting, no warm tint or yellow cast. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
+    "Preserve existing light direction and color temperature. Same camera angle, no warm tint or yellow cast. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
   ].join(" ");
 }
 
