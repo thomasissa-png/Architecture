@@ -130,7 +130,7 @@ export default function ArchitectePage() {
             <br />
             <span className="font-light text-muted">En 90 secondes, montrez-leur.</span>
           </h1>
-          <p className="text-lg sm:text-xl text-muted font-light leading-relaxed max-w-2xl mx-auto mb-8">
+          <p className="text-lg sm:text-xl text-muted font-normal leading-relaxed max-w-2xl mx-auto mb-8">
             Une planche d&apos;ambiance pour votre client dès le premier RDV,
             sans attendre 48h le rendu 3D.
           </p>
@@ -143,7 +143,7 @@ export default function ArchitectePage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
           </a>
-          <p className="text-sm text-foreground/60 font-light mt-4">
+          <p className="text-sm text-foreground/60 font-normal mt-4">
             Sans carte bancaire · 3 visuels offerts
           </p>
           <p className="text-xs text-foreground/50 font-light mt-3">
@@ -265,7 +265,7 @@ export default function ArchitectePage() {
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-4 text-center">
             La solution Versimo
           </h2>
-          <p className="text-muted font-light text-center mb-8 max-w-xl mx-auto">
+          <p className="text-muted font-normal text-center mb-8 max-w-xl mx-auto">
             Un support de conversation visuel généré en 90 secondes, pas un rendu final.
           </p>
           <div className="space-y-6">
@@ -297,7 +297,7 @@ export default function ArchitectePage() {
                 </span>
                 <div>
                   <p className="text-sm font-semibold text-foreground mb-1">{item.title}</p>
-                  <p className="text-sm text-muted font-light leading-relaxed">{item.desc}</p>
+                  <p className="text-sm text-muted font-normal leading-relaxed">{item.desc}</p>
                 </div>
               </div>
             ))}
@@ -362,7 +362,7 @@ export default function ArchitectePage() {
             ].map((c) => (
               <div key={c.context} className="p-4 rounded-xl bg-foreground/[0.03] border border-foreground/8">
                 <p className="text-xs text-sage font-medium uppercase tracking-widest mb-1">{c.context}</p>
-                <p className="text-sm text-foreground font-light">{c.action}</p>
+                <p className="text-sm text-foreground font-normal">{c.action}</p>
               </div>
             ))}
           </div>
@@ -387,7 +387,7 @@ export default function ArchitectePage() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                   </svg>
                 </summary>
-                <p className="text-sm text-muted font-light leading-relaxed pb-4">
+                <p className="text-sm text-muted font-normal leading-relaxed pb-4">
                   {item.answer}
                 </p>
               </details>
@@ -405,7 +405,7 @@ export default function ArchitectePage() {
           <p className="text-lg font-semibold text-foreground mb-3">
             Votre prochain client veut voir. Montrez-lui en 90 secondes.
           </p>
-          <p className="text-sm text-muted font-light mb-4">
+          <p className="text-sm text-muted font-normal mb-4">
             3 visuels offerts, sans carte bancaire, résultat en 90 secondes.
           </p>
           <p className="text-xs text-muted font-light mb-8">

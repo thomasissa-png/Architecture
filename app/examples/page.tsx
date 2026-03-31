@@ -191,7 +191,7 @@ function ExampleCard({ example }: { example: Example }) {
             {example.roomType}
           </span>
         </div>
-        <p className="text-sm text-foreground/80 font-light leading-relaxed">
+        <p className="text-sm text-foreground/80 font-normal leading-relaxed">
           &laquo;&nbsp;{example.caption}&nbsp;&raquo;
         </p>
       </div>
@@ -242,7 +242,7 @@ export default function ExamplesPage() {
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground tracking-tight mb-4">
               Exemples de home staging virtuel
             </h1>
-            <p className="text-muted font-light text-base sm:text-lg max-w-2xl mx-auto">
+            <p className="text-muted font-normal text-base sm:text-lg max-w-2xl mx-auto">
               D&eacute;couvrez des transformations r&eacute;alis&eacute;es par
               Versimo sur de vrais biens immobiliers.
             </p>
@@ -253,7 +253,7 @@ export default function ExamplesPage() {
 
           {/* CTA */}
           <div className="text-center mt-14 sm:mt-20">
-            <p className="text-muted font-light text-sm mb-5">
+            <p className="text-muted font-normal text-sm mb-5">
               Pr&ecirc;t &agrave; transformer vos propres espaces&nbsp;?
             </p>
             <Link

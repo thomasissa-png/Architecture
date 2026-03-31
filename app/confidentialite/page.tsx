@@ -26,7 +26,7 @@ export default function Confidentialite() {
           Politique de confidentialité
         </h1>
 
-        <div className="space-y-8 text-sm text-muted font-light leading-relaxed">
+        <div className="space-y-8 text-sm text-muted font-normal leading-relaxed">
           <section>
             <h2 className="text-base font-semibold text-foreground mb-3">1. Responsable du traitement</h2>
             <p>Versimo — <a href="mailto:contact@versimo.fr" className="text-sage hover:underline">contact@versimo.fr</a></p>

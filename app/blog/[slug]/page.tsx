@@ -64,7 +64,7 @@ function markdownToHtml(md: string): string {
       if (!trimmed) return "";
       // Don't wrap already-wrapped blocks (headers)
       if (trimmed.startsWith("<h")) return trimmed;
-      return `<p class="text-sm text-muted font-light leading-relaxed mb-4">${trimmed.replace(/\n/g, "<br/>")}</p>`;
+      return `<p class="text-sm text-muted font-normal leading-relaxed mb-4">${trimmed.replace(/\n/g, "<br/>")}</p>`;
     })
     .join("\n");
 }
@@ -173,7 +173,7 @@ export default async function BlogPostPage({ params }: PageProps) {
             <p className="text-sm font-semibold text-foreground mb-2">
               Envie de tester ?
             </p>
-            <p className="text-sm text-muted font-light mb-6">
+            <p className="text-sm text-muted font-normal mb-6">
               3 visuels offerts, sans carte bancaire.
             </p>
             <a

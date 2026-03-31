@@ -149,7 +149,7 @@ export default function MarchandPage() {
             <br />
             <span className="font-light text-muted">en 10 minutes, pas 10 jours.</span>
           </h1>
-          <p className="text-lg sm:text-xl text-muted font-light leading-relaxed max-w-2xl mx-auto mb-8">
+          <p className="text-lg sm:text-xl text-muted font-normal leading-relaxed max-w-2xl mx-auto mb-8">
             vs 200-500 € par planche chez un home stager.
             Lien partageable acquéreurs · Sans limite de durée.
           </p>
@@ -162,7 +162,7 @@ export default function MarchandPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
           </a>
-          <p className="text-sm text-foreground/60 font-light mt-4">
+          <p className="text-sm text-foreground/60 font-normal mt-4">
             50 visuels/mois inclus
           </p>
         </div>
@@ -257,10 +257,10 @@ export default function MarchandPage() {
       <section className="py-8 sm:py-10 px-5 sm:px-8">
         <div className="max-w-2xl mx-auto">
           <div className="rounded-2xl bg-sage/5 border border-sage/15 p-6 sm:p-8 text-center">
-            <p className="text-sm text-foreground font-light leading-relaxed">
+            <p className="text-sm text-foreground font-normal leading-relaxed">
               <span className="font-semibold">10 opérations/an</span> × 3 visuels = 30 photos.
             </p>
-            <p className="text-sm text-foreground font-light leading-relaxed mt-1">
+            <p className="text-sm text-foreground font-normal leading-relaxed mt-1">
               Home stager traditionnel : <span className="font-semibold">~9 000 €</span>.
               Versimo Pro : <span className="font-semibold">29 €/mois</span> (soit 348 €/an).
             </p>
@@ -277,7 +277,7 @@ export default function MarchandPage() {
           <h2 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight mb-2 text-center">
             Une offre pour chaque volume
           </h2>
-          <p className="text-sm text-muted font-light text-center mb-8">
+          <p className="text-sm text-muted font-normal text-center mb-8">
             Sans engagement. Résiliable à tout moment.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -362,7 +362,7 @@ export default function MarchandPage() {
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-4 text-center">
             La solution Versimo
           </h2>
-          <p className="text-muted font-light text-center mb-8 max-w-xl mx-auto">
+          <p className="text-muted font-normal text-center mb-8 max-w-xl mx-auto">
             Notre IA préserve la géométrie exacte de votre bien : angles, volumes, proportions.
           </p>
           <div className="space-y-6">
@@ -399,7 +399,7 @@ export default function MarchandPage() {
                 </span>
                 <div>
                   <p className="text-sm font-semibold text-foreground mb-1">{item.title}</p>
-                  <p className="text-sm text-muted font-light leading-relaxed">{item.desc}</p>
+                  <p className="text-sm text-muted font-normal leading-relaxed">{item.desc}</p>
                 </div>
               </div>
             ))}
@@ -464,7 +464,7 @@ export default function MarchandPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                   </svg>
                 </summary>
-                <p className="text-sm text-muted font-light leading-relaxed pb-4">
+                <p className="text-sm text-muted font-normal leading-relaxed pb-4">
                   {item.answer}
                 </p>
               </details>
@@ -482,7 +482,7 @@ export default function MarchandPage() {
           <p className="text-lg font-semibold text-foreground mb-3">
             Prêt à accélérer votre commercialisation ?
           </p>
-          <p className="text-sm text-muted font-light mb-4">
+          <p className="text-sm text-muted font-normal mb-4">
             Abonnement Pro — 29 €/mois · Dossiers de pré-commercialisation · 50 visuels/mois
           </p>
           <p className="text-xs text-muted font-light mb-8">

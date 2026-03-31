@@ -26,7 +26,7 @@ export default function CGV() {
           Conditions générales de vente et d&apos;utilisation
         </h1>
 
-        <div className="space-y-8 text-sm text-muted font-light leading-relaxed">
+        <div className="space-y-8 text-sm text-muted font-normal leading-relaxed">
           <section>
             <h2 className="text-base font-semibold text-foreground mb-3">1. Objet</h2>
             <p>

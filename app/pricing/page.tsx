@@ -178,7 +178,7 @@ function PricingContent() {
             <h1 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight mb-3">
               Tarifs simples et transparents
             </h1>
-            <p className="text-muted font-light">
+            <p className="text-muted font-normal">
               3 offres claires. Starter sans abonnement, Pro mensuel. Résiliez à tout moment.
             </p>
           </div>
@@ -186,7 +186,7 @@ function PricingContent() {
           {/* Checkout cancelled message */}
           {checkoutCancelled && (
             <div className="mb-8 bg-amber-50/50 border border-amber-200/60 rounded-2xl p-5 text-center max-w-xl mx-auto">
-              <p className="text-amber-700/90 text-sm font-light">
+              <p className="text-amber-700/90 text-sm font-normal">
                 Paiement annulé. Vous pouvez réessayer à tout moment.
               </p>
             </div>
@@ -195,13 +195,13 @@ function PricingContent() {
           {/* Error message */}
           {error && (
             <div className="mb-8 bg-red-50/50 border border-red-200/60 rounded-2xl p-5 text-center max-w-xl mx-auto">
-              <p className="text-red-600/80 text-sm font-light">{error}</p>
+              <p className="text-red-600/80 text-sm font-normal">{error}</p>
             </div>
           )}
 
           {/* CTA gratuit bandeau */}
           <div className="bg-sage/8 border border-sage/20 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 mb-10 max-w-2xl mx-auto">
-            <p className="text-sm text-foreground font-light text-center sm:text-left">
+            <p className="text-sm text-foreground font-normal text-center sm:text-left">
               Essayez avec <strong className="font-semibold">3 photos gratuites</strong> — sans carte bancaire
             </p>
             <a
@@ -213,7 +213,7 @@ function PricingContent() {
           </div>
 
           {/* Equivalence visuel */}
-          <p className="text-sm text-muted font-light text-center mb-8">1 visuel = 1 photo uploadée, meublée dans le style de votre choix.</p>
+          <p className="text-sm text-muted font-normal text-center mb-8">1 visuel = 1 photo uploadée, meublée dans le style de votre choix.</p>
 
           {/* Packs grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-4xl mx-auto items-stretch">
@@ -256,7 +256,7 @@ function PricingContent() {
                 <p className="text-[13px] text-foreground/60 font-medium mb-4 text-left">
                   {pack.personaLine}
                 </p>
-                <ul className="text-sm text-muted font-light space-y-2.5 text-left mb-4 flex-1">
+                <ul className="text-sm text-muted font-normal space-y-2.5 text-left mb-4 flex-1">
                   {pack.features.map((f) => (
                     <li
                       key={f.text}
@@ -340,10 +340,10 @@ function PricingContent() {
 
           {/* Comparaison ROI */}
           <div className="max-w-xl mx-auto mt-10 text-center space-y-1.5">
-            <p className="text-sm text-muted font-light">
+            <p className="text-sm text-muted font-normal">
               Un home stager facture <strong className="text-foreground font-semibold">200 à 500 € par planche</strong> et 48-72h de délai.
             </p>
-            <p className="text-sm text-muted font-light">
+            <p className="text-sm text-muted font-normal">
               Versimo Pro : <strong className="text-foreground font-semibold">0,58 €/photo</strong>, résultat en <strong className="text-foreground font-semibold">90 secondes</strong>.
             </p>
             <p className="text-xs text-sage font-medium pt-1">
@@ -424,7 +424,7 @@ function PricingContent() {
                     {faq.q}
                     <svg className="w-4 h-4 flex-shrink-0 text-muted group-open:rotate-180 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
                   </summary>
-                  <p className="px-5 pb-4 text-sm text-muted font-light leading-relaxed">{faq.a}</p>
+                  <p className="px-5 pb-4 text-sm text-muted font-normal leading-relaxed">{faq.a}</p>
                 </details>
               ))}
             </div>
