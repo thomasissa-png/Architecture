@@ -36,8 +36,14 @@ import {
  * v25 (5 corrections additives: Flos IC, no duplicate, plantes visuelles, lanternes, matériaux),
  * v26 (migration gpt-image-1 → gpt-image-1.5, latence /4 attendue),
  * v30 (audit @ia: wall preservation bedroom Flux, scaling DOWN laundry/cellar/outdoor, dimensions kitchen/office, outdoor scale refs),
- * v31 (audit Lucas v30: distribution spatiale remontee position 2, ancrage sol contact shadows, preservation lumiere passe 2, echelle conditionnelle) */
-export const PROMPT_VERSION = "v31";
+ * v31 (audit Lucas v30: distribution spatiale remontee position 2, ancrage sol contact shadows, preservation lumiere passe 2, echelle conditionnelle),
+ * v32 (revert gpt-image-1.5 → gpt-image-1 — regression spatiale confirmee par audit Lucas, modele configurable via env) */
+export const PROMPT_VERSION = "v32";
+
+// ─── Image generation model ─────────────────────────────────────────
+// Configurable via env var for A/B testing. Default: gpt-image-1 (validated at 8.0-8.5/10).
+// gpt-image-1.5 caused spatial distribution regression (audit Lucas v30).
+const IMAGE_MODEL = process.env.IMAGE_GEN_MODEL || "gpt-image-1";
 
 // ─── Timeout wrapper for external API calls ─────────────────────────
 const API_TIMEOUT_MS = 120_000;
@@ -713,7 +719,7 @@ async function tryOpenAIResponses(
         : buildFurnitureResponsesPrompt(furniturePrompt, roomTypeId);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- gpt-image-1.5 not yet in SDK types
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- image_generation tool not in SDK types
   const response = await withTimeout(
     openai.responses.create({
       model: "gpt-4.1",
@@ -736,7 +742,7 @@ async function tryOpenAIResponses(
       tools: [
         {
           type: "image_generation",
-          model: "gpt-image-1.5",
+          model: IMAGE_MODEL,
           action: "edit",
           input_fidelity: "high",
           size: size as "1024x1024" | "1536x1024" | "1024x1536",
@@ -764,7 +770,7 @@ async function tryOpenAIResponses(
 
   return {
     image: `data:image/png;base64,${resultB64}`,
-    model: `OpenAI GPT-Image-1.5 (pass ${pass})`,
+    model: `OpenAI ${IMAGE_MODEL} (pass ${pass})`,
   };
 }
 
@@ -861,7 +867,7 @@ async function tryOpenAIResponsesWithPrompt(
 ): Promise<{ image: string; model: string }> {
   const openai = getOpenAI();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- gpt-image-1.5 not yet in SDK types
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- image_generation tool not in SDK types
   const response = await withTimeout(
     openai.responses.create({
       model: "gpt-4.1",
@@ -881,7 +887,7 @@ async function tryOpenAIResponsesWithPrompt(
       tools: [
         {
           type: "image_generation",
-          model: "gpt-image-1.5",
+          model: IMAGE_MODEL,
           action: "edit",
           input_fidelity: "high",
           size: size as "1024x1024" | "1536x1024" | "1024x1536",
@@ -909,7 +915,7 @@ async function tryOpenAIResponsesWithPrompt(
 
   return {
     image: `data:image/png;base64,${resultB64}`,
-    model: "OpenAI GPT-Image-1.5 (iteration)",
+    model: `OpenAI ${IMAGE_MODEL} (iteration)`,
   };
 }
 
@@ -923,7 +929,7 @@ async function generateIterationPass(
   _fluxPrompt: string,
   outputSize: { openai: string; w: number; h: number }
 ): Promise<{ image: string; model: string }> {
-  // IMPORTANT: Iterations MUST use OpenAI (GPT-Image-1.5) ONLY.
+  // IMPORTANT: Iterations MUST use OpenAI ONLY (no Flux).
   // Flux Depth Pro regenerates the entire scene instead of editing,
   // destroying all existing furniture and geometry (see #81, Sprint 22 #155).
   // If OpenAI fails, the iteration must fail — never fall back to Flux.
