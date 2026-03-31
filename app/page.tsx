@@ -272,12 +272,6 @@ export default function Home() {
     }
   }, [selectedStyles]);
 
-  // Helper to resolve style name from ID
-  const getStyleName = useCallback((styleId: string): string => {
-    if (styleId === "custom") return "Personnalisé";
-    const style = STYLES.find((s) => s.id === styleId);
-    return style?.name || styleId;
-  }, []);
 
   // F3 — Toggle handler: reset cross-states when switching modes
   const handleToggleOutdoor = useCallback((outdoor: boolean) => {

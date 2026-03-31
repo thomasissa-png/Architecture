@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import OutdoorStylePicker from "@/components/OutdoorStylePicker";
 
 export interface StyleOption {
