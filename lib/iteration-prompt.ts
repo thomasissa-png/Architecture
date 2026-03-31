@@ -31,7 +31,9 @@ export function buildIterationFurnitureResponsesPrompt(
     // Iterations are ALWAYS exclusive: add ONLY what the user asked for.
     // The accumulated modifications describe everything the user wants.
     "Do NOT add any other furniture, decoration, rug, lamp, plant, or object not explicitly mentioned. The room should contain ONLY what the user asked for — leave the rest of the floor empty.",
-    "Place all objects naturally on the existing floor. Every piece of furniture must have correct perspective, scale, and cast realistic shadows consistent with the existing light direction. Match shadow hardness to the lighting type.",
+    "If the room is deep, distribute furniture across its full depth — primary group foreground, secondary piece further back if space allows.",
+    "Every piece must appear firmly grounded on the floor with visible contact shadows — especially furniture placed in the back of the room. Match shadow hardness to the lighting type.",
+    "Preserve existing light direction and color temperature from the input photo. No warm tint or yellow cast.",
     // Room-type-specific fixture rules
     meta.roomType === "kitchen" || meta.roomType === "bathroom"
       ? "Add room-appropriate fixtures and freestanding accessories. Built-in cabinetry, vanity units, and countertops are expected for this room type. No curtains."
@@ -88,9 +90,11 @@ export function buildIterationFurnitureFluxPrompt(
       : meta.allowWallMounted
       ? "Wall-mounted items allowed ONLY for items explicitly requested. No curtains."
       : "Freestanding furniture only. No wall-mounted objects, no framed paintings, no prints, no mirrors, no built-in shelving, no curtains.",
+    "If the room is deep, distribute furniture across its full depth — primary group foreground, secondary piece further back if space allows.",
+    "Every piece must appear firmly grounded on the floor with visible contact shadows — especially furniture in the back of the room.",
     "Every wall, floor, and ceiling surface visually identical to input — same colors, textures. Room structure LOCKED. Shadows from furniture are natural.",
     "Keep all wall-mounted equipment: radiators, heaters, vents, switches visible. Do not place furniture in front of radiators.",
-    "Same room geometry, same camera angle, same lighting conditions.",
+    "Preserve existing light direction and color temperature. Same camera angle.",
     "Photo-realistic interior photograph, DSLR full-frame 16-35mm f/8, deep DOF, sharp focus, subtle film grain.",
   ].join(" ");
 }
@@ -124,7 +128,8 @@ export function buildIterationOutdoorFurnitureResponsesPrompt(
     "Add ONLY the items described above. Everything else in the photo — all existing furniture, planters, lamps — stays untouched.",
     // Iterations are ALWAYS exclusive: add ONLY what the user asked for.
     "Do NOT add any other furniture, decoration, planter, lamp, or object not explicitly mentioned. Leave the rest of the space empty.",
-    "Place all objects naturally on the existing ground. Every piece of outdoor furniture must have correct perspective, scale, and cast realistic shadows consistent with the existing natural light direction.",
+    "If the space is deep, distribute furniture across its full depth — primary group foreground, secondary piece further back if space allows.",
+    "Place all objects naturally on the existing ground. Every piece of outdoor furniture must appear firmly grounded with visible contact shadows consistent with the existing natural light direction.",
     "ONLY add freestanding outdoor objects. Do NOT attach anything to walls, guard rails, or facades.",
     "Do not place opaque structures (screens, shelving, A-frames) directly in front of full-height windows or glass doors.",
     "Ground surface and vertical structures are LOCKED — guard rails, walls, facades, gates, fences must remain visually identical to the input. Same colors, same textures, same geometry. Shadows from furniture are expected and natural.",
@@ -155,6 +160,8 @@ export function buildIterationOutdoorFurnitureFluxPrompt(
     "Do NOT add any other furniture, decoration, planter, lamp, or object not mentioned. Leave the rest of the space empty.",
     "Freestanding outdoor furniture only. No wall-mounted objects, no objects attached to guard rails.",
     "No opaque structures (screens, shelving, A-frames) in front of full-height windows or glass doors.",
+    "If the space is deep, distribute furniture across its full depth — primary group foreground, secondary piece further back if space allows.",
+    "Every piece must appear firmly grounded on the ground with visible contact shadows consistent with the existing natural light direction.",
     "Ground surface and vertical structures LOCKED — guard rails, walls, facades same colors, textures, geometry. Shadows from furniture are natural.",
     "Preserve background vegetation. Open-air space, no ceiling, sky as-is.",
     "Preserve exact lighting from input — same shadow hardness, direction, color temperature.",
@@ -183,6 +190,8 @@ export function buildAdjustResponsesPrompt(
       : meta.roomType === "wc"
       ? "Very small space — do not overcrowd."
       : "",
+    "Every piece must appear firmly grounded on the floor with visible contact shadows. Match shadow hardness to the lighting type.",
+    "Preserve existing light direction and color temperature from the input photo. No warm tint or yellow cast.",
     "Room structure is LOCKED — walls, floor, ceiling, paint, windows, doors must remain visually identical to the input.",
     "Preserve all wall-mounted fixed equipment: radiators, heaters, vents, thermostats, switches.",
     "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation.",
@@ -199,6 +208,7 @@ export function buildAdjustFluxPrompt(
     `CHANGE: ${enrichedComment}.`,
     "Add ONLY the items described above. Everything else stays untouched.",
     "Keep ALL existing furniture and decoration exactly as-is except for this change.",
+    "Every piece must appear firmly grounded on the floor with visible contact shadows.",
     "Room surfaces, camera angle, and lighting unchanged.",
     "Photo-realistic interior photograph, DSLR full-frame 16-35mm f/8, deep DOF, sharp focus, subtle film grain.",
   ].join(" ");
@@ -213,6 +223,7 @@ export function buildAdjustOutdoorResponsesPrompt(
     `APPLY THIS CHANGE ONLY: ${enrichedComment}`,
     "Do NOT remove, move, or modify any existing item unless the user explicitly asks for it.",
     "The space must look identical to the input except for the requested change.",
+    "Every piece must appear firmly grounded on the ground with visible contact shadows consistent with the existing natural light direction.",
     "Ground surface and vertical structures are LOCKED — guard rails, walls, facades, gates, fences must remain visually identical.",
     "Preserve existing vegetation in the background.",
     "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation.",
@@ -227,6 +238,7 @@ export function buildAdjustOutdoorFluxPrompt(
   return [
     `CHANGE: ${enrichedComment}.`,
     "Keep ALL existing outdoor furniture and decoration exactly as-is except for this change.",
+    "Every piece must appear firmly grounded on the ground with visible contact shadows.",
     "Ground surfaces, vegetation, camera angle, and lighting unchanged.",
     "Photo-realistic outdoor photograph, DSLR full-frame 16-35mm f/8, deep DOF, sharp focus, subtle film grain.",
   ].join(" ");

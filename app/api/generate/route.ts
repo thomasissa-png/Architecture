@@ -531,6 +531,7 @@ function buildFurnitureFluxPrompt(furniturePrompt: string, roomTypeId?: string |
     return [
       `${furniturePrompt}, placed in this finished bedroom interior.`,
       "Freestanding only — bed, nightstands, rug, wardrobe as background anchor. No wall art, no curtains.",
+      "If the room is deep, distribute furniture across its full depth — bed foreground, wardrobe or desk further back.",
       "Every piece firmly grounded with contact shadows. Door frame = 204cm as scale reference. Scale bed to room size. Preserve existing light direction and color temperature. Calm atmosphere.",
       FLUX_STRUCTURE,
       FLUX_EQUIPMENT,
