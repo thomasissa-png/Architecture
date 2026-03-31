@@ -34,7 +34,7 @@ const faqItems = [
   {
     question: "Est-ce vraiment gratuit ?",
     answer:
-      "Oui. 3 visuels complets offerts, sans carte bancaire, sans inscription. C'est assez pour tester Scandinave, Japandi et Bohème sur votre salon. Si vous voulez continuer, le pack Starter à 9,90 € donne accès à 15 visuels en achat unique — pas d'abonnement, pas de renouvellement automatique.",
+      "Oui. 2 visuels complets offerts, sans carte bancaire, sans inscription. C'est assez pour tester deux styles sur votre salon. Si vous voulez continuer, le pack Starter à 9,90 € donne accès à 15 visuels en achat unique — pas d'abonnement, pas de renouvellement automatique.",
   },
   {
     question: "Comment ça marche concrètement ?",
@@ -130,7 +130,7 @@ export default function ParticulierPage() {
             </svg>
           </a>
           <p className="text-sm text-foreground/60 font-normal mt-4">
-            Sans carte bancaire · Sans inscription · 3 visuels offerts
+            Sans carte bancaire · Sans inscription · 2 visuels offerts
           </p>
           <p className="text-xs text-foreground/50 font-medium mt-6">Une photo, 90 secondes, 12 possibilités.</p>
         </div>
@@ -328,7 +328,7 @@ export default function ParticulierPage() {
             Rendu photo-réaliste, pas un filtre. Testé sur des vraies pièces — salons, chambres, studios.
           </p>
           <p className="text-sm text-muted font-normal mb-8">
-            3 visuels offerts · Sans CB · Ensuite à partir de 9,90 €
+            2 visuels offerts · Sans CB · Ensuite à partir de 9,90 €
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a

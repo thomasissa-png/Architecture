@@ -285,7 +285,7 @@ export default function MarchandPage() {
             <div className="rounded-2xl border border-foreground/10 p-5">
               <p className="text-xs text-muted font-medium uppercase tracking-widest mb-1">Découverte</p>
               <p className="text-2xl font-bold text-foreground">Gratuit</p>
-              <p className="text-xs text-muted font-light mt-1 mb-4">3 visuels offerts, sans carte bancaire</p>
+              <p className="text-xs text-muted font-light mt-1 mb-4">2 visuels offerts, sans carte bancaire</p>
               <ul className="space-y-2 text-xs text-muted font-light">
                 <li>12 styles disponibles</li>
                 <li>Téléchargement HD</li>
@@ -486,7 +486,7 @@ export default function MarchandPage() {
             Abonnement Pro — 29 €/mois · Dossiers de pré-commercialisation · 50 visuels/mois
           </p>
           <p className="text-xs text-muted font-light mb-8">
-            3 visuels offerts, sans carte bancaire.
+            2 visuels offerts, sans carte bancaire.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a

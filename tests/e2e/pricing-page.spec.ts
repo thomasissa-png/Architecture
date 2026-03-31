@@ -43,8 +43,8 @@ test.describe("Pricing page — /pricing", () => {
   });
 
   test("displays credit counts per pack", async ({ page }) => {
-    // Découverte = 3 générations, Starter = 15 crédits, Pro = 50 crédits
-    await expect(page.locator("text=3 générations")).toBeVisible();
+    // Découverte = 2 générations, Starter = 15 crédits, Pro = 50 crédits
+    await expect(page.locator("text=2 générations")).toBeVisible();
     await expect(page.locator("text=15 crédits")).toBeVisible();
     await expect(page.locator("text=50 crédits")).toBeVisible();
   });
@@ -77,7 +77,7 @@ test.describe("Pricing page — /pricing", () => {
 
   test("free trial note is displayed", async ({ page }) => {
     await expect(
-      page.locator("text=3 generations offertes sans carte bancaire")
+      page.locator("text=2 generations offertes sans carte bancaire")
     ).toBeVisible();
   });
 
@@ -97,9 +97,9 @@ test.describe("Pricing page — /pricing", () => {
     await expect(footer).toContainText("Versimo 2026");
   });
 
-  test("Decouverte pack mentions 3 generations offertes", async ({ page }) => {
+  test("Decouverte pack mentions 2 generations offertes", async ({ page }) => {
     await expect(
-      page.locator("text=3 générations offertes sans CB")
+      page.locator("text=2 générations offertes sans CB")
     ).toBeVisible();
   });
 

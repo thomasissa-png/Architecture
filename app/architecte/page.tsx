@@ -144,7 +144,7 @@ export default function ArchitectePage() {
             </svg>
           </a>
           <p className="text-sm text-foreground/60 font-normal mt-4">
-            Sans carte bancaire · 3 visuels offerts
+            Sans carte bancaire · 2 visuels offerts
           </p>
           <p className="text-xs text-foreground/50 font-light mt-3">
             Utilisez Versimo régulièrement ?{" "}
@@ -406,7 +406,7 @@ export default function ArchitectePage() {
             Votre prochain client veut voir. Montrez-lui en 90 secondes.
           </p>
           <p className="text-sm text-muted font-normal mb-4">
-            3 visuels offerts, sans carte bancaire, résultat en 90 secondes.
+            2 visuels offerts, sans carte bancaire, résultat en 90 secondes.
           </p>
           <p className="text-xs text-muted font-light mb-8">
             Abonnement Pro — 29 €/mois · 50 visuels/mois · HD téléchargeable · Sans filigrane · Droits commerciaux inclus

@@ -67,7 +67,7 @@ const jsonLd = {
 const comparatifData = [
   {
     critere: "Prix",
-    versimo: "Gratuit (3 visuels) puis 9,90 € (15 visuels)",
+    versimo: "Gratuit (2 visuels) puis 9,90 € (15 visuels)",
     gepetto: "Sur devis",
     interieurAI: "Dès 1,25 €/photo",
     renovateClub: "9,99 €/mois illimité",
@@ -130,7 +130,7 @@ const comparatifData = [
   },
   {
     critere: "Essai gratuit",
-    versimo: "3 visuels gratuits",
+    versimo: "2 visuels gratuits",
     gepetto: "Sur devis",
     interieurAI: "Essai gratuit",
     renovateClub: "1 photo gratuite",
@@ -314,9 +314,9 @@ export default function ComparatifPage() {
                   href="/particulier"
                   className="text-sage underline underline-offset-2 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm"
                 >
-                  3 visuels gratuits
+                  2 visuels gratuits
                 </a>
-                , elle teste le Scandinave, le Japandi ou le Contemporain
+                , elle teste deux styles sur son salon
                 directement sur ses photos, sans engagement. Le rendu est
                 suffisamment réaliste pour partager sur Instagram ou
                 envoyer à ses proches.
@@ -429,7 +429,7 @@ export default function ComparatifPage() {
             Prêt à essayer ?
           </p>
           <p className="text-sm text-muted font-normal mb-8">
-            3 visuels offerts, sans carte bancaire,
+            2 visuels offerts, sans carte bancaire,
             résultat en 90 secondes.
           </p>
           <a

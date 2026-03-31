@@ -31,7 +31,7 @@ const PACKS: Pack[] = [
   {
     id: "decouverte",
     name: "Découverte",
-    credits: 3,
+    credits: 2,
     price: "0",
     perPhoto: "0",
     features: [
@@ -44,7 +44,7 @@ const PACKS: Pack[] = [
     cta: "Essayer",
     highlight: false,
     note: "Sans carte bancaire",
-    personaLine: "Testez la qualité Versimo sur vos propres photos. 3 visuels offerts.",
+    personaLine: "Testez la qualité Versimo sur vos propres photos. 2 visuels offerts.",
   },
   {
     id: "starter",
@@ -202,7 +202,7 @@ function PricingContent() {
           {/* CTA gratuit bandeau */}
           <div className="bg-sage/8 border border-sage/20 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 mb-10 max-w-2xl mx-auto">
             <p className="text-sm text-foreground font-normal text-center sm:text-left">
-              Essayez avec <strong className="font-semibold">3 photos gratuites</strong> — sans carte bancaire
+              Essayez avec <strong className="font-semibold">2 photos gratuites</strong> — sans carte bancaire
             </p>
             <a
               href="/#outil"
@@ -403,7 +403,7 @@ function PricingContent() {
 
           {/* Free trial note */}
           <p className="text-center text-[11px] text-muted font-light mt-8">
-            3 visuels offerts sans carte bancaire · TVA récupérable
+            2 visuels offerts sans carte bancaire · TVA récupérable
             pour les professionnels assujettis.
           </p>
 

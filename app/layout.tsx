@@ -73,7 +73,7 @@ const jsonLd = [
     description:
       "Outil de home staging virtuel par IA. Uploadez une photo de pièce vide, choisissez un style parmi 12 ambiances curatées. Le pipeline 2 passes génère un visuel meublé en 90 secondes en préservant la géométrie originale.",
     offers: [
-      { "@type": "Offer", name: "Découverte", price: "0", priceCurrency: "EUR", description: "3 visuels gratuits" },
+      { "@type": "Offer", name: "Découverte", price: "0", priceCurrency: "EUR", description: "2 visuels gratuits" },
       { "@type": "Offer", name: "Starter", price: "9.90", priceCurrency: "EUR", description: "15 visuels, achat unique" },
       { "@type": "Offer", name: "Pro", price: "29", priceCurrency: "EUR", description: "50 visuels/mois, abonnement" },
     ],

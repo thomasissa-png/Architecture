@@ -67,7 +67,7 @@ const EXAMPLES: Example[] = [
     style: "Contemporain",
     roomType: "Séjour",
     caption:
-      "3 visuels meublés en 10 minutes pour la plaquette de pré-commercialisation.",
+      "2 visuels meublés en 10 minutes pour la plaquette de pré-commercialisation.",
     beforeImage: "/imageavant.jpg",
     afterImage: "/imageapres.jpg",
   },

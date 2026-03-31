@@ -113,7 +113,7 @@ export async function ensureTable(): Promise<void> {
       email TEXT UNIQUE NOT NULL,
       name TEXT,
       image TEXT,
-      credits_remaining INTEGER DEFAULT 3,
+      credits_remaining INTEGER DEFAULT 2,
       created_at TIMESTAMPTZ DEFAULT NOW()
     );
     CREATE TABLE IF NOT EXISTS purchases (

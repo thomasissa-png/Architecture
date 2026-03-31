@@ -1061,7 +1061,7 @@ export async function POST(request: NextRequest) {
 
   // Auth + credit check
   // - Connected users: use credit system (optimistic decrement)
-  // - Anonymous users: allowed with IP rate limit only (3 free generations enforced by rate limit)
+  // - Anonymous users: allowed with IP rate limit only (2 free generations enforced by rate limit)
   // - Internal dossier calls: skip (credits managed by dossier batch endpoint)
   const session = isInternalDossierCall ? null : await getServerSession(authOptions);
   console.log(`[generate] session: userId="${session?.user?.id || "NONE"}" email="${session?.user?.email || "NONE"}" isInternal=${isInternalDossierCall}`);

@@ -174,7 +174,7 @@ export default async function BlogPostPage({ params }: PageProps) {
               Envie de tester ?
             </p>
             <p className="text-sm text-muted font-normal mb-6">
-              3 visuels offerts, sans carte bancaire.
+              2 visuels offerts, sans carte bancaire.
             </p>
             <a
               href="/#outil"

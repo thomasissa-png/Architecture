@@ -37,7 +37,7 @@ export default function CGV() {
           <section>
             <h2 className="text-base font-semibold text-foreground mb-3">2. Service gratuit</h2>
             <p>
-              Tout utilisateur bénéficie de 3 générations gratuites à l&apos;inscription, sans carte bancaire. Le plan gratuit inclut l&apos;accès aux 12 styles et le téléchargement HD.
+              Tout utilisateur bénéficie de 2 générations gratuites à l&apos;inscription, sans carte bancaire. Le plan gratuit inclut l&apos;accès aux 12 styles et le téléchargement HD.
             </p>
           </section>
 
