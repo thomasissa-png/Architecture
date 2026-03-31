@@ -46,7 +46,7 @@ interface DossierPhotoStatus {
   styleId: string | null;
 }
 
-type MerchantStep = "info" | "photos" | "annotate" | "style" | "review" | "generating" | "results";
+type MerchantStep = "info" | "photos" | "annotate" | "style" | "generating" | "results";
 
 const BIEN_TYPES = [
   { id: "appartement", label: "Appartement" },
@@ -370,7 +370,7 @@ export default function MerchantMode() {
         : msg || "Une erreur est survenue. Réessayez — vos visuels n'ont pas été consommés.";
       setError(displayMsg);
       setIsGenerating(false);
-      setCurrentStep("review");
+      setCurrentStep("annotate");
     }
   }
 
@@ -557,7 +557,7 @@ export default function MerchantMode() {
             </div>
             <button
               onClick={() => {
-                setCurrentStep("review");
+                setCurrentStep("annotate");
                 merchantRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
               }}
               className="text-xs text-muted font-light hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded"
@@ -774,7 +774,7 @@ export default function MerchantMode() {
           <div className="pt-4 flex items-center gap-3">
             <button
               onClick={() => {
-                setCurrentStep("review");
+                setCurrentStep("annotate");
                 merchantRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
               }}
               className="px-8 py-3 bg-foreground text-background rounded-xl font-medium text-sm hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
@@ -1108,99 +1108,6 @@ export default function MerchantMode() {
         </div>
       )}
 
-      {/* ── Step: Review ── */}
-      {currentStep === "review" && (
-        <div className="space-y-6 animate-fade-in-up" data-testid="merchant-step-review">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-medium text-muted uppercase tracking-widest">
-              Récapitulatif
-            </h3>
-            <button
-              onClick={() => {
-                const allHaveOverride = photoEntries.every((e) => e.styleOverride !== null);
-                setCurrentStep(allHaveOverride ? "annotate" : "style");
-                merchantRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-              }}
-              className="text-xs text-muted font-light hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded"
-            >
-              Retour
-            </button>
-          </div>
-
-          <div className="border border-foreground/10 rounded-2xl p-5 space-y-4">
-            {/* Property summary */}
-            <div className="flex items-start justify-between">
-              <div>
-                <h4 className="text-base font-semibold text-foreground">
-                  {bienTitle}
-                </h4>
-                <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted font-light mt-1">
-                  {bienAdresse && <span>{bienAdresse}</span>}
-                  {bienType && <span className="capitalize">{bienType}</span>}
-                  {bienSurface && <span>{bienSurface} m²</span>}
-                  {bienPrix && <span>{Number(bienPrix).toLocaleString("fr-FR")} €</span>}
-                </div>
-              </div>
-              <button
-                onClick={() => {
-                  setCurrentStep("info");
-                  merchantRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-                }}
-                className="text-xs text-sage font-medium hover:text-sage/80 transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded"
-                data-testid="merchant-edit-info"
-              >
-                {bienAdresse ? "Modifier" : "Ajouter les infos du bien"}
-              </button>
-            </div>
-
-            {/* Photos summary */}
-            <div className="border-t border-foreground/5 pt-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-foreground font-medium">
-                  {files.length} photo{files.length > 1 ? "s" : ""}
-                </span>
-                <span className="text-sm text-sage font-medium">
-                  {creditsNeeded} visuel{creditsNeeded > 1 ? "s" : ""}
-                </span>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                {files.map((file, i) => (
-                  <div key={i} className="w-16 h-12 rounded-lg overflow-hidden border border-foreground/5">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={previewUrls[i]}
-                      alt=""
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Style summary */}
-            <div className="border-t border-foreground/5 pt-4">
-              <span className="text-sm text-foreground font-medium">
-                Style : {globalStyles.length > 0 ? globalStyles.map((id) => STYLES.find((s) => s.id === id)?.name || id).join(", ") : "Personnalisé"}
-              </span>
-            </div>
-          </div>
-
-          {/* Generate button */}
-          <button
-            onClick={handleGenerate}
-            disabled={isGenerating}
-            className="w-full py-4 bg-sage text-white rounded-xl font-medium text-base hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
-            data-testid="merchant-generate"
-          >
-            {isGenerating ? "Génération en cours..." : `Générer le dossier (${creditsNeeded} visuel${creditsNeeded > 1 ? "s" : ""})`}
-          </button>
-
-          <p className="text-center text-xs text-muted/60 font-light">
-            Si une photo échoue, le visuel correspondant est automatiquement restitué.
-          </p>
-        </div>
-      )}
 
       {/* ── Step: Generating ── */}
       {currentStep === "generating" && (
