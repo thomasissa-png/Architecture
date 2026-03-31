@@ -638,7 +638,7 @@ export default function ComptePage() {
                               setCouleurPrincipale(e.target.value);
                             }
                           }}
-                          className="flex-1 px-3 py-2 border border-foreground/10 rounded-xl text-sm font-mono font-light focus-visible:border-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+                          className="flex-1 px-3 py-2 border border-foreground/10 rounded-xl text-sm font-mono font-normal focus-visible:border-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
                         />
                       </div>
                     </div>
@@ -663,7 +663,7 @@ export default function ComptePage() {
                               setCouleurSecondaire(e.target.value);
                             }
                           }}
-                          className="flex-1 px-3 py-2 border border-foreground/10 rounded-xl text-sm font-mono font-light focus-visible:border-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+                          className="flex-1 px-3 py-2 border border-foreground/10 rounded-xl text-sm font-mono font-normal focus-visible:border-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
                         />
                       </div>
                     </div>
@@ -710,7 +710,7 @@ export default function ComptePage() {
                         {raisonSociale || "Votre raison sociale"}
                       </p>
                       <p
-                        className="text-sm font-light"
+                        className="text-sm font-normal"
                         style={{ color: couleurSecondaire, fontFamily: `'${police}', sans-serif` }}
                       >
                         Dossier de pré-commercialisation

@@ -10,14 +10,14 @@ export const metadata: Metadata = {
     "Conseils home staging virtuel, inspiration décoration IA, guides pour architectes d'intérieur et marchands de biens. Actualités Versimo.",
   keywords: [
     "blog home staging",
-    "decoration IA blog",
+    "décoration IA blog",
     "home staging virtuel conseils",
     "inspiration deco IA",
   ],
   openGraph: {
     title: "Blog | Versimo",
     description:
-      "Conseils home staging virtuel, inspiration decoration IA, guides pour professionnels et particuliers.",
+      "Conseils home staging virtuel, inspiration décoration IA, guides pour professionnels et particuliers.",
     type: "website",
     locale: "fr_FR",
     siteName: "Versimo",

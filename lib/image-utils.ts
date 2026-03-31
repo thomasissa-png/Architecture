@@ -43,7 +43,7 @@ export function getApiSize(width: number, height: number): string {
 
 /**
  * Resizes and compresses an image file.
- * - Max dimension: 2048px (preserves aspect ratio)
+ * - Max dimension: 1536px (preserves aspect ratio)
  * - Output: JPEG at 85% quality as base64 data URI
  */
 export async function processImage(file: File): Promise<ProcessedImage> {

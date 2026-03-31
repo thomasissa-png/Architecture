@@ -209,7 +209,7 @@ export default function GaleriePage() {
         <div className="text-center max-w-md space-y-4">
           <h1 className="text-2xl font-semibold text-foreground">Ma galerie</h1>
           <p className="text-sm text-muted font-normal">
-            Connectez-vous pour voir votre galerie de photos generees.
+            Connectez-vous pour voir votre galerie de photos générées.
           </p>
           <button
             onClick={() => setAuthModalOpen(true)}
