@@ -1185,7 +1185,7 @@ export async function POST(request: NextRequest) {
       const t0 = Date.now();
 
       // Check if client disconnected before starting expensive iteration
-      if (request.signal.aborted) {
+      if (request.signal?.aborted) {
         throw new Error("Client disconnecté avant le début de l'itération.");
       }
 
@@ -1365,7 +1365,7 @@ export async function POST(request: NextRequest) {
     // Check if client disconnected before starting expensive work.
     // Next.js App Router provides request.signal that aborts when the client drops the connection.
     // This prevents wasting OpenAI API credits on abandoned requests.
-    if (request.signal.aborted) {
+    if (request.signal?.aborted) {
       throw new Error("Client disconnecté avant le début de la génération.");
     }
 
@@ -1448,7 +1448,7 @@ export async function POST(request: NextRequest) {
     let pass2Failed = false;
     let pass2Attempts = 0;
 
-    if (request.signal.aborted) {
+    if (request.signal?.aborted) {
       // Client disconnected after pass 1 — don't waste credits on pass 2
       console.warn("Client disconnected after pass 1 — skipping pass 2");
       pass2Failed = true;
