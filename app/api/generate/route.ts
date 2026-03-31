@@ -9,7 +9,7 @@ function getOpenAI(): OpenAI {
   }
   return _openaiClient;
 }
-import Replicate from "replicate";
+// Replicate (Flux) REMOVED — GPT-4.1 only with retry (Sprint 23)
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { decrementCredit, addCredits } from "@/lib/credits";
@@ -238,111 +238,6 @@ function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string
   ].join(" ");
 }
 
-function buildSurfacesFluxPrompt(surfacePrompt: string, roomTypeId?: string | null): string {
-  // Kitchen: compact Flux surface prompt (~70 words)
-  if (roomTypeId === "kitchen") {
-    return [
-      `${surfacePrompt}, finished empty kitchen interior.`,
-      "Ceramic or stone floor tiles — no wood, no parquet. Subway tile or smooth splashback behind work area.",
-      "Preserve ceiling 3D geometry — vaults, beams, ribs keep shape. Ceiling light per style.",
-      "Wall geometry stays identical — same angles, corners, depth. Color and texture change only.",
-      "Remove construction leftovers including electrical outlets, round black wall boxes, cable exits — blend into wall finish. Keep wall-mounted equipment in place: radiators, heaters, vents, switches.",
-      "Empty room — no furniture, no appliances. Same windows and doors.",
-      "Same camera angle, same lighting, no warm tint or yellow cast. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
-    ].join(" ");
-  }
-
-  // Bathroom: compact Flux surface prompt (~70 words)
-  if (roomTypeId === "bathroom") {
-    return [
-      `${surfacePrompt}, finished empty bathroom interior.`,
-      "Floor-to-ceiling ceramic tiles in shower zone and behind vanity. Water-resistant stone or ceramic floor, matte non-slip. No wood. Recessed IP44 ceiling spotlights.",
-      "Preserve ceiling 3D geometry. Wall geometry stays identical — same angles, corners, depth. Color and texture change only.",
-      "Remove construction leftovers including electrical outlets, round black wall boxes, cable exits — blend into wall finish. Keep wall equipment in place: radiators, heaters, vents, switches.",
-      "Empty room — no fixtures, no objects. Same windows and doors.",
-      "Same camera angle, same lighting, no warm tint or yellow cast. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
-    ].join(" ");
-  }
-
-  // WC: compact Flux surface prompt (~60 words)
-  if (roomTypeId === "wc") {
-    return [
-      `${surfacePrompt}, finished empty WC interior.`,
-      "Small ceramic tiles or vinyl floor, neutral tone. Washable matte paint or ceramic tiles on lower walls.",
-      "Wall geometry stays identical — same angles, corners, depth. Color and texture change only.",
-      "Remove construction leftovers. Keep wall equipment in place: radiators, heaters, vents, switches.",
-      "Empty room — no fixtures, no objects. Same windows and doors.",
-      "Same camera angle, same lighting, no warm tint or yellow cast. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
-    ].join(" ");
-  }
-
-  // Bedroom: compact Flux surface prompt (~70 words)
-  if (roomTypeId === "bedroom_adults" || roomTypeId === "bedroom_children") {
-    return [
-      `${surfacePrompt}, finished empty bedroom interior.`,
-      "Warm-toned flooring for bare feet. Ceiling light per style.",
-      "If ONE accent wall differs in color or texture, preserve it as-is — restyle plain walls only. If ALL walls share the same color, restyle ALL walls uniformly.",
-      "Preserve ceiling 3D geometry. Wall geometry stays identical — same angles, corners, depth. Color and texture change only.",
-      "Remove construction leftovers including electrical outlets, round black wall boxes, cable exits — blend into wall finish. Keep wall equipment in place: radiators, heaters, vents, switches.",
-      "Empty room — no furniture, no objects. Same windows and doors.",
-      "Same camera angle, same lighting, no warm tint or yellow cast. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
-    ].join(" ");
-  }
-
-  // Laundry: compact Flux surface prompt (~60 words)
-  if (roomTypeId === "laundry") {
-    return [
-      `${surfacePrompt}, finished empty laundry room.`,
-      "White or light grey ceramic floor tiles, matte finish. Washable matte white walls.",
-      "Preserve ceiling 3D geometry — vaults, beams, ribs keep shape. Clean plaster finish over raw concrete.",
-      "Wall geometry stays identical — same angles, corners, depth. Color and texture change only.",
-      "Remove construction leftovers. Keep wall equipment in place: radiators, heaters, vents, switches.",
-      "Empty room — no appliances, no objects. Same windows and doors.",
-      "Same camera angle, same lighting, no warm tint or yellow cast. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
-    ].join(" ");
-  }
-
-  // Cellar: compact Flux surface prompt (~60 words)
-  if (roomTypeId === "cellar") {
-    return [
-      `${surfacePrompt}, finished empty cellar.`,
-      "Concrete or stone floor as-is or with sealant. Clean matte white or grey paint over masonry.",
-      "Preserve ceiling 3D geometry — vaults, beams, ribs keep shape. Clean plaster finish over raw concrete.",
-      "Wall geometry stays identical — same angles, corners, depth. Color and texture change only.",
-      "Remove construction leftovers. Keep wall equipment in place: radiators, heaters, vents, switches.",
-      "Empty room — no shelving, no objects. Same windows and doors.",
-      "Same camera angle, same lighting, no warm tint or yellow cast. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
-    ].join(" ");
-  }
-
-  // Entryway: compact Flux surface prompt (~65 words)
-  if (roomTypeId === "entryway") {
-    return [
-      `${surfacePrompt}, finished empty entryway interior.`,
-      "Durable floor — ceramic tiles, stone, or hard-wearing wood. Ceiling light per style.",
-      "Wall geometry stays identical — same angles, corners, depth. Color and texture change only.",
-      "Remove construction leftovers. Keep wall equipment in place: radiators, heaters, vents, switches.",
-      "Empty room — no furniture, no objects. Same windows and doors.",
-      "Same camera angle, same lighting, no warm tint or yellow cast. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
-    ].join(" ");
-  }
-
-  // ── FALLBACK: generic for living_room, dining_room, office, null ──
-  return [
-    `${surfacePrompt}, finished empty room interior.`,
-    "Refinished floor, repainted walls. Ceiling light per style description.",
-    "If ONE accent wall differs in color or texture, preserve it as-is — restyle plain walls only. If ALL walls share the same color, restyle ALL walls uniformly.",
-    "Preserve ceiling 3D geometry — vaults, beams, ribs, arches keep their shape and volume. Refinish ceiling surface: smooth plaster and paint over raw concrete, formwork marks, plasterboard seams. Beams keep 3D shape but receive clean painted finish. Ceiling between structural elements must look fully finished and smooth.",
-    "Remove all construction leftovers: dangling cables, exposed wiring, junction boxes, cable conduits, temporary fixtures, electrical outlets, round black wall boxes, cable exits — blend into wall finish.",
-    "Do not add baseboards or moldings unless clearly present in the input photo.",
-    "Keep all wall-mounted equipment: radiators, heaters, vents, thermostats, switches, outlets in exact position.",
-    "Completely empty room — no furniture, no rugs, no textiles, no objects.",
-    "Wall geometry identical: same angles, corners, depth — color and texture change only. Exact same number of windows and doors as the original. Same room geometry, same proportions.",
-    "Preserve existing light direction, shadow patterns, wall color temperature, light falloff, and camera angle. No warm tint or yellow cast — cool or neutral walls stay cool or neutral.",
-    "Photo-realistic interior photograph, DSLR full-frame 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
-  ].join(" ");
-}
-
 // ── Pass 2: Furniture placement ──────────────────────────────────────
 
 // Shared compact fragments for pass 2
@@ -483,132 +378,6 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: str
   ].join(" ");
 }
 
-function buildFurnitureFluxPrompt(furniturePrompt: string, roomTypeId?: string | null): string {
-  const FLUX_STRUCTURE = "Walls, floor, ceiling identical to input. Shadows from furniture natural. No new openings.";
-  const FLUX_EQUIPMENT = "Keep radiators, vents, switches visible.";
-  const FLUX_PHOTO = "Same camera angle, same lighting, no warm tint or yellow cast. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.";
-
-  // Kitchen: compact Flux furniture (~60 words)
-  if (roomTypeId === "kitchen") {
-    return [
-      `${furniturePrompt}, placed in this finished kitchen interior.`,
-      "Built-in cabinetry against walls, island with stools if space allows. Pendant above work area.",
-      "Door frame = 204cm as scale reference. Correct perspective and scale. Realistic shadows matching existing light.",
-      FLUX_STRUCTURE,
-      FLUX_EQUIPMENT,
-      "No curtains.",
-      FLUX_PHOTO,
-    ].join(" ");
-  }
-
-  // Bathroom: compact Flux furniture (~55 words)
-  if (roomTypeId === "bathroom") {
-    return [
-      `${furniturePrompt}, placed in this finished bathroom interior.`,
-      "Wall-mounted vanity and mirror expected. Other items freestanding. Scale to room: if compact, 60cm vanity, skip stool/basket. Shower max one-third of wall. 60cm clear passage minimum.",
-      "Use ceiling (~250cm) and tile size as scale references. Realistic shadows matching existing light.",
-      FLUX_STRUCTURE,
-      FLUX_EQUIPMENT,
-      "No curtains.",
-      FLUX_PHOTO,
-    ].join(" ");
-  }
-
-  // WC: compact Flux furniture (~50 words)
-  if (roomTypeId === "wc") {
-    return [
-      `${furniturePrompt}, placed in this finished small WC room.`,
-      "Minimal items — toilet, hand basin, mirror. Very small space, do not overcrowd.",
-      "Door frame = 204cm as scale reference. Correct perspective and scale. Realistic shadows.",
-      FLUX_STRUCTURE,
-      FLUX_EQUIPMENT,
-      FLUX_PHOTO,
-    ].join(" ");
-  }
-
-  // Bedroom: compact Flux furniture (~60 words)
-  if (roomTypeId === "bedroom_adults" || roomTypeId === "bedroom_children") {
-    return [
-      `${furniturePrompt}, placed in this finished bedroom interior.`,
-      "Freestanding only — bed, nightstands, rug, wardrobe as background anchor. No wall art, no curtains.",
-      "If the room is deep, distribute furniture across its full depth — bed foreground, wardrobe or desk further back.",
-      "Every piece firmly grounded with contact shadows. Door frame = 204cm as scale reference. Scale bed to room size. Preserve existing light direction and color temperature. Calm atmosphere.",
-      FLUX_STRUCTURE,
-      FLUX_EQUIPMENT,
-      "Same number of windows.",
-      FLUX_PHOTO,
-    ].join(" ");
-  }
-
-  // Entryway: compact Flux furniture (~55 words)
-  if (roomTypeId === "entryway") {
-    return [
-      `${furniturePrompt}, placed in this finished entryway.`,
-      "Small space — do not overcrowd. Console, mirror on console, coat rack, bench, runner rug. Freestanding only, no curtains.",
-      "Door frame = 204cm as scale reference. Correct perspective and scale. Realistic shadows.",
-      FLUX_STRUCTURE,
-      FLUX_EQUIPMENT,
-      FLUX_PHOTO,
-    ].join(" ");
-  }
-
-  // Laundry: compact Flux furniture (~50 words)
-  if (roomTypeId === "laundry") {
-    return [
-      `${furniturePrompt}, placed in this finished laundry room.`,
-      "Functional — washing machine, storage, drying rack. No decorative items. If compact (<4m2), skip folding table and drying rack.",
-      "Door frame = 204cm as scale reference. Correct perspective and scale. Realistic shadows.",
-      FLUX_STRUCTURE,
-      FLUX_EQUIPMENT,
-      FLUX_PHOTO,
-    ].join(" ");
-  }
-
-  // Cellar: compact Flux furniture (~50 words)
-  if (roomTypeId === "cellar") {
-    return [
-      `${furniturePrompt}, placed in this finished cellar.`,
-      "Functional storage — shelving, boxes, utility light. No luxury furniture. If compact or narrow, single shelving unit only, skip wine rack.",
-      "Door frame = 204cm as scale reference. Correct perspective and scale. Realistic shadows.",
-      FLUX_STRUCTURE,
-      FLUX_EQUIPMENT,
-      FLUX_PHOTO,
-    ].join(" ");
-  }
-
-  // Dining room: compact Flux furniture (~65 words)
-  if (roomTypeId === "dining_room") {
-    return [
-      `${furniturePrompt}, placed in this finished dining room interior.`,
-      "Center table with chairs. Sideboard as background anchor if room is deep. Every piece firmly grounded with contact shadows. Freestanding only, no wall art, no framed paintings, no curtains.",
-      "Door frame = 204cm as scale reference. Correct perspective and scale. Preserve existing light direction and color temperature.",
-      FLUX_STRUCTURE,
-      FLUX_EQUIPMENT,
-      FLUX_PHOTO,
-    ].join(" ");
-  }
-
-  // ── FALLBACK: generic for living_room, office, null ──
-  return [
-    `${furniturePrompt}, placed naturally across the full depth of this finished room interior.`,
-    "Distribute furniture in depth and width: primary group in foreground, secondary group in the back if space allows, lateral anchor on the opposite side if room is wide.",
-    "Every piece firmly grounded on the floor with contact shadows — especially back-of-room furniture. Shadow hardness matches lighting: soft for diffused, hard for direct sunlight.",
-    "Scale furniture to room: if compact (<4m wide), use smaller pieces than described. Scale up if ceiling is very high. Door frame = 204cm as reference.",
-    "Freestanding only. No wall-mounted art, no framed paintings, no prints, no mirrors, no built-in shelving, no curtains.",
-    "Walls, floor, ceiling identical to input. Shadows from furniture natural. No new openings.",
-    "Keep radiators, vents, switches visible. Do not block radiators.",
-    "Preserve existing light direction and color temperature. Same camera angle, no warm tint or yellow cast. Photo-realistic, DSLR 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
-  ].join(" ");
-}
-
-// Flux Depth Pro negative prompt — prevents common artifacts (indoor)
-const FLUX_NEGATIVE_PROMPT =
-  "distorted perspective, fisheye, stretched walls, shallow depth of field, bokeh, cartoon, illustration, 3D render, CGI, plastic, watermark, text, blurry, overexposed windows, extra windows, extra doors, floating furniture, dangling cables, junction box, unfinished floor, overly clean, flat lighting, color grading, warm color shift, cool color shift";
-
-// Outdoor negative prompt — prevents indoor artifacts + indoor plants in outdoor generations
-const OUTDOOR_NEGATIVE_PROMPT =
-  "indoor sofa, area rug, floor lamp, ceiling light, chandelier, curtains, drapes, wallpaper, baseboard, interior door, radiator, electrical outlet, kitchen appliances, ceiling, roof, indoor plant pot on parquet, monstera outdoors, fiddle-leaf fig outdoors, snake plant outdoors, string of pearls outdoors, distorted perspective, fisheye, stretched walls, cartoon, illustration, 3D render, CGI, watermark, text, blurry, color grading, warm color shift, cool color shift, golden hour filter";
-
 // ── Outdoor Pass 1: Ground surface finishing (no ceiling, no luminaire) ──
 function buildOutdoorSurfacesResponsesPrompt(
   surfacePrompt: string,
@@ -629,30 +398,6 @@ function buildOutdoorSurfacesResponsesPrompt(
     "Preserve the exact lighting conditions from the input — same shadow hardness, same direction, same color temperature.",
     "No furniture in this pass — EMPTY outdoor space with finished ground only.",
     "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, subtle sensor grain (ISO 200), natural corner vignetting.",
-  ]
-    .filter(Boolean)
-    .join(" ");
-}
-
-function buildOutdoorSurfacesFluxPrompt(
-  surfacePrompt: string,
-  subtypeOverride: string
-): string {
-  return [
-    `${surfacePrompt}, finished empty outdoor space.`,
-    "Open-air — no ceiling, sky preserved as-is. Preserve blown-out sky highlights.",
-    subtypeOverride ? subtypeOverride : "",
-    "Preserve fixed ground elements (metal covers, drain grates, manholes) — apply new ground material around them.",
-    "Preserve all expansion joints, step nosings, level changes, threshold transitions.",
-    "Preserve all guard rails, exterior walls, facades, gates, fences. No new vertical structures.",
-    "Keep existing wall color and texture — do not warm, smooth, or repaint walls.",
-    "Glass blocks and skylights keep their translucency.",
-    "Preserve background vegetation. Only modify foreground ground surface.",
-    "Maintain the exact wall and facade color temperature from the input — do not warm or cool the surfaces.",
-    "Preserve exact lighting conditions from input — same shadow hardness, direction, color temperature. No warm tint or yellow cast.",
-    "Empty outdoor space — no furniture, no rugs, no objects.",
-    "Same camera angle, same proportions.",
-    "Photo-realistic outdoor photograph, DSLR full-frame 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
   ]
     .filter(Boolean)
     .join(" ");
@@ -679,31 +424,6 @@ function buildOutdoorFurnitureResponsesPrompt(
     "Preserve the exact lighting conditions from the input — same shadow hardness, same direction, same color temperature.",
     "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation.",
     "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, subtle sensor grain (ISO 200), natural corner vignetting. Photo-realistic outdoor photograph. No text, watermarks, or logos.",
-  ]
-    .filter(Boolean)
-    .join(" ");
-}
-
-function buildOutdoorFurnitureFluxPrompt(
-  furniturePrompt: string,
-  subtypeOverride: string
-): string {
-  return [
-    `${furniturePrompt}, placed naturally across the available floor space of this finished outdoor area.`,
-    subtypeOverride ? subtypeOverride : "",
-    "Primary seating group in foreground, secondary accent further back if space allows.",
-    "Guard rail = 100cm, French door = 215cm as scale references.",
-    "All lighting fixtures OFF in daylight — unlit lanterns with cold wax candle (no flame, no glow), unlit string lights with dark bulbs, no glowing filaments.",
-    "All textiles outdoor-rated: Sunbrella or waterproof polyester, no indoor fabrics.",
-    "Scale plants to space: balcony max 120cm, garden max 200cm potted tree height.",
-    "If space appears compact (<10m2), scale down: 120cm table, 2 chairs max.",
-    "No opaque structures (screens, shelving, A-frames) in front of full-height windows or glass doors.",
-    "If exposed overhead structure (beams, pergola), consider one hanging plant or lantern if clearance allows.",
-    "Ground surfaces LOCKED — same material, color, texture. Guard rails, walls, facades unchanged.",
-    "Every piece casts realistic shadows consistent with existing natural light.",
-    "Preserve exact lighting from input — same shadow hardness, direction, color temperature. No warm tint or yellow cast.",
-    "Same camera angle, same proportions.",
-    "Photo-realistic outdoor photograph, DSLR full-frame 16-35mm f/8, deep DOF, sharp focus, visible film grain at full zoom, natural corner vignetting 5-10%.",
   ]
     .filter(Boolean)
     .join(" ");
@@ -790,91 +510,6 @@ async function tryOpenAIResponses(
   };
 }
 
-// ─── Replicate Fallback (Flux Depth Pro) ─────────────────────────────
-async function tryFluxDepth(
-  imageBase64: string,
-  surfacePrompt: string,
-  furniturePrompt: string,
-  pass: 1 | 2,
-  width: number,
-  height: number,
-  additionalNegative: string = "",
-  roomTypeId?: string | null,
-  outdoor?: { isOutdoor: boolean; subtypeSurfaceOverride?: string; subtypeFurnitureOverride?: string }
-): Promise<{ image: string; model: string }> {
-  // GUARD: Flux Depth Pro MUST NEVER be used for pass 2 (furniture).
-  // It regenerates the scene instead of editing, destroying geometry.
-  // See audit visuel #41/#42 (Yann 4.2, Lucas 5.0), CLAUDE.md Sprint 22 #155.
-  if (pass === 2) {
-    throw new Error("BLOCKED: tryFluxDepth() called with pass=2. Flux Depth Pro must NEVER be used for furniture pass — it destroys geometry. This is a programming error.");
-  }
-
-  const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
-
-  const dataUri = `data:image/jpeg;base64,${imageBase64}`;
-  let prompt: string;
-  let negativeBase: string;
-  if (outdoor?.isOutdoor) {
-    prompt =
-      pass === 1
-        ? buildOutdoorSurfacesFluxPrompt(surfacePrompt, outdoor.subtypeSurfaceOverride ?? "")
-        : buildOutdoorFurnitureFluxPrompt(furniturePrompt, outdoor.subtypeFurnitureOverride ?? "");
-    negativeBase = OUTDOOR_NEGATIVE_PROMPT;
-  } else {
-    prompt =
-      pass === 1
-        ? buildSurfacesFluxPrompt(surfacePrompt, roomTypeId)
-        : buildFurnitureFluxPrompt(furniturePrompt, roomTypeId);
-    negativeBase = FLUX_NEGATIVE_PROMPT;
-  }
-
-  // Pass 1 (surfaces): lower guidance to stay closer to input geometry
-  // Pass 2 (furniture): slightly higher guidance to ensure furniture appears
-  const guidance = pass === 1 ? 12 : 15;
-
-  const output = await withTimeout(
-    replicate.run(
-      "black-forest-labs/flux-depth-pro" as `${string}/${string}`,
-      {
-        input: {
-          prompt,
-          negative_prompt: additionalNegative
-            ? `${negativeBase}, ${additionalNegative}`
-            : negativeBase,
-          control_image: dataUri,
-          width,
-          height,
-          steps: 25,
-          guidance,
-          output_format: "jpg",
-        },
-      }
-    ),
-    API_TIMEOUT_MS,
-    "Flux Depth Pro"
-  );
-
-  let imageUrl: string;
-  if (typeof output === "string") {
-    imageUrl = output;
-  } else if (output && typeof output === "object" && "url" in output) {
-    imageUrl = (output as { url: () => string }).url();
-  } else if (Array.isArray(output) && output.length > 0) {
-    imageUrl = typeof output[0] === "string" ? output[0] : String(output[0]);
-  } else {
-    throw new Error("Unexpected output format from Flux Depth Pro");
-  }
-
-  const imageResponse = await withTimeout(fetch(imageUrl), 30_000, "Flux image download");
-  const arrayBuffer = await imageResponse.arrayBuffer();
-  const base64 = Buffer.from(arrayBuffer).toString("base64");
-
-  return {
-    image: `data:image/png;base64,${base64}`,
-    model: `Flux Depth Pro (pass ${pass})`,
-  };
-}
-
 // ─── Iteration-specific generation (pre-built prompt) ────────────────
 async function tryOpenAIResponsesWithPrompt(
   imageBase64: string,
@@ -936,76 +571,62 @@ async function tryOpenAIResponsesWithPrompt(
   };
 }
 
-// tryFluxDepthWithPrompt() REMOVED — Flux Depth Pro must NEVER be used for
-// iterations (bug #81, Sprint 22 #155). It regenerates the entire scene.
-// See tryFluxDepth() for the passe 1 fallback (the only authorized Flux usage).
-
 async function generateIterationPass(
   base64Image: string,
   responsesPrompt: string,
-  _fluxPrompt: string,
   outputSize: { openai: string; w: number; h: number }
 ): Promise<{ image: string; model: string }> {
-  // IMPORTANT: Iterations MUST use OpenAI ONLY (no Flux).
-  // Flux Depth Pro regenerates the entire scene instead of editing,
-  // destroying all existing furniture and geometry (see #81, Sprint 22 #155).
-  // If OpenAI fails, the iteration must fail — never fall back to Flux.
-
   if (!process.env.OPENAI_API_KEY) {
     throw new Error("Clé API OpenAI requise pour les itérations.");
   }
 
-  try {
-    return await tryOpenAIResponsesWithPrompt(base64Image, responsesPrompt, outputSize.openai);
-  } catch (err) {
-    const openaiError = err instanceof Error ? err : new Error(String(err));
-    console.error("OpenAI iteration failed:", openaiError.message);
-    throw new Error(`Échec itération — l'ajustement n'a pas pu être appliqué. Réessayez. (${openaiError.message})`);
+  let lastError: Error | null = null;
+  for (let attempt = 0; attempt < MAX_PASS_RETRIES; attempt++) {
+    try {
+      return await tryOpenAIResponsesWithPrompt(base64Image, responsesPrompt, outputSize.openai);
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+      console.error(`OpenAI iteration attempt ${attempt + 1}/${MAX_PASS_RETRIES} failed:`, lastError.message);
+      if (attempt < MAX_PASS_RETRIES - 1) {
+        await new Promise(r => setTimeout(r, RETRY_DELAY_MS));
+      }
+    }
   }
+
+  throw new Error(`Échec itération après ${MAX_PASS_RETRIES} tentatives. ${lastError?.message ?? ""}`);
 }
 
-// ─── Generate one pass with fallback ─────────────────────────────────
+// ─── Generate one pass with retry (GPT-4.1 only, no Flux fallback) ──
+const MAX_PASS_RETRIES = 2; // 1 initial + 1 retry
+const RETRY_DELAY_MS = 2_000;
+
 async function generatePass(
   base64Image: string,
   surfacePrompt: string,
   furniturePrompt: string,
   pass: 1 | 2,
   outputSize: { openai: string; w: number; h: number },
-  additionalNegative: string = "",
   roomTypeId?: string | null,
   outdoor?: { isOutdoor: boolean; subtypeSurfaceOverride?: string; subtypeFurnitureOverride?: string }
 ): Promise<{ image: string; model: string }> {
-  let openaiError: Error | null = null;
-  let replicateError: Error | null = null;
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error("Clé API OpenAI non configurée.");
+  }
 
-  if (process.env.OPENAI_API_KEY) {
+  let lastError: Error | null = null;
+  for (let attempt = 0; attempt < MAX_PASS_RETRIES; attempt++) {
     try {
       return await tryOpenAIResponses(base64Image, surfacePrompt, furniturePrompt, pass, outputSize.openai, roomTypeId, outdoor);
     } catch (err) {
-      openaiError = err instanceof Error ? err : new Error(String(err));
-      console.error(`OpenAI pass ${pass} failed:`, openaiError.message);
+      lastError = err instanceof Error ? err : new Error(String(err));
+      console.error(`OpenAI pass ${pass} attempt ${attempt + 1}/${MAX_PASS_RETRIES} failed:`, lastError.message);
+      if (attempt < MAX_PASS_RETRIES - 1) {
+        await new Promise(r => setTimeout(r, RETRY_DELAY_MS));
+      }
     }
   }
 
-  // Flux Depth Pro détruit la géométrie en passe 2 — audit visuel #41/#42 (Yann 4.2, Lucas 5.0).
-  // Retourner une erreur plutôt que risquer la destruction. Flux reste autorisé en passe 1 (surfaces).
-  if (pass !== 2 && process.env.REPLICATE_API_TOKEN) {
-    try {
-      return await tryFluxDepth(base64Image, surfacePrompt, furniturePrompt, pass, outputSize.w, outputSize.h, additionalNegative, roomTypeId, outdoor);
-    } catch (err) {
-      replicateError = err instanceof Error ? err : new Error(String(err));
-      console.error(`Flux Depth pass ${pass} failed:`, replicateError.message);
-    }
-  }
-
-  if (!process.env.OPENAI_API_KEY && !process.env.REPLICATE_API_TOKEN) {
-    throw new Error("Aucune clé API configurée.");
-  }
-
-  const details: string[] = [];
-  if (openaiError) details.push(`OpenAI : ${openaiError.message}`);
-  if (replicateError) details.push(`Replicate : ${replicateError.message}`);
-  throw new Error(`Échec passe ${pass}. ${details.join(" | ")}`);
+  throw new Error(`Échec passe ${pass} après ${MAX_PASS_RETRIES} tentatives. ${lastError?.message ?? ""}`);
 }
 
 // ─── API Route Handler ──────────────────────────────────────────────
@@ -1155,7 +776,6 @@ export async function POST(request: NextRequest) {
       };
 
       let responsesPrompt: string;
-      let fluxPrompt: string;
       let sourceImageBase64: string;
 
       if (intent === "adjust") {
@@ -1179,14 +799,14 @@ export async function POST(request: NextRequest) {
             iterationComment.trim(),
             preprocessResult.enrichedComment,
           );
-          fluxPrompt = ""; // Flux disabled for iterations (bug #81)
+
         } else {
           responsesPrompt = buildAdjustResponsesPrompt(
             iterationComment.trim(),
             preprocessResult.enrichedComment,
             iterMeta,
           );
-          fluxPrompt = ""; // Flux disabled for iterations (bug #81)
+
         }
       } else {
         // RESTYLE mode: original behavior — re-pass 2 from empty pass1 image
@@ -1198,14 +818,14 @@ export async function POST(request: NextRequest) {
             originalFurniturePrompt,
             allModifications,
           );
-          fluxPrompt = ""; // Flux disabled for iterations (bug #81)
+
         } else {
           responsesPrompt = buildIterationFurnitureResponsesPrompt(
             originalFurniturePrompt,
             allModifications,
             iterMeta,
           );
-          fluxPrompt = ""; // Flux disabled for iterations (bug #81)
+
         }
       }
 
@@ -1217,7 +837,7 @@ export async function POST(request: NextRequest) {
       }
 
       console.log(`Starting iteration (${intent})... Output size: ${outputSize.openai}`);
-      const result = await generateIterationPass(sourceImageBase64, responsesPrompt, fluxPrompt, outputSize);
+      const result = await generateIterationPass(sourceImageBase64, responsesPrompt, outputSize);
       const t1 = Date.now();
 
       const outputBase64 = result.image.replace(/^data:image\/[\w+]+;base64,/, "");
@@ -1350,16 +970,14 @@ export async function POST(request: NextRequest) {
     // F3: Apply outdoor subtype overrides OR F2 room type overrides (mutually exclusive)
     let trimmedSurface: string;
     let trimmedFurniture: string;
-    let negativeOverride: string;
     let outdoorParam: { isOutdoor: boolean; subtypeSurfaceOverride?: string; subtypeFurnitureOverride?: string } | undefined;
 
     if (isOutdoor) {
       // Outdoor mode: apply subtype overrides, no room type
-      const { effectiveSurfacePrompt, effectiveFurniturePrompt, subtypeNegativeOverride } =
+      const { effectiveSurfacePrompt, effectiveFurniturePrompt } =
         applyOutdoorSubtypeOverrides(surfacePrompt.trim(), furniturePrompt.trim(), outdoorSubtype ?? null);
       trimmedSurface = effectiveSurfacePrompt;
       trimmedFurniture = effectiveFurniturePrompt;
-      negativeOverride = subtypeNegativeOverride;
 
       // Extract raw subtype overrides for injection into builders
       const sub = outdoorSubtype ? OUTDOOR_SUBTYPES[outdoorSubtype] : null;
@@ -1377,14 +995,13 @@ export async function POST(request: NextRequest) {
       const ROOMS_WITH_DEDICATED_BUILDERS = ["kitchen", "bathroom", "wc", "bedroom_adults", "bedroom_children", "entryway", "laundry", "cellar"];
       const hasDedicatedBuilder = roomType && ROOMS_WITH_DEDICATED_BUILDERS.includes(roomType);
 
-      const { effectiveSurfacePrompt, effectiveFurniturePrompt, roomNegativeOverride } =
+      const { effectiveSurfacePrompt, effectiveFurniturePrompt } =
         applyRoomTypeOverrides(surfacePrompt.trim(), furniturePrompt.trim(), roomType ?? null);
 
       // If dedicated builder exists: use raw style surfacePrompt (builder handles room specifics)
       // Otherwise: use the concatenated effectiveSurfacePrompt (room override appended)
       trimmedSurface = hasDedicatedBuilder ? surfacePrompt.trim() : effectiveSurfacePrompt;
       trimmedFurniture = effectiveFurniturePrompt;
-      negativeOverride = roomNegativeOverride;
     }
 
     const t0 = Date.now();
@@ -1397,7 +1014,7 @@ export async function POST(request: NextRequest) {
     }
 
     console.log(`Starting pass 1 (surfaces)... Output size: ${outputSize.openai}${isOutdoor ? ` outdoor subtype: ${outdoorSubtype}` : roomType ? ` roomType: ${roomType}` : ""}`);
-    const pass1 = await generatePass(base64Image, trimmedSurface, trimmedFurniture, 1, outputSize, negativeOverride, isOutdoor ? null : roomType, outdoorParam);
+    const pass1 = await generatePass(base64Image, trimmedSurface, trimmedFurniture, 1, outputSize, isOutdoor ? null : roomType, outdoorParam);
     const t1 = Date.now();
 
     // Build the final prompts for logging (what the model actually receives)
@@ -1490,7 +1107,7 @@ export async function POST(request: NextRequest) {
     if (!pass2Failed) for (let attempt = 1; attempt <= 2; attempt++) {
       pass2Attempts = attempt;
       try {
-        pass2 = await generatePass(pass1Base64, trimmedSurface, trimmedFurniture, 2, outputSize, negativeOverride, isOutdoor ? null : roomType, outdoorParam);
+        pass2 = await generatePass(pass1Base64, trimmedSurface, trimmedFurniture, 2, outputSize, isOutdoor ? null : roomType, outdoorParam);
         break; // success
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);

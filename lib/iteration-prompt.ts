@@ -56,53 +56,6 @@ export function buildIterationFurnitureResponsesPrompt(
   ].join(" ");
 }
 
-// ─── Flux Depth Pro — Iteration furniture prompt ────────────────────
-export function buildIterationFurnitureFluxPrompt(
-  _furniturePrompt: string,
-  modifications: string[],
-  meta: { width?: number; height?: number; roomType?: string | null; allowWallMounted?: boolean },
-): string {
-  // Flux: modifications FIRST (first tokens = most weight), then condensed style
-  const modSummary = modifications
-    .map((m, i) => {
-      const label = i === modifications.length - 1 ? `v${i + 2} (current)` : `v${i + 2}`;
-      return `${label}: ${m}`;
-    })
-    .join("; ");
-
-  return [
-    "IMPORTANT: All existing furniture and objects in this photo must REMAIN exactly as they are. Do not remove, move, or resize any existing item.",
-    `CHANGES: ${modSummary}.`,
-    "Add ONLY the items described above. Everything else — all existing furniture, rugs, plants, lamps — stays untouched.",
-    // Iterations are ALWAYS exclusive: add ONLY what the user asked for.
-    "Do NOT add any other furniture, decoration, rug, lamp, plant, or object not mentioned. Leave the rest of the floor empty.",
-    // Room-type-specific fixture rules
-    meta.roomType === "kitchen" || meta.roomType === "bathroom"
-      ? "Room-appropriate fixtures and accessories. Built-in cabinetry, vanity, countertops expected. No curtains."
-      : meta.roomType === "wc"
-      ? "Wall-hung toilet and hand basin expected. Very small space, do not overcrowd. No curtains."
-      : meta.roomType === "laundry"
-      ? "Washing machine and functional equipment expected. No decorative items. No curtains."
-      : meta.roomType === "cellar"
-      ? "Functional storage only — shelving, boxes, utility light. No luxury furniture. No curtains."
-      : meta.roomType === "entryway"
-      ? "Small space — console, coat rack, bench, runner. Freestanding only, no curtains."
-      : meta.allowWallMounted
-      ? "Wall-mounted items allowed ONLY for items explicitly requested. No curtains."
-      : "Freestanding furniture only. No wall-mounted objects, no framed paintings, no prints, no mirrors, no built-in shelving, no curtains.",
-    "If the room is deep, distribute furniture across its full depth — primary group foreground, secondary piece further back if space allows.",
-    "Every piece must appear firmly grounded on the floor with visible contact shadows — especially furniture in the back of the room.",
-    "Every wall, floor, and ceiling surface visually identical to input — same colors, textures. Room structure LOCKED. Shadows from furniture are natural.",
-    "Keep all wall-mounted equipment: radiators, heaters, vents, switches visible. Do not place furniture in front of radiators.",
-    "Preserve existing light direction and color temperature. Same camera angle.",
-    "Photo-realistic interior photograph, DSLR full-frame 16-35mm f/8, deep DOF, sharp focus, subtle film grain.",
-  ].join(" ");
-}
-
-// Flux negative prompt enriched for iterations
-export const FLUX_ITERATION_NEGATIVE_PROMPT =
-  "distorted perspective, fisheye, stretched walls, shallow depth of field, bokeh, cartoon, illustration, 3D render, CGI, plastic, watermark, text, blurry, overexposed windows, extra windows, extra doors, floating furniture, dangling cables, junction box, unfinished floor, overly clean, flat lighting, color grading, warm color shift, cool color shift, mismatched furniture style, inconsistent color palette";
-
 // ─── Outdoor Iteration Builders ─────────────────────────────────────
 // Same logic as indoor but:
 // - No "walls, floor, ceiling" → "Ground surface and vertical structures are LOCKED"
@@ -141,35 +94,6 @@ export function buildIterationOutdoorFurnitureResponsesPrompt(
   ].join(" ");
 }
 
-export function buildIterationOutdoorFurnitureFluxPrompt(
-  _furniturePrompt: string,
-  modifications: string[],
-): string {
-  const modSummary = modifications
-    .map((m, i) => {
-      const label = i === modifications.length - 1 ? `v${i + 2} (current)` : `v${i + 2}`;
-      return `${label}: ${m}`;
-    })
-    .join("; ");
-
-  return [
-    "IMPORTANT: All existing outdoor furniture and objects in this photo must REMAIN exactly as they are. Do not remove, move, or resize any existing item.",
-    `CHANGES: ${modSummary}.`,
-    "Add ONLY the items described above. Everything else — all existing furniture, planters, lamps — stays untouched.",
-    // Iterations are ALWAYS exclusive: add ONLY what the user asked for.
-    "Do NOT add any other furniture, decoration, planter, lamp, or object not mentioned. Leave the rest of the space empty.",
-    "Freestanding outdoor furniture only. No wall-mounted objects, no objects attached to guard rails.",
-    "No opaque structures (screens, shelving, A-frames) in front of full-height windows or glass doors.",
-    "If the space is deep, distribute furniture across its full depth — primary group foreground, secondary piece further back if space allows.",
-    "Every piece must appear firmly grounded on the ground with visible contact shadows consistent with the existing natural light direction.",
-    "Ground surface and vertical structures LOCKED — guard rails, walls, facades same colors, textures, geometry. Shadows from furniture are natural.",
-    "Preserve background vegetation. Open-air space, no ceiling, sky as-is.",
-    "Preserve exact lighting from input — same shadow hardness, direction, color temperature.",
-    "Same camera angle, same proportions.",
-    "Photo-realistic outdoor photograph, DSLR full-frame 16-35mm f/8, deep DOF, sharp focus, subtle film grain.",
-  ].join(" ");
-}
-
 // ─── ADJUST mode prompts (edit furnished image, keep existing furniture) ──
 
 export function buildAdjustResponsesPrompt(
@@ -199,21 +123,6 @@ export function buildAdjustResponsesPrompt(
   ].filter(Boolean).join(" ");
 }
 
-export function buildAdjustFluxPrompt(
-  userComment: string,
-  enrichedComment: string,
-): string {
-  return [
-    "IMPORTANT: All existing furniture and objects in this photo must REMAIN exactly as they are. Do not remove, move, or resize any existing item.",
-    `CHANGE: ${enrichedComment}.`,
-    "Add ONLY the items described above. Everything else stays untouched.",
-    "Keep ALL existing furniture and decoration exactly as-is except for this change.",
-    "Every piece must appear firmly grounded on the floor with visible contact shadows.",
-    "Room surfaces, camera angle, and lighting unchanged.",
-    "Photo-realistic interior photograph, DSLR full-frame 16-35mm f/8, deep DOF, sharp focus, subtle film grain.",
-  ].join(" ");
-}
-
 export function buildAdjustOutdoorResponsesPrompt(
   userComment: string,
   enrichedComment: string,
@@ -228,19 +137,6 @@ export function buildAdjustOutdoorResponsesPrompt(
     "Preserve existing vegetation in the background.",
     "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation.",
     "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, subtle sensor grain (ISO 200), natural corner vignetting. Photo-realistic outdoor photograph. No text, watermarks, or logos.",
-  ].join(" ");
-}
-
-export function buildAdjustOutdoorFluxPrompt(
-  userComment: string,
-  enrichedComment: string,
-): string {
-  return [
-    `CHANGE: ${enrichedComment}.`,
-    "Keep ALL existing outdoor furniture and decoration exactly as-is except for this change.",
-    "Every piece must appear firmly grounded on the ground with visible contact shadows.",
-    "Ground surfaces, vegetation, camera angle, and lighting unchanged.",
-    "Photo-realistic outdoor photograph, DSLR full-frame 16-35mm f/8, deep DOF, sharp focus, subtle film grain.",
   ].join(" ");
 }
 
