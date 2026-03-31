@@ -221,7 +221,7 @@ export default function MesBiensPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
             <h1 className="text-2xl font-semibold text-foreground tracking-tight">Mes biens</h1>
-            <p className="text-sm text-muted font-light mt-1">
+            <p className="text-sm text-muted font-normal mt-1">
               {properties.length} bien{properties.length !== 1 ? "s" : ""} enregistré{properties.length !== 1 ? "s" : ""}
             </p>
           </div>
@@ -252,7 +252,7 @@ export default function MesBiensPage() {
                   placeholder="12 rue de la Paix, 75002 Paris"
                   aria-expanded={showSuggestions && suggestions.length > 0}
                   aria-autocomplete="list"
-                  className="w-full text-sm font-light bg-background border border-foreground/10 rounded-xl px-3 py-2 min-h-[44px] text-foreground placeholder:text-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                  className="w-full text-sm font-normal bg-background border border-foreground/10 rounded-xl px-3 py-2 min-h-[44px] text-foreground placeholder:text-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                 />
                 {showSuggestions && suggestions.length > 0 && (
                   <div role="listbox" className="absolute top-full left-0 right-0 z-10 mt-1 bg-background border border-foreground/10 rounded-xl shadow-lg overflow-hidden">
@@ -275,7 +275,7 @@ export default function MesBiensPage() {
                 <select
                   value={newType}
                   onChange={(e) => setNewType(e.target.value)}
-                  className="w-full text-sm font-light bg-background border border-foreground/10 rounded-xl px-3 py-2 min-h-[44px] text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                  className="w-full text-sm font-normal bg-background border border-foreground/10 rounded-xl px-3 py-2 min-h-[44px] text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                 >
                   <option value="">Sélectionner</option>
                   {Object.entries(TYPE_LABELS).map(([key, label]) => (
@@ -291,7 +291,7 @@ export default function MesBiensPage() {
                   value={newSurface}
                   onChange={(e) => setNewSurface(e.target.value)}
                   placeholder="65"
-                  className="w-full text-sm font-light bg-background border border-foreground/10 rounded-xl px-3 py-2 min-h-[44px] text-foreground placeholder:text-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                  className="w-full text-sm font-normal bg-background border border-foreground/10 rounded-xl px-3 py-2 min-h-[44px] text-foreground placeholder:text-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                 />
               </div>
 
@@ -302,7 +302,7 @@ export default function MesBiensPage() {
                   value={newRooms}
                   onChange={(e) => setNewRooms(e.target.value)}
                   placeholder="3"
-                  className="w-full text-sm font-light bg-background border border-foreground/10 rounded-xl px-3 py-2 min-h-[44px] text-foreground placeholder:text-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                  className="w-full text-sm font-normal bg-background border border-foreground/10 rounded-xl px-3 py-2 min-h-[44px] text-foreground placeholder:text-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                 />
               </div>
 
@@ -313,7 +313,7 @@ export default function MesBiensPage() {
                   value={newPrice}
                   onChange={(e) => setNewPrice(e.target.value)}
                   placeholder="250000"
-                  className="w-full text-sm font-light bg-background border border-foreground/10 rounded-xl px-3 py-2 min-h-[44px] text-foreground placeholder:text-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                  className="w-full text-sm font-normal bg-background border border-foreground/10 rounded-xl px-3 py-2 min-h-[44px] text-foreground placeholder:text-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                 />
               </div>
             </div>
@@ -352,7 +352,7 @@ export default function MesBiensPage() {
         {/* Property list */}
         {properties.length === 0 && !showCreateForm ? (
           <div className="text-center py-16">
-            <p className="text-sm text-muted font-light">Aucun bien enregistré.</p>
+            <p className="text-sm text-muted font-normal">Aucun bien enregistré.</p>
             <p className="text-xs text-muted/60 font-light mt-2">
               Ajoutez vos biens pour générer des visuels meublés et créer vos dossiers de pré-commercialisation.
             </p>
@@ -373,7 +373,7 @@ export default function MesBiensPage() {
                 placeholder="Rechercher par adresse ou ville..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1 px-4 py-2.5 min-h-[44px] border border-foreground/10 rounded-xl text-sm font-light focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
+                className="flex-1 px-4 py-2.5 min-h-[44px] border border-foreground/10 rounded-xl text-sm font-normal focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
               />
               <button
                 onClick={() => setSortBy(s => s === "recent" ? "ville" : "recent")}
@@ -386,7 +386,7 @@ export default function MesBiensPage() {
 
           {filteredProperties.length === 0 && searchQuery && (
             <div className="text-center py-10">
-              <p className="text-sm text-muted font-light">Aucun bien ne correspond à votre recherche.</p>
+              <p className="text-sm text-muted font-normal">Aucun bien ne correspond à votre recherche.</p>
               <button
                 onClick={() => setSearchQuery("")}
                 className="text-xs text-sage font-medium mt-3 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded-sm"

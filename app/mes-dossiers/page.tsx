@@ -108,7 +108,7 @@ export default function MesDossiersPage() {
     }
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-sm text-muted font-light">Redirection en cours...</p>
+        <p className="text-sm text-muted font-normal">Redirection en cours...</p>
       </div>
     );
   }
