@@ -96,7 +96,7 @@ export default function MerchantMode() {
   const [photoEntries, setPhotoEntries] = useState<PhotoEntry[]>([]);
 
   // Global style
-  const [globalStyle, setGlobalStyle] = useState<StyleOption | null>(null);
+  const [globalStyles, setGlobalStyles] = useState<string[]>([]);
   const [customPrompt, setCustomPrompt] = useState("");
 
   // Dossier state
@@ -260,7 +260,7 @@ export default function MerchantMode() {
     }
 
     const allHaveOverride = photoEntries.every((e) => e.styleOverride !== null);
-    if (!allHaveOverride && !globalStyle && !customPrompt.trim()) {
+    if (!allHaveOverride && globalStyles.length === 0 && !customPrompt.trim()) {
       setError("Choisissez un style global ou un style pour chaque photo.");
       return;
     }
@@ -281,7 +281,7 @@ export default function MerchantMode() {
           bienSurface: bienSurface ? Number(bienSurface) : null,
           bienPrix: bienPrix ? Number(bienPrix) : null,
           bienType: bienType || null,
-          globalStyleId: globalStyle?.id || "custom",
+          globalStyleId: globalStyles[0] || "custom",
           latitude: enrichedLat,
           longitude: enrichedLon,
           ville: enrichedCity || null,
@@ -322,7 +322,7 @@ export default function MerchantMode() {
             image: p.base64,
             roomLabel: p.entry?.roomLabel || `Photo ${p.index + 1}`,
             roomTypeId: p.entry?.roomTypeId || null,
-            styleId: p.entry?.styleOverride?.id || globalStyle?.id || "custom",
+            styleId: p.entry?.styleOverride?.id || globalStyles[0] || "custom",
             customPrompt: p.entry?.customPromptOverride || customPrompt || "",
             isOutdoor: p.entry?.isOutdoor || false,
             outdoorStyleId: p.entry?.outdoorStyleId || null,
@@ -1065,9 +1065,17 @@ export default function MerchantMode() {
           </p>
 
           <StylePicker
-            selectedStyle={globalStyle}
+            selectedStyles={globalStyles}
             customPrompt={customPrompt}
-            onStyleSelect={setGlobalStyle}
+            onStyleToggle={(styleId) => {
+              setGlobalStyles((prev) => {
+                if (prev.includes(styleId)) {
+                  if (prev.length === 1) return prev;
+                  return prev.filter((id) => id !== styleId);
+                }
+                return [...prev, styleId];
+              });
+            }}
             onCustomPromptChange={setCustomPrompt}
             isOutdoor={false}
             selectedOutdoorStyle={null}
@@ -1075,7 +1083,7 @@ export default function MerchantMode() {
           />
 
           {/* Navigation */}
-          {(globalStyle || customPrompt.trim()) && (
+          {(globalStyles.length > 0 || customPrompt.trim()) && (
             <div className="flex items-center gap-3 pt-4">
               <button
                 onClick={() => {
@@ -1165,7 +1173,7 @@ export default function MerchantMode() {
             {/* Style summary */}
             <div className="border-t border-foreground/5 pt-4">
               <span className="text-sm text-foreground font-medium">
-                Style : {globalStyle?.name || "Personnalisé"}
+                Style : {globalStyles.length > 0 ? globalStyles.map((id) => STYLES.find((s) => s.id === id)?.name || id).join(", ") : "Personnalisé"}
               </span>
             </div>
           </div>

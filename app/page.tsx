@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import StepIndicator from "@/components/StepIndicator";
 import UploadZone from "@/components/UploadZone";
-import StylePicker, { StyleOption, STYLES } from "@/components/StylePicker";
+import StylePicker, { STYLES } from "@/components/StylePicker";
 import ImageComparator from "@/components/ImageComparator";
 import RefineModal from "@/components/RefineModal";
 import VersionSelector from "@/components/VersionSelector";
@@ -895,10 +895,10 @@ export default function Home() {
   const canGenerate =
     files.length > 0 &&
     (files.length > 1
-      ? perPhotoStyles.size === files.length && Array.from(perPhotoStyles.values()).every(v => v !== "")
+      ? perPhotoStyles.size === files.length && (Array.from(perPhotoStyles.values()) as string[][]).every((v) => v.length > 0)
       : isOutdoor
         ? selectedOutdoorStyle !== null
-        : selectedStyle !== null || customPrompt.trim().length > 0);
+        : selectedStyles.length > 0 || (selectedStyles.includes("custom") && customPrompt.trim().length > 0));
 
   return (
     <div className="min-h-screen bg-background">
@@ -1293,7 +1293,7 @@ export default function Home() {
                   selectedRoomType={selectedRoomType}
                   onSelect={setSelectedRoomType}
                 />
-                {!selectedRoomType && selectedStyle && (
+                {!selectedRoomType && selectedStyles.length > 0 && (
                   <p className="text-xs text-sage font-light text-center mt-2">
                     Sélectionnez un type de pièce pour continuer
                   </p>
@@ -1319,13 +1319,14 @@ export default function Home() {
             </h3>
 
             <StylePicker
-              selectedStyle={selectedStyle}
+              selectedStyles={selectedStyles}
               customPrompt={customPrompt}
-              onStyleSelect={setSelectedStyle}
+              onStyleToggle={handleStyleToggle}
               onCustomPromptChange={setCustomPrompt}
               isOutdoor={isOutdoor}
               selectedOutdoorStyle={selectedOutdoorStyle}
               onSelectOutdoorStyle={setSelectedOutdoorStyle}
+              disabled={isGenerating}
             />
           </div>
 
@@ -1337,9 +1338,26 @@ export default function Home() {
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {files.map((file, index) => {
-                    const photoStyle = perPhotoStyles.get(index) || "";
-                    const isCustom = photoStyle === "custom";
+                    const photoStyleIds = perPhotoStyles.get(index) || [];
+                    const hasCustom = photoStyleIds.includes("custom");
                     const isPhotoOutdoor = perPhotoOutdoor.get(index) || false;
+
+                    const togglePhotoStyle = (styleId: string) => {
+                      const m = new Map<number, string[]>(perPhotoStyles);
+                      const current: string[] = m.get(index) || [];
+                      if (current.includes(styleId)) {
+                        if (current.length === 1) return; // At least 1 style
+                        m.set(index, current.filter((id: string) => id !== styleId));
+                      } else {
+                        m.set(index, [...current, styleId]);
+                      }
+                      setPerPhotoStyles(m);
+                    };
+
+                    const styleOptions = isPhotoOutdoor
+                      ? OUTDOOR_STYLE_LIST.map((s) => ({ id: s.id, name: s.label }))
+                      : STYLES.map((s) => ({ id: s.id, name: s.name }));
+
                     return (
                       <div key={`per-photo-${index}-${file.name}`} className="border border-foreground/5 rounded-2xl p-4 space-y-3">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -1405,38 +1423,45 @@ export default function Home() {
                           </select>
                         </div>
 
-                        {/* Style */}
+                        {/* Styles (multi-select checkboxes) */}
                         <div>
-                          <label className="text-[11px] text-muted font-light block mb-1">Style</label>
-                          <select
-                            value={photoStyle}
-                            onChange={(e) => {
-                              const m = new Map(perPhotoStyles);
-                              if (e.target.value) m.set(index, e.target.value); else m.delete(index);
-                              setPerPhotoStyles(m);
-                              if (e.target.value !== "custom") {
-                                const cm = new Map(perPhotoCustomPrompts);
-                                cm.delete(index);
-                                setPerPhotoCustomPrompts(cm);
-                              }
-                            }}
-                            className="w-full text-xs font-light bg-foreground/5 border-0 rounded-lg px-3 py-2 text-foreground min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
-                          >
-                            <option value="">Choisir un style</option>
-                            {isPhotoOutdoor
-                              ? OUTDOOR_STYLE_LIST.map((s) => (
-                                  <option key={s.id} value={s.id}>{s.label}</option>
-                                ))
-                              : STYLES.map((s) => (
-                                  <option key={s.id} value={s.id}>{s.name}</option>
-                                ))
-                            }
-                            <option value="custom">Personnalisé</option>
-                          </select>
+                          <label className="text-[11px] text-muted font-light block mb-1">
+                            Styles {photoStyleIds.length > 1 && <span className="text-foreground/60">({photoStyleIds.length} sélectionnés)</span>}
+                          </label>
+                          <div className="flex flex-wrap gap-1.5">
+                            {styleOptions.map((s) => {
+                              const checked = photoStyleIds.includes(s.id);
+                              return (
+                                <button
+                                  key={s.id}
+                                  type="button"
+                                  onClick={() => togglePhotoStyle(s.id)}
+                                  className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all ${
+                                    checked
+                                      ? "bg-foreground text-background"
+                                      : "bg-foreground/5 text-muted hover:bg-foreground/10"
+                                  }`}
+                                >
+                                  {s.name}
+                                </button>
+                              );
+                            })}
+                            <button
+                              type="button"
+                              onClick={() => togglePhotoStyle("custom")}
+                              className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all border border-dashed ${
+                                hasCustom
+                                  ? "bg-foreground text-background border-foreground"
+                                  : "bg-transparent text-muted border-foreground/20 hover:bg-foreground/5"
+                              }`}
+                            >
+                              Personnalisé
+                            </button>
+                          </div>
                         </div>
 
                         {/* Custom prompt */}
-                        {isCustom && (
+                        {hasCustom && (
                           <textarea
                             value={perPhotoCustomPrompts.get(index) || ""}
                             onChange={(e) => {
@@ -1497,7 +1522,7 @@ export default function Home() {
             <div id="step-generate" className="text-center mb-8 animate-fade-in-up sticky bottom-6 z-40">
               <button
                 onClick={handleGenerate}
-                disabled={isGenerating || (files.length <= 1 && !isOutdoor && selectedStyle !== null && !selectedRoomType)}
+                disabled={isGenerating || (files.length <= 1 && !isOutdoor && selectedStyles.length > 0 && !selectedRoomType)}
                 className="inline-flex items-center gap-3 bg-foreground text-background px-10 py-4 rounded-full font-medium text-base hover:bg-foreground/85 transition-all disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 shadow-sm"
               >
                 {isGenerating ? (
@@ -1506,11 +1531,28 @@ export default function Home() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                     </svg>
-                    Génération en cours… ({currentProcessing + 1}/{files.length})
+                    Génération en cours… ({results.length + 1}/{(() => {
+                      if (files.length > 1) {
+                        return (Array.from(perPhotoStyles.values()) as string[][]).reduce((sum, v) => sum + v.length, 0) || files.length;
+                      }
+                      return isOutdoor ? files.length : files.length * selectedStyles.length;
+                    })()})
                   </>
                 ) : (
                   <>
-                    Générer la visualisation
+                    {(() => {
+                      const nbPhotos = Math.max(1, files.length);
+                      const perPhotoStyleValues = Array.from(perPhotoStyles.values()) as string[][];
+                      const nbStyles = files.length > 1
+                        ? Math.max(...perPhotoStyleValues.map((v) => v.length), 1)
+                        : (isOutdoor ? 1 : selectedStyles.length);
+                      const totalCredits: number = files.length > 1
+                        ? perPhotoStyleValues.reduce((sum, v) => sum + v.length, 0)
+                        : nbPhotos * nbStyles;
+                      return totalCredits > 1
+                        ? `Générer — ${totalCredits} crédits`
+                        : "Générer la visualisation";
+                    })()}
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
@@ -1681,6 +1723,7 @@ export default function Home() {
                         <ImageComparator
                           originalUrl={result.originalUrl}
                           generatedUrl={displayUrl}
+                          styleLabel={results.length > 1 ? result.styleName : undefined}
                           model={resultVersions[activeIdx]?.model || result.model}
                         />
                       )}

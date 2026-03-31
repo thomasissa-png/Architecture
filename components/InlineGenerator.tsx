@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
-import StylePicker, { StyleOption } from "@/components/StylePicker";
+import StylePicker, { STYLES } from "@/components/StylePicker";
 import ImageComparator from "@/components/ImageComparator";
 import UploadZone from "@/components/UploadZone";
 
@@ -127,7 +127,7 @@ export default function InlineGenerator({
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
   // Step 2: style
-  const [selectedStyle, setSelectedStyle] = useState<StyleOption | null>(null);
+  const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
   const [customPrompt, setCustomPrompt] = useState("");
   const [selectedOutdoorStyle, setSelectedOutdoorStyle] = useState<string | null>(null);
 
@@ -174,12 +174,17 @@ export default function InlineGenerator({
   // ── Get prompts for the selected style ──
 
   const getPrompts = useCallback((): { surfacePrompt: string; furniturePrompt: string; styleId: string } => {
-    if (selectedStyle) {
-      return {
-        surfacePrompt: selectedStyle.surfacePrompt,
-        furniturePrompt: selectedStyle.furniturePrompt,
-        styleId: selectedStyle.id,
-      };
+    // Use first selected style (InlineGenerator operates in single-style mode for simplicity)
+    const firstStyleId = selectedStyles[0];
+    if (firstStyleId && firstStyleId !== "custom") {
+      const style = STYLES.find((s) => s.id === firstStyleId);
+      if (style) {
+        return {
+          surfacePrompt: style.surfacePrompt,
+          furniturePrompt: style.furniturePrompt,
+          styleId: style.id,
+        };
+      }
     }
     // Custom prompt: same text for both passes
     return {
@@ -187,7 +192,7 @@ export default function InlineGenerator({
       furniturePrompt: customPrompt,
       styleId: "custom",
     };
-  }, [selectedStyle, customPrompt]);
+  }, [selectedStyles, customPrompt]);
 
   // ── Generate for all selected photos ──
 
@@ -451,7 +456,7 @@ export default function InlineGenerator({
   // ── Derived state ──
 
   const photosWithInput = photos.filter((p) => p.input_image_key);
-  const hasStyleSelected = selectedStyle !== null || customPrompt.trim().length > 0;
+  const hasStyleSelected = selectedStyles.length > 0 || customPrompt.trim().length > 0;
   const selectedCount = selectedPhotoIds.size;
   const successCount = results.filter((r: GenerationResult) => r.status === "success").length;
   const errorCount = results.filter((r: GenerationResult) => r.status === "error").length;
@@ -620,9 +625,17 @@ export default function InlineGenerator({
             </button>
 
             <StylePicker
-              selectedStyle={selectedStyle}
+              selectedStyles={selectedStyles}
               customPrompt={customPrompt}
-              onStyleSelect={setSelectedStyle}
+              onStyleToggle={(styleId) => {
+                setSelectedStyles((prev) => {
+                  if (prev.includes(styleId)) {
+                    if (prev.length === 1) return prev;
+                    return prev.filter((id) => id !== styleId);
+                  }
+                  return [...prev, styleId];
+                });
+              }}
               onCustomPromptChange={setCustomPrompt}
               isOutdoor={false}
               selectedOutdoorStyle={selectedOutdoorStyle}
