@@ -187,7 +187,7 @@ export default function MarchandPage() {
         </div>
       </section>
 
-      {/* Galerie multi-styles — a activer quand 3 images reelles distinctes seront disponibles dans public/demo/ */}
+      {/* Galerie multi-styles — à activer quand 3 images réelles distinctes seront disponibles dans public/demo/ */}
 
       {/* Social proof line */}
       <div className="flex flex-wrap justify-center gap-4 sm:gap-8 text-xs text-muted font-light py-6">
