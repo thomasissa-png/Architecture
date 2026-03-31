@@ -25,11 +25,13 @@ interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   callbackUrl?: string;
+  /** Callback appelé après connexion réussie (credentials). Permet au parent de réagir sans reload. */
+  onAuthSuccess?: () => void;
 }
 
 type Mode = "login" | "register";
 
-export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalProps) {
+export default function AuthModal({ isOpen, onClose, callbackUrl, onAuthSuccess }: AuthModalProps) {
   const isPurchaseContext = callbackUrl?.includes("?buy=") || callbackUrl?.includes("&buy=");
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
@@ -187,12 +189,18 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
         return;
       }
 
+      // Si un callback post-auth est fourni, l'appeler sans recharger la page
+      if (onAuthSuccess) {
+        onAuthSuccess();
+        return;
+      }
+
       window.location.href = callbackUrl || window.location.pathname;
     } catch {
       setError("Erreur de connexion. Réessayez.");
       setIsLoading(false);
     }
-  }, [email, password, name, mode, callbackUrl]);
+  }, [email, password, name, mode, callbackUrl, onAuthSuccess]);
 
   if (!isOpen) return null;
 
@@ -240,7 +248,7 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
                 ? "Créez votre compte pour finaliser votre achat."
                 : mode === "login"
                   ? "Retrouvez vos créations et vos visuels."
-                  : "Gratuit — 3 visuels offerts sans CB."}
+                  : "Gratuit — 2 visuels offerts sans CB."}
             </p>
           </div>
 

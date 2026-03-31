@@ -140,6 +140,10 @@ export default function Home() {
   // Auto-open auth modal when redirected from a protected route (middleware adds ?callbackUrl=)
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authCallbackUrl, setAuthCallbackUrl] = useState<string | undefined>(undefined);
+
+  // Changement 2 — Compte obligatoire avant génération
+  // pendingGeneration = true quand l'utilisateur non connecté clique sur Générer
+  const [pendingGeneration, setPendingGeneration] = useState(false);
   useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
@@ -202,6 +206,28 @@ export default function Home() {
       setLoadingPack(null);
     }
   }
+
+  // Changement 2 — Ref pour la dernière version de handleGenerate (évite stale closure dans useEffect)
+  const handleGenerateRef = useRef<() => void>(() => {});
+
+  // Changement 2 — Callback après connexion réussie (credentials)
+  // Ferme le modal et laisse le useEffect ci-dessous relancer la génération
+  const handleAuthSuccess = useCallback(() => {
+    setAuthModalOpen(false);
+  }, []);
+
+  // Changement 2 — Relancer la génération après auth réussie
+  // Pour credentials : la session se met à jour sans reload, pendingGeneration est en mémoire
+  // Pour OAuth : la page recharge, les fichiers sont perdus — pas de relance automatique
+  useEffect(() => {
+    if (pendingGeneration && authStatus === "authenticated" && files.length > 0) {
+      setPendingGeneration(false);
+      // Petit délai pour laisser le modal se fermer et le state se stabiliser
+      setTimeout(() => {
+        handleGenerateRef.current();
+      }, 300);
+    }
+  }, [authStatus, pendingGeneration, files.length]);
 
   // F4 — Pro mode state (ex Mode Marchand)
   const [isMerchantMode, setIsMerchantMode] = useState(false);
@@ -302,6 +328,13 @@ export default function Home() {
 
   const handleGenerate = useCallback(async () => {
     if (files.length === 0) return;
+
+    // Changement 2 — Compte obligatoire : si pas connecté, ouvrir AuthModal
+    if (authStatus !== "authenticated") {
+      setPendingGeneration(true);
+      setAuthModalOpen(true);
+      return;
+    }
 
     // Resolve prompts based on mode (indoor vs outdoor)
     let surfacePrompt: string;
@@ -505,7 +538,10 @@ export default function Home() {
         scrollToElement("step-results");
       }
     }
-  }, [files, selectedStyle, customPrompt, withFurniture, filePreviewUrls, isOutdoor, selectedOutdoorStyle, outdoorSubtype, selectedRoomType, perPhotoStyles, perPhotoRoomTypes, perPhotoCustomPrompts, perPhotoOutdoor]);
+  }, [files, selectedStyle, customPrompt, withFurniture, filePreviewUrls, isOutdoor, selectedOutdoorStyle, outdoorSubtype, selectedRoomType, perPhotoStyles, perPhotoRoomTypes, perPhotoCustomPrompts, perPhotoOutdoor, authStatus]);
+
+  // Changement 2 — Garder la ref à jour pour le useEffect post-auth
+  handleGenerateRef.current = handleGenerate;
 
   const handleRetry = useCallback(() => {
     setResults([]);
@@ -563,6 +599,8 @@ export default function Home() {
     setIsOutdoor(false);
     setOutdoorSubtype("terrasse");
     setSelectedOutdoorStyle(null);
+    // Reset Changement 2 state
+    setPendingGeneration(false);
   };
 
   const handleOpenRefineModal = useCallback((resultIndex: number) => {
@@ -958,7 +996,7 @@ export default function Home() {
             </svg>
           </a>
           <p className="text-sm text-foreground/60 font-normal mt-3">
-            3 visuels offerts · Sans carte bancaire · <a href="#pricing" className="underline hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm">Tarifs à partir de 9,90 €</a>
+            2 visuels offerts · Sans carte bancaire · <a href="#pricing" className="underline hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm">Tarifs à partir de 9,90 €</a>
           </p>
 
           {/* Persona cards — 3 profils */}
@@ -1040,7 +1078,7 @@ export default function Home() {
               Mettez en scène votre espace
             </h2>
             <p className="text-muted font-normal">
-              {session?.user ? "Générez vos visuels meublés" : "3 visuels gratuits · Sans créer de compte"}
+              {session?.user ? "Générez vos visuels meublés" : "2 visuels gratuits · Sans créer de compte"}
             </p>
           </div>
 
@@ -1714,7 +1752,7 @@ export default function Home() {
               Tarifs simples et transparents
             </h2>
             <p className="text-muted font-normal">
-              Essayez gratuitement, 3 visuels offerts sans carte bancaire
+              Essayez gratuitement, 2 visuels offerts sans carte bancaire
             </p>
           </div>
 
@@ -1723,7 +1761,7 @@ export default function Home() {
             <div className="flex flex-col border border-foreground/8 rounded-2xl p-7 text-center bg-background hover:border-foreground/15 transition-colors">
               <p className="text-xs text-muted font-medium uppercase tracking-widest mb-4">Découverte</p>
               <p className="text-4xl font-bold text-foreground mb-0.5">0 €</p>
-              <p className="text-xs text-muted font-light mb-1">3 visuels · 0 €/visuel</p>
+              <p className="text-xs text-muted font-light mb-1">2 visuels · 0 €/visuel</p>
               <p className="text-[11px] text-muted/60 font-light mb-6">Sans carte bancaire</p>
               <ul className="text-sm text-muted font-normal space-y-2.5 text-left mb-8 flex-1">
                 <li className="flex items-start gap-2.5">
@@ -1857,11 +1895,16 @@ export default function Home() {
       {/* Footer */}
       <Footer currentPage="/" />
 
-      {/* Auth modal — auto-opened when redirected from protected route */}
+      {/* Auth modal — auto-opened when redirected from protected route ou avant génération */}
       <AuthModal
         isOpen={authModalOpen}
-        onClose={() => setAuthModalOpen(false)}
+        onClose={() => {
+          setAuthModalOpen(false);
+          // Si l'utilisateur ferme le modal sans se connecter, annuler la génération en attente
+          setPendingGeneration(false);
+        }}
         callbackUrl={authCallbackUrl}
+        onAuthSuccess={handleAuthSuccess}
       />
     </div>
   );
