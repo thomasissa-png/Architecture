@@ -13,6 +13,7 @@ import { ROOM_TYPE_LIST } from "@/lib/room-types";
 import { OUTDOOR_SUBTYPE_LIST } from "@/lib/outdoor-subtypes";
 import { processImage, isLikelyInterior } from "@/lib/image-utils";
 import { OUTDOOR_STYLES, OUTDOOR_STYLE_LIST } from "@/lib/outdoor-styles";
+import { useQueueStatus } from "@/lib/hooks/useQueueStatus";
 import { useSession } from "next-auth/react";
 import AuthModal from "@/components/AuthModal";
 import MerchantMode from "@/components/MerchantMode";
@@ -141,6 +142,10 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [generationElapsed, setGenerationElapsed] = useState(0);
   const [preprocessWarnings, setPreprocessWarnings] = useState<string[]>([]);
+
+  // Async queue polling (when generation falls back to background processing)
+  const { status: queueStatus, isPolling: isQueuePolling, startPolling: startQueuePolling, clearQueue } = useQueueStatus();
+  const [queueToast, setQueueToast] = useState<{ type: "success" | "error" | "info"; message: string } | null>(null);
 
   // Auto-open auth modal when redirected from a protected route (middleware adds ?callbackUrl=)
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -292,6 +297,33 @@ export default function Home() {
       setOutdoorSubtype("terrasse");
     }
   }, [outdoorSubtype]);
+
+  // Queue status watcher — notify user when background generation completes or fails
+  useEffect(() => {
+    if (!queueStatus) return;
+    if (queueStatus.status === "done") {
+      setQueueToast({
+        type: "success",
+        message: "Votre visuel est prêt ! Consultez votre galerie.",
+      });
+    } else if (queueStatus.status === "failed") {
+      const reason = queueStatus.abandonReason;
+      let msg = "La génération a échoué.";
+      if (reason === "timeout") msg = "La génération a expiré après 45 minutes.";
+      else if (reason === "max_retries") msg = "La génération a échoué après plusieurs tentatives.";
+      else if (reason === "non_transient") msg = "La génération a rencontré une erreur définitive.";
+      if (queueStatus.creditRefunded) msg += " Votre crédit a été remboursé.";
+      setQueueToast({ type: "error", message: msg });
+    }
+  }, [queueStatus]);
+
+  // Auto-dismiss queue toast after 8s
+  useEffect(() => {
+    if (queueToast) {
+      const t = setTimeout(() => setQueueToast(null), 8000);
+      return () => clearTimeout(t);
+    }
+  }, [queueToast]);
 
   // Timer for generation elapsed time
   useEffect(() => {
@@ -558,6 +590,7 @@ export default function Home() {
     const MAX_CONCURRENT = 2;
     const allResults: GenerationResult[] = [];
     let hasPartialError = false;
+    let hasQueued = false;
 
     for (let batch = 0; batch < jobs.length; batch += MAX_CONCURRENT) {
       if (controller.signal.aborted) break;
@@ -597,6 +630,16 @@ export default function Home() {
           }
 
           const data = await response.json();
+
+          // Handle async queue fallback (202 — generation queued for background processing)
+          if (data.queued && data.queueId) {
+            startQueuePolling(data.queueId);
+            // Throw a special error so the batch handler knows this isn't a failure
+            const queueError = new Error("__QUEUED__");
+            queueError.name = "QueuedError";
+            throw queueError;
+          }
+
           return {
             originalUrl: filePreviewUrls[job.img.fileIndex],
             generatedUrl: data.image,
@@ -615,6 +658,11 @@ export default function Home() {
           setResults((prev) => [...prev, result.value]);
         } else {
           if (result.reason?.name === "AbortError") continue;
+          // Queued jobs are not errors — they're being processed in the background
+          if (result.reason?.name === "QueuedError") {
+            hasQueued = true;
+            continue;
+          }
           hasPartialError = true;
           // For partial failures, show error but continue with other results
           if (allResults.length === 0 && batch + MAX_CONCURRENT >= jobs.length) {
@@ -631,6 +679,18 @@ export default function Home() {
 
     if (!controller.signal.aborted) {
       setIsGenerating(false);
+      if (hasQueued && allResults.length === 0) {
+        // All jobs were queued — show info message
+        setQueueToast({
+          type: "info",
+          message: "Le serveur est très sollicité. Votre visuel sera prêt sous peu dans votre galerie.",
+        });
+      } else if (hasQueued && allResults.length > 0) {
+        setQueueToast({
+          type: "info",
+          message: "Certains visuels sont en file d'attente. Ils apparaîtront dans votre galerie.",
+        });
+      }
       if (hasPartialError && allResults.length > 0) {
         setError(`${allResults.length}/${jobs.length} génération${jobs.length > 1 ? "s" : ""} réussie${allResults.length > 1 ? "s" : ""}. Certains styles ont échoué.`);
       }
@@ -645,7 +705,7 @@ export default function Home() {
         scrollToElement("step-results");
       }
     }
-  }, [files, selectedStyles, customPrompt, withFurniture, filePreviewUrls, isOutdoor, selectedOutdoorStyle, outdoorSubtype, selectedRoomType, perPhotoStyles, perPhotoRoomTypes, perPhotoCustomPrompts, perPhotoOutdoor, authStatus]);
+  }, [files, selectedStyles, customPrompt, withFurniture, filePreviewUrls, isOutdoor, selectedOutdoorStyle, outdoorSubtype, selectedRoomType, perPhotoStyles, perPhotoRoomTypes, perPhotoCustomPrompts, perPhotoOutdoor, authStatus, startQueuePolling]);
 
   // Changement 2 — Garder la ref à jour pour le useEffect post-auth
   handleGenerateRef.current = handleGenerate;
@@ -1603,6 +1663,79 @@ export default function Home() {
             </div>
           )}
 
+          {/* Queue polling banner */}
+          {isQueuePolling && queueStatus && queueStatus.status !== "done" && queueStatus.status !== "failed" && (
+            <div className="mb-8 bg-sage/5 border border-sage/20 rounded-2xl p-5 text-center animate-fade-in">
+              <div className="flex justify-center gap-1 mb-3">
+                <div className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                <div className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                <div className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+              </div>
+              <p className="text-sm text-foreground font-medium mb-1">
+                Votre visuel est en cours de génération
+              </p>
+              <p className="text-xs text-muted font-light">
+                {queueStatus.status === "processing"
+                  ? "Traitement en cours… Le résultat apparaîtra dans votre galerie."
+                  : `En file d'attente (tentative ${(queueStatus as { retryCount: number }).retryCount + 1})… Le résultat apparaîtra dans votre galerie.`}
+              </p>
+              <a
+                href="/ma-galerie"
+                className="inline-flex items-center gap-1.5 mt-3 text-xs text-sage font-medium hover:underline transition-colors"
+              >
+                Voir ma galerie
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </a>
+            </div>
+          )}
+
+          {/* Queue done banner */}
+          {queueStatus && queueStatus.status === "done" && (
+            <div className="mb-8 bg-green-50/50 border border-green-200/60 rounded-2xl p-5 text-center animate-fade-in">
+              <p className="text-sm text-foreground font-medium mb-1">
+                Votre visuel est prêt !
+              </p>
+              <div className="flex items-center justify-center gap-3 mt-3">
+                <a
+                  href="/ma-galerie"
+                  className="text-xs bg-sage text-white px-4 py-2 rounded-full font-medium hover:bg-sage/85 transition-colors"
+                >
+                  Voir dans ma galerie
+                </a>
+                <button
+                  onClick={clearQueue}
+                  className="text-xs text-muted hover:text-foreground transition-colors"
+                >
+                  Fermer
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Queue failed banner */}
+          {queueStatus && queueStatus.status === "failed" && (
+            <div className="mb-8 bg-red-50/50 border border-red-200/60 rounded-2xl p-5 text-center animate-fade-in">
+              <p className="text-sm text-red-600/80 font-medium mb-1">
+                {queueStatus.abandonReason === "timeout"
+                  ? "La génération a expiré après 45 minutes."
+                  : queueStatus.abandonReason === "max_retries"
+                  ? "La génération a échoué après plusieurs tentatives."
+                  : "La génération a rencontré une erreur."}
+              </p>
+              {queueStatus.creditRefunded && (
+                <p className="text-xs text-muted font-light">Votre crédit a été remboursé automatiquement.</p>
+              )}
+              <button
+                onClick={clearQueue}
+                className="mt-3 text-xs text-red-400 underline underline-offset-4 hover:text-red-600 transition-colors"
+              >
+                Fermer
+              </button>
+            </div>
+          )}
+
           {/* Error */}
           {error && error.includes("Plus de visuels") ? (
             <div className="mb-12 bg-sage/5 border border-sage/20 rounded-2xl p-6 text-center">
@@ -2025,6 +2158,31 @@ export default function Home() {
         callbackUrl={authCallbackUrl}
         onAuthSuccess={handleAuthSuccess}
       />
+
+      {/* Queue toast notification */}
+      {queueToast && (
+        <div
+          className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 text-white text-xs font-medium px-5 py-3 rounded-full shadow-lg animate-fade-in-up flex items-center gap-2 ${
+            queueToast.type === "success"
+              ? "bg-green-600/90"
+              : queueToast.type === "error"
+              ? "bg-red-500/90"
+              : "bg-sage/90"
+          }`}
+        >
+          <span>{queueToast.message}</span>
+          {queueToast.type === "success" && (
+            <a href="/ma-galerie" className="underline underline-offset-2 font-semibold ml-1">
+              Galerie
+            </a>
+          )}
+          <button onClick={() => setQueueToast(null)} className="ml-2 opacity-70 hover:opacity-100">
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
     </div>
   );
 }

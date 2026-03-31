@@ -9,6 +9,7 @@
 import { useSession } from "next-auth/react";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useScrollLock } from "@/lib/hooks/useScrollLock";
+import { useQueueStatus } from "@/lib/hooks/useQueueStatus";
 import AuthModal from "@/components/AuthModal";
 import Header from "@/components/Header";
 import { STYLE_LABELS, translateRoomLabel } from "@/lib/constants";
@@ -61,6 +62,7 @@ interface Property {
 
 export default function GaleriePage() {
   const { data: session, status: authStatus } = useSession();
+  const { status: queueStatus, isPolling: isQueuePolling } = useQueueStatus();
   const [photos, setPhotos] = useState<UserPhoto[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -150,6 +152,13 @@ export default function GaleriePage() {
       fetchProperties();
     }
   }, [session, fetchPhotos, fetchProperties]);
+
+  // Auto-refresh gallery when a queued generation completes
+  useEffect(() => {
+    if (queueStatus && queueStatus.status === "done" && session?.user?.id) {
+      fetchPhotos();
+    }
+  }, [queueStatus, session, fetchPhotos]);
 
   const handleAssociate = async (photoId: string, propertyId: string) => {
     try {
@@ -311,6 +320,23 @@ export default function GaleriePage() {
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4" data-testid="galerie-grid">
+            {/* Skeleton card for queued generation */}
+            {isQueuePolling && queueStatus && queueStatus.status !== "done" && queueStatus.status !== "failed" && (
+              <div className="flex flex-col">
+                <div className="relative bg-foreground/[0.02] rounded-2xl overflow-hidden border border-sage/20 animate-pulse">
+                  <div className="w-full aspect-[4/3] bg-sage/5 flex flex-col items-center justify-center gap-2">
+                    <div className="flex gap-1">
+                      <div className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                      <div className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                      <div className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                    </div>
+                    <p className="text-xs text-sage font-medium">
+                      {queueStatus.status === "processing" ? "Génération en cours…" : "En file d'attente…"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
             {photos.map((photo) => (
               <div key={photo.id} className="flex flex-col">
               <div

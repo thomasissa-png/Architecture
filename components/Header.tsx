@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useSession } from "next-auth/react";
+import { useQueueStatus } from "@/lib/hooks/useQueueStatus";
 import AuthButton from "@/components/AuthButton";
 
 interface HeaderProps {
@@ -18,8 +19,10 @@ const navLinks = [
 export default function Header({ variant = "internal", activePage }: HeaderProps) {
   const { data: session } = useSession();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { isPolling, status: queueStatus } = useQueueStatus();
 
   const showNav = variant === "internal" || !!session;
+  const hasActiveQueue = isPolling && queueStatus && queueStatus.status !== "done" && queueStatus.status !== "failed";
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-foreground/5">
@@ -38,13 +41,16 @@ export default function Header({ variant = "internal", activePage }: HeaderProps
               <a
                 key={link.key}
                 href={link.href}
-                className={
+                className={`relative ${
                   activePage === link.key
                     ? "text-xs text-sage font-medium"
                     : "text-xs text-muted font-light hover:text-foreground transition-colors"
-                }
+                }`}
               >
                 {link.label}
+                {link.key === "ma-galerie" && hasActiveQueue && (
+                  <span className="absolute -top-1 -right-3 w-2 h-2 bg-sage rounded-full animate-pulse" />
+                )}
               </a>
             ))}
           {variant === "home" && (
@@ -105,13 +111,16 @@ export default function Header({ variant = "internal", activePage }: HeaderProps
                 key={link.key}
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
-                className={`block py-3 text-sm ${
+                className={`block py-3 text-sm relative ${
                   activePage === link.key
                     ? "text-sage font-medium"
                     : "text-foreground font-light"
                 }`}
               >
                 {link.label}
+                {link.key === "ma-galerie" && hasActiveQueue && (
+                  <span className="inline-block ml-2 w-2 h-2 bg-sage rounded-full animate-pulse align-middle" />
+                )}
               </a>
             ))}
           {variant === "home" && (
