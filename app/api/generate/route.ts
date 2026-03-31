@@ -956,38 +956,25 @@ async function tryFluxDepthWithPrompt(
 async function generateIterationPass(
   base64Image: string,
   responsesPrompt: string,
-  fluxPrompt: string,
+  _fluxPrompt: string,
   outputSize: { openai: string; w: number; h: number }
 ): Promise<{ image: string; model: string }> {
-  let openaiError: Error | null = null;
-  let replicateError: Error | null = null;
+  // IMPORTANT: Iterations MUST use OpenAI (GPT-Image-1.5) ONLY.
+  // Flux Depth Pro regenerates the entire scene instead of editing,
+  // destroying all existing furniture and geometry (see #81, Sprint 22 #155).
+  // If OpenAI fails, the iteration must fail — never fall back to Flux.
 
-  if (process.env.OPENAI_API_KEY) {
-    try {
-      return await tryOpenAIResponsesWithPrompt(base64Image, responsesPrompt, outputSize.openai);
-    } catch (err) {
-      openaiError = err instanceof Error ? err : new Error(String(err));
-      console.error("OpenAI iteration failed:", openaiError.message);
-    }
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error("Clé API OpenAI requise pour les itérations.");
   }
 
-  if (process.env.REPLICATE_API_TOKEN) {
-    try {
-      return await tryFluxDepthWithPrompt(base64Image, fluxPrompt, outputSize.w, outputSize.h);
-    } catch (err) {
-      replicateError = err instanceof Error ? err : new Error(String(err));
-      console.error("Flux Depth iteration failed:", replicateError.message);
-    }
+  try {
+    return await tryOpenAIResponsesWithPrompt(base64Image, responsesPrompt, outputSize.openai);
+  } catch (err) {
+    const openaiError = err instanceof Error ? err : new Error(String(err));
+    console.error("OpenAI iteration failed:", openaiError.message);
+    throw new Error(`Échec itération — l'ajustement n'a pas pu être appliqué. Réessayez. (${openaiError.message})`);
   }
-
-  if (!process.env.OPENAI_API_KEY && !process.env.REPLICATE_API_TOKEN) {
-    throw new Error("Aucune clé API configurée.");
-  }
-
-  const details: string[] = [];
-  if (openaiError) details.push(`OpenAI : ${openaiError.message}`);
-  if (replicateError) details.push(`Replicate : ${replicateError.message}`);
-  throw new Error(`Échec itération. ${details.join(" | ")}`);
 }
 
 // ─── Generate one pass with fallback ─────────────────────────────────
