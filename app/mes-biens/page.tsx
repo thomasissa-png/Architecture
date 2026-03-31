@@ -11,6 +11,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import AuthButton from "@/components/AuthButton";
 import ProGate from "@/components/ProGate";
+import Header from "@/components/Header";
 import { TYPE_LABELS } from "@/lib/constants";
 
 interface Property {
@@ -169,15 +170,7 @@ export default function MesBiensPage() {
   if (authStatus === "loading" || isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-foreground/5">
-          <div className="max-w-6xl mx-auto px-5 sm:px-8 py-3 sm:py-4 flex items-center justify-between">
-            <div className="h-5 w-24 bg-foreground/5 rounded-lg animate-pulse" />
-            <div className="flex items-center gap-4">
-              <div className="h-4 w-16 bg-foreground/5 rounded-lg animate-pulse" />
-              <div className="h-8 w-20 bg-foreground/5 rounded-full animate-pulse" />
-            </div>
-          </div>
-        </header>
+        <Header activePage="mes-biens" />
         <main className="pt-24 pb-16 px-5 sm:px-8 max-w-6xl mx-auto">
           <div className="mb-8">
             <div className="h-7 w-36 bg-foreground/5 rounded-lg animate-pulse mb-2" />
@@ -197,25 +190,7 @@ export default function MesBiensPage() {
     <ProGate featureName="Mes biens">
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-foreground/5">
-        <div className="max-w-6xl mx-auto px-5 sm:px-8 py-3 sm:py-4 flex items-center justify-between">
-          <a href="/" className="text-xl font-semibold text-foreground tracking-tighter">
-            Versimo
-          </a>
-          <nav className="flex items-center gap-3 sm:gap-6">
-            <a href="/mes-biens" className="text-xs text-sage font-medium min-h-[44px] flex items-center">
-              Mes biens
-            </a>
-            <a href="/ma-galerie" className="text-xs text-muted font-light hover:text-foreground transition-colors min-h-[44px] flex items-center">
-              Ma galerie
-            </a>
-            <a href="/mes-dossiers" className="text-xs text-muted font-light hover:text-foreground transition-colors min-h-[44px] flex items-center">
-              Mes dossiers
-            </a>
-            <AuthButton />
-          </nav>
-        </div>
-      </header>
+      <Header activePage="mes-biens" />
 
       <main className="pt-24 pb-16 px-5 sm:px-8 max-w-6xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
