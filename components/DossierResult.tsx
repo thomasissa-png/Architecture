@@ -235,7 +235,7 @@ export default function DossierResult({
               className="flex items-center justify-between px-4 py-3 rounded-xl bg-red-50 border border-red-100"
             >
               <div className="flex-1 min-w-0">
-                <span className="text-sm text-red-600 font-light">
+                <span className="text-sm text-red-600 font-normal">
                   {translateRoomLabel(photo.roomLabel, `Photo ${photo.photoIndex + 1}`)}
                 </span>
                 {photo.errorMessage && (

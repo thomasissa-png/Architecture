@@ -244,7 +244,7 @@ export default function ExportPortail({
       <div className="mb-4" data-testid="export-portail-dropdown">
         <button
           onClick={() => setDropdownOpen(!dropdownOpen)}
-          className="w-full sm:w-auto inline-flex items-center justify-between gap-2 text-sm bg-foreground/5 text-foreground px-4 py-3 rounded-xl font-light hover:bg-foreground/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 min-h-[44px] min-w-56"
+          className="w-full sm:w-auto inline-flex items-center justify-between gap-2 text-sm bg-foreground/5 text-foreground px-4 py-3 rounded-xl font-normal hover:bg-foreground/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 min-h-[44px] min-w-56"
           aria-haspopup="listbox"
           aria-expanded={dropdownOpen}
         >
@@ -277,7 +277,7 @@ export default function ExportPortail({
                 className={`w-full text-left px-4 py-2.5 text-sm hover:bg-foreground/5 transition-colors min-h-[44px] ${
                   selectedPortal === id
                     ? "bg-sage/5 text-sage font-medium"
-                    : "text-foreground font-light"
+                    : "text-foreground font-normal"
                 }`}
                 role="option"
                 aria-selected={selectedPortal === id}
@@ -320,7 +320,7 @@ export default function ExportPortail({
                 {exported.title.charCount}/{exported.title.maxChars}
               </span>
             </div>
-            <p className="text-sm text-foreground font-light leading-relaxed">
+            <p className="text-sm text-foreground font-normal leading-relaxed">
               {exported.title.text}
             </p>
             {exported.title.truncated && (
@@ -355,7 +355,7 @@ export default function ExportPortail({
                 {exported.description.charCount}/{exported.description.maxChars}
               </span>
             </div>
-            <div className="text-sm text-muted font-light leading-relaxed whitespace-pre-line max-h-60 overflow-y-auto">
+            <div className="text-sm text-muted font-normal leading-relaxed whitespace-pre-line max-h-60 overflow-y-auto">
               {exported.description.text}
             </div>
             {exported.description.truncated && (
@@ -389,14 +389,14 @@ export default function ExportPortail({
                     key={field.label}
                     className="flex items-start gap-2 text-sm"
                   >
-                    <span className="text-muted font-light min-w-[120px]">
+                    <span className="text-muted font-normal min-w-[120px]">
                       {field.label} :
                     </span>
                     <span
                       className={
                         field.warning
                           ? "text-orange-500 font-medium"
-                          : "text-foreground font-light"
+                          : "text-foreground font-normal"
                       }
                       title={field.tooltip || undefined}
                     >

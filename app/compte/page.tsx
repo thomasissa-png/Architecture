@@ -442,7 +442,7 @@ export default function ComptePage() {
                     )}
                     {showResults && companyResults.length === 0 && !isSearching && (
                       <div className="absolute z-50 left-0 right-0 mt-2 bg-background border border-foreground/5 rounded-xl shadow-lg p-4 text-center">
-                        <p className="text-sm text-muted font-light">Aucune entreprise trouvée</p>
+                        <p className="text-sm text-muted font-normal">Aucune entreprise trouvée</p>
                         <p className="text-xs text-muted/60 font-light mt-1">Essayez un autre nom ou entrez le SIRET ci-dessous</p>
                       </div>
                     )}

@@ -235,7 +235,7 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
             <h2 id="auth-modal-title" className="text-2xl font-bold text-foreground tracking-tight mb-2">
               {mode === "login" ? "Connexion" : "Créer un compte"}
             </h2>
-            <p className="text-sm text-muted font-light">
+            <p className="text-sm text-muted font-normal">
               {isPurchaseContext
                 ? "Créez votre compte pour finaliser votre achat."
                 : mode === "login"
@@ -251,12 +251,12 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
               aria-live="assertive"
               className="mb-5 bg-red-50/50 border border-red-200/60 rounded-xl p-3.5 text-center"
             >
-              <p className="text-red-600/80 text-sm font-light">{error}</p>
+              <p className="text-red-600/80 text-sm font-normal">{error}</p>
             </div>
           )}
           {success && (
             <div role="status" aria-live="polite" className="mb-5 bg-sage/5 border border-sage/20 rounded-xl p-3.5 text-center">
-              <p className="text-sage text-sm font-light">{success}</p>
+              <p className="text-sage text-sm font-normal">{success}</p>
             </div>
           )}
 

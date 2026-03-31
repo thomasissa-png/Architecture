@@ -276,7 +276,7 @@ export default function StylePicker({
             value={customPrompt}
             onChange={(e) => onCustomPromptChange(e.target.value)}
             placeholder="Ex : style Art Déco avec mobilier doré, tapis persans et éclairage chaleureux…"
-            className="w-full p-5 border border-foreground/10 rounded-2xl focus:border-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 resize-none h-28 text-sm font-light transition-colors placeholder:text-foreground/30"
+            className="w-full p-5 border border-foreground/10 rounded-2xl focus:border-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 resize-none h-28 text-sm font-normal transition-colors placeholder:text-foreground/30"
           />
         </div>
       )}

@@ -93,7 +93,7 @@ export default async function DossierPage({ params }: PageProps) {
           <h1 className="text-2xl font-semibold text-foreground mb-3">
             Dossier introuvable
           </h1>
-          <p className="text-muted font-light text-sm">
+          <p className="text-muted font-normal text-sm">
             Ce dossier n&apos;existe pas ou a été supprimé.
           </p>
         </div>
@@ -109,7 +109,7 @@ export default async function DossierPage({ params }: PageProps) {
           <h1 className="text-2xl font-semibold text-foreground mb-3">
             Dossier expiré
           </h1>
-          <p className="text-muted font-light text-sm">
+          <p className="text-muted font-normal text-sm">
             Ce dossier de pré-commercialisation a expiré.
             <br />
             Les dossiers sont disponibles pendant 30 jours après leur création.
@@ -220,19 +220,19 @@ export default async function DossierPage({ params }: PageProps) {
           {dossier.description_commerciale ? (
             <div className="max-w-2xl space-y-4 mb-3">
               {dossier.description_commerciale.split(/\n\n+/).map((paragraph, idx) => (
-                <p key={idx} className="text-sm text-muted font-light leading-relaxed">
+                <p key={idx} className="text-sm text-muted font-normal leading-relaxed">
                   {paragraph.trim()}
                 </p>
               ))}
             </div>
           ) : (
-            <p className="text-sm text-muted font-light mb-3">
+            <p className="text-sm text-muted font-normal mb-3">
               Description en cours de r&eacute;daction.
             </p>
           )}
 
           {/* Property details */}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted font-light">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted font-normal">
             {dossier.bien_adresse && (
               <span>{dossier.bien_adresse}</span>
             )}
@@ -383,7 +383,7 @@ export default async function DossierPage({ params }: PageProps) {
         {/* Photos grid */}
         {completedPhotos.length === 0 ? (
           <div className="text-center py-16">
-            <p className="text-muted font-light">
+            <p className="text-muted font-normal">
               {dossier.status === "generating"
                 ? "Génération en cours, revenez dans quelques instants."
                 : "Aucun visuel disponible pour ce dossier."}
@@ -449,7 +449,7 @@ export default async function DossierPage({ params }: PageProps) {
               {[profile?.raison_sociale, profile?.telephone, profile?.email_pro].filter(Boolean).join(" — ")}
             </p>
           )}
-          <p className="text-sm text-muted/60 font-light">
+          <p className="text-sm text-muted/60 font-normal">
             Visuels d&apos;aménagement générés par intelligence artificielle — le bien est livré brut. Ces images sont à titre indicatif et ne sont pas contractuelles.
           </p>
           <p className="text-xs text-muted/40 font-light mt-1">

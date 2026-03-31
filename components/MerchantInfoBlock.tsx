@@ -76,13 +76,13 @@ export default function MerchantInfoBlock({
           )}
 
           {adresse && (
-            <p className="text-sm text-muted font-light leading-relaxed">
+            <p className="text-sm text-muted font-normal leading-relaxed">
               {adresse}
             </p>
           )}
 
           {telephone && (
-            <p className="text-sm text-muted font-light">
+            <p className="text-sm text-muted font-normal">
               <span className="text-muted/60 mr-1.5">Tel.</span>
               <a
                 href={`tel:${telephone}`}
@@ -94,7 +94,7 @@ export default function MerchantInfoBlock({
           )}
 
           {emailPro && (
-            <p className="text-sm text-muted font-light">
+            <p className="text-sm text-muted font-normal">
               <span className="text-muted/60 mr-1.5">Email</span>
               <a
                 href={`mailto:${emailPro}`}

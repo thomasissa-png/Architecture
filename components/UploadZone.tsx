@@ -99,7 +99,7 @@ export default function UploadZone({ files, onFilesChange, maxFiles }: UploadZon
           {isDragActive ? (
             <p className="text-foreground font-medium text-sm">D&eacute;posez ici&hellip;</p>
           ) : files.length >= MAX_FILES ? (
-            <p className="text-gray-400 text-sm font-light">
+            <p className="text-gray-400 text-sm font-normal">
               Maximum atteint ({MAX_FILES} photos)
             </p>
           ) : (
