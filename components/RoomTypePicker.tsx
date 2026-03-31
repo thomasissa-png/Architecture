@@ -26,7 +26,7 @@ export default function RoomTypePicker({
         <p className="text-sm font-medium text-foreground tracking-tight">
           Type de pièce
         </p>
-        <span className="text-xs text-muted/60 font-light">(optionnel)</span>
+        <span className="text-xs text-sage font-normal">— requis pour générer</span>
       </div>
 
       <div

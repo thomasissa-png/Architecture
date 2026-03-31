@@ -1288,8 +1288,8 @@ export default function Home() {
                   onSelect={setSelectedRoomType}
                 />
                 {!selectedRoomType && selectedStyles.length > 0 && (
-                  <p className="text-xs text-sage font-light text-center mt-2">
-                    Sélectionnez un type de pièce pour continuer
+                  <p className="text-xs text-sage font-normal text-center mt-2 animate-pulse">
+                    ↑ Sélectionnez un type de pièce pour pouvoir générer
                   </p>
                 )}
               </div>
@@ -1308,9 +1308,12 @@ export default function Home() {
 
           {/* Step 2b: Style — hidden when multi-photo */}
           <div id="step-style" className={`mb-10 scroll-mt-20 transition-all duration-700 ${files.length === 0 || files.length > 1 ? "hidden" : "animate-fade-in-up animate-delay-300"}`}>
-            <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
+            <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-1">
               02 — Style
             </h3>
+            <p className="text-xs text-muted/70 font-normal mb-5">
+              Vous pouvez sélectionner un ou plusieurs styles pour comparer
+            </p>
 
             <StylePicker
               selectedStyles={selectedStyles}
