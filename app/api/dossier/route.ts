@@ -13,6 +13,7 @@ import {
   getDossiersByUser,
 } from "@/lib/dossier";
 import { getMerchantProfile } from "@/lib/merchant";
+import { findOrCreatePropertyByAddress } from "@/lib/properties";
 
 export const dynamic = "force-dynamic";
 
@@ -85,6 +86,18 @@ export async function POST(request: NextRequest) {
       companyName: merchant?.raison_sociale || null,
     });
 
+    // Auto-create property in "Mes biens" if address provided (fire-and-forget)
+    if (bienAdresse) {
+      findOrCreatePropertyByAddress(session.user.id, bienAdresse, {
+        propertyType: bienType || null,
+        surfaceM2: bienSurface ? Number(bienSurface) : null,
+        salePrice: bienPrix ? Number(bienPrix) : null,
+        roomCount: nbPieces ? Number(nbPieces) : null,
+      }).catch((err) => {
+        console.error("Auto-create property for dossier failed (non-blocking):", err);
+      });
+    }
+
     return NextResponse.json({ dossier }, { status: 201 });
   } catch (err) {
     console.error("Error creating dossier:", err);
@@ -96,7 +109,7 @@ export async function POST(request: NextRequest) {
 }
 
 // ─── GET: List user's dossiers ───────────────────────────────────────
-export async function GET() {
+export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json(
@@ -106,7 +119,8 @@ export async function GET() {
   }
 
   try {
-    const dossiers = await getDossiersByUser(session.user.id);
+    const includeArchived = request.nextUrl.searchParams.get("archived") === "true";
+    const dossiers = await getDossiersByUser(session.user.id, includeArchived);
     return NextResponse.json({ dossiers });
   } catch (err) {
     console.error("Error listing dossiers:", err);

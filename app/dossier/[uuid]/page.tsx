@@ -56,7 +56,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     : `${title} — Visuels meublés par Versimo.`;
 
   // Hero image for OG preview (first completed photo)
-  const BASE_URL = "https://versimo.fr";
+  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://versimo.fr";
   const photos = await getDossierPhotos(dossier.uuid);
   const heroPhoto = photos.find((p) => p.status === "completed" && p.output_image_key);
   const ogImages = heroPhoto?.output_image_key
@@ -201,7 +201,7 @@ export default async function DossierPage({ params }: PageProps) {
             <StorageImage
               imageKey={completedPhotos[0].output_image_key}
               alt={title}
-              className="w-full aspect-[16/9] object-cover"
+              className="w-full aspect-[4/3] sm:aspect-[16/9] lg:aspect-[21/9] object-cover"
               loading="eager"
             />
           </div>

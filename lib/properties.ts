@@ -181,6 +181,44 @@ export async function createProperty(input: CreatePropertyInput): Promise<Proper
   return result.rows[0] as Property;
 }
 
+/**
+ * Find a property by address for a user, or create one if it doesn't exist.
+ * Used when creating dossiers in Pro mode to ensure the property appears in "Mes biens".
+ */
+export async function findOrCreatePropertyByAddress(
+  userId: string,
+  addressRaw: string,
+  extras?: {
+    propertyType?: string | null;
+    surfaceM2?: number | null;
+    salePrice?: number | null;
+    roomCount?: number | null;
+  }
+): Promise<Property> {
+  await ensurePropertiesTable();
+  const db = getPool();
+
+  // Try to find an existing property with the same address
+  const existing = await db.query(
+    `SELECT * FROM properties WHERE user_id = $1 AND LOWER(TRIM(address_raw)) = LOWER(TRIM($2)) LIMIT 1`,
+    [userId, addressRaw]
+  );
+
+  if (existing.rows[0]) {
+    return existing.rows[0] as Property;
+  }
+
+  // Create a new property
+  return createProperty({
+    userId,
+    addressRaw,
+    propertyType: extras?.propertyType ?? null,
+    surfaceM2: extras?.surfaceM2 ?? null,
+    salePrice: extras?.salePrice ?? null,
+    roomCount: extras?.roomCount ?? null,
+  });
+}
+
 export async function getPropertiesByUser(userId: string): Promise<Property[]> {
   await ensurePropertiesTable();
   const db = getPool();
@@ -201,7 +239,7 @@ export async function getPropertiesByUser(userId: string): Promise<Property[]> {
   const result = await db.query(
     `SELECT p.*,
       (SELECT COUNT(*) FROM user_photos up WHERE up.property_id = p.id) as photo_count,
-      (SELECT COUNT(*) FROM dossiers d WHERE d.bien_adresse = p.address_raw AND d.user_id = p.user_id) as dossier_count,
+      (SELECT COUNT(*) FROM dossiers d WHERE LOWER(TRIM(d.bien_adresse)) = LOWER(TRIM(p.address_raw)) AND d.user_id = p.user_id AND (d.status IS NULL OR d.status != 'archived')) as dossier_count,
       (SELECT COALESCE(a.slug, a.uuid) FROM annonces a WHERE a.property_id = p.id::text AND a.user_id = p.user_id AND a.status = 'active' AND a.expires_at > NOW() ORDER BY a.created_at DESC LIMIT 1) as annonce_uuid
     FROM properties p
     WHERE p.user_id = $1
@@ -224,8 +262,8 @@ export async function getPropertyById(propertyId: string, userId: string): Promi
   const result = await db.query(
     `SELECT p.*,
       (SELECT COUNT(*) FROM user_photos up WHERE up.property_id = p.id) as photo_count,
-      (SELECT COUNT(*) FROM dossiers d WHERE d.bien_adresse = p.address_raw AND d.user_id = p.user_id) as dossier_count,
-      (SELECT COALESCE(d.slug, d.uuid::text) FROM dossiers d WHERE d.bien_adresse = p.address_raw AND d.user_id = p.user_id ORDER BY d.created_at DESC LIMIT 1) as last_dossier_path
+      (SELECT COUNT(*) FROM dossiers d WHERE LOWER(TRIM(d.bien_adresse)) = LOWER(TRIM(p.address_raw)) AND d.user_id = p.user_id AND (d.status IS NULL OR d.status != 'archived')) as dossier_count,
+      (SELECT COALESCE(d.slug, d.uuid::text) FROM dossiers d WHERE LOWER(TRIM(d.bien_adresse)) = LOWER(TRIM(p.address_raw)) AND d.user_id = p.user_id AND (d.status IS NULL OR d.status != 'archived') ORDER BY d.created_at DESC LIMIT 1) as last_dossier_path
     FROM properties p
     WHERE p.id = $1 AND p.user_id = $2`,
     [propertyId, userId]

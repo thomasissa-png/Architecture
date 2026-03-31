@@ -6,7 +6,7 @@
  */
 
 import { useSession } from "next-auth/react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import AuthButton from "@/components/AuthButton";
 import ProGate from "@/components/ProGate";
@@ -18,7 +18,7 @@ interface Dossier {
   bien_nom: string | null;
   bien_adresse: string | null;
   bien_type: string | null;
-  status: "draft" | "generating" | "completed" | "partial";
+  status: "draft" | "generating" | "completed" | "partial" | "archived";
   photo_count: number;
   success_count: number;
   fail_count: number;
@@ -42,6 +42,10 @@ const STATUS_LABELS: Record<string, { label: string; className: string }> = {
     label: "Partiel",
     className: "bg-amber-50 text-amber-600",
   },
+  archived: {
+    label: "Archivé",
+    className: "bg-foreground/5 text-muted",
+  },
 };
 
 export default function MesDossiersPage() {
@@ -51,34 +55,55 @@ export default function MesDossiersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copiedUuid, setCopiedUuid] = useState<string | null>(null);
+  const [showArchived, setShowArchived] = useState(false);
+  const [archivingUuid, setArchivingUuid] = useState<string | null>(null);
+
+  const fetchDossiers = useCallback(async (archived = false) => {
+    try {
+      setIsLoading(true);
+      const url = archived ? "/api/dossier?archived=true" : "/api/dossier";
+      const res = await fetch(url);
+      if (!res.ok) {
+        if (res.status === 401) {
+          router.push("/");
+          return;
+        }
+        throw new Error("Erreur lors du chargement des dossiers.");
+      }
+      const data = await res.json();
+      setDossiers(data.dossiers || []);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Erreur lors du chargement."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }, [router]);
 
   // Fetch dossiers
   useEffect(() => {
     if (authStatus !== "authenticated") return;
+    fetchDossiers(showArchived);
+  }, [authStatus, showArchived, fetchDossiers]);
 
-    async function fetchDossiers() {
-      try {
-        const res = await fetch("/api/dossier");
-        if (!res.ok) {
-          if (res.status === 401) {
-            router.push("/");
-            return;
-          }
-          throw new Error("Erreur lors du chargement des dossiers.");
-        }
-        const data = await res.json();
-        setDossiers(data.dossiers || []);
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Erreur lors du chargement."
-        );
-      } finally {
-        setIsLoading(false);
+  async function handleArchive(uuid: string, action: "archive" | "unarchive") {
+    setArchivingUuid(uuid);
+    try {
+      const res = await fetch(`/api/dossier/${uuid}/archive`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+      if (res.ok) {
+        await fetchDossiers(showArchived);
       }
+    } catch {
+      // Silent fail
+    } finally {
+      setArchivingUuid(null);
     }
-
-    fetchDossiers();
-  }, [authStatus, router]);
+  }
 
   function formatDate(dateStr: string): string {
     try {
@@ -143,9 +168,17 @@ export default function MesDossiersPage() {
           <h1 className="text-2xl font-light text-foreground tracking-tight mb-1">
             Mes dossiers
           </h1>
-          <p className="text-sm text-muted font-light mb-8">
-            Retrouvez tous vos dossiers Mode Pro.
-          </p>
+          <div className="flex items-center justify-between mb-8">
+            <p className="text-sm text-muted font-light">
+              Retrouvez tous vos dossiers Mode Pro.
+            </p>
+            <button
+              onClick={() => setShowArchived(!showArchived)}
+              className="text-xs text-muted hover:text-foreground font-light transition-colors px-3 py-1.5 rounded-full border border-foreground/10 hover:border-foreground/20 min-h-[36px]"
+            >
+              {showArchived ? "Masquer archivés" : "Voir archivés"}
+            </button>
+          </div>
 
           {/* Loading */}
           {isLoading && (
@@ -221,8 +254,25 @@ export default function MesDossiersPage() {
                         </div>
                       </div>
 
-                      {/* Right: copy + arrow */}
+                      {/* Right: actions + arrow */}
                       <div className="flex items-center gap-2 shrink-0 mt-1">
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const action = dossier.status === "archived" ? "unarchive" : "archive";
+                            handleArchive(dossier.uuid, action);
+                          }}
+                          disabled={archivingUuid === dossier.uuid}
+                          className="text-[11px] text-muted hover:text-foreground font-light transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded px-1.5 py-1 min-h-[44px] inline-flex items-center disabled:opacity-40"
+                          title={dossier.status === "archived" ? "Désarchiver" : "Archiver"}
+                        >
+                          {archivingUuid === dossier.uuid
+                            ? "..."
+                            : dossier.status === "archived"
+                              ? "Désarchiver"
+                              : "Archiver"}
+                        </button>
                         <button
                           onClick={(e) => {
                             e.preventDefault();

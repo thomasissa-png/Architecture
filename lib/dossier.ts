@@ -10,7 +10,7 @@ import { generateSlug, extractShortId, resolveSlugCollision } from "@/lib/slug";
 
 // ─── Types ───────────────────────────────────────────────────────────
 
-export type DossierStatus = "draft" | "generating" | "completed" | "partial";
+export type DossierStatus = "draft" | "generating" | "completed" | "partial" | "archived";
 export type DossierPhotoStatus = "pending" | "generating" | "completed" | "failed";
 
 export interface Dossier {
@@ -152,6 +152,18 @@ export async function ensureDossierTables(): Promise<void> {
     CREATE UNIQUE INDEX IF NOT EXISTS idx_dossiers_slug ON dossiers (slug) WHERE slug IS NOT NULL;
   `);
 
+  // ── Backfill slugs for dossiers without one ──
+  const missingSlugRows = await db.query(
+    `SELECT uuid, bien_nom, bien_adresse FROM dossiers WHERE slug IS NULL LIMIT 50`
+  );
+  for (const row of missingSlugRows.rows) {
+    const shortId = extractShortId(row.uuid);
+    const slugTitle = row.bien_nom || row.bien_adresse || null;
+    let slug = generateSlug(null, slugTitle, shortId);
+    slug = await resolveSlugCollision(db, "dossiers", slug);
+    await db.query(`UPDATE dossiers SET slug = $1 WHERE uuid = $2`, [slug, row.uuid]);
+  }
+
   // ── F4.B: Enrichment columns (address geocoding, DVF, description, map) ──
   const enrichColumns = [
     { name: "latitude", type: "DECIMAL(10,7)" },
@@ -265,14 +277,34 @@ export async function getDossierByIdentifier(
   return { dossier: null, redirectToSlug: false };
 }
 
-export async function getDossiersByUser(userId: string): Promise<Dossier[]> {
+export async function getDossiersByUser(userId: string, includeArchived = false): Promise<Dossier[]> {
+  await ensureDossierTables();
+  const db = getPool();
+  const query = includeArchived
+    ? `SELECT * FROM dossiers WHERE user_id = $1 ORDER BY created_at DESC`
+    : `SELECT * FROM dossiers WHERE user_id = $1 AND (status IS NULL OR status != 'archived') ORDER BY created_at DESC`;
+  const result = await db.query(query, [userId]);
+  return result.rows as Dossier[];
+}
+
+export async function archiveDossier(uuid: string, userId: string): Promise<boolean> {
   await ensureDossierTables();
   const db = getPool();
   const result = await db.query(
-    `SELECT * FROM dossiers WHERE user_id = $1 ORDER BY created_at DESC`,
-    [userId]
+    `UPDATE dossiers SET status = 'archived' WHERE uuid = $1 AND user_id = $2 AND status != 'archived' RETURNING id`,
+    [uuid, userId]
   );
-  return result.rows as Dossier[];
+  return (result.rowCount ?? 0) > 0;
+}
+
+export async function unarchiveDossier(uuid: string, userId: string): Promise<boolean> {
+  await ensureDossierTables();
+  const db = getPool();
+  const result = await db.query(
+    `UPDATE dossiers SET status = 'completed' WHERE uuid = $1 AND user_id = $2 AND status = 'archived' RETURNING id`,
+    [uuid, userId]
+  );
+  return (result.rowCount ?? 0) > 0;
 }
 
 export async function updateDossierStatus(

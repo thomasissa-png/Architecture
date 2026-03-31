@@ -56,6 +56,17 @@ export async function ensureAnnonceTable(): Promise<void> {
     CREATE UNIQUE INDEX IF NOT EXISTS idx_annonces_slug ON annonces (slug) WHERE slug IS NOT NULL;
   `);
 
+  // ── Backfill slugs for annonces without one ──
+  const missingSlugRows = await db.query(
+    `SELECT uuid, title FROM annonces WHERE slug IS NULL LIMIT 50`
+  );
+  for (const row of missingSlugRows.rows) {
+    const shortId = extractShortId(row.uuid);
+    let slug = generateSlug(null, row.title, shortId);
+    slug = await resolveSlugCollision(db, "annonces", slug);
+    await db.query(`UPDATE annonces SET slug = $1 WHERE uuid = $2`, [slug, row.uuid]);
+  }
+
   annonceTableEnsured = true;
 }
 
