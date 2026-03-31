@@ -497,7 +497,7 @@ export default function InlineGenerator({
             {/* If no photos associated, show upload zone */}
             {photosWithInput.length === 0 && uploadedFiles.length === 0 && (
               <div className="space-y-3">
-                <p className="text-sm text-muted font-normal">
+                <p className="text-sm text-muted font-light">
                   Aucune photo associée. Uploadez vos photos pour générer des visuels meublés.
                 </p>
                 <UploadZone files={uploadedFiles} onFilesChange={setUploadedFiles} maxFiles={5} />
@@ -658,7 +658,7 @@ export default function InlineGenerator({
         {step === "generating" && (
           <div className="space-y-4">
             <div className="text-center py-4">
-              <div className="inline-flex items-center gap-3 text-sm text-muted font-normal">
+              <div className="inline-flex items-center gap-3 text-sm text-muted font-light">
                 <svg className="w-5 h-5 animate-spin text-sage" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                   <circle cx="12" cy="12" r="10" strokeOpacity={0.2} />
                   <path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round" />

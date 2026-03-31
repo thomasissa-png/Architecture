@@ -518,7 +518,7 @@ export default function PropertyDetailPage() {
   if (authStatus === "loading" || isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-muted font-normal text-sm">Chargement...</div>
+        <div className="animate-pulse text-muted font-light text-sm">Chargement...</div>
       </div>
     );
   }
@@ -527,7 +527,7 @@ export default function PropertyDetailPage() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <p className="text-muted font-normal text-sm">{error}</p>
+          <p className="text-muted font-light text-sm">{error}</p>
           <a href="/mes-biens" className="inline-block mt-4 text-xs text-sage font-medium hover:underline">
             Retour à mes biens
           </a>
@@ -539,7 +539,7 @@ export default function PropertyDetailPage() {
   if (!property) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-muted font-normal text-sm">Chargement...</div>
+        <div className="animate-pulse text-muted font-light text-sm">Chargement...</div>
       </div>
     );
   }
@@ -623,7 +623,7 @@ export default function PropertyDetailPage() {
                   value={editDesc}
                   onChange={(e) => setEditDesc(e.target.value)}
                   rows={4}
-                  className="w-full text-sm font-normal bg-background border border-foreground/10 rounded-xl px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                  className="w-full text-sm font-light bg-background border border-foreground/10 rounded-xl px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                 />
                 <div className="flex gap-2 mt-2">
                   <button
@@ -644,7 +644,7 @@ export default function PropertyDetailPage() {
               <div className="mb-4">
                 <div className="max-w-2xl space-y-3">
                   {description.split(/\n\n+/).map((paragraph, idx) => (
-                    <p key={idx} className="text-sm text-muted font-normal leading-relaxed">
+                    <p key={idx} className="text-sm text-muted font-light leading-relaxed">
                       {paragraph.trim()}
                     </p>
                   ))}
@@ -727,7 +727,7 @@ export default function PropertyDetailPage() {
                 data-testid="dpe-classe-select"
                 value={compInfo.dpeClasse}
                 onChange={(e) => setCompInfo((p) => ({ ...p, dpeClasse: e.target.value }))}
-                className="w-full text-sm font-normal bg-background border border-foreground/10 rounded-xl px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                className="w-full text-sm font-light bg-background border border-foreground/10 rounded-xl px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
               >
                 <option value="">--</option>
                 {["A", "B", "C", "D", "E", "F", "G"].map((c) => (
@@ -750,7 +750,7 @@ export default function PropertyDetailPage() {
                 data-testid="ges-classe-select"
                 value={compInfo.gesClasse}
                 onChange={(e) => setCompInfo((p) => ({ ...p, gesClasse: e.target.value }))}
-                className="w-full text-sm font-normal bg-background border border-foreground/10 rounded-xl px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                className="w-full text-sm font-light bg-background border border-foreground/10 rounded-xl px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
               >
                 <option value="">--</option>
                 {["A", "B", "C", "D", "E", "F", "G"].map((c) => (
@@ -770,7 +770,7 @@ export default function PropertyDetailPage() {
                 value={compInfo.etage}
                 onChange={(e) => setCompInfo((p) => ({ ...p, etage: e.target.value }))}
                 placeholder="ex: 3"
-                className="w-full text-sm font-normal bg-background border border-foreground/10 rounded-xl px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                className="w-full text-sm font-light bg-background border border-foreground/10 rounded-xl px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
               />
             </div>
             <div className="flex items-end pb-2">
@@ -822,7 +822,7 @@ export default function PropertyDetailPage() {
                 data-testid="exposition-select"
                 value={compInfo.exposition}
                 onChange={(e) => setCompInfo((p) => ({ ...p, exposition: e.target.value }))}
-                className="w-full text-sm font-normal bg-background border border-foreground/10 rounded-xl px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                className="w-full text-sm font-light bg-background border border-foreground/10 rounded-xl px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
               >
                 <option value="">--</option>
                 {["Nord", "Sud", "Est", "Ouest", "Nord-Est", "Nord-Ouest", "Sud-Est", "Sud-Ouest"].map((e) => (
@@ -843,7 +843,7 @@ export default function PropertyDetailPage() {
                 value={compInfo.anneeConstruction}
                 onChange={(e) => setCompInfo((p) => ({ ...p, anneeConstruction: e.target.value }))}
                 placeholder="ex: 1975"
-                className="w-full text-sm font-normal bg-background border border-foreground/10 rounded-xl px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                className="w-full text-sm font-light bg-background border border-foreground/10 rounded-xl px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
               />
             </div>
           </div>
@@ -862,7 +862,7 @@ export default function PropertyDetailPage() {
                 value={compInfo.chargesCoproAnnuelles}
                 onChange={(e) => setCompInfo((p) => ({ ...p, chargesCoproAnnuelles: e.target.value }))}
                 placeholder="ex: 2400"
-                className="w-full text-sm font-normal bg-background border border-foreground/10 rounded-xl px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                className="w-full text-sm font-light bg-background border border-foreground/10 rounded-xl px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
               />
             </div>
             <div>
@@ -877,7 +877,7 @@ export default function PropertyDetailPage() {
                 value={compInfo.taxeFonciere}
                 onChange={(e) => setCompInfo((p) => ({ ...p, taxeFonciere: e.target.value }))}
                 placeholder="ex: 800"
-                className="w-full text-sm font-normal bg-background border border-foreground/10 rounded-xl px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                className="w-full text-sm font-light bg-background border border-foreground/10 rounded-xl px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
               />
             </div>
             <div>
@@ -892,7 +892,7 @@ export default function PropertyDetailPage() {
                 value={compInfo.nbLotsCopro}
                 onChange={(e) => setCompInfo((p) => ({ ...p, nbLotsCopro: e.target.value }))}
                 placeholder="ex: 24"
-                className="w-full text-sm font-normal bg-background border border-foreground/10 rounded-xl px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                className="w-full text-sm font-light bg-background border border-foreground/10 rounded-xl px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
               />
             </div>
           </div>
@@ -920,7 +920,7 @@ export default function PropertyDetailPage() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-foreground">
               Photos du bien
-              <span className="text-muted font-normal text-sm ml-2">({photos.length})</span>
+              <span className="text-muted font-light text-sm ml-2">({photos.length})</span>
             </h2>
             <div className="flex gap-2">
               <button
@@ -943,7 +943,7 @@ export default function PropertyDetailPage() {
 
           {photos.length === 0 ? (
             <div className="text-center py-12 bg-foreground/[0.02] rounded-2xl border border-foreground/5">
-              <p className="text-muted font-normal text-sm">Aucune photo associée à ce bien.</p>
+              <p className="text-muted font-light text-sm">Aucune photo associée à ce bien.</p>
               <p className="text-xs text-muted/50 font-light mt-1">
                 Associez des photos depuis votre galerie ou générez-en de nouvelles.
               </p>
@@ -1083,7 +1083,7 @@ export default function PropertyDetailPage() {
 
               {unassociatedPhotos.length === 0 ? (
                 <div className="py-8 text-center">
-                  <p className="text-sm text-muted font-normal">
+                  <p className="text-sm text-muted font-light">
                     Aucune photo disponible.
                   </p>
                   <p className="text-xs text-muted/50 font-light mt-1">
@@ -1193,7 +1193,7 @@ export default function PropertyDetailPage() {
                   </p>
 
                   {photos.length === 0 ? (
-                    <p className="text-sm text-muted font-normal py-8 text-center">
+                    <p className="text-sm text-muted font-light py-8 text-center">
                       Associez d&apos;abord des photos à ce bien.
                     </p>
                   ) : (

@@ -219,7 +219,7 @@ export default function AnnoncePublicView({
           {emailRevealed ? (
             <a
               href={`mailto:${contactEmail}`}
-              className="text-sm text-muted font-normal hover:text-foreground transition-colors"
+              className="text-sm text-muted font-light hover:text-foreground transition-colors"
               data-testid="annonce-email-revealed"
             >
               {contactEmail}

@@ -22,7 +22,7 @@ export default function GlobalError({
             <h1 className="text-2xl font-bold tracking-tight mb-3">
               Une erreur est survenue
             </h1>
-            <p className="text-sm text-[#6B6B6E] font-normal mb-6">
+            <p className="text-sm text-[#6B6B6E] font-light mb-6">
               Nous avons été notifiés automatiquement. Vous pouvez réessayer ou revenir à l&apos;accueil.
             </p>
             <div className="flex gap-3 justify-center">

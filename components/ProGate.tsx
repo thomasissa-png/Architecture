@@ -85,14 +85,14 @@ export default function ProGate({ children, featureName }: ProGateProps) {
         <h1 className="text-2xl font-bold text-foreground tracking-tight mb-3">
           {featureName}
         </h1>
-        <p className="text-sm text-muted font-normal mb-8 max-w-sm mx-auto leading-relaxed">
+        <p className="text-sm text-muted font-light mb-8 max-w-sm mx-auto leading-relaxed">
           Gérez vos biens, créez des dossiers de présentation et des annonces professionnelles pour vos acquéreurs — fonctionnalité réservée aux comptes Pro.
         </p>
 
         {/* Pricing highlight */}
         <div className="bg-foreground/[0.02] border border-foreground/5 rounded-2xl p-6 mb-6 text-left max-w-sm mx-auto">
           <p className="text-sm font-semibold text-foreground mb-3">Pack Pro (29&nbsp;&#8364;/mois) inclut :</p>
-          <ul className="space-y-2 text-sm text-muted font-normal">
+          <ul className="space-y-2 text-sm text-muted font-light">
             <li className="flex items-start gap-2">
               <svg className="w-3.5 h-3.5 text-sage mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />

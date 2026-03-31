@@ -73,7 +73,7 @@ export default async function BlogIndexPage() {
             <h1 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight mb-3">
               Blog
             </h1>
-            <p className="text-muted font-normal">
+            <p className="text-muted font-light">
               Conseils, guides et inspiration pour le home staging virtuel par IA.
             </p>
           </div>
@@ -90,7 +90,7 @@ export default async function BlogIndexPage() {
                     {post.title}
                   </h2>
                   {post.meta_description && (
-                    <p className="text-sm text-muted font-normal leading-relaxed mb-3">
+                    <p className="text-sm text-muted font-light leading-relaxed mb-3">
                       {post.meta_description}
                     </p>
                   )}
@@ -122,7 +122,7 @@ export default async function BlogIndexPage() {
               <p className="text-sm font-semibold text-foreground mb-2">
                 Bientôt disponible
               </p>
-              <p className="text-sm text-muted font-normal max-w-md mx-auto">
+              <p className="text-sm text-muted font-light max-w-md mx-auto">
                 Nous préparons des articles sur le home staging virtuel,
                 l&apos;inspiration déco et les bonnes pratiques pour
                 architectes, marchands de biens et particuliers.

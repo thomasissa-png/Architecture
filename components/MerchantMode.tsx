@@ -527,7 +527,7 @@ export default function MerchantMode() {
     <div ref={merchantRef} className="space-y-8" data-testid="merchant-mode">
       {/* Error banner */}
       {error && (
-        <div className="p-4 rounded-2xl bg-red-50 border border-red-100 text-sm text-red-600 font-normal" data-testid="merchant-error">
+        <div className="p-4 rounded-2xl bg-red-50 border border-red-100 text-sm text-red-600 font-light" data-testid="merchant-error">
           {error}
           <button
             onClick={() => setError(null)}
@@ -573,7 +573,7 @@ export default function MerchantMode() {
                   if (e.target.value) handleSelectProperty(e.target.value);
                   else setSelectedPropertyId(null);
                 }}
-                className="w-full px-4 py-3 border border-foreground/10 rounded-xl text-sm font-normal bg-background focus:border-foreground focus:outline-none transition-colors min-h-[44px]"
+                className="w-full px-4 py-3 border border-foreground/10 rounded-xl text-sm font-light bg-background focus:border-foreground focus:outline-none transition-colors min-h-[44px]"
               >
                 <option value="">Nouveau bien (saisir l&apos;adresse)</option>
                 {existingProperties.map((p) => (
@@ -597,7 +597,7 @@ export default function MerchantMode() {
               onFocus={() => addressSuggestions.length > 0 && setShowSuggestions(true)}
               onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
               placeholder="Commencez à taper : 45 rue de la Paix, 75002 Paris"
-              className="w-full px-4 py-3 border border-foreground/10 rounded-xl text-sm font-normal focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
+              className="w-full px-4 py-3 border border-foreground/10 rounded-xl text-sm font-light focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
               data-testid="merchant-bien-adresse"
             />
             {isEnriching && (
@@ -614,7 +614,7 @@ export default function MerchantMode() {
                     key={i}
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => handleSelectAddress(s)}
-                    className="w-full text-left px-4 py-3 text-sm font-normal hover:bg-foreground/5 transition-colors border-b last:border-b-0 border-foreground/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-inset"
+                    className="w-full text-left px-4 py-3 text-sm font-light hover:bg-foreground/5 transition-colors border-b last:border-b-0 border-foreground/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-inset"
                     data-testid={`merchant-address-suggestion-${i}`}
                   >
                     {s.label}
@@ -657,7 +657,7 @@ export default function MerchantMode() {
                 value={bienSurface}
                 onChange={(e) => setBienSurface(e.target.value)}
                 placeholder="65"
-                className="w-full px-4 py-3 border border-foreground/10 rounded-xl text-sm font-normal focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
+                className="w-full px-4 py-3 border border-foreground/10 rounded-xl text-sm font-light focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
                 data-testid="merchant-bien-surface"
               />
             </div>
@@ -671,7 +671,7 @@ export default function MerchantMode() {
                 value={bienNbPieces}
                 onChange={(e) => setBienNbPieces(e.target.value)}
                 placeholder="3"
-                className="w-full px-4 py-3 border border-foreground/10 rounded-xl text-sm font-normal focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
+                className="w-full px-4 py-3 border border-foreground/10 rounded-xl text-sm font-light focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
                 data-testid="merchant-bien-nb-pieces"
               />
             </div>
@@ -685,7 +685,7 @@ export default function MerchantMode() {
                 value={bienPrix}
                 onChange={(e) => setBienPrix(e.target.value)}
                 placeholder="350000"
-                className="w-full px-4 py-3 border border-foreground/10 rounded-xl text-sm font-normal focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
+                className="w-full px-4 py-3 border border-foreground/10 rounded-xl text-sm font-light focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
                 data-testid="merchant-bien-prix"
               />
               <p className="text-xs text-muted/50 font-light mt-1">
@@ -727,7 +727,7 @@ export default function MerchantMode() {
                 value={enrichedDescription}
                 onChange={(e) => setEnrichedDescription(e.target.value)}
                 rows={3}
-                className="w-full px-4 py-3 border border-foreground/10 rounded-xl text-sm font-normal focus:border-foreground focus:outline-none transition-colors resize-none placeholder:text-foreground/30"
+                className="w-full px-4 py-3 border border-foreground/10 rounded-xl text-sm font-light focus:border-foreground focus:outline-none transition-colors resize-none placeholder:text-foreground/30"
                 data-testid="merchant-description"
               />
               <p className="text-xs text-muted/50 font-light mt-1">
@@ -868,7 +868,7 @@ export default function MerchantMode() {
                       <select
                         value={entry.outdoorSubtype || ""}
                         onChange={(e) => updatePhotoEntry(index, { outdoorSubtype: e.target.value || null })}
-                        className="w-full text-sm font-normal border border-foreground/10 rounded-lg px-3 py-2 bg-background focus:border-foreground focus:outline-none transition-colors"
+                        className="w-full text-sm font-light border border-foreground/10 rounded-lg px-3 py-2 bg-background focus:border-foreground focus:outline-none transition-colors"
                         data-testid={`merchant-annotate-subtype-${index}`}
                       >
                         <option value="">Non spécifié</option>
@@ -882,7 +882,7 @@ export default function MerchantMode() {
                       <select
                         value={entry.roomTypeId || ""}
                         onChange={(e) => updatePhotoEntry(index, { roomTypeId: e.target.value || null })}
-                        className="w-full text-sm font-normal border border-foreground/10 rounded-lg px-3 py-2 bg-background focus:border-foreground focus:outline-none transition-colors"
+                        className="w-full text-sm font-light border border-foreground/10 rounded-lg px-3 py-2 bg-background focus:border-foreground focus:outline-none transition-colors"
                         data-testid={`merchant-annotate-room-${index}`}
                       >
                         <option value="">Non spécifié</option>
@@ -907,7 +907,7 @@ export default function MerchantMode() {
                           const val = e.target.value || null;
                           updatePhotoEntry(index, { outdoorStyleId: val });
                         }}
-                        className="w-full text-sm font-normal border border-foreground/10 rounded-lg px-3 py-2 bg-background focus:border-foreground focus:outline-none transition-colors"
+                        className="w-full text-sm font-light border border-foreground/10 rounded-lg px-3 py-2 bg-background focus:border-foreground focus:outline-none transition-colors"
                         data-testid={`merchant-annotate-outdoor-style-${index}`}
                       >
                         <option value="">Style global</option>
@@ -933,7 +933,7 @@ export default function MerchantMode() {
                             updatePhotoEntry(index, { styleOverride: style, customPromptOverride: "" });
                           }
                         }}
-                        className="w-full text-sm font-normal border border-foreground/10 rounded-lg px-3 py-2 bg-background focus:border-foreground focus:outline-none transition-colors"
+                        className="w-full text-sm font-light border border-foreground/10 rounded-lg px-3 py-2 bg-background focus:border-foreground focus:outline-none transition-colors"
                         data-testid={`merchant-annotate-style-${index}`}
                       >
                         <option value="">Style global</option>
@@ -958,7 +958,7 @@ export default function MerchantMode() {
                         onChange={(e) => updatePhotoEntry(index, { customPromptOverride: e.target.value })}
                         placeholder="Ex : Style campagne chic avec poutres apparentes et tomettes..."
                         rows={2}
-                        className="w-full text-sm font-normal border border-foreground/10 rounded-lg px-3 py-2 bg-background focus:border-foreground focus:outline-none transition-colors resize-none placeholder:text-foreground/30"
+                        className="w-full text-sm font-light border border-foreground/10 rounded-lg px-3 py-2 bg-background focus:border-foreground focus:outline-none transition-colors resize-none placeholder:text-foreground/30"
                         data-testid={`merchant-annotate-custom-prompt-${index}`}
                       />
                     </div>
@@ -1126,7 +1126,7 @@ export default function MerchantMode() {
                 <h4 className="text-base font-semibold text-foreground">
                   {bienTitle}
                 </h4>
-                <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted font-normal mt-1">
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted font-light mt-1">
                   {bienAdresse && <span>{bienAdresse}</span>}
                   {bienType && <span className="capitalize">{bienType}</span>}
                   {bienSurface && <span>{bienSurface} m²</span>}

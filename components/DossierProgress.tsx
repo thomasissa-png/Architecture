@@ -105,7 +105,7 @@ export default function DossierProgress({
             )}
 
             {/* Label */}
-            <span className="text-sm text-foreground font-normal flex-1 truncate">
+            <span className="text-sm text-foreground font-light flex-1 truncate">
               {photo.roomLabel || `Photo ${photo.photoIndex + 1}`}
             </span>
 

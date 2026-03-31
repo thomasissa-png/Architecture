@@ -174,28 +174,28 @@ export default function AuthButton() {
           <div className="px-2 py-1 border-b border-foreground/5">
             <a
               href="/compte"
-              className="block px-3 py-2 text-sm text-muted font-normal hover:text-foreground hover:bg-foreground/5 rounded-xl transition-colors"
+              className="block px-3 py-2 text-sm text-muted font-light hover:text-foreground hover:bg-foreground/5 rounded-xl transition-colors"
               onClick={() => setMenuOpen(false)}
             >
               Mon compte
             </a>
             <a
               href="/mes-biens"
-              className="block px-3 py-2 text-sm text-muted font-normal hover:text-foreground hover:bg-foreground/5 rounded-xl transition-colors"
+              className="block px-3 py-2 text-sm text-muted font-light hover:text-foreground hover:bg-foreground/5 rounded-xl transition-colors"
               onClick={() => setMenuOpen(false)}
             >
               Mes biens
             </a>
             <a
               href="/ma-galerie"
-              className="block px-3 py-2 text-sm text-muted font-normal hover:text-foreground hover:bg-foreground/5 rounded-xl transition-colors"
+              className="block px-3 py-2 text-sm text-muted font-light hover:text-foreground hover:bg-foreground/5 rounded-xl transition-colors"
               onClick={() => setMenuOpen(false)}
             >
               Ma galerie
             </a>
             <a
               href="/mes-dossiers"
-              className="block px-3 py-2 text-sm text-muted font-normal hover:text-foreground hover:bg-foreground/5 rounded-xl transition-colors"
+              className="block px-3 py-2 text-sm text-muted font-light hover:text-foreground hover:bg-foreground/5 rounded-xl transition-colors"
               onClick={() => setMenuOpen(false)}
             >
               Mes dossiers
@@ -205,7 +205,7 @@ export default function AuthButton() {
           <div className="px-2 py-1">
             <a
               href={hasPro ? "/pricing" : "/pricing?buy=starter"}
-              className="block px-3 py-2 text-sm text-muted font-normal hover:text-foreground hover:bg-foreground/5 rounded-xl transition-colors"
+              className="block px-3 py-2 text-sm text-muted font-light hover:text-foreground hover:bg-foreground/5 rounded-xl transition-colors"
               onClick={() => setMenuOpen(false)}
             >
               {hasPro ? "Recharger des visuels" : "Acheter des visuels"}
@@ -215,7 +215,7 @@ export default function AuthButton() {
                 setMenuOpen(false);
                 signOut();
               }}
-              className="w-full text-left px-3 py-2 text-sm text-muted font-normal hover:text-foreground hover:bg-foreground/5 rounded-xl transition-colors"
+              className="w-full text-left px-3 py-2 text-sm text-muted font-light hover:text-foreground hover:bg-foreground/5 rounded-xl transition-colors"
             >
               Se déconnecter
             </button>

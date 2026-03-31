@@ -181,7 +181,7 @@ export default function ComparatifPage() {
             Comparatif home staging virtuel IA 2026 — Versimo vs
             Gepetto vs InterieurAI
           </h1>
-          <p className="text-lg sm:text-xl text-muted font-normal leading-relaxed max-w-3xl mx-auto">
+          <p className="text-lg sm:text-xl text-muted font-light leading-relaxed max-w-3xl mx-auto">
             Le marché du home staging virtuel par IA en France compte
             plusieurs acteurs avec des positionnements différents. Voici
             un comparatif factuel pour choisir l&apos;outil adapté
@@ -228,13 +228,13 @@ export default function ComparatifPage() {
                   <td className="py-3.5 px-4 text-foreground font-medium">
                     {row.versimo}
                   </td>
-                  <td className="py-3.5 px-4 text-muted font-normal">
+                  <td className="py-3.5 px-4 text-muted font-light">
                     {row.gepetto}
                   </td>
-                  <td className="py-3.5 px-4 text-muted font-normal">
+                  <td className="py-3.5 px-4 text-muted font-light">
                     {row.interieurAI}
                   </td>
-                  <td className="py-3.5 px-4 text-muted font-normal">
+                  <td className="py-3.5 px-4 text-muted font-light">
                     {row.renovateClub}
                   </td>
                 </tr>
@@ -264,7 +264,7 @@ export default function ComparatifPage() {
               <h3 className="text-sm font-semibold text-foreground mb-2">
                 Pour les architectes d&apos;intérieur
               </h3>
-              <p className="text-sm text-muted font-normal leading-relaxed">
+              <p className="text-sm text-muted font-light leading-relaxed">
                 Claire, architecte DPLG à Lyon, utilise Versimo pour
                 générer 2 à 3 ambiances différentes
                 en 90 secondes et les envoyer à son client avant le
@@ -285,7 +285,7 @@ export default function ComparatifPage() {
               <h3 className="text-sm font-semibold text-foreground mb-2">
                 Pour les marchands de biens
               </h3>
-              <p className="text-sm text-muted font-normal leading-relaxed">
+              <p className="text-sm text-muted font-light leading-relaxed">
                 Thomas, marchand de biens à Bordeaux, photographie ses
                 biens bruts juste après l&apos;achat et génère
                 des visuels meublés pour ses plaquettes de
@@ -306,7 +306,7 @@ export default function ComparatifPage() {
               <h3 className="text-sm font-semibold text-foreground mb-2">
                 Pour les particuliers
               </h3>
-              <p className="text-sm text-muted font-normal leading-relaxed">
+              <p className="text-sm text-muted font-light leading-relaxed">
                 Léa vient d&apos;acheter son premier appartement et veut
                 visualiser différents styles de décoration dans
                 SES pièces avant d&apos;acheter ses meubles. Avec{" "}
@@ -345,7 +345,7 @@ export default function ComparatifPage() {
                   Pipeline 2 passes — préservation de la
                   géométrie
                 </p>
-                <p className="text-sm text-muted font-normal leading-relaxed">
+                <p className="text-sm text-muted font-light leading-relaxed">
                   Contrairement aux outils qui génèrent tout en
                   une seule passe, Versimo traite d&apos;abord les surfaces
                   (murs, sol, plafond, luminaire) puis ajoute le mobilier dans
@@ -365,7 +365,7 @@ export default function ComparatifPage() {
                 <p className="text-sm font-semibold text-foreground mb-1">
                   Mode Pro — dossiers de pré-commercialisation et annonces partageables
                 </p>
-                <p className="text-sm text-muted font-normal leading-relaxed">
+                <p className="text-sm text-muted font-light leading-relaxed">
                   Aucun concurrent ne propose de générer un
                   dossier de pré-commercialisation complet avec visuels
                   meublés, données DVF du quartier et page
@@ -385,7 +385,7 @@ export default function ComparatifPage() {
                   Enrichissement automatique — quartier et données
                   DVF
                 </p>
-                <p className="text-sm text-muted font-normal leading-relaxed">
+                <p className="text-sm text-muted font-light leading-relaxed">
                   Versimo enrichit automatiquement les annonces avec les
                   données publiques du quartier (prix au m&sup2;,
                   évolution du marché local). Cette
@@ -413,7 +413,7 @@ export default function ComparatifPage() {
                 <h3 className="text-sm font-semibold text-foreground mb-2">
                   {item.question}
                 </h3>
-                <p className="text-sm text-muted font-normal leading-relaxed">
+                <p className="text-sm text-muted font-light leading-relaxed">
                   {item.answer}
                 </p>
               </div>
@@ -428,7 +428,7 @@ export default function ComparatifPage() {
           <p className="text-lg font-semibold text-foreground mb-3">
             Prêt à essayer ?
           </p>
-          <p className="text-sm text-muted font-normal mb-8">
+          <p className="text-sm text-muted font-light mb-8">
             2 visuels offerts, sans carte bancaire,
             résultat en 90 secondes.
           </p>

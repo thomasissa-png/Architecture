@@ -948,7 +948,7 @@ export default function Home() {
             <br />
             <span className="font-light text-muted">en 90 secondes.</span>
           </h1>
-          <p className="text-base sm:text-lg text-muted font-normal leading-relaxed max-w-2xl mx-auto mb-6 sm:mb-8">
+          <p className="text-base sm:text-lg text-muted font-light leading-relaxed max-w-2xl mx-auto mb-6 sm:mb-8">
             Uploadez une photo, choisissez un style parmi 12 ambiances curatées par des experts.
             <br className="hidden sm:inline" />
             Versimo préserve votre espace &mdash; il ne le réinvente pas.
@@ -1103,7 +1103,7 @@ export default function Home() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
             </svg>
           </a>
-          <p className="text-sm text-foreground/60 font-normal mt-3">
+          <p className="text-sm text-foreground/60 font-light mt-3">
             2 visuels offerts · Sans carte bancaire · <a href="#pricing" className="underline hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm">Tarifs à partir de 9,90 €</a>
           </p>
 
@@ -1185,7 +1185,7 @@ export default function Home() {
             <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight mb-3">
               Mettez en scène votre espace
             </h2>
-            <p className="text-muted font-normal">
+            <p className="text-muted font-light">
               {session?.user ? "Générez vos visuels meublés" : "2 visuels gratuits · Sans créer de compte"}
             </p>
           </div>
@@ -1288,7 +1288,7 @@ export default function Home() {
                   onSelect={setSelectedRoomType}
                 />
                 {!selectedRoomType && selectedStyles.length > 0 && (
-                  <p className="text-xs text-sage font-normal text-center mt-2 animate-pulse">
+                  <p className="text-xs text-sage font-light text-center mt-2 animate-pulse">
                     ↑ Sélectionnez un type de pièce pour pouvoir générer
                   </p>
                 )}
@@ -1311,7 +1311,7 @@ export default function Home() {
             <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-1">
               02 — Style
             </h3>
-            <p className="text-xs text-muted/70 font-normal mb-5">
+            <p className="text-xs text-muted/70 font-light mb-5">
               Vous pouvez sélectionner un ou plusieurs styles pour comparer
             </p>
 
@@ -1857,7 +1857,7 @@ export default function Home() {
                 <div className="text-center mt-8">
                   <button
                     onClick={handleDownloadAll}
-                    className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors underline underline-offset-4 font-normal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded"
+                    className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors underline underline-offset-4 font-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
@@ -1905,7 +1905,7 @@ export default function Home() {
             <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight mb-3">
               Tarifs simples et transparents
             </h2>
-            <p className="text-muted font-normal">
+            <p className="text-muted font-light">
               Essayez gratuitement, 2 visuels offerts sans carte bancaire
             </p>
           </div>
@@ -1917,7 +1917,7 @@ export default function Home() {
               <p className="text-4xl font-bold text-foreground mb-0.5">0 €</p>
               <p className="text-xs text-muted font-light mb-1">2 visuels · 0 €/visuel</p>
               <p className="text-[11px] text-muted/60 font-light mb-6">Sans carte bancaire</p>
-              <ul className="text-sm text-muted font-normal space-y-2.5 text-left mb-8 flex-1">
+              <ul className="text-sm text-muted font-light space-y-2.5 text-left mb-8 flex-1">
                 <li className="flex items-start gap-2.5">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                   12 styles disponibles
@@ -1953,7 +1953,7 @@ export default function Home() {
               <p className="text-xs text-muted font-light mb-1">15 visuels · 0,66 €/visuel</p>
               <p className="text-[11px] text-sage font-medium mb-1">Achat unique — sans abonnement</p>
               <p className="text-[11px] text-muted/60 font-light mb-6">TTC · TVA 20% incluse</p>
-              <ul className="text-sm text-muted font-normal space-y-2.5 text-left mb-8 flex-1">
+              <ul className="text-sm text-muted font-light space-y-2.5 text-left mb-8 flex-1">
                 <li className="flex items-start gap-2.5">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                   12 styles + mode personnalisé
@@ -1994,7 +1994,7 @@ export default function Home() {
               <p className="text-xs text-muted font-light mb-1">50 visuels/mois · 0,58 €/visuel</p>
               <p className="text-[11px] text-muted/60 font-light mb-2">TTC · TVA 20% incluse</p>
               <p className="text-xs text-sage font-medium mb-6">29 €/mois au lieu de 200-500 € chez un home stager</p>
-              <ul className="text-sm text-muted font-normal space-y-2.5 text-left mb-4 flex-1">
+              <ul className="text-sm text-muted font-light space-y-2.5 text-left mb-4 flex-1">
                 <li className="flex items-start gap-2.5">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                   3 itérations par photo

@@ -153,7 +153,7 @@ export default function RefineModal({
           {/* Description */}
           <label
             htmlFor="refine-comment"
-            className="block text-sm text-muted font-normal mb-2"
+            className="block text-sm text-muted font-light mb-2"
           >
             Décrivez votre ajustement :
           </label>
@@ -169,7 +169,7 @@ export default function RefineModal({
             disabled={isLoading}
             rows={3}
             maxLength={500}
-            className="w-full px-4 py-3 rounded-xl border border-gray-200/80 bg-white text-sm text-foreground placeholder:text-muted/50 font-normal resize-none transition-colors focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage/30 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full px-4 py-3 rounded-xl border border-gray-200/80 bg-white text-sm text-foreground placeholder:text-muted/50 font-light resize-none transition-colors focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage/30 disabled:opacity-50 disabled:cursor-not-allowed"
           />
 
           {/* Info message */}

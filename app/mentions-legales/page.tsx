@@ -26,7 +26,7 @@ export default function MentionsLegales() {
           Mentions légales
         </h1>
 
-        <div className="space-y-8 text-sm text-muted font-normal leading-relaxed">
+        <div className="space-y-8 text-sm text-muted font-light leading-relaxed">
           <section>
             <h2 className="text-base font-semibold text-foreground mb-3">1. Éditeur du site</h2>
             <p>Le site Versimo est édité par :</p>

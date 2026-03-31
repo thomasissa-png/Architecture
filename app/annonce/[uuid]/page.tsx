@@ -101,7 +101,7 @@ export default async function AnnoncePage({ params }: PageProps) {
           <h1 className="text-2xl font-semibold text-foreground mb-3">
             Annonce introuvable
           </h1>
-          <p className="text-muted font-normal text-sm">
+          <p className="text-muted font-light text-sm">
             Cette annonce n&apos;existe pas ou a été supprimée.
           </p>
         </div>
@@ -117,7 +117,7 @@ export default async function AnnoncePage({ params }: PageProps) {
           <h1 className="text-2xl font-semibold text-foreground mb-3">
             Annonce introuvable
           </h1>
-          <p className="text-muted font-normal text-sm">
+          <p className="text-muted font-light text-sm">
             Cette annonce n&apos;existe pas ou a été supprimée.
           </p>
         </div>
@@ -146,7 +146,7 @@ export default async function AnnoncePage({ params }: PageProps) {
           <h1 className="text-2xl font-semibold text-foreground mb-3">
             Bien introuvable
           </h1>
-          <p className="text-muted font-normal text-sm">
+          <p className="text-muted font-light text-sm">
             Le bien associé à cette annonce n&apos;existe plus.
           </p>
         </div>
@@ -307,7 +307,7 @@ export default async function AnnoncePage({ params }: PageProps) {
 
           {/* Address */}
           {property.address_normalized && (
-            <p className="text-sm text-muted font-normal">
+            <p className="text-sm text-muted font-light">
               {property.address_normalized}
             </p>
           )}
@@ -387,7 +387,7 @@ export default async function AnnoncePage({ params }: PageProps) {
         {/* Photo gallery grouped by room — with lightbox */}
         {completedPhotos.length === 0 ? (
           <div className="text-center py-16">
-            <p className="text-sm text-muted font-normal mb-4">
+            <p className="text-sm text-muted font-light mb-4">
               Photos en cours de pr&eacute;paration &mdash; contactez-nous pour les recevoir en avant-premi&egrave;re
             </p>
             {hasMerchant && (merchant?.telephone || merchant?.email_pro) && (
@@ -450,13 +450,13 @@ export default async function AnnoncePage({ params }: PageProps) {
           {description ? (
             <div className="max-w-2xl space-y-4">
               {description.split(/\n\n+/).map((paragraph, idx) => (
-                <p key={idx} className="text-sm text-muted font-normal leading-relaxed">
+                <p key={idx} className="text-sm text-muted font-light leading-relaxed">
                   {paragraph.trim()}
                 </p>
               ))}
             </div>
           ) : (
-            <p className="text-sm text-muted font-normal">
+            <p className="text-sm text-muted font-light">
               Description en cours de rédaction
             </p>
           )}
@@ -602,7 +602,7 @@ export default async function AnnoncePage({ params }: PageProps) {
               {merchant?.telephone && (
                 <a
                   href={`tel:${merchant.telephone}`}
-                  className="block text-sm text-muted font-normal hover:text-foreground transition-colors"
+                  className="block text-sm text-muted font-light hover:text-foreground transition-colors"
                   data-testid="annonce-telephone"
                 >
                   {merchant.telephone}
@@ -654,7 +654,7 @@ export default async function AnnoncePage({ params }: PageProps) {
               {[merchant?.raison_sociale, merchant?.telephone, merchant?.email_pro].filter(Boolean).join(" — ")}
             </p>
           )}
-          <p className="text-sm text-muted/60 font-normal">
+          <p className="text-sm text-muted/60 font-light">
             Projection d&apos;aménagement réalisée par Versimo — le bien est livré brut. Visuels non contractuels.
           </p>
           <p className="text-xs text-muted/40 font-light mt-1">

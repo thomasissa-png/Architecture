@@ -108,7 +108,7 @@ export default function MesDossiersPage() {
     }
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-sm text-muted font-normal">Redirection en cours...</p>
+        <p className="text-sm text-muted font-light">Redirection en cours...</p>
       </div>
     );
   }
@@ -143,7 +143,7 @@ export default function MesDossiersPage() {
           <h1 className="text-2xl font-light text-foreground tracking-tight mb-1">
             Mes dossiers
           </h1>
-          <p className="text-sm text-muted font-normal mb-8">
+          <p className="text-sm text-muted font-light mb-8">
             Retrouvez tous vos dossiers Mode Pro.
           </p>
 
@@ -156,7 +156,7 @@ export default function MesDossiersPage() {
 
           {/* Error */}
           {error && (
-            <div className="p-4 rounded-2xl bg-red-50 border border-red-100 text-sm text-red-600 font-normal">
+            <div className="p-4 rounded-2xl bg-red-50 border border-red-100 text-sm text-red-600 font-light">
               {error}
             </div>
           )}
@@ -164,7 +164,7 @@ export default function MesDossiersPage() {
           {/* Empty state */}
           {!isLoading && !error && dossiers.length === 0 && (
             <div className="text-center py-20">
-              <p className="text-sm text-muted font-normal mb-4">
+              <p className="text-sm text-muted font-light mb-4">
                 Aucun dossier. Créez votre premier dossier en Mode Pro.
               </p>
               <a

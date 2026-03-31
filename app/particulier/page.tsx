@@ -116,7 +116,7 @@ export default function ParticulierPage() {
             <br />
             <span className="font-light text-muted">Pas celui de quelqu&apos;un d&apos;autre.</span>
           </h1>
-          <p className="text-lg sm:text-xl text-muted font-normal leading-relaxed max-w-2xl mx-auto mb-8">
+          <p className="text-lg sm:text-xl text-muted font-light leading-relaxed max-w-2xl mx-auto mb-8">
             Testez 12 styles de déco dans VOS pièces.
             Gratuit, instantané, depuis votre iPhone.
           </p>
@@ -129,7 +129,7 @@ export default function ParticulierPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
           </a>
-          <p className="text-sm text-foreground/60 font-normal mt-4">
+          <p className="text-sm text-foreground/60 font-light mt-4">
             Sans carte bancaire · Sans inscription · 2 visuels offerts
           </p>
           <p className="text-xs text-foreground/50 font-medium mt-6">Une photo, 90 secondes, 12 possibilités.</p>
@@ -238,7 +238,7 @@ export default function ParticulierPage() {
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-4 text-center">
             Essayez avant d&apos;acheter
           </h2>
-          <p className="text-muted font-normal text-center mb-8 max-w-xl mx-auto">
+          <p className="text-muted font-light text-center mb-8 max-w-xl mx-auto">
             Scandinave, Japandi, Bohème, Cosy… testez-les tous sur votre pièce.
             Même vide, même sombre, même petite — ça marche.
           </p>
@@ -271,7 +271,7 @@ export default function ParticulierPage() {
                 </span>
                 <div>
                   <p className="text-sm font-semibold text-foreground mb-1">{item.title}</p>
-                  <p className="text-sm text-muted font-normal leading-relaxed">{item.desc}</p>
+                  <p className="text-sm text-muted font-light leading-relaxed">{item.desc}</p>
                 </div>
               </div>
             ))}
@@ -282,10 +282,10 @@ export default function ParticulierPage() {
       {/* Témoignage */}
       <section className="py-8 sm:py-10 px-5 sm:px-8">
         <div className="max-w-2xl mx-auto text-center">
-          <blockquote className="text-base sm:text-lg text-foreground font-normal leading-relaxed italic">
+          <blockquote className="text-base sm:text-lg text-foreground font-light leading-relaxed italic">
             « J&apos;ai testé 4 ambiances sur mon salon vide en 10 minutes, directement depuis mon iPhone. Mon copain a enfin compris pourquoi je voulais du Japandi — il a voté pour le Scandinave, on a comparé. »
           </blockquote>
-          <p className="text-sm text-muted font-normal mt-3">
+          <p className="text-sm text-muted font-light mt-3">
             Julie, 29 ans — Nantes, T3 livré en janvier
           </p>
         </div>
@@ -309,7 +309,7 @@ export default function ParticulierPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                   </svg>
                 </summary>
-                <p className="text-sm text-muted font-normal leading-relaxed pb-4">
+                <p className="text-sm text-muted font-light leading-relaxed pb-4">
                   {item.answer}
                 </p>
               </details>
@@ -324,10 +324,10 @@ export default function ParticulierPage() {
           <p className="text-lg font-semibold text-foreground mb-3">
             Votre pièce. Le style que vous cherchez. En 90 secondes.
           </p>
-          <p className="text-sm text-muted font-normal mb-6">
+          <p className="text-sm text-muted font-light mb-6">
             Rendu photo-réaliste, pas un filtre. Testé sur des vraies pièces — salons, chambres, studios.
           </p>
-          <p className="text-sm text-muted font-normal mb-8">
+          <p className="text-sm text-muted font-light mb-8">
             2 visuels offerts · Sans CB · Ensuite à partir de 9,90 €
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">

@@ -208,7 +208,7 @@ export default function GaleriePage() {
       <div className="min-h-screen bg-background flex items-center justify-center px-5">
         <div className="text-center max-w-md space-y-4">
           <h1 className="text-2xl font-semibold text-foreground">Ma galerie</h1>
-          <p className="text-sm text-muted font-normal">
+          <p className="text-sm text-muted font-light">
             Connectez-vous pour voir votre galerie de photos générées.
           </p>
           <button
@@ -283,7 +283,7 @@ export default function GaleriePage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
             <h1 className="text-2xl font-semibold text-foreground tracking-tight">Ma galerie</h1>
-            <p className="text-sm text-muted font-normal mt-1">
+            <p className="text-sm text-muted font-light mt-1">
               {photos.length} photo{photos.length !== 1 ? "s" : ""} générée{photos.length !== 1 ? "s" : ""}
             </p>
           </div>
@@ -337,7 +337,7 @@ export default function GaleriePage() {
 
         {photos.length === 0 ? (
           <div className="text-center py-16">
-            <p className="text-muted font-normal text-sm">Aucune photo pour le moment.</p>
+            <p className="text-muted font-light text-sm">Aucune photo pour le moment.</p>
             <a
               href="/#outil"
               className="inline-block mt-4 text-xs bg-foreground text-background px-4 py-2 rounded-full font-medium hover:bg-foreground/85 transition-colors"
