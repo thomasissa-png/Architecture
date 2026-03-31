@@ -223,19 +223,6 @@ export async function getPropertiesByUser(userId: string): Promise<Property[]> {
   await ensurePropertiesTable();
   const db = getPool();
 
-  // Debug: count total properties in table for this user
-  const countResult = await db.query(
-    `SELECT COUNT(*) as total FROM properties WHERE user_id = $1`,
-    [userId]
-  );
-  console.log(`[getPropertiesByUser] userId="${userId}" total_in_db=${countResult.rows[0]?.total}`);
-
-  // Also check: list all distinct user_ids that have properties
-  const usersResult = await db.query(
-    `SELECT DISTINCT user_id, COUNT(*) as count FROM properties GROUP BY user_id`
-  );
-  console.log(`[getPropertiesByUser] all_users_with_properties:`, JSON.stringify(usersResult.rows));
-
   const result = await db.query(
     `SELECT p.*,
       (SELECT COUNT(*) FROM user_photos up WHERE up.property_id = p.id) as photo_count,

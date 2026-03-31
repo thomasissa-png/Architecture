@@ -219,21 +219,24 @@ export default function MesBiensPage() {
                 <label className="block text-xs text-muted font-light mb-1">Adresse</label>
                 <input
                   type="text"
+                  role="combobox"
                   value={newAddress}
                   onChange={(e) => handleAddressInput(e.target.value)}
                   onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
                   onBlur={() => setTimeout(() => setShowSuggestions(false), 300)}
                   placeholder="12 rue de la Paix, 75002 Paris"
                   aria-expanded={showSuggestions && suggestions.length > 0}
+                  aria-controls="address-suggestions-listbox"
                   aria-autocomplete="list"
                   className="w-full text-sm font-light bg-background border border-foreground/10 rounded-xl px-3 py-2 min-h-[44px] text-foreground placeholder:text-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                 />
                 {showSuggestions && suggestions.length > 0 && (
-                  <div role="listbox" className="absolute top-full left-0 right-0 z-10 mt-1 bg-background border border-foreground/10 rounded-xl shadow-lg overflow-hidden">
+                  <div id="address-suggestions-listbox" role="listbox" className="absolute top-full left-0 right-0 z-10 mt-1 bg-background border border-foreground/10 rounded-xl shadow-lg overflow-hidden">
                     {suggestions.map((s, i) => (
                       <button
                         key={i}
                         role="option"
+                        aria-selected={false}
                         onMouseDown={() => selectSuggestion(s)}
                         className="w-full text-left text-xs font-light px-3 py-2 min-h-[44px] flex items-center hover:bg-foreground/5 transition-colors"
                       >

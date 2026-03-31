@@ -488,9 +488,7 @@ async function processBatchGeneration(
   );
 
   // Update dossier final status
-  const finalStatus = failCount === photos.length
-    ? "partial"
-    : successCount === photos.length
+  const finalStatus = successCount === photos.length
     ? "completed"
     : "partial";
 
