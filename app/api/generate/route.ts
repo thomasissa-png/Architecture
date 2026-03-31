@@ -1,5 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
+
+// Singleton OpenAI client — reuses HTTP connections across passes
+let _openaiClient: OpenAI | null = null;
+function getOpenAI(): OpenAI {
+  if (!_openaiClient) {
+    _openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+  return _openaiClient;
+}
 import Replicate from "replicate";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -687,7 +696,7 @@ async function tryOpenAIResponses(
   roomTypeId?: string | null,
   outdoor?: { isOutdoor: boolean; subtypeSurfaceOverride?: string; subtypeFurnitureOverride?: string }
 ): Promise<{ image: string; model: string }> {
-  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  const openai = getOpenAI();
 
   let prompt: string;
   if (outdoor?.isOutdoor) {
@@ -841,7 +850,7 @@ async function tryOpenAIResponsesWithPrompt(
   prompt: string,
   size: string
 ): Promise<{ image: string; model: string }> {
-  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  const openai = getOpenAI();
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- gpt-image-1.5 not yet in SDK types
   const response = await withTimeout(
@@ -1435,25 +1444,25 @@ export async function POST(request: NextRequest) {
       : `sessions/anon_${Date.now()}/pass1.jpg`;
 
     let pass1Saved = false;
-    try {
-      await savePass1Cache(pass1CacheKey, pass1Base64, {
-        width: width ?? outputSize.w,
-        height: height ?? outputSize.h,
-        styleId,
-        furniturePrompt: trimmedFurniture,
-        surfacePrompt: trimmedSurface,
-        createdAt: Date.now(),
-        roomType: isOutdoor ? null : (roomType ?? null),
-        isOutdoor: isOutdoor || undefined,
-        outdoorSubtype: isOutdoor ? (outdoorSubtype ?? undefined) : undefined,
-      });
-      pass1Saved = true;
-    } catch (err) {
-      console.error("Pass1 cache save failed:", err);
-    }
+    // R4: Launch cache save in parallel — pass 2 uses pass1Base64 from memory, not cache
+    const pass1CachePromise = savePass1Cache(pass1CacheKey, pass1Base64, {
+      width: width ?? outputSize.w,
+      height: height ?? outputSize.h,
+      styleId,
+      furniturePrompt: trimmedFurniture,
+      surfacePrompt: trimmedSurface,
+      createdAt: Date.now(),
+      roomType: isOutdoor ? null : (roomType ?? null),
+      isOutdoor: isOutdoor || undefined,
+      outdoorSubtype: isOutdoor ? (outdoorSubtype ?? undefined) : undefined,
+    })
+      .then(() => { pass1Saved = true; })
+      .catch((err) => console.error("Pass1 cache save failed:", err));
 
     // If surfaces-only mode, return pass 1 result directly
     if (!withFurniture) {
+      // Await cache save before responding (need pass1Saved flag + Replit kills worker after response)
+      await pass1CachePromise;
       const outputBase64 = pass1Base64;
       const response = NextResponse.json({
         image: pass1.image,
@@ -1573,6 +1582,9 @@ export async function POST(request: NextRequest) {
       }
     }
     console.log(`[generate] photoId final: ${photoId || "NULL"} for userId="${session?.user?.id || "NONE"}"`);
+
+    // Ensure cache save completed before checking pass1Saved
+    await pass1CachePromise;
 
     const response = NextResponse.json({
       image: finalImage,

@@ -3,7 +3,7 @@
  * Resizes and compresses images before sending to the API.
  */
 
-const MAX_DIMENSION = 2048;
+const MAX_DIMENSION = 1536;
 const JPEG_QUALITY = 0.85;
 
 interface ProcessedImage {
