@@ -17,8 +17,6 @@ import { logGeneration, savePass1Cache, getPass1Cache, getPool, saveIterationBas
 import { preprocessIterationComment, classifyIterationIntent } from "@/lib/custom-prompt";
 import {
   buildIterationFurnitureResponsesPrompt,
-  buildIterationFurnitureFluxPrompt,
-  FLUX_ITERATION_NEGATIVE_PROMPT,
   MAX_ITERATIONS,
   PASS1_TTL_MS,
 } from "@/lib/iteration-prompt";
@@ -27,11 +25,8 @@ import { applyOutdoorSubtypeOverrides, OUTDOOR_SUBTYPES } from "@/lib/outdoor-su
 import { saveUserPhoto } from "@/lib/user-photos";
 import {
   buildIterationOutdoorFurnitureResponsesPrompt,
-  buildIterationOutdoorFurnitureFluxPrompt,
   buildAdjustResponsesPrompt,
-  buildAdjustFluxPrompt,
   buildAdjustOutdoorResponsesPrompt,
-  buildAdjustOutdoorFluxPrompt,
 } from "@/lib/iteration-prompt";
 
 /** Prompt version — increment when modifying any prompt builder or style prompt.
@@ -776,6 +771,13 @@ async function tryFluxDepth(
   roomTypeId?: string | null,
   outdoor?: { isOutdoor: boolean; subtypeSurfaceOverride?: string; subtypeFurnitureOverride?: string }
 ): Promise<{ image: string; model: string }> {
+  // GUARD: Flux Depth Pro MUST NEVER be used for pass 2 (furniture).
+  // It regenerates the scene instead of editing, destroying geometry.
+  // See audit visuel #41/#42 (Yann 4.2, Lucas 5.0), CLAUDE.md Sprint 22 #155.
+  if (pass === 2) {
+    throw new Error("BLOCKED: tryFluxDepth() called with pass=2. Flux Depth Pro must NEVER be used for furniture pass — it destroys geometry. This is a programming error.");
+  }
+
   const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
 
   const dataUri = `data:image/jpeg;base64,${imageBase64}`;
@@ -902,12 +904,16 @@ async function tryOpenAIResponsesWithPrompt(
   };
 }
 
+// WARNING: This function is DEAD CODE since Sprint 22 fix (#155).
+// Flux Depth Pro MUST NEVER be used for iterations — it regenerates the entire scene.
+// Kept for reference only. The guard throw prevents accidental reactivation.
 async function tryFluxDepthWithPrompt(
   imageBase64: string,
   prompt: string,
   width: number,
   height: number
 ): Promise<{ image: string; model: string }> {
+  throw new Error("BLOCKED: tryFluxDepthWithPrompt() is disabled. Flux Depth Pro must NEVER be used for iterations (see bug #81, Sprint 22 #155). Use OpenAI GPT-Image-1.5 via generateIterationPass() instead.");
   const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
 
   const dataUri = `data:image/jpeg;base64,${imageBase64}`;
@@ -918,7 +924,7 @@ async function tryFluxDepthWithPrompt(
       {
         input: {
           prompt,
-          negative_prompt: FLUX_ITERATION_NEGATIVE_PROMPT,
+          negative_prompt: "", // Was FLUX_ITERATION_NEGATIVE_PROMPT — dead code
           control_image: dataUri,
           width,
           height,
@@ -1192,20 +1198,14 @@ export async function POST(request: NextRequest) {
             iterationComment.trim(),
             preprocessResult.enrichedComment,
           );
-          fluxPrompt = buildAdjustOutdoorFluxPrompt(
-            iterationComment.trim(),
-            preprocessResult.enrichedComment,
-          );
+          fluxPrompt = ""; // Flux disabled for iterations (bug #81)
         } else {
           responsesPrompt = buildAdjustResponsesPrompt(
             iterationComment.trim(),
             preprocessResult.enrichedComment,
             iterMeta,
           );
-          fluxPrompt = buildAdjustFluxPrompt(
-            iterationComment.trim(),
-            preprocessResult.enrichedComment,
-          );
+          fluxPrompt = ""; // Flux disabled for iterations (bug #81)
         }
       } else {
         // RESTYLE mode: original behavior — re-pass 2 from empty pass1 image
@@ -1217,21 +1217,14 @@ export async function POST(request: NextRequest) {
             originalFurniturePrompt,
             allModifications,
           );
-          fluxPrompt = buildIterationOutdoorFurnitureFluxPrompt(
-            originalFurniturePrompt,
-            allModifications,
-          );
+          fluxPrompt = ""; // Flux disabled for iterations (bug #81)
         } else {
           responsesPrompt = buildIterationFurnitureResponsesPrompt(
             originalFurniturePrompt,
             allModifications,
             iterMeta,
           );
-          fluxPrompt = buildIterationFurnitureFluxPrompt(
-            originalFurniturePrompt,
-            allModifications,
-            iterMeta,
-          );
+          fluxPrompt = ""; // Flux disabled for iterations (bug #81)
         }
       }
 
