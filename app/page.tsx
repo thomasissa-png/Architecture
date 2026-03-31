@@ -505,7 +505,7 @@ export default function Home() {
         scrollToElement("step-results");
       }
     }
-  }, [files, selectedStyle, customPrompt, withFurniture, filePreviewUrls, isOutdoor, selectedOutdoorStyle, outdoorSubtype, selectedRoomType, perPhotoStyles]);
+  }, [files, selectedStyle, customPrompt, withFurniture, filePreviewUrls, isOutdoor, selectedOutdoorStyle, outdoorSubtype, selectedRoomType, perPhotoStyles, perPhotoRoomTypes, perPhotoCustomPrompts, perPhotoOutdoor]);
 
   const handleRetry = useCallback(() => {
     setResults([]);
@@ -1345,7 +1345,7 @@ export default function Home() {
             <div id="step-generate" className="text-center mb-8 animate-fade-in-up sticky bottom-6 z-40">
               <button
                 onClick={handleGenerate}
-                disabled={isGenerating || (!isOutdoor && selectedStyle !== null && !selectedRoomType)}
+                disabled={isGenerating || (files.length <= 1 && !isOutdoor && selectedStyle !== null && !selectedRoomType)}
                 className="inline-flex items-center gap-3 bg-foreground text-background px-10 py-4 rounded-full font-medium text-base hover:bg-foreground/85 transition-all disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 shadow-sm"
               >
                 {isGenerating ? (
