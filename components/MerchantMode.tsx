@@ -4,11 +4,11 @@
  * F4 — Mode Pro (ex Mode Marchand): Main component.
  *
  * Multi-step flow:
- * 1. Property info (name, address, surface, price, type)
- * 2. Upload photos (max 15, drag & drop)
- * 3. Global style selection + per-photo override
+ * 1. Upload photos (max 15, drag & drop)
+ * 2. Annotate (room type + style per photo)
+ * 3. Global style selection (if needed)
  * 4. Generate batch
- * 5. View results + download PDF + share link
+ * 5. View results + attach to property + download PDF + share link
  */
 
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
@@ -46,16 +46,7 @@ interface DossierPhotoStatus {
   styleId: string | null;
 }
 
-type MerchantStep = "info" | "photos" | "annotate" | "style" | "generating" | "results";
-
-const BIEN_TYPES = [
-  { id: "appartement", label: "Appartement" },
-  { id: "maison", label: "Maison" },
-  { id: "loft", label: "Loft" },
-  { id: "studio", label: "Studio" },
-  { id: "duplex", label: "Duplex" },
-  { id: "bureau", label: "Bureau commercial" },
-];
+type MerchantStep = "photos" | "annotate" | "style" | "generating" | "results";
 
 const MAX_PHOTOS = 15;
 
@@ -73,10 +64,10 @@ export default function MerchantMode() {
 
   // Property info (bienNom supprime — auto-genere depuis type/surface/ville)
   const [bienAdresse, setBienAdresse] = useState("");
-  const [bienSurface, setBienSurface] = useState("");
-  const [bienPrix, setBienPrix] = useState("");
-  const [bienType, setBienType] = useState("");
-  const [bienNbPieces, setBienNbPieces] = useState("");
+  const [bienSurface] = useState("");
+  const [bienPrix] = useState("");
+  const [bienType] = useState("");
+  const [bienNbPieces] = useState("");
 
   // Enrichment data (F4.B)
   const [addressSuggestions, setAddressSuggestions] = useState<Array<{ label: string; postcode: string; city: string; lat: number; lon: number }>>([]);
@@ -176,24 +167,7 @@ export default function MerchantMode() {
       .catch(() => {});
   }, [session]);
 
-  const handleSelectProperty = useCallback((propertyId: string) => {
-    const prop = existingProperties.find((p) => p.id === propertyId);
-    if (!prop) return;
-    setSelectedPropertyId(propertyId);
-    setBienAdresse(prop.address_normalized || prop.address_raw || "");
-    setBienType(prop.property_type || "");
-    setBienSurface(prop.surface_m2 ? String(prop.surface_m2) : "");
-    setBienPrix(prop.sale_price ? String(prop.sale_price) : "");
-    setBienNbPieces(prop.room_count ? String(prop.room_count) : "");
-    if (prop.latitude && prop.longitude) {
-      setEnrichedLat(Number(prop.latitude));
-      setEnrichedLon(Number(prop.longitude));
-    }
-    if (prop.city) setEnrichedCity(prop.city);
-    if (prop.description_final || prop.description_generated) {
-      setEnrichedDescription(prop.description_final || prop.description_generated || "");
-    }
-  }, [existingProperties]);
+
 
   // ── Stable preview URLs ──
   const previewUrls = useMemo(() => {
@@ -540,249 +514,6 @@ export default function MerchantMode() {
           >
             Fermer
           </button>
-        </div>
-      )}
-
-      {/* ── Step: Property Info (optional — accessible from review) ── */}
-      {currentStep === "info" && (
-        <div className="space-y-6 animate-fade-in-up" data-testid="merchant-step-info">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-4">
-                Informations du bien
-              </h3>
-              <p className="text-xs text-muted/60 font-light mb-1">
-                Facultatif — ces infos enrichissent le dossier PDF et la fiche de partage.
-              </p>
-            </div>
-            <button
-              onClick={() => {
-                setCurrentStep("annotate");
-                merchantRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-              }}
-              className="text-xs text-muted font-light hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded"
-            >
-              Retour
-            </button>
-          </div>
-
-          {/* Quick select existing property */}
-          {existingProperties.length > 0 && (
-            <div>
-              <label className="text-xs font-medium text-foreground mb-1.5 block">
-                Bien existant
-              </label>
-              <select
-                value={selectedPropertyId || ""}
-                onChange={(e) => {
-                  if (e.target.value) handleSelectProperty(e.target.value);
-                  else setSelectedPropertyId(null);
-                }}
-                className="w-full px-4 py-3 border border-foreground/10 rounded-xl text-sm font-light bg-background focus:border-foreground focus:outline-none transition-colors min-h-[44px]"
-              >
-                <option value="">Nouveau bien (saisir l&apos;adresse)</option>
-                {existingProperties.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.address_normalized || p.address_raw || "Bien sans adresse"} {p.surface_m2 ? `— ${p.surface_m2} m²` : ""}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          {/* Address autocomplete */}
-          <div className="relative">
-            <label className="text-xs font-medium text-foreground mb-1.5 block">
-              {selectedPropertyId ? "Adresse" : "Adresse du bien"}
-            </label>
-            <input
-              type="text"
-              value={bienAdresse}
-              onChange={(e) => handleAddressInput(e.target.value)}
-              onFocus={() => addressSuggestions.length > 0 && setShowSuggestions(true)}
-              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-              placeholder="Commencez à taper : 45 rue de la Paix, 75002 Paris"
-              className="w-full px-4 py-3 border border-foreground/10 rounded-xl text-sm font-light focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
-              data-testid="merchant-bien-adresse"
-            />
-            {isEnriching && (
-              <div className="absolute right-3 top-[38px]">
-                <div className="w-4 h-4 border-2 border-foreground/20 border-t-sage rounded-full animate-spin" />
-              </div>
-            )}
-
-            {/* Suggestions dropdown */}
-            {showSuggestions && addressSuggestions.length > 0 && (
-              <div className="absolute z-20 left-0 right-0 mt-1 bg-background border border-foreground/10 rounded-xl shadow-lg overflow-hidden" data-testid="merchant-address-suggestions">
-                {addressSuggestions.map((s, i) => (
-                  <button
-                    key={i}
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => handleSelectAddress(s)}
-                    className="w-full text-left px-4 py-3 text-sm font-light hover:bg-foreground/5 transition-colors border-b last:border-b-0 border-foreground/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-inset"
-                    data-testid={`merchant-address-suggestion-${i}`}
-                  >
-                    {s.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Auto-filled location info */}
-          {(enrichedCity || enrichedPostcode) && (
-            <div className="flex flex-wrap gap-2 -mt-2">
-              {enrichedPostcode && (
-                <span className="text-xs px-3 py-1 rounded-full bg-foreground/5 text-muted font-light">
-                  {enrichedPostcode}
-                </span>
-              )}
-              {enrichedCity && (
-                <span className="text-xs px-3 py-1 rounded-full bg-foreground/5 text-muted font-light">
-                  {enrichedCity}
-                </span>
-              )}
-              {enrichedPrixM2 && (
-                <span className="text-xs px-3 py-1 rounded-full bg-sage/10 text-sage font-medium">
-                  Prix moyen : {enrichedPrixM2.toLocaleString("fr-FR")} €/m²
-                </span>
-              )}
-            </div>
-          )}
-
-          <div className="border-b border-foreground/5" />
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="text-xs font-medium text-foreground mb-1.5 block">
-                Surface (m²)
-              </label>
-              <input
-                type="number"
-                value={bienSurface}
-                onChange={(e) => setBienSurface(e.target.value)}
-                placeholder="65"
-                className="w-full px-4 py-3 border border-foreground/10 rounded-xl text-sm font-light focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
-                data-testid="merchant-bien-surface"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs font-medium text-foreground mb-1.5 block">
-                Nombre de pièces
-              </label>
-              <input
-                type="number"
-                value={bienNbPieces}
-                onChange={(e) => setBienNbPieces(e.target.value)}
-                placeholder="3"
-                className="w-full px-4 py-3 border border-foreground/10 rounded-xl text-sm font-light focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
-                data-testid="merchant-bien-nb-pieces"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs font-medium text-foreground mb-1.5 block">
-                Prix (€)
-              </label>
-              <input
-                type="number"
-                value={bienPrix}
-                onChange={(e) => setBienPrix(e.target.value)}
-                placeholder="350000"
-                className="w-full px-4 py-3 border border-foreground/10 rounded-xl text-sm font-light focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
-                data-testid="merchant-bien-prix"
-              />
-              <p className="text-xs text-muted/50 font-light mt-1">
-                Prix de commercialisation en euros (ex : 350000 pour 350 000 €)
-              </p>
-            </div>
-          </div>
-
-          {/* Property type */}
-          <div>
-            <label className="text-xs font-medium text-foreground mb-2 block">
-              Type de bien
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {BIEN_TYPES.map((type) => (
-                <button
-                  key={type.id}
-                  onClick={() => setBienType(bienType === type.id ? "" : type.id)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
-                    bienType === type.id
-                      ? "bg-sage text-white"
-                      : "bg-foreground/5 text-muted hover:bg-foreground/10"
-                  }`}
-                  data-testid={`merchant-bien-type-${type.id}`}
-                >
-                  {type.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Description commerciale (enriched) */}
-          {enrichedDescription && (
-            <div>
-              <label className="text-xs font-medium text-foreground mb-1.5 block">
-                Description commerciale
-              </label>
-              <textarea
-                value={enrichedDescription}
-                onChange={(e) => setEnrichedDescription(e.target.value)}
-                rows={3}
-                className="w-full px-4 py-3 border border-foreground/10 rounded-xl text-sm font-light focus:border-foreground focus:outline-none transition-colors resize-none placeholder:text-foreground/30"
-                data-testid="merchant-description"
-              />
-              <p className="text-xs text-muted/50 font-light mt-1">
-                Générée automatiquement — vous pouvez la modifier.
-              </p>
-            </div>
-          )}
-
-          {/* Carte du quartier — iframe OSM interactive (zero dependance serveur) */}
-          {enrichedLat && enrichedLon ? (
-            <div>
-              <label className="text-xs font-medium text-foreground mb-1.5 block">
-                Carte du quartier
-              </label>
-              <div className="rounded-xl border border-foreground/5 overflow-hidden">
-                <iframe
-                  title="Carte du quartier"
-                  width="100%"
-                  height="250"
-                  style={{ border: 0 }}
-                  loading="lazy"
-                  referrerPolicy="no-referrer"
-                  src={`https://www.openstreetmap.org/export/embed.html?bbox=${enrichedLon - 0.008},${enrichedLat - 0.005},${enrichedLon + 0.008},${enrichedLat + 0.005}&layer=mapnik&marker=${enrichedLat},${enrichedLon}`}
-                  data-testid="merchant-carte-preview"
-                />
-                <a
-                  href={`https://www.openstreetmap.org/?mlat=${enrichedLat}&mlon=${enrichedLon}#map=16/${enrichedLat}/${enrichedLon}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block text-center text-xs text-sage py-1.5 hover:text-sage/80 transition-colors bg-foreground/[0.02]"
-                >
-                  Voir en grand sur OpenStreetMap
-                </a>
-              </div>
-            </div>
-          ) : null}
-
-          {/* Next button */}
-          <div className="pt-4 flex items-center gap-3">
-            <button
-              onClick={() => {
-                setCurrentStep("annotate");
-                merchantRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-              }}
-              className="px-8 py-3 bg-foreground text-background rounded-xl font-medium text-sm hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
-              data-testid="merchant-next-annotate"
-            >
-              Valider les infos
-            </button>
-          </div>
         </div>
       )}
 
