@@ -66,7 +66,7 @@ Rien de bloquant.
 
 ## 7. Page /comparatif — 9/10
 
-**OK** : Tableau comparatif complet avec 10 criteres, 4 colonnes (Versiroom, Gepetto, InterieurAI, Renovate Club). FAQ JSON-LD avec 3 questions. Metadata SEO completes avec canonical.
+**OK** : Tableau comparatif complet avec 10 criteres, 4 colonnes (Versimo, Gepetto, InterieurAI, Renovate Club). FAQ JSON-LD avec 3 questions. Metadata SEO completes avec canonical.
 
 **OK** : Disclaimer "Donnees collectees en mars 2026 sur les sites publics des concurrents" (L243-248). "Non documente" au lieu de donnees inventees. Conforme a la regle zero-invention.
 

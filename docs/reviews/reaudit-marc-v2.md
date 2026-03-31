@@ -34,13 +34,13 @@
 
 ### 1. Est-ce que ca a l'air PRO ? — 9/10
 
-Oui. Le header sticky est identique sur les deux pages (logo marchand ou initiales colorees + raison sociale). Le disclaimer n'est plus une confession honteuse en xs/40 — c'est une phrase declarative ("Projection d'amenagement realisee par Versiroom — le bien est livre brut. Visuels non contractuels.") en taille visible. La pill quartier en sage signale que Thomas connait son marche. Un particulier qui vend lui-meme n'a pas ca. Marc se dit : "ce type est professionnel".
+Oui. Le header sticky est identique sur les deux pages (logo marchand ou initiales colorees + raison sociale). Le disclaimer n'est plus une confession honteuse en xs/40 — c'est une phrase declarative ("Projection d'amenagement realisee par Versimo — le bien est livre brut. Visuels non contractuels.") en taille visible. La pill quartier en sage signale que Thomas connait son marche. Un particulier qui vend lui-meme n'a pas ca. Marc se dit : "ce type est professionnel".
 
 Point manquant pour le 10 : le contact en section "Contact" sur l'annonce reste conditionnel (telephone affiché seulement si Thomas l'a rempli — sinon "Coordonnees disponibles sur demande"). Ce message existe toujours et detruit momentanement la credibilite pro.
 
 ### 2. Est-ce que c'est COHERENT ? — 9/10
 
-Oui. Les deux pages partagent desormais les memes composants : ContactSticky identique, ShareButtons identique, header identique avec la meme logique logo/initiales/fallback Versiroom, footer identique ("Projection d'amenagement — visuels non contractuels"). RoomNav sur le dossier resout l'incoherence de navigation : Marc peut sauter directement au Salon ou a la Chambre sans scroller 8 photos. Le comparateur AVANT/APRES 4/3 cote a cote est lisible sur desktop ; sur mobile ca passe en colonne unique avec le divide-y — acceptable, la hauteur par paire est contenue (aspect-ratio 4/3 fixe).
+Oui. Les deux pages partagent desormais les memes composants : ContactSticky identique, ShareButtons identique, header identique avec la meme logique logo/initiales/fallback Versimo, footer identique ("Projection d'amenagement — visuels non contractuels"). RoomNav sur le dossier resout l'incoherence de navigation : Marc peut sauter directement au Salon ou a la Chambre sans scroller 8 photos. Le comparateur AVANT/APRES 4/3 cote a cote est lisible sur desktop ; sur mobile ca passe en colonne unique avec le divide-y — acceptable, la hauteur par paire est contenue (aspect-ratio 4/3 fixe).
 
 Point manquant pour le 10 : l'annonce n'a pas de RoomNav — sur un bien de 5 pieces ca reste un scroll a blanc entre les sections.
 

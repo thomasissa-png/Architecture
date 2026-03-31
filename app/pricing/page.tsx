@@ -44,7 +44,7 @@ const PACKS: Pack[] = [
     cta: "Essayer",
     highlight: false,
     note: "Sans carte bancaire",
-    personaLine: "Testez la qualité Versiroom sur vos propres photos. 3 visuels offerts.",
+    personaLine: "Testez la qualité Versimo sur vos propres photos. 3 visuels offerts.",
   },
   {
     id: "starter",
@@ -83,7 +83,7 @@ const PACKS: Pack[] = [
     cta: "S'abonner",
     highlight: true,
     personaLine: "Pour les marchands de biens, architectes multi-projets et agences.",
-    roiNote: "8 biens × 5 photos × 300 €/planche = 12 000 €/an chez un home stager. Versiroom Pro : 348 €/an.",
+    roiNote: "8 biens × 5 photos × 300 €/planche = 12 000 €/an chez un home stager. Versimo Pro : 348 €/an.",
   },
 ];
 
@@ -157,7 +157,7 @@ function PricingContent() {
             href="/"
             className="text-xl font-semibold text-foreground tracking-tighter focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm"
           >
-            Versiroom
+            Versimo
           </a>
           <nav aria-label="Navigation principale" className="flex items-center gap-4 sm:gap-6">
             <a
@@ -344,7 +344,7 @@ function PricingContent() {
               Un home stager facture <strong className="text-foreground font-semibold">200 à 500 € par planche</strong> et 48-72h de délai.
             </p>
             <p className="text-sm text-muted font-light">
-              Versiroom Pro : <strong className="text-foreground font-semibold">0,58 €/photo</strong>, résultat en <strong className="text-foreground font-semibold">90 secondes</strong>.
+              Versimo Pro : <strong className="text-foreground font-semibold">0,58 €/photo</strong>, résultat en <strong className="text-foreground font-semibold">90 secondes</strong>.
             </p>
             <p className="text-xs text-sage font-medium pt-1">
               Sur 8 biens et 40 photos par an, vous passez de 12 000 € à 348 €.

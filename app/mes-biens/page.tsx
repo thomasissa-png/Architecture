@@ -200,7 +200,7 @@ export default function MesBiensPage() {
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-foreground/5">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 py-3 sm:py-4 flex items-center justify-between">
           <a href="/" className="text-xl font-semibold text-foreground tracking-tighter">
-            Versiroom
+            Versimo
           </a>
           <nav className="flex items-center gap-3 sm:gap-6">
             <a href="/mes-biens" className="text-xs text-sage font-medium min-h-[44px] flex items-center">

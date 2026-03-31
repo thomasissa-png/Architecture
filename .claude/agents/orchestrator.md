@@ -645,7 +645,7 @@ Si 1+ gate FAIL → documenter les objections précises, relancer les agents con
 
 **Phase 2d — Revue testeur-client-du-persona sur les outputs (OBLIGATOIRE si la plateforme génère des livrables) :**
 Vérifier que `.claude/agents/testeur-client-*.md` existe (Glob). S'il n'existe pas → lancer `@agent-factory` pour le créer MAINTENANT (specs depuis personas.md section clients-de-clients) avant de continuer.
-Invoquer `testeur-client-du-persona` sur les outputs générés par la plateforme. Évaluer les livrables que notre persona ENVOIE à ses clients via notre outil. Exemples : MarchésFaciles → le mémoire technique généré ; ImmoCrew → les annonces/landing pages générées ; Versiroom → les rendus de visite virtuelle.
+Invoquer `testeur-client-du-persona` sur les outputs générés par la plateforme. Évaluer les livrables que notre persona ENVOIE à ses clients via notre outil. Exemples : MarchésFaciles → le mémoire technique généré ; ImmoCrew → les annonces/landing pages générées ; Versimo → les rendus de visite virtuelle.
 
 **Gates testeur-client-du-persona (GC — PASS/FAIL) :**
 | # | Gate | Vérification |

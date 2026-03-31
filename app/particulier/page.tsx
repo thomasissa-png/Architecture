@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Footer from "@/components/Footer";
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://architecture-toum92.replit.app";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://versimo.fr";
 
 export const metadata: Metadata = {
-  title: "Visualiser sa décoration par IA | Versiroom",
+  title: "Visualiser sa décoration par IA | Versimo",
   description:
     "Testez 12 styles de déco dans VOS pièces. Uploadez une photo, choisissez un style, voyez votre pièce meublée en 90 secondes. Gratuit, instantané, sans inscription.",
   keywords: [
@@ -16,14 +16,14 @@ export const metadata: Metadata = {
     "meublé par IA gratuit",
   ],
   openGraph: {
-    title: "Visualisez votre future décoration avec l'IA | Versiroom",
+    title: "Visualisez votre future décoration avec l'IA | Versimo",
     description:
       "Testez 12 styles de déco dans VOS pièces. Gratuit, instantané, sans inscription. Résultat en 90 secondes.",
     type: "website",
     locale: "fr_FR",
-    siteName: "Versiroom",
+    siteName: "Versimo",
     url: `${BASE_URL}/particulier`,
-    images: [{ url: `${BASE_URL}/imageapres.jpg`, width: 1200, height: 630, alt: "Versiroom — Visualiser sa déco par IA" }],
+    images: [{ url: `${BASE_URL}/imageapres.jpg`, width: 1200, height: 630, alt: "Versimo — Visualiser sa déco par IA" }],
   },
   alternates: {
     canonical: `${BASE_URL}/particulier`,
@@ -39,12 +39,12 @@ const faqItems = [
   {
     question: "Comment ça marche concrètement ?",
     answer:
-      "Prenez une photo de votre pièce vide avec votre téléphone. Uploadez-la sur Versiroom, choisissez un style parmi 12 ambiances (Scandinave, Japandi, Bohème, Cosy…), et recevez un visuel de votre pièce meublée en 90 secondes. Vous pouvez ensuite télécharger l'image en HD ou la partager.",
+      "Prenez une photo de votre pièce vide avec votre téléphone. Uploadez-la sur Versimo, choisissez un style parmi 12 ambiances (Scandinave, Japandi, Bohème, Cosy…), et recevez un visuel de votre pièce meublée en 90 secondes. Vous pouvez ensuite télécharger l'image en HD ou la partager.",
   },
   {
     question: "Le résultat ressemble-t-il vraiment à ma pièce ?",
     answer:
-      "Oui. Versiroom utilise une technologie IA qui préserve la géométrie exacte de votre pièce : les murs, les fenêtres, la lumière, l'angle de la photo. Seules les finitions (couleur des murs, sol) et le mobilier changent. C'est votre pièce, dans le style que vous avez choisi. Le rendu est photo-réaliste — pas un filtre Instagram ni un placement 3D.",
+      "Oui. Versimo utilise une technologie IA qui préserve la géométrie exacte de votre pièce : les murs, les fenêtres, la lumière, l'angle de la photo. Seules les finitions (couleur des murs, sol) et le mobilier changent. C'est votre pièce, dans le style que vous avez choisi. Le rendu est photo-réaliste — pas un filtre Instagram ni un placement 3D.",
   },
   {
     question: "Que faites-vous de mes photos ?",
@@ -54,7 +54,7 @@ const faqItems = [
   {
     question: "Ça marche aussi pour une petite pièce ou une pièce sombre ?",
     answer:
-      "Oui. Versiroom fonctionne avec toutes les configurations — petite surface, couloir, pièce sans fenêtre ou sous mauvaise lumière. L'IA s'adapte à la géométrie réelle de votre espace. Plus la photo est nette, plus le résultat sera précis.",
+      "Oui. Versimo fonctionne avec toutes les configurations — petite surface, couloir, pièce sans fenêtre ou sous mauvaise lumière. L'IA s'adapte à la géométrie réelle de votre espace. Plus la photo est nette, plus le résultat sera précis.",
   },
 ];
 
@@ -86,7 +86,7 @@ export default function ParticulierPage() {
             href="/"
             className="text-xl font-semibold text-foreground tracking-tighter focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm"
           >
-            Versiroom
+            Versimo
           </a>
           <nav aria-label="Navigation principale" className="flex items-center gap-4 sm:gap-6">
             <a
@@ -141,16 +141,16 @@ export default function ParticulierPage() {
         <div className="max-w-3xl mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 rounded-2xl overflow-hidden">
             <div className="relative aspect-[4/3]">
-              <img src="/imageavant.jpg" alt="Pièce vide avant Versiroom" className="w-full h-full object-cover" loading="eager" />
+              <img src="/imageavant.jpg" alt="Pièce vide avant Versimo" className="w-full h-full object-cover" loading="eager" />
               <span className="absolute bottom-2 left-2 text-xs font-medium text-white bg-black/50 px-2 py-1 rounded">Avant</span>
             </div>
             <div className="relative aspect-[4/3]">
-              <img src="/imageapres.jpg" alt="Pièce meublée par Versiroom" className="w-full h-full object-cover" loading="eager" />
+              <img src="/imageapres.jpg" alt="Pièce meublée par Versimo" className="w-full h-full object-cover" loading="eager" />
               <span className="absolute bottom-2 left-2 text-xs font-medium text-white bg-black/50 px-2 py-1 rounded">Après</span>
             </div>
           </div>
           <p className="text-xs text-muted font-light text-center mt-3">
-            Salon vide → Salon Scandinave — généré en 90 secondes avec Versiroom.
+            Salon vide → Salon Scandinave — généré en 90 secondes avec Versimo.
           </p>
         </div>
       </section>

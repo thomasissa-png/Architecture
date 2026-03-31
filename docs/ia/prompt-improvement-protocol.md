@@ -1,4 +1,4 @@
-# Protocole d'amélioration des prompts — Versiroom
+# Protocole d'amélioration des prompts — Versimo
 
 > Document de référence. TOUS les agents (Yann, Lucas, Camille, @ia, @fullstack) DOIVENT lire ce document avant de toucher un prompt.
 > Date : 2026-03-27 | Version : 1.0

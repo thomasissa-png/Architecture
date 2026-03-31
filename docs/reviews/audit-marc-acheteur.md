@@ -50,7 +50,7 @@
 
 ## Note — Livrable 3 : Photos partagees (ImageComparator.tsx)
 
-ImageComparator est utilise dans le flow principal de generation (page.tsx), pas sur une page publique partageable. Marc ne voit pas ce composant — il est interne a l'outil Thomas. Les boutons de partage (WhatsApp, copier, telecharger HD) dans ImageComparator envoient une image statique ou le lien annonce, pas un comparateur interactif. Note : hors scope de l'audit acheteur direct, mais le watermark "Genere par IA — Versiroom" est correct pour la conformite EU AI Act.
+ImageComparator est utilise dans le flow principal de generation (page.tsx), pas sur une page publique partageable. Marc ne voit pas ce composant — il est interne a l'outil Thomas. Les boutons de partage (WhatsApp, copier, telecharger HD) dans ImageComparator envoient une image statique ou le lien annonce, pas un comparateur interactif. Note : hors scope de l'audit acheteur direct, mais le watermark "Genere par IA — Versimo" est correct pour la conformite EU AI Act.
 
 ---
 

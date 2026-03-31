@@ -1,4 +1,4 @@
-# Stratégie SEO — Versiroom
+# Stratégie SEO — Versimo
 > Produit par @seo — 2026-03-26
 > Baseline : audit 25/03 (38/100) → corrections appliquées → score estimé post-corrections
 
@@ -24,7 +24,7 @@
 ### Problèmes structurels persistants (freins critiques)
 
 **Frein n°1 — Domaine Replit (impact : -15 pts d'autorité)**
-`architecture-toum92.replit.app` est un sous-domaine générique partagé. Google lui attribue une confiance minimale. Aucune stratégie de backlinks ne peut compenser ce handicap structurel. Migration vers `versiroom.fr` est le ROI SEO le plus élevé du projet — priorité absolue avant tout investissement contenu.
+`versimo.fr` est un sous-domaine générique partagé. Google lui attribue une confiance minimale. Aucune stratégie de backlinks ne peut compenser ce handicap structurel. Migration vers `versimo.fr` est le ROI SEO le plus élevé du projet — priorité absolue avant tout investissement contenu.
 
 **Frein n°2 — Zéro page de destination par persona (impact : 0 trafic organique qualifié)**
 L'unique URL `/` cible simultanément 3 personas avec des intentions différentes. Google ne peut pas classer une seule page pour "home staging IA marchand de biens" ET "home staging IA architecte d'intérieur" — les intentions sont trop distinctes.
@@ -74,7 +74,7 @@ Aucun article de blog, aucune page FAQ, aucune page style. Le site est invisible
 
 ### Niveau 1 — Page pilier (existante)
 
-**`/`** — Home staging virtuel IA | Versiroom
+**`/`** — Home staging virtuel IA | Versimo
 - Cible : tous les personas, requête principale
 - Liens sortants vers toutes les pages cluster (maillage descendant)
 
@@ -122,8 +122,8 @@ Dès que `/marchand` et `/architecte` existent, ajouter `BreadcrumbList` pour si
 ### QW-4 — Canonical explicite sur `/` (15 min)
 Ajouter `alternates: { canonical: BASE_URL }` dans le `metadata` de `layout.tsx`. Évite le duplicate content entre HTTP/HTTPS et avec/sans trailing slash.
 
-### QW-5 — Migration domaine versiroom.fr (décision @infrastructure, impact maximal)
-Sans domaine propre, tout investissement SEO est plafonné. Procédure : acheter `versiroom.fr`, pointer vers Replit, mettre à jour `NEXT_PUBLIC_BASE_URL`, redirections 301 de l'ancien sous-domaine. Délai d'indexation : 2-4 semaines après migration.
+### QW-5 — Migration domaine versimo.fr (décision @infrastructure, impact maximal)
+Sans domaine propre, tout investissement SEO est plafonné. Procédure : acheter `versimo.fr`, pointer vers Replit, mettre à jour `NEXT_PUBLIC_BASE_URL`, redirections 301 de l'ancien sous-domaine. Délai d'indexation : 2-4 semaines après migration.
 
 ---
 
@@ -147,13 +147,13 @@ Les concurrents (Gepetto, IACrea, Renovate Club) publient régulièrement sur le
 
 2. **Article cluster** (~800 mots) : "Home staging IA style [Japandi/Scandinave/...] : guide pratique"
    - H1 : keyword style + IA
-   - Galerie avant/après (images générées sur Versiroom)
+   - Galerie avant/après (images générées sur Versimo)
    - CTA vers l'outil avec ancre vers le style concerné
    - Maillage : lien vers article pilier du style
 
-3. **Article comparatif** (~1000 mots) : "Versiroom vs [Gepetto/IACrea] : lequel choisir ?"
+3. **Article comparatif** (~1000 mots) : "Versimo vs [Gepetto/IACrea] : lequel choisir ?"
    - Intention : requêtes de comparaison (volume croissant dans ce secteur)
-   - Neutre mais factuel — avantages Versiroom documentés
+   - Neutre mais factuel — avantages Versimo documentés
 
 **Workflow de publication automatisée :**
 
@@ -175,7 +175,7 @@ Les concurrents (Gepetto, IACrea, Renovate Club) publient régulièrement sur le
 **Checklist qualité automatique (avant publication) :**
 - Longueur : ≥800 mots (cluster) ou ≥1500 mots (pilier)
 - Densité keyword cible : 0.8-1.5%
-- Maillage interne : ≥2 liens vers pages Versiroom
+- Maillage interne : ≥2 liens vers pages Versimo
 - H1 unique contenant le keyword cible
 - Meta description : 140-160 caractères, contient keyword
 - Aucune mention de concurrents sans validation
@@ -190,7 +190,7 @@ Les concurrents (Gepetto, IACrea, Renovate Club) publient régulièrement sur le
 |---|---|---|
 | Journal de l'Agence | Article sponsorisé ou mention | Contacter la rédaction — ce journal couvre déjà Gepetto et IACrea |
 | Immobilier 2.0 | Comparatif outils IA | Demande d'inclusion dans les comparatifs existants |
-| MeilleursAgents (édito) | Mention dans guide home staging | Contenu informatif + lien vers Versiroom |
+| MeilleursAgents (édito) | Mention dans guide home staging | Contenu informatif + lien vers Versimo |
 | Maformationimmo.fr | Test produit | Proposer un accès gratuit pour test |
 | Forums SeLoger/PAP | Mentions organiques | Répondre aux questions sur le home staging virtuel |
 
@@ -202,7 +202,7 @@ Les concurrents (Gepetto, IACrea, Renovate Club) publient régulièrement sur le
 
 ### Phase 3 — Relations presse (6+ mois, après domaine propre)
 
-- Communiqué de presse lors du lancement officiel sur `versiroom.fr`
+- Communiqué de presse lors du lancement officiel sur `versimo.fr`
 - Pitch Product Hunt (backlink DA élevé)
 - LinkedIn Thought Leadership du fondateur sur le home staging IA
 
@@ -212,7 +212,7 @@ Les concurrents (Gepetto, IACrea, Renovate Club) publient régulièrement sur le
 
 | Action | Priorité | Impact | Responsable |
 |---|---|---|---|
-| Migration domaine `versiroom.fr` | P0 | +15 pts autorité | @infrastructure |
+| Migration domaine `versimo.fr` | P0 | +15 pts autorité | @infrastructure |
 | Pages cluster personas (`/marchand`, `/architecte`, `/particulier`) | P0 | Trafic qualifié | @fullstack |
 | Blog avec pipeline automatisé | P1 | Longue traîne | @fullstack |
 | LCP : extraire hero en Server Component | P1 | Core Web Vitals | @fullstack |
@@ -229,7 +229,7 @@ Les concurrents (Gepetto, IACrea, Renovate Club) publient régulièrement sur le
 - JSON-LD validables Rich Results Test : oui (Organization + SoftwareApplication + FAQPage déjà en place)
 - Mots-clés avec volume documenté : partiellement — volumes estimés par WebSearch qualitative, marqués [HYPOTHÈSE]. Données précises accessibles via Google Search Console après activation.
 - Cocon sémantique : structure définie (pilier → 3 clusters personas → blog → pages styles), profondeur max 2 clics depuis `/`
-- Benchmark concurrentiel : oui (Gepetto +30 styles, IACrea 16€/mois, Renovate Club illimité — différenciateurs Versiroom documentés)
+- Benchmark concurrentiel : oui (Gepetto +30 styles, IACrea 16€/mois, Renovate Club illimité — différenciateurs Versimo documentés)
 - Compatibilité GEO : aucune cannibalisation détectée — le contenu blog peut servir les deux stratégies (articles informatifs = signal GEO + longue traîne SEO)
 
 ---
@@ -243,7 +243,7 @@ Décisions prises :
 - Cocon sémantique : `/` → `/marchand` + `/architecte` + `/particulier` → `/blog/[slug]` → `/styles/[style]`
 - Mots-clés primaires : "home staging virtuel IA" (transactionnel), "home staging IA marchand de biens" (ciblé)
 - Pipeline blog : 2 articles/semaine via `POST /api/blog/generate` + `POST /api/blog/publish`
-- Domaine `versiroom.fr` : recommandé P0 avant tout investissement contenu
+- Domaine `versimo.fr` : recommandé P0 avant tout investissement contenu
 
 Actions immédiates pour @fullstack :
 1. Vérifier `public/og-image.jpg` existe en 1200x630px
@@ -255,4 +255,4 @@ Actions immédiates pour @fullstack :
 Points d'attention :
 - `page.tsx` est `"use client"` — toutes les pages cluster DOIVENT être Server Components (SSG) pour être indexées
 - Les pages cluster doivent linker vers `/` ET entre elles (maillage horizontal)
-- Sans domaine propre, l'impact de toutes ces actions est plafonné — escalader la décision `versiroom.fr` à l'équipe
+- Sans domaine propre, l'impact de toutes ces actions est plafonné — escalader la décision `versimo.fr` à l'équipe

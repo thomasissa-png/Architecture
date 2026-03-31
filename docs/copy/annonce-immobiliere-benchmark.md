@@ -1,6 +1,6 @@
 # Benchmark & Prompts — Annonces Immobilières Françaises
 > Produit par @copywriter — 2026-03-26
-> Usage : fournir à Thomas (marchand de biens) des prompts de génération automatique d'annonces et de dossiers de pré-commercialisation via Versiroom
+> Usage : fournir à Thomas (marchand de biens) des prompts de génération automatique d'annonces et de dossiers de pré-commercialisation via Versimo
 > Ce document sert de référence pour la feature F4 (mode marchand de biens) et l'intégration dans le pipeline de génération de texte
 
 ---
@@ -263,7 +263,7 @@ Ce CTA ne donne pas de raison d'agir maintenant, pas de délai, pas de facilité
 
 ---
 
-### Erreur 8 — Les visuels meublés sans contextualisation (spécifique Versiroom)
+### Erreur 8 — Les visuels meublés sans contextualisation (spécifique Versimo)
 Présenter des visuels IA générés sans mention claire de leur nature peut créer une déception lors de la visite (le bien est vendu vide) et une perte de confiance. Une ligne de transparence suffit et n'enlève rien à l'impact des visuels : "Projection d'aménagement générée par IA — bien vendu vide."
 
 ---
@@ -502,8 +502,8 @@ INTERLOCUTEUR ET CONTACT :
 ### Notes d'intégration pour @fullstack
 
 - Ce prompt génère la section description longue du dossier PDF marchand de biens
-- Le dossier PDF complet inclura également : plan du bien (upload), visuels Versiroom, tableau financier, plan de rénovation — ces sections sont construites par le reste de l'interface F4
+- Le dossier PDF complet inclura également : plan du bien (upload), visuels Versimo, tableau financier, plan de rénovation — ces sections sont construites par le reste de l'interface F4
 - Modèle recommandé : GPT-4.1 (pas mini — la qualité de rédaction est critique pour un dossier investisseur)
 - Longueur de sortie attendue : ~600-750 tokens. Paramètre `max_tokens: 900`
 - Le rendu final peut être exporté en PDF via `react-pdf` ou `puppeteer` (à décider par @fullstack)
-- Ce texte accompagne les visuels Versiroom dans le dossier PDF — les légendes des visuels ("Projection d'aménagement générée par IA — état actuel disponible en annexe") sont générées séparément
+- Ce texte accompagne les visuels Versimo dans le dossier PDF — les légendes des visuels ("Projection d'aménagement générée par IA — état actuel disponible en annexe") sont générées séparément

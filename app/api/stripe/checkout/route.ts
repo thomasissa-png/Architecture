@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     const baseUrl =
       process.env.NEXTAUTH_URL ||
       process.env.NEXT_PUBLIC_BASE_URL ||
-      "https://architecture-toum92.replit.app";
+      "https://versimo.fr";
 
     const isSubscription = pack.mode === "subscription";
 
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
             currency: "eur",
             unit_amount: pack.priceCents,
             product_data: {
-              name: `Versiroom — ${pack.name}`,
+              name: `Versimo — ${pack.name}`,
               description: `${pack.credits} visuels${isSubscription ? "/mois" : ""}`,
             },
             ...(isSubscription ? { recurring: { interval: "month" as const } } : {}),

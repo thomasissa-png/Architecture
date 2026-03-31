@@ -1,4 +1,4 @@
-# Mentions légales — Versiroom
+# Mentions légales — Versimo
 > Produit par @copywriter — 2026-03-25
 > Conforme LCEN Art. 6 III — Loi n°2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique
 
@@ -6,29 +6,29 @@
 
 ## 1. Éditeur du site
 
-Le site versiroom.fr est édité par :
+Le site versimo.fr est édité par :
 
-**Versiroom**
+**Versimo**
 Forme juridique : [A COMPLETER — ex. SAS, SASU, Micro-entreprise]
 SIRET : [SIRET A COMPLETER]
 Adresse du siège social : [ADRESSE A COMPLETER]
 Capital social : [A COMPLETER]
 RCS : [A COMPLETER — ville d'immatriculation + numéro]
 
-Email de contact : contact@versiroom.fr
-Email données personnelles : privacy@versiroom.fr [A CREER]
+Email de contact : contact@versimo.fr
+Email données personnelles : privacy@versimo.fr [A CREER]
 
 ---
 
 ## 2. Directeur de la publication
 
-[NOM A COMPLETER], en qualité de [gérant / président / directeur général] de Versiroom.
+[NOM A COMPLETER], en qualité de [gérant / président / directeur général] de Versimo.
 
 ---
 
 ## 3. Hébergement
 
-Le site versiroom.fr est hébergé par :
+Le site versimo.fr est hébergé par :
 
 **Replit Inc.**
 440 N Barranca Ave
@@ -44,15 +44,15 @@ Les données de la base de données sont stockées sur les serveurs Replit. Les 
 
 ### 4.1 Contenus du site
 
-L'ensemble des éléments composant le site versiroom.fr — textes, graphismes, interface, code source, logo, architecture visuelle — est la propriété exclusive de Versiroom ou fait l'objet d'une autorisation d'utilisation, sauf mention contraire.
+L'ensemble des éléments composant le site versimo.fr — textes, graphismes, interface, code source, logo, architecture visuelle — est la propriété exclusive de Versimo ou fait l'objet d'une autorisation d'utilisation, sauf mention contraire.
 
-Toute reproduction, représentation, modification ou diffusion, totale ou partielle, sans autorisation écrite préalable de Versiroom est interdite et constituerait une contrefaçon sanctionnée par les articles L335-2 et suivants du Code de la propriété intellectuelle.
+Toute reproduction, représentation, modification ou diffusion, totale ou partielle, sans autorisation écrite préalable de Versimo est interdite et constituerait une contrefaçon sanctionnée par les articles L335-2 et suivants du Code de la propriété intellectuelle.
 
 ### 4.2 Images générées par le service
 
-Les visuels produits par Versiroom à partir des photos uploadées par les utilisateurs sont générés par intelligence artificielle (OpenAI gpt-4.1, Flux Depth Pro). En droit français, les œuvres générées par IA sans intervention créative d'une personne physique identifiable ne bénéficient pas de la protection du droit d'auteur au sens des articles L111-1 et suivants du Code de la propriété intellectuelle.
+Les visuels produits par Versimo à partir des photos uploadées par les utilisateurs sont générés par intelligence artificielle (OpenAI gpt-4.1, Flux Depth Pro). En droit français, les œuvres générées par IA sans intervention créative d'une personne physique identifiable ne bénéficient pas de la protection du droit d'auteur au sens des articles L111-1 et suivants du Code de la propriété intellectuelle.
 
-L'utilisateur conserve tous les droits sur les photos qu'il uploade. Versiroom lui accorde une licence d'utilisation large — y compris à des fins commerciales — sur les images générées à partir de ses photos, dans les conditions définies aux Conditions Générales d'Utilisation.
+L'utilisateur conserve tous les droits sur les photos qu'il uploade. Versimo lui accorde une licence d'utilisation large — y compris à des fins commerciales — sur les images générées à partir de ses photos, dans les conditions définies aux Conditions Générales d'Utilisation.
 
 **Important** : les visuels générés sont des représentations artistiques produites par intelligence artificielle. Ils constituent des projections indicatives et non des représentations exactes de travaux réalisés ou de biens existants.
 
@@ -60,7 +60,7 @@ L'utilisateur conserve tous les droits sur les photos qu'il uploade. Versiroom l
 
 ## 5. Technologies et crédits
 
-Le service Versiroom repose sur les technologies suivantes :
+Le service Versimo repose sur les technologies suivantes :
 
 - **Framework** : Next.js 14 (Vercel Inc.) — licence MIT
 - **Génération d'images IA** : OpenAI Responses API (gpt-4.1) — OpenAI Inc., San Francisco, CA, USA
@@ -75,9 +75,9 @@ Les marques et logos de ces technologies sont la propriété de leurs détenteur
 
 ## 6. Limitation de responsabilité
 
-Versiroom met tout en œuvre pour assurer l'accessibilité et la disponibilité du service. Cependant, l'accès au site peut être interrompu pour des raisons de maintenance, de mise à jour ou d'événements extérieurs indépendants de notre volonté.
+Versimo met tout en œuvre pour assurer l'accessibilité et la disponibilité du service. Cependant, l'accès au site peut être interrompu pour des raisons de maintenance, de mise à jour ou d'événements extérieurs indépendants de notre volonté.
 
-Versiroom ne saurait être tenu responsable de dommages résultant d'une interruption de service, d'une erreur de génération par les systèmes d'intelligence artificielle tiers, ou d'un usage des visuels générés non conforme aux conditions d'utilisation.
+Versimo ne saurait être tenu responsable de dommages résultant d'une interruption de service, d'une erreur de génération par les systèmes d'intelligence artificielle tiers, ou d'un usage des visuels générés non conforme aux conditions d'utilisation.
 
 ---
 
@@ -91,7 +91,7 @@ Le présent site et son contenu sont soumis au droit français. En cas de litige
 
 Pour toute question relative au site ou à son contenu :
 
-Email : contact@versiroom.fr
+Email : contact@versimo.fr
 Adresse postale : [ADRESSE A COMPLETER]
 
 *Dernière mise à jour : mars 2026*

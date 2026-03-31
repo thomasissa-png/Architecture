@@ -20,7 +20,7 @@ L'interface fonctionne et les libellés sont compréhensibles. Mais le registre 
 | **3. Cohérence tonale** | 6/10 | Le ton est sobre, c'est bien. Mais certains messages sont trop décontractés pour le contexte pro ("Nommez vos pièces") et d'autres trop laconiques ("Terminé"). Le PDF — document officiel envoyé à des acquéreurs — a le même niveau de soin que l'interface interne, ce qui est insuffisant. |
 | **4. Messages d'erreur** | 4/10 | 3 erreurs génériques non actionnables. "Connexion requise pour utiliser le Mode Marchand" : dit pourquoi mais pas quoi faire. "Sélectionnez un style" : vague, sans action directe. "Erreur inattendue" : catégorie à ne jamais utiliser selon brand-voice.md. Les messages de remboursement de crédits sont traités comme des notes de bas de page alors qu'ils réduisent le risque perçu. |
 | **5. CTA** | 5/10 | "Continuer" n'a aucun bénéfice (vers quoi ?). "Choisir le style" est fonctionnel mais perd l'opportunité de qualifier. "Générer le dossier" est correct. "PDF" seul en bouton est trop laconique — le document a une valeur. "Copier le lien" est neutre alors qu'il pourrait exprimer l'action business (partager avec un acquéreur). |
-| **6. PDF professionnel** | 5/10 | La couverture est structurée. Mais le disclaimer IA "Simulation — genere par Versiroom" (sans accent) est le seul texte de pied de page d'un document professionnel destiné à des acquéreurs. Pas de mention de la date d'expiration, pas de note sur l'utilisation des visuels. Le comptage "X visualisations" en couverture est correct mais sans contexte (visualisations de quoi ?). Les labels AVANT/APRES en capitales sont fonctionnels mais un peu bruts pour un document de commercialisation. |
+| **6. PDF professionnel** | 5/10 | La couverture est structurée. Mais le disclaimer IA "Simulation — genere par Versimo" (sans accent) est le seul texte de pied de page d'un document professionnel destiné à des acquéreurs. Pas de mention de la date d'expiration, pas de note sur l'utilisation des visuels. Le comptage "X visualisations" en couverture est correct mais sans contexte (visualisations de quoi ?). Les labels AVANT/APRES en capitales sont fonctionnels mais un peu bruts pour un document de commercialisation. |
 | **7. Accents et typographie** | 4/10 | 7 occurrences identifiées de mots sans accent dans les chaînes de texte visibles. "Optionnel" sans accent (×1), "Jusqu'à" sans accent (×1), "generee" sans accent (×1), "Personnalise" sans accent (×1), "Echec" / "echec" sans accent (×3), "En attente" (correct), "En cours" (correct). "genere" dans le disclaimer PDF. Ces fautes apparaissent dans le produit livré à des acquéreurs. |
 
 ---
@@ -98,10 +98,10 @@ DossierPublicView.tsx est sobre et fonctionnel. Aucune correction nécessaire su
 
 | Fichier | Ligne | Texte actuel | Texte proposé | Priorité |
 |---|---|---|---|---|
-| page.tsx | 32 | `"Dossier expire — Versiroom"` | `"Dossier expiré — Versiroom"` | Critique (accent, metadata publique) |
+| page.tsx | 32 | `"Dossier expire — Versimo"` | `"Dossier expiré — Versimo"` | Critique (accent, metadata publique) |
 | page.tsx | 33 | `"Ce dossier de pre-commercialisation a expire."` | `"Ce dossier de pré-commercialisation a expiré."` | Critique (accent, metadata publique) |
-| page.tsx | 43 | `"${title} — Visualisation par Versiroom."` | `"${title} — Visuels meublés par Versiroom."` | Haute (vocab secteur + OG preview) |
-| page.tsx | 49 | `"${title} — Visualisation Versiroom"` | `"${title} — Visuels meublés par Versiroom"` | Haute (OG title) |
+| page.tsx | 43 | `"${title} — Visualisation par Versimo."` | `"${title} — Visuels meublés par Versimo."` | Haute (vocab secteur + OG preview) |
+| page.tsx | 49 | `"${title} — Visualisation Versimo"` | `"${title} — Visuels meublés par Versimo"` | Haute (OG title) |
 | page.tsx | 67 | `Dossier introuvable` | — (correct) | — |
 | page.tsx | 70 | `Ce dossier n'existe pas ou a ete supprime.` | `Ce dossier est introuvable ou a été supprimé.` | Critique (accent) |
 | page.tsx | 83 | `Dossier expire` | `Dossier expiré` | Critique (accent, H1 visible) |
@@ -111,7 +111,7 @@ DossierPublicView.tsx est sobre et fonctionnel. Aucune correction nécessaire su
 | page.tsx | 153 | `"Generation en cours..."` | `"Génération en cours, revenez dans quelques instants."` | Haute |
 | page.tsx | 154 | `"Aucune visualisation disponible."` | `"Aucun visuel disponible pour ce dossier."` | Moyenne |
 | page.tsx | 179 | `Telecharger le PDF` | `Télécharger le PDF` | Critique (accent, CTA visible par les acquéreurs) |
-| page.tsx | 188 | `Simulation generee par intelligence artificielle — Versiroom` | `Visuels générés par intelligence artificielle à titre de simulation. Versiroom — versiroom.fr` | Haute (disclaimer pro, visible acquéreurs) |
+| page.tsx | 188 | `Simulation generee par intelligence artificielle — Versimo` | `Visuels générés par intelligence artificielle à titre de simulation. Versimo — versimo.fr` | Haute (disclaimer pro, visible acquéreurs) |
 
 ---
 
@@ -119,7 +119,7 @@ DossierPublicView.tsx est sobre et fonctionnel. Aucune correction nécessaire su
 
 | Fichier | Ligne | Texte actuel | Texte proposé | Priorité |
 |---|---|---|---|---|
-| route.ts | 29 | `const AI_DISCLAIMER = "Simulation — genere par Versiroom"` | `const AI_DISCLAIMER = "Visuels générés par intelligence artificielle à titre indicatif — Versiroom"` | Critique (accent + niveau pro) |
+| route.ts | 29 | `const AI_DISCLAIMER = "Simulation — genere par Versimo"` | `const AI_DISCLAIMER = "Visuels générés par intelligence artificielle à titre indicatif — Versimo"` | Critique (accent + niveau pro) |
 | route.ts | 157 | `${completedPhotos.length} visualisation${...}` | `${completedPhotos.length} visuel${completedPhotos.length > 1 ? "s" : ""} meublé${completedPhotos.length > 1 ? "s" : ""}` | Haute |
 | route.ts | 221 | `"AVANT"` | `"Avant home staging"` | Moyenne (PDF pro) |
 | route.ts | 246 | `"APRES"` | `"Après home staging"` | Moyenne (PDF pro) |
@@ -188,7 +188,7 @@ Le PDF est le seul livrable que Thomas envoie à ses acquéreurs. Il porte la r�
   - "Visuel meublé" préféré à "visualisation" — vocabulaire du terrain de Thomas (plaquette, acquéreur, pré-commercialisation)
   - "Partager avec un acquéreur" préféré à "Copier le lien" — nomme l'action business, pas l'action technique
   - "Regénérer" avec accent — cohérence avec le reste de l'interface
-  - Disclaimer PDF enrichi : `"Visuels générés par intelligence artificielle à titre indicatif — Versiroom"` — formulation plus solide vis-à-vis de l'EU AI Act Art. 50 (déjà identifié dans f4-review.md)
+  - Disclaimer PDF enrichi : `"Visuels générés par intelligence artificielle à titre indicatif — Versimo"` — formulation plus solide vis-à-vis de l'EU AI Act Art. 50 (déjà identifié dans f4-review.md)
   - "Après home staging" au lieu de "APRES" dans le PDF — le terme est celui du secteur immobilier, compréhensible pour un acquéreur
 - Points d'attention pour l'intégration :
   - Tous les accents manquants sont dans des chaînes JSX ou des constantes TypeScript — aucun n'est dans des fichiers de traduction i18n

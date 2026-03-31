@@ -1,4 +1,4 @@
-# KPI Framework — Versiroom
+# KPI Framework — Versimo
 > Produit par @data-analyst — 2026-03-24
 > Source : project-context.md + docs/strategy/personas.md + docs/product/functional-specs.md
 > Destinataire implémentation : @infrastructure (tracking) + @fullstack (events)

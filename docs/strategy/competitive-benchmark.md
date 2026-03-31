@@ -1,4 +1,4 @@
-# Benchmark Concurrentiel — Versiroom
+# Benchmark Concurrentiel — Versimo
 > Produit par @creative-strategy — 2026-03-24
 > Lecture obligatoire avant tout travail de positionnement, copy ou growth.
 
@@ -199,7 +199,7 @@
 
 > Ces éléments sont présents chez la quasi-totalité des acteurs. Les reprendre serait se fondre dans la masse.
 
-| Pattern universel | Formulation type | Risque pour Versiroom |
+| Pattern universel | Formulation type | Risque pour Versimo |
 |---|---|---|
 | **Vitesse comme argument #1** | "En 25 secondes", "En quelques secondes" | Tout le monde est rapide — ce n'est plus différenciant |
 | **Volume de styles comme argument** | "80+ styles", "50 styles" | Course aux styles que les gros acteurs gagnent toujours |
@@ -215,10 +215,10 @@
 ## 3. Espaces libres identifiés
 
 ### Espace libre #1 — La qualité architecturale assumée (vs la quantité de styles)
-Aucun acteur ne positionne sa qualité sur le vocabulaire des architectes d'intérieur. Gepetto s'en approche mais reste vague. Versiroom a un pipeline 2 passes avec des prompts co-construits par un architecte d'intérieur réel et un expert IA image — c'est un fait technique qui peut devenir un argument de positionnement.
+Aucun acteur ne positionne sa qualité sur le vocabulaire des architectes d'intérieur. Gepetto s'en approche mais reste vague. Versimo a un pipeline 2 passes avec des prompts co-construits par un architecte d'intérieur réel et un expert IA image — c'est un fait technique qui peut devenir un argument de positionnement.
 
 ### Espace libre #2 — La multi-cible explicite et hiérarchisée
-Tous les concurrents choisissent soit le pro immobilier, soit le grand public. Personne ne nomme explicitement les 3 personas (architecte d'intérieur, marchand de biens, particulier) et ne leur parle différemment sur la même plateforme. Versiroom peut occuper ce territoire si le messaging est suffisamment précis pour chaque cible.
+Tous les concurrents choisissent soit le pro immobilier, soit le grand public. Personne ne nomme explicitement les 3 personas (architecte d'intérieur, marchand de biens, particulier) et ne leur parle différemment sur la même plateforme. Versimo peut occuper ce territoire si le messaging est suffisamment précis pour chaque cible.
 
 ### Espace libre #3 — Le marché français avec une vraie expérience française
 Renovate Club et Gepetto sont français mais sans expérience premium. Les acteurs premium (REimagineHome, Collov) sont 100% anglais. Il n'existe pas encore d'outil de home staging IA premium, avec une expérience produit haut de gamme, pensé en français pour le marché immobilier français.
@@ -237,7 +237,7 @@ La citation de Claire est révélatrice : "Je cherche un support de conversation
                     QUALITÉ ARCHITECTURALE
                            ▲
                            │
-          Gepetto ●        │        ● Versiroom
+          Gepetto ●        │        ● Versimo
                            │          (cible)
   ────────────────────────────────────────────────►
   IMMOBILIER               │              MULTI-CIBLE
@@ -253,7 +253,7 @@ La citation de Claire est révélatrice : "Je cherche un support de conversation
 
 ---
 
-## 5. Implications pour le positionnement Versiroom
+## 5. Implications pour le positionnement Versimo
 
 1. **Ne pas entrer dans la guerre des styles** — 12 styles curatés > 80 styles génériques
 2. **Ne pas jouer sur le prix** — Collov à $0,17/photo est imbattable sur ce terrain

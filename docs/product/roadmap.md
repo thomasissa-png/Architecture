@@ -1,4 +1,4 @@
-# Roadmap — Versiroom
+# Roadmap — Versimo
 ## Version 1.0 — 2026-03-25 | Mise à jour 2026-03-27 (abonnement Pro, Mode Pro, pages profil)
 
 ---
@@ -127,13 +127,13 @@ Reach = % des utilisateurs actifs touchés (1-10). Impact = 1 (faible) / 2 (moye
 ## 3. Question stratégique — Site unique ou sites séparés pour F4/F5
 
 ### Contexte
-F4 (Mode Pro) et F5 (Mode Décorateur) sont des use cases distincts avec des personas différents (Thomas/Claire vs Léa). La question est : les intégrer dans Versiroom ou créer des sous-domaines/sites séparés ?
+F4 (Mode Pro) et F5 (Mode Décorateur) sont des use cases distincts avec des personas différents (Thomas/Claire vs Léa). La question est : les intégrer dans Versimo ou créer des sous-domaines/sites séparés ?
 
 ### Arguments pour le site unique
 
 - **Effets réseau** : une seule base d'utilisateurs, un seul entonnoir d'acquisition, un seul SEO à construire.
 - **Complexité opérationnelle** : solo développeur — maintenir 2-3 codebases est hors de portée.
-- **Cohérence marque** : Versiroom est positionné multi-cible depuis le début (pages /architecte /marchand /particulier). Pas de dissonance à intégrer les modes avancés dans le même outil.
+- **Cohérence marque** : Versimo est positionné multi-cible depuis le début (pages /architecte /marchand /particulier). Pas de dissonance à intégrer les modes avancés dans le même outil.
 - **Packaging abonnement** : un seul système d'abonnement Pro couvre tous les modes — plus simple pour l'utilisateur et pour la comptabilité.
 - **Précédent concurrent** : Renovate Club et Gepetto proposent tous leurs modules dans un seul produit.
 
@@ -149,7 +149,7 @@ F4 (Mode Pro) et F5 (Mode Décorateur) sont des use cases distincts avec des per
 
 **Justification** : la contrainte solo développeur est déterminante. Le gain SEO d'un sous-domaine séparé ne compense pas le coût de maintenance de 2 codebases et de 2 systèmes Auth/Stripe. Les pages profil dédiées apportent 80% du bénéfice SEO pour 10% de l'effort.
 
-**Alternative écartée** : sous-domaine `marchand.versiroom.fr` — maintenir 2 déploiements Replit + 2 bases PG + 2 Stripe webhooks = risque opérationnel inacceptable en solo.
+**Alternative écartée** : sous-domaine `marchand.versimo.fr` — maintenir 2 déploiements Replit + 2 bases PG + 2 Stripe webhooks = risque opérationnel inacceptable en solo.
 
 ---
 
@@ -222,19 +222,19 @@ subscription_status TEXT DEFAULT 'inactive'  -- active | past_due | inactive
 
 ### Hypothèse 2 — [HYPOTHÈSE] L'abonnement Pro 29€/mois justifie son prix vs les concurrents
 
-**Risque** : Thomas compare Versiroom à un home stager à 200-500€/planche. Mais il compare aussi à Renovate Club à 9,99€/mois illimité. L'abonnement Pro à 29€/mois doit justifier sa valeur par rapport à moins cher mais moins qualitatif.
+**Risque** : Thomas compare Versimo à un home stager à 200-500€/planche. Mais il compare aussi à Renovate Club à 9,99€/mois illimité. L'abonnement Pro à 29€/mois doit justifier sa valeur par rapport à moins cher mais moins qualitatif.
 
-**Impact si faux** : F4 (Mode Pro) est la feature différenciante principale. Si Thomas choisit Renovate Club pour le volume et Versiroom ne capte que les architectes, le potentiel de marché est réduit de moitié. La valeur des Dossiers de pré-commercialisation (feature unique, aucun concurrent) est l'argument principal.
+**Impact si faux** : F4 (Mode Pro) est la feature différenciante principale. Si Thomas choisit Renovate Club pour le volume et Versimo ne capte que les architectes, le potentiel de marché est réduit de moitié. La valeur des Dossiers de pré-commercialisation (feature unique, aucun concurrent) est l'argument principal.
 
 **Validation** : interviews de 5 marchands de biens avant lancement F4. Question : "Combien payez-vous actuellement pour vos dossiers de pré-commercialisation ?" + présentation de l'abonnement Pro. Seuil d'alarme : si <3/5 disent qu'ils s'abonneraient à 29€/mois pour les Dossiers de pré-commercialisation inclus.
 
 ### Hypothèse 3 — [HYPOTHÈSE] La qualité du pipeline 2 passes est perçue comme supérieure aux concurrents
 
-**Risque** : Versiroom est meilleur techniquement (préservation géométrie, styles curatés par experts) mais les utilisateurs non-experts ne perçoivent pas forcément cette différence. Sur une annonce SeLoger, une image Renovate Club à 10€/mois peut paraître "suffisamment bonne".
+**Risque** : Versimo est meilleur techniquement (préservation géométrie, styles curatés par experts) mais les utilisateurs non-experts ne perçoivent pas forcément cette différence. Sur une annonce SeLoger, une image Renovate Club à 10€/mois peut paraître "suffisamment bonne".
 
 **Impact si faux** : la différenciation qualité ne suffit pas à justifier le premium de prix. Il faut une différenciation fonctionnelle (F4 dossiers, F5 shopping list) plutôt que qualitative.
 
-**Validation** : A/B test qualitatif — montrer côte à côte 5 générations Versiroom vs 5 générations Renovate Club à 10 non-experts (acheteurs immobilier, pas pros). Demander : "laquelle préféreriez-vous pour une annonce ?" + "combien paieriez-vous pour celle que vous préférez ?" Sans dévoiler les outils.
+**Validation** : A/B test qualitatif — montrer côte à côte 5 générations Versimo vs 5 générations Renovate Club à 10 non-experts (acheteurs immobilier, pas pros). Demander : "laquelle préféreriez-vous pour une annonce ?" + "combien paieriez-vous pour celle que vous préférez ?" Sans dévoiler les outils.
 
 ---
 

@@ -90,7 +90,7 @@ Particulier ? Commencer gratuitement →
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Versiroom s'adapte à votre métier
+  Versimo s'adapte à votre métier
 
   ARCHITECTES D'INTÉRIEUR    MARCHANDS DE BIENS         PARTICULIERS
   ────────────────────        ─────────────────          ────────────

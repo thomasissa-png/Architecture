@@ -103,7 +103,7 @@ test("long title — truncated at last word boundary + ellipsis", () => {
 
   assert.equal(result.truncated, true);
   assert.ok(
-    result.text.endsWith("\u2026"),
+    result.text.endsWith("…"),
     "Truncated title must end with ellipsis character"
   );
   assert.ok(
@@ -139,7 +139,7 @@ test("title with HTML tags — tags stripped", () => {
 });
 
 test("title with curly quotes — normalized to straight quotes", () => {
-  const result = formatTitle("L\u2019appartement \u00ABcharmant\u00BB", 100);
+  const result = formatTitle("L’appartement «charmant»", 100);
   assert.ok(
     result.text.includes("'"),
     "Curly single quote should become straight"
@@ -224,13 +224,13 @@ test("description that fits exactly with disclaimer — not truncated", () => {
 
 test("SeLoger strips emojis from description", () => {
   const config = PORTAL_CONFIGS.seloger;
-  const withEmoji = "Appartement lumineux \u2728 avec terrasse \u2600\uFE0F";
+  const withEmoji = "Appartement lumineux ✨ avec terrasse ☀️";
 
   const result = formatDescription(withEmoji, config, { stripEmoji: true });
 
   // Misc symbol U+2728 and U+2600 should be stripped
   assert.ok(
-    !result.text.includes("\u2728"),
+    !result.text.includes("✨"),
     "Sparkle emoji should be stripped for SeLoger"
   );
 });
@@ -295,7 +295,7 @@ test("Bien'ici — returns structured fields with copro info", () => {
   assert.ok(result.structuredFields.length > 0);
 
   const coproField = result.structuredFields.find(
-    (f) => f.label === "Copropriete" || f.label === "Copropri\u00e9t\u00e9"
+    (f) => f.label === "Copropriete" || f.label === "Copropriété"
   );
   assert.ok(coproField, "Must have Copropriete field when isCopro=true");
   assert.ok(

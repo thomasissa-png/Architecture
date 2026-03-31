@@ -25,7 +25,7 @@
 
 ## Bilan tokens
 
-- **Tokens utilisés correctement** : `bg-foreground/5`, `bg-foreground/[0.02]`, `border-foreground/5`, `text-foreground`, `text-muted`, `bg-background`, `bg-sage/5`, `text-sage`, `focus-visible:ring-sage/50` — le composant est majoritairement conforme au design system Versiroom.
+- **Tokens utilisés correctement** : `bg-foreground/5`, `bg-foreground/[0.02]`, `border-foreground/5`, `text-foreground`, `text-muted`, `bg-background`, `bg-sage/5`, `text-sage`, `focus-visible:ring-sage/50` — le composant est majoritairement conforme au design system Versimo.
 - **Valeurs hardcodées résiduelles** : `text-orange-500`, `text-red-500` (couleurs sémantiques non tokenisées), `min-w-[220px]`, `w-[220px]`, `text-[10px]` x4. Zéro hex direct, zéro `bg-white`.
 - **Dark mode** : la totalité des fonds et textes référence des tokens CSS (`foreground`, `background`, `muted`, `sage`). Dark mode compatible sans modification, sous réserve que les tokens CSS soient redéfinis en dark mode (non vérifié — hors scope de ce composant).
 

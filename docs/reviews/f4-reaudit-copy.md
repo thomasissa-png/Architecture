@@ -22,7 +22,7 @@ Les 16 corrections critiques (accents) ont été intégralement appliquées. Les
 | **3. Cohérence tonale** | 6/10 | 8/10 | +2 | Le ton pro est maintenant cohérent du début à la fin du parcours. "Dossier prêt" est la bonne note : factuel, efficace, pro. "Lien copié · Valable 30 jours" est un micro-détail qui rassure Thomas sans emphase. La page publique acquéreur est sobre et crédible. |
 | **4. Messages d'erreur** | 4/10 | 8,5/10 | +4,5 | Les 4 messages d'erreur critiques sont devenus actionnables. "Connectez-vous", "Vérifiez votre connexion et réessayez", "vos crédits n'ont pas été consommés" : trois formulations qui réduisent l'anxiété et indiquent l'action suivante. Reste : le message d'erreur d'upload (catch dans la promesse) n'est pas visible dans les fichiers audités — à vérifier. |
 | **5. CTA** | 5/10 | 8/10 | +3 | "Partager avec un acquéreur" nomme l'action business, pas l'action technique : correction majeure. "Télécharger le PDF" est explicite. "Générer le dossier (N crédit/s)" est correct et transparent sur le coût. Reste : "Ajouter les photos" sur le bouton de navigation étape photos est ambigu (voir §corrections restantes). |
-| **6. PDF professionnel** | 5/10 | 8/10 | +3 | Disclaimer `"Visuels générés par intelligence artificielle à titre indicatif — Versiroom"` : formulation professionnelle et alignée EU AI Act Art. 50. Labels "Avant home staging" / "Après home staging" : vocabulaire du secteur, lisible par un acquéreur. Comptage couverture en "visuels meublés". Reste : titre de couverture par défaut non corrigé (voir §corrections restantes). |
+| **6. PDF professionnel** | 5/10 | 8/10 | +3 | Disclaimer `"Visuels générés par intelligence artificielle à titre indicatif — Versimo"` : formulation professionnelle et alignée EU AI Act Art. 50. Labels "Avant home staging" / "Après home staging" : vocabulaire du secteur, lisible par un acquéreur. Comptage couverture en "visuels meublés". Reste : titre de couverture par défaut non corrigé (voir §corrections restantes). |
 | **7. Accents et typographie** | 4/10 | 9,5/10 | +5,5 | 16 occurrences corrigées : Génération, Récapitulatif, Personnalisé, crédits, échec (×3), expiré, pré-commercialisation, Après, généré, etc. Reste : "m2" sans exposant (MerchantMode.tsx ligne 629) et un accent non corrigé dans un alt d'image (DossierResult.tsx ligne 135 : `"— apres"`). |
 
 ---
@@ -110,10 +110,10 @@ Les éléments suivants sont à niveau et ne doivent pas être modifiés :
 - "Partager avec un acquéreur" — nomme l'action business, pas l'action technique
 - "Relancer (1 crédit)" sur le bouton de regénération photo en échec — transparent et actionnable
 - "Si une photo échoue, le crédit correspondant est automatiquement restitué." — rassure avant l'engagement
-- Disclaimer PDF `"Visuels générés par intelligence artificielle à titre indicatif — Versiroom"` — conforme et professionnel
+- Disclaimer PDF `"Visuels générés par intelligence artificielle à titre indicatif — Versimo"` — conforme et professionnel
 - Labels PDF "Avant home staging" / "Après home staging" — vocabulaire du secteur
 - Messages d'erreur actionnables : "Connectez-vous pour accéder au Mode Marchand.", "Vérifiez votre connexion et réessayez.", "vos crédits n'ont pas été consommés."
-- Page publique acquéreur : "Dossier partagé", "Généré le {date} — Disponible jusqu'au {date}", disclaimer `"Visuels générés par intelligence artificielle à titre de simulation. Versiroom — versiroom.fr"`
+- Page publique acquéreur : "Dossier partagé", "Généré le {date} — Disponible jusqu'au {date}", disclaimer `"Visuels générés par intelligence artificielle à titre de simulation. Versimo — versimo.fr"`
 
 ---
 

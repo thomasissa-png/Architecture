@@ -7,7 +7,7 @@
 
 ## 1. Validation positionnement : 3 tiers premium
 
-**Verdict : cohérent avec le positionnement Versiroom.**
+**Verdict : cohérent avec le positionnement Versimo.**
 
 3 tiers est le standard du marché premium :
 - Gepetto : 2 tiers (Starter/Pro)
@@ -17,9 +17,9 @@
 4 tiers créait de la confusion (Découverte payant vs Gratuit — les 2 audits persona le signalaient). 3 tiers = lisibilité immédiate. Le gratuit s'appelle "Découverte" et non "Gratuit" — ça préserve la perception premium (on ne vend pas du "gratuit", on offre une découverte).
 
 **Benchmark pricing** :
-- Renovate Club : 9,99€/mois illimité → Versiroom Starter à 9,90€ est pile dans le benchmark FR
-- Pedra : 29€/mois → Versiroom Pro à 29€ est aligné sur le leader EU
-- Le positionnement qualité justifie l'écart avec Renovate Club (9,90€ limité vs 9,99€ illimité) — Versiroom vend la qualité pipeline 2 passes, pas le volume
+- Renovate Club : 9,99€/mois illimité → Versimo Starter à 9,90€ est pile dans le benchmark FR
+- Pedra : 29€/mois → Versimo Pro à 29€ est aligné sur le leader EU
+- Le positionnement qualité justifie l'écart avec Renovate Club (9,90€ limité vs 9,99€ illimité) — Versimo vend la qualité pipeline 2 passes, pas le volume
 
 ---
 
@@ -39,7 +39,7 @@
 
 ### Ancrage
 
-- **29€/mois Pro vs 200-500€/planche home stager** = ancrage massif en faveur de Versiroom. Le ROI est évident en 2 secondes. C'est l'argument principal sur /marchand.
+- **29€/mois Pro vs 200-500€/planche home stager** = ancrage massif en faveur de Versimo. Le ROI est évident en 2 secondes. C'est l'argument principal sur /marchand.
 - **9,90€/mois Starter** = prix d'un café par semaine. Ancrage "micro-transaction" pour Léa. C'est moins qu'un magazine déco (12-15€).
 - **L'écart Starter/Pro (9,90€ vs 29€)** crée un "saut" perceptible qui force le choix conscient. Si le Starter était à 19,90€, il cannibaliserait le Pro.
 

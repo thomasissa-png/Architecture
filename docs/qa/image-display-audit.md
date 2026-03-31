@@ -1,4 +1,4 @@
-# Audit affichage images — Versiroom
+# Audit affichage images — Versimo
 
 Date : 2026-03-26 | Agent : @qa
 

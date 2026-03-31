@@ -1,4 +1,4 @@
-# Audit Intégration Web + Mobile — Versiroom
+# Audit Intégration Web + Mobile — Versimo
 
 **Date :** 2026-03-26
 **Agents :** @design + @ux combinés
@@ -69,7 +69,7 @@
 | Tokens CSS | CONFORME | `bg-background`, `text-foreground`, `text-sage`, `text-muted` partout |
 | Header/footer | CONFORME | Header identique à la page principale (fixed, backdrop-blur-md, même structure nav) |
 
-**Problème P2 :** Le footer est absent sur `/marchand` (et vraisemblablement `/architecte`, `/particulier`). La page se termine après la section FAQ sans footer Versiroom. Incohérence avec la page principale.
+**Problème P2 :** Le footer est absent sur `/marchand` (et vraisemblablement `/architecte`, `/particulier`). La page se termine après la section FAQ sans footer Versimo. Incohérence avec la page principale.
 
 ---
 
@@ -115,7 +115,7 @@ Aucun.
 |---|---|---|
 | 2 | `ProGate.tsx` | Envisager un bottom sheet mobile pour cohérence avec AuthModal |
 | 3 | `MerchantMode.tsx` select | Aligner `border-foreground/5` → `border-foreground/10` |
-| 4 | Pages personas | Ajouter footer Versiroom (identique page principale) |
+| 4 | Pages personas | Ajouter footer Versimo (identique page principale) |
 | 5 | `/comparatif` table | Ajouter `min-w-[700px]` sur `<table>` pour forcer scroll propre sur iPhone SE |
 
 ---

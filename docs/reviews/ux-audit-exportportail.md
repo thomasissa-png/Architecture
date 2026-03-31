@@ -33,7 +33,7 @@ Thomas voit dans l'ordre : "Copier le titre" (petit, texte vert, discret) puis "
 
 ### Etape 5 — Le ZIP photos
 **Friction P1 — confusion sur le besoin réel.**
-Thomas uploadera ses photos directement sur LeBonCoin depuis son téléphone (c'est son workflow habituel). Le ZIP lui pose la question : "Pourquoi télécharger un ZIP si je télécharge depuis mon iPhone ?" Il ne comprend pas que les photos sont stockées sur Versiroom et non sur son appareil. Sans explication, le bouton ZIP est ambigu.
+Thomas uploadera ses photos directement sur LeBonCoin depuis son téléphone (c'est son workflow habituel). Le ZIP lui pose la question : "Pourquoi télécharger un ZIP si je télécharge depuis mon iPhone ?" Il ne comprend pas que les photos sont stockées sur Versimo et non sur son appareil. Sans explication, le bouton ZIP est ambigu.
 
 ---
 
@@ -44,7 +44,7 @@ Thomas uploadera ses photos directement sur LeBonCoin depuis son téléphone (c'
 | P0 | Composant invisible sans scroll | Déplacer ExportPortail AVANT la galerie ou ajouter un lien ancre dans le header owner ("Exporter vers les portails") |
 | P0 | Champs copie découplés mais mal ordonnés | Mettre "Copier le titre" et "Copier la description" comme actions primaires (boutons dark), supprimer "Copier le texte LeBonCoin" ou le renommer "Copier tout (titre + description)" en secondaire |
 | P1 | Compteurs anxiogènes sans explication | Remplacer les compteurs bruts par un indicateur simple : pastille verte "OK pour LeBonCoin" / orange "Adapté" + tooltip au survol avec la règle du portail |
-| P1 | ZIP sans contexte | Ajouter une ligne d'explication sous le bouton : "Vos photos HD sont stockées sur Versiroom — téléchargez-les pour les importer sur le portail" |
+| P1 | ZIP sans contexte | Ajouter une ligne d'explication sous le bouton : "Vos photos HD sont stockées sur Versimo — téléchargez-les pour les importer sur le portail" |
 | P2 | Warning "Description incomplète" non actionnable | Remplacer par un lien direct : "Compléter la description →" qui renvoie vers `/mes-biens/[id]` |
 
 ---

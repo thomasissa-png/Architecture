@@ -31,9 +31,9 @@
 **Fix P1.** `annonce/page.tsx` L.265 : ajouter pill `${Math.round(sale_price/surface_m2).toLocaleString()} €/m²` conditionnel sur `sale_price && surface_m2`. L.449-464 : passer les charges en pill identique aux autres caracteristiques.
 
 ### C4 — Dossier fait "plaquette pro" : 8/10
-**Probleme.** Date "Genere le 26/03/2026" (`dossier/page.tsx` L.226-228) affichee en evidence sous le titre — impression de document perime. Le copyright Versiroom en footer (L.381-390) affaiblit la marque blanche quand `hasMerchant` est true.
+**Probleme.** Date "Genere le 26/03/2026" (`dossier/page.tsx` L.226-228) affichee en evidence sous le titre — impression de document perime. Le copyright Versimo en footer (L.381-390) affaiblit la marque blanche quand `hasMerchant` est true.
 
-**Fix P1.** `dossier/page.tsx` L.226 : remplacer par "Dossier de pre-commercialisation" ou deplacer la date dans le footer discret. L.381-390 : conditionner `{!hasMerchant && <a href="...">Versiroom</a>}`.
+**Fix P1.** `dossier/page.tsx` L.226 : remplacer par "Dossier de pre-commercialisation" ou deplacer la date dans le footer discret. L.381-390 : conditionner `{!hasMerchant && <a href="...">Versimo</a>}`.
 
 ### C5 — Thomas peut tout modifier avant envoi : 6/10
 **Probleme majeur.** Aucun champ titre editable sur l'annonce. Description generee par IA sans bouton "Regenerer" ni textarea editable. Thomas ne peut pas corriger une description ratee avant de partager le lien.
@@ -67,7 +67,7 @@
 **Fix P0.** `annonce/page.tsx` apres L.283 : ajouter le meme bloc iframe OSM que le dossier, conditionnel sur `property.latitude && property.longitude`. Verifier que `lib/properties.ts` expose ces colonnes — si absent, les ajouter et les alimenter depuis `enrichProperty()`.
 
 ### C10 — Marc a envie d'appeler apres lecture : 7/10
-**Probleme.** La page annonce se termine sur le footer Versiroom (L.509-528), pas sur un CTA. L'ordre actuel : photos → description → caracteristiques → contact → actions partage → footer. Marc finit sa lecture sur le branding, pas sur l'invite a agir.
+**Probleme.** La page annonce se termine sur le footer Versimo (L.509-528), pas sur un CTA. L'ordre actuel : photos → description → caracteristiques → contact → actions partage → footer. Marc finit sa lecture sur le branding, pas sur l'invite a agir.
 
 **Fix P1.** `annonce/page.tsx` : reordonner → hero → prix/CTA1 → photos → description → CTA2 (bouton "Appeler" identique a L.287) → caracteristiques → contact → footer.
 
@@ -92,7 +92,7 @@
 | 6 | `annonce/[uuid]/page.tsx` | L.287-298 | Dupliquer CTA "Appeler" en fin de page avant footer |
 | 7 | `annonce/[uuid]/page.tsx` | L.248 | flex-nowrap sur pills surface/pieces/prix |
 | 8 | `dossier/[uuid]/page.tsx` | L.226-228 | Masquer date de generation ou la deplacer en footer |
-| 9 | `dossier/[uuid]/page.tsx` | L.381-390 | Conditionner lien Versiroom a `!hasMerchant` |
+| 9 | `dossier/[uuid]/page.tsx` | L.381-390 | Conditionner lien Versimo a `!hasMerchant` |
 | 10 | `app/api/properties/route.ts` | L.47-52 | Passer dpe/parking/etage/exposition a `enrichProperty` |
 
 ### P2 — Amelioration (score 8-9)
@@ -114,12 +114,12 @@
 | Prix/m2 du bien visible sans calcul | Pill explicite sur l'annonce | ❌ |
 | CTA "Appeler" visible apres lecture complete | Bouton en fin de page | ❌ |
 | Dossier sans date de generation apparente | Date masquee ou en footer | ❌ |
-| Copyright Versiroom absent sur dossier marchand | Conditionnel `!hasMerchant` | ❌ |
+| Copyright Versimo absent sur dossier marchand | Conditionnel `!hasMerchant` | ❌ |
 
 ---
 
 **Handoff → @fullstack**
 - Fichier produit : `docs/reviews/final-audit-10-10.md`
 - Corrections P0 (a traiter en priorite) : carte OSM annonce, titre editable annonce, `propertyType` dans titre auto
-- Corrections P1 : pill prix/m2 bien, mention IA sous hero, CTA duplique en fin de page, masquage date dossier, whitlabel Versiroom
+- Corrections P1 : pill prix/m2 bien, mention IA sous hero, CTA duplique en fin de page, masquage date dossier, whitlabel Versimo
 - Point d'attention critique : verifier que `properties` table expose `latitude`/`longitude` avant d'ajouter la carte annonce — si absent, ajouter la colonne dans `lib/properties.ts` et l'alimenter depuis `enrichProperty()`

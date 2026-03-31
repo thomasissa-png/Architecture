@@ -2,7 +2,7 @@
 
 ## Contexte
 
-Audit des 6 styles extérieurs de Versiroom (lib/outdoor-styles.ts) et des builders outdoor de route.ts.
+Audit des 6 styles extérieurs de Versimo (lib/outdoor-styles.ts) et des builders outdoor de route.ts.
 Méthode : analyse statique des prompts surfacePrompt + furniturePrompt + builders. Pas de visuels générés disponibles.
 
 ---

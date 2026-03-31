@@ -39,7 +39,7 @@ Le builder generique (ligne 429-439) conserve les directives de profondeur, scal
 
 "The result should look like a professionally styled photograph for a luxury real estate listing — lived-in and aspirational, not a sterile furniture catalog."
 
-Cette phrase est excellente. Elle oriente le modele vers le registre exact qu'un marchand de biens ou un architecte attend : du realisme habite, pas du showroom sterile. Le terme "luxury real estate listing" est le bon referentiel — c'est exactement le niveau Sotheby's/Barnes que vise Versiroom.
+Cette phrase est excellente. Elle oriente le modele vers le registre exact qu'un marchand de biens ou un architecte attend : du realisme habite, pas du showroom sterile. Le terme "luxury real estate listing" est le bon referentiel — c'est exactement le niveau Sotheby's/Barnes que vise Versimo.
 
 **Pas de conflit avec Japandi/Wabi-Sabi.** "Lived-in and aspirational" ne veut pas dire "charge". Un bien Japandi dans un listing Sotheby's est minimaliste ET aspire au luxe. La mood sentence de chaque style + la directive densite ("if minimalist, leave large empty floor areas") suffisent a contenir la densite. La phrase atmosphere ne fait que tirer le registre photographique vers le haut.
 

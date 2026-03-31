@@ -1,4 +1,4 @@
-# Stratégie Growth — Versiroom
+# Stratégie Growth — Versimo
 > Produit par @growth — 2026-03-25
 > Sources : project-context.md, pricing-strategy.md, kpi-framework.md, personas.md, competitive-benchmark.md
 > Objectif : 3 000€/mois de marge nette = ~140 transactions/mois (KPI North Star)
@@ -56,9 +56,9 @@ Coût acquisition par canal : estimé ci-dessous, aucune donnée terrain disponi
 
 | Rang | Canal | Justification |
 |---|---|---|
-| 1 | **Partage natif viral (WhatsApp + Instagram)** | Léa partage déjà ses coups de coeur déco. Le résultat avant/après Versiroom dans sa propre pièce est nativement partageable — boucle virale gratuite. |
+| 1 | **Partage natif viral (WhatsApp + Instagram)** | Léa partage déjà ses coups de coeur déco. Le résultat avant/après Versimo dans sa propre pièce est nativement partageable — boucle virale gratuite. |
 | 2 | **SEO inspiration déco** | Requêtes : "visualiser sa déco avant achat", "home staging virtuel appartement gratuit", "décoration intérieure IA" — Léa cherche sur Google avant de télécharger une app. |
-| 3 | **Pinterest (contenu organique)** | Léa est sur Pinterest pour l'inspiration déco. Des épingles avant/après stylisées (Japandi, Scandinave) avec lien vers Versiroom captent une audience qualifiée au moment exact où elle cherche de l'inspiration. |
+| 3 | **Pinterest (contenu organique)** | Léa est sur Pinterest pour l'inspiration déco. Des épingles avant/après stylisées (Japandi, Scandinave) avec lien vers Versimo captent une audience qualifiée au moment exact où elle cherche de l'inspiration. |
 
 ---
 
@@ -70,7 +70,7 @@ Le partage WhatsApp, copie d'image et native share (iOS) sont en place dans Imag
 
 ### Trois leviers pour amplifier
 
-**Levier 1 — Watermark discret "Généré avec Versiroom" sur les exports HD**
+**Levier 1 — Watermark discret "Généré avec Versimo" sur les exports HD**
 
 Chaque image téléchargée ou partagée porte un watermark bas de gamme discret en bas à droite. Quand Thomas l'envoie à un acquéreur ou que Léa le poste sur Instagram, le visuel se fait sa propre publicité. Implémentation : canvas overlay côté client avant le téléchargement, texte blanc semi-transparent. Coût : zéro. Délai : < 1 semaine.
 

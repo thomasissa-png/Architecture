@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Footer from "@/components/Footer";
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://architecture-toum92.replit.app";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://versimo.fr";
 
 export const metadata: Metadata = {
-  title: "Home staging IA architecte d'intérieur | Versiroom",
+  title: "Home staging IA architecte d'intérieur | Versimo",
   description:
     "Partagez des pistes d'inspiration à vos clients en 90 secondes. 12 styles curatés par des architectes d'intérieur, comparateur avant/après, partage instantané. Alternative rapide aux rendus 3D.",
   keywords: [
@@ -15,14 +15,14 @@ export const metadata: Metadata = {
     "home staging virtuel architecte",
   ],
   openGraph: {
-    title: "Home staging IA pour architectes d'intérieur | Versiroom",
+    title: "Home staging IA pour architectes d'intérieur | Versimo",
     description:
       "Générez des planches d'ambiance en 90 secondes au lieu d'attendre 2-3 jours par rendu 3D. 12 styles, comparateur avant/après.",
     type: "website",
     locale: "fr_FR",
-    siteName: "Versiroom",
+    siteName: "Versimo",
     url: `${BASE_URL}/architecte`,
-    images: [{ url: `${BASE_URL}/imageapres.jpg`, width: 1200, height: 630, alt: "Versiroom — Home staging virtuel par IA" }],
+    images: [{ url: `${BASE_URL}/imageapres.jpg`, width: 1200, height: 630, alt: "Versimo — Home staging virtuel par IA" }],
   },
   alternates: {
     canonical: `${BASE_URL}/architecte`,
@@ -31,9 +31,9 @@ export const metadata: Metadata = {
 
 const faqItems = [
   {
-    question: "Versiroom remplace-t-il un rendu 3D professionnel ?",
+    question: "Versimo remplace-t-il un rendu 3D professionnel ?",
     answer:
-      "Non, et ce n'est pas l'objectif. Versiroom génère un support de conversation en 90 secondes : une piste d'inspiration visuelle pour valider une direction esthétique avec votre client. Le rendu 3D final reste nécessaire pour les projets aboutis. Versiroom intervient au début du processus, quand le client veut voir à quoi ça va ressembler dès le premier rendez-vous.",
+      "Non, et ce n'est pas l'objectif. Versimo génère un support de conversation en 90 secondes : une piste d'inspiration visuelle pour valider une direction esthétique avec votre client. Le rendu 3D final reste nécessaire pour les projets aboutis. Versimo intervient au début du processus, quand le client veut voir à quoi ça va ressembler dès le premier rendez-vous.",
   },
   {
     question: "Les 12 styles sont-ils adaptés à une clientèle haut de gamme ?",
@@ -48,7 +48,7 @@ const faqItems = [
   {
     question: "Ça fonctionne sur un chantier brut ?",
     answer:
-      "Oui, c'est le cas d'usage principal. En deux étapes automatiques : d'abord les finitions (murs, sol, plafond), ensuite l'ameublement. Vous uploadez une seule photo, Versiroom fait le reste. Une pièce en béton brut devient un intérieur fini et meublé. Hauteur sous plafond, poutres apparentes, voûtes : la géométrie est préservée.",
+      "Oui, c'est le cas d'usage principal. En deux étapes automatiques : d'abord les finitions (murs, sol, plafond), ensuite l'ameublement. Vous uploadez une seule photo, Versimo fait le reste. Une pièce en béton brut devient un intérieur fini et meublé. Hauteur sous plafond, poutres apparentes, voûtes : la géométrie est préservée.",
   },
   {
     question: "Quels sont les droits d'usage sur les visuels générés ?",
@@ -63,7 +63,7 @@ const faqItems = [
   {
     question: "Et si le résultat ne me convient pas ?",
     answer:
-      "Vous pouvez régénérer immédiatement avec un autre style, ou affiner le résultat avec le mode personnalisé. Avec le Pro, 3 itérations par photo sont incluses : ajoutez un commentaire (« plus épuré », « changer le sol ») et Versiroom ajuste. Aucun engagement, aucun risque.",
+      "Vous pouvez régénérer immédiatement avec un autre style, ou affiner le résultat avec le mode personnalisé. Avec le Pro, 3 itérations par photo sont incluses : ajoutez un commentaire (« plus épuré », « changer le sol ») et Versimo ajuste. Aucun engagement, aucun risque.",
   },
   {
     question: "Mon client risque-t-il de confondre le visuel avec un rendu définitif ?",
@@ -100,7 +100,7 @@ export default function ArchitectePage() {
             href="/"
             className="text-xl font-semibold text-foreground tracking-tighter focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm"
           >
-            Versiroom
+            Versimo
           </a>
           <nav aria-label="Navigation principale" className="flex items-center gap-4 sm:gap-6">
             <a
@@ -147,7 +147,7 @@ export default function ArchitectePage() {
             Sans carte bancaire · 3 visuels offerts
           </p>
           <p className="text-xs text-foreground/50 font-light mt-3">
-            Utilisez Versiroom régulièrement ?{" "}
+            Utilisez Versimo régulièrement ?{" "}
             <a href="/pricing?buy=pro" className="text-sage font-medium hover:underline">
               Pro à 29 €/mois →
             </a>
@@ -160,17 +160,17 @@ export default function ArchitectePage() {
         <div className="max-w-3xl mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 rounded-2xl overflow-hidden">
             <div className="relative aspect-[4/3]">
-              <img src="/imageavant.jpg" alt="Salon vide en chantier brut — avant home staging virtuel par Versiroom" className="w-full h-full object-cover" loading="eager" />
+              <img src="/imageavant.jpg" alt="Salon vide en chantier brut — avant home staging virtuel par Versimo" className="w-full h-full object-cover" loading="eager" />
               <span className="absolute bottom-2 left-2 text-xs font-medium text-white bg-black/50 px-2 py-1 rounded">Avant</span>
             </div>
             <div className="relative aspect-[4/3]">
-              <img src="/imageapres.jpg" alt="Salon meublé en style Scandinave — canapé lin, plancher chêne, suspension PH5, généré par Versiroom en 90 secondes" className="w-full h-full object-cover" loading="eager" />
+              <img src="/imageapres.jpg" alt="Salon meublé en style Scandinave — canapé lin, plancher chêne, suspension PH5, généré par Versimo en 90 secondes" className="w-full h-full object-cover" loading="eager" />
               <span className="absolute bottom-2 left-2 text-xs font-medium text-white bg-black/50 px-2 py-1 rounded">Après</span>
               <span className="absolute top-2 right-2 text-[10px] font-light text-white/70 bg-black/30 px-2 py-0.5 rounded">Visualisation IA</span>
             </div>
           </div>
           <p className="text-xs text-muted font-light text-center mt-3">
-            Appartement en chantier — Style Scandinave, généré par Versiroom en 90 secondes.
+            Appartement en chantier — Style Scandinave, généré par Versimo en 90 secondes.
           </p>
         </div>
       </section>
@@ -250,7 +250,7 @@ export default function ArchitectePage() {
           </div>
           <div className="text-center mt-8">
             <a href="/#outil" className="text-sm text-sage font-medium hover:underline transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm">
-              Voir comment Versiroom résout ce problème →
+              Voir comment Versimo résout ce problème →
             </a>
           </div>
         </div>
@@ -263,7 +263,7 @@ export default function ArchitectePage() {
       <section className="py-10 sm:py-14 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-4 text-center">
-            La solution Versiroom
+            La solution Versimo
           </h2>
           <p className="text-muted font-light text-center mb-8 max-w-xl mx-auto">
             Un support de conversation visuel généré en 90 secondes, pas un rendu final.

@@ -1,4 +1,4 @@
-# Re-audit technique frontend Versiroom -- 2026-03-25
+# Re-audit technique frontend Versimo -- 2026-03-25
 
 Audit precedent : 6.3/10 (2026-03-22). Cible : valider les 8 corrections annoncees.
 

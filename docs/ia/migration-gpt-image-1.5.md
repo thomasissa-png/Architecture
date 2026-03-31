@@ -291,7 +291,7 @@ Le `model: "gpt-4.1"` au niveau `openai.responses.create()` **reste gpt-4.1**. C
 **Mitigation** :
 - Verifier le tier actuel du compte OpenAI
 - Le pipeline 2 passes = 2 images par generation. A 5 IPM (Tier 1), ca limite a 2.5 generations/minute.
-- Le rate limit existant de Versiroom (10 req/min/IP) est deja un garde-fou cote client
+- Le rate limit existant de Versimo (10 req/min/IP) est deja un garde-fou cote client
 - Si necessaire, ajouter un retry avec backoff sur les erreurs 429
 
 ### 4.4 Risque : cout total potentiellement different

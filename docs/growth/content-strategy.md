@@ -1,4 +1,4 @@
-# Stratégie de contenu — Versiroom
+# Stratégie de contenu — Versimo
 > Produit par @growth — 2026-03-26
 > Sources : growth-strategy.md, personas.md, seo-audit.md, brand-voice.md
 > Objectif : trafic organique + visibilité LLM + nurturing, 100% automatisable par fondateur solo + agents IA
@@ -21,14 +21,14 @@
 | # | Titre | Mot-clé cible | Persona | Angle | Format |
 |---|---|---|---|---|---|
 | 1 | "Home staging virtuel IA : comment ça marche en 2026 ?" | home staging virtuel IA | Tous | Guide explicatif, réponse directe aux LLM — article de référence | Guide pratique |
-| 2 | "5 outils de home staging IA comparés (prix, qualité, rapidité)" | home staging IA comparatif | Thomas + Claire | Comparatif objectif — Versiroom positionné sur rapport qualité/prix | Comparatif |
+| 2 | "5 outils de home staging IA comparés (prix, qualité, rapidité)" | home staging IA comparatif | Thomas + Claire | Comparatif objectif — Versimo positionné sur rapport qualité/prix | Comparatif |
 | 3 | "Architecte d'intérieur : gagner du temps avec le staging IA avant le 1er RDV client" | outil home staging architecte | Claire | Use case Claire — 90 secondes vs 2 jours de rendu 3D | Étude de cas |
 | 4 | "Marchand de biens : 3 visuels meublés en 10 minutes pour votre dossier de pré-commercialisation" | visuels meublés annonce immobilière | Thomas | ROI immédiat — 29€ vs 500€ home stager humain | Étude de cas |
 | 5 | "Home staging virtuel appartement : guide complet pour les particuliers" | home staging virtuel appartement | Léa | Longue traîne large — visualiser sa déco avant emménagement | Guide pratique |
 | 6 | "Aménagement IA : 12 styles de déco pour visualiser votre intérieur" | aménagement IA intérieur | Léa + Claire | Contenu SEO image-rich — galerie 12 styles avant/après, cible Pinterest | Inspiration |
 | 7 | "Home staging virtuel vs home stager humain : quel ROI pour un marchand de biens ?" | home staging virtuel prix | Thomas | Calcul économique précis — 1 500€ vs 29€, temps de retour, cas d'usage | Analyse |
 | 8 | "Staging IA pour annonce immobilière : comment multiplier vos demandes de visite" | staging IA immobilier | Thomas | Angle conversion annonce — lien avec photos meublées et taux de clic SeLoger/LeBonCoin | Guide pratique |
-| 9 | "Visualiser sa décoration avant d'acheter des meubles : 4 méthodes comparées" | visualiser décoration avant achat | Léa | Comparatif d'apps — positionne Versiroom sur rapidité + réalisme + gratuité des 3 premières | Comparatif |
+| 9 | "Visualiser sa décoration avant d'acheter des meubles : 4 méthodes comparées" | visualiser décoration avant achat | Léa | Comparatif d'apps — positionne Versimo sur rapidité + réalisme + gratuité des 3 premières | Comparatif |
 | 10 | "Japandi, scandinave, wabi-sabi : quel style d'intérieur vous correspond ?" | style intérieur japandi scandinave | Léa | SEO inspiration déco + signal GEO — article encyclopédique sur les 12 styles | Guide pratique |
 
 ### Pipeline d'automatisation blog
@@ -41,11 +41,11 @@ Mot-clé principal : [mot-clé]
 Titre : [titre]
 Angle : [angle]
 Longueur : 1 200-1 800 mots
-Sections obligatoires : intro (réponse directe à la question — pour GEO), contexte, guide/comparatif, exemples concrets, FAQ 3 questions, CTA Versiroom
+Sections obligatoires : intro (réponse directe à la question — pour GEO), contexte, guide/comparatif, exemples concrets, FAQ 3 questions, CTA Versimo
 Ton : [brand-voice.md §2]
 ```
 
-**Enrichissement visuel :** chaque article intègre 2-3 avant/après générés avec Versiroom (captures d'écran de production dans public/logs/ ou Object Storage). Les images servent le SEO image ET la preuve sociale.
+**Enrichissement visuel :** chaque article intègre 2-3 avant/après générés avec Versimo (captures d'écran de production dans public/logs/ ou Object Storage). Les images servent le SEO image ET la preuve sociale.
 
 **Publication :** workflow Next.js — les articles sont des fichiers `.mdx` dans `app/blog/`. Un script Node.js lit le fichier MDX généré et le place dans le bon dossier via l'API GitHub. Publication automatique au déploiement Replit.
 
@@ -69,10 +69,10 @@ Ton : [brand-voice.md §2]
 
 | # | Format | Canal | Persona | Contenu type | Hook |
 |---|---|---|---|---|---|
-| 1 | Avant/après image | Instagram + LinkedIn | Tous | Photo chantier brut → même pièce en style Scandinave (généré Versiroom) | "90 secondes pour voir à quoi ressemblera ce salon vide." |
+| 1 | Avant/après image | Instagram + LinkedIn | Tous | Photo chantier brut → même pièce en style Scandinave (généré Versimo) | "90 secondes pour voir à quoi ressemblera ce salon vide." |
 | 2 | Carousel 6 slides | LinkedIn | Claire | Slide 1 : problème (client ne visualise pas). Slide 2-5 : 4 styles sur même pièce. Slide 6 : CTA essai gratuit | "Votre client ne voit pas ce que vous voyez. Voici comment changer ça." |
 | 3 | Reel 30s | Instagram | Léa | Screen recording : upload photo appartement vide → choix style Japandi → résultat. Musique tendance. | "POV : tu viens d'acheter ton appart et tu veux voir à quoi ça peut ressembler" |
-| 4 | Chiffre choc | LinkedIn | Thomas | Visuel texte : "1 500€ pour un home stager humain. 29€ pour Versiroom. Résultat en 90 secondes." | Pas de hook nécessaire — le chiffre parle seul |
+| 4 | Chiffre choc | LinkedIn | Thomas | Visuel texte : "1 500€ pour un home stager humain. 29€ pour Versimo. Résultat en 90 secondes." | Pas de hook nécessaire — le chiffre parle seul |
 | 5 | Tutoriel étapes | Instagram Reels + TikTok | Léa | 3 étapes en 60s : upload → style → télécharger. Voice-over IA. | "Je vais te montrer comment visualiser ta déco en 60 secondes" |
 | 6 | Comparatif 12 styles | Pinterest | Léa | Épingle statique : même pièce en 4 styles (2x2 grid). Alt text SEO. Lien vers article blog #6 | "Quel style est fait pour vous ?" |
 | 7 | Témoignage reformulé | LinkedIn | Thomas + Claire | Citation reformulée d'un avis utilisateur + résultat avant/après | "Ce marchand de biens a réduit son délai de commercialisation de 3 semaines." |
@@ -109,7 +109,7 @@ Ton : [brand-voice.md §2]
 
 | Email | Délai | Objet | Contenu | CTA |
 |---|---|---|---|---|
-| E1 — Bienvenue | J+0 | "Vos 3 générations gratuites vous attendent" | Ce que Versiroom fait, comment ça marche en 3 étapes, lien direct vers l'outil | "Générer ma première image" |
+| E1 — Bienvenue | J+0 | "Vos 3 générations gratuites vous attendent" | Ce que Versimo fait, comment ça marche en 3 étapes, lien direct vers l'outil | "Générer ma première image" |
 | E2 — Activation | J+2 (si pas de génération) | "Vous n'avez pas encore essayé — voici pourquoi ça vaut le coup" | Avant/après d'un style populaire (Scandinave ou Japandi), 1 chiffre (90 secondes), preuve sociale | "Essayer maintenant" |
 | E3 — Upsell post-génération | J+1 après 1ère génération | "Comment avez-vous trouvé le résultat ?" | Félicitations, rappel des crédits restants, explication de ce qu'on gagne avec le pack Pro | "Passer au Pro — 29€" |
 | E4 — Urgence crédits | Quand crédit = 1 | "Il vous reste 1 génération gratuite" | Récapitulatif de ce que l'utilisateur a déjà créé, tarifs, CTA fort | "Continuer avec le pack Starter" |
@@ -123,7 +123,7 @@ Ton : [brand-voice.md §2]
 
 | Email | Objet | Angle |
 |---|---|---|
-| C1 — J+1 après achat Pro | "Comment présenter vos visuels Versiroom à vos clients" | Tips pro : présenter 3 styles max, créer une mini-planche, usage iPad en réunion |
+| C1 — J+1 après achat Pro | "Comment présenter vos visuels Versimo à vos clients" | Tips pro : présenter 3 styles max, créer une mini-planche, usage iPad en réunion |
 | C2 — J+14 | "Vos confrères architectes l'utilisent aussi" | Preuve sociale pro + referral (5 crédits si parrainage d'un confrère) |
 | C3 — J+28 (avant expiration) | "Vos crédits expirent dans 3 jours" | Rappel + offre renouvellement |
 
@@ -131,7 +131,7 @@ Ton : [brand-voice.md §2]
 
 | Email | Objet | Angle |
 |---|---|---|
-| T1 — J+1 après achat Studio | "Intégrer vos visuels Versiroom dans une plaquette SeLoger" | Guide pratique : export HD, formats acceptés, angle de mise en valeur |
+| T1 — J+1 après achat Studio | "Intégrer vos visuels Versimo dans une plaquette SeLoger" | Guide pratique : export HD, formats acceptés, angle de mise en valeur |
 | T2 — J+10 | "Votre prochain dossier, votre prochaine opération" | ROI calculé (temps + argent), présentation du pack F4 dossier si pas encore utilisé |
 | T3 — J+25 | "Préparez votre prochain achat — renouveler votre pack" | Offre de renouvellement avec 10% remise si renouvellement avant expiration |
 
@@ -148,7 +148,7 @@ Ton : [brand-voice.md §2]
 
 **Intégration :** à la création du compte utilisateur (Auth M2), un appel API Brevo crée le contact et déclenche la séquence onboarding selon le persona déclaré. Un webhook post-génération déclenche E3. Un cron vérifie les crédits restants et déclenche E4.
 
-**Templates :** générés par GPT-4o sur template HTML Brevo minimaliste (couleurs Versiroom : #FAFAF8 / #1C1C1E / #7D9B76). 1 template/séquence, personnalisation via variables Brevo.
+**Templates :** générés par GPT-4o sur template HTML Brevo minimaliste (couleurs Versimo : #FAFAF8 / #1C1C1E / #7D9B76). 1 template/séquence, personnalisation via variables Brevo.
 
 **Temps fondateur :** 1h pour configurer les séquences et webhooks à M2. Ensuite 0 maintenance.
 

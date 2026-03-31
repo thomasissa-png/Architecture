@@ -68,7 +68,7 @@ Toutes les corrections demandées depuis l'audit V1 sont désormais soldées dan
 - Tokens natifs sur toutes les surfaces : `bg-background`, `border-foreground/5`, `text-muted`, `text-sage`
 - Formulaire de création inline : `bg-foreground/[0.02]` pour le fond du panneau — cohérent avec le pattern cards existant
 - Autocomplete adresse : `bg-background` + `border-foreground/10` + `rounded-xl` + `shadow-lg` — conforme au token après correction V4 de MerchantMode
-- Labels `text-[10px]` sur les champs du formulaire : cohérent avec la hiérarchie typographique Versiroom
+- Labels `text-[10px]` sur les champs du formulaire : cohérent avec la hiérarchie typographique Versimo
 - Cards biens : `hover:border-sage/30 transition-all group` + `group-hover:text-sage` sur le titre = micro-interaction premium
 - Pills propriétés (`text-[10px] bg-foreground/5 text-muted`) : pattern cohérent avec la fiche bien
 - Pill DVF en sage/10 text-sage : différenciateur data bien valorisé
@@ -116,7 +116,7 @@ Le `bg-white/80` en état non-sélectionné est un token semi-hardcodé. Sur un 
 ### `app/ma-galerie/page.tsx`
 
 **Forces :**
-- Filtres en `select` avec `bg-foreground/5 border-0` : pattern flat cohérent avec l'esthétique Versiroom
+- Filtres en `select` avec `bg-foreground/5 border-0` : pattern flat cohérent avec l'esthétique Versimo
 - `focus-visible:ring-2 focus-visible:ring-sage/50` sur les deux selects : accessibilité correcte
 - Badge "Non classée" en `bg-foreground/40` vs "Associée" en `bg-sage/80` : distinction sémantique immédiate
 - Dropdown d'association sur hover : `bg-white border border-foreground/10 rounded-xl shadow-lg` — à noter cependant (voir issue)
@@ -267,7 +267,7 @@ Aucune issue bloquante ou majeure. **7 issues mineures.**
 
 **Verdict : 9.1/10 — système design mature.**
 
-Le design system de Versiroom atteint un niveau de maturité élevé. Les tokens CSS sont utilisés nativement sur toutes les nouvelles surfaces sans exception notable. La hiérarchie typographique est stable et cohérente sur l'ensemble du périmètre. Les 7 issues restantes sont toutes mineures, sans aucun bloquant ni issue majeure. L'extension vers les nouvelles surfaces Bien/Dossier/Photos n'a introduit aucune régression sur les composants existants.
+Le design system de Versimo atteint un niveau de maturité élevé. Les tokens CSS sont utilisés nativement sur toutes les nouvelles surfaces sans exception notable. La hiérarchie typographique est stable et cohérente sur l'ensemble du périmètre. Les 7 issues restantes sont toutes mineures, sans aucun bloquant ni issue majeure. L'extension vers les nouvelles surfaces Bien/Dossier/Photos n'a introduit aucune régression sur les composants existants.
 
 Deux patterns systémiques méritent une attention continue lors des prochaines extensions :
 1. **Buttons hover-only** : le pattern `opacity-0 group-hover:opacity-100` est récurrent (Retirer, Associer) et systématiquement inaccessible mobile. Documenter ce pattern comme anti-pattern interne.

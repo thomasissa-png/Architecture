@@ -1,4 +1,4 @@
-# Messaging Matrix — Versiroom
+# Messaging Matrix — Versimo
 > Produit par @creative-strategy — 2026-03-25
 > Lecture obligatoire pour @copywriter avant toute production de copy sur les canaux listés ci-dessous.
 > Construit à partir de : brand-platform.md, value-proposition.md, personas.md, competitive-benchmark.md, brand-voice.md
@@ -30,8 +30,8 @@
 ### Considération (canal : landing page — pill Claire)
 
 - **Message principal** : "Un support de conversation prêt en 90 secondes, sans attendre 3 jours ni payer 300 € une planche."
-- **Preuve** : Export HD sans filigrane, sans logo Versiroom — le visuel est présentable directement en PDF client ou dans une présentation Keynote.
-- **Objection à lever** : "J'ai déjà SketchUp." → SketchUp produit un rendu final pour un projet validé. Versiroom produit un support de conversation pour la phase amont — les deux ne se remplacent pas.
+- **Preuve** : Export HD sans filigrane, sans logo Versimo — le visuel est présentable directement en PDF client ou dans une présentation Keynote.
+- **Objection à lever** : "J'ai déjà SketchUp." → SketchUp produit un rendu final pour un projet validé. Versimo produit un support de conversation pour la phase amont — les deux ne se remplacent pas.
 - **Vocabulaire à utiliser** : "direction esthétique", "cohérence stylistique", "matières", "mise en lumière", "planche"
 - **Vocabulaire à éviter** : "vibe", "Insta-worthy", "cosy", "relooking"
 - **CTA** : "Générer 3 ambiances sur ma photo"
@@ -40,7 +40,7 @@
 
 - **Message principal** : "Sur 5 projets en cours, 3 directions esthétiques par projet. Ce que je payais avant à un prestataire 3D en une semaine."
 - **Preuve** : Plan Pro — crédits suffisants pour couvrir un portefeuille actif de projets résidentiels haut de gamme. Pas de filigrane. Export HD réutilisable dans les livrables client.
-- **Objection à lever** : "C'est trop cheap pour mon positionnement pro." → Le visuel produit ne porte aucune mention Versiroom. Le client final voit un visuel propre, pas un outil SaaS.
+- **Objection à lever** : "C'est trop cheap pour mon positionnement pro." → Le visuel produit ne porte aucune mention Versimo. Le client final voit un visuel propre, pas un outil SaaS.
 - **Vocabulaire à utiliser** : "projets", "DPLG", "présentable", "crédible", "cabinet"
 - **Vocabulaire à éviter** : "illimité", "forfait", "discount"
 - **CTA** : "Choisir le plan Pro"
@@ -159,11 +159,11 @@ Ces formulations peuvent être réutilisées en FAQ, tooltips, ou objections pai
 
 | Objection | Persona | Réponse (dans les mots du persona) |
 |---|---|---|
-| "Mes clients verront que c'est de l'IA" | Claire | "Export sans filigrane. Pas de logo Versiroom. Le visuel, c'est votre livrable." |
+| "Mes clients verront que c'est de l'IA" | Claire | "Export sans filigrane. Pas de logo Versimo. Le visuel, c'est votre livrable." |
 | "La qualité est suffisante pour les portails immo ?" | Thomas | "HD. Utilisable sur Seloger, LeBonCoin, Bien'ici. Standard du marché en 2026." |
 | "Ça ressemble vraiment à MA pièce ?" | Léa | "Vos dimensions, votre lumière, vos fenêtres. Pas un espace réinventé — le vôtre." |
 | "C'est gratuit ?" | Léa | "Plan Gratuit disponible. Pas de CB." |
-| "J'ai déjà SketchUp" | Claire | "SketchUp, c'est le rendu final. Versiroom, c'est le support de conversation — avant le projet." |
+| "J'ai déjà SketchUp" | Claire | "SketchUp, c'est le rendu final. Versimo, c'est le support de conversation — avant le projet." |
 | "J'ai besoin de 10 photos par bien" | Thomas | "Plan Business — coût à la photo inférieur au home stager humain." |
 | "Je n'ai pas le temps d'apprendre" | Thomas | "3 étapes. Depuis l'iPhone. Pas de formation." |
 

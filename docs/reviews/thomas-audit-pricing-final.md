@@ -58,7 +58,7 @@ Icone cadenas + "Paiement securise par Stripe / Donnees bancaires chiffrees / CB
 ### P2 -- ROI decompose avec calcul concret
 
 - **Avant :** "jusqu'a 20 000 EUR d'economie par an" -- chiffre rond, pas credible sans source.
-- **Apres :** "8 biens x 5 photos x 300 EUR/planche = 12 000 EUR/an chez un home stager. Versiroom Pro : 348 EUR/an." -- decompose, verifiable, credible.
+- **Apres :** "8 biens x 5 photos x 300 EUR/planche = 12 000 EUR/an chez un home stager. Versimo Pro : 348 EUR/an." -- decompose, verifiable, credible.
 
 ---
 

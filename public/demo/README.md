@@ -1,11 +1,11 @@
-# Images de demo — Versiroom
+# Images de demo — Versimo
 
 Ce dossier contient les visuels de demo utilises sur le site.
 
 ## Hero (avant/apres)
 
 - `hero-before.jpg` — Photo de piece vide (ratio 4:3, min 800x600)
-- `hero-after.jpg` — Meme piece meublee par Versiroom (meme ratio)
+- `hero-after.jpg` — Meme piece meublee par Versimo (meme ratio)
 
 ## Previews styles (optionnel)
 
@@ -31,7 +31,7 @@ Format : JPEG, ratio 4:3, 400x300px minimum.
 
 ## Comment generer ces images
 
-1. Aller sur https://architecture-toum92.replit.app/
+1. Aller sur https://versimo.fr/
 2. Uploader une photo de piece vide de bonne qualite
 3. Generer avec chaque style
 4. Telecharger les resultats HD

@@ -1,11 +1,11 @@
 /**
- * Benchmark runner — calls the Versiroom production API for each benchmark image
+ * Benchmark runner — calls the Versimo production API for each benchmark image
  *
  * Usage:
  *   npx tsx benchmarks/run.ts --version v26
  *
  * Environment:
- *   BENCHMARK_API_URL  (default: https://architecture-toum92.replit.app/api/generate)
+ *   BENCHMARK_API_URL  (default: https://versimo.fr/api/generate)
  */
 
 import * as fs from "node:fs";
@@ -175,7 +175,7 @@ async function main(): Promise<void> {
   const { version } = parseArgs();
   const apiUrl =
     process.env.BENCHMARK_API_URL ??
-    "https://architecture-toum92.replit.app/api/generate";
+    "https://versimo.fr/api/generate";
 
   const inputsDir = path.resolve(__dirname, "inputs");
   const baselineDir = path.resolve(__dirname, "baseline", version);
@@ -185,7 +185,7 @@ async function main(): Promise<void> {
   fs.mkdirSync(baselineDir, { recursive: true });
   fs.mkdirSync(historyDir, { recursive: true });
 
-  console.log(`\n=== Versiroom Benchmark Run ===`);
+  console.log(`\n=== Versimo Benchmark Run ===`);
   console.log(`Version:  ${version}`);
   console.log(`API:      ${apiUrl}`);
   console.log(`Images:   ${BENCHMARK_CONFIG.length}`);

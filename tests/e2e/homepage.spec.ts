@@ -10,7 +10,7 @@ test.describe("Homepage", () => {
 
   test("page loads with title, hero heading and nav", async ({ page }) => {
     // Page title from layout.tsx metadata
-    await expect(page).toHaveTitle(/Versiroom/);
+    await expect(page).toHaveTitle(/Versimo/);
 
     // Hero heading
     const heading = page.locator("h1");
@@ -19,7 +19,7 @@ test.describe("Homepage", () => {
 
     // Brand name in header
     const header = page.locator("header");
-    await expect(header).toContainText("Versiroom");
+    await expect(header).toContainText("Versimo");
   });
 
   test('header contains "Tarifs" and "Essayer gratuitement" links', async ({

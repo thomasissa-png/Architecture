@@ -1,4 +1,4 @@
-# QA Integration Tests — Versiroom
+# QA Integration Tests — Versimo
 
 **Date** : 2026-03-25
 **Branche** : `claude/fix-lint-e2e-tests-4VmSc`

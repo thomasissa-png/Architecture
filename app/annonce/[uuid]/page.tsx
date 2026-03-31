@@ -1,5 +1,5 @@
 /**
- * F6 — Annonce immobili\u00E8re publique.
+ * F6 — Annonce immobilière publique.
  *
  * /annonce/[uuid] — SSR, no auth required, mobile-friendly.
  * OpenGraph metadata for link preview in messaging apps.
@@ -44,7 +44,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!annonce || !isAnnonceActive(annonce)) {
     return {
-      title: "Annonce introuvable - Versiroom",
+      title: "Annonce introuvable - Versimo",
       description: "Cette annonce n'existe pas ou a été supprimée.",
       robots: "noindex, nofollow",
     };
@@ -62,8 +62,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (property?.sale_price) details.push(formatPrice(property.sale_price));
 
   const description = details.length > 0
-    ? `${title} - ${details.join(", ")}. Visuels par Versiroom.`
-    : `${title} - Visuels par Versiroom.`;
+    ? `${title} - ${details.join(", ")}. Visuels par Versimo.`
+    : `${title} - Visuels par Versimo.`;
 
   const firstPhoto = photos.find((p) => p.output_image_key);
   const ogImages = firstPhoto?.output_image_key
@@ -71,14 +71,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     : undefined;
 
   return {
-    title: `${title} - Versiroom`,
+    title: `${title} - Versimo`,
     description,
     robots: "noindex, nofollow",
     openGraph: {
       title,
       description,
       type: "website",
-      siteName: "Versiroom",
+      siteName: "Versimo",
       ...(ogImages ? { images: ogImages } : {}),
     },
   };
@@ -213,7 +213,7 @@ export default async function AnnoncePage({ params }: PageProps) {
             </span>
           ) : (
             <span className="text-xl font-semibold text-foreground tracking-tighter">
-              Versiroom
+              Versimo
             </span>
           )}
           <div className="flex items-center gap-3">
@@ -655,16 +655,16 @@ export default async function AnnoncePage({ params }: PageProps) {
             </p>
           )}
           <p className="text-sm text-muted/60 font-light">
-            Projection d&apos;aménagement réalisée par Versiroom — le bien est livré brut. Visuels non contractuels.
+            Projection d&apos;aménagement réalisée par Versimo — le bien est livré brut. Visuels non contractuels.
           </p>
           <p className="text-xs text-muted/40 font-light mt-1">
             <a
-              href="https://architecture-toum92.replit.app/"
+              href="https://versimo.fr/"
               className="hover:text-muted/60 transition-colors underline"
               target="_blank"
               rel="noopener noreferrer"
             >
-              Versiroom
+              Versimo
             </a>
             {" "}&mdash; © {new Date().getFullYear()}
           </p>

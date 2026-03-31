@@ -17,8 +17,8 @@
 |---|---------|----------|-------------|
 | 1 | **30 secondes iPhone** | 7/10 | Hero pleine largeur 16/9 charge en premier. Prix en pill noir visible sans scroller. Surface + pieces + ville presents. Mais pas de prix/m2 affiche systematiquement (seulement si `dvf_median_price_m2` renseigne) |
 | 2 | **Infos quartier** | 1/10 | CRITIQUE. Adresse normalisee affichee, mais zero mention metro, ecoles, commerces, transports. Marc ne peut pas evaluer la localisation sans ouvrir Google Maps dans un autre onglet |
-| 3 | **Contact vendeur — 1 tap** | 6/10 | ContactSticky fonctionne bien : bouton "Appeler" vert sage en bas, tel: link natif, 48px minimum. MAIS : si pas de telephone vendeur → fallback contact@versiroom.fr (perte totale de confiance pour Marc). La section Contact dans le corps de page est discrete (texte lien, pas un bouton). Aucun CTA "Appeler" au-dessus de la fold |
-| 4 | **Transparence IA** | 8/10 | Footer : "Projection d'amenagement realisee par Versiroom — le bien est livre brut. Visuels non contractuels." Clair, legal, mais en bas de page. Marc ne le voit qu'apres 10 minutes de scroll. Un badge discret sous la photo hero serait plus visible |
+| 3 | **Contact vendeur — 1 tap** | 6/10 | ContactSticky fonctionne bien : bouton "Appeler" vert sage en bas, tel: link natif, 48px minimum. MAIS : si pas de telephone vendeur → fallback contact@versimo.fr (perte totale de confiance pour Marc). La section Contact dans le corps de page est discrete (texte lien, pas un bouton). Aucun CTA "Appeler" au-dessus de la fold |
+| 4 | **Transparence IA** | 8/10 | Footer : "Projection d'amenagement realisee par Versimo — le bien est livre brut. Visuels non contractuels." Clair, legal, mais en bas de page. Marc ne le voit qu'apres 10 minutes de scroll. Un badge discret sous la photo hero serait plus visible |
 | 5 | **Envie d'appeler — CTA dans le corps** | 4/10 | Aucun bouton CTA dans le corps de la page. La section contact affiche un numero en lien hypertexte non stylise. Le sticky bottom est bon mais Marc ne le voit pas en haut de page — il peut fermer l'onglet avant de le voir |
 
 ---

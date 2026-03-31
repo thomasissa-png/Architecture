@@ -10,7 +10,7 @@
 
 ### Pourquoi 6.1/10 ?
 
-Le F4 actuel (functional-specs.md) demande a Thomas de remplir manuellement : nom du bien, adresse, surface, prix. Il ne porte pas la marque de Thomas. Le PDF est generique (branding Versiroom). Thomas doit re-saisir ses coordonnees a chaque dossier.
+Le F4 actuel (functional-specs.md) demande a Thomas de remplir manuellement : nom du bien, adresse, surface, prix. Il ne porte pas la marque de Thomas. Le PDF est generique (branding Versimo). Thomas doit re-saisir ses coordonnees a chaque dossier.
 
 ### Cible 9/10
 
@@ -43,7 +43,7 @@ Thomas n'a qu'a :
 - Critere d'acceptation : L'auto-remplissage se declenche en < 2s apres saisie des 14 chiffres. Si Pappers echoue, fallback vers API INSEE SIRENE. Si les deux echouent, les champs restent vides et editables manuellement. Aucun champ auto-rempli n'est verrouille -- Thomas peut tout modifier.
 
 **US-F4A-02 -- Uploader mon logo pour brander mes dossiers (Thomas)**
-- Job-to-be-done : Quand je genere un PDF de pre-commercialisation, je veux que mon logo apparaisse en couverture au lieu de celui de Versiroom, pour que le document porte ma marque.
+- Job-to-be-done : Quand je genere un PDF de pre-commercialisation, je veux que mon logo apparaisse en couverture au lieu de celui de Versimo, pour que le document porte ma marque.
 - Given : Thomas est sur la page Profil Marchand.
 - When : Il uploade un fichier logo (PNG, JPG ou SVG, max 2 Mo).
 - Then : Le logo est affiche en preview. Il est stocke dans Object Storage et reference en DB. Le logo est injecte automatiquement dans tous les futurs PDF generes.
@@ -54,7 +54,7 @@ Thomas n'a qu'a :
 - Given : Thomas est sur la page Profil Marchand. Les champs palette et police sont marques "Facultatif".
 - When : Il choisit une couleur principale via un color picker (hex), optionnellement une couleur secondaire. Il selectionne une police dans un dropdown (5 choix).
 - Then : Les couleurs et la police sont sauvegardees en DB. Les prochains PDF utiliseront cette palette pour les titres (couleur principale), les accents (couleur secondaire) et le texte (police choisie).
-- Critere d'acceptation : Si aucune palette definie, le PDF utilise la palette Versiroom par defaut (#1C1C1E titres, #7D9B76 accents, Inter). Si aucune police choisie, Inter est appliquee. Le color picker affiche un preview du rendu titre + accent. Les 5 polices proposees : Inter, Playfair Display, Montserrat, Lora, DM Sans.
+- Critere d'acceptation : Si aucune palette definie, le PDF utilise la palette Versimo par defaut (#1C1C1E titres, #7D9B76 accents, Inter). Si aucune police choisie, Inter est appliquee. Le color picker affiche un preview du rendu titre + accent. Les 5 polices proposees : Inter, Playfair Display, Montserrat, Lora, DM Sans.
 
 **US-F4A-04 -- Completer mes coordonnees pro (Thomas)**
 - Job-to-be-done : Quand mon dossier PDF est envoye a un acquereur, je veux que mes coordonnees directes (telephone, email pro) figurent en pied de page pour etre contacte facilement.
@@ -357,18 +357,18 @@ Extension de la table `dossiers` existante (definie dans functional-specs.md F4.
 ### 3.1 User Stories
 
 **US-F4C-01 -- Telecharger un PDF brande a mon image (Thomas)**
-- Job-to-be-done : Quand j'envoie un dossier a un acquereur, je veux que le document porte le logo et les couleurs de ma societe -- pas celles de Versiroom -- pour projeter une image professionnelle.
+- Job-to-be-done : Quand j'envoie un dossier a un acquereur, je veux que le document porte le logo et les couleurs de ma societe -- pas celles de Versimo -- pour projeter une image professionnelle.
 - Given : Le dossier est genere (photos avant/apres terminees). Thomas a configure son profil marchand (F4.A).
 - When : Il clique sur "Telecharger le PDF".
-- Then : Un PDF est genere avec : couverture brandee (logo Thomas, raison sociale, coordonnees, photo de couverture, titre du bien, description, carte), pages interieures (avant/apres cote a cote par piece), pied de page avec coordonnees Thomas et mention "Visuels generes par IA a titre indicatif -- Powered by Versiroom".
-- Critere d'acceptation : Le logo de Thomas apparait en haut a gauche de la couverture (max 180px large). Les titres utilisent la couleur principale de Thomas. Les accents utilisent la couleur secondaire. La police choisie est appliquee. Si aucun branding defini, palette Versiroom par defaut. Generation PDF < 10s. Taille < 25 Mo pour 15 photos.
+- Then : Un PDF est genere avec : couverture brandee (logo Thomas, raison sociale, coordonnees, photo de couverture, titre du bien, description, carte), pages interieures (avant/apres cote a cote par piece), pied de page avec coordonnees Thomas et mention "Visuels generes par IA a titre indicatif -- Powered by Versimo".
+- Critere d'acceptation : Le logo de Thomas apparait en haut a gauche de la couverture (max 180px large). Les titres utilisent la couleur principale de Thomas. Les accents utilisent la couleur secondaire. La police choisie est appliquee. Si aucun branding defini, palette Versimo par defaut. Generation PDF < 10s. Taille < 25 Mo pour 15 photos.
 
 **US-F4C-02 -- Consulter le dossier via un lien web brande (acquereur)**
 - Job-to-be-done : Quand je recois un lien de Thomas, je veux voir un dossier professionnel sur mobile sans telecharger de fichier.
 - Given : Thomas a partage le lien du dossier (existant dans F4 actuel).
 - When : L'acquereur ouvre le lien sur mobile ou desktop.
-- Then : La page web affiche le branding de Thomas (logo, couleurs, coordonnees) au lieu du branding Versiroom par defaut. La page est responsive. Un bouton "Telecharger le PDF" est present.
-- Critere d'acceptation : Le logo s'affiche en haut. Les couleurs de Thomas sont appliquees aux titres et accents via CSS custom properties injectees depuis la DB. La page charge en < 2s. La mention "Powered by Versiroom" reste visible (attribution obligatoire).
+- Then : La page web affiche le branding de Thomas (logo, couleurs, coordonnees) au lieu du branding Versimo par defaut. La page est responsive. Un bouton "Telecharger le PDF" est present.
+- Critere d'acceptation : Le logo s'affiche en haut. Les couleurs de Thomas sont appliquees aux titres et accents via CSS custom properties injectees depuis la DB. La page charge en < 2s. La mention "Powered by Versimo" reste visible (attribution obligatoire).
 
 **US-F4C-03 -- Avoir la meilleure photo en couverture automatiquement (Thomas)**
 - Job-to-be-done : Quand mon dossier de 10 photos est pret, je ne veux pas choisir la photo de couverture -- le systeme doit prendre la plus valorisante automatiquement.
@@ -414,7 +414,7 @@ Extension de la table `dossiers` existante (definie dans functional-specs.md F4.
 |                                                          |
 |  --------------------------------------------------------|
 |  Visuels generes par IA a titre indicatif                |
-|  Powered by Versiroom                                    |
+|  Powered by Versimo                                    |
 +----------------------------------------------------------+
 ```
 
@@ -432,7 +432,7 @@ Extension de la table `dossiers` existante (definie dans functional-specs.md F4.
 |                                                          |
 |  --------------------------------------------------------|
 |  SCI BERGER IMMO -- 06 12 34 56 78                      |
-|  Visuels IA indicatifs -- Powered by Versiroom           |
+|  Visuels IA indicatifs -- Powered by Versimo           |
 +----------------------------------------------------------+
 ```
 
@@ -452,7 +452,7 @@ Extension de la table `dossiers` existante (definie dans functional-specs.md F4.
 |  45 cours de l'Intendance, 33000 Bordeaux                |
 |                                                          |
 |  --------------------------------------------------------|
-|  Powered by Versiroom -- versiroom.app                   |
+|  Powered by Versimo -- versimo.app                   |
 +----------------------------------------------------------+
 ```
 
@@ -468,8 +468,8 @@ Extension de la table `dossiers` existante (definie dans functional-specs.md F4.
   - Logo : positionne en haut a gauche, max 180px large x 80px haut, ratio preserve. Si SVG, rasterise en PNG cote serveur avant injection dans pdf-lib (pdf-lib ne supporte pas le SVG natif).
   - Couleur principale : titres "DOSSIER DE PRE-COMMERCIALISATION", noms des pieces
   - Couleur secondaire : sous-titres (style applique), filets decoratifs, accents
-  - Police : appliquee a tout le texte du PDF sauf la mention "Powered by Versiroom" (toujours en Inter)
-  - Si aucun branding : palette Versiroom (#1C1C1E titres, #7D9B76 accents, Inter)
+  - Police : appliquee a tout le texte du PDF sauf la mention "Powered by Versimo" (toujours en Inter)
+  - Si aucun branding : palette Versimo (#1C1C1E titres, #7D9B76 accents, Inter)
 - **Images** : recuperees depuis Object Storage via leurs cles. Redimensionnees a max 800px de large pour limiter la taille du PDF. Qualite JPEG 80%.
 - **Carte statique** : injectee en couverture si disponible, 300x150px dans le PDF. Si indisponible, l'espace est laisse vide (pas de placeholder).
 - **Mention legale obligatoire** : "Visuels generes par IA a titre indicatif" en pied de chaque page. Non supprimable par Thomas. Requis pour eviter tout litige si un acquereur considere les visuels comme contractuels.
@@ -479,7 +479,7 @@ Extension de la table `dossiers` existante (definie dans functional-specs.md F4.
 ### 3.4 Edge cases
 
 1. **Profil marchand incomplet (pas de logo)** : PDF genere sans logo. L'espace logo en couverture est laisse vide. Le reste du branding (couleurs, police) s'applique normalement.
-2. **Profil marchand vide (aucune info)** : PDF genere avec branding Versiroom par defaut. Pied de page : "Powered by Versiroom" uniquement, pas de coordonnees marchand. C'est le comportement actuel du F4 existant.
+2. **Profil marchand vide (aucune info)** : PDF genere avec branding Versimo par defaut. Pied de page : "Powered by Versimo" uniquement, pas de coordonnees marchand. C'est le comportement actuel du F4 existant.
 3. **Logo transparent (PNG avec alpha)** : pdf-lib gere les PNG avec canal alpha. Le logo s'affiche correctement sur fond blanc. Pas de traitement special.
 4. **Font custom non disponible sur le serveur** : Si le fichier .ttf est manquant pour la police choisie, fallback silencieux vers Inter avec log d'erreur serveur. Le PDF n'est pas bloque.
 5. **15 photos HD = PDF > 25 Mo** : Les images sont compressee a JPEG 80% et redimensionnees a 800px max. Si malgre ca le PDF depasse 25 Mo, un ZIP est propose en alternative ("Le dossier est trop volumineux pour un PDF unique -- telecharger le ZIP"). [HYPOTHESE : 15 images a 800px JPEG 80% = ~8-12 Mo -- a valider en integration].
@@ -631,8 +631,8 @@ Phase 3 : F4.C -- PDF brande (1 semaine)
 |---|---|---|
 | CA-C01 | Le PDF couverture affiche le logo du marchand (si defini) en haut a gauche, max 180px | Test integration + visuel |
 | CA-C02 | Les titres utilisent la couleur principale du profil marchand | Test integration (verification hex dans le PDF) |
-| CA-C03 | La police choisie est appliquee (sauf mention "Powered by Versiroom" = Inter) | Test integration |
-| CA-C04 | Si aucun branding, palette Versiroom par defaut appliquee | Test integration (profil sans couleurs) |
+| CA-C03 | La police choisie est appliquee (sauf mention "Powered by Versimo" = Inter) | Test integration |
+| CA-C04 | Si aucun branding, palette Versimo par defaut appliquee | Test integration (profil sans couleurs) |
 | CA-C05 | La mention "Visuels generes par IA a titre indicatif" est presente sur chaque page | Test integration (scan texte PDF) |
 | CA-C06 | Generation PDF < 10s pour 15 photos | Test performance |
 | CA-C07 | Taille PDF < 25 Mo pour 15 photos | Test integration |
@@ -663,9 +663,9 @@ Phase 3 : F4.C -- PDF brande (1 semaine)
 [x] Le scope est defendable -- chaque element sert directement le dossier de pre-commercialisation de Thomas. Pas de feature creep.
 [x] Les hypotheses critiques sont identifiees (7 hypotheses dans la section 8)
 [x] Le pricing/cout est benchmarke (APIs gratuites sauf Pappers au-dela de 100 req -- cout marginal)
-[x] Ce livrable est specifique a Versiroom et au persona Thomas (pas de spec generique)
+[x] Ce livrable est specifique a Versimo et au persona Thomas (pas de spec generique)
 [x] Pas de contradiction avec les livrables existants (F4 de functional-specs.md est etendu, pas remplace)
-[x] Benchmark concurrentiel effectue (Renovate Club a deja le PDF brande -- Versiroom doit matcher cette feature)
+[x] Benchmark concurrentiel effectue (Renovate Club a deja le PDF brande -- Versimo doit matcher cette feature)
 
 ---
 
@@ -682,7 +682,7 @@ Phase 3 : F4.C -- PDF brande (1 semaine)
   - GPT-4.1-mini pour la description commerciale (cout negligeable ~0,001 EUR/appel)
   - pdf-lib pour la generation PDF (decision projet existante conservee)
   - 5 polices proposees (Inter, Playfair Display, Montserrat, Lora, DM Sans) -- fichiers .ttf a inclure
-  - Branding facultatif (si rien defini, palette Versiroom par defaut)
+  - Branding facultatif (si rien defini, palette Versimo par defaut)
   - Mention legale "Visuels IA indicatifs" obligatoire et non supprimable
   - Ordre : F4.A -> F4.B -> F4.C (3,5 semaines total)
 - Points d'attention :

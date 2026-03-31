@@ -1,4 +1,4 @@
-# Audit Pages Publiques — Versiroom (batch 3)
+# Audit Pages Publiques — Versimo (batch 3)
 
 ## Synthèse
 
@@ -18,7 +18,7 @@
 
 ```tsx
 // ligne 109
-<p>... Le médiateur désigné par Versiroom sera indiqué ici dès sa nomination. [Médiateur à désigner — obligatoire avant la première vente B2C]</p>
+<p>... Le médiateur désigné par Versimo sera indiqué ici dès sa nomination. [Médiateur à désigner — obligatoire avant la première vente B2C]</p>
 ```
 
 **Problème** : texte entre crochets visible par les acheteurs. Légalement, la mention du médiateur est obligatoire avant toute vente B2C (art. L616-1 Code conso).
@@ -69,7 +69,7 @@ className="border-b border-foreground/10/40"
 <p>SIRET : [À compléter]</p>
 <p>Adresse du siège social : [À compléter]</p>
 // ligne 44
-<p>[Nom à compléter], en qualité de représentant légal de Versiroom.</p>
+<p>[Nom à compléter], en qualité de représentant légal de Versimo.</p>
 ```
 
 **Problème** : 4 champs `[À compléter]` et `[Nom à compléter]` affichés en clair aux visiteurs. La loi pour la Confiance dans l'Économie Numérique (LCEN) impose la mention de la forme juridique, du SIRET et du directeur de publication. Ces champs vides constituent une non-conformité légale.
@@ -142,14 +142,14 @@ foundingDate: "2025",
 ```tsx
 // cgv/page.tsx, confidentialite/page.tsx, mentions-legales/page.tsx — lignes 15-20
 <a href="/" className="text-xl font-semibold text-foreground tracking-tighter">
-  Versiroom
+  Versimo
 </a>
 <a href="/" className="text-xs text-muted font-light hover:text-foreground transition-colors">
   Retour
 </a>
 ```
 
-**Problème** : les deux liens du header (`Versiroom` + `Retour`) n'ont pas de style `focus-visible`. Inaccessible au clavier — non conforme WCAG 2.2 AA (critère 2.4.11 Focus Appearance).
+**Problème** : les deux liens du header (`Versimo` + `Retour`) n'ont pas de style `focus-visible`. Inaccessible au clavier — non conforme WCAG 2.2 AA (critère 2.4.11 Focus Appearance).
 **Correction** : ajouter `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded` sur les deux `<a>` dans les 3 pages légales (ou extraire en composant `LegalHeader` partagé).
 
 ---
@@ -177,7 +177,7 @@ foundingDate: "2025",
 
 ```tsx
 // ligne 50
-<span>&copy; Versiroom 2026</span>
+<span>&copy; Versimo 2026</span>
 ```
 
 **Problème** : le copyright est rendu dans le même `flex gap-4` que les liens de navigation, sans séparateur. Sur mobile, il se retrouve mélangé visuellement aux liens cliquables, créant une confusion (l'utilisateur peut tenter de cliquer dessus).
@@ -205,7 +205,7 @@ foundingDate: "2025",
 | P0 | `Footer.tsx` | Supprimer ou créer les 6 pages manquantes (marchand, architecte, particulier, examples, pricing, blog) |
 | P1 | `cgv/page.tsx`, `confidentialite/page.tsx`, `mentions-legales/page.tsx` | Corriger `border-foreground/10/40` → `border-foreground/10` (3 fichiers) |
 | P1 | `mentions-legales/page.tsx` | Remplir les 4 placeholders LCEN (SIRET, forme juridique, adresse, directeur de publication) |
-| P1 | Pages légales (3 fichiers) | Ajouter `focus-visible` sur les liens header Versiroom + Retour |
+| P1 | Pages légales (3 fichiers) | Ajouter `focus-visible` sur les liens header Versimo + Retour |
 | P1 | `layout.tsx` | Vérifier chargement réel de la font Inter |
 | P1 | `Footer.tsx` | `aria-label` sur lien externe Versi Immobilier |
 | P1 | `Footer.tsx` | Séparer visuellement le copyright des liens nav |

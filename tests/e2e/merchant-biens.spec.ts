@@ -12,12 +12,12 @@ test.describe("Mes Biens — Property list page", () => {
     expect(response?.status()).toBeLessThan(500);
   });
 
-  test("page contains Versiroom branding", async ({ page }) => {
+  test("page contains Versimo branding", async ({ page }) => {
     await page.goto("/mes-biens");
     // Wait for client render
     await page.waitForTimeout(1000);
     // Either shows branding or redirects to home (which has branding)
-    await expect(page.locator("body")).toContainText("Versiroom");
+    await expect(page.locator("body")).toContainText("Versimo");
   });
 
   test("unauthenticated user sees loading or redirect", async ({ page }) => {
@@ -46,6 +46,6 @@ test.describe("Mes Biens — Property detail page", () => {
     await page.goto("/mes-biens/1");
     await page.waitForTimeout(1000);
     // Should contain branding regardless of auth state
-    await expect(page.locator("body")).toContainText("Versiroom");
+    await expect(page.locator("body")).toContainText("Versimo");
   });
 });

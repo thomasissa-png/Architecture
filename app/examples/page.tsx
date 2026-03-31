@@ -7,19 +7,19 @@ import Footer from "@/components/Footer";
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_BASE_URL ||
-  "https://architecture-toum92.replit.app";
+  "https://versimo.fr";
 
 export const metadata: Metadata = {
   title: "Exemples de home staging virtuel IA",
   description:
-    "Avant / apr\u00e8s de home staging virtuel par IA : salons, chambres, s\u00e9jours. 12 styles, 90 secondes, g\u00e9om\u00e9trie pr\u00e9serv\u00e9e. Pour architectes, marchands de biens et particuliers.",
+    "Avant / après de home staging virtuel par IA : salons, chambres, séjours. 12 styles, 90 secondes, géométrie préservée. Pour architectes, marchands de biens et particuliers.",
   openGraph: {
-    title: "Exemples de home staging virtuel IA \u2014 Versiroom",
+    title: "Exemples de home staging virtuel IA — Versimo",
     description:
-      "D\u00e9couvrez des transformations r\u00e9alis\u00e9es par Versiroom sur de vrais biens immobiliers.",
+      "Découvrez des transformations réalisées par Versimo sur de vrais biens immobiliers.",
     type: "website",
     locale: "fr_FR",
-    siteName: "Versiroom",
+    siteName: "Versimo",
   },
   alternates: {
     canonical: `${BASE_URL}/examples`,
@@ -47,7 +47,7 @@ const EXAMPLES: Example[] = [
     style: "Scandinave",
     roomType: "Salon",
     caption:
-      "Direction esth\u00e9tique valid\u00e9e en 90 secondes au lieu de 3 jours de rendu 3D.",
+      "Direction esthétique validée en 90 secondes au lieu de 3 jours de rendu 3D.",
     beforeImage: "/imageavant.jpg",
     afterImage: "/imageapres.jpg",
   },
@@ -57,7 +57,7 @@ const EXAMPLES: Example[] = [
     style: "Japandi",
     roomType: "Chambre",
     caption:
-      "Visualiser MON espace en Japandi, pas celui de quelqu\u2019un d\u2019autre sur Pinterest.",
+      "Visualiser MON espace en Japandi, pas celui de quelqu’un d’autre sur Pinterest.",
     beforeImage: "/imageavant.jpg",
     afterImage: "/imageapres.jpg",
   },
@@ -65,19 +65,19 @@ const EXAMPLES: Example[] = [
     id: "contemporain-sejour",
     persona: "marchand",
     style: "Contemporain",
-    roomType: "S\u00e9jour",
+    roomType: "Séjour",
     caption:
-      "3 visuels meubl\u00e9s en 10 minutes pour la plaquette de pr\u00e9-commercialisation.",
+      "3 visuels meublés en 10 minutes pour la plaquette de pré-commercialisation.",
     beforeImage: "/imageavant.jpg",
     afterImage: "/imageapres.jpg",
   },
   {
     id: "art-deco-salon",
     persona: "architecte",
-    style: "Art D\u00e9co",
+    style: "Art Déco",
     roomType: "Salon",
     caption:
-      "Un support de conversation client qui ancre la direction d\u00e8s le premier rendez-vous.",
+      "Un support de conversation client qui ancre la direction dès le premier rendez-vous.",
     beforeImage: "/imageavant.jpg",
     afterImage: "/imageapres.jpg",
   },
@@ -87,7 +87,7 @@ const EXAMPLES: Example[] = [
     style: "Industriel",
     roomType: "Loft",
     caption:
-      "Les acqu\u00e9reurs se projettent enfin sur un plateau brut de 80\u00a0m\u00b2.",
+      "Les acquéreurs se projettent enfin sur un plateau brut de 80 m².",
     beforeImage: "/imageavant.jpg",
     afterImage: "/imageapres.jpg",
   },
@@ -97,7 +97,7 @@ const EXAMPLES: Example[] = [
     style: "Cosy",
     roomType: "Chambre",
     caption:
-      "Tester l\u2019ambiance Cosy dans ma future chambre avant d\u2019acheter le moindre meuble.",
+      "Tester l’ambiance Cosy dans ma future chambre avant d’acheter le moindre meuble.",
     beforeImage: "/imageavant.jpg",
     afterImage: "/imageapres.jpg",
   },
@@ -107,17 +107,17 @@ const EXAMPLES: Example[] = [
     style: "Mid-Century",
     roomType: "Bureau",
     caption:
-      "Proposer une ambiance Mid-Century \u00e0 un client passionn\u00e9 de design vintage.",
+      "Proposer une ambiance Mid-Century à un client passionné de design vintage.",
     beforeImage: "/imageavant.jpg",
     afterImage: "/imageapres.jpg",
   },
   {
     id: "mediterraneen-sejour",
     persona: "particulier",
-    style: "M\u00e9diterran\u00e9en",
-    roomType: "S\u00e9jour",
+    style: "Méditerranéen",
+    roomType: "Séjour",
     caption:
-      "Imaginer mon s\u00e9jour avec une ambiance vacances avant m\u00eame la livraison.",
+      "Imaginer mon séjour avec une ambiance vacances avant même la livraison.",
     beforeImage: "/imageavant.jpg",
     afterImage: "/imageapres.jpg",
   },
@@ -135,14 +135,14 @@ const PERSONA_LABELS: { key: Persona; label: string }[] = [
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "ItemList",
-  name: "Exemples de home staging virtuel IA \u2014 Versiroom",
+  name: "Exemples de home staging virtuel IA — Versimo",
   description:
-    "Transformations avant / apr\u00e8s r\u00e9alis\u00e9es par Versiroom sur de vrais biens immobiliers.",
+    "Transformations avant / après réalisées par Versimo sur de vrais biens immobiliers.",
   numberOfItems: EXAMPLES.length,
   itemListElement: EXAMPLES.map((ex, i) => ({
     "@type": "ListItem",
     position: i + 1,
-    name: `${ex.style} \u2014 ${ex.roomType}`,
+    name: `${ex.style} — ${ex.roomType}`,
     description: ex.caption,
   })),
 };
@@ -157,7 +157,7 @@ function ExampleCard({ example }: { example: Example }) {
         <div className="relative overflow-hidden">
           <Image
             src={example.beforeImage}
-            alt={`Avant \u2014 ${example.roomType} vide`}
+            alt={`Avant — ${example.roomType} vide`}
             fill
             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
             className="object-cover"
@@ -169,7 +169,7 @@ function ExampleCard({ example }: { example: Example }) {
         <div className="relative overflow-hidden">
           <Image
             src={example.afterImage}
-            alt={`Apr\u00e8s \u2014 ${example.roomType} style ${example.style}`}
+            alt={`Après — ${example.roomType} style ${example.style}`}
             fill
             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
             className="object-cover"
@@ -216,7 +216,7 @@ export default function ExamplesPage() {
             href="/"
             className="text-sm font-semibold tracking-tight text-foreground"
           >
-            Versiroom
+            Versimo
           </Link>
           <nav className="flex items-center gap-4 sm:gap-6">
             <Link
@@ -244,7 +244,7 @@ export default function ExamplesPage() {
             </h1>
             <p className="text-muted font-light text-base sm:text-lg max-w-2xl mx-auto">
               D&eacute;couvrez des transformations r&eacute;alis&eacute;es par
-              Versiroom sur de vrais biens immobiliers.
+              Versimo sur de vrais biens immobiliers.
             </p>
           </div>
 

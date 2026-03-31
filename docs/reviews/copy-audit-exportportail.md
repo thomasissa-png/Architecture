@@ -55,7 +55,7 @@ L'audit existant avait identifié 13 séquences `\uXXXX` brutes dans les deux fi
 ## Corrections P0-P1-P2
 
 ### P0 — Avant mise en production (1 problème, 3 occurrences)
-- **Items #1** : supprimer les 3 points d'exclamation dans les états "Copié !". Violation directe brand-voice.md. Registre grand public, incompatible avec le positionnement premium de Versiroom.
+- **Items #1** : supprimer les 3 points d'exclamation dans les états "Copié !". Violation directe brand-voice.md. Registre grand public, incompatible avec le positionnement premium de Versimo.
 
 ### P1 — Corrections de fond (8 problèmes)
 - **Badges troncature** (#2, #3) : "raccourci" au lieu d'"adapté" — le badge orange doit signaler une contrainte.

@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Providers from "@/components/Providers";
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://architecture-toum92.replit.app"
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://versimo.fr"
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -11,8 +11,8 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: "Versiroom — Home staging virtuel IA | 12 styles, 90 secondes",
-    template: "%s | Versiroom"
+    default: "Versimo — Home staging virtuel IA | 12 styles, 90 secondes",
+    template: "%s | Versimo"
   },
   description:
     "Meublez vos pièces vides par IA en 90 secondes. Pipeline 2 passes qui préserve votre géométrie. Pour architectes d'intérieur, marchands de biens et particuliers exigeants. HD sans filigrane.",
@@ -28,16 +28,16 @@ export const metadata: Metadata = {
   ],
   metadataBase: new URL(BASE_URL),
   openGraph: {
-    title: "Versiroom — Home staging virtuel IA | 12 styles, 90 secondes",
+    title: "Versimo — Home staging virtuel IA | 12 styles, 90 secondes",
     description:
       "Uploadez une photo de pièce vide, choisissez un style parmi 12 ambiances curatées. Votre pièce meublée en 90 secondes — géométrie et lumière préservées.",
     type: "website",
     locale: "fr_FR",
-    siteName: "Versiroom",
+    siteName: "Versimo",
   },
   twitter: {
     card: "summary_large_image",
-    site: "@versiroom",
+    site: "@versimo",
   },
   robots: { index: true, follow: true },
   alternates: {
@@ -49,7 +49,7 @@ const jsonLd = [
   {
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: "Versiroom",
+    name: "Versimo",
     url: BASE_URL,
     logo: `${BASE_URL}/logo.png`,
     description:
@@ -66,7 +66,7 @@ const jsonLd = [
   {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    name: "Versiroom",
+    name: "Versimo",
     applicationCategory: "DesignApplication",
     operatingSystem: "Web",
     url: BASE_URL,
@@ -92,26 +92,26 @@ const jsonLd = [
     mainEntity: [
       {
         "@type": "Question",
-        name: "Comment Versiroom préserve-t-il la géométrie de ma pièce ?",
+        name: "Comment Versimo préserve-t-il la géométrie de ma pièce ?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Versiroom utilise un pipeline en 2 passes séquentielles. La passe 1 applique les finitions de surface (murs, sol, luminaire) sans toucher à la géométrie. La passe 2 ajoute le mobilier sur la pièce finie, avec les surfaces verrouillées. Résultat : l'angle de prise de vue, les proportions et la lumière naturelle sont identiques entre la photo originale et le visuel généré.",
+          text: "Versimo utilise un pipeline en 2 passes séquentielles. La passe 1 applique les finitions de surface (murs, sol, luminaire) sans toucher à la géométrie. La passe 2 ajoute le mobilier sur la pièce finie, avec les surfaces verrouillées. Résultat : l'angle de prise de vue, les proportions et la lumière naturelle sont identiques entre la photo originale et le visuel généré.",
         },
       },
       {
         "@type": "Question",
-        name: "Quelle est la différence entre Versiroom et les autres outils de home staging virtuel ?",
+        name: "Quelle est la différence entre Versimo et les autres outils de home staging virtuel ?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "La plupart des outils de home staging virtuel génèrent une nouvelle image à partir de votre photo — ils s'en inspirent mais ne l'éditent pas. Versiroom édite votre photo en 2 passes distinctes. La pièce reste la vôtre : même géométrie, même lumière, mêmes proportions. Seuls les finitions et le mobilier changent.",
+          text: "La plupart des outils de home staging virtuel génèrent une nouvelle image à partir de votre photo — ils s'en inspirent mais ne l'éditent pas. Versimo édite votre photo en 2 passes distinctes. La pièce reste la vôtre : même géométrie, même lumière, mêmes proportions. Seuls les finitions et le mobilier changent.",
         },
       },
       {
         "@type": "Question",
-        name: "Versiroom convient-il aux professionnels de l'immobilier ?",
+        name: "Versimo convient-il aux professionnels de l'immobilier ?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Oui. Versiroom est conçu pour les architectes d'intérieur (support de conversation client en 90 secondes), les marchands de biens (plaquettes de pré-commercialisation sans home stager) et les particuliers exigeants. Téléchargement HD sans filigrane inclus dans tous les plans.",
+          text: "Oui. Versimo est conçu pour les architectes d'intérieur (support de conversation client en 90 secondes), les marchands de biens (plaquettes de pré-commercialisation sans home stager) et les particuliers exigeants. Téléchargement HD sans filigrane inclus dans tous les plans.",
         },
       },
     ],

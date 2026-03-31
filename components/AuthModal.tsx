@@ -3,7 +3,7 @@
 /**
  * AuthModal — Modal de connexion / création de compte.
  * Google OAuth + Email/Mot de passe via NextAuth CredentialsProvider.
- * Design minimaliste Versiroom — audité UX 9/10 + Design 9/10.
+ * Design minimaliste Versimo — audité UX 9/10 + Design 9/10.
  *
  * Corrections appliquées :
  * - P0 UX : max-h-[90dvh] + overflow-y-auto pour clavier virtuel iPhone
@@ -345,7 +345,7 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
                 <button
                   type="button"
                   onClick={() => {
-                    setError("Fonctionnalité bientôt disponible. Contactez-nous à contact@versiroom.fr");
+                    setError("Fonctionnalité bientôt disponible. Contactez-nous à contact@versimo.fr");
                   }}
                   className="text-xs text-muted/60 hover:text-muted transition-colors duration-150"
                 >

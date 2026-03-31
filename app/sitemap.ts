@@ -1,6 +1,6 @@
 import { MetadataRoute } from "next"
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://architecture-toum92.replit.app"
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://versimo.fr"
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [

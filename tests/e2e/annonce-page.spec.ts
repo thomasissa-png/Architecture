@@ -57,11 +57,11 @@ test.describe("Annonce page — /annonce/[uuid]", () => {
     expect(status).toBeLessThan(500);
   });
 
-  test("page has Versiroom reference in footer or header", async ({
+  test("page has Versimo reference in footer or header", async ({
     page,
   }) => {
     await page.goto("/annonce/00000000-0000-0000-0000-000000000000");
-    // Even the error state should have Versiroom branding somewhere
+    // Even the error state should have Versimo branding somewhere
     const body = await page.locator("body").textContent();
     // The introuvable page is minimal — it may or may not have branding
     // At minimum, it should not crash

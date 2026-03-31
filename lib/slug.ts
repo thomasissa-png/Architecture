@@ -47,9 +47,9 @@ export function generateSlug(
   if (title?.trim()) {
     // Clean up common patterns in titles
     const cleanTitle = title
-      .replace(/\u2014/g, "-")  // em-dash to hyphen
-      .replace(/\u2013/g, "-")  // en-dash to hyphen
-      .replace(/m\u00B2/g, "m2") // m² to m2
+      .replace(/—/g, "-")  // em-dash to hyphen
+      .replace(/–/g, "-")  // en-dash to hyphen
+      .replace(/m²/g, "m2") // m² to m2
       .trim();
     parts.push(normalize(cleanTitle));
   }

@@ -5,7 +5,7 @@
 
 ## Score global : 7.2/10
 
-Versiroom a un pipeline IA qui FONCTIONNE. C'est deja enorme. 90% des startups de home staging IA sont encore a se battre avec des modeles qui regenerent la scene au lieu de l'editer. Vous avez resolu ca. Mais vous etes en train de construire une cathedrale de prompts au lieu d'un moteur industriel. Et ca, ca ne scale pas.
+Versimo a un pipeline IA qui FONCTIONNE. C'est deja enorme. 90% des startups de home staging IA sont encore a se battre avec des modeles qui regenerent la scene au lieu de l'editer. Vous avez resolu ca. Mais vous etes en train de construire une cathedrale de prompts au lieu d'un moteur industriel. Et ca, ca ne scale pas.
 
 ---
 
@@ -48,7 +48,7 @@ Versiroom a un pipeline IA qui FONCTIONNE. C'est deja enorme. 90% des startups d
 ### 2. LA LATENCE VOUS TUE (Impact : CRITIQUE)
 
 **Les faits** :
-- Versiroom : 90-120s par generation
+- Versimo : 90-120s par generation
 - Gepetto : 15s
 - Collov : "quelques secondes"
 - Edensign : "quelques secondes"

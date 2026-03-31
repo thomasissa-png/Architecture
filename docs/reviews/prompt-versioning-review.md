@@ -1,4 +1,4 @@
-# Revue du systeme de versioning des prompts — Versiroom — 2026-03-25
+# Revue du systeme de versioning des prompts — Versimo — 2026-03-25
 
 ## Resume executif (non-technique)
 

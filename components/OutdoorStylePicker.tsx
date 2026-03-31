@@ -19,7 +19,7 @@ export default function OutdoorStylePicker({
 
       <div
         role="radiogroup"
-        aria-label="Choix du style exterieur"
+        aria-label="Choix du style extérieur"
         className="grid grid-cols-2 sm:grid-cols-3 gap-3"
       >
         {OUTDOOR_STYLE_LIST.map((style) => {

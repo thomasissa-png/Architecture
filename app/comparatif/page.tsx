@@ -2,29 +2,29 @@ import type { Metadata } from "next";
 import Footer from "@/components/Footer";
 
 const BASE_URL =
-  process.env.NEXT_PUBLIC_BASE_URL || "https://architecture-toum92.replit.app";
+  process.env.NEXT_PUBLIC_BASE_URL || "https://versimo.fr";
 
 export const metadata: Metadata = {
   title:
-    "Comparatif home staging IA 2026 : Versiroom vs Gepetto vs InterieurAI | Versiroom",
+    "Comparatif home staging IA 2026 : Versimo vs Gepetto vs InterieurAI | Versimo",
   description:
     "Comparez les meilleurs outils de home staging virtuel par IA en France : prix, styles, technologie. Tableau comparatif factuel et objectif.",
   keywords: [
     "comparatif home staging IA",
     "home staging virtuel comparatif",
-    "Versiroom vs Gepetto",
+    "Versimo vs Gepetto",
     "meilleur outil home staging IA",
     "home staging IA prix",
     "home staging virtuel France",
   ],
   openGraph: {
     title:
-      "Comparatif home staging IA 2026 : Versiroom vs Gepetto vs InterieurAI",
+      "Comparatif home staging IA 2026 : Versimo vs Gepetto vs InterieurAI",
     description:
       "Comparez les meilleurs outils de home staging virtuel par IA en France : prix, styles, technologie, préservation géométrie.",
     type: "website",
     locale: "fr_FR",
-    siteName: "Versiroom",
+    siteName: "Versimo",
     url: `${BASE_URL}/comparatif`,
   },
   alternates: {
@@ -36,18 +36,18 @@ const faqItems = [
   {
     question: "Quel est le meilleur outil de home staging virtuel IA ?",
     answer:
-      "Le meilleur outil dépend de votre usage. Pour les architectes d'intérieur qui cherchent un rendu de qualité architecturale avec préservation de la géométrie, Versiroom est le plus adapté grâce à son pipeline 2 passes et ses 12 styles curatés par des experts. Pour un usage en volume à petit prix, Renovate Club propose un forfait illimité à 9,99 euros par mois. Pour les professionnels de l'immobilier qui veulent un outil français haut de gamme, Gepetto est également une option sérieuse.",
+      "Le meilleur outil dépend de votre usage. Pour les architectes d'intérieur qui cherchent un rendu de qualité architecturale avec préservation de la géométrie, Versimo est le plus adapté grâce à son pipeline 2 passes et ses 12 styles curatés par des experts. Pour un usage en volume à petit prix, Renovate Club propose un forfait illimité à 9,99 euros par mois. Pour les professionnels de l'immobilier qui veulent un outil français haut de gamme, Gepetto est également une option sérieuse.",
   },
   {
     question: "Combien coûte le home staging virtuel par IA ?",
     answer:
-      "Les prix varient selon les outils. En France, les tarifs vont de 9,90 euros pour 15 visuels en achat unique (Versiroom Starter) à 29 euros par mois pour 50 visuels (Versiroom Pro). Renovate Club propose un forfait illimité à 9,99 euros par mois. InterieurAI propose un tarif à la photo dès 1,25 euro. Gepetto fonctionne sur devis. À titre de comparaison, un home stager humain facture entre 200 et 500 euros par planche, avec un délai de 48 à 72 heures.",
+      "Les prix varient selon les outils. En France, les tarifs vont de 9,90 euros pour 15 visuels en achat unique (Versimo Starter) à 29 euros par mois pour 50 visuels (Versimo Pro). Renovate Club propose un forfait illimité à 9,99 euros par mois. InterieurAI propose un tarif à la photo dès 1,25 euro. Gepetto fonctionne sur devis. À titre de comparaison, un home stager humain facture entre 200 et 500 euros par planche, avec un délai de 48 à 72 heures.",
   },
   {
     question:
       "Le home staging virtuel par IA préserve-t-il la géométrie de la pièce ?",
     answer:
-      "Tous les outils ne se valent pas sur ce point. Versiroom utilise un pipeline 2 passes unique : la première passe traite les surfaces (murs, sol, plafond), la seconde ajoute le mobilier. Cette séparation préserve l'angle de prise de vue, la perspective et les proportions de la pièce. Les autres outils utilisent généralement un pipeline en une seule passe, ce qui peut déformer la géométrie originale. Versiroom utilise également une depth map via Flux Depth Pro en fallback pour verrouiller la structure 3D.",
+      "Tous les outils ne se valent pas sur ce point. Versimo utilise un pipeline 2 passes unique : la première passe traite les surfaces (murs, sol, plafond), la seconde ajoute le mobilier. Cette séparation préserve l'angle de prise de vue, la perspective et les proportions de la pièce. Les autres outils utilisent généralement un pipeline en une seule passe, ce qui peut déformer la géométrie originale. Versimo utilise également une depth map via Flux Depth Pro en fallback pour verrouiller la structure 3D.",
   },
 ];
 
@@ -67,70 +67,70 @@ const jsonLd = {
 const comparatifData = [
   {
     critere: "Prix",
-    versiroom: "Gratuit (3 visuels) puis 9,90 € (15 visuels)",
+    versimo: "Gratuit (3 visuels) puis 9,90 € (15 visuels)",
     gepetto: "Sur devis",
     interieurAI: "Dès 1,25 €/photo",
     renovateClub: "9,99 €/mois illimité",
   },
   {
     critere: "Nombre de styles",
-    versiroom: "12 + 8 outdoor + custom",
+    versimo: "12 + 8 outdoor + custom",
     gepetto: "30+",
     interieurAI: "~50",
     renovateClub: "80+",
   },
   {
     critere: "Technologie",
-    versiroom: "Pipeline 2 passes (GPT-4.1 vision)",
+    versimo: "Pipeline 2 passes (GPT-4.1 vision)",
     gepetto: "IA propriétaire",
     interieurAI: "IA propriétaire",
     renovateClub: "IA propriétaire",
   },
   {
     critere: "Préservation géométrie",
-    versiroom: "Oui (depth map + 2 passes)",
+    versimo: "Oui (depth map + 2 passes)",
     gepetto: "Non documenté",
     interieurAI: "Mentionnée",
     renovateClub: "Non documenté",
   },
   {
     critere: "Cible principale",
-    versiroom: "Architectes + Marchands + Particuliers",
+    versimo: "Architectes + Marchands + Particuliers",
     gepetto: "Professionnels immobilier",
     interieurAI: "Particuliers + Professionnels",
     renovateClub: "Professionnels immobilier",
   },
   {
     critere: "Mode Pro (dossiers de pré-commercialisation)",
-    versiroom: "Oui",
+    versimo: "Oui",
     gepetto: "Non",
     interieurAI: "Non",
     renovateClub: "Non",
   },
   {
     critere: "Annonce partageable",
-    versiroom: "Oui (page publique + QR)",
+    versimo: "Oui (page publique + QR)",
     gepetto: "Non",
     interieurAI: "Non",
     renovateClub: "Non",
   },
   {
     critere: "Enrichissement auto (quartier, DVF)",
-    versiroom: "Oui",
+    versimo: "Oui",
     gepetto: "Non",
     interieurAI: "Non",
     renovateClub: "Non",
   },
   {
     critere: "Made in France",
-    versiroom: "Oui",
+    versimo: "Oui",
     gepetto: "Oui (Bordeaux)",
     interieurAI: "Non documenté",
     renovateClub: "Oui",
   },
   {
     critere: "Essai gratuit",
-    versiroom: "3 visuels gratuits",
+    versimo: "3 visuels gratuits",
     gepetto: "Sur devis",
     interieurAI: "Essai gratuit",
     renovateClub: "1 photo gratuite",
@@ -152,7 +152,7 @@ export default function ComparatifPage() {
             href="/"
             className="text-xl font-semibold text-foreground tracking-tighter focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm"
           >
-            Versiroom
+            Versimo
           </a>
           <nav aria-label="Navigation principale" className="flex items-center gap-4 sm:gap-6">
             <a
@@ -178,7 +178,7 @@ export default function ComparatifPage() {
             Comparatif 2026
           </p>
           <h1 className="text-3xl sm:text-5xl font-bold text-foreground tracking-tight mb-5 leading-tight">
-            Comparatif home staging virtuel IA 2026 — Versiroom vs
+            Comparatif home staging virtuel IA 2026 — Versimo vs
             Gepetto vs InterieurAI
           </h1>
           <p className="text-lg sm:text-xl text-muted font-light leading-relaxed max-w-3xl mx-auto">
@@ -201,7 +201,7 @@ export default function ComparatifPage() {
                   Critère
                 </th>
                 <th className="text-left py-4 px-4 text-xs font-semibold text-sage uppercase tracking-wider">
-                  Versiroom
+                  Versimo
                 </th>
                 <th className="text-left py-4 px-4 text-xs font-semibold text-foreground/70 uppercase tracking-wider">
                   Gepetto
@@ -226,7 +226,7 @@ export default function ComparatifPage() {
                     {row.critere}
                   </td>
                   <td className="py-3.5 px-4 text-foreground font-medium">
-                    {row.versiroom}
+                    {row.versimo}
                   </td>
                   <td className="py-3.5 px-4 text-muted font-light">
                     {row.gepetto}
@@ -253,11 +253,11 @@ export default function ComparatifPage() {
       {/* Separator */}
       <div className="max-w-24 mx-auto border-t border-foreground/10" />
 
-      {/* Pour qui est fait Versiroom ? */}
+      {/* Pour qui est fait Versimo ? */}
       <section className="py-10 sm:py-14 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-8 text-center">
-            Pour qui est fait Versiroom ?
+            Pour qui est fait Versimo ?
           </h2>
           <div className="space-y-8">
             <div>
@@ -265,7 +265,7 @@ export default function ComparatifPage() {
                 Pour les architectes d&apos;intérieur
               </h3>
               <p className="text-sm text-muted font-light leading-relaxed">
-                Claire, architecte DPLG à Lyon, utilise Versiroom pour
+                Claire, architecte DPLG à Lyon, utilise Versimo pour
                 générer 2 à 3 ambiances différentes
                 en 90 secondes et les envoyer à son client avant le
                 premier rendez-vous. Au lieu d&apos;attendre 2-3 jours par
@@ -329,11 +329,11 @@ export default function ComparatifPage() {
       {/* Separator */}
       <div className="max-w-24 mx-auto border-t border-foreground/10" />
 
-      {/* Ce qui distingue Versiroom */}
+      {/* Ce qui distingue Versimo */}
       <section className="py-10 sm:py-14 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-8 text-center">
-            Ce qui distingue Versiroom
+            Ce qui distingue Versimo
           </h2>
           <div className="space-y-6">
             <div className="flex gap-5 items-start">
@@ -347,7 +347,7 @@ export default function ComparatifPage() {
                 </p>
                 <p className="text-sm text-muted font-light leading-relaxed">
                   Contrairement aux outils qui génèrent tout en
-                  une seule passe, Versiroom traite d&apos;abord les surfaces
+                  une seule passe, Versimo traite d&apos;abord les surfaces
                   (murs, sol, plafond, luminaire) puis ajoute le mobilier dans
                   un second temps. Cette séparation préserve
                   l&apos;angle de prise de vue, la perspective, les proportions
@@ -386,7 +386,7 @@ export default function ComparatifPage() {
                   DVF
                 </p>
                 <p className="text-sm text-muted font-light leading-relaxed">
-                  Versiroom enrichit automatiquement les annonces avec les
+                  Versimo enrichit automatiquement les annonces avec les
                   données publiques du quartier (prix au m&sup2;,
                   évolution du marché local). Cette
                   fonctionnalité n&apos;existe chez aucun concurrent du
@@ -436,7 +436,7 @@ export default function ComparatifPage() {
             href="/#outil"
             className="inline-flex items-center gap-2 bg-foreground text-background px-8 py-3.5 rounded-full text-sm font-medium hover:bg-foreground/85 transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
           >
-            Essayer Versiroom gratuitement
+            Essayer Versimo gratuitement
             <svg
               className="w-4 h-4"
               fill="none"

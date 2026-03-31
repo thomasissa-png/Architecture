@@ -1,4 +1,4 @@
-# Plateforme de Marque — Versiroom
+# Plateforme de Marque — Versimo
 > Produit par @creative-strategy — 2026-03-24
 > Ce document est la référence stratégique de la marque. Tout livrable (copy, design, growth, social) s'y soumet.
 
@@ -23,7 +23,7 @@ Le problème n'est pas la vitesse. Le problème n'est pas le prix. Le problème 
 
 ### Notre territoire
 
-**Versiroom est l'outil de home staging virtuel qui produit des visuels crédibles pour les professionnels qui engagent leur réputation.**
+**Versimo est l'outil de home staging virtuel qui produit des visuels crédibles pour les professionnels qui engagent leur réputation.**
 
 Ce territoire repose sur trois piliers :
 1. **La qualité avant la quantité** — 12 styles curatés par des experts réels, pas 80 styles génériques
@@ -111,7 +111,7 @@ La pièce a une géométrie, une lumière, une âme. Notre rôle est d'y ajouter
 
 **Professionnel sans être froid.** On parle à des professionnels qui ont des clients exigeants et une réputation à défendre. Le ton est complice, pas condescendant.
 
-### 3 mots exclus de la voix Versiroom
+### 3 mots exclus de la voix Versimo
 
 - "Révolutionnaire" — galvaudé, non prouvable
 - "Magique" — infantilise l'utilisateur
@@ -142,7 +142,7 @@ La pièce a une géométrie, une lumière, une âme. Notre rôle est d'y ajouter
 
 *Ou vous pouvez uploader votre photo, choisir un style, et obtenir un visuel qui ressemble à votre pièce — pas à celle d'un inconnu sur Pinterest.*
 
-*Versiroom ne réinvente pas votre espace. Il le meuble.*
+*Versimo ne réinvente pas votre espace. Il le meuble.*
 
 *12 styles. 90 secondes. Votre géométrie, préservée.*
 
@@ -150,7 +150,7 @@ La pièce a une géométrie, une lumière, une âme. Notre rôle est d'y ajouter
 
 ## 8. Positionnement concurrentiel synthétique
 
-| Axe | Versiroom | Gepetto | Renovate Club | REimagineHome |
+| Axe | Versimo | Gepetto | Renovate Club | REimagineHome |
 |---|---|---|---|---|
 | Qualité architecturale | Haute | Haute | Faible | Moyenne |
 | Multi-cible (archi + immo + particulier) | Oui | Non | Non | Non |
@@ -183,7 +183,7 @@ La pièce a une géométrie, une lumière, une âme. Notre rôle est d'y ajouter
 - Ne pas comparer frontalement avec Gepetto ou Renovate Club — les nommer risque de les crédibiliser
 - Ne pas viser les agents immobiliers comme persona principal — Thomas est marchand de biens, pas agent (profil différent)
 - Ne pas utiliser le mot "staging" seul sans "home staging" — confusion possible avec la mise en scène théâtrale
-- Ne pas promettre un ROI chiffré (ex: "vendez 30% plus vite") sans source vérifiable propre à Versiroom
+- Ne pas promettre un ROI chiffré (ex: "vendez 30% plus vite") sans source vérifiable propre à Versimo
 
 ---
 

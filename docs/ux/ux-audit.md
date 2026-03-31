@@ -1,4 +1,4 @@
-# Audit UX — Versiroom
+# Audit UX — Versimo
 **Agent** : @ux | **Date** : 2026-03-25 | **Version auditée** : Sprint 19 (code source)
 
 ---

@@ -1,4 +1,4 @@
-# Specs Fonctionnelles — Versiroom
+# Specs Fonctionnelles — Versimo
 ## Version 1.0 — 2026-03-24
 
 ---
@@ -14,7 +14,7 @@
 | AI HomeDesign | Abonnement | 19$/mois | 30 photos | ~0,63$/photo | Workflow listing complet | Pas de vrai staging meublé, outil retouche |
 | Virtual Staging AI | Abonnement | 16$/mois | 6 photos | ~2,67$/photo | Simplicité | Volume très limité, qualité moyenne |
 
-### Positionnement Versiroom
+### Positionnement Versimo
 
 - **Différence clé** : Pipeline 2 passes (surfaces → mobilier) = cohérence architecturale que les concurrents n'ont pas. Styles adaptés au marché français (Haussmannien, Méditerranéen, Wabi-Sabi).
 - **Modèle** : Packages crédits (one-shot, sans engagement) vs abonnements mensuels des concurrents. Adapté aux pros qui ont des pics de besoin (Thomas : 8-12 opérations/an) et aux particuliers (Léa : 1 appartement).
@@ -555,7 +555,7 @@ Upload bien complet → Dossier de pré-commercialisation PDF + lien partageable
 - Job-to-be-done : Quand je veux envoyer mon dossier de pré-commercialisation à un acquéreur potentiel, je veux un lien propre, pas une pièce jointe de 50 Mo.
 - Given : Le dossier de pré-commercialisation est généré. L'utilisateur est abonné Pro actif.
 - When : L'utilisateur clique sur "Partager le dossier".
-- Then : Un lien unique est généré (ex. `versiroom.app/dossier/abc123`). Le lien affiche une page web légère avec les visuels avant/après et les infos du bien. Pas de login requis pour consulter.
+- Then : Un lien unique est généré (ex. `versimo.app/dossier/abc123`). Le lien affiche une page web légère avec les visuels avant/après et les infos du bien. Pas de login requis pour consulter.
 - Critère d'acceptance : Le lien est valide sans limite de durée tant que l'abonnement Pro est actif (vs 30j pour les packs one-shot). La page est mobile-friendly. Un bouton "Télécharger le PDF" est présent.
 
 **US-F4-03 — Choisir le style pièce par pièce (Thomas avancé)**
@@ -759,7 +759,7 @@ Produits réels (IKEA, Leroy Merlin). Shopping list avec prix/liens. Export PDF/
 - **Accès** : Mode Décorateur disponible uniquement pour les **abonnés Pro actifs** (29€/mois). Le Pack Découverte et le Pack Starter ne donnent pas accès. Vérification côté serveur via statut Stripe subscription.
 - **Coût** : La génération de shopping list consomme 1 crédit supplémentaire (appel GPT-4.1 dédié). L'export PDF consomme 0 crédit supplémentaire.
 - **Sources produits** : IKEA France (priorité), Leroy Merlin (pour accessoires déco/plantes), Made.com ou Maisons du Monde (pour pièces premium). Les liens sont des URLs de recherche générées dynamiquement, pas des liens produits hardcodés.
-- **Disclaimer obligatoire** : "Prix indicatifs à la date de génération. Les prix et disponibilités sont susceptibles de changer. Versiroom ne garantit pas l'exactitude des prix."
+- **Disclaimer obligatoire** : "Prix indicatifs à la date de génération. Les prix et disponibilités sont susceptibles de changer. Versimo ne garantit pas l'exactitude des prix."
 - **Contenu de la shopping list** : 5-8 produits par liste. Catégories : canapé/fauteuil, table basse, tapis, luminaire, plante, accessoires (max 2). Chaque produit : nom, enseigne, prix bas/haut (fourchette), lien de recherche.
 - **Export PDF** : Contient le visuel résultat (miniature 600px), le style, la date, la liste produits avec QR codes. Format A4 portrait.
 - **Lien partageable** : La shopping list peut être partagée via un lien (UUID, TTL 7 jours). Utile pour le partage client.
@@ -923,7 +923,7 @@ Produits réels (IKEA, Leroy Merlin). Shopping list avec prix/liens. Export PDF/
 
 ### 7.5 Justification du pricing vs concurrents (mis à jour 2026-03-27)
 
-| | Versiroom Pro | Pedra (EU) | REimagineHome Optimal | Renovate Club (FR) |
+| | Versimo Pro | Pedra (EU) | REimagineHome Optimal | Renovate Club (FR) |
 |---|---|---|---|---|
 | Prix | 29€/mois | 29€/mois | 29$/mois | 9,99€/mois |
 | Crédits | 50/mois + rachats | Variable | Variable (~200) | Illimité |
@@ -933,7 +933,7 @@ Produits réels (IKEA, Leroy Merlin). Shopping list avec prix/liens. Export PDF/
 | Styles marché FR | Oui | Non | Non | Oui (~80+) |
 | Lien partageable acquéreurs | Sans limite (Pro) | Non | Non | Non |
 
-> Versiroom Pro (29€/mois) est aligné sur Pedra mais apporte un pipeline qualité supérieur (2 passes, styles FR curatés) et une feature unique : les Dossiers de pré-commercialisation inclus. Vs Renovate Club (9,99€/mois illimité) : Versiroom ne joue pas le volume mais la qualité professionnelle. Thomas dépense 200-500€/planche en home staging humain — 29€/mois pour 50 crédits est une réduction de 99%+.
+> Versimo Pro (29€/mois) est aligné sur Pedra mais apporte un pipeline qualité supérieur (2 passes, styles FR curatés) et une feature unique : les Dossiers de pré-commercialisation inclus. Vs Renovate Club (9,99€/mois illimité) : Versimo ne joue pas le volume mais la qualité professionnelle. Thomas dépense 200-500€/planche en home staging humain — 29€/mois pour 50 crédits est une réduction de 99%+.
 
 ---
 
@@ -971,7 +971,7 @@ Produits réels (IKEA, Leroy Merlin). Shopping list avec prix/liens. Export PDF/
 **Page /architecte — Premier écran**
 ```
 ┌──────────────────────────────────────────────────────────┐
-│  [Logo Versiroom]                    [Tarifs] [Essayer →] │
+│  [Logo Versimo]                    [Tarifs] [Essayer →] │
 ├──────────────────────────────────────────────────────────┤
 │                                                          │
 │  Vos clients veulent voir.                               │
@@ -993,7 +993,7 @@ Produits réels (IKEA, Leroy Merlin). Shopping list avec prix/liens. Export PDF/
 **Page /marchand — Premier écran**
 ```
 ┌──────────────────────────────────────────────────────────┐
-│  [Logo Versiroom]                    [Tarifs] [Essayer →] │
+│  [Logo Versimo]                    [Tarifs] [Essayer →] │
 ├──────────────────────────────────────────────────────────┤
 │                                                          │
 │  29€/mois. Vos dossiers de pré-commercialisation         │
@@ -1015,7 +1015,7 @@ Produits réels (IKEA, Leroy Merlin). Shopping list avec prix/liens. Export PDF/
 **Page /particulier — Premier écran**
 ```
 ┌──────────────────────────────────────────────────────────┐
-│  [Logo Versiroom]                    [Tarifs] [Essayer →] │
+│  [Logo Versimo]                    [Tarifs] [Essayer →] │
 ├──────────────────────────────────────────────────────────┤
 │                                                          │
 │  Votre appartement. Pas celui de quelqu'un d'autre.      │
@@ -1038,7 +1038,7 @@ Produits réels (IKEA, Leroy Merlin). Shopping list avec prix/liens. Export PDF/
 ### F7.3 Règles métier
 
 - **Section personas homepage** : SUPPRIMÉE (pills "Architectes / Marchands / Particuliers" + descriptions). Remplacée par des liens vers les 3 pages dans le header (nav secondaire) et le footer.
-- **Contenu des avant/après** : Utiliser des générations réelles issues de la production Versiroom (notées ≥ 7,5/10 par Yann Duval ou Lucas Moreau dans les logs). Pas d'images synthétiques ou de photos tierces — cohérence avec le positionnement "ne trahit pas votre espace".
+- **Contenu des avant/après** : Utiliser des générations réelles issues de la production Versimo (notées ≥ 7,5/10 par Yann Duval ou Lucas Moreau dans les logs). Pas d'images synthétiques ou de photos tierces — cohérence avec le positionnement "ne trahit pas votre espace".
 - **Témoignages** : [HYPOTHÈSE — à valider avec données réelles] En attendant des témoignages clients réels, les citations peuvent être des verbatims de personas tels que documentés dans `docs/strategy/personas.md`. Marquer dans le code source `{/* TODO: remplacer par témoignage réel */}`. Dès qu'un utilisateur réel donne son accord, remplacer.
 - **CTA** :
   - `/architecte` et `/particulier` → CTA gratuit → redirige vers la homepage avec ancre sur l'outil.

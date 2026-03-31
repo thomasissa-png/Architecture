@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Footer from "@/components/Footer";
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://architecture-toum92.replit.app";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://versimo.fr";
 
 export const metadata: Metadata = {
-  title: "Home staging IA marchand de biens | Versiroom",
+  title: "Home staging IA marchand de biens | Versimo",
   description:
     "Transformez vos biens bruts en visuels meublés professionnels en 90 secondes. 12 styles, téléchargement HD, dossiers de pré-commercialisation. Alternative rapide et économique au home stager traditionnel.",
   keywords: [
@@ -15,14 +15,14 @@ export const metadata: Metadata = {
     "home staging IA pas cher",
   ],
   openGraph: {
-    title: "Home staging IA pour marchands de biens | Versiroom",
+    title: "Home staging IA pour marchands de biens | Versimo",
     description:
       "Créez des dossiers de pré-commercialisation meublés en 90 secondes. 12 styles, HD, sans home stager.",
     type: "website",
     locale: "fr_FR",
-    siteName: "Versiroom",
+    siteName: "Versimo",
     url: `${BASE_URL}/marchand`,
-    images: [{ url: `${BASE_URL}/imageapres.jpg`, width: 1200, height: 630, alt: "Versiroom — Home staging virtuel par IA" }],
+    images: [{ url: `${BASE_URL}/imageapres.jpg`, width: 1200, height: 630, alt: "Versimo — Home staging virtuel par IA" }],
   },
   alternates: {
     canonical: `${BASE_URL}/marchand`,
@@ -31,24 +31,24 @@ export const metadata: Metadata = {
 
 const faqItems = [
   {
-    question: "Combien coûte Versiroom par rapport à un home stager traditionnel ?",
+    question: "Combien coûte Versimo par rapport à un home stager traditionnel ?",
     answer:
-      "Un home stager traditionnel facture entre 200 et 500 euros par planche, avec un délai de 48 à 72 heures. Avec Versiroom Pro à 29 €/mois, vous générez jusqu'à 50 visuels meublés par mois, soit environ 0,58 € par photo. Pour 8 à 12 opérations par an, l'économie est considérable.",
+      "Un home stager traditionnel facture entre 200 et 500 euros par planche, avec un délai de 48 à 72 heures. Avec Versimo Pro à 29 €/mois, vous générez jusqu'à 50 visuels meublés par mois, soit environ 0,58 € par photo. Pour 8 à 12 opérations par an, l'économie est considérable.",
   },
   {
     question: "Les visuels sont-ils suffisamment réalistes pour des plaquettes commerciales ?",
     answer:
-      "Oui. Versiroom préserve la géométrie exacte de la pièce : angle de prise de vue, lumière naturelle, proportions. Les visuels sont en haute définition, sans filigrane, et téléchargeables immédiatement. Ils sont utilisés par des marchands de biens pour leurs dossiers de pré-commercialisation et annonces sur les portails immobiliers.",
+      "Oui. Versimo préserve la géométrie exacte de la pièce : angle de prise de vue, lumière naturelle, proportions. Les visuels sont en haute définition, sans filigrane, et téléchargeables immédiatement. Ils sont utilisés par des marchands de biens pour leurs dossiers de pré-commercialisation et annonces sur les portails immobiliers.",
   },
   {
     question: "Puis-je générer des visuels depuis mon téléphone sur un chantier ?",
     answer:
-      "Absolument. Versiroom est optimisé pour mobile. Prenez une photo du bien brut directement depuis votre iPhone ou Android, uploadez-la, choisissez un style parmi 12 ambiances, et recevez votre visuel meublé en 90 secondes. Vous pouvez ensuite le partager par WhatsApp ou le télécharger en HD.",
+      "Absolument. Versimo est optimisé pour mobile. Prenez une photo du bien brut directement depuis votre iPhone ou Android, uploadez-la, choisissez un style parmi 12 ambiances, et recevez votre visuel meublé en 90 secondes. Vous pouvez ensuite le partager par WhatsApp ou le télécharger en HD.",
   },
   {
     question: "Est-ce conforme au droit immobilier ?",
     answer:
-      "Oui. Chaque visuel généré par Versiroom porte la mention « Simulation IA — home staging virtuel ». Cette transparence est conforme aux exigences du EU AI Act et aux bonnes pratiques du secteur immobilier. Vous pouvez utiliser les visuels dans vos plaquettes et annonces en toute sérénité.",
+      "Oui. Chaque visuel généré par Versimo porte la mention « Simulation IA — home staging virtuel ». Cette transparence est conforme aux exigences du EU AI Act et aux bonnes pratiques du secteur immobilier. Vous pouvez utiliser les visuels dans vos plaquettes et annonces en toute sérénité.",
   },
   {
     question: "Puis-je ajouter mon logo sur les dossiers ?",
@@ -63,7 +63,7 @@ const faqItems = [
   {
     question: "Et si le résultat ne me convient pas ?",
     answer:
-      "Vous pouvez itérer sur chaque visuel : ajoutez un commentaire (« plus de lumière », « retirer le tapis ») et Versiroom régénère en tenant compte de vos retours. Avec le Mode Pro, 3 itérations par photo sont incluses.",
+      "Vous pouvez itérer sur chaque visuel : ajoutez un commentaire (« plus de lumière », « retirer le tapis ») et Versimo régénère en tenant compte de vos retours. Avec le Mode Pro, 3 itérations par photo sont incluses.",
   },
 ];
 
@@ -83,7 +83,7 @@ const jsonLd = {
 const jsonLdApp = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
-  name: "Versiroom",
+  name: "Versimo",
   applicationCategory: "BusinessApplication",
   operatingSystem: "Web",
   offers: {
@@ -113,7 +113,7 @@ export default function MarchandPage() {
             href="/"
             className="text-xl font-semibold text-foreground tracking-tighter focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded"
           >
-            Versiroom
+            Versimo
           </a>
           <nav aria-label="Navigation principale" className="flex items-center gap-4 sm:gap-6">
             <a
@@ -173,16 +173,16 @@ export default function MarchandPage() {
         <div className="max-w-3xl mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 rounded-2xl overflow-hidden">
             <div className="relative aspect-[4/3]">
-              <img src="/imageavant.jpg" alt="T3 brut à Bordeaux avant home staging Versiroom" className="w-full h-full object-cover" />
+              <img src="/imageavant.jpg" alt="T3 brut à Bordeaux avant home staging Versimo" className="w-full h-full object-cover" />
               <span className="absolute bottom-2 left-2 text-xs font-medium text-white bg-black/50 px-2 py-1 rounded">Avant</span>
             </div>
             <div className="relative aspect-[4/3]">
-              <img src="/imageapres.jpg" alt="T3 meublé en style Scandinave par Versiroom" className="w-full h-full object-cover" />
+              <img src="/imageapres.jpg" alt="T3 meublé en style Scandinave par Versimo" className="w-full h-full object-cover" />
               <span className="absolute bottom-2 left-2 text-xs font-medium text-white bg-black/50 px-2 py-1 rounded">Après</span>
             </div>
           </div>
           <p className="text-xs text-muted font-light text-center mt-3">
-            T3 brut, Bordeaux — Style Scandinave, généré par Versiroom en 90 secondes.
+            T3 brut, Bordeaux — Style Scandinave, généré par Versimo en 90 secondes.
           </p>
         </div>
       </section>
@@ -262,7 +262,7 @@ export default function MarchandPage() {
             </p>
             <p className="text-sm text-foreground font-light leading-relaxed mt-1">
               Home stager traditionnel : <span className="font-semibold">~9 000 €</span>.
-              Versiroom Pro : <span className="font-semibold">29 €/mois</span> (soit 348 €/an).
+              Versimo Pro : <span className="font-semibold">29 €/mois</span> (soit 348 €/an).
             </p>
             <p className="text-lg font-semibold text-sage mt-3">
               Économie : 97 %
@@ -360,7 +360,7 @@ export default function MarchandPage() {
       <section className="py-10 sm:py-14 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-4 text-center">
-            La solution Versiroom
+            La solution Versimo
           </h2>
           <p className="text-muted font-light text-center mb-8 max-w-xl mx-auto">
             Notre IA préserve la géométrie exacte de votre bien : angles, volumes, proportions.

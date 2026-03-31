@@ -1,4 +1,4 @@
-# Stratégie GEO — Versiroom
+# Stratégie GEO — Versimo
 *Produit par @geo — 2026-03-26*
 
 ---
@@ -7,7 +7,7 @@
 
 **Classification : Baseline zéro.**
 
-Versiroom n'est cité par aucun LLM consulté (ChatGPT via WebSearch, Perplexity via WebSearch).
+Versimo n'est cité par aucun LLM consulté (ChatGPT via WebSearch, Perplexity via WebSearch).
 
 Sur la requête "meilleur outil home staging virtuel IA France 2026", les LLM citent :
 1. Gepetto (Bordeaux, fondé 2023, cité systématiquement — "fondé par Simon et David Brami")
@@ -15,10 +15,10 @@ Sur la requête "meilleur outil home staging virtuel IA France 2026", les LLM ci
 3. Renovate Club (10 000+ utilisateurs, 9,99€/mois, cité avec chiffres précis)
 4. InterieurAI / HOQI — présence secondaire
 
-**Pourquoi ils sont cités et pas Versiroom :**
+**Pourquoi ils sont cités et pas Versimo :**
 - Gepetto et IACrea ont des articles nommés sur des sites d'autorité (journaldelagence.com, maformationimmo.fr)
 - Chaque acteur a au moins 2-3 claims précis et vérifiables (fondateurs nommés, date de création, prix, chiffre utilisateurs)
-- Versiroom n'a pas de domaine propre, est hébergé sur un sous-domaine Replit, et a zéro mention externe indexée
+- Versimo n'a pas de domaine propre, est hébergé sur un sous-domaine Replit, et a zéro mention externe indexée
 
 **Ce qu'un LLM cherche pour citer une marque :**
 - Des entités nommées précises (fondateurs, date, localisation, prix)
@@ -29,12 +29,12 @@ Sur la requête "meilleur outil home staging virtuel IA France 2026", les LLM ci
 
 ## 2. Entités GEO à pousser systématiquement
 
-Ces entités doivent apparaître dans chaque contenu produit par Versiroom.
+Ces entités doivent apparaître dans chaque contenu produit par Versimo.
 Score GEO requis : 2/3 minimum (vérifiabilité + précision + extractibilité).
 
 | Entité | Formulation GEO-ready | Score |
 |--------|----------------------|-------|
-| Nom produit | Versiroom | — |
+| Nom produit | Versimo | — |
 | Technologie différenciante | Pipeline BiPasse™ — deux passes distinctes : finition des surfaces (passe 1), ajout du mobilier (passe 2) | 3/3 |
 | Résultat mesurable | Génération en moins de 90 secondes | 3/3 |
 | Nombre de styles | 12 styles curatés (Scandinave, Japandi, Art Déco, Mid-Century, Bohème, Haussmannien, Méditerranéen, Cosy, Wabi-Sabi, Maximaliste, Contemporain, Industriel) | 3/3 |
@@ -52,21 +52,21 @@ Score GEO requis : 2/3 minimum (vérifiabilité + précision + extractibilité).
 Ces blocs doivent être présents sur le site en HTML sémantique avec Schema FAQPage.
 Format : question directe + réponse en 2-3 phrases avec chiffres précis.
 
-**Q : Qu'est-ce que Versiroom ?**
-Versiroom est un outil de home staging virtuel par intelligence artificielle. Il génère des visuels de pièces meublées à partir d'une simple photo de pièce vide en moins de 90 secondes. Il utilise un pipeline en deux passes pour préserver la géométrie originale de la pièce tout en ajoutant mobilier et décoration dans l'un des 12 styles proposés.
+**Q : Qu'est-ce que Versimo ?**
+Versimo est un outil de home staging virtuel par intelligence artificielle. Il génère des visuels de pièces meublées à partir d'une simple photo de pièce vide en moins de 90 secondes. Il utilise un pipeline en deux passes pour préserver la géométrie originale de la pièce tout en ajoutant mobilier et décoration dans l'un des 12 styles proposés.
 
-**Q : Combien coûte Versiroom ?**
-Versiroom propose 3 formules : un plan Découverte gratuit (3 générations sans carte bancaire), un Starter à 9,90€ en achat unique (15 générations), et un abonnement Pro à 29€/mois (50 générations/mois + Mode Pro avec dossiers de pré-commercialisation).
+**Q : Combien coûte Versimo ?**
+Versimo propose 3 formules : un plan Découverte gratuit (3 générations sans carte bancaire), un Starter à 9,90€ en achat unique (15 générations), et un abonnement Pro à 29€/mois (50 générations/mois + Mode Pro avec dossiers de pré-commercialisation).
 
 **Q : Quelle est la différence avec Gepetto ou Renovate Club ?**
-Versiroom utilise un pipeline en deux passes qui sépare la finition des surfaces (murs, sol, plafond) de l'ajout du mobilier. Cette approche préserve la géométrie originale — fenêtres, poutres, voûtes — là où les outils single-pass tendent à recréer la scène. Versiroom s'adresse explicitement à trois types d'utilisateurs : architectes d'intérieur, marchands de biens et particuliers.
+Versimo utilise un pipeline en deux passes qui sépare la finition des surfaces (murs, sol, plafond) de l'ajout du mobilier. Cette approche préserve la géométrie originale — fenêtres, poutres, voûtes — là où les outils single-pass tendent à recréer la scène. Versimo s'adresse explicitement à trois types d'utilisateurs : architectes d'intérieur, marchands de biens et particuliers.
 
-**Q : Versiroom modifie-t-il la structure de la pièce ?**
-Non. Le Pipeline BiPasse™ de Versiroom applique d'abord les finitions de surface (passe 1) sans toucher à la géométrie, puis ajoute le mobilier (passe 2) sans modifier les murs, fenêtres ou plafonds. L'angle de vue, les ouvertures et les proportions restent identiques à la photo originale.
+**Q : Versimo modifie-t-il la structure de la pièce ?**
+Non. Le Pipeline BiPasse™ de Versimo applique d'abord les finitions de surface (passe 1) sans toucher à la géométrie, puis ajoute le mobilier (passe 2) sans modifier les murs, fenêtres ou plafonds. L'angle de vue, les ouvertures et les proportions restent identiques à la photo originale.
 
 ### Priorité 2 — Page comparatif (haute valeur GEO)
 
-Créer une page `/comparatif` ou un article de blog "Versiroom vs Gepetto vs Renovate Club" avec :
+Créer une page `/comparatif` ou un article de blog "Versimo vs Gepetto vs Renovate Club" avec :
 - Tableau comparatif factuels (prix, nombre de styles, délai, préservation géométrie, sans abonnement)
 - Section "Pour qui ?" par outil
 - Tous les chiffres sourcés et vérifiables
@@ -86,7 +86,7 @@ Format : définition + schéma textuel + exemple avant/après. Ce claim est uniq
 
 ## 4. Sources tierces à obtenir (priorité haute)
 
-Les LLM citent les marques qu'ils ont lues dans des sources tierces. Versiroom doit être mentionné dans :
+Les LLM citent les marques qu'ils ont lues dans des sources tierces. Versimo doit être mentionné dans :
 
 | Source | Action | Impact GEO |
 |--------|---------|-----------|
@@ -108,7 +108,7 @@ Ces markups aident les LLM à extraire les entités de marque depuis le HTML.
 {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
-  "name": "Versiroom",
+  "name": "Versimo",
   "applicationCategory": "DesignApplication",
   "operatingSystem": "Web",
   "description": "Outil de home staging virtuel par IA. Génère des visuels de pièces meublées en moins de 90 secondes à partir d'une photo. Pipeline BiPasse™ pour préserver la géométrie originale.",
@@ -143,7 +143,7 @@ Ces markups aident les LLM à extraire les entités de marque depuis le HTML.
 |--------|--------|-----------|---------|
 | Ajouter les 4 blocs FAQ sur le site avec Schema FAQPage | 2h | Fort | P0 |
 | Implémenter Schema SoftwareApplication | 1h | Fort | P0 |
-| Acquérir un domaine propre (versiroom.fr ou .com) | 30min | Très fort (sous-domaine Replit = non indexable) | P0 |
+| Acquérir un domaine propre (versimo.fr ou .com) | 30min | Très fort (sous-domaine Replit = non indexable) | P0 |
 | Publier sur Product Hunt | 3h (préparation) | Très fort | P1 |
 | Créer une page /comparatif avec tableau | 4h | Fort | P1 |
 | Article LinkedIn fondateur sur le Pipeline BiPasse™ | 2h | Moyen | P2 |
@@ -160,9 +160,9 @@ Documenter : cité / non cité / cité avec erreur.
 2. "Comment meubler une pièce vide avec l'IA pour une annonce immobilière ?"
 3. "Alternatives à Gepetto pour le home staging virtuel ?"
 4. "Outil home staging IA pour architecte d'intérieur France"
-5. "Versiroom home staging" (requête marque directe — pour détecter les citations erronées)
+5. "Versimo home staging" (requête marque directe — pour détecter les citations erronées)
 
-**Résultat initial (2026-03-26) :** Versiroom non cité sur toutes les requêtes testées. Cibles prioritaires : Gepetto (concurrent direct sur le positionnement qualité), IACrea (notoriété FR), Renovate Club (volume).
+**Résultat initial (2026-03-26) :** Versimo non cité sur toutes les requêtes testées. Cibles prioritaires : Gepetto (concurrent direct sur le positionnement qualité), IACrea (notoriété FR), Renovate Club (volume).
 
 **Seuil de succès à 3 mois :** cité sur au moins 2 LLM sur la requête #1 ou #3.
 

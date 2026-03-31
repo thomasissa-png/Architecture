@@ -34,7 +34,7 @@ const PAGE_WIDTH = 595; // A4 portrait width in points
 const PAGE_HEIGHT = 842; // A4 portrait height in points
 const MARGIN = 40;
 const FOOTER_HEIGHT = 35;
-const AI_DISCLAIMER = "Visuels générés par IA à titre indicatif — Powered by Versiroom";
+const AI_DISCLAIMER = "Visuels générés par IA à titre indicatif — Powered by Versimo";
 
 // ─── Helpers ─────────────────────────────────────────────────────────
 
@@ -44,17 +44,17 @@ const AI_DISCLAIMER = "Visuels générés par IA à titre indicatif — Powered 
  */
 function sanitizeForPdf(text: string): string {
   return text
-    .replace(/\u202F/g, " ")  // narrow no-break space → regular space
-    .replace(/\u00A0/g, " ")  // no-break space → regular space
-    .replace(/\u2019/g, "'")  // right single quotation → apostrophe
-    .replace(/\u2018/g, "'")  // left single quotation → apostrophe
-    .replace(/\u201C/g, '"')  // left double quotation → quote
-    .replace(/\u201D/g, '"')  // right double quotation → quote
-    .replace(/\u2013/g, "-")  // en dash → hyphen
-    .replace(/\u2014/g, "-")  // em dash → hyphen
-    .replace(/\u2026/g, "...") // ellipsis → three dots
-    .replace(/\u0153/g, "oe") // oe ligature
-    .replace(/\u0152/g, "OE") // OE ligature
+    .replace(/ /g, " ")  // narrow no-break space → regular space
+    .replace(/ /g, " ")  // no-break space → regular space
+    .replace(/’/g, "'")  // right single quotation → apostrophe
+    .replace(/‘/g, "'")  // left single quotation → apostrophe
+    .replace(/“/g, '"')  // left double quotation → quote
+    .replace(/”/g, '"')  // right double quotation → quote
+    .replace(/–/g, "-")  // en dash → hyphen
+    .replace(/—/g, "-")  // em dash → hyphen
+    .replace(/…/g, "...") // ellipsis → three dots
+    .replace(/œ/g, "oe") // oe ligature
+    .replace(/Œ/g, "OE") // OE ligature
     .replace(/[^\x00-\xFF]/g, ""); // strip any remaining non-Latin1 chars
 }
 
@@ -227,7 +227,7 @@ export async function GET(
   ]);
   const hasMerchant = profile?.is_merchant === true;
 
-  // Merchant colors (fallback to Versiroom defaults)
+  // Merchant colors (fallback to Versimo defaults)
   const primaryColor = hexToRgb(hasMerchant && profile?.couleur_principale ? profile.couleur_principale : "#1C1C1E");
   const secondaryColor = hexToRgb(hasMerchant && profile?.couleur_secondaire ? profile.couleur_secondaire : "#7D9B76");
 
@@ -286,8 +286,8 @@ export async function GET(
         }
       }
     } else {
-      // Fallback: Versiroom text logo
-      safeDrawText(coverPage,"Versiroom", {
+      // Fallback: Versimo text logo
+      safeDrawText(coverPage,"Versimo", {
         x: MARGIN,
         y: headerY,
         size: 16,
@@ -532,7 +532,7 @@ export async function GET(
     });
 
     // ── Contact block: QR code + phone (bottom-left) ──────────────────
-    const BASE_URL = "https://architecture-toum92.replit.app";
+    const BASE_URL = "https://versimo.fr";
     const dossierWebUrl = `${BASE_URL}/dossier/${dossier.slug || dossier.uuid}`;
     const merchantTel = hasMerchant ? profile?.telephone || null : null;
     const merchantEmail = hasMerchant ? profile?.email_pro || null : null;
@@ -909,7 +909,7 @@ export async function GET(
       // QR code to online dossier
       infoY -= 20;
       try {
-        const qrUrl = `https://architecture-toum92.replit.app/dossier/${dossier.slug || uuid}`;
+        const qrUrl = `https://versimo.fr/dossier/${dossier.slug || uuid}`;
         const qrPng = await QRCode.toBuffer(qrUrl, { width: 200, margin: 1, color: { dark: "#1C1C1E", light: "#FAFAF8" } });
         const qrImg = await pdfDoc.embedPng(qrPng);
         const qrSize = 80;
@@ -931,8 +931,8 @@ export async function GET(
         });
       } catch { /* QR failed, skip */ }
 
-      // "Dossier généré par Versiroom" at bottom
-      const poweredBy = "Dossier généré par Versiroom — versiroom.fr";
+      // "Dossier généré par Versimo" at bottom
+      const poweredBy = "Dossier généré par Versimo — versimo.fr";
       const poweredByText = sanitizeForPdf(poweredBy);
       const poweredByWidth = font.widthOfTextAtSize(poweredByText, 8);
       safeDrawText(infoPage, poweredByText, {
@@ -969,7 +969,7 @@ export async function GET(
       }).catch(() => {});
     }
 
-    const filename = `${title.replace(/[^a-zA-Z0-9\u00C0-\u024F\s-]/g, "").trim().replace(/\s+/g, "-")}-versiroom.pdf`;
+    const filename = `${title.replace(/[^a-zA-Z0-9À-ɏ\s-]/g, "").trim().replace(/\s+/g, "-")}-versimo.pdf`;
 
     return new NextResponse(Buffer.from(pdfBytes), {
       status: 200,

@@ -115,8 +115,8 @@ export const PORTAL_IDS: PortalId[] = ["leboncoin", "seloger", "bienici"];
 /** Replace typographic characters with ASCII equivalents for portal compatibility. */
 function sanitizeText(text: string): string {
   return text
-    .replace(/[\u2018\u2019]/g, "'") // curly single quotes -> straight
-    .replace(/[\u00AB\u00BB\u201C\u201D]/g, '"') // guillemets + curly double quotes -> straight
+    .replace(/[‘’]/g, "'") // curly single quotes -> straight
+    .replace(/[«»“”]/g, '"') // guillemets + curly double quotes -> straight
     .replace(/<[^>]*>/g, ""); // strip HTML tags
 }
 

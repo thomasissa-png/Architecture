@@ -1,8 +1,8 @@
-# Versiroom — Memoire Projet
+# Versimo — Memoire Projet
 
 ## Contexte Produit
 
-Versiroom est un outil de home staging virtuel par IA pour architectes, marchands de biens et particuliers.
+Versimo est un outil de home staging virtuel par IA pour architectes, marchands de biens et particuliers.
 L'utilisateur uploade des photos de pieces vides et l'IA genere des visuels meubles dans un style choisi parmi 12 ambiances.
 
 - **Stack** : Next.js 14, React, TypeScript, Tailwind CSS, App Router
@@ -11,10 +11,10 @@ L'utilisateur uploade des photos de pieces vides et l'IA genere des visuels meub
 - **Langue UI** : Francais
 - **Palette** : Background #FAFAF8, Foreground #1C1C1E, Sage #7D9B76
 - **Typographie** : Inter (300-800)
-- **Deploiement** : Replit — https://architecture-toum92.replit.app/
-- **Admin** : https://architecture-toum92.replit.app/admin (visualisation generations + logs DB)
-- **API Logs** : https://architecture-toum92.replit.app/api/logs (consultation generations recentes)
-- **API Images** : https://architecture-toum92.replit.app/api/logs/image?path=... (images full-size)
+- **Deploiement** : Replit — https://versimo.fr/
+- **Admin** : https://versimo.fr/admin (visualisation generations + logs DB)
+- **API Logs** : https://versimo.fr/api/logs (consultation generations recentes)
+- **API Images** : https://versimo.fr/api/logs/image?path=... (images full-size)
 
 ## Architecture Fichiers
 

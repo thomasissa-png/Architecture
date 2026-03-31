@@ -64,7 +64,7 @@ Delta net : +0.9 point vs premier audit. Identique au re-audit v1. Les correctio
 
 **`DossierPublicView.tsx` L30 — `bg-white/40`**
 
-La page `/dossier/[uuid]` est la surface d'exposition aux acquéreurs de Thomas. C'est la seule page Versiroom que l'acheteur potentiel voit. `bg-white/40` sur le fond `#FAFAF8` introduit un blanc légèrement froid qui trahit une incohérence de palette. Sur un écran OLED ou calibré, la différence est perceptible. Ce résidu est d'autant plus problématique qu'il est visible à chaque scroll sur la page acquéreur.
+La page `/dossier/[uuid]` est la surface d'exposition aux acquéreurs de Thomas. C'est la seule page Versimo que l'acheteur potentiel voit. `bg-white/40` sur le fond `#FAFAF8` introduit un blanc légèrement froid qui trahit une incohérence de palette. Sur un écran OLED ou calibré, la différence est perceptible. Ce résidu est d'autant plus problématique qu'il est visible à chaque scroll sur la page acquéreur.
 
 Correction exacte :
 ```diff

@@ -39,7 +39,7 @@ Parcours coherent et fonctionnel. Trois frictions prioritaires a corriger avant 
 - "Gratuit — 3 generations offertes sans CB" visible en mode inscription : Thomas comprend l'offre sans friction.
 
 **Friction identifiee :**
-- Mot de passe oublie : renvoie un message "Fonctionnalite bientot disponible. Contactez contact@versiroom.fr" — acceptable en MVP mais doit etre trace pour resolution rapide (Thomas utilise un mot de passe different par service pro, risque de blocage a la premiere connexion sur laptop).
+- Mot de passe oublie : renvoie un message "Fonctionnalite bientot disponible. Contactez contact@versimo.fr" — acceptable en MVP mais doit etre trace pour resolution rapide (Thomas utilise un mot de passe different par service pro, risque de blocage a la premiere connexion sur laptop).
 
 ---
 
@@ -145,7 +145,7 @@ F5 — Badge "(inclus Pack Pro)" non retrouve dans le code de page.tsx lu (ligne
 - Photos groupees par type de piece dans l'ordre logique de visite (salon, chambre, cuisine...).
 - ContactSticky importe : bouton d'appel persistant en bas de page.
 - Metadata OpenGraph dynamique avec photo de couverture : partage WhatsApp/SMS avec apercu.
-- Branding marchand conditionnel : logo si dispo, initiales sur fond couleur sinon, "Versiroom" si non-marchand.
+- Branding marchand conditionnel : logo si dispo, initiales sur fond couleur sinon, "Versimo" si non-marchand.
 - Annonce expiree/archivee : message generique "Annonce introuvable" (ne revele pas si l'annonce existait).
 
 **Frictions identifiees :**

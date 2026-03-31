@@ -69,7 +69,7 @@ L'association `rounded-full` + `bg-white/80` + `backdrop-blur-sm` rappelle les b
 Le fond `#FAFAF8` est défini précisément pour éviter le blanc pur. `bg-white/40` introduit un blanc légèrement froid qui contraste avec la chaleur du fond. Sur un écran OLED ou en pleine lumière, la différence est visible. C'est le genre de détail qui signale "fait vite" à un œil de professionnel.
 
 **3. Les pills de type de bien en bg-gray-100**
-`bg-gray-100` est la gris par défaut de Tailwind (#F3F4F6), légèrement plus froid et plus saturé que `var(--foreground)/5` appliqué sur `#FAFAF8`. Sur la palette Versiroom, ce gris tranche de manière perceptible. Les pills inactives devraient être quasi-transparentes, pas grises.
+`bg-gray-100` est la gris par défaut de Tailwind (#F3F4F6), légèrement plus froid et plus saturé que `var(--foreground)/5` appliqué sur `#FAFAF8`. Sur la palette Versimo, ce gris tranche de manière perceptible. Les pills inactives devraient être quasi-transparentes, pas grises.
 
 **4. L'absence de focus-visible sur les boutons**
 Sur un produit professionnel utilisé par des architectes avec des configurations d'accessibilité, l'absence de rings de focus est rédhibitoire. Thomas (persona marchand) travaille sur laptop Windows avec navigation clavier fréquente entre les outils. Ce n'est pas un détail cosmétique : c'est un engagement de qualité.

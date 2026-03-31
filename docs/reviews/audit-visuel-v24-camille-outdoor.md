@@ -1,6 +1,6 @@
 # Audit Visuel V24 — Generations Outdoor — Camille Verdier, Paysagiste
 **Date** : 27 mars 2026
-**Scope** : 7 generations outdoor (#51 a #57) — images reelles produites par le pipeline Versiroom
+**Scope** : 7 generations outdoor (#51 a #57) — images reelles produites par le pipeline Versimo
 **Methode** : lecture visuelle de chaque output, evaluation sur grille 10 criteres outdoor
 
 ---

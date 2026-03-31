@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!dossier || isDossierExpired(dossier)) {
     return {
-      title: "Dossier expiré — Versiroom",
+      title: "Dossier expiré — Versimo",
       description: "Ce dossier de pré-commercialisation a expiré.",
     };
   }
@@ -52,25 +52,25 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (dossier.bien_prix) details.push(formatPrice(dossier.bien_prix));
 
   const description = details.length > 0
-    ? `${title} — ${details.join(", ")}. Visuels meublés par Versiroom.`
-    : `${title} — Visuels meublés par Versiroom.`;
+    ? `${title} — ${details.join(", ")}. Visuels meublés par Versimo.`
+    : `${title} — Visuels meublés par Versimo.`;
 
   // Hero image for OG preview (first completed photo)
-  const BASE_URL = "https://architecture-toum92.replit.app";
+  const BASE_URL = "https://versimo.fr";
   const photos = await getDossierPhotos(dossier.uuid);
   const heroPhoto = photos.find((p) => p.status === "completed" && p.output_image_key);
   const ogImages = heroPhoto?.output_image_key
     ? [{ url: `${BASE_URL}/api/logs/image?path=${encodeURIComponent(heroPhoto.output_image_key)}`, width: 1200, height: 630, alt: title }]
-    : [{ url: `${BASE_URL}/imageapres.jpg`, width: 1200, height: 630, alt: "Versiroom — Home staging virtuel par IA" }];
+    : [{ url: `${BASE_URL}/imageapres.jpg`, width: 1200, height: 630, alt: "Versimo — Home staging virtuel par IA" }];
 
   return {
-    title: `${title} — Versiroom`,
+    title: `${title} — Versimo`,
     description,
     openGraph: {
-      title: `${title} — Visualisation Versiroom`,
+      title: `${title} — Visualisation Versimo`,
       description,
       type: "website",
-      siteName: "Versiroom",
+      siteName: "Versimo",
       images: ogImages,
     },
   };
@@ -171,7 +171,7 @@ export default async function DossierPage({ params }: PageProps) {
             </span>
           ) : (
             <span className="text-xl font-semibold text-foreground tracking-tighter">
-              Versiroom
+              Versimo
             </span>
           )}
           <div className="flex items-center gap-3">
@@ -457,12 +457,12 @@ export default async function DossierPage({ params }: PageProps) {
           </p>
           <p className="text-xs text-muted/40 font-light mt-1">
             <a
-              href="https://architecture-toum92.replit.app/"
+              href="https://versimo.fr/"
               className="hover:text-muted/60 transition-colors underline"
               target="_blank"
               rel="noopener noreferrer"
             >
-              Versiroom
+              Versimo
             </a>
             {" "}&mdash; © {new Date().getFullYear()}
           </p>

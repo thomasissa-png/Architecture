@@ -6,7 +6,7 @@ Modele : GPT-4.1 via Responses API (presume)
 
 ## Avertissement methodologique
 
-Les images input de ce batch sont des photos Unsplash DEJA MEUBLEES, pas des pieces vides. Le pipeline Versiroom est concu pour des pieces vides. Cela biaise le test de deux facons :
+Les images input de ce batch sont des photos Unsplash DEJA MEUBLEES, pas des pieces vides. Le pipeline Versimo est concu pour des pieces vides. Cela biaise le test de deux facons :
 1. La passe 1 (surfaces) doit "effacer" du mobilier existant avant de traiter les finitions — ce n'est pas son role
 2. La preservation geometrique est plus difficile a evaluer car l'input contient des objets qui interferer avec la lecture spatiale
 
@@ -89,7 +89,7 @@ Moyenne globale batch : **8.0/10** (+2.5 pts vs batch #37-42)
 **Problemes :**
 - **P1** : L'angle de camera a change (meme probleme que #45 — input meuble). Pas un defaut pipeline sur piece vide.
 - **P2** : Le ratio sol vide est a ~50-55% au lieu de 60%. Le coussin de meditation au sol + le tapis jute remplissent un peu trop le premier plan. En retirant le coussin, on serait dans la cible.
-- **P2** : Le rendu, bien que tres atmospherique, a un aspect legerement "CGI moody" — les murs enduits sont presque TROP parfaitement imparfaits. Un vrai enduit a la chaux aurait des irregularites plus aleatoires, des traces de reprise plus nettes. C'est une critique de luxe — pour 95% des clients de Versiroom, ce rendu est plus que suffisant.
+- **P2** : Le rendu, bien que tres atmospherique, a un aspect legerement "CGI moody" — les murs enduits sont presque TROP parfaitement imparfaits. Un vrai enduit a la chaux aurait des irregularites plus aleatoires, des traces de reprise plus nettes. C'est une critique de luxe — pour 95% des clients de Versimo, ce rendu est plus que suffisant.
 - **P2** : Le grain photographique est present mais discret. On est sur du ISO 100 plutot que ISO 200 — ca ajoute a l'impression "CGI clean" malgre la palette organique.
 
 ---

@@ -11,10 +11,10 @@ test.describe("Compte — Profile page", () => {
     expect(response?.status()).toBeLessThan(500);
   });
 
-  test("page contains Versiroom branding", async ({ page }) => {
+  test("page contains Versimo branding", async ({ page }) => {
     await page.goto("/compte");
     await page.waitForTimeout(1000);
-    await expect(page.locator("body")).toContainText("Versiroom");
+    await expect(page.locator("body")).toContainText("Versimo");
   });
 
   test("unauthenticated user sees loading or redirect", async ({ page }) => {

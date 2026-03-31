@@ -1,4 +1,4 @@
-# Audit pre-lancement Versiroom -- 2026-03-27
+# Audit pre-lancement Versimo -- 2026-03-27
 
 Auditeur : @qa | Branche : claude/update-gradient-agents-rnmKh
 

@@ -862,7 +862,7 @@ export default function MerchantMode() {
                   {/* Room type / Outdoor subtype dropdown */}
                   <div>
                     <label className="text-[11px] text-muted font-light block mb-1">
-                      {entry.isOutdoor ? "Type d\u0027espace" : "Pièce"}
+                      {entry.isOutdoor ? "Type d'espace" : "Pièce"}
                     </label>
                     {entry.isOutdoor ? (
                       <select

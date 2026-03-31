@@ -1,4 +1,4 @@
-# Lessons Learned — Versiroom
+# Lessons Learned — Versimo
 
 ## Session 2026-03-28 (Audit complet site + parcours d'achat)
 
@@ -23,7 +23,7 @@
 | 28 | 2026-03-28 | préférence fondateur | - | [PRÉFÉRENCE FONDATEUR] : le fondateur ne veut PAS tester le build lui-même. "Je ne suis pas là pour tester" — frustration exprimée 2 fois dans la session. Les agents doivent être autonomes sur la QA de build. | — | Les agents doivent intégrer le build check comme étape NON NÉGOCIABLE de leur workflow. Si le build check est impossible dans l'environnement, documenter la limitation et proposer une alternative. | ouvert |
 | 28 | 2026-03-28 | préférence fondateur | - | [PRÉFÉRENCE FONDATEUR] : quand on clique "Acheter", ça doit lancer l'achat DIRECTEMENT — pas ouvrir une page intermédiaire. La checkbox de rétractation est une friction inutile puisque Stripe gère les conditions. | Checkout direct + suppression checkbox rétractation | Les parcours d'achat doivent être le plus court possible : clic → auth si nécessaire → Stripe. Zéro étape intermédiaire. |appliqué |
 | 28 | 2026-03-28 | préférence fondateur | - | [PRÉFÉRENCE FONDATEUR] : les boutons dossier/annonce doivent refléter l'état réel ("Voir" si existe, "Générer" si n'existe pas, "Regénérer" si existe déjà). Pas de lien vers une liste globale depuis une fiche de bien. | Boutons contextuels + liens directs sur fiche bien | Les actions sur une entité doivent être contextuelles à cette entité — jamais de redirection vers une liste globale. | appliqué |
-| 28 | 2026-03-28 | préférence fondateur | - | [PRÉFÉRENCE FONDATEUR] : le backoffice admin doit être "propre comme le reste du site" — même header, footer, design system. Pas de styles inline. | Refonte admin Tailwind + header/footer Versiroom + tab Utilisateurs | Le backoffice n'est pas un "outil interne moche" — c'est une extension du produit. Même standard de qualité. | appliqué |
+| 28 | 2026-03-28 | préférence fondateur | - | [PRÉFÉRENCE FONDATEUR] : le backoffice admin doit être "propre comme le reste du site" — même header, footer, design system. Pas de styles inline. | Refonte admin Tailwind + header/footer Versimo + tab Utilisateurs | Le backoffice n'est pas un "outil interne moche" — c'est une extension du produit. Même standard de qualité. | appliqué |
 | 28 | 2026-03-28 | recommandation | P1 | **Les agents admin timeout systématiquement** sur les gros fichiers (admin/page.tsx ~700 lignes). 3 timeouts consécutifs avant de réussir. | Instructions anti-timeout : "commite après chaque section" | Les fichiers de plus de 500 lignes doivent être traités par SECTIONS avec commit intermédiaire. L'agent doit commiter dès qu'une section est terminée, pas attendre la fin. | appliqué |
 
 ## Session 2026-03-27c (Landing pages personas + refonte pricing)

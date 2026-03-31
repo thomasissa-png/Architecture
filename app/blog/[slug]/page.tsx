@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getBlogPostBySlug } from "@/lib/blog";
 import Footer from "@/components/Footer";
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://architecture-toum92.replit.app";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://versimo.fr";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -26,13 +26,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   return {
     title: post.title,
-    description: post.meta_description || `${post.title} — Blog Versiroom`,
+    description: post.meta_description || `${post.title} — Blog Versimo`,
     openGraph: {
       title: post.title,
-      description: post.meta_description || `${post.title} — Blog Versiroom`,
+      description: post.meta_description || `${post.title} — Blog Versimo`,
       type: "article",
       locale: "fr_FR",
-      siteName: "Versiroom",
+      siteName: "Versimo",
       url: `${BASE_URL}/blog/${post.slug}`,
       publishedTime: new Date(post.created_at).toISOString(),
       modifiedTime: new Date(post.updated_at).toISOString(),
@@ -91,7 +91,7 @@ export default async function BlogPostPage({ params }: PageProps) {
     dateModified: new Date(post.updated_at).toISOString(),
     publisher: {
       "@type": "Organization",
-      name: "Versiroom",
+      name: "Versimo",
       url: BASE_URL,
     },
     mainEntityOfPage: `${BASE_URL}/blog/${post.slug}`,
@@ -113,7 +113,7 @@ export default async function BlogPostPage({ params }: PageProps) {
             href="/"
             className="text-xl font-semibold text-foreground tracking-tighter focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm"
           >
-            Versiroom
+            Versimo
           </a>
           <nav className="flex items-center gap-4 sm:gap-6">
             <a
@@ -164,7 +164,7 @@ export default async function BlogPostPage({ params }: PageProps) {
 
           {/* Article content */}
           <div
-            className="prose-versiroom"
+            className="prose-versimo"
             dangerouslySetInnerHTML={{ __html: contentHtml }}
           />
 
@@ -180,7 +180,7 @@ export default async function BlogPostPage({ params }: PageProps) {
               href="/#outil"
               className="inline-flex items-center gap-2 bg-foreground text-background px-6 py-3 rounded-full text-sm font-medium hover:bg-foreground/85 transition-all duration-200 active:scale-[0.98]"
             >
-              Essayer Versiroom
+              Essayer Versimo
             </a>
           </div>
         </div>

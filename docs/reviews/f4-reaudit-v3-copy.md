@@ -101,7 +101,7 @@ Delta : +0,5 point vs V2. Les corrections apportées en V3 ont résolu 3 des 6 p
   - Ligne 145 : `"Format invalide. Seuls PNG et JPG sont acceptes."` → `"Format invalide. Seuls PNG et JPG sont acceptés."`
   - Ligne 178 : `"Logo enregistre."` → `"Logo enregistré."`
   - Ligne 215 : `"Profil enregistre."` → `"Profil enregistré."`
-- Impact : page /compte est le premier contact d'un marchand de biens qui configure son branding — les fautes d'accent sur les labels de formulaire signalent un manque de soin incompatible avec le positionnement premium de Versiroom.
+- Impact : page /compte est le premier contact d'un marchand de biens qui configure son branding — les fautes d'accent sur les labels de formulaire signalent un manque de soin incompatible avec le positionnement premium de Versimo.
 
 **B5 — MerchantMode : résidus sans accent dans les périmètres V3**
 - Fichier : `components/MerchantMode.tsx`
@@ -113,8 +113,8 @@ Delta : +0,5 point vs V2. Les corrections apportées en V3 ont résolu 3 des 6 p
 
 **B6 — Page publique acquéreur : disclaimer sans accents**
 - Fichier : `app/dossier/[uuid]/page.tsx`, ligne 233
-- Actuel : `"Visuels generes par intelligence artificielle a titre de simulation. Versiroom — versiroom.fr"`
-- Corrigé : `"Visuels générés par intelligence artificielle à titre de simulation. Versiroom — versiroom.fr"`
+- Actuel : `"Visuels generes par intelligence artificielle a titre de simulation. Versimo — versimo.fr"`
+- Corrigé : `"Visuels générés par intelligence artificielle à titre de simulation. Versimo — versimo.fr"`
 - Impact : texte lu par les acquéreurs de Thomas. Un disclaimer avec fautes d'orthographe fragilise la crédibilité du document professionnel.
 
 **B7 — aria-label "Partager avec un acquereur" sans accent**
@@ -157,10 +157,10 @@ Les éléments suivants sont consolidés et ne doivent pas être modifiés :
 - "Relancer (1 crédit)" — actionnable et transparent
 - "Si une photo échoue, le crédit correspondant est automatiquement restitué." — micro-copy de rassurance, correct
 - "Génération en cours..." / "Terminé" dans DossierProgress header — correct (ligne 39-40)
-- Disclaimer PDF : `"Visuels generes par IA a titre indicatif — Powered by Versiroom"` — acceptable (document interne)
+- Disclaimer PDF : `"Visuels generes par IA a titre indicatif — Powered by Versimo"` — acceptable (document interne)
 - formatSurface() — lib/dossier.ts : `${surface} m\u00B2` correct
 - formatPrice() — lib/dossier.ts : Intl.NumberFormat currency EUR est correct pour le PDF (notation comptable standard)
-- Métadonnées OG page publique — app/dossier/[uuid]/page.tsx : "Visuels meublés par Versiroom" correct
+- Métadonnées OG page publique — app/dossier/[uuid]/page.tsx : "Visuels meublés par Versimo" correct
 - "Génération en cours, revenez dans quelques instants." — page publique, correct
 - `"Dossier partagé"` dans l'en-tête page publique si pas de marchand — neutre et pro
 - `formatDate()` /mes-dossiers — Intl.DateTimeFormat fr-FR correct

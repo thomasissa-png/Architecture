@@ -2,7 +2,7 @@
 
 > Produit par @product-manager — 2026-03-25
 > Validé et enrichi par @product-manager — 2026-03-25
-> Décision fondateur : adresser le pain point Thomas "publier une annonce" depuis Versiroom
+> Décision fondateur : adresser le pain point Thomas "publier une annonce" depuis Versimo
 > Score Thomas post-F6 estimé : 9.2/10 (vs 8.8 actuel — seuil 9/10 dépassé)
 
 ---
@@ -25,10 +25,10 @@ Tentation de détecter qui sont les "autres" personas sur cette page (Claire veu
 
 ## 1. Problème
 
-Thomas (marchand de biens, 35 ans, 8-12 opérations/an) utilise Versiroom pour générer des visuels meublés et des dossiers PDF. Mais son workflow complet est :
+Thomas (marchand de biens, 35 ans, 8-12 opérations/an) utilise Versimo pour générer des visuels meublés et des dossiers PDF. Mais son workflow complet est :
 
 1. Acheter un bien → photos iPhone ✅
-2. Générer les visuels → Versiroom ✅
+2. Générer les visuels → Versimo ✅
 3. Constituer le dossier PDF → Mode Marchand ✅
 4. **Publier l'annonce sur SeLoger/LeBonCoin/Bien'ici → PAS COUVERT**
 5. Envoyer aux acquéreurs → lien partageable ✅
@@ -40,7 +40,7 @@ Pour l'étape 4, Thomas doit aujourd'hui :
 - Uploader les photos une par une
 - Répéter pour chaque portail
 
-**Or, Versiroom possède déjà TOUTES les données** : adresse, type, surface, pièces, prix, description GPT, photos HD.
+**Or, Versimo possède déjà TOUTES les données** : adresse, type, surface, pièces, prix, description GPT, photos HD.
 
 ---
 
@@ -52,7 +52,7 @@ Pour l'étape 4, Thomas doit aujourd'hui :
 
 1. Thomas a un bien dans `/mes-biens/[id]` avec photos générées et description
 2. Il clique **"Créer une annonce"** depuis la fiche bien
-3. Versiroom génère une page publique `/annonce/{uuid}` avec :
+3. Versimo génère une page publique `/annonce/{uuid}` avec :
    - Titre auto-généré (type + surface + ville)
    - Description commerciale (déjà générée par GPT-4.1)
    - Galerie photos HD organisée par pièce
@@ -206,7 +206,7 @@ Layout :
 │  [Copier la description]            │
 │                                     │
 ├─────────────────────────────────────┤
-│  Annonce générée par Versiroom      │  ← Footer
+│  Annonce générée par Versimo      │  ← Footer
 └─────────────────────────────────────┘
 ```
 
@@ -228,7 +228,7 @@ Justification :
 - L'annonce n'a **aucun coût API** (pas de génération IA, juste de l'affichage de données existantes)
 - C'est une **extension naturelle** du dossier PDF — même données, rendu web au lieu de PDF
 - Facturer séparément créerait de la friction pour Thomas qui vient d'acheter un Pack Pro
-- L'annonce publique est un **canal d'acquisition organique** : chaque annonce contient "Généré par Versiroom" → SEO + visibilité gratuite
+- L'annonce publique est un **canal d'acquisition organique** : chaque annonce contient "Généré par Versimo" → SEO + visibilité gratuite
 - Le ZIP est un **réducteur de friction** pour l'upload sur les portails → augmente la satisfaction Thomas
 
 **Gate** : même que F4 — `hasProAccess()` (Pack Pro ou Studio acheté).
@@ -239,7 +239,7 @@ Justification :
 
 | Critère | Avant F6 | Après F6 | Delta | Justification |
 |---|---|---|---|---|
-| 1. Simplicité parcours | 8.5 | 9.0 | +0.5 | Le workflow complet est dans Versiroom — plus besoin de jongler entre outils |
+| 1. Simplicité parcours | 8.5 | 9.0 | +0.5 | Le workflow complet est dans Versimo — plus besoin de jongler entre outils |
 | 4. Téléchargement HD | 9.0 | 9.5 | +0.5 | ZIP bulk download résout la friction F4 de l'audit Thomas |
 | 5. Partage | 9.0 | 9.5 | +0.5 | Lien annonce publique + copier description pour portails |
 | 9. Retrouvabilité | 9.0 | 9.5 | +0.5 | Photos groupées par pièce sur l'annonce = vue organisée |
@@ -265,7 +265,7 @@ Justification :
 - [ ] Bouton "Copier la description" fonctionnel (feedback toast "Description copiée !")
 - [ ] Bouton "Partager WhatsApp" fonctionnel (natif mobile, fallback wa.me sur desktop)
 - [ ] Bouton "Télécharger les photos" génère un ZIP (JSZip client-side) nommé `annonce-{ville}-{surface}m2.zip`
-- [ ] Footer "Annonce générée par Versiroom" avec lien vers le site
+- [ ] Footer "Annonce générée par Versimo" avec lien vers le site
 - [ ] Gate Pro+ : seuls les utilisateurs ayant acheté Pro/Studio peuvent créer une annonce
 - [ ] Responsive mobile-first (iPhone 15 Pro = device principal Thomas)
 - [ ] data-testid sur tous les éléments interactifs
@@ -378,7 +378,7 @@ Justification :
 
 | Critère | V5 (actuel) | Post-F6 | Delta | Justification |
 |---|---|---|---|---|
-| 1. Simplicité parcours | 8.5 | 9.0 | +0.5 | Workflow complet dans Versiroom — plus besoin de jongler entre outils |
+| 1. Simplicité parcours | 8.5 | 9.0 | +0.5 | Workflow complet dans Versimo — plus besoin de jongler entre outils |
 | 4. Téléchargement HD | 9.0 | 9.5 | +0.5 | ZIP bulk download résout la friction F4 de l'audit Thomas |
 | 5. Partage | 9.0 | 9.5 | +0.5 | Lien annonce publique + copier description pour portails |
 | 9. Retrouvabilité | 9.0 | 9.5 | +0.5 | F2 (filtre room_type) résolu dans ce sprint + photos groupées par pièce sur l'annonce |

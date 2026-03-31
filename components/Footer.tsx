@@ -14,7 +14,7 @@ const LINKS = [
   { href: "/mentions-legales", label: "Mentions légales" },
   { href: "/cgv", label: "CGV" },
   { href: "/confidentialite", label: "Confidentialité" },
-  { href: "mailto:contact@versiroom.fr", label: "Contact" },
+  { href: "mailto:contact@versimo.fr", label: "Contact" },
 ];
 
 export default function Footer({ currentPage }: FooterProps) {
@@ -47,7 +47,7 @@ export default function Footer({ currentPage }: FooterProps) {
               {link.label}
             </a>
           ))}
-          <span>&copy; Versiroom 2026</span>
+          <span>&copy; Versimo 2026</span>
         </nav>
       </div>
     </footer>

@@ -36,7 +36,7 @@ Date : 2026-03-26 | Auditeur : @qa | Source : code source uniquement
 | Footer "Mentions legales" | Nav page | OK | `<a href="/mentions-legales">` — page existe |
 | Footer "CGV" | Nav page | OK | `<a href="/cgv">` — page existe |
 | Footer "Confidentialite" | Nav page | OK | `<a href="/confidentialite">` — page existe |
-| Footer "Contact" | Mailto | OK | `<a href="mailto:contact@versiroom.fr">` |
+| Footer "Contact" | Mailto | OK | `<a href="mailto:contact@versimo.fr">` |
 | Footer "Versi Immobilier" | Lien externe | OK | `target="_blank" rel="noopener noreferrer"` |
 
 **Bugs :**

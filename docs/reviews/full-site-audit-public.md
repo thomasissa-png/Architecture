@@ -1,4 +1,4 @@
-# Audit Pages Publiques — Versiroom (batch 1)
+# Audit Pages Publiques — Versimo (batch 1)
 
 ## Synthèse
 | Page | Score | P0 | P1 | P2 |
@@ -40,7 +40,7 @@ Aucun P0 détecté.
 
 ### P1
 
-- Ligne 85 : `"8 biens \u00d7 5 photos \u00d7 300 \u20ac/planche = 12 000 \u20ac/an chez un home stager. Versiroom Pro : 348 \u20ac/an."` → `"8 biens × 5 photos × 300 €/planche = 12 000 €/an chez un home stager. Versiroom Pro : 348 €/an."` (règle 13 — séquences unicode dans string constant)
+- Ligne 85 : `"8 biens \u00d7 5 photos \u00d7 300 \u20ac/planche = 12 000 \u20ac/an chez un home stager. Versimo Pro : 348 \u20ac/an."` → `"8 biens × 5 photos × 300 €/planche = 12 000 €/an chez un home stager. Versimo Pro : 348 €/an."` (règle 13 — séquences unicode dans string constant)
 
 ### P2
 
@@ -58,13 +58,13 @@ Aucun P0 détecté.
 
 ### P1
 
-- Ligne 9 : `title: "Comparatif home staging IA 2026 : Versiroom vs Gepetto vs InterieurAI | Versiroom"` — nomme les concurrents par nom dans les métadonnées SEO. La règle 14 de CLAUDE.md interdit de mentionner les concurrents par nom dans les livrables client-facing. Exception documentée : "les livrables internes [...] DOIVENT nommer les concurrents". La page comparatif est un livrable SEO public donc règle 14 s'applique. **Cependant** : une page comparatif ne peut pas fonctionner sans nommer les concurrents — c'est le sujet même de la page. C'est un cas-limite qui doit être arbitré par le fondateur. Signalé comme P1 pour décision.
+- Ligne 9 : `title: "Comparatif home staging IA 2026 : Versimo vs Gepetto vs InterieurAI | Versimo"` — nomme les concurrents par nom dans les métadonnées SEO. La règle 14 de CLAUDE.md interdit de mentionner les concurrents par nom dans les livrables client-facing. Exception documentée : "les livrables internes [...] DOIVENT nommer les concurrents". La page comparatif est un livrable SEO public donc règle 14 s'applique. **Cependant** : une page comparatif ne peut pas fonctionner sans nommer les concurrents — c'est le sujet même de la page. C'est un cas-limite qui doit être arbitré par le fondateur. Signalé comme P1 pour décision.
 - Ligne 39-51 : texte FAQ sans accents (`interieur`, `egalement`, `geometrie`, `fidelite`, etc.) — les strings dans `faqItems` sont en JSX et ne passent pas par des entités. Ces chaînes sont directement dans des objets JS, les accents UTF-8 doivent être présents. Lignes 39, 44, 50 : remplacer `interieur` → `intérieur`, `egalement` → `également`, `geometrie` → `géométrie`, `fidelite` → `fidélité`, `adapte` → `adapté`, `Tous les outils ne se valent pas sur ce point.` est correct. Correction systématique des accents manquants dans `faqItems`.
 
 ### P2
 
 - Ligne 70-138 : `comparatifData` — les strings `"Oui (depth map + 2 passes)"`, `"Non documente"`, `"Mentionnee"` sont sans accents. `"documente"` → `"documenté"`, `"Mentionnee"` → `"Mentionnée"`. Règle 13 CLAUDE.md.
-- Ligne 98 : `versiroom: "Architectes + Marchands + Particuliers"` — cohérent avec les personas. OK.
+- Ligne 98 : `versimo: "Architectes + Marchands + Particuliers"` — cohérent avec les personas. OK.
 - Lignes 455-478 : liens `/architecte`, `/marchand`, `/particulier`, `/blog` dans le footer de la section CTA — `/blog` est un lien potentiellement mort (pas de page blog visible dans la structure). À vérifier avec `Glob app/blog`.
 
 ---

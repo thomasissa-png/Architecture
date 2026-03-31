@@ -65,7 +65,7 @@ export async function POST(
 
     if (!selectedPhotoIds || selectedPhotoIds.length === 0) {
       return NextResponse.json(
-        { error: "Selectionnez au moins une photo." },
+        { error: "Sélectionnez au moins une photo." },
         { status: 400 }
       );
     }

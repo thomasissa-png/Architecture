@@ -1,10 +1,10 @@
-# Vision Produit — Versiroom
+# Vision Produit — Versimo
 > Produit par @product-manager — 2026-03-24
 > Ancré sur : brand-platform.md, personas.md, competitive-benchmark.md, project-context.md
 
 ---
 
-## 1. Le monde avant Versiroom
+## 1. Le monde avant Versimo
 
 Un marchand de biens vient d'acquérir un appartement à rénover. Les murs sont bruts, le sol est nu. Pour préparer sa plaquette de pré-commercialisation, il a deux options : attendre 48 à 72 heures et payer 1 500€ à un home stager, ou publier des photos de murs vides et perdre des acquéreurs qui ne se projettent pas.
 
@@ -16,7 +16,7 @@ Dans les trois cas, le problème est le même : l'espace existant est invisible.
 
 ---
 
-## 2. Le monde avec Versiroom
+## 2. Le monde avec Versimo
 
 **Un visuel meublé de qualité architecturale est disponible en 90 secondes, à partir d'une simple photo, pour un coût inférieur à 1€.**
 
@@ -32,7 +32,7 @@ Ce monde se traduit concrètement :
 
 ## 3. Ce qui rend ce monde possible — et unique
 
-Deux raisons techniques expliquent pourquoi Versiroom produit ce que les autres ne peuvent pas :
+Deux raisons techniques expliquent pourquoi Versimo produit ce que les autres ne peuvent pas :
 
 **Le pipeline 2 passes** : la passe 1 finit les surfaces (murs, sol, plafond, luminaire) sans toucher à la géométrie. La passe 2 ajoute le mobilier sur des surfaces verrouillées. C'est la seule approche sur le marché qui respecte la voûte d'un Haussmannien, la poutre d'un industriel, la hauteur sous plafond d'un loft — parce qu'elle ne réinvente jamais la pièce, elle la meuble.
 
@@ -42,7 +42,7 @@ Deux raisons techniques expliquent pourquoi Versiroom produit ce que les autres 
 
 ## 4. La vision à 12 mois
 
-**Versiroom est devenu le standard de qualité du home staging virtuel en France.**
+**Versimo est devenu le standard de qualité du home staging virtuel en France.**
 
 Ce n'est pas l'outil le moins cher, ni le plus rapide, ni celui avec le plus de styles. C'est l'outil que les professionnels recommandent parce qu'il respecte leur espace et leur réputation.
 
@@ -56,12 +56,12 @@ Ce n'est pas l'outil le moins cher, ni le plus rapide, ni celui avec le plus de 
 
 ## 5. Ce que la vision refuse
 
-La vision Versiroom exclut explicitement les compromis suivants :
+La vision Versimo exclut explicitement les compromis suivants :
 
 - **L'illimité à bas prix** : 9,99€/mois illimité (Renovate Club) est un terrain perdu d'avance et un positionnement opposé. Le volume dilue la qualité perçue.
 - **La guerre des styles** : 80+ styles génériques (HomeDesigns AI, REimagineHome) est une course que les gros acteurs gagnent toujours. 12 styles curatés > 80 styles anonymes.
 - **La vitesse comme argument principal** : "25 secondes" (Pedra) est un message banalisé. 90 secondes pour un résultat crédible est préférable à 10 secondes pour un résultat qui se voit.
-- **Le viligrane et le filigrane** : aucun logo Versiroom sur les exports. Le visuel est la propriété de l'utilisateur. C'est ce que le professionnel peut montrer à son client.
+- **Le viligrane et le filigrane** : aucun logo Versimo sur les exports. Le visuel est la propriété de l'utilisateur. C'est ce que le professionnel peut montrer à son client.
 
 ---
 

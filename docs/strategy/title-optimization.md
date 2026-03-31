@@ -1,4 +1,4 @@
-# Optimisation des titres d'annonces — Versiroom
+# Optimisation des titres d'annonces — Versimo
 
 ## 1. Audit du format actuel
 

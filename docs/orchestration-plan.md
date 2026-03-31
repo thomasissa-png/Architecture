@@ -1,4 +1,4 @@
-# Plan d'orchestration — Versiroom
+# Plan d'orchestration — Versimo
 
 ## Demande utilisateur
 Phase 3 : Review croisee de l'implementation F1 (iteration commentaire). Puis lancement F2 (type de piece) : audit prompts Yann+Lucas, implementation fullstack, review.
@@ -210,8 +210,8 @@ Moyenne — 5 agents (reviewer, Yann, Lucas, fullstack, reviewer), 2 features su
 
 ### Phase D — Naming + Rename
 - Statut : TERMINE
-- Decision fondateur : Versiroom (filiation Versi Immobilier)
-- 46 fichiers renommes VisiRenov→Versiroom
+- Decision fondateur : Versimo (filiation Versi Immobilier)
+- 46 fichiers renommes VisiRenov→Versimo
 - Footer : "Un produit Versi Immobilier"
 
 ### Phase E — Auth + Stripe + Credits
@@ -269,7 +269,7 @@ Moyenne — 5 agents (reviewer, Yann, Lucas, fullstack, reviewer), 2 features su
 
 ### Phases NON commencees
 - F5 Mode Decorateur (LATER)
-- Domaine propre versiroom.fr (action fondateur)
+- Domaine propre versimo.fr (action fondateur)
 - Configuration lancement (cles API Stripe/NextAuth/Sentry)
 
 ---
@@ -416,7 +416,7 @@ Moyenne — 5 agents (reviewer, Yann, Lucas, fullstack, reviewer), 2 features su
 - **CGV** : mettre à jour pour refléter l'abonnement Pro (pas que one-shot)
 - **Comparateur mobile** : curseur touch ne fonctionne pas
 - **Blog seed** : `npx tsx scripts/seed-blog.ts` à exécuter sur Replit
-- **Domaine versiroom.fr** : blocker SEO/GEO n°1, action fondateur
+- **Domaine versimo.fr** : blocker SEO/GEO n°1, action fondateur
 - **Clés API prod** : Stripe, Google OAuth, Sentry (action fondateur)
 - **Images galerie landing pages** : 3-6 visuels réels pour activer les galeries commentées
 - **Tester v30 en prod** : générer sur toutes tailles de pièces pour valider l'échelle

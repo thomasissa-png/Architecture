@@ -83,12 +83,12 @@ Sections supprimées :
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  Versiroom                    Tarifs    [Essayer gratuitement]│
+│  Versimo                    Tarifs    [Essayer gratuitement]│
 └─────────────────────────────────────────────────────────────┘
 ```
 
 **Contenu.**
-- Logo "Versiroom" — lien vers /
+- Logo "Versimo" — lien vers /
 - Nav : "Tarifs" (ancre #pricing) — visible desktop uniquement
 - CTA "Essayer gratuitement" (ancre #outil) — visible desktop ET mobile
 - Si session active : "Mes biens" / "Ma galerie" / "Mes dossiers" + AuthButton
@@ -113,7 +113,7 @@ Sections supprimées :
 │                                                             │
 │   Uploadez une photo, choisissez un style parmi 12         │
 │   ambiances curatées par des experts.                       │
-│   Versiroom préserve votre espace — il ne le réinvente pas.│
+│   Versimo préserve votre espace — il ne le réinvente pas.│
 │                                                             │
 │   ┌──────────────┐  ┌──────────────┐                        │
 │   │  AVANT       │  │  APRÈS       │                        │
@@ -178,7 +178,7 @@ Remplace les 3 cartes USE_CASES (section supprimée). Format : 3 lignes texte en
 │                                                             │
 │  Mode Pro — pour les professionnels                         │
 │                                                             │
-│  Vous utilisez Versiroom pour des projets clients ou        │
+│  Vous utilisez Versimo pour des projets clients ou        │
 │  des dossiers de vente ? Le Mode Pro ajoute ce dont        │
 │  vous avez besoin — sans changer votre workflow.           │
 │                                                             │
@@ -202,7 +202,7 @@ Cet encart apparaît directement sous le hero, AVANT le séparateur et l'outil. 
 La ligne "29€/mois · vs. 200 à 500€ par planche" est le pivot de cet encart. Elle doit être lisible immédiatement, en `font-semibold`, pas enfouie dans le body text. Thomas fait ce calcul mentalement : 50 crédits × 29€ = moins de 0,60€/visuel vs 200-500€ chez un prestataire. L'encart ne dit pas "économisez 90%" — il donne les deux chiffres bruts et laisse le calcul à Thomas.
 
 **Copy — Claire (persona architecte).**
-"sans changer votre workflow" est pour Claire. Elle ne veut pas apprendre un nouvel outil — elle veut que Versiroom s'intègre dans ce qu'elle fait déjà (envoyer des JPG par email, partager des liens avec ses clients).
+"sans changer votre workflow" est pour Claire. Elle ne veut pas apprendre un nouvel outil — elle veut que Versimo s'intègre dans ce qu'elle fait déjà (envoyer des JPG par email, partager des liens avec ses clients).
 
 **Renommage appliqué.**
 - "Mode Marchand" → "Mode Pro" dans le titre de l'encart ET dans le toggle Standard/Mode Pro de l'outil
@@ -309,7 +309,7 @@ Les 3 pages (/architecte, /marchand, /particulier) partagent la même architectu
 [1] HEADER — identique homepage (fixe)
 [2] HERO PERSONA — titre + promesse spécifique au persona
 [3] BEFORE/AFTER — visuel spécifique au cas d'usage du persona
-[4] ARGUMENT CENTRAL — ce que Versiroom résout pour ce persona
+[4] ARGUMENT CENTRAL — ce que Versimo résout pour ce persona
 [5] FLOW D'USAGE — comment le persona utilise le produit (3 étapes illustrées)
 [6] MODE PRO — visible sur /architecte et /marchand ; simplifié sur /particulier
 [7] CTA FINAL — vers l'outil
@@ -342,7 +342,7 @@ Chaque page persona comporte un lien discret "← Retour" vers la homepage et de
 │        avant la fin du premier RDV.                        │
 │                                                             │
 │   Vos clients veulent "voir à quoi ça va ressembler"       │
-│   avant de valider une direction. Versiroom génère 2-3     │
+│   avant de valider une direction. Versimo génère 2-3     │
 │   ambiances à partir de vos photos de chantier             │
 │   — en 90 secondes, pendant que vous parlez.              │
 │                                                             │
@@ -438,7 +438,7 @@ Chaque page persona comporte un lien discret "← Retour" vers la homepage et de
 │        Sans prestataire. Sans délai.                        │
 │                                                             │
 │   Vos acquéreurs ne se projettent pas sur des murs vides.  │
-│   Avec Versiroom, vos photos brutes deviennent une         │
+│   Avec Versimo, vos photos brutes deviennent une         │
 │   plaquette de pré-commercialisation — le jour même        │
 │   de votre acquisition.                                     │
 │                                                             │
@@ -457,7 +457,7 @@ Chaque page persona comporte un lien discret "← Retour" vers la homepage et de
 │                         vs.                                 │
 │                                                             │
 │   ┌──────────────────────────────────────────────────┐      │
-│   │  Versiroom Mode Pro                              │      │
+│   │  Versimo Mode Pro                              │      │
 │   │  29€/mois · 50 crédits · résultat en 90 sec.    │      │
 │   │  → 3 visuels = moins de 2€ · prêts en 5 min.    │      │
 │   └──────────────────────────────────────────────────┘      │
@@ -547,7 +547,7 @@ Chaque page persona comporte un lien discret "← Retour" vers la homepage et de
 │   Votre appartement est vide. Vous avez des idées déco     │
 │   mais pas moyen de les visualiser dans VOS pièces.        │
 │   Uploadez une photo. Choisissez un style.                 │
-│   Versiroom vous montre ce que ça donne — vraiment.        │
+│   Versimo vous montre ce que ça donne — vraiment.        │
 │                                                             │
 │      [ Essayer gratuitement · Sans créer de compte ]        │
 └─────────────────────────────────────────────────────────────┘
@@ -633,7 +633,7 @@ Chaque page persona comporte un lien discret "← Retour" vers la homepage et de
 | Time-to-value : <= 3 étapes avant le premier résultat | Upload → Style → Générer = 3 étapes. Résultat visible sans login. | PASS |
 | Répétition signal audience : 0 répétition inutile dans les 700px du fold | Pills hero + liens discrets = 1 mention par persona. Galerie par métier supprimée. USE_CASES cartes remplacées par liens texte. | PASS |
 | Edge case : utilisateur pro qui arrive directement sur /marchand | Page /marchand contient : hero, calcul ROI, workflow, Mode Pro, CTA. Aucun élément ne requiert d'avoir vu la homepage. | PASS |
-| Edge case : utilisateur qui arrive sur homepage sans savoir ce qu'est Versiroom | Le titre "Votre pièce meublée, en 90 secondes" + visuel avant/après donne le contexte complet above the fold. | PASS |
+| Edge case : utilisateur qui arrive sur homepage sans savoir ce qu'est Versimo | Le titre "Votre pièce meublée, en 90 secondes" + visuel avant/après donne le contexte complet above the fold. | PASS |
 | Accessibilité WCAG 2.2 AA | Pills devenues liens : tabindex natif via balise `<a>`. Focus-visible:ring conservé. Texte des CTA descriptif ("Essayer gratuitement" pas "Cliquer ici"). | PASS |
 | Mobile Thomas (iPhone 15 Pro) : encart Mode Pro lisible en entier sans scroll horizontal | Layout flex-col sur mobile documenté dans le wireframe. Prix en font-semibold, pas en tableau. | PASS |
 

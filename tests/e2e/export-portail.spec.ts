@@ -117,11 +117,11 @@ const MOCK_EXPORT_PAGE_HTML = `
       bienici: { id: "bienici", label: "Bien\\'ici", titleMaxChars: 100, descriptionMaxChars: 3000, photosMaxCount: null, hasStructuredFields: true },
     };
 
-    const DISCLAIMER = "\\u2014 Photos d'int\\u00e9rieur g\\u00e9n\\u00e9r\\u00e9es par IA, \\u00e0 titre indicatif, non contractuelles.";
+    const DISCLAIMER = "\— Photos d'int\érieur g\én\ér\ées par IA, \à titre indicatif, non contractuelles.";
 
     const annonceData = {
-      title: "Appartement T3 lumineux avec balcon \\u2014 Bordeaux Chartrons",
-      description: "Bel appartement de 65m2 situ\\u00e9 au 3\\u00e8me \\u00e9tage.\\n\\nIl comprend un s\\u00e9jour lumineux et deux chambres.",
+      title: "Appartement T3 lumineux avec balcon \— Bordeaux Chartrons",
+      description: "Bel appartement de 65m2 situ\é au 3\ème \étage.\\n\\nIl comprend un s\éjour lumineux et deux chambres.",
       dpeClasse: "C",
     };
 
@@ -136,7 +136,7 @@ const MOCK_EXPORT_PAGE_HTML = `
         const config = PORTAL_CONFIGS[selectedPortal];
         const title = annonceData.title.length <= config.titleMaxChars
           ? annonceData.title
-          : annonceData.title.slice(0, config.titleMaxChars - 1) + "\\u2026";
+          : annonceData.title.slice(0, config.titleMaxChars - 1) + "\…";
         const desc = annonceData.description + "\\n\\n" + DISCLAIMER;
         const titleCount = title.length;
         const descCount = desc.length;
@@ -154,7 +154,7 @@ const MOCK_EXPORT_PAGE_HTML = `
           '</div>' +
           '<div style="white-space:pre-line">' + desc + '</div>' +
           '<button data-testid="export-portail-copy-btn" data-copy-text="' + copyText.replace(/"/g, '&quot;') + '">' +
-            (copied === "all" ? "Texte " + config.label + " copi\\u00e9" : "Copier le texte " + config.label) +
+            (copied === "all" ? "Texte " + config.label + " copi\é" : "Copier le texte " + config.label) +
           '</button>' +
         '</div>';
       }

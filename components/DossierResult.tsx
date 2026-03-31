@@ -51,13 +51,13 @@ export default function DossierResult({
   const handleWhatsAppShare = useCallback(async () => {
     if (!dossierUuid) return;
     const shareUrl = `${window.location.origin}/dossier/${dossierUuid}`;
-    const text = `${bienNom} — Visuels meubles par Versiroom\n${shareUrl}`;
+    const text = `${bienNom} — Visuels meubles par Versimo\n${shareUrl}`;
 
     if (canNativeShare) {
       try {
         await navigator.share({
           title: bienNom,
-          text: `${bienNom} — Visuels meubles par Versiroom`,
+          text: `${bienNom} — Visuels meubles par Versimo`,
           url: shareUrl,
         });
         return;

@@ -15,7 +15,7 @@ F6 MVP (page annonce publique `/annonce/[uuid]`) livre :
 - Un bouton "Copier la description" → copie le texte brut de `description_final`
 - Un bouton "Télécharger les photos" → ZIP de toutes les photos HD
 
-Ce que F6 MVP ne résout PAS : Thomas doit encore **adapter manuellement** le texte pour chaque portail. SeLoger limite le titre à ~100 caractères. LeBonCoin limite la description à 4 000 caractères. Bien'ici exige des champs structurés (DPE, charges copro, etc.). Un texte généré par GPT-4.1 pour Versiroom fait souvent 600-900 mots — trop long pour certains portails, mal structuré pour d'autres.
+Ce que F6 MVP ne résout PAS : Thomas doit encore **adapter manuellement** le texte pour chaque portail. SeLoger limite le titre à ~100 caractères. LeBonCoin limite la description à 4 000 caractères. Bien'ici exige des champs structurés (DPE, charges copro, etc.). Un texte généré par GPT-4.1 pour Versimo fait souvent 600-900 mots — trop long pour certains portails, mal structuré pour d'autres.
 
 ### Ce que V2a ajoute
 
@@ -75,9 +75,9 @@ Thomas est un marchand de biens avec un compte personnel ou agence. LeBonCoin es
 
 ### US-V2a-01 — Publication LeBonCoin (portail principal)
 
-**Format JTBD** : Quand je veux publier une annonce sur LeBonCoin pour un bien que j'ai photographié dans Versiroom, je veux obtenir un bloc de texte pré-formaté aux contraintes LeBonCoin (titre ≤100 chars, description ≤4 000 chars, disclaimer IA inclus) que je peux coller directement sans retouche manuelle, pour économiser 15 minutes de reformatage et éviter les rejets d'annonce pour non-conformité.
+**Format JTBD** : Quand je veux publier une annonce sur LeBonCoin pour un bien que j'ai photographié dans Versimo, je veux obtenir un bloc de texte pré-formaté aux contraintes LeBonCoin (titre ≤100 chars, description ≤4 000 chars, disclaimer IA inclus) que je peux coller directement sans retouche manuelle, pour économiser 15 minutes de reformatage et éviter les rejets d'annonce pour non-conformité.
 
-**Contexte Thomas** : Thomas est sur son laptop Windows au bureau. Il a déjà généré les visuels, sa page annonce Versiroom est ouverte. Il ouvre LeBonCoin dans un autre onglet, commence à créer l'annonce, et veut coller le contenu depuis Versiroom sans jongler entre les onglets.
+**Contexte Thomas** : Thomas est sur son laptop Windows au bureau. Il a déjà généré les visuels, sa page annonce Versimo est ouverte. Il ouvre LeBonCoin dans un autre onglet, commence à créer l'annonce, et veut coller le contenu depuis Versimo sans jongler entre les onglets.
 
 **Critères de succès** :
 - Thomas arrive à coller le titre sans le couper manuellement
@@ -91,7 +91,7 @@ Thomas est un marchand de biens avec un compte personnel ou agence. LeBonCoin es
 
 **Format JTBD** : Quand je veux publier sur SeLoger via mon accès mandataire, je veux obtenir un bloc adapté au format SeLoger (~2 000 chars max, champs structurés séparés du corps de l'annonce) pour coller directement dans le formulaire SeLoger Pro sans adapter manuellement.
 
-**Contexte Thomas** : Thomas travaille avec une agence partenaire qui lui donne accès au backoffice SeLoger Pro. L'interface SeLoger a des champs séparés (titre, corps de texte, surface, prix, etc.). Le bloc exporté Versiroom doit distinguer ce qui va dans quel champ.
+**Contexte Thomas** : Thomas travaille avec une agence partenaire qui lui donne accès au backoffice SeLoger Pro. L'interface SeLoger a des champs séparés (titre, corps de texte, surface, prix, etc.). Le bloc exporté Versimo doit distinguer ce qui va dans quel champ.
 
 **Critères de succès** :
 - Le bloc copié identifie clairement "Titre :", "Description :", "Champs à remplir :" dans des sections distinctes
@@ -102,9 +102,9 @@ Thomas est un marchand de biens avec un compte personnel ou agence. LeBonCoin es
 
 ### US-V2a-03 — Publication multi-portails en une session
 
-**Format JTBD** : Quand je dois publier le même bien sur 3 portails différents le même jour, je veux pouvoir générer rapidement les blocs pour chaque portail depuis la même page Versiroom, sans re-naviguer dans les menus, pour publier les 3 annonces en 20 minutes au lieu d'une heure.
+**Format JTBD** : Quand je dois publier le même bien sur 3 portails différents le même jour, je veux pouvoir générer rapidement les blocs pour chaque portail depuis la même page Versimo, sans re-naviguer dans les menus, pour publier les 3 annonces en 20 minutes au lieu d'une heure.
 
-**Contexte Thomas** : Thomas publie toujours sur LeBonCoin + SeLoger + Bien'ici en même temps (couverture max). Il a 3 onglets de portails ouverts. Il veut switcher rapidement entre les formats Versiroom.
+**Contexte Thomas** : Thomas publie toujours sur LeBonCoin + SeLoger + Bien'ici en même temps (couverture max). Il a 3 onglets de portails ouverts. Il veut switcher rapidement entre les formats Versimo.
 
 **Critères de succès** :
 - Le dropdown portail change le contenu instantanément (pas de reload)
@@ -115,7 +115,7 @@ Thomas est un marchand de biens avec un compte personnel ou agence. LeBonCoin es
 
 ### US-V2a-04 — Adaptation titre trop long
 
-**Format JTBD** : Quand le titre auto-généré de mon annonce fait plus de 100 caractères, je veux que Versiroom me propose automatiquement une version raccourcie qui garde les informations clés (type, surface, ville), pour ne pas perdre de temps à le reformuler.
+**Format JTBD** : Quand le titre auto-généré de mon annonce fait plus de 100 caractères, je veux que Versimo me propose automatiquement une version raccourcie qui garde les informations clés (type, surface, ville), pour ne pas perdre de temps à le reformuler.
 
 **Contexte Thomas** : Le titre auto-généré est `"{Type} {surface}m² — {ville}"` (format F6 MVP). Pour "Appartement 3 pièces 65m² avec terrasse — Bordeaux Chartrons" c'est 57 chars — OK. Mais un titre overridé par Thomas comme "Grand appartement lumineux entièrement rénové 3 pièces 65m² avec terrasse et vue dégagée sur jardins — Bordeaux secteur Chartrons 33300" ferait 140 chars — trop long pour LeBonCoin.
 
@@ -128,7 +128,7 @@ Thomas est un marchand de biens avec un compte personnel ou agence. LeBonCoin es
 
 ### US-V2a-05 — Gestion photos > 20
 
-**Format JTBD** : Quand mon bien a plus de 20 photos HD sur Versiroom, je veux que V2a me recommande les 20 meilleures à inclure sur LeBonCoin (qui limite à 20), pour publier dans les limites sans avoir à choisir manuellement parmi mes photos.
+**Format JTBD** : Quand mon bien a plus de 20 photos HD sur Versimo, je veux que V2a me recommande les 20 meilleures à inclure sur LeBonCoin (qui limite à 20), pour publier dans les limites sans avoir à choisir manuellement parmi mes photos.
 
 **Contexte Thomas** : Un appartement avec 6 pièces photographiées à 4 angles = 24 photos. LeBonCoin n'en accepte que 20. Thomas ne veut pas choisir — il veut une recommandation automatique (photos de pièces principales en premier, extras en dernier).
 
@@ -263,7 +263,7 @@ CHAMPS À REMPLIR DANS LE FORMULAIRE
 
 - Affiché en `XX/XXXX` sous chaque zone (titre et description)
 - Couleur : gris si < 80% de la limite, orange si 80-95%, rouge si > 95%
-- Le rouge déclenche un badge "Texte tronqué — informations complètes dans la description Versiroom"
+- Le rouge déclenche un badge "Texte tronqué — informations complètes dans la description Versimo"
 
 ## 4. Specs techniques
 
@@ -527,13 +527,13 @@ V2a n'est pas une feature de monétisation directe — elle ne crée pas de reve
 
 **Levier 1 — Rétention Thomas (prévention churn)**
 
-Sans V2a, Thomas utilise Versiroom pour les visuels et repart sur d'autres outils pour la publication. Si un outil concurrent propose l'export portail natif, Thomas n'a plus de raison de rester sur Versiroom pour la partie publication. V2a crée de la **stickiness** : toute la chaîne de valeur immobilière est dans Versiroom.
+Sans V2a, Thomas utilise Versimo pour les visuels et repart sur d'autres outils pour la publication. Si un outil concurrent propose l'export portail natif, Thomas n'a plus de raison de rester sur Versimo pour la partie publication. V2a crée de la **stickiness** : toute la chaîne de valeur immobilière est dans Versimo.
 
 Lien North Star : rétention × LTV. Thomas achète 2-3 packs Pro/an (8-12 biens × 1 pack = ~4 packs à 29€ = 116€/an). Sur 100 Thomas actifs, la rétention de 10% supplémentaire = 10 × 116€ = 1 160€/an de revenus supplémentaires.
 
 **Levier 2 — Conversion freemium → Pro**
 
-V2a est une feature Pro (gate `hasProAccess()`). Sa visibilité dans le flow annonce (même si grisée pour les utilisateurs gratuits) crée un **nudge de conversion** : "Pour exporter directement sur LeBonCoin, passez au Pack Pro." Ce nudge est positionné au moment où Thomas a déjà créé une annonce et réalise la valeur de Versiroom — moment optimal pour la conversion.
+V2a est une feature Pro (gate `hasProAccess()`). Sa visibilité dans le flow annonce (même si grisée pour les utilisateurs gratuits) crée un **nudge de conversion** : "Pour exporter directement sur LeBonCoin, passez au Pack Pro." Ce nudge est positionné au moment où Thomas a déjà créé une annonce et réalise la valeur de Versimo — moment optimal pour la conversion.
 
 Lien North Star : conversion × panier moyen. Si V2a convertit 5% des utilisateurs gratuits qui créent une annonce → contribution directe au MRR.
 

@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 
 /**
  * E2E tests for /comparatif — SEO comparison page.
- * Static page with comparison table (Versiroom vs Gepetto vs InterieurAI vs Renovate Club),
+ * Static page with comparison table (Versimo vs Gepetto vs InterieurAI vs Renovate Club),
  * FAQ section with JSON-LD, and persona-targeted content sections.
  */
 
@@ -17,7 +17,7 @@ test.describe("Comparatif page — /comparatif", () => {
     const h1 = page.locator("h1");
     await expect(h1).toBeVisible();
     await expect(h1).toContainText("Comparatif");
-    await expect(h1).toContainText("Versiroom");
+    await expect(h1).toContainText("Versimo");
     await expect(h1).toContainText("Gepetto");
   });
 
@@ -27,11 +27,11 @@ test.describe("Comparatif page — /comparatif", () => {
     const table = page.locator("table");
     await expect(table).toBeVisible();
 
-    // Table headers: Critere, Versiroom, Gepetto, InterieurAI, Renovate Club
+    // Table headers: Critere, Versimo, Gepetto, InterieurAI, Renovate Club
     const headers = table.locator("th");
     await expect(headers).toHaveCount(5);
 
-    await expect(headers.nth(1)).toContainText("Versiroom");
+    await expect(headers.nth(1)).toContainText("Versimo");
     await expect(headers.nth(2)).toContainText("Gepetto");
     await expect(headers.nth(3)).toContainText("InterieurAI");
     await expect(headers.nth(4)).toContainText("Renovate Club");
@@ -54,7 +54,7 @@ test.describe("Comparatif page — /comparatif", () => {
     expect(count).toBeGreaterThanOrEqual(8);
   });
 
-  test("Versiroom price is displayed in the table", async ({ page }) => {
+  test("Versimo price is displayed in the table", async ({ page }) => {
     const table = page.locator("table");
     await expect(table).toContainText("9,90");
   });
@@ -80,7 +80,7 @@ test.describe("Comparatif page — /comparatif", () => {
   test("persona sections mention Claire, Thomas and Lea", async ({
     page,
   }) => {
-    await expect(page.locator("text=Pour qui est fait Versiroom")).toBeVisible();
+    await expect(page.locator("text=Pour qui est fait Versimo")).toBeVisible();
     await expect(page.locator("text=Claire")).toBeVisible();
     await expect(page.locator("text=Thomas")).toBeVisible();
   });
@@ -89,7 +89,7 @@ test.describe("Comparatif page — /comparatif", () => {
     page,
   }) => {
     await expect(
-      page.locator("text=Ce qui distingue Versiroom")
+      page.locator("text=Ce qui distingue Versimo")
     ).toBeVisible();
     await expect(page.locator("text=Pipeline 2 passes")).toBeVisible();
   });

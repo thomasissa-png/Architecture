@@ -1,4 +1,4 @@
-# Revue croisee — Versiroom F6 (Annonce immobiliere publique) + Session complete — 2026-03-25
+# Revue croisee — Versimo F6 (Annonce immobiliere publique) + Session complete — 2026-03-25
 
 ## Resume executif (non-technique)
 
@@ -23,13 +23,13 @@ Coherence globale : 7/10. L'architecture code est propre (lib/annonce.ts suit le
 | 5 | Photos groupees par room_type avec labels FR | **OK** | ROOM_TYPE_LABELS + tri logique ROOM_ORDER |
 | 6 | Infos cles : surface, pieces, prix formate, localisation | **PARTIEL** | Affiche correctement QUAND present, mais edge case prix=0/null non gere (voir #14) |
 | 7 | Contact marchand : tel + email pro | **OK** | Tel en clair, email click-to-reveal (anti-scraping) |
-| 8 | Logo + couleurs marchand | **PARTIEL** | Logo affiche si present, fallback = logo "Versiroom" au lieu des initiales specifiees |
+| 8 | Logo + couleurs marchand | **PARTIEL** | Logo affiche si present, fallback = logo "Versimo" au lieu des initiales specifiees |
 | 9 | Bouton "Copier le lien" fonctionnel + toast | **OK** | Feedback "Copie !" avec timeout 2s |
 | 10 | Bouton "Copier la description" + disclaimer | **OK** | Disclaimer ajoute automatiquement dans le texte copie |
 | 11 | Bouton "Partager WhatsApp" fonctionnel | **OK** | navigator.share natif + fallback wa.me |
 | 12 | Bouton "Telecharger photos" ZIP (JSZip) | **PARTIEL** | ZIP fonctionne mais pas de barre de progression (specs : "7/15") |
 | 13 | Nom ZIP `annonce-{ville}-{surface}m2.zip` | **OK** | Avec fallback UUID si ville/surface absents |
-| 14 | Footer "Annonce generee par Versiroom" | **OK** | Present avec lien vers le site |
+| 14 | Footer "Annonce generee par Versimo" | **OK** | Present avec lien vers le site |
 | 15 | Gate Pro+ (hasProAccess) | **OK** | Verifie cote serveur dans POST /api/annonce |
 | 16 | Responsive mobile-first | **OK** | Grille 2 cols mobile / 3 cols desktop, touch targets 44px |
 | 17 | data-testid sur elements interactifs | **OK** | 13 data-testid presents (titre, prix, galerie, description, contact, tel, actions, copy-link, copy-desc, whatsapp, download-zip, reveal-email, email-revealed) |
@@ -46,7 +46,7 @@ Coherence globale : 7/10. L'architecture code est propre (lib/annonce.ts suit le
 | E5 | Telephone absent → masquer | **OK** | Conditional render `merchant?.telephone &&` |
 | E6 | Email absent → masquer | **OK** | Conditional render `contactEmail &&` |
 | E7 | Aucun contact → "Coordonnees sur demande" | **KO** | Si tel ET email null, le bloc contact est masque. Pas de message "Coordonnees disponibles sur demande" |
-| E8 | Logo absent → initiales dans carre couleur | **KO** | Fallback affiche "Versiroom" au lieu des initiales du nom d'entreprise |
+| E8 | Logo absent → initiales dans carre couleur | **KO** | Fallback affiche "Versimo" au lieu des initiales du nom d'entreprise |
 | E9 | Photos supprimees apres creation → galerie sans planter | **OK** | `.filter(p => p.output_image_key)` protege |
 
 ### Edge cases securite
@@ -76,7 +76,7 @@ Coherence globale : 7/10. L'architecture code est propre (lib/annonce.ts suit le
 | f6-annonce-specs.md §8 "Annonce archivee → 404, ne pas reveler l'existence" | app/api/annonce/[uuid]/route.ts retourne `{ status: 410, error: "Annonce expiree ou archivee" }` + page affiche "Annonce expiree" avec date | **L'API et la page revelent que l'annonce existe et quand elle a ete creee** | BLOQUANT | Retourner 404 avec message identique a "UUID inexistant". Supprimer la date de creation de la page archivee. |
 | pricing-strategy.md §feature gating : "Annonce publique (F6) : Oui (illimite) pour Pro/Studio" | app/pricing/page.tsx PACKS : aucune mention de F6/annonce dans les features Pro ni Studio | **Thomas ne sait pas qu'il a acces a F6 en achetant Pro** | MAJEUR | Ajouter "Annonces immobilieres publiques" dans les features Pro et Studio sur la page pricing |
 | f6-annonce-specs.md §10 R1 : "disclaimer IA visible sur la page annonce ET dans la description copiee" | app/annonce/[uuid]/page.tsx : disclaimer dans le footer mais PAS dans la zone de description visible. AnnoncePublicView : disclaimer dans le texte copie OK | **Le disclaimer est presque invisible en footer (text-muted/40, taille xs). Pas dans la section description elle-meme.** | MINEUR | Acceptable en MVP — le disclaimer est present dans le footer ET dans le texte copie. Amelioration V2 : l'integrer aussi en fin de description affichee. |
-| f6-annonce-specs.md §8 edge case "Logo absent → initiales du nom de l'entreprise dans un carre de la couleur principale" | app/annonce/[uuid]/page.tsx : fallback affiche "Versiroom" en texte | **Le fallback ne respecte pas les specs** | MINEUR | Implementer le fallback initiales avec couleur_principale du merchant |
+| f6-annonce-specs.md §8 edge case "Logo absent → initiales du nom de l'entreprise dans un carre de la couleur principale" | app/annonce/[uuid]/page.tsx : fallback affiche "Versimo" en texte | **Le fallback ne respecte pas les specs** | MINEUR | Implementer le fallback initiales avec couleur_principale du merchant |
 | f6-annonce-specs.md §3 "F2 (filtre room_type) integre au scope F6" | app/ma-galerie/page.tsx : filtre room_type PRESENT (data-testid filter-room-type, param roomType) | **Pas de contradiction — F2 EST implemente** | N/A | Conforme |
 | f4-final-verdict-thomas.md "Score 8.8/10, F2 seule friction bloquante" | f6-annonce-specs.md "Score post-F6 : 9.3/10" | **Coherent** — F6 ajoute les gains + F2 resolu | N/A | Conforme |
 
@@ -112,7 +112,7 @@ Coherence globale : 7/10. L'architecture code est propre (lib/annonce.ts suit le
 | Body scroll lock | **OK** — overflow: hidden quand ouvert, cleanup en return |
 | Clavier virtuel iOS | **OK** — max-h-[90dvh] + overflow-y-auto |
 | ARIA | **OK** — role="dialog", aria-modal, aria-labelledby, role="alert" |
-| Design system Versiroom | **OK** — bg-background, text-foreground, ring-sage, rounded-3xl, font-light |
+| Design system Versimo | **OK** — bg-background, text-foreground, ring-sage, rounded-3xl, font-light |
 
 ### Recherche entreprise (compte/page.tsx)
 
@@ -134,7 +134,7 @@ Coherence globale : 7/10. L'architecture code est propre (lib/annonce.ts suit le
 3. **Edge case "Prix sur demande"** quand sale_price est null/0
 4. **Edge case "Description a venir"** avec lien "Completer depuis la fiche bien" quand description null
 5. **Edge case "Coordonnees sur demande"** quand tel ET email null
-6. **Fallback logo = initiales** dans carre couleur (affiche "Versiroom" a la place)
+6. **Fallback logo = initiales** dans carre couleur (affiche "Versimo" a la place)
 7. **Mot de passe oublie** — le bouton existe mais affiche juste un message "bientot disponible" (acceptable en MVP, mais a documenter)
 
 ### Angles morts (aucun agent n'a couvert)

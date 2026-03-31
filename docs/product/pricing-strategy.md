@@ -1,4 +1,4 @@
-# Stratégie de Pricing — Versiroom
+# Stratégie de Pricing — Versimo
 
 > Produit par @product-manager — 2026-03-27 (v3)
 > Refonte fondateur : 3 tiers uniquement (Découverte/Starter/Pro), recharge crédits au prix du tier souscrit.
@@ -17,11 +17,11 @@
 | **REimagineHome (US)** | Abonnement | $14-99/mois | 3 designs gratuits | Agents immo US |
 | **Collov AI (US)** | Mixte | $0,17/photo — $16-39/mois | 300+ marques, MLS-compliant | Grands réseaux US |
 
-**Enseignement** : le marché FR est dominé par l'abonnement. Pedra (29€/mois) est le benchmark EU. Versiroom adopte un modèle 3 tiers avec recharge — simplicité + flexibilité.
+**Enseignement** : le marché FR est dominé par l'abonnement. Pedra (29€/mois) est le benchmark EU. Versimo adopte un modèle 3 tiers avec recharge — simplicité + flexibilité.
 
 ---
 
-## 2. Les 3 tiers Versiroom
+## 2. Les 3 tiers Versimo
 
 ### Décision fondateur (non négociable)
 

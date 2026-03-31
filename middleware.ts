@@ -20,7 +20,7 @@ export async function middleware(request: NextRequest) {
 
   const token = await getToken({
     req: request,
-    secret: process.env.NEXTAUTH_SECRET || "versiroom-fallback-secret-change-me-in-production",
+    secret: process.env.NEXTAUTH_SECRET || "versimo-fallback-secret-change-me-in-production",
   });
 
   if (!token) {

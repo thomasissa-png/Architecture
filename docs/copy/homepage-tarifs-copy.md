@@ -267,7 +267,7 @@ Essayez avec 3 photos — sans carte bancaire.
   - Caption galerie Thomas [BLOC 2B] : "1 500€" conservé (citation directe Thomas) — plus impactant que "200-500€/planche" en contexte visuel.
   - Teaser Mode Marchand [BLOC 3] : CTA "Voir le Mode Marchand" pointe vers ancre #mode-marchand dans /pricing — pas vers une page inexistante.
   - Feature Mode Marchand [BLOC 5] : 3 lignes distinctes pour maximiser la lisibilité en feature list (pas un paragraphe).
-  - Note ROI pack Pro [BLOC 5] : sous la feature list, style sage ou italique — pas en badge rouge ou accent fort (contraire au ton Versiroom).
+  - Note ROI pack Pro [BLOC 5] : sous la feature list, style sage ou italique — pas en badge rouge ou accent fort (contraire au ton Versimo).
   - CTA gratuit [BLOC 6] : formulation avec tiret "—" pour marquer la respiration — cohérent avec le style typographique de brand-voice.md.
 - Points d'attention :
   - SECTION 2 : les images de la galerie doivent être issues de générations réelles notées > 7,5/10 — voir CLAUDE.md Sprint 17b pour les candidats (#28 Scandinave 8.4/10, #31 Art Déco 8.3/10). Ne pas utiliser de visuels de démonstration synthétiques.

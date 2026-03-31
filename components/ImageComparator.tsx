@@ -44,7 +44,7 @@ function addWatermark(dataUri: string): Promise<Blob> {
       ctx.textAlign = "right";
       const padding = Math.round(img.width * 0.015);
       ctx.fillText(
-        "Généré par IA — Versiroom",
+        "Généré par IA — Versimo",
         img.width - padding,
         img.height - padding
       );
@@ -78,7 +78,7 @@ export default function ImageComparator({
     const blobUrl = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = blobUrl;
-    link.download = `versiroom-${Date.now()}.jpg`;
+    link.download = `versimo-${Date.now()}.jpg`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -89,7 +89,7 @@ export default function ImageComparator({
     if (!navigator.share) return;
     try {
       const blob = dataUriToBlob(generatedUrl);
-      const file = new File([blob], "versiroom.png", { type: "image/png" });
+      const file = new File([blob], "versimo.png", { type: "image/png" });
       await navigator.share({
         title: "Mon visuel VisiRénov",
         text: "Découvrez cette visualisation d\u2019intérieur générée par IA",
@@ -118,7 +118,7 @@ export default function ImageComparator({
 
   const handleWhatsApp = async () => {
     const blob = dataUriToBlob(generatedUrl);
-    const file = new File([blob], "versiroom.png", { type: "image/png" });
+    const file = new File([blob], "versimo.png", { type: "image/png" });
 
     // Mobile: navigator.share with files sends the image directly via WhatsApp
     if (navigator.share && navigator.canShare?.({ files: [file] })) {
@@ -143,7 +143,7 @@ export default function ImageComparator({
       // Clipboard not available — proceed anyway
     }
     const text = encodeURIComponent(
-      "Découvre ce visuel d\u2019intérieur généré par VisiRénov \ud83c\udfe0 \u2014 versiroom.fr"
+      "Découvre ce visuel d\u2019intérieur généré par VisiRénov \ud83c\udfe0 \u2014 versimo.fr"
     );
     window.open(`https://wa.me/?text=${text}`, "_blank", "noopener");
   };

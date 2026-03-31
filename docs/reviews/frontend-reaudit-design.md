@@ -1,4 +1,4 @@
-# Re-audit Design Frontend — Versiroom
+# Re-audit Design Frontend — Versimo
 **Date :** 2026-03-25 | **Agent :** @design | **Scope :** globals.css, page.tsx (pricing), AuthModal.tsx, compte/page.tsx, MerchantMode.tsx, mes-dossiers/page.tsx
 
 ---

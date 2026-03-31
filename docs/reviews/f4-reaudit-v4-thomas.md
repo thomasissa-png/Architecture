@@ -110,7 +110,7 @@ Le bouton "Associer" dans /ma-galerie est `opacity-0 group-hover:opacity-100` (l
 
 **8.7/10 — seuil 9/10 non atteint. 4 corrections pour franchir le cap.**
 
-Le saut qualitatif V3→V4 est réel et concentré sur le critère 9 (retrouvabilité). Versiroom n'est plus un outil de génération one-shot : c'est un outil de gestion de portefeuille immobilier. Pour Thomas qui a 8-12 opérations simultanées, c'est la différence entre "un gadget fun" et "un outil de travail quotidien".
+Le saut qualitatif V3→V4 est réel et concentré sur le critère 9 (retrouvabilité). Versimo n'est plus un outil de génération one-shot : c'est un outil de gestion de portefeuille immobilier. Pour Thomas qui a 8-12 opérations simultanées, c'est la différence entre "un gadget fun" et "un outil de travail quotidien".
 
 Les 4 corrections restantes sont toutes techniquement simples (CSS, filtre API, message UX, ZIP). Aucune ne nécessite de refonte architecturale. La correction F1 (mobile hover) est la seule bloquante pour l'usage terrain iPhone.
 

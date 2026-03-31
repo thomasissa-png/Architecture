@@ -1,4 +1,4 @@
-# Audit UX Frontend — Versiroom
+# Audit UX Frontend — Versimo
 **Agent UX — 25 mars 2026**
 **Scope : desktop ET mobile — 10 fichiers analysés**
 

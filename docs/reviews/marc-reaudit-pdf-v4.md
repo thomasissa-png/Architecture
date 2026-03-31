@@ -66,9 +66,9 @@ Diff exact dans `app/dossier/[uuid]/page.tsx` :
 -   : undefined;
 + const ogImages = heroPhoto?.output_image_key
 +   ? [{ url: `${BASE_URL}/api/logs/image?path=...`, ... }]
-+   : [{ url: `${BASE_URL}/og-default.jpg`, width: 1200, height: 630, alt: "Versiroom" }];
++   : [{ url: `${BASE_URL}/og-default.jpg`, width: 1200, height: 630, alt: "Versimo" }];
 ```
-Nécessite un fichier `public/og-default.jpg` (photo meublée générique Versiroom, 1200×630px).
+Nécessite un fichier `public/og-default.jpg` (photo meublée générique Versimo, 1200×630px).
 
 **CR2 — Page "Votre interlocuteur" : pas de lien cliquable sur le tél. et l'email (basse, +0.2 pt, critère 6)**
 Les coordonnées de la dernière page sont du texte passif — pas d'annotations `tel:` / `mailto:`.

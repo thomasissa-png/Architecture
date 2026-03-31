@@ -1,4 +1,4 @@
-# Audit UX — Pages connectées Versiroom — Batch 1
+# Audit UX — Pages connectées Versimo — Batch 1
 
 > Agent : @ux — 2026-03-28
 > Périmètre : 5 pages connectées principales
@@ -88,7 +88,7 @@
 - PASS : grille `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`. Formulaire en `grid-cols-1 sm:grid-cols-2`. OK.
 
 ### Navigation / liens retour
-- P1 : le logo Versiroom fait office de retour vers `/` mais ce n'est pas évident sur mobile. Pas bloquant, mais un lien "← Accueil" en pied de page serait utile.
+- P1 : le logo Versimo fait office de retour vers `/` mais ce n'est pas évident sur mobile. Pas bloquant, mais un lien "← Accueil" en pied de page serait utile.
 - P2 : après création de bien, redirection `window.location.href` (ligne 143) — perd l'état. Préférer `router.push`. Impact mineur.
 
 ### Autres

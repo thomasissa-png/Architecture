@@ -227,7 +227,7 @@ export default function AdminPage() {
     return (
       <div className="flex items-center justify-center min-h-screen font-[Inter,sans-serif] bg-background">
         <form onSubmit={handleLogin} className="bg-white px-12 py-10 rounded-2xl border border-foreground/10 text-center max-w-[360px] w-full">
-          <h1 className="text-xl font-semibold text-foreground mb-2">Versiroom Admin</h1>
+          <h1 className="text-xl font-semibold text-foreground mb-2">Versimo Admin</h1>
           <p className="text-[13px] text-foreground/50 mb-6">Accès restreint</p>
           <input
             type="password"
@@ -251,32 +251,32 @@ export default function AdminPage() {
 
   const showEmptyGenerations = !loading && !error && logs.length === 0 && activeTab === "generations";
 
-  const auditPromptText = `Fais appel aux agents Architecte d'Interieur (Yann Duval), Expert IA Image (Lucas Moreau) et Paysagiste (Camille Verdier, pour les generations outdoor) pour auditer les generations recentes de production.
+  const auditPromptText = `Fais appel aux agents Architecte d'Intérieur (Yann Duval), Expert IA Image (Lucas Moreau) et Paysagiste (Camille Verdier, pour les générations outdoor) pour auditer les générations récentes de production.
 
-Methode d'acces aux donnees de production :
-- Utilise WebFetch sur https://architecture-toum92.replit.app/api/logs?token=allezpsg pour recuperer TOUS les logs (style, duree, succes, prompts construits, chemins images)
-- Pour les images : telecharge-les avec curl dans /tmp/audit-images/ :
-  curl -s -o /tmp/audit-images/{id}_{type}.jpg "https://architecture-toum92.replit.app/api/logs/image?path={image_path}&token=allezpsg"
+Méthode d'accès aux données de production :
+- Utilise WebFetch sur https://versimo.fr/api/logs?token=allezpsg pour récupérer TOUS les logs (style, durée, succès, prompts construits, chemins images)
+- Pour les images : télécharge-les avec curl dans /tmp/audit-images/ :
+  curl -s -o /tmp/audit-images/{id}_{type}.jpg "https://versimo.fr/api/logs/image?path={image_path}&token=allezpsg"
   (image_path = input_image_path, pass1_image_path, output_image_path de chaque log)
 - Puis lis les images avec Read tool pour les analyser visuellement (Read supporte les images JPG/PNG)
-- IMPORTANT : decoupe l'audit en batches de 6 generations max par agent pour eviter les timeouts
+- IMPORTANT : découpe l'audit en batches de 6 générations max par agent pour éviter les timeouts
 
 Workflow d'audit :
-1. Recupere les logs via l'API production (WebFetch sur /api/logs?token=allezpsg)
-2. Identifie les generations NOUVELLES depuis le dernier audit (voir docs/reviews/audit-visuel-* pour le dernier batch audite)
-3. Telecharge TOUTES les images (input, pass1, output) dans /tmp/audit-images/
-4. Pour chaque generation, examine visuellement avec Read :
+1. Récupère les logs via l'API production (WebFetch sur /api/logs?token=allezpsg)
+2. Identifie les générations NOUVELLES depuis le dernier audit (voir docs/reviews/audit-visuel-* pour le dernier batch audité)
+3. Télécharge TOUTES les images (input, pass1, output) dans /tmp/audit-images/
+4. Pour chaque génération, examine visuellement avec Read :
    - Les images INPUT, PASSE 1 et OUTPUT
    - Le prompt construit passe 1 (built_prompt_pass1) et passe 2 (built_prompt_pass2)
-   - Le style utilise, la duree par passe, le modele utilise
-5. Yann evalue (grille 10 criteres, fidelite et credibilite comptent double) : fidelite stylistique, vocabulaire visuel, hero pieces, coherence matieres, eclairage, credibilite pro, completude, differenciation, adaptabilite spatiale, potentiel photorealiste
-6. Lucas evalue (grille 10 criteres, preservation et rendu comptent double) : preservation architecturale, contraintes lumiere, vocabulaire photo, structure prompt, negative prompting, compatibilite multi-modeles, coherence I/O, richesse descriptive, adaptabilite conditions variables, rendu final credible
-7. Camille evalue les generations outdoor (grille 10 criteres) : fidelite style paysager, vocabulaire vegetal, mobilier outdoor, materiaux exterieurs, eclairage naturel, credibilite pro, completude, differenciation, integration environnement, potentiel photorealiste
-8. Note /10 par generation + classement comparatif
-9. Patterns recurrents (problemes communs a plusieurs generations)
-10. Plan d'amelioration prioritaire (P0-P4) avec corrections concretes de prompts/parametres
+   - Le style utilisé, la durée par passe, le modèle utilisé
+5. Yann évalue (grille 10 critères, fidélité et crédibilité comptent double) : fidélité stylistique, vocabulaire visuel, hero pièces, cohérence matières, éclairage, crédibilité pro, complétude, différenciation, adaptabilité spatiale, potentiel photoréaliste
+6. Lucas évalue (grille 10 critères, préservation et rendu comptent double) : préservation architecturale, contraintes lumière, vocabulaire photo, structure prompt, negative prompting, compatibilité multi-modèles, cohérence I/O, richesse descriptive, adaptabilité conditions variables, rendu final crédible
+7. Camille évalue les générations outdoor (grille 10 critères) : fidélité style paysager, vocabulaire végétal, mobilier outdoor, matériaux extérieurs, éclairage naturel, crédibilité pro, complétude, différenciation, intégration environnement, potentiel photoréaliste
+8. Note /10 par génération + classement comparatif
+9. Patterns récurrents (problèmes communs à plusieurs générations)
+10. Plan d'amélioration prioritaire (P0-P4) avec corrections concrètes de prompts/paramètres
 
-Demande type : "Fais appel aux agents Architecte d'Interieur, Expert IA Image et Paysagiste pour auditer toutes les generations depuis le dernier audit. Telecharge les images dans /tmp/audit-images/ et analyse-les visuellement. Donne la note de chaque generation, identifie les patterns recurrents, et propose un plan d'amelioration prioritaire."`;
+Demande type : "Fais appel aux agents Architecte d'Intérieur, Expert IA Image et Paysagiste pour auditer toutes les générations depuis le dernier audit. Télécharge les images dans /tmp/audit-images/ et analyse-les visuellement. Donne la note de chaque génération, identifie les patterns récurrents, et propose un plan d'amélioration prioritaire."`;
 
   return (
     <div className="min-h-screen bg-background">
@@ -284,7 +284,7 @@ Demande type : "Fais appel aux agents Architecte d'Interieur, Expert IA Image et
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-foreground/5">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 py-3 sm:py-4 flex items-center justify-between">
           <a href="/" className="text-xl font-semibold text-foreground tracking-tighter focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm">
-            Versiroom
+            Versimo
           </a>
           <span className="text-xs text-muted font-light">Administration</span>
         </div>

@@ -1,4 +1,4 @@
-# Audit Back-office Admin — Versiroom
+# Audit Back-office Admin — Versimo
 Date : 2026-03-28 | Agent : @ux
 
 ---
@@ -40,7 +40,7 @@ Date : 2026-03-28 | Agent : @ux
 
 | Point | Statut | Détail |
 |---|---|---|
-| Pagination | ABSENT (P1) | `LIMIT 50` hardcodé dans `/api/logs`. Pas de `OFFSET`, pas de `cursor`. Au-delà de 50 générations, les plus anciennes sont invisibles. Versiroom a déjà ~42 générations documentées — la limite va être atteinte rapidement. |
+| Pagination | ABSENT (P1) | `LIMIT 50` hardcodé dans `/api/logs`. Pas de `OFFSET`, pas de `cursor`. Au-delà de 50 générations, les plus anciennes sont invisibles. Versimo a déjà ~42 générations documentées — la limite va être atteinte rapidement. |
 | Indicateur de troncature | ABSENT (P1) | L'UI affiche "X générations" mais ne signale pas que la liste est tronquée à 50. L'utilisateur croit voir tout l'historique. |
 | Recommandation | — | Ajouter un paramètre `?limit=50&offset=0` côté API + bouton "Voir plus" ou pagination simple côté UI. Alternative immédiate : passer `LIMIT` à 200 et documenter. |
 

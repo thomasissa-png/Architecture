@@ -18,9 +18,9 @@ Calibration concurrentielle effectuée sur Gepetto et Renovate Club (WebSearch 2
 
 - Positionnement "Votre pièce meublée, en 90 secondes" — clair, différenciant, aligné brand-platform
 - Pills personas (Architectes / Marchands de biens / Particuliers) visibles au-dessus du H1 — bonne hiérarchie
-- Social proof line ("12 styles · 90 secondes · HD gratuit") — factuelle, sobre, dans le ton Versiroom
+- Social proof line ("12 styles · 90 secondes · HD gratuit") — factuelle, sobre, dans le ton Versimo
 - CTA "Essayer gratuitement" + "3 générations offertes sans CB" — levée de friction correcte
-- Copy sous-titre "Versiroom préserve votre espace — il ne le réinvente pas" — le différenciateur pipeline 2 passes est nommé
+- Copy sous-titre "Versimo préserve votre espace — il ne le réinvente pas" — le différenciateur pipeline 2 passes est nommé
 
 ### Lacunes identifiées
 
@@ -28,13 +28,13 @@ Calibration concurrentielle effectuée sur Gepetto et Renovate Club (WebSearch 2
 Les pills "Marchands de biens" et "Architectes" sont des labels, pas des promesses. Il n'y a aucune mention du ROI économique pour Thomas (200-500€/planche → 29€, -97%), qui est pourtant l'argument le plus tranchant du produit. Un marchand de biens qui atterrit sur la homepage ne comprend pas en 5 secondes ce qu'il gagne à changer de méthode.
 
 **P0 — Le pipeline 2 passes n'est pas expliqué comme différenciateur**
-"Préserve votre espace" est la conclusion, pas l'argument. Ni Claire ni Thomas ne comprennent pourquoi Versiroom est différent des outils génériques qui réinventent la géométrie. Le bénéfice (crédibilité pour vos clients, photos utilisables sur les portails) n'est pas articulé.
+"Préserve votre espace" est la conclusion, pas l'argument. Ni Claire ni Thomas ne comprennent pourquoi Versimo est différent des outils génériques qui réinventent la géométrie. Le bénéfice (crédibilité pour vos clients, photos utilisables sur les portails) n'est pas articulé.
 
 **P1 — Les use-case cards sous le Hero sont trop génériques**
 "Partagez des pistes d'inspiration" (Architectes) et "Précommercialisez vos opérations" (Marchands de biens) sont dans le bon registre mais manquent de spécificité. Claire dit "Je veux un support de conversation avec mon client dès le premier RDV" — ce vocabulaire n'apparaît nulle part. Thomas dit "Si je peux sortir 3 visuels en 10 minutes au lieu de payer 1500€" — cet argument non plus.
 
 **P1 — Zéro social proof qualitative**
-Il n'y a pas de témoignage, pas de chiffre d'usage, pas de logos clients. Gepetto affiche Orpi, Century 21, Coldwell Banker sur sa page. Renovate Club revendique 10 000 utilisateurs. Versiroom est en alpha — mais même une citation de test utilisateur ou un chiffre de générations réalisées renforcerait la crédibilité.
+Il n'y a pas de témoignage, pas de chiffre d'usage, pas de logos clients. Gepetto affiche Orpi, Century 21, Coldwell Banker sur sa page. Renovate Club revendique 10 000 utilisateurs. Versimo est en alpha — mais même une citation de test utilisateur ou un chiffre de générations réalisées renforcerait la crédibilité.
 
 **P2 — Mode Marchand (F4) non visible sur la homepage**
 Le toggle Standard / Mode Marchand n'apparaît que pour les utilisateurs connectés. Un Thomas non connecté ne sait pas que cette feature existe. C'est la feature la plus différenciante pour son profil.
@@ -96,7 +96,7 @@ Format recommandé : slider avant/après (identique au comparateur in-app) sur 3
 
 **Étape 2 (P1 — après lancement F6)** : Page publique /examples dédiée marchands de biens.
 
-Quand F6 (annonces publiques) sera live, chaque annonce générée par Versiroom est une démo vivante. Agréger 5-10 des meilleures annonces publiques sur une page /examples avec un filtre par type de bien. Coût de production : nul (contenu généré par les utilisateurs). Valeur SEO : forte ("home staging virtuel appartement T3 exemple", "dossier marchand de biens IA exemple").
+Quand F6 (annonces publiques) sera live, chaque annonce générée par Versimo est une démo vivante. Agréger 5-10 des meilleures annonces publiques sur une page /examples avec un filtre par type de bien. Coût de production : nul (contenu généré par les utilisateurs). Valeur SEO : forte ("home staging virtuel appartement T3 exemple", "dossier marchand de biens IA exemple").
 
 ### Ce qu'il ne faut pas faire
 

@@ -1,4 +1,4 @@
-# Re-audit UX Frontend Versiroom — Post-corrections Sprint N
+# Re-audit UX Frontend Versimo — Post-corrections Sprint N
 
 **Date :** 2026-03-25
 **Agent :** @ux

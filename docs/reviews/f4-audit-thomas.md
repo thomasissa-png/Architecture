@@ -42,7 +42,7 @@ Thomas fait 8-12 opérations par an. Il a besoin de retrouver le dossier du bien
 ### Friction 2 — Prix en crédits sans valeur EUR
 **Impact : majeur**
 
-Au moment du récapitulatif, Thomas voit "Générer le dossier (8 crédits)". Il ne sait pas ce que ça lui coûte en euros. Il ne peut pas faire le calcul mental "est-ce que c'est moins cher que d'appeler mon prestataire ?". La proposition de valeur centrale de Versiroom (gain vs prestataire 200-500€/planche) ne peut pas être ressentie sans cet ancrage.
+Au moment du récapitulatif, Thomas voit "Générer le dossier (8 crédits)". Il ne sait pas ce que ça lui coûte en euros. Il ne peut pas faire le calcul mental "est-ce que c'est moins cher que d'appeler mon prestataire ?". La proposition de valeur centrale de Versimo (gain vs prestataire 200-500€/planche) ne peut pas être ressentie sans cet ancrage.
 
 > "Là je me dis... 8 crédits, ça veut rien dire. C'est combien en vrai ? Je vais pas cliquer sur 'Générer' sans savoir ce que ça me coûte."
 

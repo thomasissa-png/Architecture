@@ -1,8 +1,8 @@
-# Audit technique frontend — Versiroom — 2026-03-25
+# Audit technique frontend — Versimo — 2026-03-25
 
 ## Resume executif
 
-L'ensemble du frontend Versiroom est fonctionnel et bien structure. Le code est majoritairement propre avec un bon usage de TypeScript, des patterns React corrects et une attention reelle portee a l'UX (focus traps, ARIA, scroll-lock sur modales). Cependant, plusieurs problemes de severite variable ont ete identifies : des pages protegees sans verification serveur (auth bypass cote client uniquement), des `catch` vides qui masquent des erreurs, l'absence quasi totale de `next/image` (impact performance et SEO), et des risques XSS potentiels sur les images. Le score global est 6.8/10 — solide pour un MVP, insuffisant pour une production exposee.
+L'ensemble du frontend Versimo est fonctionnel et bien structure. Le code est majoritairement propre avec un bon usage de TypeScript, des patterns React corrects et une attention reelle portee a l'UX (focus traps, ARIA, scroll-lock sur modales). Cependant, plusieurs problemes de severite variable ont ete identifies : des pages protegees sans verification serveur (auth bypass cote client uniquement), des `catch` vides qui masquent des erreurs, l'absence quasi totale de `next/image` (impact performance et SEO), et des risques XSS potentiels sur les images. Le score global est 6.8/10 — solide pour un MVP, insuffisant pour une production exposee.
 
 ## Resume technique
 

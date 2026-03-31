@@ -16,13 +16,13 @@ Thomas vient d'acheter un T3 de 58 m² à Bordeaux-Chartrons. Il prend ses photo
 
 | # | Critère | Note /10 | Justification synthétique |
 |---|---|---|---|
-| 1 | Crédibilité professionnelle | 6/10 | Page web propre, PDF sobre — mais le footer "Powered by Versiroom" sur chaque page PDF et les caractéristiques vides (DPE, charges absents par défaut) trahissent une page auto-générée |
+| 1 | Crédibilité professionnelle | 6/10 | Page web propre, PDF sobre — mais le footer "Powered by Versimo" sur chaque page PDF et les caractéristiques vides (DPE, charges absents par défaut) trahissent une page auto-générée |
 | 2 | Complétude des informations | 4/10 | Manque critique : DPE/GES absents du dossier, charges copro absentes, conditions de vente absentes, disponibilité absente, honoraires absents. L'annonce affiche ces données SI Thomas les a saisies, mais le dossier ne les affiche que via `linkedProperty` — conditionnel non garanti |
 | 3 | Qualité rédactionnelle | 7/10 | Le system prompt de génération est solide : anti-superlatifs, structure en 4 blocs, 200-350 mots. Problème majeur : la description est générée EN PARALLÈLE avec DVF, donc `prixMoyenM2` est toujours `null` à l'appel — l'IA ne dispose pas du prix marché pour contextualiser l'accroche investisseur |
 | 4 | Mise en valeur du bien | 5/10 | Visuels avant/après bien intégrés dans le dossier (comparateur). Mais aucune section "potentiel" ni "projection post-rénovation" — or c'est le cœur de la valeur ajoutée d'un dossier marchand de biens (benchmark section 6) |
 | 5 | Facilité de partage | 7/10 | Lien public 30 jours OK, boutons ShareButtons présents, PDF téléchargeable — mais l'annonce est en `noindex, nofollow` ce qui empêche le partage via lien vers Google (pas critique pour le use case WhatsApp) et le PDF ne peut pas être envoyé depuis le mobile sans passer par l'interface web |
 | 6 | Conformité légale | 3/10 | CRITIQUE — Le disclaimer IA est présent ("Visuels non contractuels") mais : (1) Aucun DPE/GES obligatoire dans la description générée par IA alors que la loi Climat 2021 l'impose, (2) Le disclaimer EU AI Act "Visuels générés par IA" est dans le footer PDF mais absent de la page dossier web, (3) Pas de mention "logement à consommation énergétique excessive" si DPE F/G, (4) Charges de copropriété absentes du document envoyé aux acquéreurs |
-| 7 | Différenciation vs concurrence | 7/10 | Le comparateur avant/après dans le dossier est un vrai différenciateur vs un home stager classique qui livrerait uniquement les visuels "après". Le PDF est propre et professionnel. Mais l'absence de section "potentiel chiffré" nivelle Versiroom par le bas vs les meilleurs dossiers de marchands |
+| 7 | Différenciation vs concurrence | 7/10 | Le comparateur avant/après dans le dossier est un vrai différenciateur vs un home stager classique qui livrerait uniquement les visuels "après". Le PDF est propre et professionnel. Mais l'absence de section "potentiel chiffré" nivelle Versimo par le bas vs les meilleurs dossiers de marchands |
 | 8 | Adaptabilité | 4/10 | Thomas ne peut PAS modifier la description générée avant envoi — elle est figée en base. Il n'y a pas d'éditeur inline. Il ne peut pas ajouter une note manuscrite, un commentaire de travaux, un prix révisé sur le dossier |
 | 9 | Visuels | 8/10 | L'image hero full-width dans l'annonce est efficace. La galerie groupée par pièce avec navigation RoomNav est au niveau des meilleurs portails. Le PDF avant/après côte à côte est lisible et sobre. Point de friction : le style IA (nom technique "scandinavian") apparaît dans le header de chaque page PDF au lieu du nom commercial |
 | 10 | Impact conversion | 5/10 | L'annonce manque d'un CTA fort. Le ContactSticky est là mais il est discret. Il n'y a pas de bouton "Demander une visite" ni de formulaire intégré. L'acquéreur qui reçoit le lien WhatsApp ne sait pas quoi faire ensuite hormis appeler — et encore, seulement si Thomas a renseigné son téléphone dans le profil marchand |
@@ -47,7 +47,7 @@ Thomas vient d'acheter un T3 de 58 m² à Bordeaux-Chartrons. Il prend ses photo
 - Correction : ajouter dans le system prompt une instruction explicite : si le DPE n'est pas fourni, conclure la description par une ligne du type "Diagnostic énergétique (DPE) à compléter par le vendeur."
 
 **P0.3 — Disclaimer EU AI Act absent de la page dossier web**
-- Le disclaimer est dans le footer PDF (correct) et en pied de page de l'annonce web (correct) mais la page `/dossier/[uuid]` n'a qu'un footer générique "Projection d'aménagement réalisée par Versiroom — le bien est livré brut. Visuels non contractuels."
+- Le disclaimer est dans le footer PDF (correct) et en pied de page de l'annonce web (correct) mais la page `/dossier/[uuid]` n'a qu'un footer générique "Projection d'aménagement réalisée par Versimo — le bien est livré brut. Visuels non contractuels."
 - L'EU AI Act Art. 50 exige que l'utilisateur soit informé qu'il interagit avec un contenu généré par IA. La formulation est trop passive et ne mentionne pas explicitement l'IA.
 - Correction : remplacer par "Visuels d'aménagement générés par intelligence artificielle — le bien est livré brut. Ces images sont à titre indicatif et ne sont pas contractuelles."
 
@@ -190,7 +190,7 @@ Ce qu'il dirait après les corrections P0+P1 :
 
 | Agent proposé | Type | Rôle | Justification | Priorité |
 |---|---|---|---|---|
-| @validateur-legal-immo | Validateur | Vérifier la conformité de chaque champ obligatoire (DPE, GES, mentions légales loi Climat 2021, EU AI Act Art. 50) dans les pages annonce, dossier et PDF | La non-conformité DPE expose Thomas à une amende et nuit à la crédibilité de Versiroom | Haute |
+| @validateur-legal-immo | Validateur | Vérifier la conformité de chaque champ obligatoire (DPE, GES, mentions légales loi Climat 2021, EU AI Act Art. 50) dans les pages annonce, dossier et PDF | La non-conformité DPE expose Thomas à une amende et nuit à la crédibilité de Versimo | Haute |
 | @testeur-thomas-mobile | Testeur persona | Simuler le parcours complet de Thomas sur iPhone 15 Pro (photos → dossier → envoi WhatsApp) et évaluer chaque friction | Thomas fait 80% de son usage sur mobile — les frictions desktop ne se voient pas en audit statique | Haute |
 
 → Handoff @agent-factory : créer ces agents à partir des specs ci-dessus.

@@ -1,8 +1,8 @@
-# Revue technique workflow complet -- Versiroom -- 2026-03-25
+# Revue technique workflow complet -- Versimo -- 2026-03-25
 
 ## Resume executif (non-technique)
 
-Le codebase Versiroom est structurellement sain. Les routes API sont coherentes, les migrations DB sont idempotentes, le middleware protege les bonnes routes, et les composants UI sont bien structures. Un bug d'affichage a ete detecte dans le composant DossierCaracteristiques (l'etage affiche du texte brut JSX au lieu du caractere accentue). Le middleware presente un risque operationnel si la variable NEXTAUTH_SECRET n'est pas definie en production. Aucun blocage critique pour avancer.
+Le codebase Versimo est structurellement sain. Les routes API sont coherentes, les migrations DB sont idempotentes, le middleware protege les bonnes routes, et les composants UI sont bien structures. Un bug d'affichage a ete detecte dans le composant DossierCaracteristiques (l'etage affiche du texte brut JSX au lieu du caractere accentue). Le middleware presente un risque operationnel si la variable NEXTAUTH_SECRET n'est pas definie en production. Aucun blocage critique pour avancer.
 
 ## Resume technique
 
@@ -51,7 +51,7 @@ Le codebase Versiroom est structurellement sain. Les routes API sont coherentes,
 
 | Composant | Statut | Detail |
 |---|---|---|
-| `ContactSticky.tsx` | OK | Props bien typees (telephone/email/raisonSociale optionnels). z-index `z-[95]` -- inferieur au Lightbox `z-[100]`, pas de conflit. Fallback vers `contact@versiroom.fr` si aucun contact. `pointer-events-none` sur le conteneur + `pointer-events-auto` sur le bouton = bon pattern. |
+| `ContactSticky.tsx` | OK | Props bien typees (telephone/email/raisonSociale optionnels). z-index `z-[95]` -- inferieur au Lightbox `z-[100]`, pas de conflit. Fallback vers `contact@versimo.fr` si aucun contact. `pointer-events-none` sur le conteneur + `pointer-events-auto` sur le bouton = bon pattern. |
 | `Lightbox.tsx` | OK | z-index `z-[100]` (superieur a ContactSticky z-95 et RoomNav z-40). Navigation clavier (Escape, fleches). Swipe tactile. Lock body scroll avec cleanup. Fermeture par backdrop click. `stopPropagation` sur l'image et les boutons. |
 | `RoomNav.tsx` | OK | Pills horizontales avec overflow scroll. Sticky `top-[49px]` aligne sous le header. z-index `z-40`. `scrollIntoView` smooth. Masque si 1 seule piece (`rooms.length <= 1`). |
 | `ShareButtons.tsx` | OK | Clipboard API avec try/catch. Hydration-safe : `canShare` initialise dans `useEffect` (pas de mismatch SSR). Fallback WhatsApp si `navigator.share` echoue ou absent. |

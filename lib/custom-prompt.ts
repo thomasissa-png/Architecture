@@ -182,7 +182,7 @@ Your job:
    - Structural changes (add/remove windows, doors, walls) → not possible in refinement mode
    - Surface changes (repaint walls, change floor) → surfaces are locked
    - Radical changes requesting removal of ALL furniture → not supported in refinement
-   - Sanitary/plumbing equipment (WC, toilet, bathtub, shower, sink, bidet) → not supported in home staging mode, warn "Versiroom est conçu pour le home staging mobilier. Les équipements sanitaires ne sont pas supportés dans ce mode."
+   - Sanitary/plumbing equipment (WC, toilet, bathtub, shower, sink, bidet) → not supported in home staging mode, warn "Versimo est conçu pour le home staging mobilier. Les équipements sanitaires ne sont pas supportés dans ce mode."
    - Curtains, drapes, blinds → risk of window hallucination, always filter these out
    IMPORTANT: If the user explicitly asks for wall-mounted items (shelves, étagères, mirrors, frames, hooks, wall lamps, sconces, wall art), do NOT filter them out. Instead, set allowWallMounted to true and include them in the enrichedComment. Only filter wall-mounted items when the user did NOT ask for them.
 5. Keep the enriched comment under 50 words — it will be prepended to the existing furniture prompt

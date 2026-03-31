@@ -75,7 +75,7 @@ Le marché évolue rapidement. Les tendances pour 2026-2027 :
 
 ---
 
-**Envie de tester ?** [Versiroom](/) génère des visuels meublés de qualité architecte en 90 secondes, avec 12 styles curatés par des experts. Uploadez votre première photo gratuitement.`;
+**Envie de tester ?** [Versimo](/) génère des visuels meublés de qualité architecte en 90 secondes, avec 12 styles curatés par des experts. Uploadez votre première photo gratuitement.`;
 
 // ─── Article 2 : Comparatif ─────────────────────────────────────────────────
 
@@ -87,7 +87,7 @@ Le marché du home staging virtuel par IA s'est structuré en 2025-2026 avec l'a
 
 ## Tableau comparatif synthétique
 
-| Critère | **Versiroom** | **Gepetto** | **Renovate Club** | **InterieurAI** | **Pedra** |
+| Critère | **Versimo** | **Gepetto** | **Renovate Club** | **InterieurAI** | **Pedra** |
 |---|---|---|---|---|---|
 | **Origine** | France | Bordeaux, France | France (KRAFTECH) | France | Europe |
 | **Cible principale** | Architectes, marchands, particuliers | Professionnels immobilier | Professionnels immobilier | Mix pros/particuliers | Agents immobiliers |
@@ -102,7 +102,7 @@ Le marché du home staging virtuel par IA s'est structuré en 2025-2026 avec l'a
 
 ## Analyse détaillée par outil
 
-### Versiroom
+### Versimo
 
 **Forces :**
 - **Pipeline 2 passes unique** : sépare le traitement des surfaces (murs, sol, plafond) et du mobilier. Résultat : meilleure préservation de la géométrie architecturale originale.
@@ -177,16 +177,16 @@ Le marché du home staging virtuel par IA s'est structuré en 2025-2026 avec l'a
 
 Le choix dépend de votre profil :
 
-- **Vous êtes architecte d'intérieur** et la qualité du rendu est votre priorité → testez **Versiroom** (préservation géométrie) et **Gepetto** (ancrage architecte).
-- **Vous êtes marchand de biens** avec 8-12 opérations/an → **Versiroom** (29 €/mois, qualité pro) ou **Renovate Club** (9,99 €/mois, volume illimité).
+- **Vous êtes architecte d'intérieur** et la qualité du rendu est votre priorité → testez **Versimo** (préservation géométrie) et **Gepetto** (ancrage architecte).
+- **Vous êtes marchand de biens** avec 8-12 opérations/an → **Versimo** (29 €/mois, qualité pro) ou **Renovate Club** (9,99 €/mois, volume illimité).
 - **Vous êtes agent immobilier** avec beaucoup d'annonces → **Renovate Club** (illimité) ou **Pedra** (rapidité).
-- **Vous êtes particulier** → commencez par les essais gratuits de **Versiroom** et **InterieurAI**.
+- **Vous êtes particulier** → commencez par les essais gratuits de **Versimo** et **InterieurAI**.
 
 Le conseil universel : **testez avec votre propre photo** avant de vous engager. La qualité du rendu varie selon le type de pièce, l'éclairage et l'angle de vue.
 
 ---
 
-**Testez Versiroom gratuitement** — uploadez une photo et comparez le résultat avec les autres outils. [Essayer maintenant](/).`;
+**Testez Versimo gratuitement** — uploadez une photo et comparez le résultat avec les autres outils. [Essayer maintenant](/).`;
 
 // ─── Article 3 : Cluster marchand ────────────────────────────────────────────
 
@@ -208,7 +208,7 @@ Pendant ce temps, vos plaquettes commerciales montrent des **murs vides et des s
 Le home staging virtuel par IA change fondamentalement l'équation pour les [marchands de biens](/marchand). Le processus :
 
 1. **Photographiez le bien** avec votre smartphone (iPhone, Android — peu importe)
-2. **Uploadez les photos** sur [Versiroom](/) — 5 photos maximum par session
+2. **Uploadez les photos** sur [Versimo](/) — 5 photos maximum par session
 3. **Choisissez un style** parmi 12 ambiances curatées (Scandinave, Contemporain, Haussmannien, Industriel, etc.)
 4. **Récupérez les visuels HD** en 30 à 90 secondes
 
@@ -218,7 +218,7 @@ En 10 minutes, vous avez un dossier complet avec des visuels meublés pour chaqu
 
 Faisons le calcul sur une opération type — un T3 de 65 m² avec salon, 2 chambres, cuisine et salle de bain :
 
-| Poste | Home stager traditionnel | Versiroom (Pro 29 €/mois) |
+| Poste | Home stager traditionnel | Versimo (Pro 29 €/mois) |
 |---|---|---|
 | Salon | 350 € | Inclus |
 | Chambre 1 | 250 € | Inclus |
@@ -228,7 +228,7 @@ Faisons le calcul sur une opération type — un T3 de 65 m² avec salon, 2 cham
 | **Total annuel (10 opérations)** | **12 000 €** | **348 €/an** |
 | **Économie** | — | **11 652 €/an** |
 
-Même en comparant avec les solutions les moins chères du marché (1,25 €/photo chez certains concurrents), l'abonnement Versiroom Pro à 29 €/mois est rentabilisé dès la **deuxième opération** du mois.
+Même en comparant avec les solutions les moins chères du marché (1,25 €/photo chez certains concurrents), l'abonnement Versimo Pro à 29 €/mois est rentabilisé dès la **deuxième opération** du mois.
 
 ## Cas d'usage : la pré-commercialisation avant travaux
 
@@ -240,7 +240,7 @@ Vous visitez le bien avec votre téléphone. Vous prenez 3-5 photos par pièce. 
 
 ### Étape 2 — Le soir même
 
-Vous uploadez les photos sur Versiroom. Le pipeline 2 passes fait le travail :
+Vous uploadez les photos sur Versimo. Le pipeline 2 passes fait le travail :
 - **Passe 1** : l'IA applique les finitions de surface (murs blancs, parquet chêne, luminaire contemporain) tout en préservant la géométrie de la pièce.
 - **Passe 2** : l'IA ajoute le mobilier (canapé, table, tapis, plantes) en respectant les proportions et la profondeur de la pièce.
 
@@ -249,7 +249,7 @@ Vous uploadez les photos sur Versiroom. Le pipeline 2 passes fait le travail :
 Vos visuels sont prêts. Vous les intégrez dans :
 - La **plaquette commerciale** PDF pour les investisseurs
 - Les **annonces en ligne** (SeLoger, LeBonCoin, portails pros)
-- Les **messages WhatsApp** aux acquéreurs de votre réseau (partage en un clic depuis Versiroom)
+- Les **messages WhatsApp** aux acquéreurs de votre réseau (partage en un clic depuis Versimo)
 
 ### Résultat
 
@@ -290,7 +290,7 @@ const ARTICLES = [
     title: "Home staging virtuel par IA : le guide complet 2026",
     content: ARTICLE_1_CONTENT,
     meta_description:
-      "Découvrez le home staging virtuel par IA : fonctionnement, avantages vs traditionnel, comment choisir son outil. Guide complet 2026 par Versiroom.",
+      "Découvrez le home staging virtuel par IA : fonctionnement, avantages vs traditionnel, comment choisir son outil. Guide complet 2026 par Versimo.",
     keyword: "home staging virtuel IA",
     persona: "tous",
     published: true,
@@ -298,10 +298,10 @@ const ARTICLES = [
   {
     slug: "comparatif-outils-home-staging-ia-2026",
     title:
-      "Comparatif des outils de home staging IA en 2026 : Versiroom, Gepetto, Renovate Club et plus",
+      "Comparatif des outils de home staging IA en 2026 : Versimo, Gepetto, Renovate Club et plus",
     content: ARTICLE_2_CONTENT,
     meta_description:
-      "Comparatif factuel des outils de home staging IA français en 2026 : prix, styles, technologie. Versiroom, Gepetto, Renovate Club, InterieurAI, Pedra.",
+      "Comparatif factuel des outils de home staging IA français en 2026 : prix, styles, technologie. Versimo, Gepetto, Renovate Club, InterieurAI, Pedra.",
     keyword: "comparatif home staging IA",
     persona: "tous",
     published: true,

@@ -60,7 +60,7 @@
 C'est le seul problème structurel non résolu. A4 paysage sur iPhone 14 Pro = zoom obligatoire à 80% pour lire le texte. Marc lit le PDF en portrait — il voit une page écrasée. Correction : ajouter `?format=portrait` à l'endpoint `/api/dossier/[uuid]/pdf`. En portrait (595×842pt) : hero pleine largeur 320pt de haut, infos en dessous à 12pt, avant (haut) / après (bas) empilés sur les pages pièces. Thomas choisit le format via un paramètre optionnel — paysage pour impression, portrait pour WhatsApp.
 
 **CR2 — Fallback OG image pour les dossiers sans photo complétée (moyenne, +0.3 pt, critère 7)**
-`ogImages` est `undefined` si `heroPhoto` est null (dossier en cours de génération ou partiel). WhatsApp affiche alors une preview texte sans image. Correction : ajouter une image OG par défaut Versiroom (`/og-default.jpg`) quand `heroPhoto` est absent. Marc et sa conjointe voient toujours une preview visuelle.
+`ogImages` est `undefined` si `heroPhoto` est null (dossier en cours de génération ou partiel). WhatsApp affiche alors une preview texte sans image. Correction : ajouter une image OG par défaut Versimo (`/og-default.jpg`) quand `heroPhoto` est absent. Marc et sa conjointe voient toujours une preview visuelle.
 
 **CR3 — Analyse du marché masquée si bien_prix ET bien_surface absents (basse, +0.2 pt, critère 3)**
 La section "Analyse du marché" n'apparaît que si `bien_prix && bien_surface > 0` (ligne 278). Si Thomas n'a pas encore renseigné le prix, la section disparaît entièrement — Marc voit "Prix sur demande" sans aucun contexte marché. Correction : afficher la section avec uniquement `prix_moyen_m2` du quartier si disponible, même sans prix du bien.

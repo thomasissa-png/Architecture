@@ -23,14 +23,14 @@ export default function GlobalError({
               Une erreur est survenue
             </h1>
             <p className="text-sm text-[#6B6B6E] font-light mb-6">
-              Nous avons ete notifies automatiquement. Vous pouvez reessayer ou revenir a l&apos;accueil.
+              Nous avons été notifiés automatiquement. Vous pouvez réessayer ou revenir à l&apos;accueil.
             </p>
             <div className="flex gap-3 justify-center">
               <button
                 onClick={reset}
                 className="bg-[#1C1C1E] text-[#FAFAF8] px-6 py-2.5 rounded-full text-sm font-medium hover:bg-[#1C1C1E]/85 transition-colors"
               >
-                Reessayer
+                Réessayer
               </button>
               <a
                 href="/"

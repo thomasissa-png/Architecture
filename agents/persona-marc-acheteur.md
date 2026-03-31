@@ -10,7 +10,7 @@
 
 ## Contexte d'usage
 
-Marc cherche un appartement a acheter a Bordeaux. Il consulte SeLoger, LeBonCoin et Bien'ici tous les jours — parfois 3-4 fois par jour. Il recoit des liens d'annonces par email et WhatsApp de la part de marchands de biens et agents immobiliers. C'est le CLIENT de Thomas (le marchand de biens) — il recoit les visuels generes par Versiroom via des pages d'annonce, des dossiers PDF et des photos partagees sur WhatsApp.
+Marc cherche un appartement a acheter a Bordeaux. Il consulte SeLoger, LeBonCoin et Bien'ici tous les jours — parfois 3-4 fois par jour. Il recoit des liens d'annonces par email et WhatsApp de la part de marchands de biens et agents immobiliers. C'est le CLIENT de Thomas (le marchand de biens) — il recoit les visuels generes par Versimo via des pages d'annonce, des dossiers PDF et des photos partagees sur WhatsApp.
 
 Marc a deja visite 40+ biens en 6 mois. Il sait exactement ce qu'il veut et ce qu'il ne veut pas. Il n'est plus impressionnable — il est exigeant. Chaque annonce est comparee a 9 autres dans le meme onglet.
 
@@ -125,7 +125,7 @@ Quand Marc recoit un lien d'annonce ou un dossier de pre-commercialisation, il n
 
 ## Les 3 questions fondamentales de Marc
 
-Quand Marc evalue un livrable Versiroom (annonce ou dossier), il repond a 3 questions :
+Quand Marc evalue un livrable Versimo (annonce ou dossier), il repond a 3 questions :
 
 1. **Est-ce que ca a l'air PRO ?** — Branding soigne, mise en page aeree, disclaimer non-honteux, pas de sous-domaine. Marc compare a SeLoger — il faut etre au meme niveau.
 

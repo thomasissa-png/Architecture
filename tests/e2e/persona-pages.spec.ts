@@ -10,7 +10,7 @@ import { test, expect } from "@playwright/test";
  * - Unique H1, hero section, FAQ section
  * - JSON-LD FAQPage structured data
  * - CTA links to /#outil
- * - Header with Versiroom branding + Tarifs + Essayer
+ * - Header with Versimo branding + Tarifs + Essayer
  * - Footer with cross-links to other persona pages
  */
 
@@ -60,11 +60,11 @@ test.describe("Architecte persona page — /architecte", () => {
     expect(parsed.mainEntity[0]["@type"]).toBe("Question");
   });
 
-  test("header contains Versiroom branding and nav links", async ({
+  test("header contains Versimo branding and nav links", async ({
     page,
   }) => {
     const header = page.locator("header");
-    await expect(header).toContainText("Versiroom");
+    await expect(header).toContainText("Versimo");
     await expect(header.locator('a[href="/pricing"]')).toBeVisible();
     await expect(header.locator('a[href="/#outil"]')).toBeVisible();
   });

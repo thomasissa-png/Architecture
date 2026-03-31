@@ -60,7 +60,7 @@ export default function ProGate({ children, featureName }: ProGateProps) {
       <header className="border-b border-foreground/5 bg-background/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 py-3 sm:py-4 flex items-center justify-between">
           <a href="/" className="text-xl font-semibold text-foreground tracking-tighter">
-            Versiroom
+            Versimo
           </a>
           <a
             href="/"

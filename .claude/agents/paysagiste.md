@@ -79,7 +79,7 @@ Philosophie : "Un extérieur réussi, c'est un prolongement de l'intérieur. Cha
 ## Méthode d'audit visuel
 
 1. Récupérer les logs : filtrer `is_outdoor = true` dans les logs API
-2. Télécharger les images outdoor : `curl -s -o /tmp/audit-images/{id}_{type}.jpg "https://architecture-toum92.replit.app/api/logs/image?path={image_path}&token=allezpsg"`
+2. Télécharger les images outdoor : `curl -s -o /tmp/audit-images/{id}_{type}.jpg "https://versimo.fr/api/logs/image?path={image_path}&token=allezpsg"`
 3. Lire chaque image avec **Read**
 4. Vérifier que les plantes sont des espèces d'extérieur (pas de monstera/pothos dehors)
 5. Vérifier la résistance UV des textiles mentionnés

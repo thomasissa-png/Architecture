@@ -38,10 +38,10 @@ const MAX_ITERATIONS = 3;
 
 function getSessionId(): string {
   if (typeof window === "undefined") return "";
-  let sessionId = localStorage.getItem("versiroom_session_id");
+  let sessionId = localStorage.getItem("versimo_session_id");
   if (!sessionId) {
     sessionId = crypto.randomUUID();
-    localStorage.setItem("versiroom_session_id", sessionId);
+    localStorage.setItem("versimo_session_id", sessionId);
   }
   return sessionId;
 }
@@ -319,7 +319,8 @@ export default function Home() {
       effectiveStyleId = selectedStyle?.id ?? "custom";
     }
 
-    if (!surfacePrompt && !furniturePrompt) return;
+    // In multi-photo mode, prompts are resolved per-photo — skip global check
+    if (!surfacePrompt && !furniturePrompt && files.length <= 1) return;
 
     // Cancel any previous in-flight requests
     abortControllerRef.current?.abort();
@@ -714,7 +715,7 @@ export default function Home() {
           ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
           ctx.textAlign = "right";
           const pad = Math.round(img.width * 0.015);
-          ctx.fillText("Généré par IA — Versiroom", img.width - pad, img.height - pad);
+          ctx.fillText("Généré par IA — Versimo", img.width - pad, img.height - pad);
           canvas.toBlob((b) => resolve(b!), "image/jpeg", 0.92);
         };
         img.src = result.generatedUrl;
@@ -722,7 +723,7 @@ export default function Home() {
       const blobUrl = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = blobUrl;
-      link.download = `versiroom-${index + 1}-${Date.now()}.jpg`;
+      link.download = `versimo-${index + 1}-${Date.now()}.jpg`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -753,7 +754,7 @@ export default function Home() {
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-foreground/5">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 py-3 sm:py-4 flex items-center justify-between">
           <a href="/" className="text-xl font-semibold text-foreground tracking-tighter focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm">
-            Versiroom
+            Versimo
           </a>
           <nav className="flex items-center gap-2 sm:gap-6">
             {session && (
@@ -804,7 +805,7 @@ export default function Home() {
           <p className="text-base sm:text-lg text-muted font-light leading-relaxed max-w-2xl mx-auto mb-6 sm:mb-8">
             Uploadez une photo, choisissez un style parmi 12 ambiances curatées par des experts.
             <br className="hidden sm:inline" />
-            Versiroom préserve votre espace &mdash; il ne le réinvente pas.
+            Versimo préserve votre espace &mdash; il ne le réinvente pas.
           </p>
 
           {/* Hero before/after — architectural illustration */}
@@ -931,7 +932,7 @@ export default function Home() {
                   {/* Real photo — static file, no API dependency */}
                   <img
                     src="/imageapres.jpg"
-                    alt="Salon scandinave meublé par Versiroom"
+                    alt="Salon scandinave meublé par Versimo"
                     className="absolute inset-0 w-full h-full object-cover"
                   />
                 </div>
@@ -1103,7 +1104,7 @@ export default function Home() {
             <div className="mb-6">
               <div
                 role="radiogroup"
-                aria-label="Choix entre interieur et exterieur"
+                aria-label="Choix entre intérieur et extérieur"
                 className="inline-flex rounded-full bg-foreground/5 p-0.5"
               >
                 <button
@@ -1229,7 +1230,7 @@ export default function Home() {
                         {/* Type de pièce / sous-type */}
                         <div>
                           <label className="text-[11px] text-muted font-light block mb-1">
-                            {isPhotoOutdoor ? "Type d\u0027espace" : "Type de pièce"}
+                            {isPhotoOutdoor ? "Type d'espace" : "Type de pièce"}
                           </label>
                           <select
                             value={perPhotoRoomTypes.get(index) || ""}
@@ -1580,7 +1581,7 @@ export default function Home() {
                               onClick={handleRefineRetry}
                               className="text-xs text-red-500 underline underline-offset-4 hover:text-red-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded"
                             >
-                              Reessayer
+                              Réessayer
                             </button>
                             <button
                               onClick={handleRefineModify}

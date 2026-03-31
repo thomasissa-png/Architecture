@@ -9,7 +9,7 @@ Date : 2026-03-26 | Auditeur : @qa
 | Element | Action attendue | Statut | Probleme |
 |---------|----------------|--------|----------|
 | ProGate wrapper | Bloque si non-Pro, fetch `/api/user/credits` | OK | |
-| Logo header "Versiroom" | `<a href="/">` — retour accueil | OK | |
+| Logo header "Versimo" | `<a href="/">` — retour accueil | OK | |
 | Nav "Mes biens" | `<a href="/mes-biens">` | OK | |
 | Nav "Ma galerie" | `<a href="/ma-galerie">` | OK | |
 | Nav "Mes dossiers" | Lien actif (text-sage, pas de href fonctionnel) | WARN | Meme href que la page courante, pas de `aria-current="page"` |
@@ -31,7 +31,7 @@ Date : 2026-03-26 | Auditeur : @qa
 
 | Element | Action attendue | Statut | Probleme |
 |---------|----------------|--------|----------|
-| Header logo/initiales merchant | Affichage conditionnel logo > initiales > "Versiroom" | OK | |
+| Header logo/initiales merchant | Affichage conditionnel logo > initiales > "Versimo" | OK | |
 | Hero photo | `<img>` premier output living_room ou premier global | OK | |
 | Pills info (surface, pieces, ville, prix) | Affichage conditionnel | OK | |
 | Prix moyen DVF | Pill sage si `dvf_median_price_m2` | OK | |
@@ -50,11 +50,11 @@ Date : 2026-03-26 | Auditeur : @qa
 | Contact section — telephone | `<a href="tel:${telephone}">` | OK | |
 | ContactSticky — telephone | `<a href="tel:...">` sticky bottom | OK | |
 | ContactSticky — email fallback | `<a href="mailto:...">` avec subject | OK | |
-| ContactSticky — aucun contact | Fallback `contact@versiroom.fr` | WARN | L'email versiroom.fr est-il configure ? |
-| Footer — lien Versiroom | `target="_blank" rel="noopener noreferrer"` | OK | |
+| ContactSticky — aucun contact | Fallback `contact@versimo.fr` | WARN | L'email versimo.fr est-il configure ? |
+| Footer — lien Versimo | `target="_blank" rel="noopener noreferrer"` | OK | |
 
 **Bugs :**
-- P2 : ContactSticky affiche TOUJOURS un CTA (fallback versiroom.fr) — verifier que l'email existe
+- P2 : ContactSticky affiche TOUJOURS un CTA (fallback versimo.fr) — verifier que l'email existe
 
 ---
 
@@ -75,7 +75,7 @@ Date : 2026-03-26 | Auditeur : @qa
 | PDF download | `<a href="/api/dossier/${uuid}/pdf">` | OK | Route GET existante, pdf-lib |
 | ContactSticky | Meme composant que page annonce | OK | |
 | Footer — date expiration | `new Date(dossier.expires_at).toLocaleDateString("fr-FR")` | OK | |
-| Footer — lien Versiroom | `target="_blank" rel="noopener noreferrer"` | OK | |
+| Footer — lien Versimo | `target="_blank" rel="noopener noreferrer"` | OK | |
 | Dossier expire | Message clair + date de creation | OK | |
 | ShareButtons — clipboard fail | `catch` silencieux, pas de feedback erreur | WARN | Echec silencieux si clipboard indisponible |
 
@@ -158,7 +158,7 @@ Aucun.
 ### P2 (moyenne)
 1. **Mes dossiers** : `aria-current="page"` manquant sur nav active
 2. **Mes dossiers** : session absente = `return null` silencieux
-3. **Page annonce** : ContactSticky fallback `contact@versiroom.fr` — email a verifier
+3. **Page annonce** : ContactSticky fallback `contact@versimo.fr` — email a verifier
 4. **Page dossier** : ShareButtons clipboard fail = echec silencieux (pas de feedback)
 5. **Compte** : pas de ProGate — marchand accessible sans Pro (a confirmer si intentionnel)
 6. **InlineGenerator** : `handleAssociateResults` erreur sans feedback UI

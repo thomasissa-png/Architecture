@@ -191,13 +191,13 @@ Les éléments suivants sont consolidés en V4 et ne doivent pas être modifiés
 - `formatPrice()` — lib/dossier.ts : Intl.NumberFormat currency EUR correct (PDF)
 - "Génération en cours..." / "Terminé" dans DossierProgress header (lignes 39-40) — corrects
 - "Prêt" / "Échec" dans DossierProgress (lignes 119, 121) — corrects
-- Métadonnées OG page publique — "Visuels meublés par Versiroom" correct
+- Métadonnées OG page publique — "Visuels meublés par Versimo" correct
 - "Génération en cours, revenez dans quelques instants." — page publique, correct
 - Bloc partial page publique (ligne 208-211) — message clair et empathique, correct
 - "Partager avec un acquéreur" (label visible DossierResult) — correct
 - "Relancer (1 crédit)" — actionnable et transparent, correct
 - "Si une photo échoue, le crédit correspondant est automatiquement restitué." — micro-copy de rassurance, correct
-- Disclaimer PDF route.ts : "Visuels générés par IA à titre indicatif — Powered by Versiroom" — correct
+- Disclaimer PDF route.ts : "Visuels générés par IA à titre indicatif — Powered by Versimo" — correct
 - "Avant home staging" (label PDF ligne 408) — correct
 - WhatsApp button avec aria-label "Partager via WhatsApp" — correct
 - "Description en cours d'enrichissement..." (fiche bien ligne 372) — empathique et clair, correct

@@ -23,7 +23,7 @@ export default function OutdoorSubtypePicker({
 
       <div
         role="radiogroup"
-        aria-label="Choix du type d'espace exterieur"
+        aria-label="Choix du type d'espace extérieur"
         className="flex flex-wrap gap-2"
       >
         {OUTDOOR_SUBTYPE_LIST.map((sub) => {

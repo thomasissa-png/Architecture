@@ -1,4 +1,4 @@
-# Audit Infrastructure Versiroom — 2026-03-25
+# Audit Infrastructure Versimo — 2026-03-25
 
 Agent : @infrastructure | Stack : Next.js 14, PostgreSQL, Replit Object Storage, Replit hosting
 

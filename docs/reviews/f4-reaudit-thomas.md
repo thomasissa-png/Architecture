@@ -66,7 +66,7 @@ Mais les 4 frictions structurelles identifiées comme P0/P1 n'ont pas été impl
 ### Correction R1 — Page "Mes dossiers" (P0) — impact : +1.0 pt
 **Critère affecté : Retrouvabilité (3 → 7/10)**
 
-Thomas fait 8-12 opérations par an. La retrouvabilité est la fonctionnalité qui transforme Versiroom d'un outil ponctuel en outil de travail récurrent. Sans elle, chaque session repart de zéro.
+Thomas fait 8-12 opérations par an. La retrouvabilité est la fonctionnalité qui transforme Versimo d'un outil ponctuel en outil de travail récurrent. Sans elle, chaque session repart de zéro.
 
 Implémentation minimale viable :
 - Route `/mes-dossiers` protégée par session (next-auth)
@@ -75,7 +75,7 @@ Implémentation minimale viable :
 - État vide : "Aucun dossier — commencez par générer vos premiers visuels"
 - Lien dans le header du mode marchand ou dans la nav principale
 
-Sans cette correction, Thomas ne peut pas adopter Versiroom comme outil quotidien.
+Sans cette correction, Thomas ne peut pas adopter Versimo comme outil quotidien.
 
 ---
 

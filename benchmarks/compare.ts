@@ -182,7 +182,7 @@ async function main(): Promise<void> {
   const currentReport = loadHistoryReport(historyDir, current);
   const previousReport = loadHistoryReport(historyDir, previous);
 
-  console.log(`\n=== Versiroom Benchmark Comparison ===`);
+  console.log(`\n=== Versimo Benchmark Comparison ===`);
   console.log(`Current:  ${current} (${currentDir})`);
   console.log(`Previous: ${previous} (${previousDir})`);
   console.log(`Images:   ${BENCHMARK_CONFIG.length}\n`);

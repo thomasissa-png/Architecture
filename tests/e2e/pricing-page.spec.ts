@@ -81,11 +81,11 @@ test.describe("Pricing page — /pricing", () => {
     ).toBeVisible();
   });
 
-  test("header contains Versiroom branding and Essayer link", async ({
+  test("header contains Versimo branding and Essayer link", async ({
     page,
   }) => {
     const header = page.locator("header");
-    await expect(header).toContainText("Versiroom");
+    await expect(header).toContainText("Versimo");
     await expect(header.locator('a[href="/#outil"]')).toBeVisible();
   });
 
@@ -94,7 +94,7 @@ test.describe("Pricing page — /pricing", () => {
     await expect(footer.locator('a[href="/mentions-legales"]')).toBeVisible();
     await expect(footer.locator('a[href="/cgv"]')).toBeVisible();
     await expect(footer.locator('a[href="/confidentialite"]')).toBeVisible();
-    await expect(footer).toContainText("Versiroom 2026");
+    await expect(footer).toContainText("Versimo 2026");
   });
 
   test("Decouverte pack mentions 3 generations offertes", async ({ page }) => {

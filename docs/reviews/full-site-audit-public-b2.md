@@ -1,4 +1,4 @@
-# Audit Pages Publiques — Versiroom (batch 2)
+# Audit Pages Publiques — Versimo (batch 2)
 
 ## Synthèse
 
@@ -72,14 +72,14 @@
 
 | # | Sévérité | Localisation | Problème | Code exact | Correction |
 |---|---|---|---|---|---|
-| A1 | P1 | L.659–661 (footer lien) | URL hardcodée Replit en production `https://architecture-toum92.replit.app/` dans le footer visible par les acheteurs immobiliers — expose l'infrastructure interne, manque de brand polish | `href="https://architecture-toum92.replit.app/"` | Remplacer par `process.env.NEXT_PUBLIC_BASE_URL` ou le domaine de production final |
+| A1 | P1 | L.659–661 (footer lien) | URL hardcodée Replit en production `https://versimo.fr/` dans le footer visible par les acheteurs immobiliers — expose l'infrastructure interne, manque de brand polish | `href="https://versimo.fr/"` | Remplacer par `process.env.NEXT_PUBLIC_BASE_URL` ou le domaine de production final |
 
 ### P2
 
 | # | Sévérité | Localisation | Problème | Correction |
 |---|---|---|---|---|
 | A2 | P2 | L.28–29 (PageProps) | `params: { uuid: string }` est un objet synchrone — depuis Next.js 15, `params` est une Promise. Déjà géré dans blog/[slug] avec `Promise<{ slug: string }>`. Incohérence inter-pages, risque de warning ou break sur upgrade. | Aligner sur `params: Promise<{ uuid: string }>` + `await params` |
-| A3 | P2 | L.386–389 (empty state galerie) | Texte "contactez-nous" dans un état vide sans lien ni action définie — "nous" est ambigu (Versiroom ou le marchand ?). L'utilisateur ne sait pas qui contacter. | Remplacer par "contactez le vendeur" si `hasMerchant`, sinon supprimer la mention |
+| A3 | P2 | L.386–389 (empty state galerie) | Texte "contactez-nous" dans un état vide sans lien ni action définie — "nous" est ambigu (Versimo ou le marchand ?). L'utilisateur ne sait pas qui contacter. | Remplacer par "contactez le vendeur" si `hasMerchant`, sinon supprimer la mention |
 | A4 | P2 | L.45–84 (generateMetadata) | `robots: "noindex, nofollow"` sur toutes les annonces — les annonces publiques partagées via WhatsApp/email ne sont pas référencées. Intentionnel ? Si les annonces doivent être trouvables via Google, retirer le noindex. Sinon documenter le choix. | Documenter le choix ou conditionner : `robots: isOwner ? "noindex" : "index, nofollow"` |
 
 ---
@@ -90,14 +90,14 @@
 
 | # | Sévérité | Localisation | Problème | Code exact | Correction |
 |---|---|---|---|---|---|
-| D1 | P1 | L.460–467 (footer lien) | Même problème que A1 — URL Replit hardcodée dans le footer visible acheteurs | `href="https://architecture-toum92.replit.app/"` | Remplacer par `process.env.NEXT_PUBLIC_BASE_URL` |
+| D1 | P1 | L.460–467 (footer lien) | Même problème que A1 — URL Replit hardcodée dans le footer visible acheteurs | `href="https://versimo.fr/"` | Remplacer par `process.env.NEXT_PUBLIC_BASE_URL` |
 
 ### P2
 
 | # | Sévérité | Localisation | Problème | Correction |
 |---|---|---|---|---|
 | D2 | P2 | L.35–36 (PageProps) | Même problème que A2 — `params` synchrone, à aligner sur Next.js 15 async params | `params: Promise<{ uuid: string }>` + `await params` |
-| D3 | P2 | L.59 (generateMetadata) | `BASE_URL` définie en dur dans `generateMetadata` — n'utilise pas `process.env.NEXT_PUBLIC_BASE_URL` contrairement au reste du codebase. Double source de vérité pour l'URL de base. | `const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://architecture-toum92.replit.app"` |
+| D3 | P2 | L.59 (generateMetadata) | `BASE_URL` définie en dur dans `generateMetadata` — n'utilise pas `process.env.NEXT_PUBLIC_BASE_URL` contrairement au reste du codebase. Double source de vérité pour l'URL de base. | `const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://versimo.fr"` |
 
 ---
 

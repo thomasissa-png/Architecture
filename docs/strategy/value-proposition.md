@@ -1,4 +1,4 @@
-# Proposition de Valeur — Versiroom
+# Proposition de Valeur — Versimo
 > Produit par @creative-strategy — 2026-03-24
 > Ce document traduit le positionnement en arguments opérationnels cibles par persona.
 > Lecture obligatoire pour @copywriter avant toute production de copy (hero, email, bio social, pricing).
@@ -23,7 +23,7 @@ Risque réel : 200-2 000€ de mobilier acheté sans pouvoir visualiser le résu
 
 ## 2. Solution différenciante — le mécanisme unique
 
-Versiroom est le seul outil du marché français qui sépare la rénovation des surfaces et l'ajout du mobilier en deux passes IA distinctes.
+Versimo est le seul outil du marché français qui sépare la rénovation des surfaces et l'ajout du mobilier en deux passes IA distinctes.
 
 **Passe 1 — Surfaces :** murs, sol, plafond, luminaire. La géométrie de la pièce est préservée à l'identique — voûtes, poutres, proportions, lumière naturelle, angle de prise de vue.
 
@@ -42,7 +42,7 @@ Les 12 styles ont été co-construits par Yann Duval (architecte d'intérieur, 2
 | "La géométrie est préservée" | Pipeline 2 passes — passe 1 surfaces sans mobilier, passe 2 mobilier sur surfaces verrouillées. Seule architecture de ce type documentée sur le marché FR. |
 | "Qualité architecturale, pas CGI générique" | Prompts co-construits avec Yann Duval (architecte d'intérieur, 20 ans XP) et Lucas Moreau (ex-Midjourney / Getty AI Lab). 12 styles avec pièces iconiques nommées (PH5, Wegner, AJ-style). |
 | "En 90 secondes" | Latence mesurée en production : 2 passes de ~45 secondes chacune, modèle OpenAI gpt-4.1 + fallback Flux Depth Pro. |
-| "Présentable à un client ou sur un portail immo" | Export HD sans filigrane, sans logo Versiroom. Utilisable sur Seloger, LeBonCoin, Bien'ici et dans les présentations client. |
+| "Présentable à un client ou sur un portail immo" | Export HD sans filigrane, sans logo Versimo. Utilisable sur Seloger, LeBonCoin, Bien'ici et dans les présentations client. |
 | "Pas de résultat identique à l'input" | Sprint 7-10 documentés : abandon de toutes les approches single-pass qui produisaient des images quasi identiques à l'original. |
 
 ---
@@ -59,16 +59,16 @@ Les 12 styles ont été co-construits par Yann Duval (architecte d'intérieur, 2
 
 ## 5. Pour qui / Pas pour qui
 
-**Le client idéal de Versiroom :**
+**Le client idéal de Versimo :**
 - L'architecte d'intérieur qui veut un support de conversation avec son client, pas un rendu final
 - Le marchand de biens qui traite 5 à 15 photos par opération et compare le coût à un home stager humain
 - Le particulier qui vient d'acheter un bien vide et veut visualiser son propre espace avant d'acheter
 
-**Versiroom n'est PAS fait pour :**
+**Versimo n'est PAS fait pour :**
 - Les agents immobiliers qui génèrent 500 photos par mois et veulent un illimité à 9,99€ (→ Renovate Club)
 - Les utilisateurs qui cherchent 80+ styles génériques et ne regardent pas la qualité architecturale
 - Les équipes US qui travaillent en MLS et ont besoin d'intégrations américaines (→ Collov AI)
-- Les utilisateurs qui veulent transformer une pièce en une pièce différente — Versiroom meuble, il ne réinvente pas
+- Les utilisateurs qui veulent transformer une pièce en une pièce différente — Versimo meuble, il ne réinvente pas
 
 ---
 
@@ -78,7 +78,7 @@ Le marché du home staging virtuel IA s'est banalisé en 18 mois. Les outils vol
 
 En 2026, les professionnels qui publient des visuels IA mal préservés géométriquement perdent en crédibilité. Les acquéreurs reconnaissent les images CGI déconnectées. Le marché immobilier français reprend une tension sur la qualité de présentation des biens.
 
-Le pipeline 2 passes de Versiroom est une réponse technique à cette attente — disponible maintenant, avec 28+ générations de production validées et 19 sprints d'itération documentés.
+Le pipeline 2 passes de Versimo est une réponse technique à cette attente — disponible maintenant, avec 28+ générations de production validées et 19 sprints d'itération documentés.
 
 ---
 
@@ -88,11 +88,11 @@ Le pipeline 2 passes de Versiroom est une réponse technique à cette attente �
 > **"Un visuel meublé qui ressemble à votre pièce. En 90 secondes. Sans home stager."**
 
 ### Version longue (4 phrases)
-Versiroom génère des visuels de home staging virtuel qui préservent la géométrie réelle de la pièce — pas une version réinventée par l'IA. Le pipeline en 2 passes sépare la finition des surfaces (murs, sol, plafond) de l'ajout du mobilier : la pièce reste reconnaissable à chaque étape. 12 styles curatés par un architecte d'intérieur et un expert IA image, exportables en HD sans filigrane. Pensé pour les architectes d'intérieur, les marchands de biens et les particuliers exigeants — pas pour ceux qui veulent de l'illimité générique.
+Versimo génère des visuels de home staging virtuel qui préservent la géométrie réelle de la pièce — pas une version réinventée par l'IA. Le pipeline en 2 passes sépare la finition des surfaces (murs, sol, plafond) de l'ajout du mobilier : la pièce reste reconnaissable à chaque étape. 12 styles curatés par un architecte d'intérieur et un expert IA image, exportables en HD sans filigrane. Pensé pour les architectes d'intérieur, les marchands de biens et les particuliers exigeants — pas pour ceux qui veulent de l'illimité générique.
 
 ### Test différenciation vs 3 concurrents principaux
 
-| Critère | Gepetto | Renovate Club | Pedra | Versiroom |
+| Critère | Gepetto | Renovate Club | Pedra | Versimo |
 |---|---|---|---|---|
 | **Différenciante ?** | Qualité assumée, mais cible immobilier uniquement | Prix (illimité 9,99€) — pas de qualité architecturale | Vitesse (25 secondes) — messagerie générique | Pipeline 2 passes + multi-cible explicite (archi / marchand / particulier) — espace libre non occupé |
 | **Crédible ?** | Oui (fondé par un architecte) | Faible sur la qualité | Faible (fonctionnel pur) | Oui — processus documenté, experts nommés, sprints de validation tracés |

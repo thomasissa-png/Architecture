@@ -41,7 +41,7 @@
 
 ---
 
-## 2. Ce que Versiroom a DÉJÀ
+## 2. Ce que Versimo a DÉJÀ
 
 | Information | Statut | Source dans le code |
 |---|---|---|

@@ -1,4 +1,4 @@
-# Brief Créatif — Versiroom
+# Brief Créatif — Versimo
 > Produit par @creative-strategy — 2026-03-24
 > Document de référence pour @copywriter, @design, @ux, @growth, @seo, @social
 > Lire AVANT toute production créative. Toute déviation doit être justifiée et soumise à @reviewer.
@@ -39,7 +39,7 @@ Cette phrase est le filtre de tout contenu créatif. Si un visuel, un titre ou u
 
 ## 4. Territoire sémantique — 15 mots-clés à utiliser
 
-Ces mots appartiennent au territoire de Versiroom. Les utiliser dans les titres, accrochages, descriptions, balises meta.
+Ces mots appartiennent au territoire de Versimo. Les utiliser dans les titres, accrochages, descriptions, balises meta.
 
 1. votre espace / votre pièce
 2. crédible / crédibilité
@@ -59,7 +59,7 @@ Ces mots appartiennent au territoire de Versiroom. Les utiliser dans les titres,
 
 ---
 
-## 5. Exclusions absolues — Ce que Versiroom ne dit PAS
+## 5. Exclusions absolues — Ce que Versimo ne dit PAS
 
 > Ces éléments sont interdits dans tout contenu de marque. Aucune exception.
 
@@ -72,7 +72,7 @@ Ces mots appartiennent au territoire de Versiroom. Les utiliser dans les titres,
 | "En quelques secondes" sans préciser | Tout le monde le dit. "90 secondes" est notre ancrage. |
 | "Transformez votre maison de rêve" | Langage grand public générique, contre le ton pro sobre |
 | "IA" seul sans contexte | Sans explication, crée méfiance chez les pros |
-| ROI chiffré sans source Versiroom | "Vendez X% plus vite" — non prouvé, risque juridique |
+| ROI chiffré sans source Versimo | "Vendez X% plus vite" — non prouvé, risque juridique |
 | Mention frontale d'un concurrent | Risque de les crédibiliser |
 | "Virtual staging" en anglais sur les pages FR | Marché français — tout en français |
 
@@ -110,7 +110,7 @@ Ces mots appartiennent au territoire de Versiroom. Les utiliser dans les titres,
 4. Partage direct WhatsApp depuis le résultat
 
 **Format de preuve attendu :**
-- Calcul ROI simple : "8 opérations × 5 photos × 200€ = 8 000€/an. Versiroom : 8 × 5 × 1,50€ = 60€/an."
+- Calcul ROI simple : "8 opérations × 5 photos × 200€ = 8 000€/an. Versimo : 8 × 5 × 1,50€ = 60€/an."
 - [HYPOTHÈSE : le prix exact par crédit à valider avec product-manager]
 - Before/after : photo de murs vides → annonce immo publiable
 
@@ -141,9 +141,9 @@ Ces mots appartiennent au territoire de Versiroom. Les utiliser dans les titres,
 
 ### Le concept : "Votre pièce, enfin meublée"
 
-Le territoire créatif de Versiroom repose sur un seul axe narratif : **la différence entre voir une pièce ET voir VOTRE pièce.**
+Le territoire créatif de Versimo repose sur un seul axe narratif : **la différence entre voir une pièce ET voir VOTRE pièce.**
 
-Pinterest, Instagram, les catalogues IKEA — tout le monde voit des belles photos. Personne ne peut voir à quoi ça ressemble dans son propre espace. Versiroom comble ce vide.
+Pinterest, Instagram, les catalogues IKEA — tout le monde voit des belles photos. Personne ne peut voir à quoi ça ressemble dans son propre espace. Versimo comble ce vide.
 
 **Ce concept se décline en 3 registres selon le persona :**
 
@@ -169,7 +169,7 @@ Pinterest, Instagram, les catalogues IKEA — tout le monde voit des belles phot
 
 ### Principe visuel fondamental
 - **Comparateurs avant/après** : le visuel le plus puissant est un slider qui montre la transformation dans la MÊME pièce
-- **Jamais de stock photos** de "belles pièces" génériques — tout visuel de démonstration doit être un résultat réel Versiroom
+- **Jamais de stock photos** de "belles pièces" génériques — tout visuel de démonstration doit être un résultat réel Versimo
 - **Design architecture-grade** : inspiration Apple / Foster+Partners — épure, espace blanc, typographie fine
 - **Pas de badges "IA", "powered by OpenAI"** visible dans l'UI — la technologie est un détail d'implémentation, pas un argument visible
 
@@ -197,7 +197,7 @@ Pinterest, Instagram, les catalogues IKEA — tout le monde voit des belles phot
 
 ### À éviter en SEO
 - Contenu générique "qu'est-ce que le home staging virtuel" — trop concurrencé
-- Comparatifs "Versiroom vs Renovate Club" — ne pas pointer des concurrents
+- Comparatifs "Versimo vs Renovate Club" — ne pas pointer des concurrents
 
 ---
 
@@ -205,7 +205,7 @@ Pinterest, Instagram, les catalogues IKEA — tout le monde voit des belles phot
 
 ### Boucles de croissance naturelles
 - **Claire** → partage ses visuels avec ses clients → les clients demandent où elle fait ça → acquisition pro-to-pro
-- **Thomas** → publie ses annonces avec les visuels Versiroom → les acquéreurs voient la qualité → notoriété organique
+- **Thomas** → publie ses annonces avec les visuels Versimo → les acquéreurs voient la qualité → notoriété organique
 - **Léa** → poste sur Instagram/TikTok → ses amis veulent tester → viralité grand public
 
 ### Levier acquisition prioritaire (sans budget)
@@ -234,7 +234,7 @@ Pinterest, Instagram, les catalogues IKEA — tout le monde voit des belles phot
 
 ## 12. Hypothèses à valider
 
-> Ces éléments sont marqués [HYPOTHÈSE] car non confirmés par des données Versiroom internes.
+> Ces éléments sont marqués [HYPOTHÈSE] car non confirmés par des données Versimo internes.
 
 - [HYPOTHÈSE] Prix par crédit pour Thomas : calcul ROI basé sur un prix estimé à ~1,20-1,50 €/crédit — à valider avec @product-manager (docs/product/functional-specs.md)
 - [HYPOTHÈSE] N générations gratuites dans le plan Gratuit — le nombre exact est à confirmer par @product-manager
@@ -248,6 +248,6 @@ Pinterest, Instagram, les catalogues IKEA — tout le monde voit des belles phot
 - Points d'attention pour la suite :
   - La section 6 (messages par persona) est directement utilisable pour la landing page — un hero par cible, ou un hero multi-cible avec pills (déjà en place dans le code)
   - Le calcul ROI de Thomas (section 6) nécessite validation du prix par crédit (@product-manager)
-  - Les visuels de démonstration doivent être des résultats RÉELS Versiroom, jamais des stock photos
+  - Les visuels de démonstration doivent être des résultats RÉELS Versimo, jamais des stock photos
   - @design : lire la section 8 avant tout travail visuel — la palette et les principes visuels sont non-négociables
   - @growth : lire la section 10 — les boucles de croissance naturelles sont dans les comportements documentés des personas

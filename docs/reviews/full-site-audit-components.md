@@ -47,7 +47,7 @@
 **P0 — Aucun**
 
 **P1**
-- Le bouton "Mot de passe oublié ?" déclenche un `setError()` avec un message statique (`"Fonctionnalité bientôt disponible. Contactez-nous à contact@versiroom.fr"`). Ce comportement est trompeur : un bouton interactif qui simule une erreur plutôt qu'une action dédiée viole H9. Corriger avec un état distinct `forgotPasswordSent` ou désactiver visuellement le bouton avec un tooltip `title="Bientôt disponible"` et `disabled` + style `cursor-not-allowed`.
+- Le bouton "Mot de passe oublié ?" déclenche un `setError()` avec un message statique (`"Fonctionnalité bientôt disponible. Contactez-nous à contact@versimo.fr"`). Ce comportement est trompeur : un bouton interactif qui simule une erreur plutôt qu'une action dédiée viole H9. Corriger avec un état distinct `forgotPasswordSent` ou désactiver visuellement le bouton avec un tooltip `title="Bientôt disponible"` et `disabled` + style `cursor-not-allowed`.
 - Le sous-titre mode inscription est `"Gratuit — 3 générations offertes sans CB."` — cohérent avec le pricing v3 (Découverte GRATUIT). Vérifier que la limite de 3 générations gratuites est bien appliquée côté API, sinon le message est inexact.
 
 **P2**
@@ -79,7 +79,7 @@
 **P0 — Aucun**
 
 **P1**
-- La ProGate affiche un mini-header Versiroom avec lien "Retour" mais **sans le composant `AuthButton`**. Si un utilisateur non connecté arrive sur une page Pro, il voit le header minimaliste sans possibilité de se connecter. Il doit cliquer "Retour" vers la page principale pour s'authentifier. Ajouter `<AuthButton />` dans le header de la ProGate pour permettre la connexion directement depuis le mur de paiement.
+- La ProGate affiche un mini-header Versimo avec lien "Retour" mais **sans le composant `AuthButton`**. Si un utilisateur non connecté arrive sur une page Pro, il voit le header minimaliste sans possibilité de se connecter. Il doit cliquer "Retour" vers la page principale pour s'authentifier. Ajouter `<AuthButton />` dans le header de la ProGate pour permettre la connexion directement depuis le mur de paiement.
 - Le CTA "Découvrir les offres Pro" pointe vers `/#pricing`. Sur mobile, ce lien ne scrolle pas toujours correctement vers la section pricing (comportement `#anchor` variable selon le SSR/CSR). Vérifier que la section pricing a bien l'`id="pricing"` et tester le scroll sur iOS Safari.
 - Le texte "Pack Pro inclut" liste des features avec le libellé "Dossiers de présentation brandés" — le renommage officiel est "Dossiers de pré-commercialisation" (project-context.md 2026-03-27). Aligner.
 

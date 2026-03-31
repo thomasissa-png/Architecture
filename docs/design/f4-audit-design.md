@@ -134,7 +134,7 @@ Fix : ajouter `aria-live="polite" aria-atomic="false"` sur le `div.space-y-1.5` 
 ## Elements qui cassent le premium feel
 
 **1. Pills de type de bien en gris generique**
-Le step "Info" presente le bien en premier. Les pills `bg-gray-100` avec texte gris ressemblent a un formulaire admin generique, pas a un outil architecture-grade. Versiroom se positionne contre Gepetto et Renovate Club sur la qualite — ce premier point de contact doit incarner ce positionnement. La correction vers `bg-[var(--foreground)]/5` restaure la coherence visuelle avec le reste des composants.
+Le step "Info" presente le bien en premier. Les pills `bg-gray-100` avec texte gris ressemblent a un formulaire admin generique, pas a un outil architecture-grade. Versimo se positionne contre Gepetto et Renovate Club sur la qualite — ce premier point de contact doit incarner ce positionnement. La correction vers `bg-[var(--foreground)]/5` restaure la coherence visuelle avec le reste des composants.
 
 **2. Label "AVANT" en gris terne vs "APRES" en sage**
 La paire AVANT/APRES est le moment de verite du produit — c'est le before/after qui justifie l'abonnement et la confiance du marchand Thomas. Avoir "APRES" mis en valeur par le sage et "AVANT" dans un gris generique hardcode casse la symetrie intentionnelle de ce moment. Il faut une coherence visuelle : les deux doivent etre dans le systeme, avec la differentiation assurée par le token sage vs muted.

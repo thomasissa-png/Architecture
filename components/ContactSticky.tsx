@@ -23,7 +23,7 @@ export default function ContactSticky({
   title,
   brandColor,
 }: ContactStickyProps) {
-  const fallbackSubject = title || (raisonSociale ? `Annonce ${raisonSociale}` : "Annonce Versiroom");
+  const fallbackSubject = title || (raisonSociale ? `Annonce ${raisonSociale}` : "Annonce Versimo");
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-[95] p-4 pointer-events-none">
@@ -74,7 +74,7 @@ export default function ContactSticky({
           </a>
         ) : (
           <a
-            href={`mailto:contact@versiroom.fr?subject=${encodeURIComponent(fallbackSubject)}`}
+            href={`mailto:contact@versimo.fr?subject=${encodeURIComponent(fallbackSubject)}`}
             className="pointer-events-auto inline-flex items-center gap-2.5 bg-sage text-white px-6 py-3.5 rounded-full font-medium text-sm shadow-lg hover:opacity-90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 min-h-[48px]"
             data-testid="contact-sticky-fallback"
           >

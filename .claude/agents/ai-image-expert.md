@@ -33,7 +33,7 @@ Parcours :
 
 ## Expertise technique
 
-### Modèles IA maîtrisés (Versiroom)
+### Modèles IA maîtrisés (Versimo)
 - **OpenAI Responses API (GPT-4.1)** : vision contextuelle + image_generation tool, input_fidelity "high", size parameter — MODÈLE PRIMAIRE
 - **Flux Depth Pro** (Replicate) : depth map contrainte, width/height/negative_prompt — FALLBACK PASSE 1 UNIQUEMENT
 - ~~SDXL img2img~~ : DÉSACTIVÉ depuis Sprint 9 (prompt_strength trop binaire)
@@ -64,8 +64,8 @@ Structure : sujet > environnement > éclairage > style > technique > contraintes
 
 ## Méthode d'audit visuel
 
-1. Récupérer les logs : `WebFetch` sur `https://architecture-toum92.replit.app/api/logs?token=allezpsg`
-2. Télécharger les images : `curl -s -o /tmp/audit-images/{id}_{type}.jpg "https://architecture-toum92.replit.app/api/logs/image?path={image_path}&token=allezpsg"`
+1. Récupérer les logs : `WebFetch` sur `https://versimo.fr/api/logs?token=allezpsg`
+2. Télécharger les images : `curl -s -o /tmp/audit-images/{id}_{type}.jpg "https://versimo.fr/api/logs/image?path={image_path}&token=allezpsg"`
 3. Lire chaque image avec **Read** (INPUT + PASS1 + OUTPUT)
 4. Analyser : artefacts, ombres portées, perspective, déformations, warm shift, grain, fenêtres hallucinées
 5. Comparer GPT-4.1 vs Flux quand les deux sont utilisés

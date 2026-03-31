@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import { getBlogPosts } from "@/lib/blog";
 import Footer from "@/components/Footer";
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://architecture-toum92.replit.app";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://versimo.fr";
 
 export const metadata: Metadata = {
-  title: "Blog | Versiroom",
+  title: "Blog | Versimo",
   description:
-    "Conseils home staging virtuel, inspiration decoration IA, guides pour architectes d'interieur et marchands de biens. Actualites Versiroom.",
+    "Conseils home staging virtuel, inspiration décoration IA, guides pour architectes d'intérieur et marchands de biens. Actualités Versimo.",
   keywords: [
     "blog home staging",
     "decoration IA blog",
@@ -15,12 +15,12 @@ export const metadata: Metadata = {
     "inspiration deco IA",
   ],
   openGraph: {
-    title: "Blog | Versiroom",
+    title: "Blog | Versimo",
     description:
       "Conseils home staging virtuel, inspiration decoration IA, guides pour professionnels et particuliers.",
     type: "website",
     locale: "fr_FR",
-    siteName: "Versiroom",
+    siteName: "Versimo",
     url: `${BASE_URL}/blog`,
   },
   alternates: {
@@ -47,7 +47,7 @@ export default async function BlogIndexPage() {
             href="/"
             className="text-xl font-semibold text-foreground tracking-tighter focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm"
           >
-            Versiroom
+            Versimo
           </a>
           <nav className="flex items-center gap-4 sm:gap-6">
             <a

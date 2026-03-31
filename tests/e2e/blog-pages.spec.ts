@@ -15,7 +15,7 @@ test.describe("Blog index page — /blog", () => {
     const response = await page.goto("/blog");
     expect(response?.status()).toBeLessThan(500);
 
-    await expect(page).toHaveTitle(/Blog.*Versiroom/);
+    await expect(page).toHaveTitle(/Blog.*Versimo/);
   });
 
   test("H1 is Blog", async ({ page }) => {
@@ -34,11 +34,11 @@ test.describe("Blog index page — /blog", () => {
     ).toBeVisible();
   });
 
-  test("header contains Versiroom branding and nav", async ({ page }) => {
+  test("header contains Versimo branding and nav", async ({ page }) => {
     await page.goto("/blog");
 
     const header = page.locator("header");
-    await expect(header).toContainText("Versiroom");
+    await expect(header).toContainText("Versimo");
     await expect(header.locator('a[href="/pricing"]')).toBeVisible();
     await expect(header.locator('a[href="/#outil"]')).toBeVisible();
   });
@@ -64,7 +64,7 @@ test.describe("Blog index page — /blog", () => {
     await expect(footer.locator('a[href="/"]')).toBeVisible();
     await expect(footer.locator('a[href="/marchand"]')).toBeVisible();
     await expect(footer.locator('a[href="/mentions-legales"]')).toBeVisible();
-    await expect(footer).toContainText("Versiroom 2026");
+    await expect(footer).toContainText("Versimo 2026");
   });
 });
 

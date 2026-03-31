@@ -1,4 +1,4 @@
-# Audit Design Frontend — Versiroom
+# Audit Design Frontend — Versimo
 **Date :** 2026-03-25 | **Agent :** @design | **Scope :** 8 fichiers frontend
 
 ---

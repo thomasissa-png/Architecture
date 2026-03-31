@@ -72,7 +72,7 @@ Scenario reellement problematique :
 
 **Impact reel** : Faible en pratique. Le `StorageClient` est leger (pas de pool de connexions). La double-creation produit au pire un client orphelin qui sera garbage-collecte. Pas de corruption de donnees car chaque operation est atomique cote Object Storage.
 
-**Resolution proposee** : Ajouter un verrou simple (flag `reinitializing`) pour eviter la double-creation. Alternative acceptable : documenter le risque et ne pas corriger (impact negligeable pour le volume de trafic actuel de Versiroom en alpha).
+**Resolution proposee** : Ajouter un verrou simple (flag `reinitializing`) pour eviter la double-creation. Alternative acceptable : documenter le risque et ne pas corriger (impact negligeable pour le volume de trafic actuel de Versimo en alpha).
 
 **Agent responsable** : @fullstack (si correction souhaitee)
 

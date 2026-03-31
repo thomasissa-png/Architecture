@@ -1,4 +1,4 @@
-# Versiroom — Guide des variables d'environnement (Replit)
+# Versimo — Guide des variables d'environnement (Replit)
 
 ## OBLIGATOIRES (l'app ne fonctionne pas sans)
 
@@ -17,7 +17,7 @@
 | `REPLICATE_API_TOKEN` | Fallback Flux Depth Pro (si OpenAI echoue) | https://replicate.com/account/api-tokens — creer un token |
 | `STRIPE_SECRET_KEY` | Paiements (packs credits) | https://dashboard.stripe.com/apikeys — cle secrete (`sk_live_...` ou `sk_test_...`) |
 | `STRIPE_WEBHOOK_SECRET` | Validation webhooks Stripe | Dashboard Stripe → Developers → Webhooks → ajouter endpoint `https://ton-app.replit.app/api/stripe/webhook`, copier le signing secret (`whsec_...`) |
-| `NEXT_PUBLIC_BASE_URL` | URL publique de l'app (SEO, OG, emails) | `https://architecture-toum92.replit.app` (ou ton domaine custom) |
+| `NEXT_PUBLIC_BASE_URL` | URL publique de l'app (SEO, OG, emails) | `https://versimo.fr` (ou ton domaine custom) |
 | `NEXTAUTH_URL` | URL NextAuth (redirections OAuth) | Meme valeur que `NEXT_PUBLIC_BASE_URL` |
 | `ADMIN_PASSWORD` | Protection page /admin et replay | Choisir un mot de passe fort quelconque |
 
