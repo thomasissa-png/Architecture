@@ -356,6 +356,11 @@ async function generateSinglePhoto(
   if (effectiveStyleId === "custom") {
     // Custom style: use stored custom_prompt, preprocess it via GPT-4.1-mini
     const rawPrompt = photo.custom_prompt || "";
+
+    if (!rawPrompt.trim()) {
+      throw new Error("Le prompt personnalisé est vide. Décrivez le style souhaité avant de lancer la génération.");
+    }
+
     surfacePrompt = rawPrompt;
     furniturePrompt = rawPrompt;
 
