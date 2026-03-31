@@ -16,6 +16,7 @@ import {
   getDossierPhotos,
   addDossierPhoto,
   updateDossierStatus,
+  updateDossierInfo,
   updateDossierPhotoStatus,
   updateDossierPhotoStyle,
   isDossierExpired,
@@ -181,12 +182,50 @@ export async function PATCH(
   try {
     const body = await request.json();
     const { action, photoId, styleId, isOutdoor, regeneratePhotoId } = body as {
-      action: "generate" | "update_style" | "regenerate";
+      action: "generate" | "update_style" | "regenerate" | "attach";
       photoId?: number;
       styleId?: string;
       isOutdoor?: boolean;
       regeneratePhotoId?: number;
     };
+
+    // ── Attach dossier to property (post-generation) ──
+    if (action === "attach") {
+      const {
+        bienAdresse, bienNom, bienSurface, bienPrix, bienType,
+        latitude, longitude, ville, codePostal,
+        descriptionCommerciale, carteImageKey, prixMoyenM2, propertyId,
+      } = body;
+
+      await updateDossierInfo(uuid, {
+        bienNom: bienNom || null,
+        bienAdresse: bienAdresse || null,
+        bienSurface: bienSurface ? Number(bienSurface) : null,
+        bienPrix: bienPrix ? Number(bienPrix) : null,
+        bienType: bienType || null,
+        latitude: latitude ? Number(latitude) : null,
+        longitude: longitude ? Number(longitude) : null,
+        ville: ville || null,
+        codePostal: codePostal || null,
+        descriptionCommerciale: descriptionCommerciale || null,
+        carteImageKey: carteImageKey || null,
+        prixMoyenM2: prixMoyenM2 ? Number(prixMoyenM2) : null,
+      });
+
+      // Auto-create property if address provided and no propertyId
+      if (bienAdresse && !propertyId) {
+        const { findOrCreatePropertyByAddress } = await import("@/lib/properties");
+        findOrCreatePropertyByAddress(session.user.id, bienAdresse, {
+          propertyType: bienType || null,
+          surfaceM2: bienSurface ? Number(bienSurface) : null,
+          salePrice: bienPrix ? Number(bienPrix) : null,
+        }).catch((err: unknown) => {
+          console.error("Auto-create property on attach failed:", err);
+        });
+      }
+
+      return NextResponse.json({ success: true });
+    }
 
     // ── Update individual photo style ──
     if (action === "update_style" && photoId && styleId) {

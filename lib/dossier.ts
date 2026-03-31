@@ -324,6 +324,62 @@ export async function unarchiveDossier(uuid: string, userId: string): Promise<bo
   return (result.rowCount ?? 0) > 0;
 }
 
+export async function updateDossierInfo(
+  uuid: string,
+  info: {
+    bienNom?: string | null;
+    bienAdresse?: string | null;
+    bienSurface?: number | null;
+    bienPrix?: number | null;
+    bienType?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
+    ville?: string | null;
+    codePostal?: string | null;
+    descriptionCommerciale?: string | null;
+    carteImageKey?: string | null;
+    prixMoyenM2?: number | null;
+    nbPieces?: number | null;
+  }
+): Promise<void> {
+  await ensureDossierTables();
+  const db = getPool();
+  const setClauses: string[] = [];
+  const values: (string | number | null)[] = [uuid];
+  let idx = 2;
+
+  const fields: [string, unknown][] = [
+    ["bien_nom", info.bienNom],
+    ["bien_adresse", info.bienAdresse],
+    ["bien_surface", info.bienSurface],
+    ["bien_prix", info.bienPrix],
+    ["bien_type", info.bienType],
+    ["latitude", info.latitude],
+    ["longitude", info.longitude],
+    ["ville", info.ville],
+    ["code_postal", info.codePostal],
+    ["description_commerciale", info.descriptionCommerciale],
+    ["carte_image_key", info.carteImageKey],
+    ["prix_moyen_m2", info.prixMoyenM2],
+    ["nb_pieces", info.nbPieces],
+  ];
+
+  for (const [col, val] of fields) {
+    if (val !== undefined) {
+      setClauses.push(`${col} = $${idx}`);
+      values.push(val as string | number | null);
+      idx++;
+    }
+  }
+
+  if (setClauses.length === 0) return;
+
+  await db.query(
+    `UPDATE dossiers SET ${setClauses.join(", ")} WHERE uuid = $1`,
+    values
+  );
+}
+
 export async function updateDossierStatus(
   uuid: string,
   status: DossierStatus,

@@ -108,6 +108,9 @@ export default function MerchantMode() {
   const [error, setError] = useState<string | null>(null);
   const [isRegenerating, setIsRegenerating] = useState<number | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [attachMode, setAttachMode] = useState<"none" | "existing" | "new">("none");
+  const [isAttaching, setIsAttaching] = useState(false);
+  const [attachDone, setAttachDone] = useState(false);
 
   // Poll interval ref
   const pollRef = useRef<NodeJS.Timeout | null>(null);
@@ -285,25 +288,17 @@ export default function MerchantMode() {
     merchantRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
 
     try {
-      // Step 1: Create dossier
+      // Step 1: Create dossier (lightweight — property info added post-generation)
       const createRes = await fetch("/api/dossier", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          bienNom: autoNom || null,
-          bienAdresse: bienAdresse.trim() || null,
-          bienSurface: bienSurface ? Number(bienSurface) : null,
-          bienPrix: bienPrix ? Number(bienPrix) : null,
-          bienType: bienType || null,
+          bienNom: null,
+          bienAdresse: null,
+          bienSurface: null,
+          bienPrix: null,
+          bienType: null,
           globalStyleId: globalStyles[0] || "custom",
-          latitude: enrichedLat,
-          longitude: enrichedLon,
-          ville: enrichedCity || null,
-          codePostal: enrichedPostcode || null,
-          descriptionCommerciale: enrichedDescription.trim() || null,
-          carteImageKey: enrichedCarteKey,
-          prixMoyenM2: enrichedPrixM2,
-          nbPieces: bienNbPieces ? Number(bienNbPieces) : null,
         }),
       });
 
@@ -516,13 +511,7 @@ export default function MerchantMode() {
 
   // ── Derived ──
   // Auto-generated name: "[Type] — [Surface] m² — [Ville]"
-  const autoNom = [
-    bienType && BIEN_TYPES.find((t) => t.id === bienType)?.label,
-    bienSurface && `${bienSurface} m²`,
-    enrichedCity,
-  ].filter(Boolean).join(" — ") || "Mon bien";
-
-  // Full title for display (richer, includes address)
+  // Full title for display
   const bienTitle = (() => {
     const type = bienType ? bienType.charAt(0).toUpperCase() + bienType.slice(1) : null;
     const surface = bienSurface ? `${bienSurface} m²` : null;
@@ -991,18 +980,21 @@ export default function MerchantMode() {
                 // Check if all photos have a style override (none needs global)
                 const allHaveOverride = photoEntries.every((e) => e.styleOverride !== null);
                 if (allHaveOverride) {
-                  // Skip global style step, go straight to review
-                  setCurrentStep("review");
+                  // All photos have individual styles — generate directly
+                  handleGenerate();
                 } else {
                   // Need global style for photos without override
                   setCurrentStep("style");
+                  merchantRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
                 }
-                merchantRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
               }}
-              className="px-8 py-3 bg-foreground text-background rounded-xl font-medium text-sm hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+              disabled={isGenerating}
+              className="px-8 py-3 bg-foreground text-background rounded-xl font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
               data-testid="merchant-next-annotate-continue"
             >
-              Continuer
+              {photoEntries.every((e) => e.styleOverride !== null)
+                ? `Générer (${creditsNeeded} visuel${creditsNeeded > 1 ? "s" : ""})`
+                : "Choisir un style global"}
             </button>
           </div>
         </div>
@@ -1100,18 +1092,16 @@ export default function MerchantMode() {
             onSelectOutdoorStyle={() => {}}
           />
 
-          {/* Navigation */}
+          {/* Generate button */}
           {(globalStyles.length > 0 || customPrompt.trim()) && (
             <div className="flex items-center gap-3 pt-4">
               <button
-                onClick={() => {
-                  setCurrentStep("review");
-                  merchantRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-                }}
-                className="px-8 py-3 bg-foreground text-background rounded-xl font-medium text-sm hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
-                data-testid="merchant-next-review"
+                onClick={handleGenerate}
+                disabled={isGenerating}
+                className="px-8 py-3 bg-sage text-white rounded-xl font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+                data-testid="merchant-generate-from-style"
               >
-                Vérifier avant de générer
+                {isGenerating ? "Génération en cours..." : `Générer (${creditsNeeded} visuel${creditsNeeded > 1 ? "s" : ""})`}
               </button>
             </div>
           )}
@@ -1247,7 +1237,7 @@ export default function MerchantMode() {
         <div className="space-y-6 animate-fade-in-up" data-testid="merchant-step-results">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-medium text-muted uppercase tracking-widest">
-              Dossier prêt
+              Visuels générés
             </h3>
             {linkCopied && (
               <span className="text-xs text-sage font-medium animate-fade-in-up">
@@ -1258,13 +1248,179 @@ export default function MerchantMode() {
 
           <DossierResult
             photos={dossierPhotos}
-            bienNom={bienTitle}
+            bienNom={bienTitle || "Visuels"}
             dossierUuid={dossierIdentifier || dossierUuid}
             onDownloadPdf={handleDownloadPdf}
             onShareLink={handleShareLink}
             onRegenerate={handleRegenerate}
             isRegenerating={isRegenerating}
           />
+
+          {/* ── Attach to property panel ── */}
+          {!attachDone && (
+            <div className="border border-foreground/10 rounded-2xl p-5 space-y-4" data-testid="attach-panel">
+              <h4 className="text-sm font-medium text-foreground">
+                Associer ces visuels à un bien
+              </h4>
+              <p className="text-xs text-muted font-light">
+                Retrouvez-les dans vos biens et créez un dossier de présentation.
+              </p>
+
+              <div className="flex flex-wrap gap-2">
+                {existingProperties.length > 0 && (
+                  <button
+                    onClick={() => setAttachMode("existing")}
+                    className={`text-xs px-4 py-2 rounded-full border transition-colors ${
+                      attachMode === "existing"
+                        ? "border-sage bg-sage/10 text-sage font-medium"
+                        : "border-foreground/10 text-muted font-light hover:border-foreground/20"
+                    }`}
+                  >
+                    Bien existant
+                  </button>
+                )}
+                <button
+                  onClick={() => setAttachMode("new")}
+                  className={`text-xs px-4 py-2 rounded-full border transition-colors ${
+                    attachMode === "new"
+                      ? "border-sage bg-sage/10 text-sage font-medium"
+                      : "border-foreground/10 text-muted font-light hover:border-foreground/20"
+                  }`}
+                >
+                  Nouveau bien
+                </button>
+              </div>
+
+              {/* Existing property selector */}
+              {attachMode === "existing" && (
+                <div className="space-y-3">
+                  <select
+                    value={selectedPropertyId || ""}
+                    onChange={(e) => setSelectedPropertyId(e.target.value || null)}
+                    className="w-full px-4 py-3 border border-foreground/10 rounded-xl text-sm font-light bg-background focus:border-foreground focus:outline-none transition-colors"
+                  >
+                    <option value="">Sélectionner un bien</option>
+                    {existingProperties.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.address_normalized || p.address_raw || "Bien sans adresse"} {p.surface_m2 ? `— ${p.surface_m2} m²` : ""}
+                      </option>
+                    ))}
+                  </select>
+                  {selectedPropertyId && (
+                    <button
+                      onClick={async () => {
+                        setIsAttaching(true);
+                        try {
+                          const prop = existingProperties.find((p) => p.id === selectedPropertyId);
+                          const res = await fetch(`/api/dossier/${dossierUuid}`, {
+                            method: "PATCH",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              action: "attach",
+                              bienAdresse: prop?.address_raw || prop?.address_normalized || null,
+                              bienNom: prop?.address_normalized || prop?.address_raw || null,
+                              bienSurface: prop?.surface_m2 || null,
+                              bienPrix: prop?.sale_price || null,
+                              bienType: prop?.property_type || null,
+                              propertyId: selectedPropertyId,
+                            }),
+                          });
+                          if (res.ok) setAttachDone(true);
+                        } catch { /* silent */ }
+                        setIsAttaching(false);
+                      }}
+                      disabled={isAttaching}
+                      className="px-6 py-3 bg-sage text-white rounded-xl text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40"
+                    >
+                      {isAttaching ? "Association..." : "Associer à ce bien"}
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* New property form */}
+              {attachMode === "new" && (
+                <div className="space-y-3">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={bienAdresse}
+                      onChange={(e) => handleAddressInput(e.target.value)}
+                      onFocus={() => addressSuggestions.length > 0 && setShowSuggestions(true)}
+                      onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                      placeholder="Adresse du bien"
+                      className="w-full px-4 py-3 border border-foreground/10 rounded-xl text-sm font-light focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
+                    />
+                    {isEnriching && (
+                      <div className="absolute right-3 top-3">
+                        <div className="w-4 h-4 border-2 border-foreground/20 border-t-sage rounded-full animate-spin" />
+                      </div>
+                    )}
+                    {showSuggestions && addressSuggestions.length > 0 && (
+                      <div className="absolute z-20 left-0 right-0 mt-1 bg-background border border-foreground/10 rounded-xl shadow-lg overflow-hidden">
+                        {addressSuggestions.map((s, i) => (
+                          <button
+                            key={i}
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={() => handleSelectAddress(s)}
+                            className="w-full text-left px-4 py-3 text-sm font-light hover:bg-foreground/5 transition-colors border-b last:border-b-0 border-foreground/5"
+                          >
+                            {s.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  {bienAdresse.trim() && (
+                    <button
+                      onClick={async () => {
+                        setIsAttaching(true);
+                        try {
+                          const res = await fetch(`/api/dossier/${dossierUuid}`, {
+                            method: "PATCH",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              action: "attach",
+                              bienAdresse: bienAdresse.trim(),
+                              bienNom: bienAdresse.trim(),
+                              bienSurface: bienSurface ? Number(bienSurface) : null,
+                              bienPrix: bienPrix ? Number(bienPrix) : null,
+                              bienType: bienType || null,
+                              latitude: enrichedLat,
+                              longitude: enrichedLon,
+                              ville: enrichedCity || null,
+                              codePostal: enrichedPostcode || null,
+                              descriptionCommerciale: enrichedDescription.trim() || null,
+                              carteImageKey: enrichedCarteKey,
+                              prixMoyenM2: enrichedPrixM2,
+                            }),
+                          });
+                          if (res.ok) setAttachDone(true);
+                        } catch { /* silent */ }
+                        setIsAttaching(false);
+                      }}
+                      disabled={isAttaching}
+                      className="px-6 py-3 bg-sage text-white rounded-xl text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40"
+                    >
+                      {isAttaching ? "Création..." : "Créer le bien et associer"}
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {attachDone && (
+            <div className="flex items-center gap-2 p-4 rounded-xl bg-sage/10 border border-sage/20">
+              <svg className="w-4 h-4 text-sage shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              <span className="text-sm text-sage font-medium">Visuels associés au bien</span>
+              <a href="/mes-biens" className="text-xs text-sage/70 hover:text-sage ml-auto">
+                Voir mes biens →
+              </a>
+            </div>
+          )}
         </div>
       )}
     </div>
