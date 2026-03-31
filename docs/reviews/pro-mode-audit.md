@@ -133,8 +133,25 @@
 
 ---
 
+---
+
+## Statut des corrections (2026-03-31)
+
+| Bug | Sévérité | Statut | Notes |
+|---|---|---|---|
+| BUG-1 | P1 | CORRIGE (commit a114929) | Validation custom prompt vide ajoutée |
+| BUG-2 | P0 | CORRIGE | outdoorStyleId lu, stocké en DB, utilisé dans generateSinglePhoto |
+| BUG-3 | P1 | CORRIGE | Colonnes outdoor_style_id + outdoor_subtype ajoutées à dossier_photos |
+| BUG-4 | P1 | CORRIGE | updateProperty appelé après findOrCreatePropertyByAddress avec geo data |
+| BUG-5 | P1 | CORRIGE | Sélecteur de style ajouté dans la modale dossier depuis Mes biens + auto-génération |
+| BUG-6 | P2 | REPORTE Pro v2 | Jointure textuelle — nécessite refonte schema DB avec FK property_id |
+| BUG-7 | P1 | REPORTE Pro v2 | Itération sur photos dossier — feature gap, fait partie du redesign |
+| BUG-8 | P2 | CORRIGE | globalStyles limité à un seul élément (sélection remplace au lieu d'ajouter) |
+
+---
+
 **Handoff → @product-manager**
 - Fichier produit : `docs/reviews/pro-mode-audit.md`
-- 2 bugs P0, 5 bugs P1, 2 bugs P2 identifiés
-- Le redesign du flow Pro doit adresser ces bugs en priorité
-- Les bugs P0 (outdoor dans dossier) bloquent les marchands de biens qui photographient aussi les extérieurs
+- 2 bugs P0, 5 bugs P1, 2 bugs P2 identifiés — **6 corrigés, 2 reportés**
+- BUG-6 (FK property_id) et BUG-7 (itération photos dossier) sont reportés au redesign Pro v2
+- Les bugs P0 (outdoor dans dossier) sont corrigés

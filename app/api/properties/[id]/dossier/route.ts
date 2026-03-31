@@ -57,10 +57,12 @@ export async function POST(
       selectedPhotoIds,
       coverPhotoId,
       photoOrder,
+      globalStyleId,
     } = body as {
       selectedPhotoIds?: string[];
       coverPhotoId?: string;
       photoOrder?: string[];
+      globalStyleId?: string; // BUG-5: optional style override for dossier
     };
 
     if (!selectedPhotoIds || selectedPhotoIds.length === 0) {
@@ -99,6 +101,9 @@ export async function POST(
     // 5. Fetch merchant profile for slug
     const merchant = await getMerchantProfile(session.user.id);
 
+    // BUG-5 fix: determine if we need re-generation (new style chosen)
+    const needsRegeneration = !!globalStyleId;
+
     // 6. Create dossier with property snapshot
     const dossier = await createDossier({
       userId: session.user.id,
@@ -108,6 +113,7 @@ export async function POST(
       bienSurface: property.surface_m2 || undefined,
       bienPrix: property.sale_price || undefined,
       bienType: property.property_type || undefined,
+      globalStyleId: globalStyleId || undefined,
       latitude: property.latitude || undefined,
       longitude: property.longitude || undefined,
       ville: property.city || undefined,
@@ -125,18 +131,21 @@ export async function POST(
       const photo = validPhotos.find((p) => p!.id === photoId);
       if (!photo) continue;
 
+      // BUG-5 fix: use globalStyleId if provided, otherwise keep original style
+      const effectiveStyleId = needsRegeneration ? globalStyleId : (photo.style_id || undefined);
+
       await addDossierPhoto({
         dossierUuid: dossier.uuid,
         photoIndex: i,
         roomLabel: photo.room_label || undefined,
         roomTypeId: photo.room_type || undefined,
-        styleId: photo.style_id || undefined,
+        styleId: effectiveStyleId,
         isOutdoor: photo.is_outdoor,
         inputImageKey: photo.input_image_key || "",
       });
 
-      // Mark photo as completed since output already exists
-      if (photo.output_image_key) {
+      // Mark photo as completed only if NOT re-generating (original style kept)
+      if (!needsRegeneration && photo.output_image_key) {
         const { updateDossierPhotoStatus } = await import("@/lib/dossier");
         const { getDossierPhotos } = await import("@/lib/dossier");
         const dossierPhotos = await getDossierPhotos(dossier.uuid);
@@ -150,7 +159,43 @@ export async function POST(
       }
     }
 
-    // 7. Mark dossier as completed (photos are already generated)
+    if (needsRegeneration) {
+      // BUG-5 fix: dossier needs generation — check credits
+      const pendingCount = validPhotos.length;
+      if (credits < pendingCount) {
+        return NextResponse.json(
+          {
+            error: `Crédits insuffisants. ${pendingCount} nécessaires, ${credits} disponibles.`,
+            creditsNeeded: pendingCount,
+            creditsAvailable: credits,
+          },
+          { status: 402 }
+        );
+      }
+
+      // Launch generation via internal PATCH call (fire-and-forget)
+      const baseUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+      fetch(`${baseUrl}/api/dossier/${dossier.uuid}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Cookie": request.headers.get("cookie") || "",
+        },
+        body: JSON.stringify({ action: "generate" }),
+      }).catch((err) => console.error("Auto-launch generation failed:", err));
+
+      // Return dossier — client redirects to dossier page (will show generating state)
+      return NextResponse.json({
+        dossier: {
+          uuid: dossier.uuid,
+          slug: dossier.slug,
+          identifier: dossier.slug || dossier.uuid,
+          needsGeneration: true,
+        },
+      }, { status: 201 });
+    }
+
+    // 7. Mark dossier as completed (photos are already generated, original style kept)
     const completedCount = validPhotos.filter((p) => p!.output_image_key).length;
     await updateDossierStatus(dossier.uuid, "completed", {
       successCount: completedCount,

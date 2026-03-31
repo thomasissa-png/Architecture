@@ -1084,12 +1084,14 @@ export default function MerchantMode() {
             selectedStyles={globalStyles}
             customPrompt={customPrompt}
             onStyleToggle={(styleId) => {
+              // BUG-8 fix: single style selection (only globalStyles[0] was ever used)
               setGlobalStyles((prev) => {
                 if (prev.includes(styleId)) {
-                  if (prev.length === 1) return prev;
-                  return prev.filter((id) => id !== styleId);
+                  // Deselect = clear (allows switching to custom)
+                  return [];
                 }
-                return [...prev, styleId];
+                // Replace any previous selection with the new one
+                return [styleId];
               });
             }}
             onCustomPromptChange={setCustomPrompt}

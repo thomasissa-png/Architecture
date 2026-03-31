@@ -29,6 +29,7 @@ import RoomNav from "@/components/RoomNav";
 import StorageImage from "@/components/StorageImage";
 import MerchantBrandWrapper from "@/components/MerchantBrandWrapper";
 import { translateRoomLabel } from "@/lib/constants";
+import DossierAutoRefresh from "@/components/DossierAutoRefresh";
 
 interface PageProps {
   params: { uuid: string };
@@ -382,13 +383,15 @@ export default async function DossierPage({ params }: PageProps) {
 
         {/* Photos grid */}
         {completedPhotos.length === 0 ? (
-          <div className="text-center py-16">
-            <p className="text-muted font-light">
-              {dossier.status === "generating"
-                ? "Génération en cours, revenez dans quelques instants."
-                : "Aucun visuel disponible pour ce dossier."}
-            </p>
-          </div>
+          (dossier.status === "generating" || dossier.status === "draft") ? (
+            <DossierAutoRefresh dossierUuid={dossier.uuid} />
+          ) : (
+            <div className="text-center py-16">
+              <p className="text-muted font-light">
+                Aucun visuel disponible pour ce dossier.
+              </p>
+            </div>
+          )
         ) : (
           <>
             <DossierPublicView

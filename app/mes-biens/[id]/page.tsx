@@ -119,6 +119,7 @@ export default function PropertyDetailPage() {
   const [coverPhotoId, setCoverPhotoId] = useState<string | null>(null);
   const [isCreatingDossier, setIsCreatingDossier] = useState(false);
   const [dossierResult, setDossierResult] = useState<{ uuid: string; slug?: string; identifier?: string; pdfUrl: string } | null>(null);
+  const [dossierStyleId, setDossierStyleId] = useState<string | null>(null); // BUG-5: style for dossier from "Mes biens"
 
   // Modal refs for focus trap
   const associateModalRef = useRef<HTMLDivElement>(null);
@@ -413,14 +414,23 @@ export default function PropertyDetailPage() {
           selectedPhotoIds: Array.from(selectedForDossier),
           coverPhotoId,
           photoOrder: Array.from(selectedForDossier),
+          globalStyleId: dossierStyleId || undefined,
         }),
       });
 
       if (res.ok) {
         const data = await res.json();
+        const dossierPath = data.dossier.identifier || data.dossier.slug || data.dossier.uuid;
+
+        if (data.dossier.needsGeneration) {
+          // BUG-5: style override chosen — redirect to dossier page to trigger generation
+          // The dossier page will detect "draft" status and offer to launch generation
+          window.location.href = `/dossier/${dossierPath}`;
+          return;
+        }
+
         setDossierResult(data.dossier);
         // Auto-open dossier page in new tab (primary action)
-        const dossierPath = data.dossier.identifier || data.dossier.slug || data.dossier.uuid;
         window.open(`/dossier/${dossierPath}`, '_blank', 'noopener,noreferrer');
       } else {
         const data = await res.json();
@@ -985,6 +995,7 @@ export default function PropertyDetailPage() {
                     setSelectedForDossier(new Set());
                     setCoverPhotoId(null);
                     setDossierResult(null);
+                    setDossierStyleId(null);
                   }}
                   className="text-xs bg-foreground text-background px-4 py-2.5 rounded-full font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                   data-testid="create-dossier-btn"
@@ -1172,8 +1183,43 @@ export default function PropertyDetailPage() {
               ) : (
                 <>
                   <p className="text-xs text-muted font-light mb-3">
-                    Sélectionnez les photos à inclure dans le dossier. Cliquez sur la couverture souhaitée.
+                    Sélectionnez les photos à inclure et choisissez un style unifié pour le dossier.
                   </p>
+
+                  {/* BUG-5 fix: Style selector for dossier */}
+                  <div className="mb-4">
+                    <label className="text-xs font-medium text-foreground/70 block mb-2">Style du dossier</label>
+                    <div className="flex flex-wrap gap-1.5">
+                      <button
+                        onClick={() => setDossierStyleId(null)}
+                        className={`text-xs px-3 py-1.5 rounded-full transition-colors ${
+                          dossierStyleId === null
+                            ? "bg-foreground text-background"
+                            : "bg-foreground/5 text-foreground/70 hover:bg-foreground/10"
+                        }`}
+                      >
+                        Style original
+                      </button>
+                      {Object.entries(STYLE_LABELS).filter(([id]) => id !== "custom").map(([id, label]) => (
+                        <button
+                          key={id}
+                          onClick={() => setDossierStyleId(id)}
+                          className={`text-xs px-3 py-1.5 rounded-full transition-colors ${
+                            dossierStyleId === id
+                              ? "bg-sage text-white"
+                              : "bg-foreground/5 text-foreground/70 hover:bg-foreground/10"
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                    {dossierStyleId && (
+                      <p className="text-xs text-sage font-light mt-1.5">
+                        Les photos seront re-générées en style {STYLE_LABELS[dossierStyleId] || dossierStyleId}.
+                      </p>
+                    )}
+                  </div>
 
                   {photos.length === 0 ? (
                     <p className="text-sm text-muted font-light py-8 text-center">
