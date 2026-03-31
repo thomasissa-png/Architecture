@@ -336,7 +336,9 @@ export default function MerchantMode() {
             image: p.base64,
             roomLabel: p.entry?.roomLabel || `Photo ${p.index + 1}`,
             roomTypeId: p.entry?.roomTypeId || null,
-            styleId: p.entry?.styleOverride?.id || globalStyles[0] || "custom",
+            styleId: p.entry?.isOutdoor
+              ? (p.entry?.outdoorStyleId || globalStyles[0] || "custom")
+              : (p.entry?.styleOverride?.id || globalStyles[0] || "custom"),
             customPrompt: p.entry?.customPromptOverride || customPrompt || "",
             isOutdoor: p.entry?.isOutdoor || false,
             outdoorStyleId: p.entry?.outdoorStyleId || null,

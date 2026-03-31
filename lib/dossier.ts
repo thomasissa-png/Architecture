@@ -51,6 +51,8 @@ export interface DossierPhoto {
   style_id: string | null;
   custom_prompt: string | null;
   is_outdoor: boolean;
+  outdoor_style_id: string | null;
+  outdoor_subtype: string | null;
   input_image_key: string | null;
   output_image_key: string | null;
   pass1_image_key: string | null;
@@ -87,6 +89,8 @@ export interface DossierPhotoInput {
   styleId?: string;
   customPrompt?: string;
   isOutdoor?: boolean;
+  outdoorStyleId?: string;
+  outdoorSubtype?: string;
   inputImageKey: string;
 }
 
@@ -188,6 +192,12 @@ export async function ensureDossierTables(): Promise<void> {
   // ── custom_prompt column on dossier_photos (idempotent migration) ──
   await db.query(`
     DO $$ BEGIN ALTER TABLE dossier_photos ADD COLUMN custom_prompt TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$;
+  `);
+
+  // ── outdoor_style_id + outdoor_subtype columns on dossier_photos (BUG-2/BUG-3 fix) ──
+  await db.query(`
+    DO $$ BEGIN ALTER TABLE dossier_photos ADD COLUMN outdoor_style_id VARCHAR(50); EXCEPTION WHEN duplicate_column THEN NULL; END $$;
+    DO $$ BEGIN ALTER TABLE dossier_photos ADD COLUMN outdoor_subtype VARCHAR(50); EXCEPTION WHEN duplicate_column THEN NULL; END $$;
   `);
 
   dossierTablesEnsured = true;
@@ -372,8 +382,8 @@ export async function addDossierPhoto(input: DossierPhotoInput): Promise<Dossier
   const db = getPool();
 
   const result = await db.query(
-    `INSERT INTO dossier_photos (dossier_uuid, photo_index, room_label, room_type_id, style_id, custom_prompt, is_outdoor, input_image_key)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    `INSERT INTO dossier_photos (dossier_uuid, photo_index, room_label, room_type_id, style_id, custom_prompt, is_outdoor, outdoor_style_id, outdoor_subtype, input_image_key)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
      RETURNING *`,
     [
       input.dossierUuid,
@@ -383,6 +393,8 @@ export async function addDossierPhoto(input: DossierPhotoInput): Promise<Dossier
       input.styleId || null,
       input.customPrompt || null,
       input.isOutdoor || false,
+      input.outdoorStyleId || null,
+      input.outdoorSubtype || null,
       input.inputImageKey,
     ]
   );

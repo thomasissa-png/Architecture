@@ -92,6 +92,8 @@ export async function POST(
         styleId?: string;
         customPrompt?: string;
         isOutdoor?: boolean;
+        outdoorStyleId?: string;
+        outdoorSubtype?: string;
         photoIndex: number;
       }>;
     };
@@ -128,6 +130,8 @@ export async function POST(
         styleId: photo.styleId || dossier.global_style_id || undefined,
         customPrompt: photo.customPrompt,
         isOutdoor: photo.isOutdoor,
+        outdoorStyleId: photo.outdoorStyleId,
+        outdoorSubtype: photo.outdoorSubtype,
         inputImageKey: imageKey,
       });
 
@@ -344,8 +348,10 @@ async function generateSinglePhoto(
   const outputWidth = ratio > 1.3 ? 1536 : ratio < 0.77 ? 1024 : 1024;
   const outputHeight = ratio > 1.3 ? 1024 : ratio < 0.77 ? 1536 : 1024;
 
-  // Resolve style prompts
-  const effectiveStyleId = photo.style_id || dossier.global_style_id || "scandinavian";
+  // Resolve style prompts — use outdoor_style_id for outdoor photos (BUG-2 fix)
+  const effectiveStyleId = photo.is_outdoor
+    ? (photo.outdoor_style_id || photo.style_id || dossier.global_style_id || "scandinavian")
+    : (photo.style_id || dossier.global_style_id || "scandinavian");
 
   // Call the generate API internally
   const generateUrl = `${process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/generate`;
@@ -411,6 +417,7 @@ async function generateSinglePhoto(
       height: outputHeight,
       roomType: photo.room_type_id,
       isOutdoor: photo.is_outdoor,
+      outdoorSubtype: photo.outdoor_subtype || undefined,
       _skipCreditCheck: true, // Internal flag
     }),
   });

@@ -87,12 +87,28 @@ export async function POST(request: NextRequest) {
     });
 
     // Auto-create property in "Mes biens" if address provided (fire-and-forget)
+    // BUG-4 fix: also enrich with geo data after creation
     if (bienAdresse) {
       findOrCreatePropertyByAddress(session.user.id, bienAdresse, {
         propertyType: bienType || null,
         surfaceM2: bienSurface ? Number(bienSurface) : null,
         salePrice: bienPrix ? Number(bienPrix) : null,
         roomCount: nbPieces ? Number(nbPieces) : null,
+      }).then(async (property) => {
+        // Enrich with geo data that MerchantMode already has
+        const { updateProperty } = await import("@/lib/properties");
+        const enrichData: Record<string, unknown> = {};
+        if (latitude) enrichData.latitude = Number(latitude);
+        if (longitude) enrichData.longitude = Number(longitude);
+        if (ville) enrichData.city = ville;
+        if (codePostal) enrichData.postalCode = codePostal;
+        if (prixMoyenM2) enrichData.dvfMedianPriceM2 = Number(prixMoyenM2);
+        if (descriptionCommerciale) enrichData.descriptionGenerated = descriptionCommerciale;
+        if (carteImageKey) enrichData.mapImageKey = carteImageKey;
+
+        if (Object.keys(enrichData).length > 0) {
+          await updateProperty(property.id, session.user.id, enrichData);
+        }
       }).catch((err) => {
         console.error("Auto-create property for dossier failed (non-blocking):", err);
       });
