@@ -448,16 +448,14 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: str
     ].join(" ");
   }
 
-  // ── FALLBACK: generic for living_room, office, null ── (full directives)
+  // ── FALLBACK: generic for living_room, office, null ── (condensed ~180 words)
   return [
     `Add the following furniture and decoration into this photo of a finished room: ${furniturePrompt}.`,
-    "The result should look like a professionally styled photograph for a luxury real estate listing — lived-in and aspirational, not a sterile furniture catalog.",
-    "Distribute furniture across the FULL DEPTH and WIDTH of the room. If the room is deep or has multiple zones, place a primary group in the foreground AND a secondary group further back. If the room is also wide, add a lateral anchor on the opposite side.",
-    "Place all objects naturally on the floor. Use visible architectural cues as absolute scale references — a standard interior door is 204cm tall, a door handle sits at 100cm, a window sill at 90cm. Every piece of furniture must be proportional to these references. Cast realistic shadows matching the existing light. Match shadow hardness to lighting type.",
-    "Adapt furniture size to the actual room volume: if the ceiling appears very high (>3m) or room is very large, scale up furniture proportionally. If the room appears compact or narrow (visible wall-to-wall distance seems less than 4m), scale DOWN — use a 180cm sofa instead of 230cm, an 80cm coffee table instead of 120cm, a 160x230cm rug instead of 200x300cm. Furniture must never appear to touch or crowd the walls.",
-    "Respect furniture density implied by the style. If minimalist, leave large empty floor areas. If room appears small, reduce accent pieces.",
-    "Freestanding objects only — no wall art, no shelving, no curtains. No duplicate items — each piece of furniture appears only once unless the style explicitly calls for a pair. Room structure LOCKED (walls, floor, ceiling, windows, radiators unchanged, not blocking radiators). Shadows from new furniture are expected.",
-    "If the input has zero windows, the output must have zero windows.",
+    "Result should look like a luxury real estate listing photo — lived-in, not a sterile catalog.",
+    "Distribute furniture across FULL DEPTH and WIDTH: primary group foreground, secondary group further back if space allows, lateral anchor on opposite side if room is wide.",
+    "Scale references: door = 204cm, handle = 100cm, sill = 90cm. Scale furniture to room volume — if compact (<4m wide), use 180cm sofa, 80cm table, 160x230cm rug. Scale up if ceiling >3m. Furniture must not touch walls. Match shadow hardness to lighting type.",
+    "Respect style density. If minimalist, leave large empty floor areas. If room small, reduce accent pieces. No duplicate items unless style calls for a pair.",
+    "Freestanding only — no wall art, no shelving, no curtains. Room structure LOCKED (walls, floor, ceiling, windows, radiators unchanged). Do not block radiators. If input has zero windows, output has zero windows.",
     CAMERA_AND_PHOTO,
   ].join(" ");
 }
