@@ -287,26 +287,22 @@
 
 ## Mémo de reprise — dernière session
 
-- **Date et heure de clôture** : 2026-03-28 (session 28)
-- **Branch** : `claude/update-gradient-agents-JekRd`
+- **Date et heure de clôture** : 2026-03-31 (session 29)
+- **Branch** : `claude/session-recovery-analysis-jNy97`
 - **Résumé de la session** :
-  - **Session massive** (~50 commits) : audit complet du site (20 pages, 31 composants), corrections P0/P1/P2 exhaustives, parcours d'achat reconstruit de zéro, prompts IA v27→v30.
-  - **Audit complet site** : 6 rapports dans docs/reviews/full-site-audit-*.md. Tous les P0 et P1 corrigés.
-  - **Parcours d'achat** : lib/stripe.ts sync pricing v3 (était sur les anciens prix), Pro en mode subscription (était one-shot), 4 packs recharge ajoutés, checkout direct depuis homepage (plus de redirect /pricing), suppression checkbox rétractation (Stripe gère), feedback post-achat.
-  - **Vocabulaire** : "crédit/génération" → "visuel" unifié sur 12 fichiers (70 occurrences). Terme commercial unique.
-  - **Prompts IA** : v27 (action:edit gpt-image-1.5), v28 (échelle architecturale 204cm + scaling DOWN), v29 (SDB dimensions explicites), v30 (tous trous comblés — Flux builders, outdoor, laundry/cellar).
-  - **Homepage** : 3 cartes personas compactes (Thomas 9.5/10), spacing réduit 35%.
-  - **Landing pages** : /architecte 8.1→9.5, /particulier 7.05→9.5 (pills styles, copy reécrit, a11y).
-  - **Page annonce** : 5 bugs (z-index, labels FR, grille photos, ExportPortail→modal, sticky).
-  - **Mes biens** : recherche/tri, boutons dossier/annonce contextuels avec liens directs.
-  - **MerchantMode** : 7 fixes (flow réordonné, scroll, custom style, outdoor par photo, miniatures résultat).
-  - **Admin backoffice** : refonte Tailwind complète + tab Utilisateurs + P0 QA (hooks order, focus-visible, accents).
-  - **Style par photo** en mode normal (multi-upload).
+  - **Latence** : Phase 1 optimisations appliquées (R3 MAX_DIMENSION 2048→1536, R6 singleton OpenAI client, R4 savePass1Cache parallélisé, R8 Flux PNG→JPEG). Gain estimé 3-8s. Phase 2 audit produit (docs/ia/latency-phase2-audit.md) sans application.
+  - **Produit** : 3 changements majeurs — crédits gratuits 3→2, auth obligatoire avant génération (pendingGeneration pattern), sélection multi-styles (radio→checkboxes, batch generation 2 concurrent).
+  - **UX** : hint multi-style, RoomTypePicker "(optionnel)"→"requis pour générer", generate button clarté sans compte.
+  - **Modal scroll** : bug fondateur — RefineModal remontait en haut. Fix : useScrollLock hook partagé (position:fixed + top:-scrollY) appliqué aux 6 modals (RefineModal, AuthModal, ExportPortailModal, Lightbox, ma-galerie, mes-biens).
+  - **Font** : font-light→font-normal revert immédiat (fondateur : "c'est moche"). Solution : --muted color #6B6B6E→#58585B (~6.5:1 ratio) pour lisibilité avec font-light (300).
+  - **Prompts** : audit Yann Duval 7.8/10, Lucas Moreau 8.1/10 (docs/reviews/). P1 corrections appliquées : Bohème kilim pouf, Haussmannien chandelier détaillé, pass2 condensé 250→180 mots. FLUX_NEGATIVE_PROMPT vérifié complet.
+  - **Audit production** : 50 générations en DB, images accessibles via Object Storage. Audits visuels Yann+Lucas lancés sur #74-81 (bohemian, scandinavian, contemporary, provencal).
+  - **QA** : 0 critique, 7 bugs mineurs corrigés (ESLint, accents, labels).
 
 - **Travaux en cours** :
-  1. **Tester v30 en prod** — les corrections d'échelle (v28-v30) n'ont pas été validées visuellement. Générer sur salon, chambre, SDB, cuisine de tailles variées.
-  2. **CGV** — le texte mentionne "sans abonnement" mais le Pro est maintenant un abonnement. À mettre à jour.
-  3. **Images galerie landing pages** — galeries commentées, en attente de 3-6 visuels réels dans public/demo/.
+  1. **Audits visuels production** — Yann+Lucas évaluent les photos réelles #74-81. Résultats à intégrer.
+  2. **CGV** — toujours à mettre à jour (abonnement Pro).
+  3. **Images galerie landing pages** — en attente de visuels réels.
 
 - **Travaux reportés (sessions précédentes, toujours valides)** :
   1. Blog seed — `npx tsx scripts/seed-blog.ts` sur Replit
@@ -316,20 +312,26 @@
   5. F5 Mode Décorateur — specs prêtes, pas implémenté
   6. Comparateur mobile — curseur touch events manquants
 
+- **Préférences fondateur documentées** :
+  - font-light (300) sacré — NE JAMAIS changer vers font-normal
+  - Ne jamais demander permission pour fixer un bug QA — fixer directement
+  - --muted à #58585B minimum pour lisibilité
+
 - **Prochaines actions recommandées** :
-  1. **Déployer sur Replit + tester v30** : générer 5+ photos sur des pièces de tailles variées (petit studio, grand salon, SDB compacte, cuisine ouverte, extérieur). Valider que l'échelle mobilier est cohérente. Si pas OK → audit Yann+Lucas pour re-calibrer.
-  2. **CGV** : mettre à jour le modèle économique (abonnement Pro, pas seulement one-shot). @legal pour la rédaction.
-  3. **Clés API Stripe** : configurer dans Replit Secrets pour activer le parcours d'achat réel.
-  4. **Images galerie** : générer via l'outil en prod, commiter dans public/demo/, activer les galeries sur les 3 landing pages.
+  1. **Intégrer résultats audits visuels** : si Yann/Lucas détectent des patterns récurrents (ex: color shift, flottement), ouvrir un sprint prompt dédié.
+  2. **Déployer sur Replit** : valider les 3 changements produit (auth gate, multi-styles, crédits) + P1 prompt corrections en production.
+  3. **CGV** : mettre à jour le modèle économique. @legal.
+  4. **Clés API Stripe** : activer le parcours d'achat réel.
+  5. **Tester 7 styles non testés** : Contemporain, Bohème, Méditerranéen (2 passes), Cosy, Wabi-Sabi, Maximaliste, Haussmannien.
 
 - **Blockers** :
-  - Déploiement Replit requis pour tester v30 + parcours achat
-  - Clés Stripe non configurées = parcours d'achat en mode test uniquement
-  - Domaine versimo.fr = plafond SEO/GEO
+  - Déploiement Replit requis pour tester changements produit
+  - Clés Stripe non configurées
+  - Domaine versimo.fr
 
 - **Commande de reprise suggérée** :
 ```
-@orchestrator Reprends le projet Versimo. Session 28 : audit complet site (6 rapports, P0/P1/P2 corrigés), parcours achat reconstruit (checkout direct, subscription Pro, 4 recharges), vocabulaire "visuel" unifié, prompts v27→v30 (action:edit, échelle architecturale, SDB dimensions). Priorités : (1) déployer Replit + tester v30 sur toutes tailles de pièces, (2) CGV abonnement Pro, (3) clés Stripe + test achat réel, (4) images galerie landing pages.
+@orchestrator Reprends Versimo. Session 29 : latence Phase 1 appliquée (-3-8s), 3 changements produit (auth obligatoire, multi-styles, crédits 3→2), modal scroll fix (6 modals), font-light préservé (--muted assombri), P1 prompts corrigés (Bohème pouf, Haussmannien chandelier, pass2 condensé). Priorités : (1) déployer Replit + tester en prod, (2) intégrer résultats audits visuels Yann+Lucas, (3) CGV abonnement, (4) tester les 7 styles non couverts.
 ```
 
 ---
