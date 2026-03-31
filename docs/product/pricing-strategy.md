@@ -41,13 +41,13 @@
 | | |
 |---|---|
 | **Prix** | 0€ — sans carte bancaire, sans inscription obligatoire |
-| **Crédits inclus** | 3 générations offertes (one-time) |
+| **Crédits inclus** | 2 générations offertes (one-time) |
 | **Recharge** | Non disponible — upgrade vers Starter ou Pro pour continuer |
 | **Features** | 12 styles intérieurs + 8 styles extérieurs, comparateur avant/après, téléchargement HD, sans filigrane |
 | **Exclusions** | Mode Pro (dossiers), itérations, annonces publiques, export portails |
 | **Persona cible** | Léa (test), Claire (découverte), Thomas (évaluation) |
 
-**Justification** : 3 générations = tester 3 styles sur la même photo (usage naturel de Claire). Suffisant pour démontrer la qualité du pipeline 2 passes. En dessous de 3, la démonstration de valeur est insuffisante. Au-dessus de 5, le coût d'acquisition en crédits offerts devient significatif (~0,50€/nouveau compte). Aligné sur REimagineHome (3 designs gratuits).
+**Justification** : 2 générations = tester 2 styles sur la même photo, suffisant pour démontrer la qualité du pipeline 2 passes et créer l'envie de continuer. Réduit le coût d'acquisition par rapport à 3 crédits (~0,30€/nouveau compte au lieu de ~0,50€). Crée une friction douce qui pousse vers le Starter à 9,90 €.
 
 ---
 
@@ -166,7 +166,7 @@ Hypothèse : marge nette = marge brute - coûts fixes (hébergement ~50€/mois,
 |---|---|
 | 4 tiers (Gratuit + Découverte 4,90€ + Starter 14,90€ + Pro 29€) | 3 tiers (Découverte gratuit + Starter 9,90€ one-shot + Pro 29€/mois) |
 | Packs one-shot séparés | Starter = one-shot, Pro = abonnement, recharge pour les deux |
-| Découverte = pack payant 4,90€/5 crédits | Découverte = gratuit (3 crédits) |
+| Découverte = pack payant 4,90€/5 crédits | Découverte = gratuit (2 crédits) |
 | Starter = pack payant 14,90€/20 crédits | Starter = achat unique 9,90€, 15 crédits sans expiration |
 | Tout en one-shot sauf Pro | Seul le Pro est en abonnement mensuel (50 crédits renouvelés) |
 

@@ -54,7 +54,7 @@ Le service propose 12 styles curatés : Scandinave, Contemporain, Industriel, Ja
 
 ### 3.1 Générations gratuites
 
-Versimo offre **3 générations gratuites** à toute personne accédant au service, sans nécessité de créer un compte ni de fournir des coordonnées bancaires. Ces générations gratuites sont accordées dans la limite d'une utilisation raisonnable par adresse IP.
+Versimo offre **2 générations gratuites** à toute personne accédant au service, sans nécessité de créer un compte ni de fournir des coordonnées bancaires. Ces générations gratuites sont accordées dans la limite d'une utilisation raisonnable par adresse IP.
 
 ### 3.2 Compte utilisateur [FONCTIONNALITE EN COURS DE DEVELOPPEMENT]
 
@@ -68,7 +68,7 @@ La création d'un compte sera nécessaire pour acheter des crédits et conserver
 
 Versimo propose trois tiers d'accès au service :
 
-- **Découverte** : accès gratuit, sans carte bancaire, incluant 3 générations offertes (usage unique, non renouvelable).
+- **Découverte** : accès gratuit, sans carte bancaire, incluant 2 générations offertes (usage unique, non renouvelable).
 - **Starter** : achat unique (one-shot), sans abonnement. Les crédits inclus n'expirent pas.
 - **Pro** : abonnement mensuel à reconduction tacite. Les crédits mensuels sont renouvelés chaque mois et non cumulables d'un mois sur l'autre.
 
@@ -80,7 +80,7 @@ Les titulaires d'un compte Starter ou Pro peuvent acquérir des crédits supplé
 
 | Tier | Prix TTC | Crédits inclus | Type |
 |------|----------|----------------|------|
-| **Découverte** | Gratuit | 3 générations (one-time) | Sans abonnement |
+| **Découverte** | Gratuit | 2 générations (one-time) | Sans abonnement |
 | **Starter** | 9,90 € TTC | 15 crédits (sans expiration) | Achat unique |
 | **Pro** | 29 €/mois TTC | 50 crédits/mois (renouvelés, non cumulables) | Abonnement mensuel |
 
