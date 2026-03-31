@@ -37,8 +37,9 @@ import {
  * v26 (migration gpt-image-1 → gpt-image-1.5, latence /4 attendue),
  * v30 (audit @ia: wall preservation bedroom Flux, scaling DOWN laundry/cellar/outdoor, dimensions kitchen/office, outdoor scale refs),
  * v31 (audit Lucas v30: distribution spatiale remontee position 2, ancrage sol contact shadows, preservation lumiere passe 2, echelle conditionnelle),
- * v32 (revert gpt-image-1.5 → gpt-image-1 — regression spatiale confirmee par audit Lucas, modele configurable via env) */
-export const PROMPT_VERSION = "v32";
+ * v32 (revert gpt-image-1.5 → gpt-image-1 — regression spatiale confirmee par audit Lucas, modele configurable via env),
+ * v33 (audit Yann: propagation DEPTH_DISTRIBUTION + CONTACT_SHADOWS aux 7 builders dedies — bedroom, kitchen, bathroom, WC, entryway, laundry, cellar + preservation lumiere passe 2 tous builders) */
+export const PROMPT_VERSION = "v33";
 
 // ─── Image generation model ─────────────────────────────────────────
 // Configurable via env var for A/B testing. Default: gpt-image-1 (validated at 8.0-8.5/10).
@@ -347,6 +348,8 @@ function buildSurfacesFluxPrompt(surfacePrompt: string, roomTypeId?: string | nu
 // Shared compact fragments for pass 2
 const STRUCTURE_LOCKED = "Room structure is LOCKED: walls, floor, ceiling, windows visually identical to input. Shadows from furniture are natural. No new openings.";
 const EQUIPMENT_PRESERVATION = "Keep all wall-mounted equipment visible (radiators, vents, switches, outlets). Do not place furniture in front of radiators.";
+const CONTACT_SHADOWS = "Every piece must appear firmly grounded on the floor with visible contact shadows — especially furniture placed in the back of the room.";
+const DEPTH_DISTRIBUTION = "If the room is deep, distribute furniture across its full depth — primary group foreground, secondary piece further back if space allows.";
 const CAMERA_AND_PHOTO = `${CAMERA_PRESERVATION} DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Subtle photographic film grain must be visible at 100% zoom — not smooth CGI rendering. Natural lens vignetting darkening the corners by 5-10%. No text or watermarks.`;
 
 function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: string | null): string {
@@ -355,7 +358,10 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: str
     return [
       `Add the following kitchen elements to this photo of a finished room: ${furniturePrompt}.`,
       "Built-in cabinetry and countertops against walls. Add island or peninsula with stools ONLY if the kitchen is wide enough (visible floor area suggests >10m2). If the kitchen appears compact, skip the island entirely.",
-      "Place all elements with correct perspective and scale on the existing floor. Use door frames and window sills as scale references. Cast realistic shadows matching existing light.",
+      DEPTH_DISTRIBUTION,
+      CONTACT_SHADOWS,
+      "Place all elements with correct perspective and scale on the existing floor. Use door frames and window sills as scale references.",
+      "Preserve existing light direction and color temperature.",
       STRUCTURE_LOCKED,
       EQUIPMENT_PRESERVATION,
       "No curtains.",
@@ -369,7 +375,9 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: str
       `Add the following bathroom fixtures and accessories to this photo of a finished room: ${furniturePrompt}.`,
       "Wall-mounted vanity and mirror expected. Other items (stool, basket, plant) freestanding.",
       "Bathrooms are typically small — scale ALL fixtures to fit within the visible floor area. If the room appears compact (one wall visible is under 2m), use a 60cm vanity instead of 80cm, skip the stool and basket, keep only essentials (shower, vanity, mirror, towel ladder). The shower enclosure must NOT extend beyond one-third of any visible wall.",
-      "Use ceiling height (~250cm), tile size, and visible plumbing as scale references. Every fixture must leave at least 60cm clear passage width between it and the opposite wall or fixture. Cast realistic shadows matching existing light.",
+      "Use ceiling height (~250cm), tile size, and visible plumbing as scale references. Every fixture must leave at least 60cm clear passage width between it and the opposite wall or fixture.",
+      CONTACT_SHADOWS,
+      "Preserve existing light direction and color temperature.",
       STRUCTURE_LOCKED,
       EQUIPMENT_PRESERVATION,
       "No curtains.",
@@ -382,7 +390,8 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: str
     return [
       `Add the following WC fixtures to this photo of a finished room: ${furniturePrompt}.`,
       "Very small space — minimal items only. Wall-hung or floor toilet, compact hand basin with mirror above.",
-      "Place all elements with correct perspective and scale. Use door frame (204cm) as scale reference. Cast realistic shadows matching existing light.",
+      CONTACT_SHADOWS,
+      "Place all elements with correct perspective and scale. Use door frame (204cm) as scale reference. Preserve existing light direction and color temperature.",
       STRUCTURE_LOCKED,
       EQUIPMENT_PRESERVATION,
       "No curtains.",
@@ -395,7 +404,9 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: str
     return [
       `Add the following bedroom furniture to this photo of a finished room: ${furniturePrompt}.`,
       "Freestanding furniture only — bed, nightstands, rug beside bed, wardrobe or dresser as background anchor. No wall-mounted art, no built-in shelving, no curtains.",
-      "Every piece must appear firmly grounded on the floor with visible contact shadows. Scale bed to room: if compact room, use 140cm bed instead of 160cm, skip bench at foot. Place all objects naturally with correct perspective and scale. Use door frame height (204cm) as reference.",
+      DEPTH_DISTRIBUTION,
+      CONTACT_SHADOWS,
+      "Scale bed to room: if compact room, use 140cm bed instead of 160cm, skip bench at foot. Place all objects naturally with correct perspective and scale. Use door frame height (204cm) as reference.",
       "Preserve existing light direction and color temperature. Calm atmosphere — respect furniture density implied by the style.",
       STRUCTURE_LOCKED,
       EQUIPMENT_PRESERVATION,
@@ -409,7 +420,8 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: str
     return [
       `Add the following entryway furniture to this photo of a finished room: ${furniturePrompt}.`,
       "Small space — do not overcrowd. Scale console to visible wall width — never wider than 60% of the available wall. Freestanding items only: console, mirror propped on console, coat rack, small bench, runner rug. No wall-mounted art, no curtains.",
-      "Place all objects with correct perspective and scale. Use door frame (204cm tall) as scale reference. Cast realistic shadows matching existing light.",
+      CONTACT_SHADOWS,
+      "Place all objects with correct perspective and scale. Use door frame (204cm tall) as scale reference. Preserve existing light direction and color temperature.",
       STRUCTURE_LOCKED,
       EQUIPMENT_PRESERVATION,
       CAMERA_AND_PHOTO,
@@ -422,7 +434,8 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: str
       `Add the following laundry equipment to this photo of a finished room: ${furniturePrompt}.`,
       "Functional layout — washing machine, storage cabinet, drying rack, laundry basket. No decorative objects, no luxury items.",
       "If the room appears compact (under 4m2 visible floor), skip the folding table and drying rack — keep only washing machine, cabinet, and basket.",
-      "Place all elements with correct perspective and scale. Use door frame (204cm) as scale reference. Cast realistic shadows matching existing light.",
+      CONTACT_SHADOWS,
+      "Place all elements with correct perspective and scale. Use door frame (204cm) as scale reference. Preserve existing light direction and color temperature.",
       STRUCTURE_LOCKED,
       EQUIPMENT_PRESERVATION,
       "No curtains.",
@@ -436,7 +449,8 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: str
       `Add the following cellar furnishing to this photo of a finished room: ${furniturePrompt}.`,
       "Functional storage — shelving unit, storage boxes, utility light. Wine rack if space allows. No luxury furniture, no decorative objects.",
       "If the room appears compact or narrow, use a single shelving unit and skip the wine rack.",
-      "Place all elements with correct perspective and scale. Use door frame (204cm) as scale reference. Cast realistic shadows matching existing light.",
+      CONTACT_SHADOWS,
+      "Place all elements with correct perspective and scale. Use door frame (204cm) as scale reference. Preserve existing light direction and color temperature.",
       STRUCTURE_LOCKED,
       EQUIPMENT_PRESERVATION,
       CAMERA_AND_PHOTO,
