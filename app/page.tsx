@@ -83,7 +83,10 @@ async function resilientFetch(
   parentSignal?: AbortSignal
 ): Promise<Response> {
   const TIMEOUT_MS = 180_000; // 3 min — pipeline 2 passes can take 60-90s
-  const MAX_RETRIES = 1;
+  // NO automatic retry: /api/generate debits credits upfront.
+  // A retry after timeout = double billing (server may still be processing).
+  // The user has an explicit "Réessayer" button instead.
+  const MAX_RETRIES = 0;
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     const timeoutController = new AbortController();

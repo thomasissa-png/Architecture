@@ -1,5 +1,23 @@
 import OpenAI from "openai";
 
+// Timeout for GPT-4.1-mini calls (classify, preprocess).
+// These are lightweight chat completions — 15s is generous.
+// Without this, a slow GPT-4.1-mini could block the entire iteration indefinitely.
+const MINI_TIMEOUT_MS = 15_000;
+
+function withMiniTimeout<T>(promise: Promise<T>, label: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(new Error(`${label} timeout after ${MINI_TIMEOUT_MS / 1000}s`)),
+      MINI_TIMEOUT_MS
+    );
+    promise.then(
+      (val) => { clearTimeout(timer); resolve(val); },
+      (err) => { clearTimeout(timer); reject(err); }
+    );
+  });
+}
+
 /**
  * Pre-processes a custom user prompt:
  * 1. Translates to English
@@ -17,7 +35,7 @@ export async function preprocessCustomPrompt(
 
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-  const response = await openai.chat.completions.create({
+  const response = await withMiniTimeout(openai.chat.completions.create({
     model: "gpt-4.1-mini",
     temperature: 0.3,
     messages: [
@@ -65,7 +83,7 @@ warnings should be in French (the user's language). Each warning explains what w
       }
     ],
     response_format: { type: "json_object" },
-  });
+  }), "preprocessCustomPrompt");
 
   const content = response.choices[0]?.message?.content;
   if (!content) {
@@ -100,7 +118,7 @@ export async function classifyIterationIntent(
   try {
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-    const response = await openai.chat.completions.create({
+    const response = await withMiniTimeout(openai.chat.completions.create({
       model: "gpt-4.1-mini",
       temperature: 0,
       max_tokens: 10,
@@ -123,7 +141,7 @@ If unsure, default to "adjust" (safer — preserves existing furniture).`,
           content: comment,
         },
       ],
-    });
+    }), "classifyIterationIntent");
 
     const content = response.choices[0]?.message?.content?.trim().toLowerCase();
     if (content === "restyle") return "restyle";
@@ -158,7 +176,7 @@ export async function preprocessIterationComment(
   try {
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-    const response = await openai.chat.completions.create({
+    const response = await withMiniTimeout(openai.chat.completions.create({
       model: "gpt-4.1-mini",
       temperature: 0.3,
       messages: [
@@ -205,7 +223,7 @@ Warnings must be in French. Each warning explains what was filtered and why.`
         }
       ],
       response_format: { type: "json_object" },
-    });
+    }), "preprocessIterationComment");
 
     const content = response.choices[0]?.message?.content;
     if (!content) {
