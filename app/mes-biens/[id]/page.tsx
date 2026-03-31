@@ -9,7 +9,6 @@ import { useSession } from "next-auth/react";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useScrollLock } from "@/lib/hooks/useScrollLock";
 import { useParams } from "next/navigation";
-import AuthButton from "@/components/AuthButton";
 import Header from "@/components/Header";
 import InlineGenerator from "@/components/InlineGenerator";
 import { STYLE_LABELS, TYPE_LABELS } from "@/lib/constants";

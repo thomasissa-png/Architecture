@@ -9,7 +9,6 @@
 import { useSession } from "next-auth/react";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import AuthButton from "@/components/AuthButton";
 import ProGate from "@/components/ProGate";
 import Header from "@/components/Header";
 import { TYPE_LABELS } from "@/lib/constants";

@@ -596,6 +596,7 @@ agents/
 
 ## Regles de Developpement
 
+- **REGLE CRITIQUE ESLint/Replit** : Apres CHAQUE modification de fichier, verifier que tous les imports sont utilises. Replit echoue le build sur les imports non utilises (`@typescript-eslint/no-unused-vars`). Quand on extrait du code dans un composant partage (ex: Header), TOUJOURS supprimer les imports devenus inutiles dans les fichiers consommateurs. Lancer `npx next lint` avant de committer.
 - Design minimaliste, pas de surcharge visuelle
 - Mobile-first pour les interactions tactiles
 - Feedback visuel a chaque action utilisateur

@@ -14,7 +14,6 @@ import { OUTDOOR_SUBTYPE_LIST } from "@/lib/outdoor-subtypes";
 import { processImage, isLikelyInterior } from "@/lib/image-utils";
 import { OUTDOOR_STYLES, OUTDOOR_STYLE_LIST } from "@/lib/outdoor-styles";
 import { useSession } from "next-auth/react";
-import AuthButton from "@/components/AuthButton";
 import AuthModal from "@/components/AuthModal";
 import MerchantMode from "@/components/MerchantMode";
 import PhotoAssociator from "@/components/PhotoAssociator";

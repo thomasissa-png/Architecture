@@ -9,7 +9,6 @@
 import { useSession } from "next-auth/react";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useScrollLock } from "@/lib/hooks/useScrollLock";
-import AuthButton from "@/components/AuthButton";
 import AuthModal from "@/components/AuthModal";
 import Header from "@/components/Header";
 import { STYLE_LABELS, translateRoomLabel } from "@/lib/constants";

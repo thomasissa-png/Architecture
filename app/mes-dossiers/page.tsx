@@ -8,7 +8,6 @@
 import { useSession } from "next-auth/react";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import AuthButton from "@/components/AuthButton";
 import Header from "@/components/Header";
 import ProGate from "@/components/ProGate";
 
