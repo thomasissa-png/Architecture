@@ -26,6 +26,8 @@ interface GenerationResult {
   model: string;
   pass1Key?: string;
   photoId?: string;
+  styleId?: string;
+  styleName?: string;
 }
 
 interface VersionEntry {
@@ -122,9 +124,9 @@ async function resilientFetch(
 export default function Home() {
   const { data: session, status: authStatus } = useSession();
   const [files, setFiles] = useState<File[]>([]);
-  const [selectedStyle, setSelectedStyle] = useState<StyleOption | null>(null);
+  const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
   const [customPrompt, setCustomPrompt] = useState("");
-  const [perPhotoStyles, setPerPhotoStyles] = useState<Map<number, string>>(new Map());
+  const [perPhotoStyles, setPerPhotoStyles] = useState<Map<number, string[]>>(new Map());
   const [perPhotoRoomTypes, setPerPhotoRoomTypes] = useState<Map<number, string>>(new Map());
   const [perPhotoCustomPrompts, setPerPhotoCustomPrompts] = useState<Map<number, string>>(new Map());
   const [perPhotoOutdoor, setPerPhotoOutdoor] = useState<Map<number, boolean>>(new Map());
@@ -254,12 +256,35 @@ export default function Home() {
   const toolRef = useReveal();
   const pricingRef = useReveal();
 
+  // Multi-style toggle handler
+  const handleStyleToggle = useCallback((styleId: string) => {
+    setSelectedStyles((prev) => {
+      if (prev.includes(styleId)) {
+        // Don't allow deselecting the last style
+        if (prev.length === 1) return prev;
+        return prev.filter((id) => id !== styleId);
+      }
+      return [...prev, styleId];
+    });
+    // Clear customPrompt when deselecting custom
+    if (selectedStyles.includes("custom") && selectedStyles.length > 1) {
+      // Keep customPrompt if custom is still selected after toggle
+    }
+  }, [selectedStyles]);
+
+  // Helper to resolve style name from ID
+  const getStyleName = useCallback((styleId: string): string => {
+    if (styleId === "custom") return "Personnalisé";
+    const style = STYLES.find((s) => s.id === styleId);
+    return style?.name || styleId;
+  }, []);
+
   // F3 — Toggle handler: reset cross-states when switching modes
   const handleToggleOutdoor = useCallback((outdoor: boolean) => {
     setIsOutdoor(outdoor);
     if (outdoor) {
       // Switching to outdoor: reset indoor selections
-      setSelectedStyle(null);
+      setSelectedStyles([]);
       setCustomPrompt("");
       setSelectedRoomType(null);
       // Default subtype if none set
@@ -320,9 +345,9 @@ export default function Home() {
   const currentStep =
     results.length > 0
       ? 4
-      : (selectedStyle || customPrompt || selectedOutdoorStyle) && files.length > 0
+      : (selectedStyles.length > 0 || customPrompt || selectedOutdoorStyle) && files.length > 0
       ? 3
-      : files.length > 0 || selectedStyle || customPrompt || selectedOutdoorStyle || selectedRoomType || isOutdoor
+      : files.length > 0 || selectedStyles.length > 0 || customPrompt || selectedOutdoorStyle || selectedRoomType || isOutdoor
       ? 2
       : 1;
 
@@ -336,25 +361,6 @@ export default function Home() {
       return;
     }
 
-    // Resolve prompts based on mode (indoor vs outdoor)
-    let surfacePrompt: string;
-    let furniturePrompt: string;
-    let effectiveStyleId: string;
-
-    if (isOutdoor && selectedOutdoorStyle) {
-      const oStyle = OUTDOOR_STYLES[selectedOutdoorStyle];
-      surfacePrompt = oStyle?.surfacePrompt || "";
-      furniturePrompt = oStyle?.furniturePrompt || "";
-      effectiveStyleId = selectedOutdoorStyle;
-    } else {
-      surfacePrompt = selectedStyle?.surfacePrompt || customPrompt.trim();
-      furniturePrompt = selectedStyle?.furniturePrompt || customPrompt.trim();
-      effectiveStyleId = selectedStyle?.id ?? "custom";
-    }
-
-    // In multi-photo mode, prompts are resolved per-photo — skip global check
-    if (!surfacePrompt && !furniturePrompt && files.length <= 1) return;
-
     // Cancel any previous in-flight requests
     abortControllerRef.current?.abort();
     const controller = new AbortController();
@@ -365,8 +371,16 @@ export default function Home() {
     setResults([]);
     setPreprocessWarnings([]);
 
-    // Pre-process custom prompts via GPT-4.1-mini (translate, split, enrich)
-    if (!selectedStyle && customPrompt.trim()) {
+    // Resolve the list of styles to generate
+    // In outdoor mode, use single outdoor style
+    // In multi-photo mode with per-photo styles, each photo has its own style list
+    // In single-photo mode, use selectedStyles (multi-select)
+
+    // Pre-process custom prompt if "custom" is among selectedStyles
+    let preprocessedSurfacePrompt = customPrompt.trim();
+    let preprocessedFurniturePrompt = customPrompt.trim();
+
+    if (selectedStyles.includes("custom") && customPrompt.trim()) {
       try {
         const ppResponse = await fetch("/api/preprocess-prompt", {
           method: "POST",
@@ -376,16 +390,14 @@ export default function Home() {
         });
         if (ppResponse.ok) {
           const ppData = await ppResponse.json();
-          if (ppData.surfacePrompt) surfacePrompt = ppData.surfacePrompt;
-          if (ppData.furniturePrompt) furniturePrompt = ppData.furniturePrompt;
+          if (ppData.surfacePrompt) preprocessedSurfacePrompt = ppData.surfacePrompt;
+          if (ppData.furniturePrompt) preprocessedFurniturePrompt = ppData.furniturePrompt;
           if (Array.isArray(ppData.warnings) && ppData.warnings.length > 0) {
             setPreprocessWarnings(ppData.warnings);
           }
         }
       } catch (e: unknown) {
-        // On abort, stop entirely
         if (e instanceof Error && e.name === "AbortError") return;
-        // On any other error, proceed with the raw custom prompt (backward compatible)
       }
       if (controller.signal.aborted) return;
     }
@@ -420,68 +432,159 @@ export default function Home() {
 
     if (controller.signal.aborted) return;
 
-    // Step 3: Generate in parallel batches (max 2 concurrent)
+    // Step 3: Build job list — each job is a (photo, style) pair
+    interface GenerationJob {
+      img: typeof processedImages[0];
+      styleId: string;
+      styleName: string;
+      surfacePrompt: string;
+      furniturePrompt: string;
+      roomType: string | null;
+      isOutdoor: boolean;
+      outdoorSubtype: string | undefined;
+      customPrompt: string;
+    }
+
+    const jobs: GenerationJob[] = [];
+
+    for (const img of processedImages) {
+      const imgIsOutdoor = perPhotoOutdoor.get(img.fileIndex) || isOutdoor;
+      const overrideRoomType = perPhotoRoomTypes.get(img.fileIndex);
+      const imgRoomType = overrideRoomType || selectedRoomType;
+
+      if (files.length > 1) {
+        // Multi-photo mode: per-photo styles (can be multi-style per photo)
+        const photoStyleIds = perPhotoStyles.get(img.fileIndex) || [];
+        const overrideCustomPrompt = perPhotoCustomPrompts.get(img.fileIndex);
+
+        for (const styleId of photoStyleIds) {
+          if (styleId === "custom" && overrideCustomPrompt) {
+            jobs.push({
+              img,
+              styleId: "custom",
+              styleName: "Personnalisé",
+              surfacePrompt: overrideCustomPrompt,
+              furniturePrompt: overrideCustomPrompt,
+              roomType: imgRoomType,
+              isOutdoor: imgIsOutdoor,
+              outdoorSubtype: imgIsOutdoor ? (overrideRoomType || outdoorSubtype || undefined) : undefined,
+              customPrompt: overrideCustomPrompt,
+            });
+          } else if (imgIsOutdoor) {
+            const oStyle = OUTDOOR_STYLES[styleId];
+            if (oStyle) {
+              jobs.push({
+                img,
+                styleId: oStyle.id,
+                styleName: oStyle.label || styleId,
+                surfacePrompt: oStyle.surfacePrompt,
+                furniturePrompt: oStyle.furniturePrompt,
+                roomType: imgRoomType,
+                isOutdoor: true,
+                outdoorSubtype: overrideRoomType || outdoorSubtype || undefined,
+                customPrompt: "",
+              });
+            }
+          } else {
+            const style = STYLES.find((s) => s.id === styleId);
+            if (style) {
+              jobs.push({
+                img,
+                styleId: style.id,
+                styleName: style.name,
+                surfacePrompt: style.surfacePrompt,
+                furniturePrompt: style.furniturePrompt,
+                roomType: imgRoomType,
+                isOutdoor: false,
+                outdoorSubtype: undefined,
+                customPrompt: "",
+              });
+            }
+          }
+        }
+      } else {
+        // Single-photo mode: use global selectedStyles (multi-select)
+        if (imgIsOutdoor && selectedOutdoorStyle) {
+          const oStyle = OUTDOOR_STYLES[selectedOutdoorStyle];
+          jobs.push({
+            img,
+            styleId: selectedOutdoorStyle,
+            styleName: oStyle?.label || selectedOutdoorStyle,
+            surfacePrompt: oStyle?.surfacePrompt || "",
+            furniturePrompt: oStyle?.furniturePrompt || "",
+            roomType: imgRoomType,
+            isOutdoor: true,
+            outdoorSubtype: outdoorSubtype || undefined,
+            customPrompt: "",
+          });
+        } else {
+          for (const styleId of selectedStyles) {
+            if (styleId === "custom") {
+              jobs.push({
+                img,
+                styleId: "custom",
+                styleName: "Personnalisé",
+                surfacePrompt: preprocessedSurfacePrompt,
+                furniturePrompt: preprocessedFurniturePrompt,
+                roomType: imgRoomType,
+                isOutdoor: false,
+                outdoorSubtype: undefined,
+                customPrompt: customPrompt.trim(),
+              });
+            } else {
+              const style = STYLES.find((s) => s.id === styleId);
+              if (style) {
+                jobs.push({
+                  img,
+                  styleId: style.id,
+                  styleName: style.name,
+                  surfacePrompt: style.surfacePrompt,
+                  furniturePrompt: style.furniturePrompt,
+                  roomType: imgRoomType,
+                  isOutdoor: false,
+                  outdoorSubtype: undefined,
+                  customPrompt: "",
+                });
+              }
+            }
+          }
+        }
+      }
+    }
+
+    if (jobs.length === 0) {
+      setIsGenerating(false);
+      return;
+    }
+
+    // Step 4: Execute jobs in batches (max 2 concurrent)
     const MAX_CONCURRENT = 2;
     const allResults: GenerationResult[] = [];
-    let hasError = false;
+    let hasPartialError = false;
 
-    for (let batch = 0; batch < processedImages.length; batch += MAX_CONCURRENT) {
-      if (hasError || controller.signal.aborted) break;
-      const chunk = processedImages.slice(batch, batch + MAX_CONCURRENT);
+    for (let batch = 0; batch < jobs.length; batch += MAX_CONCURRENT) {
+      if (controller.signal.aborted) break;
+      const chunk = jobs.slice(batch, batch + MAX_CONCURRENT);
       setCurrentProcessing(batch);
 
       const batchResults = await Promise.allSettled(
-        chunk.map(async (img) => {
-          // Per-photo overrides (style, room type, custom prompt)
-          let imgSurfacePrompt = surfacePrompt;
-          let imgFurniturePrompt = furniturePrompt;
-          let imgStyleId = effectiveStyleId;
-          let imgRoomType = selectedRoomType;
-          let imgCustomPrompt = customPrompt;
-          const overrideStyleId = perPhotoStyles.get(img.fileIndex);
-          const overrideRoomType = perPhotoRoomTypes.get(img.fileIndex);
-          const overrideCustomPrompt = perPhotoCustomPrompts.get(img.fileIndex);
-          const imgIsOutdoor = perPhotoOutdoor.get(img.fileIndex) || isOutdoor;
-          if (overrideStyleId === "custom" && overrideCustomPrompt) {
-            imgStyleId = "custom";
-            imgCustomPrompt = overrideCustomPrompt;
-            imgSurfacePrompt = "";
-            imgFurniturePrompt = "";
-          } else if (overrideStyleId && !imgIsOutdoor) {
-            const overrideStyle = STYLES.find((s) => s.id === overrideStyleId);
-            if (overrideStyle) {
-              imgSurfacePrompt = overrideStyle.surfacePrompt;
-              imgFurniturePrompt = overrideStyle.furniturePrompt;
-              imgStyleId = overrideStyle.id;
-            }
-          } else if (overrideStyleId && imgIsOutdoor) {
-            const outdoorStyle = OUTDOOR_STYLES[overrideStyleId];
-            if (outdoorStyle) {
-              imgSurfacePrompt = outdoorStyle.surfacePrompt;
-              imgFurniturePrompt = outdoorStyle.furniturePrompt;
-              imgStyleId = outdoorStyle.id;
-            }
-          }
-          if (overrideRoomType) {
-            imgRoomType = overrideRoomType;
-          }
-
+        chunk.map(async (job) => {
           const response = await resilientFetch("/api/generate", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              image: img.base64,
-              surfacePrompt: imgSurfacePrompt,
-              furniturePrompt: imgFurniturePrompt,
-              customPrompt: imgCustomPrompt || undefined,
-              styleId: imgStyleId,
+              image: job.img.base64,
+              surfacePrompt: job.surfacePrompt,
+              furniturePrompt: job.furniturePrompt,
+              customPrompt: job.customPrompt || undefined,
+              styleId: job.styleId,
               withFurniture,
-              width: img.width,
-              height: img.height,
+              width: job.img.width,
+              height: job.img.height,
               sessionId: getSessionId(),
-              roomType: imgRoomType,
-              isOutdoor: imgIsOutdoor,
-              outdoorSubtype: imgIsOutdoor ? (overrideRoomType || outdoorSubtype) : undefined,
+              roomType: job.roomType,
+              isOutdoor: job.isOutdoor,
+              outdoorSubtype: job.outdoorSubtype,
             }),
           }, controller.signal);
 
@@ -498,11 +601,13 @@ export default function Home() {
 
           const data = await response.json();
           return {
-            originalUrl: filePreviewUrls[img.fileIndex],
+            originalUrl: filePreviewUrls[job.img.fileIndex],
             generatedUrl: data.image,
             model: data.model,
             pass1Key: data.pass1_key,
             photoId: data.photoId,
+            styleId: job.styleId,
+            styleName: job.styleName,
           } as GenerationResult;
         })
       );
@@ -512,22 +617,27 @@ export default function Home() {
           allResults.push(result.value);
           setResults((prev) => [...prev, result.value]);
         } else {
-          // Ignore abort errors
           if (result.reason?.name === "AbortError") continue;
-          hasError = true;
-          setError(
-            result.reason instanceof Error
-              ? result.reason.message
-              : "Erreur lors de la génération"
-          );
+          hasPartialError = true;
+          // For partial failures, show error but continue with other results
+          if (allResults.length === 0 && batch + MAX_CONCURRENT >= jobs.length) {
+            // Only set error if this is the last batch and no results yet
+            setError(
+              result.reason instanceof Error
+                ? result.reason.message
+                : "Erreur lors de la génération"
+            );
+          }
         }
       }
     }
 
     if (!controller.signal.aborted) {
       setIsGenerating(false);
+      if (hasPartialError && allResults.length > 0) {
+        setError(`${allResults.length}/${jobs.length} génération${jobs.length > 1 ? "s" : ""} réussie${allResults.length > 1 ? "s" : ""}. Certains styles ont échoué.`);
+      }
       if (allResults.length > 0) {
-        // Initialize versions array: one entry per result (v1 = original generation)
         setVersions(
           allResults.map((r) => [
             { imageUrl: r.generatedUrl, comment: undefined, model: r.model },
@@ -538,7 +648,7 @@ export default function Home() {
         scrollToElement("step-results");
       }
     }
-  }, [files, selectedStyle, customPrompt, withFurniture, filePreviewUrls, isOutdoor, selectedOutdoorStyle, outdoorSubtype, selectedRoomType, perPhotoStyles, perPhotoRoomTypes, perPhotoCustomPrompts, perPhotoOutdoor, authStatus]);
+  }, [files, selectedStyles, customPrompt, withFurniture, filePreviewUrls, isOutdoor, selectedOutdoorStyle, outdoorSubtype, selectedRoomType, perPhotoStyles, perPhotoRoomTypes, perPhotoCustomPrompts, perPhotoOutdoor, authStatus]);
 
   // Changement 2 — Garder la ref à jour pour le useEffect post-auth
   handleGenerateRef.current = handleGenerate;
@@ -574,7 +684,7 @@ export default function Home() {
   const handleFullReset = () => {
     abortControllerRef.current?.abort();
     setFiles([]);
-    setSelectedStyle(null);
+    setSelectedStyles([]);
     setCustomPrompt("");
     setPerPhotoStyles(new Map());
     setPerPhotoRoomTypes(new Map());
@@ -653,13 +763,17 @@ export default function Home() {
             sessionId: getSessionId(),
             surfacePrompt: isOutdoor && selectedOutdoorStyle
               ? (OUTDOOR_STYLES[selectedOutdoorStyle]?.surfacePrompt || "")
-              : (selectedStyle?.surfacePrompt || customPrompt.trim()),
+              : (targetResult.styleId && targetResult.styleId !== "custom"
+                ? (STYLES.find((s) => s.id === targetResult.styleId)?.surfacePrompt || customPrompt.trim())
+                : customPrompt.trim()),
             furniturePrompt: isOutdoor && selectedOutdoorStyle
               ? (OUTDOOR_STYLES[selectedOutdoorStyle]?.furniturePrompt || "")
-              : (selectedStyle?.furniturePrompt || customPrompt.trim()),
+              : (targetResult.styleId && targetResult.styleId !== "custom"
+                ? (STYLES.find((s) => s.id === targetResult.styleId)?.furniturePrompt || customPrompt.trim())
+                : customPrompt.trim()),
             styleId: isOutdoor && selectedOutdoorStyle
               ? selectedOutdoorStyle
-              : (selectedStyle?.id ?? "custom"),
+              : (targetResult.styleId ?? "custom"),
             withFurniture: true,
             width: 0, // Server uses pass1 dimensions
             height: 0,
@@ -722,7 +836,7 @@ export default function Home() {
         }
       }
     },
-    [results, refineTargetIndex, versions, selectedStyle, customPrompt, isOutdoor, selectedOutdoorStyle, outdoorSubtype]
+    [results, refineTargetIndex, versions, customPrompt, isOutdoor, selectedOutdoorStyle, outdoorSubtype]
   );
 
   const handleRefineRetry = useCallback(() => {

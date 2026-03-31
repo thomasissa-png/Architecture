@@ -10,6 +10,7 @@ interface ImageComparatorProps {
   originalUrl: string;
   generatedUrl: string;
   model?: string;
+  styleLabel?: string;
 }
 
 /**
@@ -63,6 +64,7 @@ export default function ImageComparator({
   originalUrl,
   generatedUrl,
   model,
+  styleLabel,
 }: ImageComparatorProps) {
   const [copied, setCopied] = useState(false);
   const [canShare, setCanShare] = useState(false);
@@ -150,6 +152,12 @@ export default function ImageComparator({
 
   return (
     <div className="space-y-5">
+      {styleLabel && (
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-foreground tracking-tight">{styleLabel}</span>
+          <span className="flex-1 h-px bg-foreground/10" />
+        </div>
+      )}
       <div className="rounded-2xl overflow-hidden border border-gray-200/80" style={{ touchAction: "none" }}>
         <ReactCompareSlider
           itemOne={

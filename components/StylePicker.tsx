@@ -158,38 +158,42 @@ function IconCustom({ className }: { className?: string }) {
 }
 
 interface StylePickerProps {
-  selectedStyle: StyleOption | null;
+  selectedStyles: string[];
   customPrompt: string;
-  onStyleSelect: (style: StyleOption | null) => void;
+  onStyleToggle: (styleId: string) => void;
   onCustomPromptChange: (prompt: string) => void;
   isOutdoor: boolean;
   selectedOutdoorStyle: string | null;
   onSelectOutdoorStyle: (styleId: string) => void;
+  disabled?: boolean;
 }
 
 export default function StylePicker({
-  selectedStyle,
+  selectedStyles,
   customPrompt,
-  onStyleSelect,
+  onStyleToggle,
   onCustomPromptChange,
   isOutdoor,
   selectedOutdoorStyle,
   onSelectOutdoorStyle,
+  disabled = false,
 }: StylePickerProps) {
-  const [isCustom, setIsCustom] = useState(false);
+  const isCustomSelected = selectedStyles.includes("custom");
 
   const handleStyleClick = (style: StyleOption) => {
-    setIsCustom(false);
-    onStyleSelect(style);
-    onCustomPromptChange("");
-    setTimeout(() => {
-      document.getElementById("step-generate")?.scrollIntoView({ behavior: "smooth", block: "center" });
-    }, 150);
+    if (disabled) return;
+    onStyleToggle(style.id);
+    // Auto-scroll to generate button after first selection
+    if (selectedStyles.length === 0) {
+      setTimeout(() => {
+        document.getElementById("step-generate")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 150);
+    }
   };
 
   const handleCustomClick = () => {
-    setIsCustom(true);
-    onStyleSelect(null);
+    if (disabled) return;
+    onStyleToggle("custom");
   };
 
   return (
@@ -212,21 +216,31 @@ export default function StylePicker({
       {/* Indoor mode: 12 styles + custom */}
       {!isOutdoor && (
         <>
-      <div role="radiogroup" aria-label="Choix du style" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+      <div role="group" aria-label="Choix du style (sélection multiple)" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
         {STYLES.map((style) => {
-          const isSelected = selectedStyle?.id === style.id && !isCustom;
+          const isSelected = selectedStyles.includes(style.id);
+          const selectionIndex = selectedStyles.indexOf(style.id);
+          const isLastSelected = selectedStyles.length === 1 && isSelected;
           return (
             <button
               key={style.id}
               onClick={() => handleStyleClick(style)}
-              role="radio"
+              role="checkbox"
               aria-checked={isSelected}
-              className={`group text-left p-3.5 sm:p-5 rounded-2xl border transition-all duration-300 hover:shadow-sm hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
+              disabled={disabled || (isLastSelected && !isCustomSelected)}
+              title={isLastSelected && !isCustomSelected ? "Au moins 1 style requis" : undefined}
+              className={`group relative text-left p-3.5 sm:p-5 rounded-2xl border transition-all duration-300 hover:shadow-sm hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
                 isSelected
                   ? "border-foreground bg-foreground/5 shadow-sm scale-[1.02]"
                   : "border-foreground/10 hover:border-foreground/15"
-              }`}
+              } ${disabled ? "opacity-60 cursor-not-allowed" : ""} ${isLastSelected && !isCustomSelected ? "cursor-not-allowed" : ""}`}
             >
+              {/* Badge numéroté */}
+              {isSelected && (
+                <span className="absolute top-2 right-2 w-5 h-5 bg-foreground text-background text-[10px] font-semibold rounded-md flex items-center justify-center" aria-label={`Sélection ${selectionIndex + 1}`}>
+                  {selectionIndex + 1}
+                </span>
+              )}
               <span className="flex gap-1.5 mb-2 sm:mb-3" aria-hidden="true">
                 {style.palette.map((color, i) => (
                   <span
@@ -242,23 +256,37 @@ export default function StylePicker({
               <p className="text-xs sm:text-[11px] text-muted font-light leading-relaxed">
                 {style.description}
               </p>
+              {/* Checkbox indicator */}
+              <span className={`absolute bottom-2 right-2 w-4 h-4 rounded border transition-colors ${isSelected ? "bg-foreground border-foreground" : "border-foreground/20 bg-transparent"}`} aria-hidden="true">
+                {isSelected && (
+                  <svg className="w-4 h-4 text-background" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                    <path d="M3.5 8.5L6.5 11.5L12.5 5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                )}
+              </span>
             </button>
           );
         })}
 
         <button
           onClick={handleCustomClick}
-          role="radio"
-          aria-checked={isCustom}
-          className={`group text-left p-3.5 sm:p-5 rounded-2xl border border-dashed transition-all duration-300 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
-            isCustom
+          role="checkbox"
+          aria-checked={isCustomSelected}
+          disabled={disabled || (selectedStyles.length === 1 && isCustomSelected)}
+          className={`group relative text-left p-3.5 sm:p-5 rounded-2xl border border-dashed transition-all duration-300 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
+            isCustomSelected
               ? "border-foreground bg-foreground/5 shadow-sm"
               : "border-foreground/15 hover:border-foreground/20"
-          }`}
+          } ${disabled ? "opacity-60 cursor-not-allowed" : ""}`}
         >
+          {isCustomSelected && (
+            <span className="absolute top-2 right-2 w-5 h-5 bg-foreground text-background text-[10px] font-semibold rounded-md flex items-center justify-center" aria-label={`Sélection ${selectedStyles.indexOf("custom") + 1}`}>
+              {selectedStyles.indexOf("custom") + 1}
+            </span>
+          )}
           <IconCustom
             className={`w-5 h-5 mb-3 transition-colors duration-300 ${
-              isCustom ? "text-foreground" : "text-foreground/30 group-hover:text-muted"
+              isCustomSelected ? "text-foreground" : "text-foreground/30 group-hover:text-muted"
             }`}
           />
           <h4 className="text-sm font-semibold text-foreground mb-1 tracking-tight">
@@ -267,16 +295,32 @@ export default function StylePicker({
           <p className="text-[11px] text-muted font-light leading-relaxed">
             Décrivez votre style idéal
           </p>
+          {/* Checkbox indicator */}
+          <span className={`absolute bottom-2 right-2 w-4 h-4 rounded border transition-colors ${isCustomSelected ? "bg-foreground border-foreground" : "border-foreground/20 bg-transparent"}`} aria-hidden="true">
+            {isCustomSelected && (
+              <svg className="w-4 h-4 text-background" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                <path d="M3.5 8.5L6.5 11.5L12.5 5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            )}
+          </span>
         </button>
       </div>
 
-      {isCustom && (
+      {/* Multi-style counter */}
+      {selectedStyles.length > 1 && (
+        <p className="text-xs text-muted font-light text-center">
+          {selectedStyles.length} style{selectedStyles.length > 1 ? "s" : ""} sélectionné{selectedStyles.length > 1 ? "s" : ""} — {selectedStyles.length} crédit{selectedStyles.length > 1 ? "s" : ""} par photo
+        </p>
+      )}
+
+      {isCustomSelected && (
         <div className="animate-fade-in-up">
           <textarea
             value={customPrompt}
             onChange={(e) => onCustomPromptChange(e.target.value)}
             placeholder="Ex : style Art Déco avec mobilier doré, tapis persans et éclairage chaleureux…"
             className="w-full p-5 border border-foreground/10 rounded-2xl focus:border-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 resize-none h-28 text-sm font-normal transition-colors placeholder:text-foreground/30"
+            disabled={disabled}
           />
         </div>
       )}
