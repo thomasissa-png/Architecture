@@ -79,7 +79,7 @@ export default function Header({ variant = "internal", activePage }: HeaderProps
           <AuthButton />
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-foreground/5 transition-colors"
+            className="w-11 h-11 flex items-center justify-center rounded-lg hover:bg-foreground/5 transition-colors"
             aria-label={mobileOpen ? "Fermer le menu" : "Ouvrir le menu"}
             aria-expanded={mobileOpen}
           >

@@ -64,10 +64,10 @@ export default function MerchantMode() {
 
   // Property info (bienNom supprime — auto-genere depuis type/surface/ville)
   const [bienAdresse, setBienAdresse] = useState("");
-  const [bienSurface] = useState("");
-  const [bienPrix] = useState("");
-  const [bienType] = useState("");
-  const [bienNbPieces] = useState("");
+  const [bienSurface, setBienSurface] = useState("");
+  const [bienPrix, setBienPrix] = useState("");
+  const [bienType, setBienType] = useState("");
+  const [bienNbPieces, setBienNbPieces] = useState("");
 
   // Enrichment data (F4.B)
   const [addressSuggestions, setAddressSuggestions] = useState<Array<{ label: string; postcode: string; city: string; lat: number; lon: number }>>([]);
@@ -102,6 +102,7 @@ export default function MerchantMode() {
   const [attachMode, setAttachMode] = useState<"none" | "existing" | "new">("none");
   const [isAttaching, setIsAttaching] = useState(false);
   const [attachDone, setAttachDone] = useState(false);
+  const [userCredits, setUserCredits] = useState<number | null>(null);
 
   // Poll interval ref
   const pollRef = useRef<NodeJS.Timeout | null>(null);
@@ -163,6 +164,17 @@ export default function MerchantMode() {
       .then((res) => res.ok ? res.json() : null)
       .then((data) => {
         if (data?.properties) setExistingProperties(data.properties);
+      })
+      .catch(() => {});
+  }, [session]);
+
+  // ── Fetch user credits ──
+  useEffect(() => {
+    if (!session?.user?.id) return;
+    fetch("/api/user/credits")
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => {
+        if (data?.credits !== undefined) setUserCredits(data.credits);
       })
       .catch(() => {});
   }, [session]);
@@ -540,7 +552,7 @@ export default function MerchantMode() {
             </button>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {files.map((file, index) => {
               const entry = photoEntries[index];
               if (!entry) return null;
@@ -727,6 +739,11 @@ export default function MerchantMode() {
                 ? `Générer (${creditsNeeded} visuel${creditsNeeded > 1 ? "s" : ""})`
                 : "Choisir un style global"}
             </button>
+            {userCredits !== null && (
+              <span className={`text-xs font-light ${userCredits < creditsNeeded ? "text-red-500" : "text-muted"}`}>
+                {userCredits} crédit{userCredits > 1 ? "s" : ""} restant{userCredits > 1 ? "s" : ""}
+              </span>
+            )}
           </div>
         </div>
       )}
@@ -834,6 +851,11 @@ export default function MerchantMode() {
               >
                 {isGenerating ? "Génération en cours..." : `Générer (${creditsNeeded} visuel${creditsNeeded > 1 ? "s" : ""})`}
               </button>
+              {userCredits !== null && (
+                <span className={`text-xs font-light ${userCredits < creditsNeeded ? "text-red-500" : "text-muted"}`}>
+                  {userCredits} crédit{userCredits > 1 ? "s" : ""} restant{userCredits > 1 ? "s" : ""}
+                </span>
+              )}
             </div>
           )}
         </div>
@@ -894,12 +916,45 @@ export default function MerchantMode() {
             isRegenerating={isRegenerating}
           />
 
+          {/* ── Share buttons ── */}
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={handleShareLink}
+              className="flex items-center gap-2 px-4 py-2.5 border border-foreground/10 rounded-xl text-sm font-medium hover:bg-foreground/5 transition-colors min-h-[44px]"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+              </svg>
+              Copier le lien
+            </button>
+            <a
+              href={`https://wa.me/?text=${encodeURIComponent(`Voici les visuels du bien : ${window.location.origin}/dossier/${dossierIdentifier || dossierUuid}`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-4 py-2.5 bg-[#25D366] text-white rounded-xl text-sm font-medium hover:opacity-90 transition-opacity min-h-[44px]"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+                <path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.555 4.126 1.528 5.867L.06 23.884l6.182-1.425A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.82c-1.905 0-3.727-.514-5.32-1.49l-.382-.227-3.964.914.99-3.78-.25-.397A9.803 9.803 0 012.18 12c0-5.422 4.398-9.82 9.82-9.82 5.422 0 9.82 4.398 9.82 9.82 0 5.422-4.398 9.82-9.82 9.82z" />
+              </svg>
+              Envoyer par WhatsApp
+            </a>
+          </div>
+
           {/* ── Attach to property panel ── */}
           {!attachDone && (
             <div className="border border-foreground/10 rounded-2xl p-5 space-y-4" data-testid="attach-panel">
-              <h4 className="text-sm font-medium text-foreground">
-                Associer ces visuels à un bien
-              </h4>
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-medium text-foreground">
+                  Associer ces visuels à un bien
+                </h4>
+                <button
+                  onClick={() => setAttachDone(true)}
+                  className="text-xs text-muted font-light hover:text-foreground transition-colors"
+                >
+                  Ignorer
+                </button>
+              </div>
               <p className="text-xs text-muted font-light">
                 Retrouvez-les dans vos biens et créez un dossier de présentation.
               </p>
@@ -963,8 +1018,14 @@ export default function MerchantMode() {
                               propertyId: selectedPropertyId,
                             }),
                           });
-                          if (res.ok) setAttachDone(true);
-                        } catch { /* silent */ }
+                          if (res.ok) {
+                            setAttachDone(true);
+                          } else {
+                            setError("L'association a échoué. Vérifiez votre connexion et réessayez.");
+                          }
+                        } catch {
+                          setError("L'association a échoué. Vérifiez votre connexion et réessayez.");
+                        }
                         setIsAttaching(false);
                       }}
                       disabled={isAttaching}
@@ -1009,6 +1070,45 @@ export default function MerchantMode() {
                       </div>
                     )}
                   </div>
+
+                  {/* Type, surface, prix, nb pièces */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <select
+                      value={bienType}
+                      onChange={(e) => setBienType(e.target.value)}
+                      className="px-3 py-3 border border-foreground/10 rounded-xl text-sm font-light bg-background focus:border-foreground focus:outline-none transition-colors min-h-[44px]"
+                    >
+                      <option value="">Type de bien</option>
+                      <option value="appartement">Appartement</option>
+                      <option value="maison">Maison</option>
+                      <option value="loft">Loft</option>
+                      <option value="studio">Studio</option>
+                      <option value="duplex">Duplex</option>
+                      <option value="bureau">Bureau commercial</option>
+                    </select>
+                    <input
+                      type="number"
+                      value={bienSurface}
+                      onChange={(e) => setBienSurface(e.target.value)}
+                      placeholder="Surface m²"
+                      className="px-3 py-3 border border-foreground/10 rounded-xl text-sm font-light focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30 min-h-[44px]"
+                    />
+                    <input
+                      type="number"
+                      value={bienPrix}
+                      onChange={(e) => setBienPrix(e.target.value)}
+                      placeholder="Prix €"
+                      className="px-3 py-3 border border-foreground/10 rounded-xl text-sm font-light focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30 min-h-[44px]"
+                    />
+                    <input
+                      type="number"
+                      value={bienNbPieces}
+                      onChange={(e) => setBienNbPieces(e.target.value)}
+                      placeholder="Nb pièces"
+                      className="px-3 py-3 border border-foreground/10 rounded-xl text-sm font-light focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30 min-h-[44px]"
+                    />
+                  </div>
+
                   {bienAdresse.trim() && (
                     <button
                       onClick={async () => {
@@ -1024,6 +1124,7 @@ export default function MerchantMode() {
                               bienSurface: bienSurface ? Number(bienSurface) : null,
                               bienPrix: bienPrix ? Number(bienPrix) : null,
                               bienType: bienType || null,
+                              nbPieces: bienNbPieces ? Number(bienNbPieces) : null,
                               latitude: enrichedLat,
                               longitude: enrichedLon,
                               ville: enrichedCity || null,
@@ -1033,8 +1134,14 @@ export default function MerchantMode() {
                               prixMoyenM2: enrichedPrixM2,
                             }),
                           });
-                          if (res.ok) setAttachDone(true);
-                        } catch { /* silent */ }
+                          if (res.ok) {
+                            setAttachDone(true);
+                          } else {
+                            setError("L'association a échoué. Vérifiez votre connexion et réessayez.");
+                          }
+                        } catch {
+                          setError("L'association a échoué. Vérifiez votre connexion et réessayez.");
+                        }
                         setIsAttaching(false);
                       }}
                       disabled={isAttaching}
