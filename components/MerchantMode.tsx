@@ -127,6 +127,9 @@ export default function MerchantMode() {
     return () => clearInterval(interval);
   }, [isGenerating]);
 
+  // Track previous file count for auto-transition detection
+  const prevFilesCountRef = useRef(0);
+
   // ── Sync files → photoEntries ──
   useEffect(() => {
     setPhotoEntries((prev) => {
@@ -146,7 +149,18 @@ export default function MerchantMode() {
       });
       return next;
     });
-  }, [files]);
+
+    // Auto-transition: when new photos are added and we're still on "photos" step
+    const hadNewFiles = files.length > prevFilesCountRef.current;
+    prevFilesCountRef.current = files.length;
+
+    if (hadNewFiles && files.length > 0 && currentStep === "photos") {
+      setCurrentStep("annotate");
+      setTimeout(() => {
+        document.getElementById("merchant-annotate")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 150);
+    }
+  }, [files, currentStep]);
 
   // ── Fetch existing properties for quick select ──
   useEffect(() => {
@@ -783,7 +797,7 @@ export default function MerchantMode() {
 
       {/* ── Step: Annotate (per-photo room type + style override) ── */}
       {currentStep === "annotate" && (
-        <div className="space-y-6 animate-fade-in-up" data-testid="merchant-step-annotate">
+        <div id="merchant-annotate" className="space-y-6 animate-fade-in-up" data-testid="merchant-step-annotate">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-1">

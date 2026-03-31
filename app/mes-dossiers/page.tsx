@@ -9,6 +9,7 @@ import { useSession } from "next-auth/react";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import AuthButton from "@/components/AuthButton";
+import Header from "@/components/Header";
 import ProGate from "@/components/ProGate";
 
 interface Dossier {
@@ -142,25 +143,7 @@ export default function MesDossiersPage() {
     <ProGate featureName="Mes dossiers">
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-foreground/5">
-        <div className="max-w-6xl mx-auto px-5 sm:px-8 py-3 sm:py-4 flex items-center justify-between">
-          <a href="/" className="text-xl font-semibold text-foreground tracking-tighter">
-            Versimo
-          </a>
-          <nav className="flex items-center gap-2 sm:gap-6">
-            <a href="/mes-biens" className="text-xs text-muted font-light hover:text-foreground transition-colors">
-              Mes biens
-            </a>
-            <a href="/ma-galerie" className="text-xs text-muted font-light hover:text-foreground transition-colors">
-              Ma galerie
-            </a>
-            <a href="/mes-dossiers" className="text-xs text-sage font-medium">
-              Mes dossiers
-            </a>
-            <AuthButton />
-          </nav>
-        </div>
-      </header>
+      <Header activePage="mes-dossiers" />
 
       {/* Content */}
       <main className="pt-24 sm:pt-28 pb-16 px-5 sm:px-8">

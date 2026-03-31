@@ -49,6 +49,7 @@ export interface DossierPhoto {
   room_label: string | null;
   room_type_id: string | null;
   style_id: string | null;
+  custom_prompt: string | null;
   is_outdoor: boolean;
   input_image_key: string | null;
   output_image_key: string | null;
@@ -84,6 +85,7 @@ export interface DossierPhotoInput {
   roomLabel?: string;
   roomTypeId?: string;
   styleId?: string;
+  customPrompt?: string;
   isOutdoor?: boolean;
   inputImageKey: string;
 }
@@ -182,6 +184,11 @@ export async function ensureDossierTables(): Promise<void> {
     )
     .join("; ");
   await db.query(enrichSql);
+
+  // ── custom_prompt column on dossier_photos (idempotent migration) ──
+  await db.query(`
+    DO $$ BEGIN ALTER TABLE dossier_photos ADD COLUMN custom_prompt TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$;
+  `);
 
   dossierTablesEnsured = true;
 }
@@ -365,8 +372,8 @@ export async function addDossierPhoto(input: DossierPhotoInput): Promise<Dossier
   const db = getPool();
 
   const result = await db.query(
-    `INSERT INTO dossier_photos (dossier_uuid, photo_index, room_label, room_type_id, style_id, is_outdoor, input_image_key)
-     VALUES ($1, $2, $3, $4, $5, $6, $7)
+    `INSERT INTO dossier_photos (dossier_uuid, photo_index, room_label, room_type_id, style_id, custom_prompt, is_outdoor, input_image_key)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
      RETURNING *`,
     [
       input.dossierUuid,
@@ -374,6 +381,7 @@ export async function addDossierPhoto(input: DossierPhotoInput): Promise<Dossier
       input.roomLabel || null,
       input.roomTypeId || null,
       input.styleId || null,
+      input.customPrompt || null,
       input.isOutdoor || false,
       input.inputImageKey,
     ]

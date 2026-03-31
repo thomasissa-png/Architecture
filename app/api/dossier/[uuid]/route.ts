@@ -90,6 +90,7 @@ export async function POST(
         roomLabel?: string;
         roomTypeId?: string;
         styleId?: string;
+        customPrompt?: string;
         isOutdoor?: boolean;
         photoIndex: number;
       }>;
@@ -125,6 +126,7 @@ export async function POST(
         roomLabel: photo.roomLabel,
         roomTypeId: photo.roomTypeId,
         styleId: photo.styleId || dossier.global_style_id || undefined,
+        customPrompt: photo.customPrompt,
         isOutdoor: photo.isOutdoor,
         inputImageKey: imageKey,
       });
@@ -348,13 +350,42 @@ async function generateSinglePhoto(
   // Call the generate API internally
   const generateUrl = `${process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/generate`;
 
-  // We need to resolve prompts from the style ID.
-  // Import the styles data server-side.
-  const { getStyleById } = await import("@/lib/style-resolver");
-  const style = getStyleById(effectiveStyleId, photo.is_outdoor);
+  let surfacePrompt: string;
+  let furniturePrompt: string;
 
-  if (!style) {
-    throw new Error(`Style introuvable: ${effectiveStyleId}`);
+  if (effectiveStyleId === "custom") {
+    // Custom style: use stored custom_prompt, preprocess it via GPT-4.1-mini
+    const rawPrompt = photo.custom_prompt || "";
+    surfacePrompt = rawPrompt;
+    furniturePrompt = rawPrompt;
+
+    if (rawPrompt) {
+      try {
+        const preprocessUrl = `${process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/preprocess-prompt`;
+        const ppRes = await fetch(preprocessUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: rawPrompt }),
+        });
+        if (ppRes.ok) {
+          const ppData = await ppRes.json();
+          if (ppData.surfacePrompt) surfacePrompt = ppData.surfacePrompt;
+          if (ppData.furniturePrompt) furniturePrompt = ppData.furniturePrompt;
+        }
+      } catch {
+        // Fallback to raw prompt — already set above
+      }
+    }
+  } else {
+    // Named style: resolve from style-resolver
+    const { getStyleById } = await import("@/lib/style-resolver");
+    const style = getStyleById(effectiveStyleId, photo.is_outdoor);
+
+    if (!style) {
+      throw new Error(`Style introuvable: ${effectiveStyleId}`);
+    }
+    surfacePrompt = style.surfacePrompt;
+    furniturePrompt = style.furniturePrompt;
   }
 
   // Call generate API with internal fetch
@@ -367,8 +398,8 @@ async function generateSinglePhoto(
     },
     body: JSON.stringify({
       image: `data:image/jpeg;base64,${inputBase64}`,
-      surfacePrompt: style.surfacePrompt,
-      furniturePrompt: style.furniturePrompt,
+      surfacePrompt,
+      furniturePrompt,
       styleId: effectiveStyleId,
       withFurniture: true,
       width: outputWidth,
