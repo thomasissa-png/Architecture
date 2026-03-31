@@ -41,6 +41,11 @@ export const PROMPT_VERSION = "v30";
 // ─── Timeout wrapper for external API calls ─────────────────────────
 const API_TIMEOUT_MS = 120_000;
 
+// Global deadline for the entire route — prevents Replit proxy 504.
+// Budget: pass1 up to 120s + pass2 up to 120s = 240s worst case.
+// We cap at 150s to leave margin before Replit proxy timeout (~180s).
+const ROUTE_DEADLINE_MS = 150_000;
+
 function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
   return new Promise<T>((resolve, reject) => {
     const timer = setTimeout(
@@ -1229,6 +1234,12 @@ export async function POST(request: NextRequest) {
       }
 
       const t0 = Date.now();
+
+      // Check if client disconnected before starting expensive iteration
+      if (request.signal.aborted) {
+        throw new Error("Client disconnecté avant le début de l'itération.");
+      }
+
       console.log(`Starting iteration (${intent})... Output size: ${outputSize.openai}`);
       const result = await generateIterationPass(sourceImageBase64, responsesPrompt, fluxPrompt, outputSize);
       const t1 = Date.now();
@@ -1402,6 +1413,13 @@ export async function POST(request: NextRequest) {
 
     const t0 = Date.now();
 
+    // Check if client disconnected before starting expensive work.
+    // Next.js App Router provides request.signal that aborts when the client drops the connection.
+    // This prevents wasting OpenAI API credits on abandoned requests.
+    if (request.signal.aborted) {
+      throw new Error("Client disconnecté avant le début de la génération.");
+    }
+
     console.log(`Starting pass 1 (surfaces)... Output size: ${outputSize.openai}${isOutdoor ? ` outdoor subtype: ${outdoorSubtype}` : roomType ? ` roomType: ${roomType}` : ""}`);
     const pass1 = await generatePass(base64Image, trimmedSurface, trimmedFurniture, 1, outputSize, negativeOverride, isOutdoor ? null : roomType, outdoorParam);
     const t1 = Date.now();
@@ -1472,12 +1490,28 @@ export async function POST(request: NextRequest) {
 
     // Pass 2 is ALWAYS attempted after a successful pass 1 (audit #36, #39, #40: empty rooms = no client value).
     // Retry once before falling back to pass 1 result alone.
-    console.log("Starting pass 2 (furniture)...");
+    // Check global deadline — if pass 1 was slow, skip pass 2 rather than risk a 504.
+    const elapsedAfterPass1 = Date.now() - t0;
+    const remainingBudget = ROUTE_DEADLINE_MS - elapsedAfterPass1;
+
+    console.log(`Starting pass 2 (furniture)... Elapsed: ${Math.round(elapsedAfterPass1 / 1000)}s, remaining budget: ${Math.round(remainingBudget / 1000)}s`);
     let pass2: { image: string; model: string } | null = null;
     let pass2Failed = false;
     let pass2Attempts = 0;
 
-    for (let attempt = 1; attempt <= 2; attempt++) {
+    if (request.signal.aborted) {
+      // Client disconnected after pass 1 — don't waste credits on pass 2
+      console.warn("Client disconnected after pass 1 — skipping pass 2");
+      pass2Failed = true;
+      pass2Attempts = 0;
+    } else if (remainingBudget < 30_000) {
+      // Less than 30s left — not enough for a pass 2 attempt. Deliver pass 1.
+      console.warn(`Deadline approaching (${Math.round(remainingBudget / 1000)}s left) — skipping pass 2 to avoid 504`);
+      pass2Failed = true;
+      pass2Attempts = 0;
+    }
+
+    if (!pass2Failed) for (let attempt = 1; attempt <= 2; attempt++) {
       pass2Attempts = attempt;
       try {
         pass2 = await generatePass(pass1Base64, trimmedSurface, trimmedFurniture, 2, outputSize, negativeOverride, isOutdoor ? null : roomType, outdoorParam);
@@ -1497,6 +1531,14 @@ export async function POST(request: NextRequest) {
     if (!pass2) {
       pass2Failed = true;
       console.warn("Pass 2 failed after 2 attempts — delivering pass 1 (surfaces only)");
+
+      // Refund the credit — delivering an empty room (surfaces only) is not the paid service.
+      if (session?.user?.id) {
+        addCredits(session.user.id, 1).catch((refundErr) => {
+          console.error("CRITICAL: Credit refund (pass2 failed) failed for user", session.user.id, refundErr);
+        });
+        console.log(`[generate] Credit refunded for user ${session.user.id} (pass 2 failed)`);
+      }
     }
 
     const finalImage = pass2 ? pass2.image : pass1.image;
