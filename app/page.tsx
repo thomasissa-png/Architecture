@@ -1887,15 +1887,7 @@ export default function Home() {
             </div>
           )}
 
-          {/* Refine Modal */}
-          <RefineModal
-            isOpen={isRefineModalOpen}
-            onClose={() => setIsRefineModalOpen(false)}
-            onSubmit={handleRefine}
-            iterationsRemaining={iterationsRemaining}
-            isLoading={isRefining}
-            warnings={refineWarnings}
-          />
+          {/* Refine Modal — rendered at root level, see below AuthModal */}
           </>
           )}
         </div>
@@ -2051,6 +2043,17 @@ export default function Home() {
 
       {/* Footer */}
       <Footer currentPage="/" />
+
+      {/* Refine Modal — must be at root level, not inside a scrollable container,
+          to avoid z-index/stacking issues with useScrollLock (position:fixed on body) */}
+      <RefineModal
+        isOpen={isRefineModalOpen}
+        onClose={() => setIsRefineModalOpen(false)}
+        onSubmit={handleRefine}
+        iterationsRemaining={iterationsRemaining}
+        isLoading={isRefining}
+        warnings={refineWarnings}
+      />
 
       {/* Auth modal — auto-opened when redirected from protected route ou avant génération */}
       <AuthModal
