@@ -909,60 +909,9 @@ async function tryOpenAIResponsesWithPrompt(
   };
 }
 
-// WARNING: This function is DEAD CODE since Sprint 22 fix (#155).
-// Flux Depth Pro MUST NEVER be used for iterations — it regenerates the entire scene.
-// Kept for reference only. The guard throw prevents accidental reactivation.
-async function tryFluxDepthWithPrompt(
-  imageBase64: string,
-  prompt: string,
-  width: number,
-  height: number
-): Promise<{ image: string; model: string }> {
-  throw new Error("BLOCKED: tryFluxDepthWithPrompt() is disabled. Flux Depth Pro must NEVER be used for iterations (see bug #81, Sprint 22 #155). Use OpenAI GPT-Image-1.5 via generateIterationPass() instead.");
-  const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
-
-  const dataUri = `data:image/jpeg;base64,${imageBase64}`;
-
-  const output = await withTimeout(
-    replicate.run(
-      "black-forest-labs/flux-depth-pro" as `${string}/${string}`,
-      {
-        input: {
-          prompt,
-          negative_prompt: "", // Was FLUX_ITERATION_NEGATIVE_PROMPT — dead code
-          control_image: dataUri,
-          width,
-          height,
-          steps: 25,
-          guidance: 15,
-          output_format: "jpg",
-        },
-      }
-    ),
-    API_TIMEOUT_MS,
-    "Flux Depth Pro"
-  );
-
-  let imageUrl: string;
-  if (typeof output === "string") {
-    imageUrl = output;
-  } else if (output && typeof output === "object" && "url" in output) {
-    imageUrl = (output as { url: () => string }).url();
-  } else if (Array.isArray(output) && output.length > 0) {
-    imageUrl = typeof output[0] === "string" ? output[0] : String(output[0]);
-  } else {
-    throw new Error("Unexpected output format from Flux Depth Pro (iteration)");
-  }
-
-  const imageResponse = await withTimeout(fetch(imageUrl), 30_000, "Flux image download");
-  const arrayBuffer = await imageResponse.arrayBuffer();
-  const base64 = Buffer.from(arrayBuffer).toString("base64");
-
-  return {
-    image: `data:image/png;base64,${base64}`,
-    model: "Flux Depth Pro (iteration)",
-  };
-}
+// tryFluxDepthWithPrompt() REMOVED — Flux Depth Pro must NEVER be used for
+// iterations (bug #81, Sprint 22 #155). It regenerates the entire scene.
+// See tryFluxDepth() for the passe 1 fallback (the only authorized Flux usage).
 
 async function generateIterationPass(
   base64Image: string,
