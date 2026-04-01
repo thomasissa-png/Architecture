@@ -111,11 +111,12 @@ const CAMERA_PRESERVATION = "Same camera angle, lens distortion, vanishing point
 // ── Pass 1: Surface finishing ────────────────────────────────────────
 // v36: ACTION FIRST in all builders (v30 lesson — GPT-image-1 weights early tokens more)
 export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string | null): string {
-  // Kitchen: action first
+  // Kitchen: action first — OVERRIDE floor from surfacePrompt (kitchens need tiles, not wood)
   if (roomTypeId === "kitchen") {
+    const kitchenSurface = surfacePrompt.replace(/,?\s*(wide-plank|herringbone|wood|ash|oak|walnut|parquet)\s+flooring[^,.]*/gi, "");
     return [
-      `Edit this photo of a room. Apply this surface finish: ${surfacePrompt}.`,
-      "Ceramic or natural stone floor tiles — NOT wood. Subway tile or smooth splashback behind work area. Ceiling light per style description.",
+      `Edit this photo of a kitchen. Apply this surface finish: ${kitchenSurface}.`,
+      "FLOOR OVERRIDE: ceramic or natural stone floor tiles suited for a kitchen — NOT wood, NOT parquet. Subway tile or smooth splashback behind work area. Ceiling light per style description.",
       "Remove construction leftovers: dangling cables, junction boxes, exposed wiring, electrical outlets, round black wall boxes, cable exits — blend into wall finish. Keep radiators, switches, vents in exact position.",
       "Room stays COMPLETELY EMPTY — no furniture, no appliances. Same number of windows and doors.",
       CEILING_PRESERVATION, WALL_PRESERVATION,
@@ -150,11 +151,11 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
     ].join(" ");
   }
 
-  // Bedroom: action first
+  // Bedroom: action first — floor tone decided by surfacePrompt (not hardcoded warm)
   if (roomTypeId === "bedroom_adults" || roomTypeId === "bedroom_children") {
     return [
       `Edit this photo of a room. Apply this surface finish: ${surfacePrompt}.`,
-      "Warm-toned flooring. Ceiling light per style description. If ONE accent wall exists, preserve it — apply style color to other walls only.",
+      "Flooring per style description above. Ceiling light per style description. If ONE accent wall exists, preserve it — apply style color to other walls only.",
       "Remove construction leftovers: dangling cables, junction boxes, exposed wiring, electrical outlets, cable exits — blend into wall finish. Keep radiators, heaters, vents, switches in position.",
       "Room stays COMPLETELY EMPTY — no furniture, no objects. Same number of windows and doors.",
       CEILING_PRESERVATION, WALL_PRESERVATION,
@@ -222,16 +223,17 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
 // Shared compact fragments for pass 2
 const EQUIPMENT_PRESERVATION = "Keep all wall-mounted equipment visible (radiators, vents, switches, outlets). Do not place furniture in front of radiators. No curtains.";
 const CONTACT_SHADOWS = "Every piece must appear firmly grounded on the floor with visible contact shadows — especially furniture placed in the back of the room.";
-const DEPTH_DISTRIBUTION = "Distribute furniture across the FULL DEPTH of the room. Place a primary seating group in the foreground third and at least one secondary anchor (side table, floor lamp, accent chair) in the back third. Never cluster all furniture in one zone.";
+const DEPTH_DISTRIBUTION_KITCHEN = "Distribute kitchen elements across the FULL DEPTH of the room. Work zones along walls, island or table in the middle zone if space allows. Counter accessories spread across the full counter length — never cluster on one end.";
+const DEPTH_DISTRIBUTION_BEDROOM = "Distribute bedroom furniture across the FULL DEPTH of the room. Bed as primary anchor, dresser or wardrobe as background anchor in the back third. Never cluster all furniture against one wall.";
 
 // v36: ACTION FIRST in all builders (v30 lesson), camera/structure at END
 export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: string | null): string {
-  // Kitchen: action first
+  // Kitchen: action first — ceiling light already set in pass 1, skip pendant here
   if (roomTypeId === "kitchen") {
     return [
       `Add the following kitchen elements to this photo of a finished room: ${furniturePrompt}.`,
-      "Built-in cabinetry and countertops against walls. Add island ONLY if kitchen appears >10m2. If compact, skip island.",
-      DEPTH_DISTRIBUTION,
+      "Built-in cabinetry and countertops against walls. Add island ONLY if kitchen appears >10m2. If compact, skip island. Do NOT add a ceiling pendant — the ceiling light was already placed in pass 1.",
+      DEPTH_DISTRIBUTION_KITCHEN,
       CONTACT_SHADOWS,
       EQUIPMENT_PRESERVATION,
       "Scale references: door = 204cm, sill = 90cm. Freestanding objects only.",
@@ -273,7 +275,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       `Add the following bedroom furniture to this photo of a finished room: ${furniturePrompt}.`,
       "Freestanding only — bed, nightstands, rug, wardrobe/dresser as background anchor. All objects resting on the floor. Furniture must not touch walls.",
       "Calm atmosphere — respect furniture density implied by the style. If minimalist, leave large empty floor areas.",
-      DEPTH_DISTRIBUTION,
+      DEPTH_DISTRIBUTION_BEDROOM,
       CONTACT_SHADOWS,
       EQUIPMENT_PRESERVATION,
       "Scale bed to room: if compact, 140cm bed instead of 160cm, skip bench. Door = 204cm reference.",
