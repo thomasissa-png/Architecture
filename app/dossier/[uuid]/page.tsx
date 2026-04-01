@@ -30,6 +30,8 @@ import StorageImage from "@/components/StorageImage";
 import MerchantBrandWrapper from "@/components/MerchantBrandWrapper";
 import { translateRoomLabel } from "@/lib/constants";
 import DossierAutoRefresh from "@/components/DossierAutoRefresh";
+import DossierPrintView from "@/components/DossierPrintView";
+import PrintPdfButton from "@/components/PrintPdfButton";
 
 interface PageProps {
   params: { uuid: string };
@@ -411,19 +413,13 @@ export default async function DossierPage({ params }: PageProps) {
           </>
         )}
 
-        {/* PDF download link */}
+        {/* PDF download — browser print (HD) + legacy fallback */}
         {completedPhotos.length > 0 && (
-          <div className="text-center mt-8 sm:mt-12">
-            <a
-              href={`/api/dossier/${dossier.uuid}/pdf`}
-              className="inline-flex items-center gap-2 border border-foreground/20 text-foreground/60 px-5 py-2.5 rounded-xl font-light text-xs hover:border-foreground/40 hover:text-foreground/80 transition-colors"
-              data-testid="dossier-download-pdf"
-            >
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              Télécharger le PDF
-            </a>
+          <div className="text-center mt-8 sm:mt-12 no-print">
+            <PrintPdfButton
+              title={title}
+              fallbackPdfUrl={`/api/dossier/${dossier.uuid}/pdf`}
+            />
           </div>
         )}
 
@@ -480,6 +476,59 @@ export default async function DossierPage({ params }: PageProps) {
         title={title}
         brandColor={hasMerchant ? profile?.couleur_principale : null}
       />
+
+      {/* Print-only view — hidden on screen, shown in @media print */}
+      {completedPhotos.length > 0 && (
+        <DossierPrintView
+          title={title}
+          description={dossier.description_commerciale}
+          address={dossier.bien_adresse}
+          bienType={dossier.bien_type}
+          surface={dossier.bien_surface ? formatSurface(dossier.bien_surface) : null}
+          nbPieces={dossier.nb_pieces}
+          price={dossier.bien_prix ? formatPrice(dossier.bien_prix) : null}
+          pricePerM2={
+            dossier.bien_prix && dossier.bien_surface && dossier.bien_surface > 0
+              ? Math.round(dossier.bien_prix / dossier.bien_surface).toLocaleString("fr-FR")
+              : null
+          }
+          prixMoyenM2={
+            dossier.prix_moyen_m2
+              ? dossier.prix_moyen_m2.toLocaleString("fr-FR")
+              : null
+          }
+          dateCreated={new Date(dossier.created_at).toLocaleDateString("fr-FR")}
+          photos={completedPhotos.map((p) => ({
+            id: p.id,
+            roomLabel: translateRoomLabel(p.room_label, `Photo ${p.photo_index + 1}`),
+            inputImageKey: p.input_image_key || "",
+            outputImageKey: p.output_image_key || "",
+            styleLabel: p.style_id || undefined,
+          }))}
+          merchant={
+            hasMerchant && profile
+              ? {
+                  raisonSociale: profile.raison_sociale,
+                  adresse: profile.adresse,
+                  telephone: profile.telephone,
+                  emailPro: profile.email_pro,
+                  siret: profile.siret,
+                  logoStorageKey: profile.logo_storage_key,
+                  couleurPrincipale: profile.couleur_principale,
+                }
+              : null
+          }
+          property={
+            linkedProperty
+              ? {
+                  dpeClasse: linkedProperty.dpe_classe,
+                  gesClasse: linkedProperty.ges_classe,
+                }
+              : null
+          }
+          dossierUrl={`https://versimo.fr/dossier/${dossierIdentifier}`}
+        />
+      )}
     </div>
     </MerchantBrandWrapper>
   );

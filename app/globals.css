@@ -126,3 +126,141 @@ html {
   height: 30%;
   background: linear-gradient(0deg, rgba(200, 213, 192, 0.4) 0%, transparent 100%);
 }
+
+/* ─── Print page settings (must be top-level, not nested) ────────── */
+@page {
+  size: A4 portrait;
+  margin: 12mm 10mm 15mm 10mm;
+}
+
+/* ─── Print styles for /dossier/[uuid] PDF export ────────────────── */
+@media print {
+  /* Force white background + dark text for all elements */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  body {
+    background: white !important;
+    font-family: 'Inter', system-ui, sans-serif !important;
+    -webkit-font-smoothing: antialiased !important;
+  }
+
+  /* Hide interactive/navigation elements */
+  .no-print,
+  header,
+  [data-testid="share-copy-link"],
+  [data-testid="share-whatsapp"],
+  [data-testid="dossier-download-pdf"],
+  nav[aria-label="Navigation par pièce"] {
+    display: none !important;
+  }
+
+  /* Hide the sticky contact bar */
+  .fixed.bottom-0 {
+    display: none !important;
+  }
+
+  /* Show the print-only view */
+  .print-only {
+    display: block !important;
+  }
+
+  /* The web view is hidden when printing — the print view takes over */
+  .screen-only {
+    display: none !important;
+  }
+
+  /* Page break utilities */
+  .print-page-break-before {
+    page-break-before: always;
+    break-before: page;
+  }
+
+  .print-page-break-after {
+    page-break-after: always;
+    break-after: page;
+  }
+
+  .print-avoid-break {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Print cover page */
+  .print-cover {
+    page-break-after: always;
+    break-after: page;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .print-cover-hero img {
+    width: 100%;
+    max-height: 40vh;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+
+  /* Print photo page — each room gets its own page */
+  .print-photo-page {
+    page-break-before: always;
+    break-before: page;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .print-photo-page img {
+    width: 100%;
+    max-height: 38vh;
+    object-fit: contain;
+    border-radius: 4px;
+  }
+
+  /* Print footer on every page */
+  .print-page-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 7pt;
+    color: #999;
+    padding: 4px 0;
+  }
+
+  /* Ensure images load fully for print */
+  img {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  /* Remove box shadows for cleaner print */
+  .print-photo-page *,
+  .print-cover * {
+    box-shadow: none !important;
+  }
+
+  /* Remove backdrop blur (not printable) */
+  .backdrop-blur-md {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* Links don't show URLs */
+  a::after {
+    content: none !important;
+  }
+
+  /* Remove animations */
+  .animate-fade-in-up,
+  .reveal {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
