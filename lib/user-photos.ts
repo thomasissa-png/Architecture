@@ -50,6 +50,11 @@ export async function ensureUserPhotosTable(): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_user_photos_property ON user_photos (property_id);
   `);
 
+  // ─── Migrate: add status column for archive feature ───
+  await db.query(`
+    DO $$ BEGIN ALTER TABLE user_photos ADD COLUMN status TEXT DEFAULT 'active'; EXCEPTION WHEN duplicate_column THEN NULL; END $$;
+  `);
+
   userPhotosTableEnsured = true;
 }
 
@@ -107,7 +112,7 @@ export async function getUserPhotos(
   await ensureUserPhotosTable();
   const db = getPool();
 
-  const conditions = ["user_id = $1"];
+  const conditions = ["user_id = $1", "(status IS NULL OR status != 'archived')"];
   const values: (string | boolean | null)[] = [userId];
   let paramIdx = 2;
 
@@ -209,4 +214,24 @@ export async function getPhotoCountByProperty(propertyId: string): Promise<numbe
     [propertyId]
   );
   return parseInt(result.rows[0].count, 10);
+}
+
+export async function archiveUserPhoto(photoId: string, userId: string): Promise<boolean> {
+  await ensureUserPhotosTable();
+  const db = getPool();
+  const result = await db.query(
+    `UPDATE user_photos SET status = 'archived' WHERE id = $1 AND user_id = $2`,
+    [photoId, userId]
+  );
+  return (result.rowCount ?? 0) > 0;
+}
+
+export async function unarchiveUserPhoto(photoId: string, userId: string): Promise<boolean> {
+  await ensureUserPhotosTable();
+  const db = getPool();
+  const result = await db.query(
+    `UPDATE user_photos SET status = 'active' WHERE id = $1 AND user_id = $2`,
+    [photoId, userId]
+  );
+  return (result.rowCount ?? 0) > 0;
 }

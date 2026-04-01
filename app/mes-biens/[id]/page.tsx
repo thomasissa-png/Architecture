@@ -1290,8 +1290,25 @@ export default function PropertyDetailPage() {
             {toastMsg}
           </div>
         )}
-        {/* Delete property — bottom of page, discrete */}
-        <div className="mt-16 pt-8 border-t border-foreground/5">
+        {/* Archive + Delete property — bottom of page, discrete */}
+        <div className="mt-16 pt-8 border-t border-foreground/5 flex items-center gap-6">
+          <button
+            onClick={async () => {
+              try {
+                const res = await fetch(`/api/properties/${property.id}/archive`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ action: "archive" }),
+                });
+                if (res.ok) {
+                  window.location.href = "/mes-biens";
+                }
+              } catch { /* ignore */ }
+            }}
+            className="text-xs text-muted font-light hover:text-foreground transition-colors"
+          >
+            Archiver ce bien
+          </button>
           <button
             onClick={() => setShowDeleteConfirm(true)}
             disabled={isDeletingProperty}

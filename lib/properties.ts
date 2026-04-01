@@ -154,6 +154,11 @@ export async function ensurePropertiesTable(): Promise<void> {
     .join("; ");
   await db.query(migrateSql);
 
+  // ─── Migrate: add status column for archive feature ───
+  await db.query(`
+    DO $$ BEGIN ALTER TABLE properties ADD COLUMN status TEXT DEFAULT 'active'; EXCEPTION WHEN duplicate_column THEN NULL; END $$;
+  `);
+
   propertiesTableEnsured = true;
 }
 
@@ -231,7 +236,7 @@ export async function getPropertiesByUser(userId: string): Promise<Property[]> {
       (SELECT d.uuid FROM dossiers d WHERE LOWER(TRIM(d.bien_adresse)) = LOWER(TRIM(p.address_raw)) AND d.user_id = p.user_id AND (d.status IS NULL OR d.status != 'archived') ORDER BY d.created_at DESC LIMIT 1) as last_dossier_uuid,
       (SELECT COALESCE(a.slug, a.uuid) FROM annonces a WHERE a.property_id = p.id::text AND a.user_id = p.user_id AND a.status = 'active' AND a.expires_at > NOW() ORDER BY a.created_at DESC LIMIT 1) as annonce_uuid
     FROM properties p
-    WHERE p.user_id = $1
+    WHERE p.user_id = $1 AND (p.status IS NULL OR p.status != 'archived')
     ORDER BY p.updated_at DESC`,
     [userId]
   );
@@ -359,5 +364,25 @@ export async function deleteProperty(propertyId: string, userId: string): Promis
     [propertyId, userId]
   );
 
+  return (result.rowCount ?? 0) > 0;
+}
+
+export async function archiveProperty(propertyId: string, userId: string): Promise<boolean> {
+  await ensurePropertiesTable();
+  const db = getPool();
+  const result = await db.query(
+    `UPDATE properties SET status = 'archived', updated_at = NOW() WHERE id = $1 AND user_id = $2`,
+    [propertyId, userId]
+  );
+  return (result.rowCount ?? 0) > 0;
+}
+
+export async function unarchiveProperty(propertyId: string, userId: string): Promise<boolean> {
+  await ensurePropertiesTable();
+  const db = getPool();
+  const result = await db.query(
+    `UPDATE properties SET status = 'active', updated_at = NOW() WHERE id = $1 AND user_id = $2`,
+    [propertyId, userId]
+  );
   return (result.rowCount ?? 0) > 0;
 }

@@ -179,6 +179,25 @@ export default function GaleriePage() {
     }
   };
 
+  const handleArchivePhoto = async (photoId: string) => {
+    try {
+      const res = await fetch(`/api/user/photos/${photoId}/archive`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "archive" }),
+      });
+      if (res.ok) {
+        setToastMsg("Photo archivée.");
+        fetchPhotos();
+      } else {
+        setToastMsg("Erreur lors de l'archivage. Réessayez.");
+      }
+    } catch {
+      console.error("Erreur archivage photo");
+      setToastMsg("Erreur lors de l'archivage. Réessayez.");
+    }
+  };
+
   const getPropertyLabel = (propertyId: string): string => {
     const p = properties.find((p) => p.id === propertyId);
     if (!p) return "Bien inconnu";
@@ -384,18 +403,35 @@ export default function GaleriePage() {
                   </div>
                 </div>
 
-                {/* Association action — only for unassociated photos */}
-                {!photo.property_id && properties.length > 0 && (
+                {/* Action buttons — top right */}
+                <div className="absolute top-2 right-2 flex gap-1.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                  {!photo.property_id && properties.length > 0 && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setAssociatingPhotoId(associatingPhotoId === photo.id ? null : photo.id);
+                      }}
+                      className="bg-background/90 text-foreground text-xs px-2 py-1 rounded-lg font-medium hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                    >
+                      Associer
+                    </button>
+                  )}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      setAssociatingPhotoId(associatingPhotoId === photo.id ? null : photo.id);
+                      if (confirm("Archiver cette photo ? Elle disparaîtra de la galerie.")) {
+                        handleArchivePhoto(photo.id);
+                      }
                     }}
-                    className="absolute top-2 right-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity bg-background/90 text-foreground text-xs px-2 py-1 rounded-lg font-medium hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                    className="bg-background/90 text-foreground/60 hover:text-red-500 text-xs px-1.5 py-1 rounded-lg hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                    aria-label="Archiver cette photo"
+                    title="Archiver"
                   >
-                    Associer
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0-3-3m3 3 3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
+                    </svg>
                   </button>
-                )}
+                </div>
 
                 {/* Association dropdown */}
                 {associatingPhotoId === photo.id && (
