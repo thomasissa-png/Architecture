@@ -82,7 +82,7 @@ async function loadImageFromStorage(key: string): Promise<string> {
   const client = new Client();
   const { ok, value } = await client.downloadAsBytes(key);
   if (!ok || !value) throw new Error(`Failed to load image: ${key}`);
-  return Buffer.from(value).toString("base64");
+  return value[0].toString("base64");
 }
 
 // ─── Save results to DB ─────────────────────────────────────────────
