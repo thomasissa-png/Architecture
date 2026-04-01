@@ -227,6 +227,7 @@ export async function getPropertiesByUser(userId: string): Promise<Property[]> {
     `SELECT p.*,
       (SELECT COUNT(*) FROM user_photos up WHERE up.property_id = p.id) as photo_count,
       (SELECT COUNT(*) FROM dossiers d WHERE LOWER(TRIM(d.bien_adresse)) = LOWER(TRIM(p.address_raw)) AND d.user_id = p.user_id AND (d.status IS NULL OR d.status != 'archived')) as dossier_count,
+      (SELECT d.uuid FROM dossiers d WHERE LOWER(TRIM(d.bien_adresse)) = LOWER(TRIM(p.address_raw)) AND d.user_id = p.user_id AND (d.status IS NULL OR d.status != 'archived') ORDER BY d.created_at DESC LIMIT 1) as last_dossier_uuid,
       (SELECT COALESCE(a.slug, a.uuid) FROM annonces a WHERE a.property_id = p.id::text AND a.user_id = p.user_id AND a.status = 'active' AND a.expires_at > NOW() ORDER BY a.created_at DESC LIMIT 1) as annonce_uuid
     FROM properties p
     WHERE p.user_id = $1
@@ -238,6 +239,7 @@ export async function getPropertiesByUser(userId: string): Promise<Property[]> {
     ...row,
     photo_count: parseInt(row.photo_count, 10),
     dossier_count: parseInt(row.dossier_count, 10),
+    last_dossier_uuid: row.last_dossier_uuid || null,
     annonce_uuid: row.annonce_uuid || null,
   })) as Property[];
 }

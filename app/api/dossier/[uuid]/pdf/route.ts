@@ -763,7 +763,7 @@ export async function GET(
 
       // Horizontal separator line between before and after
       const separatorColor = rgb(secondaryColor.r, secondaryColor.g, secondaryColor.b);
-      const sepY = afterY + imgAreaHeight + 4;
+      const sepY = afterY + 4; // just above the after image area
       page.drawLine({
         start: { x: MARGIN, y: sepY },
         end: { x: PAGE_WIDTH - MARGIN, y: sepY },
@@ -776,7 +776,7 @@ export async function GET(
       const afterLabelColor = rgb(secondaryColor.r, secondaryColor.g, secondaryColor.b);
       safeDrawText(page, "Après home staging", {
         x: MARGIN,
-        y: afterY + imgAreaHeight + 8,
+        y: afterY + 8, // just above the after image area
         size: 8,
         font: fontBold,
         color: afterLabelColor,
@@ -789,7 +789,8 @@ export async function GET(
           if (afterImg) {
             const dims = afterImg.scaleToFit(imgAreaWidth, imgAreaHeight);
             const xOffset = MARGIN + (imgAreaWidth - dims.width) / 2;
-            const yOffset = afterY + (imgAreaHeight - dims.height) / 2;
+            // afterY is the TOP of the after area — image bottom = afterY - imgAreaHeight + centering
+            const yOffset = afterY - imgAreaHeight + (imgAreaHeight - dims.height) / 2;
             page.drawImage(afterImg, {
               x: xOffset,
               y: yOffset,

@@ -26,6 +26,7 @@ interface Property {
   dvf_median_price_m2: number | null;
   photo_count?: number;
   dossier_count?: number;
+  last_dossier_uuid?: string | null;
   annonce_uuid?: string | null;
   created_at: string;
 }
@@ -432,13 +433,15 @@ export default function MesBiensPage() {
 
                 {((property.dossier_count ?? 0) > 0 || property.annonce_uuid) && (
                   <div className="flex gap-2 mt-2">
-                    {(property.dossier_count ?? 0) > 0 && (
+                    {(property.dossier_count ?? 0) > 0 && property.last_dossier_uuid && (
                       <a
-                        href={`/mes-biens/${property.id}`}
+                        href={`/dossier/${property.last_dossier_uuid}`}
                         onClick={(e) => e.stopPropagation()}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="text-xs text-muted border border-foreground/10 px-3 py-1.5 rounded-full hover:text-foreground hover:border-foreground/20 transition-colors min-h-[44px] flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                       >
-                        Voir le dossier
+                        Voir le dossier ↗
                       </a>
                     )}
                     {property.annonce_uuid && (
