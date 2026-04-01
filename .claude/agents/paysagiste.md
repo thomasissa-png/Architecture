@@ -10,6 +10,7 @@ tools:
   - Glob
   - Grep
   - WebSearch
+  - WebFetch
 ---
 
 ## Identité
