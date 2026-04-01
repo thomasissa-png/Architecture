@@ -25,8 +25,9 @@ function getOpenAI(): OpenAI {
  * v30 (audit @ia: wall preservation bedroom Flux, scaling DOWN laundry/cellar/outdoor, dimensions kitchen/office, outdoor scale refs),
  * v31 (audit Lucas v30: distribution spatiale remontee position 2, ancrage sol contact shadows, preservation lumiere passe 2, echelle conditionnelle),
  * v32 (revert gpt-image-1.5 → gpt-image-1 — regression spatiale confirmee par audit Lucas, modele configurable via env),
- * v33 (audit Yann: propagation DEPTH_DISTRIBUTION + CONTACT_SHADOWS aux 7 builders dedies — bedroom, kitchen, bathroom, WC, entryway, laundry, cellar + preservation lumiere passe 2 tous builders) */
-export const PROMPT_VERSION = "v34";
+ * v33 (audit Yann: propagation DEPTH_DISTRIBUTION + CONTACT_SHADOWS aux 7 builders dedies — bedroom, kitchen, bathroom, WC, entryway, laundry, cellar + preservation lumiere passe 2 tous builders),
+ * v34 (audit Yann structurel: DEPTH_DISTRIBUTION imperatif, densite adaptative, furniturePrompts avec placement spatial) */
+export const PROMPT_VERSION = "v35";
 
 // ─── Image generation model ─────────────────────────────────────────
 // Hardcoded: gpt-image-1.5 is the only model. No fallback, no env var override.
@@ -221,7 +222,7 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
 // Shared compact fragments for pass 2
 const EQUIPMENT_PRESERVATION = "Keep all wall-mounted equipment visible (radiators, vents, switches, outlets). Do not place furniture in front of radiators.";
 const CONTACT_SHADOWS = "Every piece must appear firmly grounded on the floor with visible contact shadows — especially furniture placed in the back of the room.";
-const DEPTH_DISTRIBUTION = "If the room is deep, distribute furniture across its full depth — primary group foreground, secondary piece further back if space allows.";
+const DEPTH_DISTRIBUTION = "Distribute furniture across the FULL DEPTH of the room. Place a primary seating group in the foreground third and at least one secondary anchor (side table, floor lamp, accent chair) in the back third. Never cluster all furniture in one zone.";
 
 export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: string | null): string {
   // Kitchen: CAMERA+STRUCTURE first, then furniture
@@ -339,7 +340,8 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
     EQUIPMENT_PRESERVATION,
     `Add the following furniture and decoration into this photo of a finished room: ${furniturePrompt}.`,
     "Freestanding objects only, resting on the floor. Furniture must not touch walls.",
-    "Distribute furniture across FULL DEPTH and WIDTH: primary group foreground, secondary group further back if space allows.",
+    "Distribute furniture across FULL DEPTH and WIDTH of the room. Primary seating group in the foreground third, at least one secondary anchor (side table, accent chair, floor lamp) in the back third. Never cluster everything in one zone.",
+    "Adapt density to room size: if the visible floor area appears compact, keep 5-6 key pieces only. If the room is very large or deep, add a second furniture grouping in the back zone.",
     CONTACT_SHADOWS,
     "Scale references: door = 204cm, handle = 100cm, sill = 90cm. Scale furniture to room volume — if compact (<4m wide), use smaller pieces. Scale up if ceiling >3m.",
     "Preserve existing light direction and color temperature. No warm tint or yellow cast. No duplicate items unless style calls for a pair.",

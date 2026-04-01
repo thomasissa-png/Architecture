@@ -28,7 +28,7 @@ export function buildIterationFurnitureResponsesPrompt(
     "This is a REFINEMENT. Room surfaces are FINAL. Focus ONLY on the changes below.",
     `APPLY THESE CHANGES:\n${modBlock}`,
     "Add ONLY the items described above. Everything else stays untouched. Leave the rest of the floor empty.",
-    "If the room is deep, distribute furniture across its full depth — primary group foreground, secondary piece further back if space allows.",
+    "Distribute furniture across the FULL DEPTH of the room. Place items in the foreground third AND at least one anchor in the back third. Never cluster all furniture in one zone.",
     "Every piece must appear firmly grounded on the floor with visible contact shadows — especially furniture placed in the back of the room. Match shadow hardness to the lighting type.",
     "Preserve existing light direction and color temperature from the input photo. No warm tint or yellow cast.",
     // Room-type-specific fixture rules
@@ -76,7 +76,7 @@ export function buildIterationOutdoorFurnitureResponsesPrompt(
     `APPLY THESE CHANGES:\n${modBlock}`,
     "Add ONLY the items described above. Everything else in the photo — all existing furniture, planters, lamps — stays untouched.",
     "Do NOT add any other furniture, decoration, planter, lamp, or object not explicitly mentioned. Leave the rest of the space empty.",
-    "If the space is deep, distribute furniture across its full depth — primary group foreground, secondary piece further back if space allows.",
+    "Distribute furniture across the FULL DEPTH of the space. Primary group foreground, secondary anchor further back. Never cluster everything in one zone.",
     "Place all objects naturally on the existing ground. Every piece of outdoor furniture must appear firmly grounded with visible contact shadows consistent with the existing natural light direction.",
     "ONLY add freestanding outdoor objects. Do NOT attach anything to walls, guard rails, or facades.",
     "Do not place opaque structures (screens, shelving, A-frames) directly in front of full-height windows or glass doors.",

@@ -191,13 +191,29 @@ Le seuil de credibilite professionnelle est a 7.5/10. On est significativement e
 
 ---
 
+## Corrections APPLIQUEES (v34 -> v35)
+
+### Fait dans cette session :
+1. **DEPTH_DISTRIBUTION imperatif** (route.ts, generation-pipeline.ts, iteration-prompt.ts) — supprime tous les conditionnels "if the room is deep", "if space allows". Directive imperative : "Place items in foreground third AND at least one anchor in back third. Never cluster."
+2. **Densite adaptative** (route.ts, generation-pipeline.ts) — "Adapt density to room size: compact = 5-6 pieces, large = second grouping in back zone."
+3. **12 furniturePrompts avec placement spatial** (StylePicker.tsx) — TOUS les styles ont maintenant FOREGROUND/LATERAL/BACKGROUND/ACCENTS au lieu d'une liste lineaire. Le modele sait ou placer chaque objet.
+4. **Pre-processor custom enrichi** (custom-prompt.ts) — few-shot examples FR->EN, filtrage assoupli (3 categories au lieu de blocage systematique), limites augmentees (80 mots surface, 120 mots furniture), placement spatial integre.
+5. **Prompt version** incrementee a v35.
+
+### Reste a faire :
+- **P0** : A/B test gpt-image-1 vs gpt-image-1.5 — variable confondante majeure, non resolue.
+- **P1** : Restructurer les prompts passe 1 (plus courts, hierarchie claire).
+- **P1** : Afficher le prompt enrichi a l'utilisateur en mode Custom (transparence UX).
+
 ## Handoff
 
-**Destinataire** : @fullstack pour implementation des corrections P0, @ai-image-expert (Lucas Moreau) pour l'A/B test modele.
+**Destinataire** : @ai-image-expert (Lucas Moreau) pour l'A/B test modele gpt-image-1 vs 1.5. Le fondateur doit generer 3 images avec v35 et comparer avec les resultats precedents.
 
-**Fichiers a modifier** :
-- `/home/user/Architecture/app/api/generate/route.ts` (lignes 47, 122-126, 223-234, 241, 354-365)
-- `/home/user/Architecture/components/StylePicker.tsx` (12 furniturePrompts)
-- `/home/user/Architecture/lib/custom-prompt.ts` (lignes 44-77, 65-69)
+**Fichiers modifies** :
+- `/home/user/Architecture/app/api/generate/route.ts` — DEPTH_DISTRIBUTION imperatif, densite adaptative, version v35
+- `/home/user/Architecture/lib/generation-pipeline.ts` — memes corrections propagees, version v35
+- `/home/user/Architecture/lib/iteration-prompt.ts` — DEPTH_DISTRIBUTION imperatif (indoor + outdoor)
+- `/home/user/Architecture/components/StylePicker.tsx` — 12 furniturePrompts avec FOREGROUND/LATERAL/BACKGROUND/ACCENTS
+- `/home/user/Architecture/lib/custom-prompt.ts` — system prompt enrichi few-shot, filtrage assoupli, limites augmentees
 
 **Question bloquante pour le fondateur** : as-tu compare les resultats recents avec les generations anterieures (avant la migration gpt-image-1.5) ? Si les generations precedentes etaient meilleures, le revert modele est la priorite absolue.

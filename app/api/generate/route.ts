@@ -38,8 +38,9 @@ import { enqueueGeneration, shouldQueue } from "@/lib/generation-queue";
  * v30 (audit @ia: wall preservation bedroom Flux, scaling DOWN laundry/cellar/outdoor, dimensions kitchen/office, outdoor scale refs),
  * v31 (audit Lucas v30: distribution spatiale remontee position 2, ancrage sol contact shadows, preservation lumiere passe 2, echelle conditionnelle),
  * v32 (revert gpt-image-1.5 → gpt-image-1 — regression spatiale confirmee par audit Lucas, modele configurable via env),
- * v33 (audit Yann: propagation DEPTH_DISTRIBUTION + CONTACT_SHADOWS aux 7 builders dedies — bedroom, kitchen, bathroom, WC, entryway, laundry, cellar + preservation lumiere passe 2 tous builders) */
-export const PROMPT_VERSION = "v34";
+ * v33 (audit Yann: propagation DEPTH_DISTRIBUTION + CONTACT_SHADOWS aux 7 builders dedies — bedroom, kitchen, bathroom, WC, entryway, laundry, cellar + preservation lumiere passe 2 tous builders),
+ * v34 (audit Yann structurel: DEPTH_DISTRIBUTION imperatif sans conditionnels, densite adaptative, furniturePrompts 12 styles avec FOREGROUND/LATERAL/BACKGROUND/ACCENTS, pre-processor custom enrichi few-shot + filtrage assoupli) */
+export const PROMPT_VERSION = "v35";
 
 // ─── Image generation model ─────────────────────────────────────────
 // Hardcoded: gpt-image-1.5 is the only model. No fallback, no env var override.
