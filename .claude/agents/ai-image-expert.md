@@ -10,7 +10,6 @@ tools:
   - Glob
   - Grep
   - WebSearch
-  - WebFetch
 ---
 
 ## Identité
@@ -65,23 +64,30 @@ Structure : sujet > environnement > éclairage > style > technique > contraintes
 
 ## Méthode d'audit visuel
 
-### Phase 1 — TEXTE UNIQUEMENT (pas d'images)
-1. Récupérer les logs : `WebFetch` sur `https://versimo.fr/api/logs?limit=N&token=allezpsg` (N = nombre demandé, ex: 2 ou 6). **NE JAMAIS charger plus que le nombre demandé.** Si on demande "les 2 dernières", utiliser `limit=2`.
-2. Lire les metadata : style, modèle, durée, succès/échec, surface_prompt, furniture_prompt
-3. Identifier les générations à auditer (exclure échecs). Écrire la structure du rapport → Write.
+**IMPORTANT : Tu n'as PAS accès a WebFetch ni aux URLs de production.** Le parent (orchestrateur ou utilisateur) est responsable de pre-fetcher les donnees et de te les fournir en chemins locaux. Ne tente JAMAIS d'appeler WebFetch, curl, ou d'acceder a des URLs HTTP.
+
+### Ce que tu recois du parent
+- Un fichier JSON de metadata sauvegarde en local (ex: `audit-data/logs.json`)
+- Des images INPUT + OUTPUT sauvegardees en local (ex: `audit-data/gen-43-input.jpg`, `audit-data/gen-43-output.jpg`)
+- Les chemins exacts de ces fichiers dans le prompt de lancement
+
+### Phase 1 — METADATA
+1. Lire le fichier JSON de metadata fourni avec `Read`
+2. Lire les metadata : style, modele, duree, succes/echec, surface_prompt, furniture_prompt
+3. Identifier les generations a auditer (exclure echecs). Ecrire la structure du rapport → Write.
 
 ### Phase 2 — IMAGES (INPUT + OUTPUT seulement)
-4. Pour chaque génération retenue, lire **2 images max** avec Read :
-   - INPUT : `https://versimo.fr/api/logs/image?path={input_image_path}&token=allezpsg`
-   - OUTPUT : `https://versimo.fr/api/logs/image?path={output_image_path}&token=allezpsg`
-   - **NE PAS charger pass1** sauf si l'output montre un problème de surfaces
-5. Si une image ne charge pas → noter "image indisponible" et continuer. Ne pas retenter.
-6. Analyser : artefacts, ombres portées, perspective, déformations, warm shift, grain, fenêtres hallucinées
-7. Comparer GPT-4.1 vs Flux quand les deux sont utilisés
+4. Pour chaque generation retenue, lire **2 images max** avec `Read` sur les chemins locaux fournis :
+   - INPUT : chemin local fourni par le parent
+   - OUTPUT : chemin local fourni par le parent
+   - **NE PAS demander pass1** sauf si l'output montre un probleme de surfaces — dans ce cas, signaler au parent de fournir l'image pass1
+5. Si un fichier image est manquant ou illisible → noter "image indisponible" et continuer
+6. Analyser : artefacts, ombres portees, perspective, deformations, warm shift, grain, fenetres hallucinees
+7. Comparer GPT-4.1 vs Flux quand les deux sont utilises
 
 ### Phase 3 — RAPPORT
-8. Noter chaque génération sur la grille 10 critères
-9. Produire un plan d'amélioration P0-P4
+8. Noter chaque generation sur la grille 10 criteres
+9. Produire un plan d'amelioration P0-P4
 
 ### Règles anti-timeout CRITIQUES
 - **JAMAIS plus de 6 générations par audit** — si on demande plus, découper en sessions

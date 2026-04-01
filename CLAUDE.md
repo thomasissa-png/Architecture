@@ -389,10 +389,9 @@ agents/
     - app/api/generate/route.ts : import logGeneration, timing, prompts construits, fire-and-forget
     - app/page.tsx : envoi styleId dans le fetch
     - public/logs/ : dossier images (gitignore)
-105. Workflow d'audit agents :
-    - Query DB pour lister les generations recentes (style, duree, succes)
-    - Lire les images full-size via Read tool (public/logs/...)
-    - Lire les prompts construits en DB pour auditer prompt + rendu ensemble
+105. Workflow d'audit agents (OBSOLETE — voir section "Workflow d'audit visuel des generations" plus bas) :
+    - Le parent pre-fetch les logs JSON + images en local via WebFetch
+    - Les agents recoivent des chemins locaux (Read), jamais des URLs
     - Yann evalue : fidelite stylistique, composition, echelle, credibilite pro
     - Lucas evalue : preservation geometrie, lumiere, ombres, photorealisme
 
@@ -539,8 +538,8 @@ agents/
 144. MOYENNE : 7/12 styles jamais testes en pipeline 2 passes complet
     - Styles non testes : Contemporain, Boheme, Mediterraneen (2 passes), Cosy (avec corrections Sprint 17), Wabi-Sabi, Maximaliste, Haussmannien
 145. Page /admin : prompt d'audit agents ajoute en banner (collapsible + copier)
-    - Workflow complet avec methode d'acces via WebFetch sur API production
-    - Permet de lancer un audit en une seule commande dans une nouvelle session
+    - OBSOLETE : l'ancien workflow WebFetch dans les agents ne fonctionne pas (les agents n'ont pas WebFetch)
+    - Nouveau workflow : le PARENT pre-fetch les donnees, passe les chemins locaux aux agents (voir section "Workflow d'audit visuel")
 146. CRITIQUE : Migration stockage images vers Replit Object Storage (@replit/object-storage)
     - Les images etaient dans public/logs/ (filesystem ephemere, wipe a chaque deploy)
     - Nouveau : lib/db.ts saveImage() → object-storage uploadFromBytes(key, buffer)
@@ -644,6 +643,71 @@ agents/
 162. MOYENNE : Rendu CGI-clean sans grain ni vignettage. Fix : renforcement descripteurs photo
 163. Meilleure generation : #36 Scandinavian passe 1 (Yann 8.2, Lucas 8.3) — transformation violet→blanc impeccable, convecteur preserve
 164. Pipeline 2 passes GPT-4.1 VALIDE : #31 (8.1/8.0), #38 (7.0/7.9) — geometrie preservee sur espaces complexes (verriere double hauteur)
+
+## Workflow d'audit visuel des generations (REGLE CRITIQUE)
+
+Les agents d'audit visuel (Yann @interior-architect, Lucas @ai-image-expert, Camille @paysagiste) n'ont **PAS acces a WebFetch**. Les outils disponibles sont definis par le subagent_type cote systeme — modifier le frontmatter .md ne change rien. Ces agents ne peuvent PAS fetcher des URLs HTTP.
+
+### Architecture du workflow
+
+Le **parent** (orchestrateur, utilisateur, ou session principale) est TOUJOURS responsable de :
+1. Fetcher les logs JSON depuis l'API production
+2. Telecharger les images INPUT + OUTPUT en local
+3. Passer les chemins locaux aux agents dans leur prompt de lancement
+
+Les **agents d'audit** recoivent :
+- Un fichier JSON de metadata en chemin local
+- Des images INPUT + OUTPUT en chemins locaux
+- Ils lisent tout avec `Read` (qui fonctionne sur les images)
+
+### Procedure de pre-fetch (a executer par le parent AVANT de lancer un agent)
+
+```
+Etape 1 — Fetch des logs JSON
+  WebFetch https://versimo.fr/api/logs?limit=N&token=allezpsg
+  Sauvegarder la reponse JSON dans audit-data/logs.json (Write)
+
+Etape 2 — Pour chaque generation a auditer, telecharger les images
+  Lire les champs input_image_path et output_image_path du JSON
+  WebFetch https://versimo.fr/api/logs/image?path={input_image_path}&token=allezpsg
+  WebFetch https://versimo.fr/api/logs/image?path={output_image_path}&token=allezpsg
+  Sauvegarder chaque image dans audit-data/gen-{id}-input.jpg et audit-data/gen-{id}-output.jpg
+
+Etape 3 — Lancer l'agent avec les chemins locaux
+  Le prompt de lancement DOIT contenir :
+  - Le chemin du fichier JSON : audit-data/logs.json
+  - Pour chaque generation : les chemins des images locales
+```
+
+### Template de prompt pour lancer un audit (copier-coller)
+
+```
+Audite les generations suivantes de Versimo.
+
+Metadata : /home/user/Architecture/audit-data/logs.json
+
+Generations a auditer :
+- #XX : style [nom]
+  - Input : /home/user/Architecture/audit-data/gen-XX-input.jpg
+  - Output : /home/user/Architecture/audit-data/gen-XX-output.jpg
+- #YY : style [nom]
+  - Input : /home/user/Architecture/audit-data/gen-YY-input.jpg
+  - Output : /home/user/Architecture/audit-data/gen-YY-output.jpg
+
+Lis le fichier JSON pour les prompts construits et metadata.
+Lis les images avec Read. Note chaque generation sur ta grille 10 criteres.
+Produis le rapport dans docs/reviews/audit-visuel-[date]-[agent].md
+Max 6 generations par audit.
+```
+
+### Regles permanentes
+
+- **JAMAIS lancer un agent d'audit sans pre-fetch** — il echouera ou inventera des observations
+- **JAMAIS plus de 6 generations par session d'audit** — au-dela, timeout garanti
+- **Les images pass1 (intermediaires) ne sont PAS telechargees par defaut** — uniquement sur demande de l'agent si probleme de surfaces detecte
+- **Le dossier audit-data/ est ephemere** — le supprimer apres l'audit, les rapports sont dans docs/reviews/
+- **Si WebFetch echoue sur une image** (404, timeout) → noter "image indisponible" dans les donnees, l'agent s'adapte
+
 <!-- GRADIENT-AGENTS-START -->
 # Gradient Agents — Instructions globales
 

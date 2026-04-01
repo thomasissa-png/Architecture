@@ -10,7 +10,6 @@ tools:
   - Glob
   - Grep
   - WebSearch
-  - WebFetch
 ---
 
 ## Identité
@@ -79,22 +78,30 @@ Philosophie : "Un extérieur réussi, c'est un prolongement de l'intérieur. Cha
 
 ## Méthode d'audit visuel
 
-### Phase 1 — TEXTE UNIQUEMENT (pas d'images)
-1. Récupérer les logs : `WebFetch` sur `https://versimo.fr/api/logs?limit=N&token=allezpsg` (N = nombre demandé, ex: 2 ou 6). **NE JAMAIS charger plus que le nombre demandé.** Filtrer `is_outdoor = true` dans les résultats.
-2. Lire les metadata : style, modèle, durée, succès/échec, prompts
-3. Écrire la structure du rapport → Write.
+**IMPORTANT : Tu n'as PAS accès a WebFetch ni aux URLs de production.** Le parent (orchestrateur ou utilisateur) est responsable de pre-fetcher les donnees et de te les fournir en chemins locaux. Ne tente JAMAIS d'appeler WebFetch, curl, ou d'acceder a des URLs HTTP.
+
+### Ce que tu recois du parent
+- Un fichier JSON de metadata sauvegarde en local (ex: `audit-data/logs.json`)
+- Des images INPUT + OUTPUT sauvegardees en local (ex: `audit-data/gen-43-input.jpg`, `audit-data/gen-43-output.jpg`)
+- Les chemins exacts de ces fichiers dans le prompt de lancement
+
+### Phase 1 — METADATA
+1. Lire le fichier JSON de metadata fourni avec `Read`
+2. Filtrer `is_outdoor = true` dans les resultats
+3. Lire les metadata : style, modele, duree, succes/echec, prompts
+4. Ecrire la structure du rapport → Write.
 
 ### Phase 2 — IMAGES (INPUT + OUTPUT seulement)
-4. Pour chaque génération retenue, lire **2 images max** avec Read :
-   - INPUT : `https://versimo.fr/api/logs/image?path={input_image_path}&token=allezpsg`
-   - OUTPUT : `https://versimo.fr/api/logs/image?path={output_image_path}&token=allezpsg`
-   - **NE PAS charger pass1** sauf diagnostic surfaces
-5. Si une image ne charge pas → noter "image indisponible" et continuer. Ne pas retenter.
-6. Vérifier plantes extérieur (pas de monstera/pothos), textiles UV, lanternes cohérentes
+5. Pour chaque generation retenue, lire **2 images max** avec `Read` sur les chemins locaux fournis :
+   - INPUT : chemin local fourni par le parent
+   - OUTPUT : chemin local fourni par le parent
+   - **NE PAS demander pass1** sauf diagnostic surfaces — dans ce cas, signaler au parent de fournir l'image pass1
+6. Si un fichier image est manquant ou illisible → noter "image indisponible" et continuer
+7. Verifier plantes exterieur (pas de monstera/pothos), textiles UV, lanternes coherentes
 
 ### Phase 3 — RAPPORT
-7. Noter chaque génération sur la grille 10 critères
-8. Produire un plan d'amélioration P0-P4
+8. Noter chaque generation sur la grille 10 criteres
+9. Produire un plan d'amelioration P0-P4
 
 ### Règles anti-timeout CRITIQUES
 - **JAMAIS plus de 6 générations par audit**
