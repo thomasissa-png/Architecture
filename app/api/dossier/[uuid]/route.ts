@@ -19,6 +19,7 @@ import {
   updateDossierInfo,
   updateDossierPhotoStatus,
   updateDossierPhotoStyle,
+  incrementIterationCount,
   isDossierExpired,
   MAX_PHOTOS_PER_DOSSIER,
   MAX_CONCURRENT_GENERATIONS,
@@ -196,7 +197,7 @@ export async function PATCH(
   try {
     const body = await request.json();
     const { action, photoId, styleId, isOutdoor, regeneratePhotoId } = body as {
-      action: "generate" | "update_style" | "regenerate" | "attach";
+      action: "generate" | "update_style" | "regenerate" | "attach" | "iterate";
       photoId?: number;
       styleId?: string;
       isOutdoor?: boolean;
@@ -247,6 +248,143 @@ export async function PATCH(
       return NextResponse.json({ success: true });
     }
 
+    // ── Iterate (refine) single photo — 3 iterations max, free ──
+    if (action === "iterate" && body.iteratePhotoId) {
+      const { iteratePhotoId, comment, previousModifications } = body as {
+        iteratePhotoId: number;
+        comment: string;
+        previousModifications?: string[];
+      };
+
+      if (!comment?.trim()) {
+        return NextResponse.json(
+          { error: "Décrivez l'ajustement souhaité." },
+          { status: 400 }
+        );
+      }
+
+      const photos = await getDossierPhotos(uuid);
+      const targetPhoto = photos.find((p) => p.id === iteratePhotoId);
+      if (!targetPhoto) {
+        return NextResponse.json(
+          { error: "Photo introuvable." },
+          { status: 404 }
+        );
+      }
+
+      if (!targetPhoto.output_image_key) {
+        return NextResponse.json(
+          { error: "Cette photo n'a pas encore été générée." },
+          { status: 400 }
+        );
+      }
+
+      if (!targetPhoto.pass1_image_key) {
+        return NextResponse.json(
+          { error: "Les surfaces de cette génération ont expiré. Regénérez depuis l'image originale." },
+          { status: 400 }
+        );
+      }
+
+      // Check iteration limit (3 max)
+      const currentIterations = targetPhoto.iteration_count ?? 0;
+      if (currentIterations >= 3) {
+        return NextResponse.json(
+          { error: "Maximum 3 itérations atteint. Regénérez pour repartir de zéro." },
+          { status: 400 }
+        );
+      }
+
+      const startTime = Date.now();
+      try {
+        // The generate API reads pass1 from storage via pass1_key — no need to read it here
+        // Just need to verify it exists
+        const pass1Exists = await getImage(targetPhoto.pass1_image_key);
+        if (!pass1Exists) {
+          throw new Error("Image surfaces (passe 1) introuvable dans le stockage.");
+        }
+
+        // Resolve style prompts for iteration
+        const effectiveStyleId = targetPhoto.is_outdoor
+          ? (targetPhoto.outdoor_style_id || targetPhoto.style_id || dossier.global_style_id || "scandinavian")
+          : (targetPhoto.style_id || dossier.global_style_id || "scandinavian");
+
+        let surfacePrompt = "";
+        let furniturePrompt = "";
+        if (effectiveStyleId === "custom") {
+          surfacePrompt = targetPhoto.custom_prompt || "";
+          furniturePrompt = targetPhoto.custom_prompt || "";
+        } else {
+          const { getStyleById } = await import("@/lib/style-resolver");
+          const style = getStyleById(effectiveStyleId, targetPhoto.is_outdoor);
+          if (style) {
+            surfacePrompt = style.surfacePrompt;
+            furniturePrompt = style.furniturePrompt;
+          }
+        }
+
+        // Call generate API with iteration parameters (same as F1 iteration)
+        const generateUrl = `${process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/generate`;
+
+        const response = await fetch(generateUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Internal-Dossier": "true",
+            "X-Internal-Secret": process.env.INTERNAL_API_SECRET || "",
+          },
+          body: JSON.stringify({
+            pass1_key: targetPhoto.pass1_image_key,
+            iterationComment: comment.trim(),
+            previousModifications: previousModifications || [],
+            surfacePrompt,
+            furniturePrompt,
+            styleId: effectiveStyleId,
+            withFurniture: true,
+            width: 0,
+            height: 0,
+            roomType: targetPhoto.room_type_id,
+            isOutdoor: targetPhoto.is_outdoor,
+            outdoorSubtype: targetPhoto.outdoor_subtype || undefined,
+            _skipCreditCheck: true,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `Iteration failed (${response.status})`);
+        }
+
+        const data = await response.json();
+
+        // Save iterated output
+        const outputBase64 = data.image.replace(/^data:image\/[\w+]+;base64,/, "");
+        const outputKey = await saveImage(
+          outputBase64,
+          `dossier_${dossier.uuid}_${targetPhoto.photo_index}_iter${currentIterations + 1}`
+        );
+
+        // Update photo with new output + increment iteration count
+        await updateDossierPhotoStatus(targetPhoto.id, "completed", {
+          outputImageKey: outputKey,
+          durationMs: Date.now() - startTime,
+        });
+        const newCount = await incrementIterationCount(targetPhoto.id);
+
+        return NextResponse.json({
+          success: true,
+          image: data.image,
+          iterationCount: newCount,
+          iterationsRemaining: 3 - newCount,
+        });
+      } catch (err) {
+        return NextResponse.json(
+          { error: err instanceof Error ? err.message : "Erreur lors de l'itération." },
+          { status: 500 }
+        );
+      }
+    }
+
     // ── Regenerate single photo ──
     if (action === "regenerate" && regeneratePhotoId) {
       // Check credits
@@ -286,6 +424,9 @@ export async function PATCH(
           pass1ImageKey: result.pass1Key,
           durationMs: Date.now() - startTime,
         });
+        // Reset iteration count on full regeneration (back to 0, 3 iterations available)
+        const { getPool: getDbPool } = await import("@/lib/db");
+        await getDbPool().query(`UPDATE dossier_photos SET iteration_count = 0 WHERE id = $1`, [targetPhoto.id]);
         return NextResponse.json({ success: true, photo: targetPhoto });
       } catch (err) {
         // Refund credit on failure

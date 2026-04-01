@@ -1,13 +1,17 @@
 "use client";
 
+import { useState } from "react";
 import StorageImage from "@/components/StorageImage";
+import RefineModal from "@/components/RefineModal";
 import { translateRoomLabel } from "@/lib/constants";
 
 /**
  * F4 — Mode Pro (ex Mode Marchand): Dossier result display.
- * Shows completed before/after images with download and share options.
+ * Shows completed before/after images with download, share, regenerate and iterate options.
  * Summary bar removed — share buttons are in MerchantMode.tsx, not here.
  */
+
+const MAX_ITERATIONS = 3;
 
 interface DossierPhotoResult {
   id: number;
@@ -15,9 +19,11 @@ interface DossierPhotoResult {
   roomLabel: string | null;
   inputImageKey: string | null;
   outputImageKey: string | null;
+  pass1ImageKey?: string | null;
   status: string;
   styleId: string | null;
   errorMessage?: string | null;
+  iterationCount?: number;
 }
 
 interface DossierResultProps {
@@ -25,7 +31,9 @@ interface DossierResultProps {
   dossierUuid?: string;
   onDownloadPdf: () => void;
   onRegenerate?: (photoId: number) => void;
+  onIterate?: (photoId: number, comment: string, previousModifications: string[]) => Promise<void>;
   isRegenerating?: number | null;
+  isIterating?: number | null;
 }
 
 export default function DossierResult({
@@ -33,10 +41,38 @@ export default function DossierResult({
   dossierUuid,
   onDownloadPdf,
   onRegenerate,
+  onIterate,
   isRegenerating,
+  isIterating,
 }: DossierResultProps) {
   const completedPhotos = photos.filter((p) => p.status === "completed");
   const failedPhotos = photos.filter((p) => p.status === "failed");
+
+  // RefineModal state
+  const [refinePhotoId, setRefinePhotoId] = useState<number | null>(null);
+  const [previousModifications, setPreviousModifications] = useState<Record<number, string[]>>({});
+  const [refineWarnings, setRefineWarnings] = useState<string[]>([]);
+
+  const refinePhoto = completedPhotos.find((p) => p.id === refinePhotoId);
+  const refineIterationsUsed = refinePhoto?.iterationCount ?? 0;
+  const refineIterationsRemaining = MAX_ITERATIONS - refineIterationsUsed;
+
+  const handleOpenRefine = (photoId: number) => {
+    setRefinePhotoId(photoId);
+    setRefineWarnings([]);
+  };
+
+  const handleRefineSubmit = async (comment: string) => {
+    if (!refinePhotoId || !onIterate) return;
+    const mods = previousModifications[refinePhotoId] || [];
+    await onIterate(refinePhotoId, comment, mods);
+    // Track modification for cumulative prompt
+    setPreviousModifications((prev) => ({
+      ...prev,
+      [refinePhotoId]: [...(prev[refinePhotoId] || []), comment],
+    }));
+    setRefinePhotoId(null);
+  };
 
   return (
     <div className="space-y-6" data-testid="dossier-result">
@@ -72,76 +108,116 @@ export default function DossierResult({
 
       {/* Photos grid */}
       <div className="space-y-4">
-        {completedPhotos.map((photo) => (
-          <div
-            key={photo.id}
-            className="border border-foreground/5 rounded-2xl overflow-hidden"
-            data-testid={`dossier-result-photo-${photo.id}`}
-          >
-            {/* Room label header */}
-            <div className="px-4 py-2.5 border-b border-foreground/5 flex items-center justify-between">
-              <span className="text-sm font-medium text-foreground">
-                {translateRoomLabel(photo.roomLabel, `Photo ${photo.photoIndex + 1}`)}
-              </span>
-              {onRegenerate && (
-                <button
-                  onClick={() => onRegenerate(photo.id)}
-                  disabled={isRegenerating === photo.id}
-                  className="text-xs text-muted font-light hover:text-foreground transition-colors disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 min-h-[44px] inline-flex items-center"
-                  data-testid={`dossier-regenerate-${photo.id}`}
-                >
-                  {isRegenerating === photo.id ? "En cours..." : "Regénérer"}
-                </button>
+        {completedPhotos.map((photo) => {
+          const iterationsUsed = photo.iterationCount ?? 0;
+          const iterationsLeft = MAX_ITERATIONS - iterationsUsed;
+          const canIterate = iterationsLeft > 0 && !!photo.pass1ImageKey && !!onIterate;
+
+          return (
+            <div
+              key={photo.id}
+              className="border border-foreground/5 rounded-2xl overflow-hidden"
+              data-testid={`dossier-result-photo-${photo.id}`}
+            >
+              {/* Room label header */}
+              <div className="px-4 py-2.5 border-b border-foreground/5 flex items-center justify-between">
+                <span className="text-sm font-medium text-foreground">
+                  {translateRoomLabel(photo.roomLabel, `Photo ${photo.photoIndex + 1}`)}
+                </span>
+                <div className="flex items-center gap-3">
+                  {/* Iterate (refine) button */}
+                  {canIterate && (
+                    <button
+                      onClick={() => handleOpenRefine(photo.id)}
+                      disabled={isIterating === photo.id || isRegenerating === photo.id}
+                      className="text-xs text-sage font-medium hover:text-sage/80 transition-colors disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 min-h-[44px] inline-flex items-center gap-1"
+                      data-testid={`dossier-iterate-${photo.id}`}
+                    >
+                      {isIterating === photo.id ? (
+                        "Affinage..."
+                      ) : (
+                        <>
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42" />
+                          </svg>
+                          Affiner ({iterationsLeft})
+                        </>
+                      )}
+                    </button>
+                  )}
+                  {/* Iterations exhausted indicator */}
+                  {iterationsUsed >= MAX_ITERATIONS && (
+                    <span className="text-xs text-muted/50 font-light min-h-[44px] inline-flex items-center">
+                      3/3 affinages
+                    </span>
+                  )}
+                  {/* Regenerate button */}
+                  {onRegenerate && (
+                    <button
+                      onClick={() => onRegenerate(photo.id)}
+                      disabled={isRegenerating === photo.id || isIterating === photo.id}
+                      className="text-xs text-muted font-light hover:text-foreground transition-colors disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 min-h-[44px] inline-flex items-center"
+                      data-testid={`dossier-regenerate-${photo.id}`}
+                    >
+                      {isRegenerating === photo.id ? "En cours..." : "Regénérer"}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Before/After side by side */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0">
+                {/* Before */}
+                <div className="relative">
+                  <div className="aspect-[4/3]">
+                    <StorageImage
+                      imageKey={photo.inputImageKey}
+                      alt={`${translateRoomLabel(photo.roomLabel, "Photo")} — avant`}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                  <span className="absolute bottom-2 left-2 text-[11px] font-medium tracking-widest uppercase text-white/70">
+                    AVANT
+                  </span>
+                </div>
+
+                {/* After */}
+                <div className="relative">
+                  <div className="aspect-[4/3]">
+                    <StorageImage
+                      imageKey={photo.outputImageKey}
+                      alt={`${translateRoomLabel(photo.roomLabel, "Photo")} — après`}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                  <span className="absolute bottom-2 left-2 text-[11px] font-medium tracking-widest uppercase text-sage">
+                    APRÈS
+                  </span>
+                </div>
+              </div>
+
+              {/* Download HD link + iteration info */}
+              {photo.outputImageKey && (
+                <div className="px-4 py-2 border-t border-foreground/5 flex items-center justify-between">
+                  <a
+                    href={`/api/logs/image?path=${encodeURIComponent(photo.outputImageKey)}`}
+                    download={`${photo.roomLabel || 'photo'}-apres.jpg`}
+                    className="min-h-[44px] inline-flex items-center text-xs text-muted hover:text-foreground transition-colors"
+                  >
+                    Télécharger HD
+                  </a>
+                  {iterationsUsed > 0 && (
+                    <span className="text-xs text-muted/50 font-light">
+                      {iterationsUsed} affinage{iterationsUsed > 1 ? "s" : ""} appliqué{iterationsUsed > 1 ? "s" : ""}
+                    </span>
+                  )}
+                </div>
               )}
             </div>
-
-            {/* Before/After side by side */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0">
-              {/* Before */}
-              <div className="relative">
-                <div className="aspect-[4/3]">
-                  <StorageImage
-                    imageKey={photo.inputImageKey}
-                    alt={`${translateRoomLabel(photo.roomLabel, "Photo")} — avant`}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                </div>
-                <span className="absolute bottom-2 left-2 text-[11px] font-medium tracking-widest uppercase text-white/70">
-                  AVANT
-                </span>
-              </div>
-
-              {/* After */}
-              <div className="relative">
-                <div className="aspect-[4/3]">
-                  <StorageImage
-                    imageKey={photo.outputImageKey}
-                    alt={`${translateRoomLabel(photo.roomLabel, "Photo")} — après`}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                </div>
-                <span className="absolute bottom-2 left-2 text-[11px] font-medium tracking-widest uppercase text-sage">
-                  APRÈS
-                </span>
-              </div>
-            </div>
-
-            {/* Download HD link */}
-            {photo.outputImageKey && (
-              <div className="px-4 py-2 border-t border-foreground/5">
-                <a
-                  href={`/api/logs/image?path=${encodeURIComponent(photo.outputImageKey)}`}
-                  download={`${photo.roomLabel || 'photo'}-apres.jpg`}
-                  className="min-h-[44px] inline-flex items-center text-xs text-muted hover:text-foreground transition-colors"
-                >
-                  Télécharger HD
-                </a>
-              </div>
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Failed photos */}
@@ -176,6 +252,16 @@ export default function DossierResult({
           ))}
         </div>
       )}
+
+      {/* RefineModal for iteration */}
+      <RefineModal
+        isOpen={refinePhotoId !== null}
+        onClose={() => setRefinePhotoId(null)}
+        onSubmit={handleRefineSubmit}
+        iterationsRemaining={refineIterationsRemaining}
+        isLoading={isIterating === refinePhotoId}
+        warnings={refineWarnings}
+      />
     </div>
   );
 }

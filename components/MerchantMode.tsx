@@ -43,7 +43,9 @@ interface DossierPhotoStatus {
   errorMessage: string | null;
   inputImageKey: string | null;
   outputImageKey: string | null;
+  pass1ImageKey: string | null;
   styleId: string | null;
+  iterationCount: number;
 }
 
 type MerchantStep = "photos" | "annotate" | "style" | "generating" | "results";
@@ -98,6 +100,7 @@ export default function MerchantMode() {
   const [generationElapsed, setGenerationElapsed] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [isRegenerating, setIsRegenerating] = useState<number | null>(null);
+  const [isIterating, setIsIterating] = useState<number | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
   const [attachMode, setAttachMode] = useState<"none" | "existing" | "new">("none");
   const [isAttaching, setIsAttaching] = useState(false);
@@ -211,7 +214,9 @@ export default function MerchantMode() {
           errorMessage: (p.errorMessage ?? p.error_message ?? null) as string | null,
           inputImageKey: (p.inputImageKey ?? p.input_image_key ?? null) as string | null,
           outputImageKey: (p.outputImageKey ?? p.output_image_key ?? null) as string | null,
+          pass1ImageKey: (p.pass1ImageKey ?? p.pass1_image_key ?? null) as string | null,
           styleId: (p.styleId ?? p.style_id ?? null) as string | null,
+          iterationCount: (p.iterationCount ?? p.iteration_count ?? 0) as number,
         }));
         setDossierPhotos(mappedPhotos);
 
@@ -393,13 +398,78 @@ export default function MerchantMode() {
           errorMessage: (p.errorMessage ?? p.error_message ?? null) as string | null,
           inputImageKey: (p.inputImageKey ?? p.input_image_key ?? null) as string | null,
           outputImageKey: (p.outputImageKey ?? p.output_image_key ?? null) as string | null,
+          pass1ImageKey: (p.pass1ImageKey ?? p.pass1_image_key ?? null) as string | null,
           styleId: (p.styleId ?? p.style_id ?? null) as string | null,
+          iterationCount: (p.iterationCount ?? p.iteration_count ?? 0) as number,
         })));
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Une erreur est survenue. Réessayez — vos visuels n'ont pas été consommés.");
     } finally {
       setIsRegenerating(null);
+    }
+  }, [dossierUuid]);
+
+  // ── Iterate (refine) single photo — free, max 3 per photo ──
+  const handleIterate = useCallback(async (photoId: number, comment: string, previousModifications: string[]) => {
+    if (!dossierUuid) return;
+    setIsIterating(photoId);
+    setError(null);
+
+    try {
+      const res = await fetch(`/api/dossier/${dossierUuid}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "iterate",
+          iteratePhotoId: photoId,
+          comment,
+          previousModifications,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error || "Erreur lors de l'affinage.");
+        return;
+      }
+
+      const data = await res.json();
+
+      // Update the photo's output image and iteration count locally
+      setDossierPhotos((prev) =>
+        prev.map((p) =>
+          p.id === photoId
+            ? {
+                ...p,
+                outputImageKey: null, // Force StorageImage refresh
+                iterationCount: data.iterationCount ?? (p.iterationCount + 1),
+              }
+            : p
+        )
+      );
+
+      // Refresh photos from server to get updated outputImageKey
+      const detailRes = await fetch(`/api/dossier/${dossierUuid}`);
+      if (detailRes.ok) {
+        const { photos: rawP } = await detailRes.json();
+        setDossierPhotos(rawP.map((p: Record<string, unknown>) => ({
+          id: p.id as number,
+          photoIndex: (p.photoIndex ?? p.photo_index ?? 0) as number,
+          roomLabel: (p.roomLabel ?? p.room_label ?? null) as string | null,
+          status: (p.status ?? "pending") as DossierPhotoStatus["status"],
+          errorMessage: (p.errorMessage ?? p.error_message ?? null) as string | null,
+          inputImageKey: (p.inputImageKey ?? p.input_image_key ?? null) as string | null,
+          outputImageKey: (p.outputImageKey ?? p.output_image_key ?? null) as string | null,
+          pass1ImageKey: (p.pass1ImageKey ?? p.pass1_image_key ?? null) as string | null,
+          styleId: (p.styleId ?? p.style_id ?? null) as string | null,
+          iterationCount: (p.iterationCount ?? p.iteration_count ?? 0) as number,
+        })));
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erreur lors de l'affinage.");
+    } finally {
+      setIsIterating(null);
     }
   }, [dossierUuid]);
 
@@ -892,7 +962,9 @@ export default function MerchantMode() {
             dossierUuid={dossierIdentifier || dossierUuid}
             onDownloadPdf={handleDownloadPdf}
             onRegenerate={handleRegenerate}
+            onIterate={handleIterate}
             isRegenerating={isRegenerating}
+            isIterating={isIterating}
           />
 
           {/* ── Share buttons ── */}

@@ -59,6 +59,7 @@ export interface DossierPhoto {
   status: DossierPhotoStatus;
   error_message: string | null;
   duration_ms: number | null;
+  iteration_count: number;
   created_at: string;
 }
 
@@ -198,6 +199,11 @@ export async function ensureDossierTables(): Promise<void> {
   await db.query(`
     DO $$ BEGIN ALTER TABLE dossier_photos ADD COLUMN outdoor_style_id VARCHAR(50); EXCEPTION WHEN duplicate_column THEN NULL; END $$;
     DO $$ BEGIN ALTER TABLE dossier_photos ADD COLUMN outdoor_subtype VARCHAR(50); EXCEPTION WHEN duplicate_column THEN NULL; END $$;
+  `);
+
+  // ── iteration_count column on dossier_photos (iteration feature) ──
+  await db.query(`
+    DO $$ BEGIN ALTER TABLE dossier_photos ADD COLUMN iteration_count INTEGER DEFAULT 0; EXCEPTION WHEN duplicate_column THEN NULL; END $$;
   `);
 
   dossierTablesEnsured = true;
@@ -529,6 +535,18 @@ export async function updateDossierPhotoStyle(
     `UPDATE dossier_photos SET style_id = $2, is_outdoor = $3 WHERE id = $1`,
     [photoId, styleId, isOutdoor]
   );
+}
+
+export async function incrementIterationCount(
+  photoId: number,
+): Promise<number> {
+  await ensureDossierTables();
+  const db = getPool();
+  const result = await db.query(
+    `UPDATE dossier_photos SET iteration_count = COALESCE(iteration_count, 0) + 1 WHERE id = $1 RETURNING iteration_count`,
+    [photoId]
+  );
+  return result.rows[0]?.iteration_count ?? 0;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────
