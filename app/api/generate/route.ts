@@ -203,7 +203,7 @@ function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string
       `Edit this photo of a room. Apply this surface finish: ${surfacePrompt}.`,
       "Concrete or stone floor as-is or with sealant. Clean matte white or light grey paint over masonry.",
       "Remove construction leftovers: outlets, cables, junction boxes — blend into wall finish. Keep radiators, heaters, water heater (cylindrical tank), vents, switches in position.",
-      "Room stays COMPLETELY EMPTY — bare floors, bare walls. Preserve exact count and position of all openings.",
+      "Room stays COMPLETELY EMPTY — bare floors, bare walls. EXACTLY the same number of windows and doors as the input — same positions, same sizes. Walls without windows must remain solid.",
       CEILING_PRESERVATION, WALL_PRESERVATION,
       `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
       DSLR_LINE,
@@ -336,7 +336,7 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: str
       "Functional storage — shelving unit, boxes, utility light. Wine rack if space allows. If compact, single shelf, no wine rack.",
       CONTACT_SHADOWS,
       EQUIPMENT_PRESERVATION,
-      `${CAMERA_PRESERVATION} Room structure LOCKED: walls, floor, ceiling visually identical to input — same geometry. Door = 204cm reference. Preserve existing light direction and color temperature.`,
+      `${CAMERA_PRESERVATION} Room structure LOCKED: walls, floor, ceiling visually identical to input — same geometry. Door = 204cm reference. Preserve existing light direction and color temperature. Even if the style uses warm materials, the room's overall lighting temperature must match the input. No warm tint.`,
       "DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Subtle film grain. No text or watermarks.",
     ].join(" ");
   }
