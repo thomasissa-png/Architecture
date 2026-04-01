@@ -1,0 +1,26 @@
+{
+  "generations": [
+    {
+      "id": 94,
+      "style_id": "maximalist",
+      "model_used": "gpt-4.1",
+      "pass1_model": "gpt-4.1",
+      "pass2_model": "gpt-4.1",
+      "success": true,
+      "prompt_version": "v36",
+      "input_image": "/home/user/Architecture/audit-data/gen94-input.jpg",
+      "output_image": "/home/user/Architecture/audit-data/gen94-output.jpg"
+    },
+    {
+      "id": 95,
+      "style_id": "maximalist",
+      "model_used": "gpt-4.1",
+      "pass1_model": "gpt-4.1",
+      "pass2_model": "gpt-4.1",
+      "success": true,
+      "prompt_version": "v36",
+      "input_image": "/home/user/Architecture/audit-data/gen95-input.jpg",
+      "output_image": "/home/user/Architecture/audit-data/gen95-output.jpg"
+    }
+  ]
+}
