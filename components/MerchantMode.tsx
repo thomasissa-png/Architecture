@@ -920,7 +920,7 @@ export default function MerchantMode() {
 
       {/* ── Step: Generating ── */}
       {currentStep === "generating" && (
-        <div className="space-y-6 animate-fade-in-up" data-testid="merchant-step-generating">
+        <div className="space-y-6 animate-fade-in-up min-h-[60vh] flex flex-col justify-center" data-testid="merchant-step-generating">
           <h3 className="text-sm font-medium text-muted uppercase tracking-widest">
             Génération en cours
           </h3>
