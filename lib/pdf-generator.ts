@@ -8,7 +8,7 @@
  * and linked via pdf_storage_key in the dossiers table.
  */
 
-import { saveImage } from "@/lib/db";
+import { saveRawBuffer } from "@/lib/db";
 
 const BASE_URL = process.env.NEXTAUTH_URL
   || process.env.NEXT_PUBLIC_BASE_URL
@@ -34,7 +34,7 @@ export async function generateDossierPdf(
 
     browser = await puppeteer.default.launch({
       args: chromium.default.args,
-      defaultViewport: chromium.default.defaultViewport,
+      defaultViewport: { width: 1280, height: 900 },
       executablePath,
       headless: true,
     });
@@ -86,7 +86,7 @@ export async function generateDossierPdf(
 
     // Save to Object Storage
     const storageKey = `dossiers/${uuid}/dossier.pdf`;
-    await saveImage(Buffer.from(pdfBuffer), storageKey);
+    await saveRawBuffer(Buffer.from(pdfBuffer), storageKey);
 
     console.log(`[PDF] Generated and saved: ${storageKey} (${Math.round(pdfBuffer.byteLength / 1024)}KB)`);
     return storageKey;

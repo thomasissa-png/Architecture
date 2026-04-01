@@ -46,6 +46,7 @@ export interface Property {
   nb_lots_copro: number | null;
   photo_count?: number;
   dossier_count?: number;
+  last_dossier_uuid?: string | null;
   annonce_uuid?: string | null;
   created_at: string;
   updated_at: string;

@@ -244,6 +244,18 @@ export async function saveImage(base64: string, name: string): Promise<string> {
   return key;
 }
 
+/** Upload a raw buffer to Object Storage with a custom key (no prefix/extension added). */
+export async function saveRawBuffer(buffer: Buffer, key: string): Promise<string> {
+  const { ok, error } = await withStorageRetry(
+    (client) => client.uploadFromBytes(key, buffer),
+    `saveRawBuffer(${key})`
+  );
+  if (!ok) {
+    throw new Error(`Failed to upload ${key}: ${error}`);
+  }
+  return key;
+}
+
 export async function getImage(key: string): Promise<Uint8Array | null> {
   try {
     const result = await withStorageRetry(

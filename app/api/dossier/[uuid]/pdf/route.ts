@@ -215,7 +215,7 @@ export async function GET(
       if (pdfData) {
         const title = getDossierTitle(dossier);
         const safeName = title.replace(/[^a-zA-Z0-9\u00C0-\u024F\s-]/g, "").trim().replace(/\s+/g, "-");
-        return new NextResponse(pdfData, {
+        return new NextResponse(Buffer.from(pdfData), {
           status: 200,
           headers: {
             "Content-Type": "application/pdf",
