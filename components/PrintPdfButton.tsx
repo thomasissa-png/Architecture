@@ -16,13 +16,10 @@ import { useState, useCallback } from "react";
 interface PrintPdfButtonProps {
   /** Title used for the PDF filename */
   title: string;
-  /** Fallback PDF URL (legacy pdf-lib endpoint) */
-  fallbackPdfUrl: string;
 }
 
 export default function PrintPdfButton({
   title,
-  fallbackPdfUrl,
 }: PrintPdfButtonProps) {
   const [isPreparing, setIsPreparing] = useState(false);
 
@@ -67,24 +64,16 @@ export default function PrintPdfButton({
   }, [title]);
 
   return (
-    <div className="flex flex-col items-center gap-2">
-      <button
-        onClick={handlePrint}
-        disabled={isPreparing}
-        className="inline-flex items-center gap-2 border border-foreground/20 text-foreground/60 px-5 py-2.5 rounded-xl font-light text-xs hover:border-foreground/40 hover:text-foreground/80 transition-colors disabled:opacity-50 disabled:cursor-wait"
-        data-testid="dossier-print-pdf"
-      >
-        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-        {isPreparing ? "Préparation..." : "Télécharger le PDF"}
-      </button>
-      <a
-        href={fallbackPdfUrl}
-        className="text-[10px] text-muted/40 hover:text-muted/60 transition-colors no-print"
-      >
-        Version simplifiée (sans images HD)
-      </a>
-    </div>
+    <button
+      onClick={handlePrint}
+      disabled={isPreparing}
+      className="inline-flex items-center gap-2 border border-foreground/20 text-foreground/60 px-5 py-2.5 rounded-xl font-light text-xs hover:border-foreground/40 hover:text-foreground/80 transition-colors disabled:opacity-50 disabled:cursor-wait"
+      data-testid="dossier-print-pdf"
+    >
+      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+      {isPreparing ? "Préparation..." : "Télécharger le PDF"}
+    </button>
   );
 }

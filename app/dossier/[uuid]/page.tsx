@@ -416,10 +416,7 @@ export default async function DossierPage({ params }: PageProps) {
         {/* PDF download — browser print (HD) + legacy fallback */}
         {completedPhotos.length > 0 && (
           <div className="text-center mt-8 sm:mt-12 no-print">
-            <PrintPdfButton
-              title={title}
-              fallbackPdfUrl={`/api/dossier/${dossier.uuid}/pdf`}
-            />
+            <PrintPdfButton title={title} />
           </div>
         )}
 
