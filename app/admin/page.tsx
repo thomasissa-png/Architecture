@@ -35,6 +35,9 @@ interface LogEntry {
   pixel_diff_pct: number | null;
   color_shift_score: number | null;
   prompt_version: string | null;
+  room_type: string | null;
+  is_outdoor: boolean | null;
+  outdoor_subtype: string | null;
 }
 
 function extractFilename(path: string): string {
@@ -488,6 +491,11 @@ Demande type : "Fais appel aux agents Architecte d'Intérieur, Expert IA Image e
                 <span className="bg-sage text-white px-2.5 py-0.5 rounded-md text-[13px] font-medium">
                   {log.style_id || "custom"}
                 </span>
+                {(log.room_type || log.is_outdoor) && (
+                  <span className="bg-foreground/10 text-foreground/70 px-2 py-0.5 rounded-md text-[11px]">
+                    {log.is_outdoor ? `outdoor${log.outdoor_subtype ? ` / ${log.outdoor_subtype}` : ""}` : log.room_type?.replace(/_/g, " ")}
+                  </span>
+                )}
                 {log.is_iteration && (
                   <span className="bg-amber-500 text-white px-2 py-0.5 rounded-md text-[11px] font-semibold">
                     ITÉRATION{log.iteration_number ? ` #${log.iteration_number}` : ""}
