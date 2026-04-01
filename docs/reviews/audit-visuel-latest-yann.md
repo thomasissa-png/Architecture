@@ -1,66 +1,89 @@
 # Audit visuel generations recentes — Yann Duval, Architecte d'interieur
 
 Date : 2026-04-01
-Dernier audit precedent : #37-42 (2026-03-26, moyenne 5.5/10)
-
-## Statut : EN ATTENTE DE DONNEES
-
-### Probleme technique
-
-L'outil `WebFetch` n'est pas disponible dans cette session. Les outils disponibles sont :
-- `Read` : fichiers locaux uniquement
-- `WebSearch` : moteur de recherche (pas de fetch HTTP)
-- `Write` / `Edit` : ecriture fichiers
-- `Glob` / `Grep` : recherche fichiers
-
-L'API de production `https://versimo.fr/api/logs?limit=2&token=allezpsg` necessite un appel HTTP GET pour recuperer les metadata JSON des generations, puis les images via `/api/logs/image?path=...&token=allezpsg`.
-
-### Pour debloquer cet audit
-
-**Option A (recommandee)** : Coller directement la reponse JSON de l'API dans le chat.
-Ouvrir dans un navigateur : `https://versimo.fr/api/logs?limit=2&token=allezpsg`
-Copier-coller le JSON ici. Je pourrai ensuite analyser les metadata et demander les images.
-
-**Option B** : Telecharger les images INPUT + OUTPUT des 2 dernieres generations dans le repo local (ex: `docs/reviews/images/`) et me donner les chemins. Je les lirai avec Read.
-
-**Option C** : Fournir les screenshots des 2 dernieres generations (captures d'ecran depuis /admin) dans le repo. Je les analyserai visuellement.
-
-## Structure du rapport (pre-remplie, a completer)
-
-### Tableau recapitulatif
-
-| # | Style | Type piece | Modele | Duree | Fidelite (x2) | Vocab. | Hero | Matieres | Eclairage | Credib. (x2) | Complet. | Diff. | Adapt. | Photo. | **Moy. pond.** |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| ? | ? | ? | ? | ? | - | - | - | - | - | - | - | - | - | - | **-** |
-| ? | ? | ? | ? | ? | - | - | - | - | - | - | - | - | - | - | **-** |
-
-### Analyse generation #?
-*En attente des donnees*
-
-### Analyse generation #?
-*En attente des donnees*
-
-### Patterns recurrents
-*En attente*
-
-### Plan d'amelioration P0-P4
-*En attente*
+Dernier audit precedent : #37-42 (2026-03-26, moyenne Yann 5.5/10)
 
 ---
 
-## Grille d'evaluation (rappel)
+## Statut : BLOQUE — Acces API distant indisponible
 
-| # | Critere | Poids | Ce que Yann regarde |
-|---|---------|-------|---------------------|
-| 1 | Fidelite stylistique | x2 | L'essence du style est-elle capturee ? References correctes ? |
-| 2 | Vocabulaire visuel | x1 | Materiaux, textures, couleurs suffisamment decrits/rendus ? |
-| 3 | Hero pieces | x1 | Les meubles signature du style sont-ils les bons ? |
-| 4 | Coherence matieres | x1 | Les materiaux sont-ils compatibles entre eux ? |
-| 5 | Eclairage | x1 | La lumiere est-elle preservee/coherente avec l'input ? |
-| 6 | Credibilite pro | x2 | Un architecte montrerait-il ca a un client ? |
-| 7 | Completude | x1 | Manque-t-il des elements cles du style ? |
-| 8 | Differenciation | x1 | Ce style est-il visuellement distinct des autres ? |
-| 9 | Adaptabilite spatiale | x1 | Le mobilier est-il adapte a l'espace ? |
-| 10 | Potentiel photorealiste | x1 | L'image passe-t-elle pour une vraie photo ? |
+### Diagnostic
 
-Note = moyenne ponderee /10 (criteres 1 et 6 comptent double).
+Cette session ne dispose pas d'un outil `WebFetch` ou equivalent pour executer un appel HTTP GET sur l'API de production. Les outils disponibles sont :
+
+| Outil | Capacite | Peut acceder a l'API ? |
+|---|---|---|
+| `Read` | Fichiers locaux uniquement | Non |
+| `WebSearch` | Moteur de recherche (pas de fetch HTTP) | Non |
+| `Glob` / `Grep` | Recherche dans le filesystem local | Non |
+
+L'API cible est `https://versimo.fr/api/logs?limit=2&token=allezpsg` (JSON) et les images sont servies par `https://versimo.fr/api/logs/image?path={key}&token=allezpsg` depuis Replit Object Storage.
+
+Les images ne sont PAS sur le filesystem local (`public/logs/` est vide — Sprint 16, point 146 : migration vers Object Storage).
+
+### Pour debloquer cet audit — 3 options
+
+**Option A (la plus rapide)** : Coller le JSON de l'API directement dans le chat.
+
+1. Ouvrir dans un navigateur : `https://versimo.fr/api/logs?limit=2&token=allezpsg`
+2. Copier-coller le JSON complet ici
+3. Pour chaque generation, telecharger les images INPUT et OUTPUT depuis `/admin` et les deposer dans le repo (ex: `docs/reviews/images/`)
+4. Me donner les chemins des fichiers images
+
+**Option B (complete)** : Telecharger tout localement.
+
+1. Depuis `/admin`, identifier les 2 dernieres generations
+2. Telecharger les 4 images (2 INPUT + 2 OUTPUT) dans `docs/reviews/images/`
+3. Copier les metadata (style, modele, duree, prompts) dans un fichier texte
+4. Me donner les chemins
+
+**Option C (screenshots)** : Captures d'ecran depuis `/admin`.
+
+1. Faire 2 captures d'ecran depuis la page `/admin` montrant les paires avant/apres
+2. Les deposer dans le repo
+3. Me donner les chemins — je les analyserai visuellement (moins precis que les images full-size)
+
+---
+
+## Structure du rapport (pre-remplie, a completer apres reception des donnees)
+
+### Tableau recapitulatif
+
+| # | Style | Modele | Duree | Yann /10 | Verdict |
+|---|---|---|---|---|---|
+| ? | — | — | — | — | En attente |
+| ? | — | — | — | — | En attente |
+
+### Grille d'evaluation (par generation)
+
+La grille 10 criteres sera appliquee des reception des images :
+
+| # | Critere | Poids | Note /10 |
+|---|---|---|---|
+| 1 | Fidelite stylistique | x2 | — |
+| 2 | Vocabulaire visuel | x1 | — |
+| 3 | Hero pieces | x1 | — |
+| 4 | Coherence matieres | x1 | — |
+| 5 | Eclairage | x1 | — |
+| 6 | Credibilite pro | x2 | — |
+| 7 | Completude | x1 | — |
+| 8 | Differenciation | x1 | — |
+| 9 | Adaptabilite spatiale | x1 | — |
+| 10 | Potentiel photorealiste | x1 | — |
+
+### Patterns recurrents
+
+A identifier apres analyse.
+
+### Plan d'amelioration P0-P4
+
+A produire apres analyse.
+
+---
+
+## Memo pour la prochaine session
+
+Pour lancer cet audit efficacement, fournir dans le prompt initial :
+1. Le JSON brut de `https://versimo.fr/api/logs?limit=2&token=allezpsg`
+2. Les images INPUT + OUTPUT deposees dans le repo local
+3. (Optionnel) Les images pass1 si un probleme de surfaces est suspecte
