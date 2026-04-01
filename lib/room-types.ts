@@ -6,9 +6,9 @@
  * - roomFurnitureOverride: MERGES with the style's furniturePrompt (pass 2) — except when empty
  * - roomNegativeOverride: added to the Flux negative prompt
  *
- * Decision: roomFurnitureOverride replaces (not concatenates) because bedroom furniture
- * has nothing in common with living room furniture. Concatenating would produce
- * "sofa + bed" nonsense.
+ * Decision: roomFurnitureOverride MERGES with the style furniturePrompt — it provides
+ * room-specific furniture while the style prompt provides materials, textures, colors,
+ * and design references. This ensures bedroom furniture follows the chosen style.
  *
  * See docs/ia/f2-room-type-prompts.md for full rationale (Yann Duval + Lucas Moreau).
  */
