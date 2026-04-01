@@ -496,20 +496,6 @@ export default function MerchantMode() {
   }, [bienSurface, bienType, bienNbPieces]);
 
   // ── Derived ──
-  // Auto-generated name: "[Type] — [Surface] m² — [Ville]"
-  // Full title for display
-  const bienTitle = (() => {
-    const type = bienType ? bienType.charAt(0).toUpperCase() + bienType.slice(1) : null;
-    const surface = bienSurface ? `${bienSurface} m²` : null;
-    const city = enrichedCity?.trim() || null;
-    const adresse = bienAdresse?.trim() || null;
-    const location = adresse && city ? `${adresse}, ${city}` : adresse || city || null;
-    const propertyDesc = [type, surface].filter(Boolean).join(" ");
-    if (propertyDesc && location) return `${propertyDesc} — ${location}`;
-    if (propertyDesc) return propertyDesc;
-    if (location) return location;
-    return "Dossier de présentation";
-  })();
   const creditsNeeded = files.length;
 
   // ─── RENDER ────────────────────────────────────────────────────────
@@ -895,23 +881,16 @@ export default function MerchantMode() {
       {/* ── Step: Results ── */}
       {currentStep === "results" && dossierUuid && (
         <div className="space-y-6 animate-fade-in-up" data-testid="merchant-step-results">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-medium text-muted uppercase tracking-widest">
-              Visuels générés
-            </h3>
-            {linkCopied && (
-              <span className="text-xs text-sage font-medium animate-fade-in-up">
-                Lien copié · Valable 30 jours
-              </span>
-            )}
-          </div>
+          {linkCopied && (
+            <span className="text-xs text-sage font-medium animate-fade-in-up">
+              Lien copié · Valable 30 jours
+            </span>
+          )}
 
           <DossierResult
             photos={dossierPhotos}
-            bienNom={bienTitle || "Visuels"}
             dossierUuid={dossierIdentifier || dossierUuid}
             onDownloadPdf={handleDownloadPdf}
-            onShareLink={handleShareLink}
             onRegenerate={handleRegenerate}
             isRegenerating={isRegenerating}
           />
