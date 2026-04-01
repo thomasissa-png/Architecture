@@ -4,7 +4,7 @@
  * NO dependency on NextRequest/NextResponse/session/headers.
  */
 import OpenAI from "openai";
-import { applyRoomTypeOverrides, ROOM_TYPES } from "@/lib/room-types";
+import { applyRoomTypeOverrides, ROOM_TYPES, getStyleMaterialHint } from "@/lib/room-types";
 import { applyOutdoorSubtypeOverrides, OUTDOOR_SUBTYPES } from "@/lib/outdoor-subtypes";
 
 // Singleton OpenAI client — reuses HTTP connections across passes
@@ -666,7 +666,7 @@ export async function runGenerationPipeline(params: PipelineParams): Promise<Pip
     if (hasDedicatedBuilder && roomType) {
       const rt = ROOM_TYPES[roomType];
       trimmedFurniture = rt?.roomFurnitureOverride
-        ? `${rt.roomFurnitureOverride} Match the ${styleId || "contemporary"} design style for all materials, finishes, and color palette.`
+        ? `${rt.roomFurnitureOverride} ${getStyleMaterialHint(styleId)}`
         : furniturePrompt.trim();
     } else {
       trimmedFurniture = effectiveFurniturePrompt;

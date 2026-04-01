@@ -167,6 +167,51 @@ export const ROOM_TYPES: Record<string, RoomType> = {
   },
 };
 
+/**
+ * Rich material/texture/color hints per style — used when dedicated builders
+ * (kitchen, bathroom, etc.) need to know the aesthetic without receiving the
+ * full living-room furniturePrompt. 20-30 words per style.
+ */
+export const STYLE_MATERIAL_HINTS: Record<string, string> = {
+  scandinavian:
+    "Light birch and ash wood, oatmeal boucle fabric, whitewashed finishes, cream wool, matte black metal accents, muted blue and warm grey tones, minimal clean lines.",
+  contemporary:
+    "Brushed steel and chrome, charcoal boucle, smoked glass, engineered stone, matte black and brass accents, neutral grey palette with warm beige.",
+  industrial:
+    "Raw steel with visible welds, warm cognac leather with patina, reclaimed wood, matte black metal, aged brass, exposed rivets, muted red and navy accents.",
+  japandi:
+    "Light ash wood, natural undyed linen in ecru, unglazed ceramics, warm sand and clay tones, matte finishes throughout, washi paper, minimal ornamentation.",
+  "art-deco":
+    "Polished brass, deep emerald velvet, smoked glass, dark lacquer, geometric patterns in black gold and cream, crystal accents, pleated silk.",
+  "mid-century":
+    "Warm walnut wood, mustard and teal woven fabrics, brass and black metal, natural linen, tapered legs, organic curves, terracotta planters.",
+  bohemian:
+    "Natural rattan and wicker, kilim and mudcloth textiles in terracotta rust and indigo, reclaimed wood, sheepskin, jute, aged brass Moroccan accents.",
+  mediterranean:
+    "White lime plaster, natural linen in off-white, olive wood, wrought iron with aged patina, terracotta and turquoise glazed ceramics, esparto grass.",
+  cosy:
+    "Cream and camel boucle, chunky knit wool, light oak wood, warm cognac velvet, linen and sheepskin layers, ceramic stoneware, pillar candles.",
+  "wabi-sabi":
+    "Weathered reclaimed wood, raw undyed linen flax, unglazed ceramics with crackle glaze, natural stone, warm grey and charcoal tones, kintsugi-inspired.",
+  maximalist:
+    "Deep cobalt velvet, polished brass, lacquered coral, bold graphic patterns, mixed vintage Persian with contemporary prints, colored glass, animal print.",
+  haussmannian:
+    "Dark walnut wood, dove grey linen, aged brass with patina, cream leather, marble, dusty rose and sage velvet, crystal drops, gilt bronze accents.",
+};
+
+/**
+ * Returns a rich style hint for dedicated builders.
+ * Falls back to a basic hint if styleId is not in the map.
+ */
+export function getStyleMaterialHint(styleId: string | null | undefined): string {
+  if (!styleId) return "Match the contemporary design style for all materials, finishes, and color palette.";
+  const hint = STYLE_MATERIAL_HINTS[styleId];
+  if (hint) {
+    return `Design style: ${styleId.replace(/-/g, " ")}. Materials and palette: ${hint}`;
+  }
+  return `Match the ${styleId.replace(/-/g, " ")} design style for all materials, finishes, and color palette.`;
+}
+
 /** Ordered list for UI display */
 export const ROOM_TYPE_LIST: RoomType[] = [
   ROOM_TYPES.living_room,
