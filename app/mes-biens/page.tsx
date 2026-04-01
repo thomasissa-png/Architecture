@@ -56,6 +56,7 @@ export default function MesBiensPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
   const [showArchived, setShowArchived] = useState(false);
+  const [archivingId, setArchivingId] = useState<string | null>(null);
 
   // Search + sort
   const [searchQuery, setSearchQuery] = useState("");
@@ -97,6 +98,21 @@ export default function MesBiensPage() {
       fetchProperties(showArchived);
     }
   }, [session, fetchProperties, showArchived]);
+
+  const handleArchiveFromList = async (propertyId: string) => {
+    if (!confirm("Archiver ce bien ? Il disparaîtra de la liste.")) return;
+    setArchivingId(propertyId);
+    try {
+      const action = showArchived ? "unarchive" : "archive";
+      const res = await fetch(`/api/properties/${propertyId}/archive`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+      if (res.ok) fetchProperties(showArchived);
+    } catch { /* silent */ }
+    setArchivingId(null);
+  };
 
   // Address autocomplete with debounce
   const handleAddressInput = (value: string) => {
@@ -389,13 +405,31 @@ export default function MesBiensPage() {
               <div
                 key={property.id}
                 onClick={() => window.location.href = `/mes-biens/${property.id}`}
-                className="bg-foreground/[0.02] border border-foreground/5 rounded-2xl p-5 hover:border-sage/30 transition-all group cursor-pointer"
+                className="relative bg-foreground/[0.02] border border-foreground/5 rounded-2xl p-5 hover:border-sage/30 transition-all group cursor-pointer"
                 role="link"
                 tabIndex={0}
                 onKeyDown={(e) => e.key === "Enter" && (window.location.href = `/mes-biens/${property.id}`)}
                 data-testid="bien-card"
               >
-                <h3 className="text-sm font-medium text-foreground group-hover:text-sage transition-colors truncate">
+                {/* Archive/Unarchive button */}
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleArchiveFromList(property.id); }}
+                  disabled={archivingId === property.id}
+                  className="absolute top-3 right-3 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity bg-background/90 text-foreground/50 hover:text-foreground text-xs p-1.5 rounded-lg hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 min-w-[44px] min-h-[44px] flex items-center justify-center disabled:opacity-40"
+                  aria-label={showArchived ? "Désarchiver ce bien" : "Archiver ce bien"}
+                  title={showArchived ? "Désarchiver" : "Archiver"}
+                >
+                  {showArchived ? (
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0 3-3m-3 3-3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0-3-3m3 3 3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
+                    </svg>
+                  )}
+                </button>
+                <h3 className="text-sm font-medium text-foreground group-hover:text-sage transition-colors truncate pr-10">
                   {property.address_normalized || property.address_raw || "Bien sans adresse"}
                 </h3>
 
@@ -441,22 +475,6 @@ export default function MesBiensPage() {
                   </p>
                 )}
 
-                {showArchived ? (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      fetch(`/api/properties/${property.id}/archive`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ action: "unarchive" }),
-                      }).then(() => fetchProperties(true)).catch(() => {});
-                    }}
-                    className="mt-3 text-xs text-sage border border-sage/20 px-3 py-1.5 rounded-full hover:bg-sage/5 transition-colors min-h-[44px] flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
-                  >
-                    Désarchiver
-                  </button>
-                ) : (
-                <>
                 {((property.dossier_count ?? 0) > 0 || property.annonce_uuid) && (
                   <div className="flex gap-2 mt-2">
                     {(property.dossier_count ?? 0) > 0 && property.last_dossier_uuid && (
@@ -482,8 +500,6 @@ export default function MesBiensPage() {
                       </a>
                     )}
                   </div>
-                )}
-                </>
                 )}
               </div>
             ))}
