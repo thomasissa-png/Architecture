@@ -50,6 +50,12 @@ export async function POST(
       session.user.id
     );
 
+    if (updated === 0) {
+      return NextResponse.json(
+        { associated: 0, warning: "Aucune photo n'a été associée. La photo appartient peut-être déjà à un autre bien." },
+        { status: 200 }
+      );
+    }
     return NextResponse.json({ associated: updated });
   } catch (err) {
     console.error("Error associating photos:", err);

@@ -181,6 +181,7 @@ export async function associatePhotosToProperty(
 
   // Build placeholders: $3, $4, $5...
   const placeholders = photoIds.map((_, i) => `$${i + 3}`).join(", ");
+  console.log(`[associatePhotosToProperty] propertyId=${propertyId} userId=${userId} photoIds=${JSON.stringify(photoIds)}`);
   const result = await db.query(
     `UPDATE user_photos SET property_id = $1
      WHERE user_id = $2 AND id IN (${placeholders})
@@ -188,7 +189,18 @@ export async function associatePhotosToProperty(
     [propertyId, userId, ...photoIds]
   );
 
-  return result.rowCount ?? 0;
+  const updated = result.rowCount ?? 0;
+  console.log(`[associatePhotosToProperty] updated=${updated} (expected ${photoIds.length})`);
+  if (updated === 0) {
+    // Debug: check why no rows matched
+    const debugPlaceholders = photoIds.map((_, i) => `$${i + 1}`).join(", ");
+    const debug = await db.query(
+      `SELECT id, user_id, property_id, status FROM user_photos WHERE id IN (${debugPlaceholders})`,
+      [...photoIds]
+    );
+    console.log(`[associatePhotosToProperty] debug rows:`, JSON.stringify(debug.rows));
+  }
+  return updated;
 }
 
 export async function dissociatePhotosFromProperty(

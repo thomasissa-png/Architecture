@@ -260,7 +260,7 @@ export async function getPropertyById(propertyId: string, userId: string): Promi
 
   const result = await db.query(
     `SELECT p.*,
-      (SELECT COUNT(*) FROM user_photos up WHERE up.property_id = p.id) as photo_count,
+      (SELECT COUNT(*) FROM user_photos up WHERE up.property_id = p.id AND (up.status IS NULL OR up.status != 'archived')) as photo_count,
       (SELECT COUNT(*) FROM dossiers d WHERE LOWER(TRIM(d.bien_adresse)) = LOWER(TRIM(p.address_raw)) AND d.user_id = p.user_id AND (d.status IS NULL OR d.status != 'archived')) as dossier_count,
       (SELECT COALESCE(d.slug, d.uuid::text) FROM dossiers d WHERE LOWER(TRIM(d.bien_adresse)) = LOWER(TRIM(p.address_raw)) AND d.user_id = p.user_id AND (d.status IS NULL OR d.status != 'archived') ORDER BY d.created_at DESC LIMIT 1) as last_dossier_path
     FROM properties p

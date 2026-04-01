@@ -170,8 +170,14 @@ export default function GaleriePage() {
         body: JSON.stringify({ photoIds: [photoId] }),
       });
       if (res.ok) {
+        const data = await res.json();
         setAssociatingPhotoId(null);
-        fetchPhotos();
+        if (data.associated === 0) {
+          setToastMsg("Erreur : la photo n'a pas pu être associée. Elle appartient peut-être déjà à un autre bien.");
+        } else {
+          setToastMsg("Photo associée au bien.");
+          fetchPhotos();
+        }
       } else {
         setToastMsg("Erreur lors de l'association. Réessayez.");
       }
