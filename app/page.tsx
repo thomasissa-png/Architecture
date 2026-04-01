@@ -239,8 +239,7 @@ export default function Home() {
     }
   }, [authStatus, pendingGeneration, files.length]);
 
-  // F4 — Pro mode state (ex Mode Marchand)
-  const [isMerchantMode, setIsMerchantMode] = useState(false);
+  // F4 — Pro mode state
   const [dismissedAssociators, setDismissedAssociators] = useState<Set<number>>(new Set());
 
   // F3 — Outdoor state
@@ -1212,45 +1211,17 @@ export default function Home() {
             </p>
           </div>
 
-          {/* F4 — Mode toggle: Standard / Pro (visible only when authenticated) */}
-          {session && (
-          <div className="flex justify-center mb-8" data-testid="mode-toggle">
-            <div className="inline-flex rounded-full bg-foreground/5 p-0.5">
-              <button
-                onClick={() => setIsMerchantMode(false)}
-                className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
-                  !isMerchantMode
-                    ? "bg-foreground text-background shadow-sm"
-                    : "text-muted hover:text-foreground"
-                }`}
-                data-testid="mode-standard"
-              >
-                Standard
-              </button>
-              <button
-                onClick={() => setIsMerchantMode(true)}
-                className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
-                  isMerchantMode
-                    ? "bg-foreground text-background shadow-sm"
-                    : "text-muted hover:text-foreground"
-                }`}
-                data-testid="mode-merchant"
-              >
-                Mode Pro
-              </button>
-            </div>
-          </div>
-          )}
+          {/* F4 — Mode Pro par défaut pour les utilisateurs connectés (toggle masqué) */}
 
-          {/* F4 — Merchant Mode */}
-          {isMerchantMode && (
+          {/* F4 — Merchant Mode (default for authenticated users) */}
+          {session && (
             <div className="animate-fade-in-up">
               <MerchantMode />
             </div>
           )}
 
-          {/* Standard Mode */}
-          {!isMerchantMode && (
+          {/* Standard Mode — only for unauthenticated users */}
+          {!session && (
           <>
           <StepIndicator currentStep={currentStep} />
 
