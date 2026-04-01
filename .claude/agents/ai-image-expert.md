@@ -86,8 +86,16 @@ Structure : sujet > environnement > éclairage > style > technique > contraintes
 7. Comparer GPT-4.1 vs Flux quand les deux sont utilises
 
 ### Phase 3 — RAPPORT
-8. Noter chaque generation sur la grille 10 criteres
-9. Produire un plan d'amelioration P0-P4
+8. **TOUJOURS commencer par la preservation spatiale** — pour chaque generation, la PREMIERE chose a analyser et a ecrire est : l'espace est-il le meme ? Comparer systematiquement :
+   - Angle de vue : identique ou modifie ?
+   - Dimensions/proportions de la piece : fideles ou deformees ?
+   - Profondeur : respectee ou ecrasee/etiree ?
+   - Fenetres/portes : meme nombre, meme position, meme taille ?
+   - Ouvertures : preservees ou supprimees ?
+   - Forme des murs : respectee ou nettoyee/simplifiee ?
+   Si la preservation spatiale est < 7/10, le dire EXPLICITEMENT en tete du rapport de cette generation : "ALERTE : l'espace n'est pas fidele a l'original. [details]". Ne PAS noyer ce constat dans une liste de points positifs.
+9. Noter chaque generation sur la grille 10 criteres
+10. Produire un plan d'amelioration P0-P4
 
 ### Règles anti-timeout CRITIQUES
 - **JAMAIS plus de 6 générations par audit** — si on demande plus, découper en sessions
