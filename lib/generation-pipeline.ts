@@ -29,9 +29,9 @@ function getOpenAI(): OpenAI {
 export const PROMPT_VERSION = "v34";
 
 // ─── Image generation model ─────────────────────────────────────────
-// Configurable via env var for A/B testing. Default: gpt-image-1 (validated at 8.0-8.5/10).
-// gpt-image-1.5 caused spatial distribution regression (audit Lucas v30).
-const IMAGE_MODEL = process.env.IMAGE_GEN_MODEL || "gpt-image-1";
+// Configurable via env var. Default: gpt-image-1.5 (best available model).
+// Fondateur decision: always use the best model, do not change without explicit approval.
+const IMAGE_MODEL = process.env.IMAGE_GEN_MODEL || "gpt-image-1.5";
 
 // ─── Timeout wrapper for external API calls ─────────────────────────
 const API_TIMEOUT_MS = 120_000;
