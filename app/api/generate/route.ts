@@ -9,7 +9,6 @@ function getOpenAI(): OpenAI {
   }
   return _openaiClient;
 }
-// Replicate (Flux) REMOVED — GPT-4.1 only with retry (Sprint 23)
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { decrementCredit, addCredits } from "@/lib/credits";
@@ -43,9 +42,9 @@ import { enqueueGeneration, shouldQueue } from "@/lib/generation-queue";
 export const PROMPT_VERSION = "v34";
 
 // ─── Image generation model ─────────────────────────────────────────
-// Configurable via env var. Default: gpt-image-1.5 (best available model).
-// Fondateur decision: always use the best model, do not change without explicit approval.
-const IMAGE_MODEL = process.env.IMAGE_GEN_MODEL || "gpt-image-1.5";
+// Hardcoded: gpt-image-1.5 is the only model. No fallback, no env var override.
+// Fondateur decision: always use the best model, iterate prompts if issues arise.
+const IMAGE_MODEL = "gpt-image-1.5";
 
 // ─── Timeout wrapper for external API calls ─────────────────────────
 const API_TIMEOUT_MS = 120_000;

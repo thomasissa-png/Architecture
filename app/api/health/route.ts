@@ -48,7 +48,6 @@ export async function GET() {
 
   // Check API keys
   checks.openaiKey = { ok: !!process.env.OPENAI_API_KEY };
-  checks.replicateKey = { ok: !!process.env.REPLICATE_API_TOKEN };
 
   const allOk = Object.values(checks).every((c) => c.ok);
 
