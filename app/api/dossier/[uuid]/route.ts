@@ -23,8 +23,22 @@ import {
   MAX_PHOTOS_PER_DOSSIER,
   MAX_CONCURRENT_GENERATIONS,
 } from "@/lib/dossier";
+import { generateDossierPdf } from "@/lib/pdf-generator";
 
 export const dynamic = "force-dynamic";
+
+/** Fire-and-forget PDF generation after dossier completion */
+async function generateDossierPdfBackground(uuid: string, slug?: string | null) {
+  try {
+    const pdfKey = await generateDossierPdf(uuid, slug);
+    if (pdfKey) {
+      await updateDossierStatus(uuid, "completed", { pdfStorageKey: pdfKey });
+      console.log(`[PDF] Stored for dossier ${uuid}: ${pdfKey}`);
+    }
+  } catch (err) {
+    console.error(`[PDF] Background generation error for ${uuid}:`, err);
+  }
+}
 
 // ─── GET: Dossier details + photos ───────────────────────────────────
 export async function GET(
@@ -536,6 +550,13 @@ async function processBatchGeneration(
     failCount,
     totalDurationMs: Date.now() - startTime,
   });
+
+  // Generate PDF in background (fire-and-forget) — only if at least 1 photo succeeded
+  if (successCount > 0) {
+    generateDossierPdfBackground(dossierUuid, dossier.slug).catch((err) => {
+      console.error(`[PDF] Background generation failed for ${dossierUuid}:`, err);
+    });
+  }
 }
 
 // ─── Simple Semaphore ────────────────────────────────────────────────

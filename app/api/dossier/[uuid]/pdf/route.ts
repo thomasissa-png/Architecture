@@ -208,6 +208,28 @@ export async function GET(
     );
   }
 
+  // If a pre-generated PDF exists in Object Storage, serve it directly
+  if (dossier.pdf_storage_key) {
+    try {
+      const pdfData = await getImage(dossier.pdf_storage_key);
+      if (pdfData) {
+        const title = getDossierTitle(dossier);
+        const safeName = title.replace(/[^a-zA-Z0-9\u00C0-\u024F\s-]/g, "").trim().replace(/\s+/g, "-");
+        return new NextResponse(pdfData, {
+          status: 200,
+          headers: {
+            "Content-Type": "application/pdf",
+            "Content-Disposition": `attachment; filename="${safeName}-versimo.pdf"`,
+            "Cache-Control": "public, max-age=3600",
+          },
+        });
+      }
+    } catch (err) {
+      console.error(`[PDF] Failed to serve stored PDF for ${uuid}:`, err);
+      // Fall through to pdf-lib generation
+    }
+  }
+
   const photos = await getDossierPhotos(uuid);
   const completedPhotos = photos.filter((p) => p.status === "completed");
 

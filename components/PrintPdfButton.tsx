@@ -1,14 +1,8 @@
 "use client";
 
 /**
- * PrintPdfButton — Triggers browser print dialog to export as PDF.
- *
- * Sets the document title before printing so the browser suggests
- * a meaningful filename (e.g. "Appartement-Bordeaux-versimo.pdf").
- * Restores the original title after printing.
- *
- * Also waits for all images to load before triggering print
- * to avoid blank images in the PDF.
+ * PrintPdfButton — Downloads the pre-generated PDF if available,
+ * otherwise falls back to browser print dialog.
  */
 
 import { useState, useCallback } from "react";
@@ -16,23 +10,35 @@ import { useState, useCallback } from "react";
 interface PrintPdfButtonProps {
   /** Title used for the PDF filename */
   title: string;
+  /** UUID of the dossier for direct PDF download */
+  dossierUuid: string;
+  /** Whether a pre-generated PDF exists in storage */
+  hasPdf: boolean;
 }
 
 export default function PrintPdfButton({
   title,
+  dossierUuid,
+  hasPdf,
 }: PrintPdfButtonProps) {
   const [isPreparing, setIsPreparing] = useState(false);
 
-  const handlePrint = useCallback(async () => {
+  const handleDownload = useCallback(async () => {
+    if (hasPdf) {
+      // Direct download of pre-generated PDF
+      window.open(`/api/dossier/${dossierUuid}/pdf`, "_blank");
+      return;
+    }
+
+    // Fallback: browser print dialog
     setIsPreparing(true);
 
-    // Wait for all print-view images to finish loading
     const printImages = document.querySelectorAll<HTMLImageElement>(".print-only img");
     const loadPromises = Array.from(printImages).map((img) => {
       if (img.complete) return Promise.resolve();
       return new Promise<void>((resolve) => {
         img.onload = () => resolve();
-        img.onerror = () => resolve(); // Don't block print if an image fails
+        img.onerror = () => resolve();
       });
     });
 
@@ -42,7 +48,6 @@ export default function PrintPdfButton({
       // Proceed even if image loading fails
     }
 
-    // Set document title to control the suggested PDF filename
     const originalTitle = document.title;
     const safeName = title
       .replace(/[^a-zA-Z0-9\u00C0-\u024F\s-]/g, "")
@@ -50,22 +55,19 @@ export default function PrintPdfButton({
       .replace(/\s+/g, "-");
     document.title = `${safeName}-versimo`;
 
-    // Small delay to let the browser update the title
     await new Promise((resolve) => setTimeout(resolve, 100));
 
     setIsPreparing(false);
     window.print();
 
-    // Restore original title after print dialog closes
-    // Use a timeout because window.print() blocks on some browsers
     setTimeout(() => {
       document.title = originalTitle;
     }, 1000);
-  }, [title]);
+  }, [title, dossierUuid, hasPdf]);
 
   return (
     <button
-      onClick={handlePrint}
+      onClick={handleDownload}
       disabled={isPreparing}
       className="inline-flex items-center gap-2 border border-foreground/20 text-foreground/60 px-5 py-2.5 rounded-xl font-light text-xs hover:border-foreground/40 hover:text-foreground/80 transition-colors disabled:opacity-50 disabled:cursor-wait"
       data-testid="dossier-print-pdf"
