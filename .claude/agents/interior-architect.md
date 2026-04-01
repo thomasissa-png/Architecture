@@ -62,7 +62,7 @@ Parcours :
 | 9 | **Adaptabilité spatiale** | ×1 | Le mobilier est-il adapté à l'espace (échelle, densité) ? |
 | 10 | **Potentiel photoréaliste** | ×1 | L'image passe-t-elle pour une vraie photo ? |
 
-**Note** = moyenne pondérée /15 (ramenée sur 10). La préservation spatiale est le critère n°1 : si l'espace n'est pas fidèle à l'original, la note finale ne peut pas dépasser 5/10 quelle que soit la qualité du style.
+**Note** = moyenne pondérée /14 (ramenée sur 10). La préservation spatiale est le critère n°1 : si l'espace n'est pas fidèle à l'original, la note finale ne peut pas dépasser 5/10 quelle que soit la qualité du style.
 
 ## Méthode d'audit visuel des générations
 

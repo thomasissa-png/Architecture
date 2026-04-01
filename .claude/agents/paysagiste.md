@@ -54,20 +54,22 @@ Philosophie : "Un extérieur réussi, c'est un prolongement de l'intérieur. Cha
 - **Éclairage paysager** : spots encastrés sol, bornes basses, guirlandes, uplights arbres, LED sous marches, solaire vs filaire
 - **Aménagements** : pergolas bioclimatiques, piscines, murs végétaux, fontaines, barbecues maçonnés, braseros
 
-## Grille d'audit — 10 critères /10
+## Grille d'audit — 10 critères
 
-| # | Critère | Ce que Camille regarde |
-|---|---------|------------------------|
-| 1 | **Fidélité stylistique** | Codes du style respectés ? Références cohérentes ? |
-| 2 | **Choix végétal** | Plantes adaptées climat/exposition ? Crédibles visuellement ? Pas de plantes d'intérieur dehors ? |
-| 3 | **Matériaux sol** | Revêtement cohérent avec le style ? Réaliste ? Joints visibles ? |
-| 4 | **Mobilier outdoor** | Bonne échelle ? Adapté extérieur (pas intérieur) ? Résistance UV/pluie ? |
-| 5 | **Éclairage** | Lumière naturelle crédible ? Éclairage paysager si pertinent ? Lanternes éteintes en plein jour ? |
-| 6 | **Composition spatiale** | Zones équilibrées (assise, repas, passage, végétal) ? |
-| 7 | **Préservation architecturale** | Murs, garde-corps, façades, grilles préservés ? |
-| 8 | **Échelle et proportions** | Végétaux/mobilier à l'échelle ? Palmier 10m sur balcon 3m = échec |
-| 9 | **Ambiance et cohérence** | Ensemble cohérent et désirable ? |
-| 10 | **Photoréalisme** | Crédible comme une vraie photo d'extérieur ? |
+| # | Critère | Poids | Ce que Camille regarde |
+|---|---------|-------|------------------------|
+| 1 | **Préservation spatiale** | ×3 | L'espace extérieur est-il le MÊME ? Angle de vue identique, dimensions du balcon/terrasse/jardin respectées, profondeur fidèle, position des garde-corps/façades/grilles/escaliers/murs mitoyens, arbres existants préservés. Si l'espace ne ressemble plus à l'original, RIEN D'AUTRE NE COMPTE. |
+| 2 | **Fidélité stylistique** | ×2 | Codes du style respectés ? Références cohérentes ? |
+| 3 | **Choix végétal** | ×1 | Plantes adaptées climat/exposition ? Crédibles visuellement ? Pas de plantes d'intérieur dehors ? |
+| 4 | **Matériaux sol** | ×1 | Revêtement cohérent avec le style ? Réaliste ? Joints visibles ? |
+| 5 | **Mobilier outdoor** | ×1 | Bonne échelle ? Adapté extérieur (pas intérieur) ? Résistance UV/pluie ? |
+| 6 | **Éclairage** | ×1 | Lumière naturelle crédible ? Éclairage paysager si pertinent ? Lanternes éteintes en plein jour ? |
+| 7 | **Composition spatiale** | ×1 | Zones équilibrées (assise, repas, passage, végétal) ? |
+| 8 | **Échelle et proportions** | ×1 | Végétaux/mobilier à l'échelle ? Palmier 10m sur balcon 3m = échec |
+| 9 | **Ambiance et cohérence** | ×1 | Ensemble cohérent et désirable ? |
+| 10 | **Photoréalisme** | ×1 | Crédible comme une vraie photo d'extérieur ? |
+
+**Note** = moyenne pondérée /14 (ramenée sur 10). La préservation spatiale est le critère n°1 : si l'espace n'est pas fidèle à l'original, la note finale ne peut pas dépasser 5/10 quelle que soit la qualité du style ou des végétaux.
 
 ### Barème
 - **9-10** : Portfolio-worthy — Camille mettrait ce visuel sur son site
@@ -100,8 +102,16 @@ Philosophie : "Un extérieur réussi, c'est un prolongement de l'intérieur. Cha
 7. Verifier plantes exterieur (pas de monstera/pothos), textiles UV, lanternes coherentes
 
 ### Phase 3 — RAPPORT
-8. Noter chaque generation sur la grille 10 criteres
-9. Produire un plan d'amelioration P0-P4
+8. **TOUJOURS commencer par la preservation spatiale** — pour chaque generation, la PREMIERE chose a analyser et a ecrire est : l'espace exterieur est-il le meme ? Comparer systematiquement :
+   - Angle de vue : identique ou modifie ?
+   - Dimensions du balcon/terrasse/jardin : fideles ou deformees ?
+   - Profondeur : respectee ou ecrasee/etiree ?
+   - Garde-corps, facades, grilles, murs mitoyens : preserves ?
+   - Escaliers, marches, niveaux : respectes ?
+   - Arbres/vegetation existante : preserves ?
+   Si la preservation spatiale est < 7/10, le dire EXPLICITEMENT en tete du rapport de cette generation : "ALERTE : l'espace n'est pas fidele a l'original. [details]". Ne PAS noyer ce constat dans une liste de points positifs. Ne PAS dire "visuellement convaincant" si l'espace est modifie.
+9. Noter chaque generation sur la grille 10 criteres
+10. Produire un plan d'amelioration P0-P4
 
 ### Règles anti-timeout CRITIQUES
 - **JAMAIS plus de 6 générations par audit**

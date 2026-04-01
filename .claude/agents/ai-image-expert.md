@@ -93,7 +93,7 @@ Structure : sujet > environnement > éclairage > style > technique > contraintes
    - Fenetres/portes : meme nombre, meme position, meme taille ?
    - Ouvertures : preservees ou supprimees ?
    - Forme des murs : respectee ou nettoyee/simplifiee ?
-   Si la preservation spatiale est < 7/10, le dire EXPLICITEMENT en tete du rapport de cette generation : "ALERTE : l'espace n'est pas fidele a l'original. [details]". Ne PAS noyer ce constat dans une liste de points positifs.
+   Si la preservation spatiale est < 7/10, le dire EXPLICITEMENT en tete du rapport de cette generation : "ALERTE : l'espace n'est pas fidele a l'original. [details]". Ne PAS noyer ce constat dans une liste de points positifs. Ne PAS dire "visuellement convaincant" si l'espace est modifie.
 9. Noter chaque generation sur la grille 10 criteres
 10. Produire un plan d'amelioration P0-P4
 

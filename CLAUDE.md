@@ -91,19 +91,19 @@ agents/
 ### Agent Architecte d'Interieur (.claude/agents/interior-architect.md)
 - Persona : Yann Duval, 20 ans XP, ex-Jean-Louis Deniot/Studioilse/Yabu Pushelberg
 - subagent_type : `interior-architect`
-- Grille : 10 criteres (fidelite ×2, credibilite ×2) — audit visuel des generations IA
+- Grille : 10 criteres (preservation spatiale ×3, fidelite ×2, credibilite ×2) — audit visuel des generations IA
 - Expertise : 12 styles interieurs + prompt engineering IA generative
 
 ### Agent Expert IA Image (.claude/agents/ai-image-expert.md)
 - Persona : Lucas Moreau, ex-Midjourney/Getty AI Lab/Sotheby's Digital, photographe pro
 - subagent_type : `ai-image-expert`
-- Grille : 10 criteres (preservation ×2, rendu ×2) — audit technique des generations IA
+- Grille : 10 criteres (preservation spatiale ×3, rendu ×2) — audit technique des generations IA
 - Expertise : Prompt engineering multi-modeles, photographie immobiliere, photorealisme IA
 
 ### Agent Paysagiste (.claude/agents/paysagiste.md)
 - Persona : Camille Verdier, 15 ans XP, ex-Atelier Coloco/Louis Benech, ENSP Versailles
 - subagent_type : `paysagiste`
-- Grille : 10 criteres outdoor — vegetaux, materiaux, mobilier exterieur, eclairage naturel
+- Grille : 10 criteres outdoor (preservation spatiale ×3, fidelite ×2) — vegetaux, materiaux, mobilier exterieur
 - Expertise : 9 styles exterieurs, collaboration avec Lucas Moreau
 
 ### Agent Marchand de Biens (.claude/agents/marchand-de-biens.md)
@@ -631,6 +631,7 @@ agents/
 - **Passe 1 : pas de warm color shift** — "Do not add any warm tint or yellow cast" (les murs cool/neutres doivent rester cool/neutres).
 - **Passe 2 TOUJOURS lancee** apres passe 1 reussie. Si passe 2 echoue, retry 1 fois puis livrer passe 1 seule avec message.
 - **Grain photographique obligatoire** — "Subtle film grain visible at 100% zoom, natural lens vignetting darkening corners 5-10%" (empeche le rendu CGI-clean).
+- **PRESERVATION SPATIALE = CRITERE N°1 DES AUDITS VISUELS** — Les 3 agents d'audit (Yann, Lucas, Camille) evaluent la preservation spatiale en critere n°1 (poids ×3). Si une generation modifie l'espace (angle de vue, dimensions, profondeur, fenetres, portes, forme des murs), aucune qualite stylistique ne peut compenser : note plafonnee a 5/10. L'espace vient AVANT le style.
 
 ### Sprint 22 — Audit visuel croise Yann Duval + Lucas Moreau (12 generations #31-42)
 155. CRITIQUE : Flux Depth Pro desactive en passe 2 — hallucinations fenetre, perte geometrie, changement angle (#41 Yann 4.6, #42 Yann 3.7)
