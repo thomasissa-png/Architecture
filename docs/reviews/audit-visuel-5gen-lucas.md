@@ -2,8 +2,8 @@
 
 **Date** : 2026-04-01
 **Prompt version auditee** : v36
-**Dernier audit** : #94-95 (audit-visuel-latest-lucas.md)
-**Generations cibles** : #91, #92, #93 — Cuisines + WC
+**Dernier audit** : ce fichier
+**Generations cibles** : #91, #92, #93 (cuisines + WC) + #94, #95 (Maximalist salon + chambre enfant)
 **Modele primaire** : GPT-4.1 Responses API (gpt-image-1 via image_generation tool)
 **Pipeline** : 2 passes (surfaces puis mobilier), GPT-4.1 pour les 2 passes
 **Fallback Flux passe 2** : DESACTIVE (Sprint 22)
@@ -165,6 +165,113 @@ Salle d'eau/WC tres etroite en couloir (~1.2m de large). Au fond : baignoire enc
 
 ---
 
+## Generation #94 — Maximalist (salon)
+
+### Contexte input
+
+Chantier brut : piece rectangulaire ~15-18m2, forte hauteur sous plafond (~3m). Plafond blanc avec poutres apparentes en beton/placo (2 poutres principales traversantes, une longitudinale et une transversale, plus une retombee laterale droite). Neon tube fluorescent au plafond (centre, parallele au mur du fond). Murs : enduit brut gris/blanc irregulier, traces de demolition sur le mur du fond (briques apparentes, placo arrache). Fenetre noire (chassis aluminium/PVC) a gauche, rectangulaire, avec vue sur vegetation exterieure. Chauffe-eau/ballon cylindrique blanc vertical dans le coin fond-droite, avec tuyaux. Cables electriques pendants au mur droit (boitier electrique visible). Sol : chape beton/enduit sale, traces de carrelage arrache (residus colle). Escabeau metallique au centre-gauche. 2 personnes debout au fond (ouvriers). Eclairage : lumiere naturelle laterale gauche (fenetre) + neon froid au plafond. Angle : portrait, grand-angle depuis l'entree, face au mur du fond, hauteur yeux, legere plongee.
+
+### Analyse output
+
+**Transformation globale** : Salon maximaliste — mur accent vert canard profond (mur du fond), canape 3 places velours bleu marine avec coussins eclectiques (leopard, rayures orange/noir), table basse ronde orange avec plateau laiton et bougies, tapis persan rouge/bleu superpose sur tapis chevron noir/blanc, lampadaire arc cuivre avec dome cuivre patine, Monstera deliciosa dans pot vert ceramique, 2 cadres poses au sol contre le mur accent, lustre/suspension multicolore en verre souffle style Murano, sol parquet fonce chevron. Murs lateraux beige/cream.
+
+**Preservation spatiale (critere prioritaire)** :
+- Poutres plafond : PARTIELLEMENT PRESERVEES. Les 2 poutres traversantes sont visibles dans l'output — la poutre transversale et la retombee laterale droite sont bien presentes. Cependant, leur texture est lissee et blanchie (enduit propre au lieu de beton brut). La GEOMETRIE est la — les SAILLIES sont correctes. C'est un cas intermediaire : la forme 3D est preservee mais la texture est perdue. Acceptable pour un restyling, mais la directive Sprint 18 #148 demande "rough texture, irregular edges, patina intact". Score mitige.
+- Fenetre gauche : PRESERVEE. Position, taille, chassis noir — fidele a l'input. Vue sur vegetation. Bon.
+- Volume general : la hauteur sous plafond est bien rendue (~3m percu). La profondeur de la piece est correcte. La largeur semble coherente.
+- Mur du fond : les briques apparentes et traces de demolition ont logiquement disparu sous la peinture vert canard. Acceptable dans un restyling surfaces.
+- Chauffe-eau fond-droite : SUPPRIME. Le ballon d'eau chaude cylindrique a completement disparu. Violation directive #147. Recurrent.
+- Cables electriques droite : nettoyes — acceptable (directive passe 1 "cover outlets").
+- Personnes/escabeau : supprimes — attendu et correct (ce sont des elements de chantier, pas des fixtures).
+- Angle de camera : PRESERVE. Meme perspective portrait, face au mur du fond, meme hauteur. Lignes de fuite coherentes.
+- AUCUNE fenetre hallucinee — bon point sur cette piece qui n'a qu'une seule fenetre.
+
+**Bilan preservation** : La geometrie de l'enveloppe est globalement preservee (poutres, fenetre, volume, angle). Le chauffe-eau supprime est un defaut recurrent mais ne modifie pas la structure spatiale perceptible (il etait dans un coin). Les poutres ont la bonne forme 3D mais la texture est lissee. Note : 7/10 — la geometrie est la, le volume est correct, un seul equipement manquant.
+
+**Lumiere** : La lumiere naturelle laterale gauche est PRESERVEE. Le gradient fenetre→fond est visible (le mur du fond vert est plus sombre que le mur gauche eclaire). Pas de warm shift majeur — les murs lateraux beige/cream sont neutres. Le lustre Murano est eteint (pas de halo artificiel ajoute). L'ombre portee du canape est coherente avec la source laterale. Bon travail de preservation lumiere.
+
+**Vocabulaire photo** : Grain photographique subtil visible. DOF etendue — tout est net du premier plan (tapis chevron) au fond (cadres poses). Pas de bokeh. Vignette naturelle legere aux coins superieurs. Le rendu est DSLR credible, pas CGI-clean. Bon.
+
+**Negative prompting** : Pas de fenetre hallucinee. Pas de rideaux. Du wall art est present (2 cadres poses AU SOL contre le mur, pas accroches). C'est malin — le modele a contourne la restriction "no wall-mounted art" en posant les cadres au sol. Acceptable et stylistiquement coherent avec le Maximaliste.
+
+**Rendu final** : Le salon maximaliste est visuellement percutant et credible. Le mur accent vert canard, le canape bleu marine, la table orange, le tapis persan + chevron — les layers de couleur et texture sont bien superposees. Le lustre Murano est un hero piece qui ancre le style. La Monstera est un choix generique (marqueur IA) mais acceptable en Maximaliste. L'ensemble passe pour une photo editoriale de magazine deco.
+
+### Grille 10 criteres
+
+| # | Critere | Poids | Note | Commentaire |
+|---|---------|-------|------|-------------|
+| 1 | Preservation spatiale | x3 | 7/10 | Poutres geometrie OK (texture lissee), fenetre preservee, volume correct, angle fidele. Chauffe-eau supprime. |
+| 2 | Contraintes lumiere | x1 | 8/10 | Laterale gauche preservee, gradient fenetre-fond correct, pas de warm shift majeur. |
+| 3 | Vocabulaire photo | x1 | 8/10 | Grain subtil, DOF etendu, vignette. DSLR credible. |
+| 4 | Structure prompt | x1 | 8/10 | Style Maximaliste bien traduit — layers, couleurs saturees, eclectisme. |
+| 5 | Negative prompting | x1 | 8/10 | Pas de fenetre hallucinee, pas de rideaux. Cadres au sol (pas muraux). |
+| 6 | Compatibilite multi-modeles | x1 | 7/10 | Prompt v36 GPT-4.1. Pas de test Flux. |
+| 7 | Coherence I/O | x1 | 8/10 | Format portrait preserve. Ratio coherent. |
+| 8 | Richesse descriptive | x1 | 8/10 | Lustre Murano, velours, leopard, persan + chevron — details riches et differencies. |
+| 9 | Adaptabilite conditions | x1 | 8/10 | Chantier brut bien transforme. Cables nettoyes, ouvriers supprimes. |
+| 10 | Rendu final credible | x2 | 8/10 | Photo editoriale credible. Pas de marqueur IA evident (sauf Monstera generique). |
+
+**Note ponderee** : (7x3 + 8 + 8 + 8 + 8 + 7 + 8 + 8 + 8 + 8x2) / 14 = (21 + 8 + 8 + 8 + 8 + 7 + 8 + 8 + 8 + 16) / 14 = 100 / 14 = **7.1/10**
+
+Note preservation = 7 : pas de CAP applique.
+
+---
+
+## Generation #95 — Maximalist (chambre enfant)
+
+### Contexte input
+
+MEME INPUT que #94 — chantier brut : piece rectangulaire ~15-18m2, forte hauteur sous plafond (~3m). Poutres beton/placo traversantes. Neon tube. Fenetre noire a gauche. Chauffe-eau fond-droite. Cables electriques mur droit. Sol chape beton sale. Escabeau + 2 ouvriers.
+
+### Analyse output
+
+**Transformation globale** : Chambre enfant maximaliste — lit enfant en bois naturel avec courtepointe patchwork multicolore (carres rouge/jaune/vert/bleu), armoire haute bois avec panneau central decoratif (motif floral bleu/orange), meuble rangement bas ouvert (casiers rouges, livres, jouets), petit bureau bois + chaise bleue enfant, table de chevet bois avec lampe laiton, lustre multicolore verre souffle (similaire a #94), tapis persan rouge/bleu + tapis rond floral multicolore au premier plan, panier osier avec peluche lapin, girafe jouet sur le meuble. Mur accent vert canard (mur du fond) avec 2 cadres (art abstrait colore). Sol parquet fonce. Poutres apparentes teintees bois sombre.
+
+Le furniturePrompt demandait explicitement une chambre enfant — ce n'est PAS une hallucination du modele.
+
+**Preservation spatiale (critere prioritaire)** :
+- Poutres plafond : BIEN PRESERVEES et meme AMELIOREES. Les 2 poutres traversantes sont visibles, avec une teinte bois fonce qui les met en valeur. La retombee laterale droite est presente. La geometrie 3D est fidele. Les poutres sont plus "decoratives" que dans l'input (beton brut → bois sombre) mais la SAILLIE est correcte.
+- Fenetre gauche : PRESERVEE. Meme position, meme taille. MAIS : une DEUXIEME FENETRE apparait a gauche du mur du fond (plus petite, avec volet/store). L'input ne montre qu'UNE seule fenetre. C'est une fenetre supplementaire hallucinee — moins grave que #92 (creation ex nihilo sur un mur plein) car elle est dans la meme zone que la fenetre existante, mais c'est quand meme une modification structurelle.
+- Volume general : la hauteur sous plafond est bien rendue. La profondeur semble legerement augmentee — le mur du fond parait plus eloigne que dans l'input, ce qui donne une piece plus grande. L'ecart est subtil mais perceptible.
+- Mur du fond : vert canard (comme #94). Les briques/demolition disparaissent sous la peinture. Acceptable.
+- Chauffe-eau fond-droite : SUPPRIME. Meme defaut que #94. La zone fond-droite est occupee par l'armoire decorative.
+- Cables electriques : nettoyes. Acceptable.
+- Angle de camera : MODIFIE. L'input etait face au mur du fond avec une legere plongee. L'output montre un angle plus eleve (plongee plus marquee) et legerement pivote vers la gauche. Le changement est subtil mais reel — le premier plan (tapis rond) est vu de plus haut que dans l'input.
+- Sol : parquet fonce au lieu de chape beton — attendu.
+
+**ALERTE preservation** : Fenetre supplementaire hallucinee + angle de camera legerement modifie + chauffe-eau supprime. Trois defauts structurels. La fenetre hallucinee est moins grave que #92 (pas sur un mur plein, dans la zone de la fenetre existante) mais reste une modification de l'enveloppe architecturale. Note : 6/10.
+
+**CAP APPLIQUE** : Preservation spatiale = 6/10 (< 7) => Note finale CAPPED a 5/10 maximum.
+
+**Lumiere** : La lumiere naturelle laterale gauche est partiellement preservee — le gradient existe. MAIS la deuxieme fenetre hallucinee ajoute une source lumineuse supplementaire qui n'existait pas. Il y a un warm shift notable : l'input avait une tonalite froide (neon + lumiere grise exterieure), l'output a une ambiance warm (sols bois dore, lumiere chaude). La lampe de chevet laiton ajoute un point chaud. Le warm shift est marque.
+
+**Vocabulaire photo** : Grain photographique visible, DOF etendu (tout net). Le rendu est photographique, pas CGI. Vignette aux coins. Bon. Cependant, la saturation des couleurs est poussee (tapis, patchwork) — ca tire vers le rendu editorial/magazine plutot que photo immobiliere.
+
+**Negative prompting** : ECHEC partiel — fenetre supplementaire hallucinee. Du wall art est present (2 cadres ACCROCHES au mur cette fois, contrairement a #94 ou ils etaient poses au sol). Sur une chambre enfant, la decoration murale est attendue, mais la directive "no wall-mounted art" n'a pas ete respectee. Les cadres sont stylistiquement coherents.
+
+**Rendu final** : La chambre enfant est visuellement riche et charmante. Le patchwork, les jouets, le panier avec la peluche — tout raconte une histoire. Le style Maximaliste enfant est bien interprete (layers de couleur, patterns eclectiques, mobilier en bois naturel). MAIS la fenetre supplementaire et le warm shift empechent de valider la credibilite spatiale. Un acheteur qui connait la piece verrait la fenetre en trop.
+
+### Grille 10 criteres
+
+| # | Critere | Poids | Note | Commentaire |
+|---|---------|-------|------|-------------|
+| 1 | Preservation spatiale | x3 | 6/10 | Poutres OK, fenetre principale OK. MAIS fenetre supplementaire hallucinee + angle modifie + chauffe-eau supprime. |
+| 2 | Contraintes lumiere | x1 | 5/10 | Warm shift marque (froid→chaud). Source lumineuse supplementaire (fenetre fictive). |
+| 3 | Vocabulaire photo | x1 | 7/10 | Grain, DOF. Saturation poussee (editorial > immobilier). |
+| 4 | Structure prompt | x1 | 8/10 | Chambre enfant Maximaliste bien traduite — patchwork, jouets, bois naturel, couleurs vives. |
+| 5 | Negative prompting | x1 | 5/10 | Fenetre hallucinee + wall art accroche (cadres au mur). |
+| 6 | Compatibilite multi-modeles | x1 | 7/10 | Prompt v36 GPT-4.1. Pas de test Flux. |
+| 7 | Coherence I/O | x1 | 7/10 | Format portrait preserve. Ratio legerement modifie (piece semble plus profonde). |
+| 8 | Richesse descriptive | x1 | 8/10 | Patchwork, girafe, peluche lapin, tapis superposes — richesse enfant bien rendue. |
+| 9 | Adaptabilite conditions | x1 | 7/10 | Chantier brut transforme. Cables nettoyes. Mais fenetre ajoutee = mauvaise adaptation. |
+| 10 | Rendu final credible | x2 | 6/10 | Chambre enfant charmante mais fenetre fictive + warm shift = credibilite spatiale compromise. |
+
+**Note brute ponderee** : (6x3 + 5 + 7 + 8 + 5 + 7 + 7 + 8 + 7 + 6x2) / 14 = (18 + 5 + 7 + 8 + 5 + 7 + 7 + 8 + 7 + 12) / 14 = 84 / 14 = 6.0/10
+
+**CAP applique (preservation = 6 < 7)** : **Note finale = 5.0/10** (capped)
+
+---
+
 ## Synthese
 
 | # | Style | Room | Preservation | Note finale | Defaut principal |
@@ -172,50 +279,68 @@ Salle d'eau/WC tres etroite en couloir (~1.2m de large). Au fond : baignoire enc
 | 91 | Scandinavian | Kitchen | 7/10 | **7.1/10** | Radiateur supprime + plafond aplati |
 | 92 | Contemporary | Kitchen | 4/10 | **4.7/10** (CAP) | FENETRE HALLUCINEE + chauffe-eau supprime |
 | 93 | Custom | WC | 6/10 | **5.0/10** (CAP) | Baignoire→WC (room_type mismatch) + warm shift |
+| 94 | Maximalist | Salon | 7/10 | **7.1/10** | Chauffe-eau supprime, poutres texture lissee |
+| 95 | Maximalist | Chambre enfant | 6/10 | **5.0/10** (CAP) | Fenetre supplementaire hallucinee + warm shift + angle modifie |
 
-**Moyenne** : 5.6/10 — en regression par rapport aux meilleures generations post-Sprint 17 (8.4/10).
+**Moyenne 5 generations** : (7.1 + 4.7 + 5.0 + 7.1 + 5.0) / 5 = **5.8/10**
 
-### Constats recurrents
+3 generations sur 5 sont CAPPED (preservation < 7). Le pipeline produit 40% de resultats exploitables (>= 7/10) et 60% de rejets.
 
-1. **Hallucination fenetre (P0)** : #92 invente une fenetre complete sur un mur plein. Le probleme persiste malgre Sprint 12 (#81-85). Cause probable : piece sans fenetre → le modele "a besoin" d'une source lumineuse et invente une ouverture.
-2. **Suppression equipements muraux (P1)** : Radiateur #91, chauffe-eau #92. La directive Sprint 18 #147 n'est pas assez forte ou n'est pas injectee dans le builder kitchen.
-3. **Room_type vs contenu reel (P1)** : #93 montre qu'un utilisateur peut upload une salle de bain et selectionner "WC" — le modele obeit au room_type et supprime la baignoire. Pas un bug IA, mais un manque de validation cote UX/pipeline.
-4. **Plafond aplati (P2)** : #91 efface un decrochement de plafond (placo rose + spots) en le lissant en plafond plat. La directive "preserve ceiling geometry" n'a pas suffi.
-5. **Warm shift en piece aveugle (P2)** : #93 passe d'un eclairage froid a un eclairage warm laiton. La directive "do not add warm tint" n'est pas respectee quand le style implique des finitions laiton/dore.
+### Constats recurrents (mis a jour #91-95)
 
-### Plan d'amelioration
+1. **Hallucination fenetre (P0)** : #92 invente une fenetre complete sur un mur plein. #95 ajoute une deuxieme fenetre la ou il n'y en a qu'une. 2/5 generations affectees (40%). Le probleme persiste malgre Sprint 12 (#81-85). Deux variantes : (a) creation ex nihilo sur mur plein (piece aveugle), (b) duplication/ajout a cote d'une fenetre existante. La variante (b) est nouvelle.
+2. **Suppression equipements muraux (P0 rehausse)** : Chauffe-eau supprime dans #91, #92, #94, #95. Radiateur supprime dans #91. 4/5 generations affectees (80%). La directive Sprint 18 #147 est systematiquement ignoree. Ce n'est plus P1 — c'est P0 par sa frequence.
+3. **Warm shift (P1)** : #93 (froid→warm laiton), #95 (froid→warm bois dore). 2/5 generations. Le warm shift se produit quand le style implique des materiaux chauds (laiton, bois sombre). La directive "do not add warm tint" n'est pas assez forte face au style prompt.
+4. **Room_type vs contenu reel (P1)** : #93 montre qu'un utilisateur peut upload une salle de bain et selectionner "WC". Pas un bug IA mais un manque de validation UX/pipeline.
+5. **Plafond : geometrie preservee, texture lissee (P2)** : #91 aplatit un decrochement. #94 lisse les poutres beton en enduit propre. La forme 3D est la mais la patine disparait. La directive #148 ("rough texture, irregular edges") n'est pas respectee.
+6. **Angle de camera instable (P2)** : #95 montre une plongee plus marquee et un pivot lateral par rapport a l'input. Subtil mais reel. 1/5 generation.
 
-**P0 — Hallucination fenetre en piece aveugle**
-- Ajouter dans le builder (passe 1 ET passe 2) une directive conditionnelle specifique : "If the input photo has NO windows visible, the output MUST have no windows. Do not add any window, skylight, or glass opening."
-- Renforcer le negative prompt : "hallucinated window, added window, new window opening"
-- Envisager une detection automatique de fenetre dans l'input (vision pre-processing) pour injecter un flag `has_windows: true/false` dans le prompt.
+### Plan d'amelioration (mis a jour)
 
-**P1 — Preservation equipements muraux cuisine**
-- Verifier que la directive #147 ("preserve radiators, heaters, vents") est bien injectee dans le builder passe 1 pour room_type "kitchen" (et pas seulement pour "living_room").
-- Ajouter specifiquement : "Preserve the water heater (if visible) — do not remove or hide it behind cabinetry."
+**P0 — Hallucination fenetre (2 variantes)**
+- Variante A (mur plein) : directive conditionnelle "If the input photo has NO windows visible, the output MUST have no windows."
+- Variante B (duplication) : directive "The output must have EXACTLY the same number of windows as the input. Do not add extra windows."
+- Negative prompt renforce : "hallucinated window, added window, extra window, new window opening, additional window"
+- Pre-processing vision : detecter le nombre de fenetres dans l'input et injecter un compteur explicite ("Input has 1 window on the left wall. Output must have exactly 1 window on the left wall.")
 
-**P1 — Room_type mismatch (salle de bain → WC)**
-- Cote UX : ajouter un warning si l'image uploadee semble contenir une baignoire/douche et que le room_type est "wc" (detection vision).
-- Cote pipeline : quand room_type = "wc" et que l'input contient une baignoire visible, la directive devrait etre "convert to WC, remove bathtub" explicitement au lieu de simplement ignorer la baignoire.
+**P0 — Suppression equipements muraux (80% des generations)**
+- La directive generique #147 est insuffisante. Il faut NOMMER les equipements specifiques dans le builder :
+  "Preserve ALL of the following if visible in the input: water heater (cylindrical tank), radiator, convector, thermostat, ventilation grille, electrical panel. These are permanent fixtures — do not remove, hide, or cover them with furniture."
+- Ajouter dans le negative prompt : "removed water heater, hidden radiator, missing fixed equipment"
+- Envisager un pre-processing vision qui detecte les equipements fixes et les liste explicitement dans le prompt.
 
-**P2 — Plafond decrochement**
-- Renforcer la directive plafond : "Preserve ALL ceiling geometry including drop ceilings, stepped ceilings, recessed lighting pockets, exposed plasterboard sections."
-- Ajouter "stepped ceiling, drop ceiling" aux termes de preservation explicites.
+**P1 — Warm shift quand style warm**
+- Separer EXPLICITEMENT dans le builder : "The STYLE may use warm-toned materials (brass, dark wood, copper). This does NOT mean the overall lighting should shift warm. Keep the input's color temperature. Warm materials reflect existing light — they do not create new warm light."
+- Conditionnel : si input a une tonalite froide (neon, lumiere grise), ajouter "Maintain the cool/neutral color temperature throughout."
 
-**P2 — Warm shift en piece aveugle**
-- Quand `has_windows: false`, ajouter : "Maintain cool/neutral lighting temperature. Do not introduce warm-toned lighting fixtures or warm wall wash."
-- Separer la preservation lumiere de la prescription de luminaire — le style peut demander du laiton sans que la lumiere devienne warm.
+**P1 — Room_type mismatch**
+- Inchange depuis l'audit #91-93.
+
+**P2 — Texture poutres/plafond**
+- Renforcer : "If beams are visible, preserve their EXACT surface texture — raw concrete stays raw, aged wood stays aged. Do NOT smooth, paint, or refinish beams unless the surfacePrompt explicitly requests it."
+
+**P2 — Stabilite angle camera**
+- Ajouter dans le builder : "Camera position is LOCKED. Same height, same tilt angle, same horizontal rotation as input. Do not raise or lower the camera. Do not rotate."
 
 ---
 
-## Comparaison avec audit #94-95 (Maximalist)
+## Comparaison #94 vs #95 (meme input, meme style, room_type different)
 
-Les generations #94-95 (Maximalist, salon) avaient des notes de 6.5 et 7.2. Les cuisines et WC auditees ici (#91-93) montrent des defauts plus graves, en particulier sur la preservation spatiale. Les cuisines sont un cas d'usage plus difficile pour le pipeline car :
-- Elles ont souvent des equipements fixes (chauffe-eau, radiateur, tuyaux) que le modele supprime
-- Le room_type "kitchen" demande du mobilier encastre (plans de travail, meubles hauts) qui modifie le rapport aux murs
-- Les cuisines sans fenetre sont frequentes et declenchent l'hallucination de fenetre
+Les generations #94 et #95 partagent le MEME input (chantier brut) et le MEME style (Maximalist) mais avec des room_types differents (salon vs chambre enfant). Cela permet une comparaison directe :
 
-Les WC/salles de bain sont egalement problematiques car le room_type peut ne pas correspondre au contenu reel de la photo.
+| Critere | #94 (salon) | #95 (chambre enfant) |
+|---------|-------------|---------------------|
+| Preservation | 7/10 | 6/10 |
+| Fenetre | Preservee (1 seule) | Hallucinee (2eme ajoutee) |
+| Poutres | Geometrie OK, texture lissee | Geometrie OK, teintees bois sombre |
+| Chauffe-eau | Supprime | Supprime |
+| Warm shift | Minimal | Marque |
+| Angle | Fidele | Modifie (plongee accrue) |
+| Note finale | 7.1/10 | 5.0/10 (CAP) |
+
+**Analyse** : Le meme input produit un ecart de 2.1 points selon le room_type. La chambre enfant est plus "transformative" (le modele prend plus de libertes pour creer un univers enfant) ce qui degrade la preservation. Le salon maximaliste reste plus fidele a l'enveloppe. Le furniturePrompt chambre enfant incite probablement le modele a modifier davantage l'espace (mobilier enfant = echelle differente, plus de decoration murale attendue).
+
+**Apprentissage** : Les room_types "enfant" (chambre enfant, salle de jeux) sont un facteur de risque pour la preservation spatiale — le modele cherche a creer un "monde" plutot qu'a meubler un espace existant.
 
 ---
 
@@ -223,5 +348,6 @@ Les WC/salles de bain sont egalement problematiques car le room_type peut ne pas
 
 - **Destinataire** : @interior-architect (Yann Duval) pour audit croise stylistique
 - **Fichiers produits** : docs/reviews/audit-visuel-5gen-lucas.md
-- **Generations auditees** : #91, #92, #93
+- **Generations auditees** : #91, #92, #93, #94, #95
 - **Prochaine action** : Yann audite les memes generations sur sa grille fidelite/credibilite
+- **Alertes pour le pipeline** : P0 hallucination fenetre (40% gen), P0 suppression equipements (80% gen)
