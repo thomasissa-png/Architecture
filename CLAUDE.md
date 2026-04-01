@@ -645,6 +645,16 @@ agents/
 163. Meilleure generation : #36 Scandinavian passe 1 (Yann 8.2, Lucas 8.3) — transformation violet→blanc impeccable, convecteur preserve
 164. Pipeline 2 passes GPT-4.1 VALIDE : #31 (8.1/8.0), #38 (7.0/7.9) — geometrie preservee sur espaces complexes (verriere double hauteur)
 
+### Sprint 23 — Audit croise Yann Duval + Lucas Moreau (5 generations #91-95, v37)
+165. CRITIQUE : Anti-fenetre hallucinee — comptage explicite "EXACTLY the same number of windows and doors" remplace "Same number of windows and doors" dans tous les builders (80% des generations affectees). Formulation positive "Walls without windows must remain solid" (pas de mention negative qui amorce le modele).
+166. CRITIQUE : Preservation equipements muraux renforcee — "water heater (cylindrical tank)" nomme explicitement dans EQUIPMENT_PRESERVATION + tous les builders passe 1 (4/5 generations perdaient le chauffe-eau, 80%). Ajout boiler, electrical panel.
+167. HAUTE : Anti-warm shift materiaux chauds — "warm-toned materials (brass, wood, copper) reflect existing light, they do NOT shift the overall lighting warm" dans LIGHT_PRESERVATION + builders passe 2 (2/5 generations affectees, 40%).
+168. HAUTE : Texture poutres conditionnelle — "Smooth plaster BETWEEN beams only" + "if beams show raw concrete, aged wood, or exposed metal (IPN), preserve exact surface texture" remplace "clean painted finish" qui lissait les poutres brutes.
+169. HAUTE : Camera position LOCKED — "same height, same tilt angle, same horizontal rotation" ajoute a CAMERA_PRESERVATION (1/5 generation avec angle modifie).
+170. HAUTE : Pierre brute limewash — "If walls show raw stone, exposed brick, or masonry, apply a limewash or transparent finish" dans WALL_PRESERVATION (2/5 generations couvraient les moellons d'aplat opaque).
+171. Corrections propagees dans 3 fichiers : route.ts, generation-pipeline.ts, iteration-prompt.ts.
+172. Notes audit : Yann moyenne 6.73/10 (2 CAPpees), Lucas moyenne 5.8/10 (3 CAPpees). Meilleure : #91 Scandinave cuisine (Yann 8.04, Lucas 7.1). Pires : #94/#95 Maximaliste chantier brut (CAPpees a 5.0).
+
 ## Workflow d'audit visuel des generations (REGLE CRITIQUE)
 
 Les agents d'audit visuel (Yann @interior-architect, Lucas @ai-image-expert, Camille @paysagiste) n'ont **PAS acces a WebFetch**. Les outils disponibles sont definis par le subagent_type cote systeme — modifier le frontmatter .md ne change rien. Ces agents ne peuvent PAS fetcher des URLs HTTP.

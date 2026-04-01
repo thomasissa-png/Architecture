@@ -30,7 +30,7 @@ export function buildIterationFurnitureResponsesPrompt(
     "Add ONLY the items described above. Everything else stays untouched. Leave the rest of the floor empty.",
     "Distribute furniture across the FULL DEPTH of the room. Place items in the foreground third AND at least one anchor in the back third. Never cluster all furniture in one zone.",
     "Every piece must appear firmly grounded on the floor with visible contact shadows — especially furniture placed in the back of the room. Match shadow hardness to the lighting type.",
-    "Preserve existing light direction and color temperature from the input photo. No warm tint or yellow cast.",
+    "Preserve existing light direction and color temperature from the input photo. Even if the style uses warm materials, the room's overall lighting temperature must match the input. No warm tint or yellow cast.",
     // Room-type-specific fixture rules
     meta.roomType === "kitchen" || meta.roomType === "bathroom"
       ? "Add room-appropriate fixtures and freestanding accessories. Built-in cabinetry, vanity units, and countertops are expected for this room type."
@@ -45,7 +45,7 @@ export function buildIterationFurnitureResponsesPrompt(
       : meta.allowWallMounted
       ? "Wall-mounted items are allowed ONLY for the items explicitly requested by the user."
       : "ONLY add freestanding objects resting on the floor. Do not attach anything to walls.",
-    "Preserve all wall-mounted fixed equipment: radiators, heaters, vents, thermostats, switches. Do not place furniture in front of radiators.",
+    "Preserve all wall-mounted fixed equipment: radiators, heaters, water heater (cylindrical tank), vents, thermostats, switches, boiler. Do not place furniture in front of radiators.",
     "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, subtle sensor grain (ISO 200), natural corner vignetting. Photo-realistic interior photograph. No text, watermarks, or logos.",
   ].join(" ");
 }
@@ -110,8 +110,8 @@ export function buildAdjustResponsesPrompt(
       ? "Very small space — do not overcrowd."
       : "",
     "Every piece must appear firmly grounded on the floor with visible contact shadows. Match shadow hardness to the lighting type.",
-    "Preserve existing light direction and color temperature from the input photo. No warm tint or yellow cast.",
-    "Preserve all wall-mounted fixed equipment: radiators, heaters, vents, thermostats, switches.",
+    "Preserve existing light direction and color temperature from the input photo. Even if the style uses warm materials, the room's overall lighting temperature must match the input. No warm tint or yellow cast.",
+    "Preserve all wall-mounted fixed equipment: radiators, heaters, water heater (cylindrical tank), vents, thermostats, switches, boiler.",
     "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, subtle sensor grain (ISO 200), natural corner vignetting. Photo-realistic interior photograph. No text, watermarks, or logos.",
   ].filter(Boolean).join(" ");
 }
