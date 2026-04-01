@@ -10,18 +10,19 @@ interface HeaderProps {
   activePage?: "mes-biens" | "ma-galerie" | "mes-dossiers";
 }
 
-const navLinks = [
+const navLinksLoggedIn = [
   { href: "/mes-biens", label: "Mes biens", key: "mes-biens" as const },
   { href: "/ma-galerie", label: "Ma galerie", key: "ma-galerie" as const },
-  { href: "/mes-dossiers", label: "Mes dossiers", key: "mes-dossiers" as const },
 ];
 
 export default function Header({ variant = "internal", activePage }: HeaderProps) {
-  const { data: session } = useSession();
+  const { data: session, status: sessionStatus } = useSession();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { isPolling, status: queueStatus } = useQueueStatus();
 
-  const showNav = variant === "internal" || !!session;
+  const isLoaded = sessionStatus !== "loading";
+  const isLoggedIn = !!session;
+  const showNav = isLoaded && (variant === "internal" || isLoggedIn);
   const hasActiveQueue = isPolling && queueStatus && queueStatus.status !== "done" && queueStatus.status !== "failed";
 
   return (
@@ -37,7 +38,7 @@ export default function Header({ variant = "internal", activePage }: HeaderProps
         {/* Desktop nav */}
         <nav className="hidden sm:flex items-center gap-6">
           {showNav &&
-            navLinks.map((link) => (
+            navLinksLoggedIn.map((link) => (
               <a
                 key={link.key}
                 href={link.href}
@@ -53,13 +54,16 @@ export default function Header({ variant = "internal", activePage }: HeaderProps
                 )}
               </a>
             ))}
-          <a
-            href={variant === "home" ? "#pricing" : "/#pricing"}
-            className="text-xs text-muted font-light hover:text-foreground transition-colors"
-          >
-            Tarifs
-          </a>
-          {variant === "home" && !session && (
+          {/* Tarifs: only when not logged in */}
+          {isLoaded && !isLoggedIn && (
+            <a
+              href={variant === "home" ? "#pricing" : "/#pricing"}
+              className="text-xs text-muted font-light hover:text-foreground transition-colors"
+            >
+              Tarifs
+            </a>
+          )}
+          {isLoaded && !isLoggedIn && variant === "home" && (
             <a
               href="#outil"
               className="text-xs bg-foreground text-background px-4 py-2 rounded-full font-medium hover:bg-foreground/85 transition-colors"
@@ -67,7 +71,7 @@ export default function Header({ variant = "internal", activePage }: HeaderProps
               Essayer gratuitement
             </a>
           )}
-          {session && (
+          {isLoaded && isLoggedIn && (
             <a
               href={variant === "home" ? "#outil" : "/"}
               className="text-xs bg-foreground text-background px-3 py-2 rounded-full font-medium hover:bg-foreground/85 transition-colors"
@@ -104,7 +108,7 @@ export default function Header({ variant = "internal", activePage }: HeaderProps
       {mobileOpen && (
         <div className="sm:hidden border-t border-foreground/5 bg-background/95 backdrop-blur-md px-5 py-4 space-y-1 animate-fade-in-up">
           {showNav &&
-            navLinks.map((link) => (
+            navLinksLoggedIn.map((link) => (
               <a
                 key={link.key}
                 href={link.href}
@@ -121,14 +125,17 @@ export default function Header({ variant = "internal", activePage }: HeaderProps
                 )}
               </a>
             ))}
-          <a
-            href={variant === "home" ? "#pricing" : "/#pricing"}
-            onClick={() => setMobileOpen(false)}
-            className="block py-3 text-sm text-foreground font-light"
-          >
-            Tarifs
-          </a>
-          {variant === "home" && !session && (
+          {/* Tarifs: only when not logged in */}
+          {!isLoggedIn && (
+            <a
+              href={variant === "home" ? "#pricing" : "/#pricing"}
+              onClick={() => setMobileOpen(false)}
+              className="block py-3 text-sm text-foreground font-light"
+            >
+              Tarifs
+            </a>
+          )}
+          {!isLoggedIn && variant === "home" && (
             <a
               href="#outil"
               onClick={() => setMobileOpen(false)}
@@ -137,7 +144,7 @@ export default function Header({ variant = "internal", activePage }: HeaderProps
               Essayer gratuitement
             </a>
           )}
-          {session && (
+          {isLoggedIn && (
             <a
               href={variant === "home" ? "#outil" : "/"}
               onClick={() => setMobileOpen(false)}
