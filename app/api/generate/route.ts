@@ -397,6 +397,8 @@ function buildOutdoorFurnitureResponsesPrompt(
   subtypeOverride: string
 ): string {
   return [
+    "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation.",
+    "Ground surfaces are LOCKED — same material, color, texture. Guard rails, walls, facades unchanged.",
     `Add outdoor furniture and decoration to this photo of a finished outdoor space: ${furniturePrompt}.`,
     subtypeOverride ? subtypeOverride : "",
     "Distribute furniture naturally across the available floor space. If space is large, create a primary seating group and a secondary accent further back.",
@@ -407,10 +409,8 @@ function buildOutdoorFurnitureResponsesPrompt(
     "If the outdoor space appears compact (under ~10m2 visible floor), scale down: use a 120cm bistro table instead of 160cm dining, skip large sofas, limit to 2 chairs instead of 4.",
     "Do not place opaque structures (screens, shelving, A-frames) directly in front of full-height windows or glass doors.",
     "If the space has exposed overhead structure (beams, pergola, rafters), consider hanging one trailing plant or lantern from it to activate the vertical dimension — only if clearance allows.",
-    "Ground surfaces are LOCKED — same material, color, texture. Guard rails, walls, facades unchanged.",
     "Every piece must cast realistic shadows consistent with the existing natural light direction.",
     "Preserve the exact lighting conditions from the input — same shadow hardness, same direction, same color temperature.",
-    "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation.",
     "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, subtle sensor grain (ISO 200), natural corner vignetting. Photo-realistic outdoor photograph. No text, watermarks, or logos.",
   ]
     .filter(Boolean)

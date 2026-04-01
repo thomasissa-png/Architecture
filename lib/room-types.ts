@@ -3,7 +3,7 @@
  *
  * Each room type provides:
  * - roomSurfaceOverride: concatenated to the style's surfacePrompt (pass 1)
- * - roomFurnitureOverride: REPLACES the style's furniturePrompt (pass 2) — except when empty
+ * - roomFurnitureOverride: MERGES with the style's furniturePrompt (pass 2) — except when empty
  * - roomNegativeOverride: added to the Flux negative prompt
  *
  * Decision: roomFurnitureOverride replaces (not concatenates) because bedroom furniture

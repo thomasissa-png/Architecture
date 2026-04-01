@@ -23,35 +23,32 @@ export function buildIterationFurnitureResponsesPrompt(
     .join("\n");
 
   return [
+    "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation.",
+    "Room structure is LOCKED — walls, floor, ceiling, paint, windows, doors must remain visually identical to the input. Same colors, same textures, same geometry. If the input has zero windows, the output must have zero windows. Shadows from furniture are expected and natural.",
     "IMPORTANT: All furniture, decoration, and objects currently visible in this photo must REMAIN exactly as they are. Do not remove, move, or resize any existing item.",
     "This is a REFINEMENT of a previous generation. The room surfaces in this photo are FINAL and PERFECT. They must not change in any way — not even subtle color shifts, lighting changes, or texture smoothing.",
     "Focus ONLY on adjusting the furniture and decoration as described below.",
     `APPLY THESE CHANGES:\n${modBlock}`,
     "Add ONLY the items described above. Everything else in the photo — all existing furniture, rugs, plants, lamps — stays untouched.",
-    // Iterations are ALWAYS exclusive: add ONLY what the user asked for.
-    // The accumulated modifications describe everything the user wants.
     "Do NOT add any other furniture, decoration, rug, lamp, plant, or object not explicitly mentioned. The room should contain ONLY what the user asked for — leave the rest of the floor empty.",
     "If the room is deep, distribute furniture across its full depth — primary group foreground, secondary piece further back if space allows.",
     "Every piece must appear firmly grounded on the floor with visible contact shadows — especially furniture placed in the back of the room. Match shadow hardness to the lighting type.",
     "Preserve existing light direction and color temperature from the input photo. No warm tint or yellow cast.",
     // Room-type-specific fixture rules
     meta.roomType === "kitchen" || meta.roomType === "bathroom"
-      ? "Add room-appropriate fixtures and freestanding accessories. Built-in cabinetry, vanity units, and countertops are expected for this room type. No curtains."
+      ? "Add room-appropriate fixtures and freestanding accessories. Built-in cabinetry, vanity units, and countertops are expected for this room type."
       : meta.roomType === "wc"
-      ? "Wall-hung toilet and wall-mounted hand basin expected. Other items (shelf, brush holder) freestanding only. Very small space — do not overcrowd. No curtains."
+      ? "Wall-hung toilet and wall-mounted hand basin expected. Other items (shelf, brush holder) freestanding only. Very small space — do not overcrowd."
       : meta.roomType === "laundry"
-      ? "Washing machine and functional equipment expected. Storage cabinet, drying rack, laundry basket. No decorative objects, no luxury items. No curtains."
+      ? "Washing machine and functional equipment expected. Storage cabinet, drying rack, laundry basket. No decorative objects, no luxury items."
       : meta.roomType === "cellar"
-      ? "Functional storage only — shelving, storage boxes, utility light. Wine rack if space allows. No luxury furniture, no decorative objects. No curtains."
+      ? "Functional storage only — shelving, storage boxes, utility light. Wine rack if space allows. No luxury furniture, no decorative objects."
       : meta.roomType === "entryway"
-      ? "Small space — do not overcrowd. Freestanding items only: console, coat rack, small bench, runner rug. No wall-mounted art, no curtains."
+      ? "Small space — do not overcrowd. Freestanding items only: console, coat rack, small bench, runner rug."
       : meta.allowWallMounted
-      ? "Wall-mounted items are allowed ONLY for the items explicitly requested by the user. No curtains."
-      : "ONLY add freestanding objects. Do NOT attach anything to walls. No wall-mounted art, no framed paintings, no prints, no mirrors, no built-in shelving, no curtains.",
-    "Room structure is LOCKED — walls, floor, ceiling, paint, windows, doors must remain visually identical to the input. Same colors, same textures, same geometry. Shadows from furniture are expected and natural.",
+      ? "Wall-mounted items are allowed ONLY for the items explicitly requested by the user."
+      : "ONLY add freestanding objects. Do NOT attach anything to walls. No wall-mounted art, no framed paintings, no prints, no mirrors, no built-in shelving.",
     "Preserve all wall-mounted fixed equipment: radiators, heaters, vents, thermostats, switches. Do not place furniture in front of radiators.",
-    "If the input has zero windows, the output must have zero windows.",
-    "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation.",
     "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, subtle sensor grain (ISO 200), natural corner vignetting. Photo-realistic interior photograph. No text, watermarks, or logos.",
   ].join(" ");
 }
@@ -74,22 +71,21 @@ export function buildIterationOutdoorFurnitureResponsesPrompt(
     .join("\n");
 
   return [
+    "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation.",
+    "Ground surface and vertical structures are LOCKED — guard rails, walls, facades, gates, fences must remain visually identical to the input. Same colors, same textures, same geometry. Shadows from furniture are expected and natural.",
     "IMPORTANT: All furniture, decoration, and objects currently visible in this photo must REMAIN exactly as they are. Do not remove, move, or resize any existing item.",
     "This is a REFINEMENT of a previous outdoor generation. The ground surface and vertical structures in this photo are FINAL and PERFECT. They must not change in any way — not even subtle color shifts or texture changes.",
     "Focus ONLY on adjusting the outdoor furniture and decoration as described below.",
     `APPLY THESE CHANGES:\n${modBlock}`,
     "Add ONLY the items described above. Everything else in the photo — all existing furniture, planters, lamps — stays untouched.",
-    // Iterations are ALWAYS exclusive: add ONLY what the user asked for.
     "Do NOT add any other furniture, decoration, planter, lamp, or object not explicitly mentioned. Leave the rest of the space empty.",
     "If the space is deep, distribute furniture across its full depth — primary group foreground, secondary piece further back if space allows.",
     "Place all objects naturally on the existing ground. Every piece of outdoor furniture must appear firmly grounded with visible contact shadows consistent with the existing natural light direction.",
     "ONLY add freestanding outdoor objects. Do NOT attach anything to walls, guard rails, or facades.",
     "Do not place opaque structures (screens, shelving, A-frames) directly in front of full-height windows or glass doors.",
-    "Ground surface and vertical structures are LOCKED — guard rails, walls, facades, gates, fences must remain visually identical to the input. Same colors, same textures, same geometry. Shadows from furniture are expected and natural.",
     "Preserve existing vegetation in the background. Do not alter tree lines, hedges, or background plants.",
     "Open-air space — no ceiling. Sky preserved as-is.",
     "Preserve the exact lighting conditions from the input — same shadow hardness, same direction, same color temperature.",
-    "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation.",
     "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, subtle sensor grain (ISO 200), natural corner vignetting. Photo-realistic outdoor photograph. No text, watermarks, or logos.",
   ].join(" ");
 }
@@ -102,6 +98,8 @@ export function buildAdjustResponsesPrompt(
   meta: { roomType?: string | null; allowWallMounted?: boolean },
 ): string {
   return [
+    "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation.",
+    "Room structure is LOCKED — walls, floor, ceiling, paint, windows, doors must remain visually identical to the input.",
     "IMPORTANT: All furniture, decoration, and objects currently visible in this photo must REMAIN exactly as they are. Do not remove, move, or resize any existing item.",
     "Edit this furnished room photo. Keep ALL existing furniture, decorations, and room surfaces EXACTLY as they are.",
     `APPLY THIS CHANGE ONLY: ${enrichedComment}`,
@@ -116,9 +114,7 @@ export function buildAdjustResponsesPrompt(
       : "",
     "Every piece must appear firmly grounded on the floor with visible contact shadows. Match shadow hardness to the lighting type.",
     "Preserve existing light direction and color temperature from the input photo. No warm tint or yellow cast.",
-    "Room structure is LOCKED — walls, floor, ceiling, paint, windows, doors must remain visually identical to the input.",
     "Preserve all wall-mounted fixed equipment: radiators, heaters, vents, thermostats, switches.",
-    "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation.",
     "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, subtle sensor grain (ISO 200), natural corner vignetting. Photo-realistic interior photograph. No text, watermarks, or logos.",
   ].filter(Boolean).join(" ");
 }
@@ -128,14 +124,14 @@ export function buildAdjustOutdoorResponsesPrompt(
   enrichedComment: string,
 ): string {
   return [
+    "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation.",
+    "Ground surface and vertical structures are LOCKED — guard rails, walls, facades, gates, fences must remain visually identical.",
     "Edit this furnished outdoor space photo. Keep ALL existing furniture, decorations, and ground surfaces EXACTLY as they are.",
     `APPLY THIS CHANGE ONLY: ${enrichedComment}`,
     "Do NOT remove, move, or modify any existing item unless the user explicitly asks for it.",
     "The space must look identical to the input except for the requested change.",
     "Every piece must appear firmly grounded on the ground with visible contact shadows consistent with the existing natural light direction.",
-    "Ground surface and vertical structures are LOCKED — guard rails, walls, facades, gates, fences must remain visually identical.",
     "Preserve existing vegetation in the background.",
-    "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation.",
     "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, subtle sensor grain (ISO 200), natural corner vignetting. Photo-realistic outdoor photograph. No text, watermarks, or logos.",
   ].join(" ");
 }

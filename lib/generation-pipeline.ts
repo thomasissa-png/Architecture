@@ -26,7 +26,7 @@ function getOpenAI(): OpenAI {
  * v31 (audit Lucas v30: distribution spatiale remontee position 2, ancrage sol contact shadows, preservation lumiere passe 2, echelle conditionnelle),
  * v32 (revert gpt-image-1.5 → gpt-image-1 — regression spatiale confirmee par audit Lucas, modele configurable via env),
  * v33 (audit Yann: propagation DEPTH_DISTRIBUTION + CONTACT_SHADOWS aux 7 builders dedies — bedroom, kitchen, bathroom, WC, entryway, laundry, cellar + preservation lumiere passe 2 tous builders) */
-export const PROMPT_VERSION = "v33";
+export const PROMPT_VERSION = "v34";
 
 // ─── Image generation model ─────────────────────────────────────────
 // Configurable via env var for A/B testing. Default: gpt-image-1 (validated at 8.0-8.5/10).
@@ -379,6 +379,8 @@ export function buildOutdoorFurnitureResponsesPrompt(
   subtypeOverride: string
 ): string {
   return [
+    "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation.",
+    "Ground surfaces are LOCKED — same material, color, texture. Guard rails, walls, facades unchanged.",
     `Add outdoor furniture and decoration to this photo of a finished outdoor space: ${furniturePrompt}.`,
     subtypeOverride ? subtypeOverride : "",
     "Distribute furniture naturally across the available floor space. If space is large, create a primary seating group and a secondary accent further back.",
@@ -389,10 +391,8 @@ export function buildOutdoorFurnitureResponsesPrompt(
     "If the outdoor space appears compact (under ~10m2 visible floor), scale down: use a 120cm bistro table instead of 160cm dining, skip large sofas, limit to 2 chairs instead of 4.",
     "Do not place opaque structures (screens, shelving, A-frames) directly in front of full-height windows or glass doors.",
     "If the space has exposed overhead structure (beams, pergola, rafters), consider hanging one trailing plant or lantern from it to activate the vertical dimension — only if clearance allows.",
-    "Ground surfaces are LOCKED — same material, color, texture. Guard rails, walls, facades unchanged.",
     "Every piece must cast realistic shadows consistent with the existing natural light direction.",
     "Preserve the exact lighting conditions from the input — same shadow hardness, same direction, same color temperature.",
-    "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation.",
     "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, subtle sensor grain (ISO 200), natural corner vignetting. Photo-realistic outdoor photograph. No text, watermarks, or logos.",
   ]
     .filter(Boolean)
