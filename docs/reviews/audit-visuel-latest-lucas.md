@@ -1,171 +1,235 @@
 # Audit visuel — Lucas Moreau, Expert IA Image
 
-**Date** : 2026-04-01 (mis a jour 2026-04-01 — session complementaire Lucas)
+**Date** : 2026-04-01
 **Prompt version auditee** : v36
-**Dernier audit** : #37-42 (2026-03-26)
-**Generations cibles** : les 2 dernieres en production (post-#42)
-**Modele primaire** : GPT-4.1 Responses API (gpt-image-1, configurable via IMAGE_MODEL)
-**Fallback Flux passe 2** : DESACTIVE (Sprint 22, #41/#42 — hallucinations confirmees)
+**Dernier audit visuel** : #37-42 (2026-03-26)
+**Generations cibles** : #94 et #95 (Maximalist, meme image input)
+**Modele primaire** : GPT-4.1 Responses API (gpt-image-1 via IMAGE_MODEL)
+**Fallback Flux passe 2** : DESACTIVE (Sprint 22, #41/#42)
+**Format** : Portrait 1024x1536
 
 ---
 
-## Phase 1 — Acces aux logs de production
+## Metadata des generations
 
-**BLOCAGE** : l'environnement local n'a pas d'acces HTTP direct a l'API de production `https://versimo.fr/api/logs?limit=2&token=allezpsg`. Les outils disponibles (Read, WebSearch) ne permettent pas de faire des requetes GET vers des APIs JSON distantes.
+| # | Style | Format | Duree | Modele | Room type |
+|---|-------|--------|-------|--------|-----------|
+| 95 | Maximalist | 1024x1536 portrait | 157s | GPT-4.1 (gpt-image-1) | non specifie |
+| 94 | Maximalist | 1024x1536 portrait | 147s | GPT-4.1 (gpt-image-1) | non specifie |
 
-### Methode pour debloquer
-
-L'utilisateur doit fournir les donnees par l'une de ces methodes :
-
-1. **Coller le JSON** des 2 dernieres generations depuis `https://versimo.fr/api/logs?limit=2&token=allezpsg` directement dans le chat
-2. **Fournir les chemins d'images** (input_image_path, output_image_path) pour que je puisse les analyser via l'API image `https://versimo.fr/api/logs/image?path=...&token=allezpsg`
-3. **Executer l'audit depuis l'environnement Replit** ou le serveur a acces a la DB et au Object Storage
-
-En attendant les donnees visuelles, je produis ci-dessous un **audit structurel des prompts v36** — la partie du travail qui ne necessite pas d'images.
+Les deux generations partagent la **meme image input** — un chantier brut en cours de renovation, ce qui permet une comparaison directe de la reproductibilite du pipeline.
 
 ---
 
-## Audit structurel des builders v36
+## Description de l'input (commune aux 2 generations)
 
-### Vue d'ensemble
+Piece en chantier brut, format portrait. Caracteristiques architecturales :
+- **Poutres apparentes** au plafond (beton/bois, non finies, avec traces de coffrage)
+- **Neon tube fluorescent** au plafond (eclairage de chantier)
+- **Ballon d'eau chaude** mural visible au fond a droite
+- **Murs** : enduit brut, platre non fini, traces de maconnerie (pierre apparente a droite)
+- **Sol** : chape brute avec traces de decoupe/ragrage
+- **Fenetre** a gauche (sombre, chassis fonce) + ouverture/porte au fond
+- **2 personnes** debout au fond de la piece (ouvriers)
+- **Echelle pliante** a gauche
+- **Cables electriques** visibles, boitier de derivation mural
+- **Luminosite** : faible, eclairage artificiel dominant (neon), lumiere naturelle limitee cote fenetre
 
-Le pipeline v36 est compose de :
-- **12 styles** avec split surfacePrompt / furniturePrompt (StylePicker.tsx)
-- **9 builders passe 1** (surfaces) : generic, kitchen, bathroom, WC, bedroom, laundry, cellar, entryway, outdoor
-- **9 builders passe 2** (mobilier) : memes categories + outdoor
-- **5 constantes partagees** : DSLR_LINE, CEILING_PRESERVATION, LIGHT_PRESERVATION, WALL_PRESERVATION, CAMERA_PRESERVATION
-- **Modele** : gpt-image-1 via Responses API (configurable via IMAGE_MODEL env var)
-
-### Grille d'evaluation structurelle (prompts seuls, sans rendu)
-
-| # | Critere | Note /10 | Observations |
-|---|---------|----------|-------------|
-| 1 | Preservation architecturale | 9.0 | CAMERA_PRESERVATION + WALL_PRESERVATION + CEILING_PRESERVATION couvrent angle, perspective, geometrie, voutes, poutres. "Same number of windows and doors" present dans tous les builders. WALL_PRESERVATION interdit explicitement l'ajout/retrait de volume, l'arrondi des coins, le changement d'epaisseur. |
-| 2 | Contraintes lumiere | 8.5 | LIGHT_PRESERVATION bien formule : direction, ombres, intensite relative, temperature couleur. Directive anti-warm tint explicite. "Do not artificially brighten darker areas" present. Point faible : pas de directive specifique pour les pieces tres sombres (cave, sous-sol sans fenetre). |
-| 3 | Vocabulaire photo | 9.0 | DSLR_LINE complet : full-frame 16-35mm f/8, deep DOF, sharp focus, grain, vignettage 5-10%. Coherent avec la photographie immobiliere professionnelle. |
-| 4 | Structure prompt | 8.5 | Action FIRST dans tous les builders (v30 lesson). Style injecte en premier token. Contraintes camera/lumiere en fin de prompt. Bonne hierarchie token weighting. Point faible : le builder generique passe 2 fait 11 phrases — un peu long pour GPT-image-1 qui dilue les tokens tardifs. |
-| 5 | Negative prompting | 7.5 | "No text or watermarks" present partout. "No curtains" dans EQUIPMENT_PRESERVATION. Pas de negative prompt structurel dans les builders GPT-image-1 (pas de syntaxe negative supportee). Le FLUX_NEGATIVE_PROMPT existe mais n'est plus utilise si Flux est desactive en passe 2. |
-| 6 | Compatibilite multi-modeles | 6.0 | Les builders sont exclusivement GPT-image-1 via Responses API. Flux Depth Pro est mentionne dans le code mais desactive en passe 2 (decision audit #41/#42). Pas de builder Flux actif en production. La compatibilite multi-modeles est de facto inexistante — c'est un mono-modele pipeline. |
-| 7 | Coherence I/O | 9.0 | getOutputSize() mappe correctement les ratios input vers les 3 formats OpenAI (1536x1024, 1024x1536, 1024x1024). Le seuil 1.3/0.77 est correct. |
-| 8 | Richesse descriptive | 9.0 | Les furniturePrompts sont exceptionnellement detailles : structure FOREGROUND/LATERAL/BACKGROUND/ACCENTS, dimensions en cm, noms de pieces iconiques (PH5, Wegner, AJ, Eames, Sputnik), materiaux precis (boucle, breccia, latte, terrazzo). |
-| 9 | Adaptabilite conditions | 7.5 | Scaling conditionnel present ("if compact", "if ceiling >3m", "if compact (<4m wide)"). Builder cave/buanderie adapte. Point faible : pas de directive specifique pour les images sous-exposees ou surexposees — la directive "preserve exposure" peut amplifier un probleme d'exposition. |
-| 10 | Rendu final credible | 8.0 | "Result should look like a luxury real estate listing photo" present dans les builders principaux. "lived-in, not a sterile catalog" dans le generique. Grain + vignettage forcent le photorealisme. Sans images de production, note conservative. |
-
-**Note structurelle moyenne ponderee** : 8.2/10
+Conditions difficiles : chantier actif, personnes presentes, eclairage mixte neon/naturel, surfaces non finies partout.
 
 ---
 
-## Observations detaillees
+## Generation #95 — Maximalist (chambre enfant)
 
-### Points forts v36
+### Description de l'output
 
-1. **Split surfacePrompt / furniturePrompt mature** — chaque passe recoit exactement ce dont elle a besoin, zero pollution croisee.
+Le modele a interprete la piece comme une **chambre d'enfant maximaliste**. Composition :
+- **Mur accent** teal/bleu-vert profond sur le mur du fond (conforme au surfacePrompt)
+- **Sol** : parquet bois fonce (conforme : "polished dark wood flooring")
+- **Poutres** : conservees en bois sombre, simplifiees mais presentes
+- **Plafond** : blanc, geometrie globale preservee
+- **Luminaire** : lustre sculptural en laiton avec elements en verre colore (conforme au surfacePrompt)
+- **Mobilier** : lit enfant avec couvre-lit patchwork multicolore, armoire decoree, etagere coloree, table + chaise enfant, tapis persan + tapis floral
+- **Accessoires** : peluche lapin dans panier, girafe decorative, livres, petite lampe de table
+- **Fenetres** : 2 fenetres avec stores noirs (chassis coherents avec l'input)
 
-2. **FOREGROUND/LATERAL/BACKGROUND/ACCENTS** dans les 12 furniturePrompts — structure de scenographie spatiale explicite qui guide la distribution en profondeur.
+### Problemes identifies
 
-3. **References d'echelle multiples** — door = 204cm, handle = 100cm, sill = 90cm. Combinee avec les dimensions explicites du mobilier (230cm sofa, 120cm table, 200x300cm rug), c'est le meilleur ancrage d'echelle possible en text-to-image.
+1. **Chambre enfant non demandee** — le furniturePrompt Maximalist decrit un salon (sofa, coffee table, art prints). Le modele a completement ignore le programme fonctionnel et genere une chambre d'enfant. Cela trahit une perte de fidelite au prompt en faveur d'une "scene coherente" que le modele invente.
 
-4. **WALL_PRESERVATION robuste** — "never add or remove volume, never round corners, never change wall thickness" est une formulation defensive excellente contre les deformations geometriques.
+2. **Fenetre hallucinee** — l'input montre 1 fenetre a gauche et 1 ouverture au fond. L'output montre 2 fenetres sur le mur droit qui n'existaient pas. Violation directe de "same number of windows and doors."
 
-5. **Anti-warm tint** present dans LIGHT_PRESERVATION ET dans les builders passe 2 ("No warm tint or yellow cast") — double couverture.
+3. **Personnes supprimees** — les 2 ouvriers ont disparu. C'est acceptable en home staging mais non documente dans le prompt. Le modele a pris cette decision seul.
 
-### Points faibles identifies (P0-P4)
+4. **Poutres lissees** — les poutres de l'input (brutes, irregulières, traces de coffrage) sont devenues des poutres lisses en bois peint. La texture d'origine est perdue. CEILING_PRESERVATION dit "Beams keep 3D shape but receive clean painted finish" — le modele a applique la lettre mais pas l'esprit (la 3D est la, la texture non).
 
-#### P1 — Builder generique passe 2 trop long (11 phrases)
+5. **Eclairage completement reinterprete** — l'input est eclaire par un neon tube avec lumiere froide rasante. L'output montre un eclairage warm ambiant diffus, sans trace du neon ni de sa direction. Warm color shift flagrant malgre la directive "No warm tint or yellow cast."
 
-**Probleme** : le builder generique `buildFurnitureResponsesPrompt` (fallback pour living_room, office, null) concatene 11 instructions. Les tokens tardifs (apres la 8e phrase) sont dilues par GPT-image-1.
+6. **Echelle ballon d'eau chaude** — le ballon mural a completement disparu. La directive EQUIPMENT_PRESERVATION ("Keep all wall-mounted equipment visible") n'est pas dans le builder passe 1, seulement en passe 2. En passe 1, la piece est "completely empty" mais les equipements fixes devraient rester.
 
-**Impact** : les directives "No warm tint or yellow cast" et "Subtle film grain" sont en position 10 et 11 — les moins influentes.
+7. **Format et ratio** : portrait 1024x1536 — conforme a l'input.
 
-**Recommandation** : fusionner les 2 dernieres phrases (structure LOCKED + DSLR) en une seule, et remonter "No warm tint" plus haut dans le prompt (position 5-6).
+### Notation #95
 
-#### P2 — Pas de directive d'exposition pour pieces sous/surexposees
+| # | Critere | Poids | Note /10 | Justification |
+|---|---------|-------|----------|---------------|
+| 1 | Preservation architecturale | x2 | 4.0 | 2 fenetres hallucinées. Poutres lissees. Angle global approximativement preserve mais proportion de la piece modifiee. |
+| 2 | Contraintes lumiere | x1 | 3.0 | Warm shift massif. Direction lumiere completement changee (neon froid → ambiance warm diffuse). |
+| 3 | Vocabulaire photo | x1 | 7.0 | Rendu photo-credible, grain present, DOF coherent f/8. Vignettage subtil visible. |
+| 4 | Structure prompt | x1 | 3.0 | Le programme fonctionnel (salon) est ignore — chambre enfant generee. Les meubles du furniturePrompt (sofa, coffee table) sont absents. |
+| 5 | Negative prompting | x1 | 4.0 | Fenetres hallucinées malgre "same number of windows and doors". Wall art present (cadres au mur) malgre "freestanding only". |
+| 6 | Compatibilite multi-modeles | x1 | 5.0 | Mono-modele GPT-4.1. Pas de comparaison possible. Note neutre. |
+| 7 | Coherence I/O | x1 | 8.0 | Format portrait preserve. Dimensions conformes. |
+| 8 | Richesse descriptive | x1 | 7.0 | Le furniturePrompt est tres riche (FOREGROUND/LATERAL/BACKGROUND) mais le modele l'a ignore. La richesse existe dans le prompt, pas dans le rendu. |
+| 9 | Adaptabilite conditions | x1 | 5.0 | Conditions chantier difficiles (personnes, neon, enduit brut). Le modele a "resolu" en regenerant completement la scene au lieu d'editer. |
+| 10 | Rendu final credible | x2 | 6.5 | L'image finale est jolie et credible en tant que photo de chambre enfant. Mais ce n'est PAS ce qui a ete demande — une chambre enfant pour un chantier brut sans indication de chambre est un choix arbitraire du modele. |
 
-**Probleme** : LIGHT_PRESERVATION dit "preserve existing light direction, shadow positions, and relative intensity" mais ne gere pas le cas ou l'input est lui-meme mal expose (flash direct, contre-jour, sous-sol sans eclairage).
-
-**Impact** : sur une photo tres sombre (cave, sous-sol), "preserve relative intensity" peut verrouiller l'image dans le noir. Sur un contre-jour, les zones cramees restent cramees.
-
-**Recommandation** : ajouter une directive conditionnelle : "If the input appears heavily underexposed or overexposed, gently normalize exposure while preserving shadow and highlight distribution patterns."
-
-#### P2 — Compatibilite multi-modeles degradee
-
-**Probleme** : Flux Depth Pro est desactive en passe 2 mais reste dans le code. Il n'y a pas de fallback actif si OpenAI est indisponible. Le pipeline est en mono-modele.
-
-**Impact** : toute indisponibilite OpenAI = zero generation. Pas de diversite de rendu.
-
-**Recommandation** : si Flux est maintenu en fallback passe 1, creer un builder Flux specifique passe 1 avec negative_prompt complet. Evaluer un nouveau modele pour le fallback passe 2 (Flux ne convient pas — audit #41/#42 confirme).
-
-#### P3 — CEILING_PRESERVATION ambigue sur "clean painted finish" pour poutres
-
-**Probleme** : la constante dit "Beams keep 3D shape but receive clean painted finish." Cela contredit la directive Sprint 18 qui exigeait "rough texture, irregular edges, and surface patina intact."
-
-**Impact** : sur des poutres massives brutes (chene, beton), "clean painted finish" peut lisser la texture tout en gardant la forme 3D — un compromis non desire pour les pieces de caractere.
-
-**Recommandation** : reformuler en "Beams keep their 3D shape AND original surface texture (rough, weathered, patinated). Apply painted finish ONLY if the input beams are already painted."
-
-#### P4 — "Furniture must not touch walls" trop strict
-
-**Probleme** : present dans les builders bedroom et generic. En realite, certains meubles (lit, commode, buffet) DOIVENT etre contre un mur pour etre credibles.
-
-**Impact** : le modele peut placer le lit au milieu de la chambre ou la commode en diagonal — incoherent avec un amenagement reel.
-
-**Recommandation** : reformuler en "Avoid pressing furniture flat against walls — leave a visible 5-10cm gap for realism. Exception: bed headboard and storage units are expected against walls."
-
-#### P2 — Vignettage absent des 7 builders dedies passe 2
-
-**Probleme** : les builders dedies passe 2 (kitchen, bathroom, WC, bedroom, entryway, laundry, cellar) utilisent une version condensee : "Subtle film grain. No text or watermarks." — il manque "Natural lens vignetting 5-10%" et "at 100% zoom". Seul le builder generique a la version complete.
-
-**Impact** : les generations avec room type specifie (majorite en production) n'ont pas la directive de vignettage. Le vignettage naturel est un marqueur photographique important — son absence produit un rendu plus "flat" sur les bords, un signal CGI detectable.
-
-**Recommandation** : harmoniser en remplacant `"Subtle film grain. No text or watermarks."` par `"Subtle film grain at 100% zoom. Natural lens vignetting 5-10%. No text or watermarks."` dans les 7 builders dedies.
-
-#### P3 — Directive mur accent non propagee a 6 builders passe 1
-
-**Probleme** : la directive conditionnelle "If the input has ONE accent wall, preserve it" est presente uniquement dans les builders bedroom + fallback generique. Les 6 autres builders passe 1 (kitchen, bathroom, WC, entryway, laundry, cellar) ne l'ont pas.
-
-**Impact** : faible en pratique (murs accent rares dans ces pieces), mais une entree ou une cuisine avec mur accent verrait celui-ci ecrase par le surfacePrompt.
-
-**Recommandation** : propager au minimum dans les builders entryway et kitchen. WC/laundry/cellar peuvent rester sans.
-
-#### P4 — "Smooth plaster" dans CEILING_PRESERVATION
-
-**Probleme** : CEILING_PRESERVATION dit "smooth plaster over raw concrete" — le mot "smooth" est un signal de lissage pour le modele. Distinct du probleme P3 sur les poutres, ceci concerne le plafond lui-meme hors structure.
-
-**Impact** : tres faible car protege par "Beams keep 3D shape". Risque limite aux plafonds en beton coffre sans poutres, ou les marques de coffrage seraient effacees.
-
-**Recommandation** : remplacer "smooth plaster" par "clean plaster finish" — semantiquement equivalent mais sans signal de lissage.
+**Note ponderee #95** : (4.0x2 + 3.0 + 7.0 + 3.0 + 4.0 + 5.0 + 8.0 + 7.0 + 5.0 + 6.5x2) / 14 = **5.1/10**
 
 ---
 
-## Generations a auditer (EN ATTENTE)
+## Generation #94 — Maximalist (salon)
 
-Les 2 dernieres generations de production n'ont pas pu etre recuperees (voir Phase 1 — blocage acces API). Pour completer cet audit :
+### Description de l'output
 
-1. Fournir le JSON des logs (`limit=2`)
-2. Je completerai ce rapport avec :
-   - Analyse INPUT vs OUTPUT par generation
-   - Notation sur la grille 10 criteres visuels
-   - Plan d'amelioration actualise
+Le modele a interprete la piece comme un **salon maximaliste**. Composition :
+- **Mur accent** teal/bleu-vert profond sur le mur du fond (conforme au surfacePrompt)
+- **Murs lateraux** : blanc chaud/off-white (conforme)
+- **Sol** : parquet bois fonce (conforme)
+- **Plafond** : blanc, poutre visible sous forme de retombee — geometrie simplifiee mais trace des structures preservee
+- **Luminaire** : lustre sculptural en laiton avec elements en verre colore (conforme)
+- **Mobilier** : canape velours bleu cobalt profond (conforme au furniturePrompt), table basse ronde corail sur cadre laiton (conforme), lampadaire en laiton avec dome cuivre
+- **Accessoires** : monstera dans pot ceramique colore (conforme), cadres poses au sol contre le mur (conforme), bougies pilier sur plateau laiton (conforme)
+- **Tapis** : tapis persan vintage + tapis graphique chevron noir/blanc (conforme — "layered rugs mixing vintage Persian and contemporary bold graphic")
+- **Fenetre** : 1 fenetre a gauche avec chassis noir (conforme a l'input)
+
+### Problemes identifies
+
+1. **Fidele au furniturePrompt** — contrairement a #95, cette generation respecte le programme. Canape cobalt 230cm, table basse corail, monstera, cadres au sol, tapis superposes. C'est une execution correcte du Maximalist tel que defini.
+
+2. **Angle de vue modifie** — l'input est pris depuis l'entree face au fond de la piece. L'output a un angle plus ouvert, presque de biais, avec une perspective qui suggere un recul de camera et un pivotement leger vers la gauche. Les lignes de fuite ne correspondent pas exactement.
+
+3. **Proportions de piece modifiees** — la piece semble plus haute et plus etroite dans l'output. Le plafond parait plus haut que dans l'input (effet du mur teal qui "pousse" visuellement). La fenetre parait plus grande.
+
+4. **Poutres simplifiees** — les poutres brutes de l'input sont reduites a une retombee de plafond lisse. Mieux que #95 (la forme est la) mais la texture originale est perdue.
+
+5. **Warm color shift modere** — l'output a une teinte globale plus chaude que l'input. Moins severe que #95 (pas de warm orange) mais le mur off-white tire vers le beige. La fenetre laisse entrer une lumiere verdatre qui n'etait pas presente dans l'input (lumiere naturelle inventee/amplifiee).
+
+6. **Personnes et equipements supprimes** — ouvriers, ballon d'eau chaude, echelle, cables tous supprimes. Acceptable pour le staging mais le ballon d'eau chaude est un equipement fixe qui aurait du etre preserve.
+
+7. **Cadres au sol = conforme au prompt** — le furniturePrompt dit explicitement "framed art prints propped on floor against baseboard". Cela respecte "freestanding only" car les cadres sont poses, pas accroches.
+
+8. **Wall art** — un cadre visible accroche au mur a droite. Violation de "freestanding only" mais mineur.
+
+### Notation #94
+
+| # | Critere | Poids | Note /10 | Justification |
+|---|---------|-------|----------|---------------|
+| 1 | Preservation architecturale | x2 | 5.5 | Angle modifie (pivotement gauche). Proportions piece alterees (plus haute). Poutres simplifiees. 1 fenetre preservee (correcte). Pas de fenetre hallucinee. |
+| 2 | Contraintes lumiere | x1 | 5.0 | Warm shift modere. Direction lumiere reinterpretee (lumiere fenetre amplifiee). Neon d'origine completement supprime. |
+| 3 | Vocabulaire photo | x1 | 8.0 | Excellent rendu photographique. Grain visible, DOF profond coherent f/8, vignettage naturel aux coins. Pas de rendu CGI-clean. |
+| 4 | Structure prompt | x1 | 7.5 | Le furniturePrompt est respecte : canape cobalt, table corail, monstera, cadres au sol, tapis superposes, lampadaire laiton. Le mur teal est conforme. |
+| 5 | Negative prompting | x1 | 7.0 | Pas de fenetre hallucinee. 1 cadre mural (mineur). Pas de rideaux. |
+| 6 | Compatibilite multi-modeles | x1 | 5.0 | Mono-modele. Note neutre. |
+| 7 | Coherence I/O | x1 | 8.0 | Format portrait preserve. Dimensions conformes. |
+| 8 | Richesse descriptive | x1 | 8.0 | La richesse du furniturePrompt se retrouve dans le rendu : superposition tapis, variete textures, palette teal/cobalt/corail/laiton. |
+| 9 | Adaptabilite conditions | x1 | 6.0 | Chantier brut transforme en interieur fini. Les conditions difficiles (neon, personnes, enduit brut) sont gerees — le resultat est propre. Mais la transformation est trop radicale (regeneration plus que edition). |
+| 10 | Rendu final credible | x2 | 7.5 | Image credible comme photo immobiliere Maximalist. Les couleurs sont audacieuses mais coherentes. Le mobilier est a l'echelle. Les ombres de contact sont presentes. Un acheteur potentiel se projetterait. |
+
+**Note ponderee #94** : (5.5x2 + 5.0 + 8.0 + 7.5 + 7.0 + 5.0 + 8.0 + 8.0 + 6.0 + 7.5x2) / 14 = **6.7/10**
 
 ---
 
-## Resume
+## Comparaison #94 vs #95
+
+| Critere | #94 | #95 | Delta |
+|---------|-----|-----|-------|
+| Preservation architecturale | 5.5 | 4.0 | #94 +1.5 |
+| Contraintes lumiere | 5.0 | 3.0 | #94 +2.0 |
+| Structure prompt (fidelite) | 7.5 | 3.0 | #94 +4.5 |
+| Rendu final credible | 7.5 | 6.5 | #94 +1.0 |
+| **Note ponderee** | **6.7** | **5.1** | **#94 +1.6** |
+
+**Constats cles** :
+- **Reproductibilite faible** : meme input, meme style, 2 resultats radicalement differents (chambre enfant vs salon). L'ecart de 1.6 points est significatif. GPT-image-1 a une variance elevee sur les pieces brutes de chantier.
+- **#94 est nettement meilleur** : respect du furniturePrompt, pas de fenetres hallucinées, rendu credible.
+- **#95 est un echec fonctionnel** : programme ignore (chambre enfant au lieu de salon), fenetres inventees, warm shift severe.
+
+---
+
+## Diagnostic technique
+
+### Cause racine de la variance
+
+L'image input est un **chantier brut avec personnes** — un des cas les plus difficiles pour le pipeline. Le modele doit :
+1. Supprimer les personnes (non documente dans le prompt)
+2. Finir les surfaces (chape → parquet, enduit → peinture)
+3. Supprimer les equipements de chantier (echelle, neon)
+4. Ajouter le mobilier style
+
+C'est une **transformation lourde** sur 2 passes. Le modele a plus de latitude creative, ce qui amplifie la variance. Quand le delta entre input et output est trop grand, le modele "regenere" au lieu d'"editer" — confirmant l'apprentissage Sprint 11.
+
+### Probleme specifique #95 : interpretation "chambre enfant"
+
+Hypothese : le modele a detecte la petite taille de la piece (portrait, profondeur limitee) et les poutres basses, et a decide qu'une chambre d'enfant etait plus "coherente" qu'un salon. Le furniturePrompt decrit un canape 230cm qui ne tient physiquement pas dans cette piece — le modele a peut-etre "raisonne" et substitue un programme plus adapte au volume.
+
+C'est un comportement **non desire** : le modele ne doit jamais substituer le programme fonctionnel. Si le mobilier ne rentre pas, il doit le reduire (directive "if compact, keep 5-6 key pieces only"), pas inventer une autre piece.
+
+---
+
+## Plan d'amelioration
+
+### P0 — Critique (a corriger immediatement)
+
+**Rien de P0** — le pipeline fonctionne. Les problemes sont de l'ordre de l'optimisation, pas du blocage.
+
+### P1 — Haute priorite
+
+1. **Ancrage du programme fonctionnel dans le builder passe 2** : ajouter une directive explicite "This is a LIVING ROOM — generate living room furniture only, not a bedroom, not a children's room, not an office." Le room type doit etre nomme en toutes lettres quand il est fourni.
+
+2. **Directive anti-substitution de programme** : "If furniture described in the style prompt is too large for the room, scale DOWN the pieces — do not replace them with a different room program."
+
+3. **Renforcer preservation poutres brutes** : dans CEILING_PRESERVATION, reformuler "Beams keep 3D shape but receive clean painted finish" en "Beams keep their 3D shape AND original surface texture. Apply painted finish ONLY if the input beams are already painted or smooth."
+
+### P2 — Moyenne priorite
+
+4. **Warm shift** : les 2 generations montrent un warm shift. La directive existe mais est en position tardive dans le prompt. Remonter "Do not add any warm tint or yellow cast" en position 3-4 dans le builder (juste apres l'action et le style).
+
+5. **Equipements fixes en passe 1** : le builder passe 1 ne mentionne pas explicitement la preservation du ballon d'eau chaude. Ajouter "water heater" a la liste des equipements fixes : "Preserve all wall-mounted fixed equipment: radiators, heaters, water heaters, vents, thermostats, switches."
+
+6. **Variance chantier brut** : sur les inputs de chantier avec personnes/equipements, envisager un pre-traitement prompt supplementaire : "This input photo shows an active construction site. Ignore workers, tools, ladders — stage the room as if construction is complete."
+
+### P3 — Basse priorite
+
+7. **Angle camera** : #94 montre un pivotement de l'angle. CAMERA_PRESERVATION est en fin de prompt (position 10/11). Dupliquer "Same camera angle" dans la premiere phrase : "Add furniture to this photo — keep the exact same camera angle."
+
+8. **Coherence mur accent** : le mur teal est tres bien rendu mais le surfacePrompt dit "rich deep teal accent on the largest visible surface" — sur un chantier brut, le mur du fond est le plus grand visible. Verifier que c'est bien le mur du fond dans les 2 generations (oui — coherent).
+
+### P4 — Amelioration future
+
+9. **Seed/temperature** : investiguer si GPT-image-1 via Responses API supporte un parametre de seed ou de temperature pour reduire la variance entre generations identiques.
+
+10. **Detection de personnes** : ajouter une etape de pre-traitement vision (GPT-4.1 vision sans generation) pour detecter si l'input contient des personnes et ajouter la directive de suppression automatiquement.
+
+---
+
+## Synthese
 
 | Element | Statut |
 |---------|--------|
-| Audit structurel prompts v36 | TERMINE — 8.2/10 |
-| Audit visuel generation post-#42 | EN ATTENTE — donnees inaccessibles |
-| Points forts | Split prompts, FOREGROUND/LATERAL/BACKGROUND, echelle, anti-warm tint |
-| P1 | Builder generique trop long (11 phrases) |
-| P2 | Pas de gestion exposition anormale |
-| P2 | Mono-modele, pas de fallback passe 2 |
-| P3 | CEILING_PRESERVATION contredit Sprint 18 sur poutres brutes |
-| P2 | Vignettage absent des 7 builders dedies passe 2 |
-| P3 | Directive mur accent non propagee a 6 builders |
-| P4 | "Furniture must not touch walls" trop strict |
-| P4 | "Smooth plaster" dans CEILING_PRESERVATION |
+| Generation #94 Maximalist | **6.7/10** — bonne fidelite au prompt, rendu credible, mais angle modifie et warm shift |
+| Generation #95 Maximalist | **5.1/10** — echec fonctionnel (chambre enfant au lieu de salon), fenetres hallucinees |
+| Reproductibilite pipeline | **FAIBLE** — ecart 1.6 pts entre 2 runs identiques, variance inacceptable pour production |
+| Preservation architecturale | **MOYENNE** — poutres lissees, angle modifie, proportions alterees |
+| Warm color shift | **PERSISTANT** — present dans les 2 generations malgre directive anti-warm |
+| Vocabulaire photographique | **BON** — grain, DOF, vignettage presents, rendu photo credible |
+| Respect du furniturePrompt | **VARIABLE** — excellent sur #94, ignore sur #95 |
+
+**Moyenne ponderee des 2 generations** : **5.9/10**
+
+Ce score est en regression par rapport aux meilleures generations precedentes (post-Sprint 17 : 8.4/10 de moyenne). La cause principale est la difficulte de l'input (chantier actif avec personnes) qui pousse le modele vers la regeneration complete plutot que l'edition. Les P1 proposes (ancrage du programme, anti-substitution) sont les corrections les plus impactantes a court terme.
 
 ---
 
 *Lucas Moreau — Expert IA Image*
-*Prochain audit visuel : des que les donnees de production sont accessibles*
+*Audit visuel #94-95, 2026-04-01*
