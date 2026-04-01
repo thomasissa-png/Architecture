@@ -30,9 +30,9 @@ function getOpenAI(): OpenAI {
 export const PROMPT_VERSION = "v35";
 
 // ─── Image generation model ─────────────────────────────────────────
-// Hardcoded: gpt-image-1.5 is the only model. No fallback, no env var override.
-// Fondateur decision: always use the best model, iterate prompts if issues arise.
-const IMAGE_MODEL = "gpt-image-1.5";
+// v36: configurable via env var. Default gpt-image-1 (v32 reverted gpt-image-1.5 for spatial regression).
+// Set IMAGE_MODEL=gpt-image-1.5 in env to switch back if regression is resolved.
+const IMAGE_MODEL = (process.env.IMAGE_MODEL as string) || "gpt-image-1";
 
 // ─── Timeout wrapper for external API calls ─────────────────────────
 const API_TIMEOUT_MS = 120_000;
@@ -109,110 +109,110 @@ const WALL_PRESERVATION = "Wall geometry must stay identical: same angles, same 
 const CAMERA_PRESERVATION = "Same camera angle, lens distortion, vanishing points, field of view, orientation.";
 
 // ── Pass 1: Surface finishing ────────────────────────────────────────
-// CRITICAL: Camera + geometry preservation FIRST in all builders (highest token weight in GPT-image-1)
+// v36: ACTION FIRST in all builders (v30 lesson — GPT-image-1 weights early tokens more)
 export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string | null): string {
-  // Kitchen: CAMERA+GEOMETRY first
+  // Kitchen: action first
   if (roomTypeId === "kitchen") {
     return [
-      `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
-      CEILING_PRESERVATION, WALL_PRESERVATION,
       `Edit this photo of a room. Apply this surface finish: ${surfacePrompt}.`,
       "Ceramic or natural stone floor tiles — NOT wood. Subway tile or smooth splashback behind work area. Ceiling light per style description.",
-      "Remove construction leftovers: cables, junction boxes, outlets — blend into wall finish. Keep radiators, switches, vents in exact position.",
+      "Remove construction leftovers: dangling cables, junction boxes, exposed wiring, electrical outlets, round black wall boxes, cable exits — blend into wall finish. Keep radiators, switches, vents in exact position.",
       "Room stays COMPLETELY EMPTY — no furniture, no appliances. Same number of windows and doors.",
+      CEILING_PRESERVATION, WALL_PRESERVATION,
+      `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
       DSLR_LINE,
     ].join(" ");
   }
 
-  // Bathroom: CAMERA+GEOMETRY first
+  // Bathroom: action first
   if (roomTypeId === "bathroom") {
     return [
-      `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
-      CEILING_PRESERVATION, WALL_PRESERVATION,
       `Edit this photo of a room. Apply this surface finish: ${surfacePrompt}.`,
       "Floor-to-ceiling ceramic tiles in shower zone and vanity area. Water-resistant floor — ceramic or stone, matte non-slip. Recessed IP44 ceiling spotlights.",
-      "Remove construction leftovers: cables, junction boxes, outlets — blend into wall finish. Keep radiators, heaters, vents, switches in exact position.",
+      "Remove construction leftovers: dangling cables, junction boxes, exposed wiring, electrical outlets, cable exits — blend into wall finish. Keep radiators, heaters, vents, switches in exact position.",
       "Room stays COMPLETELY EMPTY — no fixtures, no objects. Same number of windows and doors.",
+      CEILING_PRESERVATION, WALL_PRESERVATION,
+      `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
       DSLR_LINE,
     ].join(" ");
   }
 
-  // WC: CAMERA+GEOMETRY first
+  // WC: action first
   if (roomTypeId === "wc") {
     return [
-      `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
-      CEILING_PRESERVATION, WALL_PRESERVATION,
       `Edit this photo of a room. Apply this surface finish: ${surfacePrompt}.`,
       "Waterproof floor — small ceramic tiles or vinyl. Washable matte paint or tiles on lower walls.",
-      "Remove construction leftovers: outlets, cables — blend into wall finish. Keep radiators, heaters, vents, switches in position.",
+      "Remove construction leftovers: outlets, cables, junction boxes — blend into wall finish. Keep radiators, heaters, vents, switches in position.",
       "Room stays COMPLETELY EMPTY — no fixtures, no objects. Same number of windows and doors.",
+      CEILING_PRESERVATION, WALL_PRESERVATION,
+      `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
       DSLR_LINE,
     ].join(" ");
   }
 
-  // Bedroom: CAMERA+GEOMETRY first
+  // Bedroom: action first
   if (roomTypeId === "bedroom_adults" || roomTypeId === "bedroom_children") {
     return [
-      `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
-      CEILING_PRESERVATION, WALL_PRESERVATION,
       `Edit this photo of a room. Apply this surface finish: ${surfacePrompt}.`,
       "Warm-toned flooring. Ceiling light per style description. If ONE accent wall exists, preserve it — apply style color to other walls only.",
-      "Remove construction leftovers: cables, junction boxes, outlets — blend into wall finish. Keep radiators, heaters, vents, switches in position.",
+      "Remove construction leftovers: dangling cables, junction boxes, exposed wiring, electrical outlets, cable exits — blend into wall finish. Keep radiators, heaters, vents, switches in position.",
       "Room stays COMPLETELY EMPTY — no furniture, no objects. Same number of windows and doors.",
+      CEILING_PRESERVATION, WALL_PRESERVATION,
+      `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
       DSLR_LINE,
     ].join(" ");
   }
 
-  // Laundry: CAMERA+GEOMETRY first
+  // Laundry: action first
   if (roomTypeId === "laundry") {
     return [
-      `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
-      CEILING_PRESERVATION, WALL_PRESERVATION,
       `Edit this photo of a room. Apply this surface finish: ${surfacePrompt}.`,
       "Waterproof floor — white or light grey ceramic tiles matte. Walls in washable matte white paint.",
-      "Remove construction leftovers: outlets, cables — blend into wall finish. Keep radiators, heaters, vents, switches in position.",
+      "Remove construction leftovers: outlets, cables, junction boxes — blend into wall finish. Keep radiators, heaters, vents, switches in position.",
       "Room stays COMPLETELY EMPTY — no appliances, no objects. Same number of windows and doors.",
+      CEILING_PRESERVATION, WALL_PRESERVATION,
+      `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
       DSLR_LINE,
     ].join(" ");
   }
 
-  // Cellar: CAMERA+GEOMETRY first
+  // Cellar: action first
   if (roomTypeId === "cellar") {
     return [
-      `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
-      CEILING_PRESERVATION, WALL_PRESERVATION,
       `Edit this photo of a room. Apply this surface finish: ${surfacePrompt}.`,
       "Concrete or stone floor as-is or with sealant. Clean matte white or light grey paint over masonry.",
-      "Remove construction leftovers: outlets, cables — blend into wall finish. Keep radiators, heaters, vents, switches in position.",
+      "Remove construction leftovers: outlets, cables, junction boxes — blend into wall finish. Keep radiators, heaters, vents, switches in position.",
       "Room stays COMPLETELY EMPTY — bare floors, bare walls. Preserve exact count and position of all openings.",
+      CEILING_PRESERVATION, WALL_PRESERVATION,
+      `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
       DSLR_LINE,
     ].join(" ");
   }
 
-  // Entryway: CAMERA+GEOMETRY first
+  // Entryway: action first
   if (roomTypeId === "entryway") {
     return [
-      `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
-      CEILING_PRESERVATION, WALL_PRESERVATION,
       `Edit this photo of a room. Apply this surface finish: ${surfacePrompt}.`,
       "Durable entrance floor — ceramic tiles, natural stone, or hard-wearing wood. Ceiling light per style description.",
-      "Remove construction leftovers: outlets, cables — blend into wall finish. Keep radiators, heaters, vents, switches in position.",
+      "Remove construction leftovers: outlets, cables, junction boxes — blend into wall finish. Keep radiators, heaters, vents, switches in position.",
       "Room stays COMPLETELY EMPTY — no furniture, no objects. Same number of windows and doors.",
+      CEILING_PRESERVATION, WALL_PRESERVATION,
+      `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
       DSLR_LINE,
     ].join(" ");
   }
 
   // ── FALLBACK: generic builder for living_room, dining_room, office, null ──
-  // CRITICAL: Camera + geometry preservation FIRST (highest token weight)
+  // v36: Action FIRST (v30 lesson), camera/light at END
   return [
-    `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
-    CEILING_PRESERVATION, WALL_PRESERVATION,
     `Edit this photo of a room. Apply this surface finish: ${surfacePrompt}.`,
     "Refinish the floor and repaint or replaster the walls. For the ceiling light fixture, follow the style description above exactly.",
     "If the input has ONE accent wall (different color or texture), preserve it as-is — apply the style's wall color to the other walls only.",
-    "Remove all visible construction elements: dangling cables, junction boxes, electrical outlets, round black wall boxes, cable exits — blend into wall finish.",
+    "Remove all visible construction elements: dangling cables, junction boxes, exposed wiring, electrical outlets, round black wall boxes, cable exits — blend into wall finish.",
     "Preserve all wall-mounted fixed equipment: radiators, heaters, vents, thermostats, switches in exact position.",
     "Keep the room COMPLETELY EMPTY — no furniture, no rugs, no objects. Same number of windows and doors as input.",
+    CEILING_PRESERVATION, WALL_PRESERVATION,
+    `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
     DSLR_LINE,
   ].join(" ");
 }
@@ -224,128 +224,129 @@ const EQUIPMENT_PRESERVATION = "Keep all wall-mounted equipment visible (radiato
 const CONTACT_SHADOWS = "Every piece must appear firmly grounded on the floor with visible contact shadows — especially furniture placed in the back of the room.";
 const DEPTH_DISTRIBUTION = "Distribute furniture across the FULL DEPTH of the room. Place a primary seating group in the foreground third and at least one secondary anchor (side table, floor lamp, accent chair) in the back third. Never cluster all furniture in one zone.";
 
+// v36: ACTION FIRST in all builders (v30 lesson), camera/structure at END
 export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: string | null): string {
-  // Kitchen: CAMERA+STRUCTURE first, then furniture
+  // Kitchen: action first
   if (roomTypeId === "kitchen") {
     return [
-      `${CAMERA_PRESERVATION} Room structure LOCKED: walls, floor, ceiling, windows visually identical to input — same geometry, same openings.`,
-      EQUIPMENT_PRESERVATION,
       `Add the following kitchen elements to this photo of a finished room: ${furniturePrompt}.`,
       "Built-in cabinetry and countertops against walls. Add island ONLY if kitchen appears >10m2. If compact, skip island.",
       DEPTH_DISTRIBUTION,
       CONTACT_SHADOWS,
-      "Scale references: door = 204cm, sill = 90cm. Preserve existing light direction and color temperature. No warm tint or yellow cast. Freestanding objects only.",
-      "Result should look like a luxury real estate listing photo. DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Subtle film grain. No text or watermarks.",
+      EQUIPMENT_PRESERVATION,
+      "Scale references: door = 204cm, sill = 90cm. Freestanding objects only.",
+      "Result should look like a luxury real estate listing photo.",
+      `${CAMERA_PRESERVATION} Room structure LOCKED: walls, floor, ceiling, windows visually identical to input — same geometry, same openings. Preserve existing light direction and color temperature. No warm tint or yellow cast.`,
+      "DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Subtle film grain. No text or watermarks.",
     ].join(" ");
   }
 
-  // Bathroom: CAMERA+STRUCTURE first
+  // Bathroom: action first
   if (roomTypeId === "bathroom") {
     return [
-      `${CAMERA_PRESERVATION} Room structure LOCKED: walls, floor, ceiling, windows visually identical to input — same geometry, same openings.`,
-      EQUIPMENT_PRESERVATION,
       `Add the following bathroom fixtures and accessories to this photo of a finished room: ${furniturePrompt}.`,
       "Wall-mounted vanity and mirror expected. Other items freestanding. If compact (wall <2m), use 60cm vanity, skip stool/basket. Shower max one-third of any wall.",
-      "Scale references: ceiling ~250cm, tile size, plumbing. 60cm min passage width.",
+      "Scale references: ceiling ~250cm, tile size, plumbing proportions. 60cm min passage width.",
       CONTACT_SHADOWS,
-      "Preserve existing light direction and color temperature. No warm tint or yellow cast. Freestanding objects only.",
-      "Result should look like a luxury real estate listing photo. DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Subtle film grain. No text or watermarks.",
+      EQUIPMENT_PRESERVATION,
+      "Result should look like a luxury real estate listing photo.",
+      `${CAMERA_PRESERVATION} Room structure LOCKED: walls, floor, ceiling, windows visually identical to input — same geometry, same openings. Preserve existing light direction and color temperature. No warm tint or yellow cast.`,
+      "DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Subtle film grain. No text or watermarks.",
     ].join(" ");
   }
 
-  // WC: CAMERA+STRUCTURE first
+  // WC: action first
   if (roomTypeId === "wc") {
     return [
-      `${CAMERA_PRESERVATION} Room structure LOCKED: walls, floor, ceiling, windows visually identical to input — same geometry.`,
-      EQUIPMENT_PRESERVATION,
       `Add the following WC fixtures to this photo of a finished room: ${furniturePrompt}.`,
       "Very small space — minimal items. Wall-hung or floor toilet, compact hand basin with mirror above.",
       CONTACT_SHADOWS,
-      "Scale reference: door = 204cm. Preserve existing light direction and color temperature. No warm tint. Freestanding objects only.",
+      EQUIPMENT_PRESERVATION,
+      `${CAMERA_PRESERVATION} Room structure LOCKED: walls, floor, ceiling visually identical to input — same geometry. Scale reference: door = 204cm. Preserve existing light direction and color temperature. No warm tint.`,
       "DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Subtle film grain. No text or watermarks.",
     ].join(" ");
   }
 
-  // Bedroom: CAMERA+STRUCTURE first
+  // Bedroom: action first + restore "Calm atmosphere" from v30
   if (roomTypeId === "bedroom_adults" || roomTypeId === "bedroom_children") {
     return [
-      `${CAMERA_PRESERVATION} Room structure LOCKED: walls, floor, ceiling, windows visually identical to input — same geometry, same number of openings.`,
-      EQUIPMENT_PRESERVATION,
       `Add the following bedroom furniture to this photo of a finished room: ${furniturePrompt}.`,
       "Freestanding only — bed, nightstands, rug, wardrobe/dresser as background anchor. All objects resting on the floor. Furniture must not touch walls.",
+      "Calm atmosphere — respect furniture density implied by the style. If minimalist, leave large empty floor areas.",
       DEPTH_DISTRIBUTION,
       CONTACT_SHADOWS,
-      "Scale bed to room: if compact, 140cm bed instead of 160cm, skip bench. Door = 204cm reference. Preserve existing light direction and color temperature. No warm tint.",
-      "Result should look like a luxury real estate listing photo. DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Subtle film grain. No text or watermarks.",
+      EQUIPMENT_PRESERVATION,
+      "Scale bed to room: if compact, 140cm bed instead of 160cm, skip bench. Door = 204cm reference.",
+      "Result should look like a luxury real estate listing photo.",
+      `${CAMERA_PRESERVATION} Room structure LOCKED: walls, floor, ceiling, windows visually identical to input — same geometry, same number of openings. Preserve existing light direction and color temperature. No warm tint.`,
+      "DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Subtle film grain. No text or watermarks.",
     ].join(" ");
   }
 
-  // Entryway: CAMERA+STRUCTURE first
+  // Entryway: action first
   if (roomTypeId === "entryway") {
     return [
-      `${CAMERA_PRESERVATION} Room structure LOCKED: walls, floor, ceiling, doors visually identical to input — same geometry.`,
-      EQUIPMENT_PRESERVATION,
       `Add the following entryway furniture to this photo of a finished room: ${furniturePrompt}.`,
       "Small space — do not overcrowd. Console max 60% of wall width. Freestanding only: console, mirror propped on console, coat rack, bench, runner rug. All objects resting on the floor.",
       CONTACT_SHADOWS,
-      "Door = 204cm reference. Preserve existing light direction and color temperature. No warm tint.",
+      EQUIPMENT_PRESERVATION,
+      `${CAMERA_PRESERVATION} Room structure LOCKED: walls, floor, ceiling, doors visually identical to input — same geometry. Door = 204cm reference. Preserve existing light direction and color temperature. No warm tint.`,
       "DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Subtle film grain. No text or watermarks.",
     ].join(" ");
   }
 
-  // Laundry: CAMERA+STRUCTURE first
+  // Laundry: action first
   if (roomTypeId === "laundry") {
     return [
-      `${CAMERA_PRESERVATION} Room structure LOCKED: walls, floor, ceiling visually identical to input — same geometry.`,
-      EQUIPMENT_PRESERVATION,
       `Add the following laundry equipment to this photo of a finished room: ${furniturePrompt}.`,
       "Functional layout — washing machine, cabinet, drying rack, basket. No decorative objects. If compact (<4m2), skip folding table and drying rack.",
       CONTACT_SHADOWS,
-      "Door = 204cm reference. Preserve existing light direction and color temperature. No warm tint. Freestanding objects only.",
+      EQUIPMENT_PRESERVATION,
+      `${CAMERA_PRESERVATION} Room structure LOCKED: walls, floor, ceiling visually identical to input — same geometry. Door = 204cm reference. Preserve existing light direction and color temperature. No warm tint.`,
       "DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Subtle film grain. No text or watermarks.",
     ].join(" ");
   }
 
-  // Cellar: CAMERA+STRUCTURE first
+  // Cellar: action first
   if (roomTypeId === "cellar") {
     return [
-      `${CAMERA_PRESERVATION} Room structure LOCKED: walls, floor, ceiling visually identical to input — same geometry.`,
-      EQUIPMENT_PRESERVATION,
       `Add the following cellar furnishing to this photo of a finished room: ${furniturePrompt}.`,
       "Functional storage — shelving unit, boxes, utility light. Wine rack if space allows. If compact, single shelf, no wine rack.",
       CONTACT_SHADOWS,
-      "Door = 204cm reference. Preserve existing light direction and color temperature.",
+      EQUIPMENT_PRESERVATION,
+      `${CAMERA_PRESERVATION} Room structure LOCKED: walls, floor, ceiling visually identical to input — same geometry. Door = 204cm reference. Preserve existing light direction and color temperature.`,
       "DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Subtle film grain. No text or watermarks.",
     ].join(" ");
   }
 
-  // Dining room: CAMERA+STRUCTURE first
+  // Dining room: action first
   if (roomTypeId === "dining_room") {
     return [
-      `${CAMERA_PRESERVATION} Room structure LOCKED: walls, floor, ceiling, windows visually identical to input — same geometry, same openings.`,
-      EQUIPMENT_PRESERVATION,
       `Add the following furniture and decoration into this photo of a finished room: ${furniturePrompt}.`,
       "Center dining table with chairs. If deep room, add sideboard as background anchor. If compact, round table 120cm + 4 chairs instead of rectangular 180cm + 6.",
       "Freestanding only — no wall art, no shelving. Furniture must not touch walls.",
       CONTACT_SHADOWS,
-      "Door = 204cm, sill = 90cm references. Preserve existing light direction and color temperature. No warm tint.",
-      "Result should look like a luxury real estate listing photo. DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Subtle film grain. No text or watermarks.",
+      EQUIPMENT_PRESERVATION,
+      "Door = 204cm, sill = 90cm references.",
+      "Result should look like a luxury real estate listing photo.",
+      `${CAMERA_PRESERVATION} Room structure LOCKED: walls, floor, ceiling, windows visually identical to input — same geometry, same openings. Preserve existing light direction and color temperature. No warm tint.`,
+      "DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Subtle film grain. No text or watermarks.",
     ].join(" ");
   }
 
   // ── FALLBACK: generic for living_room, office, null ──
-  // CRITICAL: Camera + Structure FIRST (highest token weight in GPT-image-1), then furniture
+  // v36: Action FIRST (v30 lesson), camera/structure at END
   return [
-    `${CAMERA_PRESERVATION} Room structure is LOCKED: walls, floor, ceiling, windows, doors visually identical to input — same angles, same geometry, same number of openings. Preserve exact count and position of all openings.`,
-    EQUIPMENT_PRESERVATION,
     `Add the following furniture and decoration into this photo of a finished room: ${furniturePrompt}.`,
     "Freestanding objects only, resting on the floor. Furniture must not touch walls.",
     "Distribute furniture across FULL DEPTH and WIDTH of the room. Primary seating group in the foreground third, at least one secondary anchor (side table, accent chair, floor lamp) in the back third. Never cluster everything in one zone.",
     "Adapt density to room size: if the visible floor area appears compact, keep 5-6 key pieces only. If the room is very large or deep, add a second furniture grouping in the back zone.",
     CONTACT_SHADOWS,
+    EQUIPMENT_PRESERVATION,
     "Scale references: door = 204cm, handle = 100cm, sill = 90cm. Scale furniture to room volume — if compact (<4m wide), use smaller pieces. Scale up if ceiling >3m.",
-    "Preserve existing light direction and color temperature. No warm tint or yellow cast. No duplicate items unless style calls for a pair.",
+    "No duplicate items unless style calls for a pair.",
     "Result should look like a luxury real estate listing photo — lived-in, not a sterile catalog.",
+    `${CAMERA_PRESERVATION} Room structure is LOCKED: walls, floor, ceiling, windows, doors visually identical to input — same angles, same geometry, same number of openings. Preserve exact count and position of all openings. Preserve existing light direction and color temperature. No warm tint or yellow cast.`,
     "DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Subtle film grain at 100% zoom. Natural lens vignetting 5-10%. No text or watermarks.",
   ].join(" ");
 }
