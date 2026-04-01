@@ -11,6 +11,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getUserCredits, decrementCredit, addCredits } from "@/lib/credits";
 import { saveImage, getImage } from "@/lib/db";
+import { saveUserPhoto } from "@/lib/user-photos";
 import {
   getDossierByUuid,
   getDossierPhotos,
@@ -427,6 +428,22 @@ export async function PATCH(
         // Reset iteration count on full regeneration (back to 0, 3 iterations available)
         const { getPool: getDbPool } = await import("@/lib/db");
         await getDbPool().query(`UPDATE dossier_photos SET iteration_count = 0 WHERE id = $1`, [targetPhoto.id]);
+
+        // Save regenerated photo to user's gallery
+        saveUserPhoto({
+          userId: session.user.id,
+          inputImageKey: targetPhoto.input_image_key,
+          outputImageKey: result.outputKey,
+          pass1ImageKey: result.pass1Key || null,
+          styleId: targetPhoto.is_outdoor
+            ? (targetPhoto.outdoor_style_id || targetPhoto.style_id || dossier.global_style_id || null)
+            : (targetPhoto.style_id || dossier.global_style_id || null),
+          roomType: targetPhoto.room_type_id || null,
+          roomLabel: targetPhoto.room_label || null,
+          isOutdoor: targetPhoto.is_outdoor || false,
+          propertyId: null,
+        }).catch((err) => console.error("[Gallery] Failed to save regenerated dossier photo:", err));
+
         return NextResponse.json({ success: true, photo: targetPhoto });
       } catch (err) {
         // Refund credit on failure
@@ -666,6 +683,21 @@ async function processBatchGeneration(
           pass1ImageKey: result.pass1Key,
           durationMs: Date.now() - photoStart,
         });
+
+        // Save to user's personal gallery (so it appears in /ma-galerie)
+        saveUserPhoto({
+          userId,
+          inputImageKey: photo.input_image_key,
+          outputImageKey: result.outputKey,
+          pass1ImageKey: result.pass1Key || null,
+          styleId: photo.is_outdoor
+            ? (photo.outdoor_style_id || photo.style_id || dossier.global_style_id || null)
+            : (photo.style_id || dossier.global_style_id || null),
+          roomType: photo.room_type_id || null,
+          roomLabel: photo.room_label || null,
+          isOutdoor: photo.is_outdoor || false,
+          propertyId: null,
+        }).catch((err) => console.error("[Gallery] Failed to save dossier photo:", err));
 
         successCount++;
       } catch (err) {
