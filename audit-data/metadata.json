@@ -1,26 +1,64 @@
 {
   "generations": [
     {
-      "id": 94,
-      "style_id": "maximalist",
+      "id": 91,
+      "style_id": "scandinavian",
+      "room_type": "kitchen",
       "model_used": "gpt-4.1",
-      "pass1_model": "gpt-4.1",
-      "pass2_model": "gpt-4.1",
+      "pass1_model": "gpt-image-1",
+      "pass2_model": "gpt-image-1",
       "success": true,
       "prompt_version": "v36",
-      "input_image": "/home/user/Architecture/audit-data/gen94-input.jpg",
-      "output_image": "/home/user/Architecture/audit-data/gen94-output.jpg"
+      "duration_ms": 128031,
+      "furniture_prompt_start": "Kitchen furnishing: countertop work surface 60cm deep with integrated sink, upper cabinetry..."
+    },
+    {
+      "id": 92,
+      "style_id": "contemporary",
+      "room_type": "kitchen",
+      "model_used": "gpt-4.1",
+      "pass1_model": "gpt-image-1",
+      "pass2_model": "gpt-image-1",
+      "success": true,
+      "prompt_version": "v36",
+      "duration_ms": 132122,
+      "furniture_prompt_start": "Kitchen furnishing: countertop work surface 60cm deep with integrated sink, upper cabinetry..."
+    },
+    {
+      "id": 93,
+      "style_id": "custom",
+      "room_type": "wc",
+      "model_used": "gpt-4.1",
+      "pass1_model": "gpt-image-1",
+      "pass2_model": "gpt-image-1",
+      "success": true,
+      "prompt_version": "v36",
+      "duration_ms": 152536,
+      "furniture_prompt_start": "WC room fixtures: wall-hung or floor-standing toilet, compact wall-mounted hand basin 40cm..."
+    },
+    {
+      "id": 94,
+      "style_id": "maximalist",
+      "room_type": "living_room",
+      "model_used": "gpt-4.1",
+      "pass1_model": "gpt-image-1",
+      "pass2_model": "gpt-image-1",
+      "success": true,
+      "prompt_version": "v36",
+      "duration_ms": 146664,
+      "furniture_prompt_start": "A bold, personality-filled room — vibrant colors, mixed patterns, curated eclecticism. Maximalist furniture: bold jewel-toned velvet sofa..."
     },
     {
       "id": 95,
       "style_id": "maximalist",
+      "room_type": "bedroom_children",
       "model_used": "gpt-4.1",
-      "pass1_model": "gpt-4.1",
-      "pass2_model": "gpt-4.1",
+      "pass1_model": "gpt-image-1",
+      "pass2_model": "gpt-image-1",
       "success": true,
       "prompt_version": "v36",
-      "input_image": "/home/user/Architecture/audit-data/gen95-input.jpg",
-      "output_image": "/home/user/Architecture/audit-data/gen95-output.jpg"
+      "duration_ms": 157317,
+      "furniture_prompt_start": "Children bedroom furniture: single bed 90cm wide with simple headboard and colorful bedlinen..."
     }
   ]
 }
