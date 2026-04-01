@@ -1294,6 +1294,7 @@ export default function PropertyDetailPage() {
         <div className="mt-16 pt-8 border-t border-foreground/5 flex items-center gap-6">
           <button
             onClick={async () => {
+              if (!confirm("Archiver ce bien ? Il disparaîtra de la liste de vos biens.")) return;
               try {
                 const res = await fetch(`/api/properties/${property.id}/archive`, {
                   method: "POST",
@@ -1302,8 +1303,12 @@ export default function PropertyDetailPage() {
                 });
                 if (res.ok) {
                   window.location.href = "/mes-biens";
+                } else {
+                  setToastMsg("Erreur lors de l'archivage. Réessayez.");
                 }
-              } catch { /* ignore */ }
+              } catch {
+                setToastMsg("Erreur lors de l'archivage. Réessayez.");
+              }
             }}
             className="text-xs text-muted font-light hover:text-foreground transition-colors"
           >

@@ -210,7 +210,7 @@ export async function getPhotoCountByProperty(propertyId: string): Promise<numbe
   await ensureUserPhotosTable();
   const db = getPool();
   const result = await db.query(
-    `SELECT COUNT(*) as count FROM user_photos WHERE property_id = $1`,
+    `SELECT COUNT(*) as count FROM user_photos WHERE property_id = $1 AND (status IS NULL OR status != 'archived')`,
     [propertyId]
   );
   return parseInt(result.rows[0].count, 10);

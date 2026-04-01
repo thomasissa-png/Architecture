@@ -206,7 +206,7 @@ export async function findOrCreatePropertyByAddress(
 
   // Try to find an existing property with the same address
   const existing = await db.query(
-    `SELECT * FROM properties WHERE user_id = $1 AND LOWER(TRIM(address_raw)) = LOWER(TRIM($2)) LIMIT 1`,
+    `SELECT * FROM properties WHERE user_id = $1 AND LOWER(TRIM(address_raw)) = LOWER(TRIM($2)) AND (status IS NULL OR status != 'archived') LIMIT 1`,
     [userId, addressRaw]
   );
 
