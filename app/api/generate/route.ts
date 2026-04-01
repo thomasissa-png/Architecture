@@ -238,7 +238,7 @@ function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string
 // Shared compact fragments for pass 2
 const EQUIPMENT_PRESERVATION = "Keep all wall-mounted equipment visible (radiators, vents, switches, outlets). Do not place furniture in front of radiators.";
 const CONTACT_SHADOWS = "Every piece must appear firmly grounded on the floor with visible contact shadows — especially furniture placed in the back of the room.";
-const DEPTH_DISTRIBUTION = "If the room is deep, distribute furniture across its full depth — primary group foreground, secondary piece further back if space allows.";
+const DEPTH_DISTRIBUTION = "Distribute furniture across the FULL DEPTH of the room. Place a primary seating group in the foreground third and at least one secondary anchor (side table, floor lamp, accent chair) in the back third. Never cluster all furniture in one zone.";
 
 function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: string | null): string {
   // Kitchen: CAMERA+STRUCTURE first, then furniture
@@ -356,7 +356,8 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: str
     EQUIPMENT_PRESERVATION,
     `Add the following furniture and decoration into this photo of a finished room: ${furniturePrompt}.`,
     "Freestanding objects only, resting on the floor. Furniture must not touch walls.",
-    "Distribute furniture across FULL DEPTH and WIDTH: primary group foreground, secondary group further back if space allows.",
+    "Distribute furniture across FULL DEPTH and WIDTH of the room. Primary seating group in the foreground third, at least one secondary anchor (side table, accent chair, floor lamp) in the back third. Never cluster everything in one zone.",
+    "Adapt density to room size: if the visible floor area appears compact, keep 5-6 key pieces only. If the room is very large or deep, add a second furniture grouping in the back zone.",
     CONTACT_SHADOWS,
     "Scale references: door = 204cm, handle = 100cm, sill = 90cm. Scale furniture to room volume — if compact (<4m wide), use smaller pieces. Scale up if ceiling >3m.",
     "Preserve existing light direction and color temperature. No warm tint or yellow cast. No duplicate items unless style calls for a pair.",
