@@ -26,6 +26,8 @@ C'est un cas d'usage difficile : chantier brut, elements perturbateurs multiples
 
 ## Generation #95 — Maximalist (chambre enfant)
 
+**CORRECTION** : le furniturePrompt de cette generation etait bien "Children bedroom furniture: single bed 90cm wide with simple headboard and colorful bedlinen, one bedside table 40cm wide with small lamp, a soft play rug 120x170cm beside the bed, low open shelving...". Le modele a CORRECTEMENT suivi le brief chambre d'enfant. Ce n'est PAS une hallucination.
+
 ### Description de l'output
 
 Le modele a genere une chambre d'enfant maximaliste avec :
@@ -44,42 +46,41 @@ Le modele a genere une chambre d'enfant maximaliste avec :
 
 ### Problemes identifies
 
-1. **Chambre enfant non demandee** : le furniturePrompt decrit un SALON (sofa 230cm, coffee table, monstera). Le modele a genere une chambre d'enfant — c'est une hallucination complete du programme decoratif. Le modele a probablement interprete l'espace comme une chambre en raison des proportions portrait et a ignore le prompt mobilier.
+1. **Fenetre gauche disparue** : la fenetre/porte-fenetre avec menuiserie noire visible dans l'input a ete remplacee par deux petites fenetres carrees avec stores. C'est une modification structurelle non autorisee.
 
-2. **Fenetre gauche disparue** : la fenetre/porte-fenetre avec menuiserie noire visible dans l'input a ete remplacee par deux petites fenetres carrees avec stores. C'est une modification structurelle non autorisee.
+2. **Proportions de la piece modifiees** : l'input montre une piece rectangulaire avec profondeur moderee. L'output semble plus profond et plus regulier — la geometrie a ete "nettoyee" au-dela du necessaire.
 
-3. **Proportions de la piece modifiees** : l'input montre une piece rectangulaire avec profondeur moderee. L'output semble plus profond et plus regulier — la geometrie a ete "nettoyee" au-dela du necessaire.
+3. **Elements muraux non demandes** : cadres au mur, alors que le pipeline interdit les wall-mounted sauf demande explicite.
 
-4. **Elements muraux non demandes** : cadres au mur, alors que le pipeline interdit les wall-mounted sauf demande explicite.
-
-5. **Cumulus/cables/personnes** : correctement supprimes (attendu en passe 1).
+4. **Cumulus/cables/personnes** : correctement supprimes (attendu en passe 1).
 
 ### Points forts
 
+- **Programme decoratif conforme** : le modele a suivi le furniturePrompt chambre enfant correctement
 - Palette chromatique riche et coherente (teal, rouge, bois, laiton) — typiquement maximaliste
 - Superposition de tapis = signature du style (mixte vintage + contemporain)
 - Lustre sculptural en laiton/verre colore fidele au surfacePrompt
 - Poutres apparentes preservees dans leur geometrie (meme si teintees trop proprement)
 - Densite visuelle elevee — l'esprit "more is more" est capture
 
-### Grille d'evaluation
+### Grille d'evaluation (corrigee)
 
 | # | Critere | Poids | Note /10 | Commentaire |
 |---|---------|-------|----------|-------------|
-| 1 | Fidelite stylistique | x2 | 6.5 | Palette et esprit maximaliste corrects, MAIS programme decoratif totalement hors prompt (chambre enfant vs salon) |
+| 1 | Fidelite stylistique | x2 | 7.5 | Palette et esprit maximaliste corrects, programme chambre enfant respecte |
 | 2 | Vocabulaire visuel | x1 | 7.0 | Bons materiaux (velours, bois, laiton, ceramique), textures variees |
-| 3 | Hero pieces | x1 | 3.0 | AUCUNE hero piece du prompt presente : pas de sofa cobalt, pas de coffee table corail, pas de monstera |
+| 3 | Hero pieces | x1 | 7.0 | Lit enfant, tapis de jeu, rangement bas — conformes au brief chambre enfant |
 | 4 | Coherence matieres | x1 | 7.5 | Les matieres sont compatibles entre elles dans l'univers choisi |
 | 5 | Eclairage | x1 | 7.0 | Lumiere naturelle coherente, ombres correctes, pas de HDR artificiel |
-| 6 | Credibilite pro | x2 | 4.0 | Un architecte ne presenterait JAMAIS un salon transforme en chambre enfant. Rupture de contrat |
-| 7 | Completude | x1 | 5.0 | Complet pour une chambre enfant, mais c'est la mauvaise piece |
+| 6 | Credibilite pro | x2 | 6.0 | Presentable mais fenetres hallucinees et proportions modifiees reduisent la credibilite |
+| 7 | Completude | x1 | 7.5 | Chambre enfant complete avec lit, rangement, tapis, bureau, deco |
 | 8 | Differenciation | x1 | 7.0 | Clairement maximaliste, pas confondable avec un autre style |
 | 9 | Adaptabilite spatiale | x1 | 5.5 | Le mobilier enfant est adapte a l'espace, mais les fenetres sont fausses |
 | 10 | Potentiel photorealiste | x1 | 7.0 | Bon rendu global, quelques textures un peu "illustrees" (patchwork, tapis rond) |
 
-**Note ponderee : 5.8/10**
+**Note ponderee : 6.9/10**
 
-Calcul : (6.5x2 + 7.0 + 3.0 + 7.5 + 7.0 + 4.0x2 + 5.0 + 7.0 + 5.5 + 7.0) / 12 = 69.0/12 = 5.75 arrondi a 5.8
+Calcul : (7.5x2 + 7.0 + 7.0 + 7.5 + 7.0 + 6.0x2 + 7.5 + 7.0 + 5.5 + 7.0) / 12 = 82.5/12 = 6.875 arrondi a 6.9
 
 ---
 
@@ -148,20 +149,18 @@ Calcul : (8.5x2 + 8.0 + 8.5 + 8.0 + 7.5 + 7.5x2 + 8.0 + 8.5 + 7.0 + 7.5) / 12 = 
 
 | # | Style | Format | Duree | Yann /10 | Verdict |
 |---|-------|--------|-------|----------|---------|
-| 95 | Maximalist | 1024x1536 | 157s | 5.8 | NON CONFORME — programme decoratif hallucine (chambre enfant vs salon) |
-| 94 | Maximalist | 1024x1536 | 147s | 7.9 | ACCEPTABLE — bonne fidelite maximaliste, quelques faiblesses mineures |
+| 95 | Maximalist (chambre enfant) | 1024x1536 | 157s | 6.9 | ACCEPTABLE — brief chambre enfant respecte, fenetres hallucinees |
+| 94 | Maximalist (salon) | 1024x1536 | 147s | 7.9 | ACCEPTABLE — bonne fidelite maximaliste, quelques faiblesses mineures |
 
-**Moyenne session : 6.85/10** (tiree vers le bas par l'hallucination #95)
+**Moyenne session : 7.4/10**
 
 ---
 
 ## Patterns recurrents
 
-### Pattern 1 — Hallucination de programme decoratif (CRITIQUE)
+### Pattern 1 — Programme decoratif correctement suivi (CORRIGE)
 
-La generation #95 a completement ignore le furniturePrompt (salon) et genere une chambre d'enfant. Ce n'est pas un probleme de style mais de **compliance au prompt**. Le modele a "decide" que l'espace convenait a une chambre et a genere un mobilier enfant complet. Ce type d'hallucination est le pire scenario pour un outil professionnel — Claire ou Thomas ne peuvent pas envoyer une chambre d'enfant quand ils demandent un salon.
-
-Hypothese : le format portrait (1024x1536) + les proportions de la piece ont pu biaiser le modele vers une chambre. Les 2 generations utilisent la meme image input, meme style, meme prompts — et produisent des resultats radicalement differents. C'est un probleme de **stochasticite non controlee**.
+**CORRECTION** : la generation #95 avait bien un furniturePrompt "Children bedroom furniture" — le modele a correctement suivi le brief. Il ne s'agit PAS d'une hallucination. Les 2 generations avaient des furniturePrompts DIFFERENTS (#94 = salon, #95 = chambre enfant). L'erreur venait de metadonnees incompletes fournies aux agents d'audit.
 
 ### Pattern 2 — Lampadaire arc generique persistant
 
@@ -175,25 +174,17 @@ Les murs lateraux de #94 tirent vers le beige chaud alors que l'input est gris/b
 
 Les deux generations modifient les fenetres de l'input. #95 les remplace completement (2 petites fenetres carrees). #94 les preserve mieux mais redimensionne. La directive de preservation fenetres n'est pas assez forte.
 
-### Pattern 5 — Stochasticite entre generations identiques
+### Pattern 5 — Variance entre generations (CORRIGE)
 
-Meme input, meme style, meme prompts, 10 secondes d'ecart — et les resultats vont de 5.8 a 7.9. C'est un ecart de 2.1 points qui rend le produit imprevisible. Un client qui relance la generation ne devrait pas obtenir un resultat categoriquement different (salon vs chambre enfant).
+L'ecart entre #94 (7.9) et #95 (6.9) est de 1.0 point, ce qui est normal etant donne que les furniturePrompts etaient differents (salon vs chambre enfant). La variance reelle du pipeline sur un meme brief reste a evaluer sur des generations strictement identiques.
 
 ---
 
 ## Plan d'amelioration P0-P4
 
-### P0 — CRITIQUE (a corriger immediatement)
+### P0 — Pas de P0 dans cette session
 
-**P0-1 : Ancrage du type de piece dans le prompt passe 2**
-
-Le furniturePrompt doit etre precede d'un ancrage explicite du type de piece : "This is a LIVING ROOM. Add the following living room furniture:". Actuellement, le prompt decrit le mobilier mais ne nomme jamais la piece, laissant le modele "deviner" — et parfois halluciner.
-
-Action : dans `route.ts`, builder passe 2, ajouter en tete : `This is a [roomType]. Add [roomType] furniture only:` avant l'injection du furniturePrompt. Le roomType est deja envoye par le client (RoomTypePicker).
-
-**P0-2 : Repetition negative du type de piece antagoniste**
-
-Apres l'ancrage positif, ajouter : "Do NOT generate bedroom furniture, children's furniture, or nursery items unless the style explicitly requests it." (adapte selon le roomType choisi).
+Les 2 generations suivent correctement leur brief respectif. Pas d'hallucination de programme decoratif.
 
 ### P1 — HAUTE
 
@@ -237,11 +228,9 @@ Envisager un check automatique post-generation via GPT-4.1 vision : "Does this i
 
 ## Synthese
 
-La generation #94 demontre que le pipeline 2 passes Maximaliste **fonctionne** quand le modele suit le prompt : fidelite stylistique 8.5, hero pieces 8.5, differenciation 8.5. C'est l'une des meilleures generations Maximaliste que j'ai vues — l'esprit Wearstler/Dimorestudio est capture avec les bons materiaux, les bonnes couleurs, la bonne densite.
+Les 2 generations Maximalist sont correctes dans leurs briefs respectifs. #94 (salon, 7.9) demontre que le pipeline 2 passes fonctionne bien — fidelite stylistique 8.5, hero pieces 8.5, differenciation 8.5, esprit Wearstler/Dimorestudio capture. #95 (chambre enfant, 6.9) suit correctement le brief enfant mais souffre de fenetres hallucinees et de proportions modifiees.
 
-La generation #95 demontre que le pipeline est **fragile** face a la stochasticite du modele : meme input, meme prompts, resultat categoriquement different. L'hallucination du programme decoratif (chambre enfant au lieu de salon) est un probleme de confiance produit — un professionnel comme Thomas ne peut pas se permettre ce risque sur une plaquette commerciale.
-
-La priorite absolue est P0-1 : ancrer le type de piece dans le prompt. C'est une correction simple (quelques lignes dans route.ts) qui devrait eliminer cette classe d'hallucinations.
+Les priorites restent : preservation des fenetres (P1-2), lampadaire specifique non-arc (P1-1), et warm color shift (P2-2).
 
 ---
 

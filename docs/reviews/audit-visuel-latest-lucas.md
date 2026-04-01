@@ -55,7 +55,7 @@ Le modele a interprete la piece comme une **chambre d'enfant maximaliste**. Comp
 
 ### Problemes identifies
 
-1. **Chambre enfant non demandee** — le furniturePrompt Maximalist decrit un salon (sofa, coffee table, art prints). Le modele a completement ignore le programme fonctionnel et genere une chambre d'enfant. Cela trahit une perte de fidelite au prompt en faveur d'une "scene coherente" que le modele invente.
+1. **CORRECTION : chambre enfant BIEN demandee** — le furniturePrompt de cette generation etait "Children bedroom furniture: single bed 90cm wide..." et non le furniturePrompt salon standard. Le modele a correctement suivi le brief. Ce n'est PAS une hallucination de programme.
 
 2. **Fenetre hallucinee** — l'input montre 1 fenetre a gauche et 1 ouverture au fond. L'output montre 2 fenetres sur le mur droit qui n'existaient pas. Violation directe de "same number of windows and doors."
 
@@ -76,15 +76,15 @@ Le modele a interprete la piece comme une **chambre d'enfant maximaliste**. Comp
 | 1 | Preservation architecturale | x2 | 4.0 | 2 fenetres hallucinées. Poutres lissees. Angle global approximativement preserve mais proportion de la piece modifiee. |
 | 2 | Contraintes lumiere | x1 | 3.0 | Warm shift massif. Direction lumiere completement changee (neon froid → ambiance warm diffuse). |
 | 3 | Vocabulaire photo | x1 | 7.0 | Rendu photo-credible, grain present, DOF coherent f/8. Vignettage subtil visible. |
-| 4 | Structure prompt | x1 | 3.0 | Le programme fonctionnel (salon) est ignore — chambre enfant generee. Les meubles du furniturePrompt (sofa, coffee table) sont absents. |
+| 4 | Structure prompt | x1 | 7.0 | CORRIGE : le furniturePrompt demandait bien une chambre enfant. Lit, table de chevet, tapis de jeu, rangement bas — conformes au brief. |
 | 5 | Negative prompting | x1 | 4.0 | Fenetres hallucinées malgre "same number of windows and doors". Wall art present (cadres au mur) malgre "freestanding only". |
 | 6 | Compatibilite multi-modeles | x1 | 5.0 | Mono-modele GPT-4.1. Pas de comparaison possible. Note neutre. |
 | 7 | Coherence I/O | x1 | 8.0 | Format portrait preserve. Dimensions conformes. |
-| 8 | Richesse descriptive | x1 | 7.0 | Le furniturePrompt est tres riche (FOREGROUND/LATERAL/BACKGROUND) mais le modele l'a ignore. La richesse existe dans le prompt, pas dans le rendu. |
+| 8 | Richesse descriptive | x1 | 7.0 | Le furniturePrompt chambre enfant est adequat (lit, table de chevet, tapis, rangement). Moins riche que le prompt salon mais adapte au programme. |
 | 9 | Adaptabilite conditions | x1 | 5.0 | Conditions chantier difficiles (personnes, neon, enduit brut). Le modele a "resolu" en regenerant completement la scene au lieu d'editer. |
-| 10 | Rendu final credible | x2 | 6.5 | L'image finale est jolie et credible en tant que photo de chambre enfant. Mais ce n'est PAS ce qui a ete demande — une chambre enfant pour un chantier brut sans indication de chambre est un choix arbitraire du modele. |
+| 10 | Rendu final credible | x2 | 6.5 | L'image finale est credible en tant que photo de chambre enfant maximaliste. Les fenetres hallucinees et le warm shift reduisent la note. |
 
-**Note ponderee #95** : (4.0x2 + 3.0 + 7.0 + 3.0 + 4.0 + 5.0 + 8.0 + 7.0 + 5.0 + 6.5x2) / 14 = **5.1/10**
+**Note ponderee #95 (corrigee)** : (4.0x2 + 3.0 + 7.0 + 7.0 + 4.0 + 5.0 + 8.0 + 7.0 + 5.0 + 6.5x2) / 14 = **5.7/10**
 
 ---
 
@@ -169,11 +169,9 @@ L'image input est un **chantier brut avec personnes** — un des cas les plus di
 
 C'est une **transformation lourde** sur 2 passes. Le modele a plus de latitude creative, ce qui amplifie la variance. Quand le delta entre input et output est trop grand, le modele "regenere" au lieu d'"editer" — confirmant l'apprentissage Sprint 11.
 
-### Probleme specifique #95 : interpretation "chambre enfant"
+### CORRECTION : #95 avait un furniturePrompt chambre enfant
 
-Hypothese : le modele a detecte la petite taille de la piece (portrait, profondeur limitee) et les poutres basses, et a decide qu'une chambre d'enfant etait plus "coherente" qu'un salon. Le furniturePrompt decrit un canape 230cm qui ne tient physiquement pas dans cette piece — le modele a peut-etre "raisonne" et substitue un programme plus adapte au volume.
-
-C'est un comportement **non desire** : le modele ne doit jamais substituer le programme fonctionnel. Si le mobilier ne rentre pas, il doit le reduire (directive "if compact, keep 5-6 key pieces only"), pas inventer une autre piece.
+Le furniturePrompt de #95 etait "Children bedroom furniture: single bed 90cm wide with simple headboard and colorful bedlinen, one bedside table 40cm wide..." — le modele a correctement suivi ce brief. Il ne s'agit PAS d'une substitution de programme. Les 2 generations avaient des furniturePrompts differents (#94 = salon Maximalist, #95 = chambre enfant).
 
 ---
 
@@ -185,11 +183,9 @@ C'est un comportement **non desire** : le modele ne doit jamais substituer le pr
 
 ### P1 — Haute priorite
 
-1. **Ancrage du programme fonctionnel dans le builder passe 2** : ajouter une directive explicite "This is a LIVING ROOM — generate living room furniture only, not a bedroom, not a children's room, not an office." Le room type doit etre nomme en toutes lettres quand il est fourni.
+1. **CORRIGE : l'ancrage programme n'est plus P1** — le modele a suivi le bon brief. Le roomType etait correct.
 
-2. **Directive anti-substitution de programme** : "If furniture described in the style prompt is too large for the room, scale DOWN the pieces — do not replace them with a different room program."
-
-3. **Renforcer preservation poutres brutes** : dans CEILING_PRESERVATION, reformuler "Beams keep 3D shape but receive clean painted finish" en "Beams keep their 3D shape AND original surface texture. Apply painted finish ONLY if the input beams are already painted or smooth."
+2. **Renforcer preservation poutres brutes** : dans CEILING_PRESERVATION, reformuler "Beams keep 3D shape but receive clean painted finish" en "Beams keep their 3D shape AND original surface texture. Apply painted finish ONLY if the input beams are already painted or smooth."
 
 ### P2 — Moyenne priorite
 
@@ -218,16 +214,16 @@ C'est un comportement **non desire** : le modele ne doit jamais substituer le pr
 | Element | Statut |
 |---------|--------|
 | Generation #94 Maximalist | **6.7/10** — bonne fidelite au prompt, rendu credible, mais angle modifie et warm shift |
-| Generation #95 Maximalist | **5.1/10** — echec fonctionnel (chambre enfant au lieu de salon), fenetres hallucinees |
-| Reproductibilite pipeline | **FAIBLE** — ecart 1.6 pts entre 2 runs identiques, variance inacceptable pour production |
+| Generation #95 Maximalist (chambre enfant) | **5.7/10** (corrige) — brief chambre enfant respecte, fenetres hallucinees, warm shift |
+| Reproductibilite pipeline | **CORRECTE** — ecart 1.0 pt entre 2 briefs differents (salon vs chambre enfant), variance normale |
 | Preservation architecturale | **MOYENNE** — poutres lissees, angle modifie, proportions alterees |
 | Warm color shift | **PERSISTANT** — present dans les 2 generations malgre directive anti-warm |
 | Vocabulaire photographique | **BON** — grain, DOF, vignettage presents, rendu photo credible |
-| Respect du furniturePrompt | **VARIABLE** — excellent sur #94, ignore sur #95 |
+| Respect du furniturePrompt | **BON** — les 2 generations suivent correctement leur brief respectif |
 
-**Moyenne ponderee des 2 generations** : **5.9/10**
+**Moyenne ponderee des 2 generations (corrigee)** : **6.2/10**
 
-Ce score est en regression par rapport aux meilleures generations precedentes (post-Sprint 17 : 8.4/10 de moyenne). La cause principale est la difficulte de l'input (chantier actif avec personnes) qui pousse le modele vers la regeneration complete plutot que l'edition. Les P1 proposes (ancrage du programme, anti-substitution) sont les corrections les plus impactantes a court terme.
+L'input chantier brut avec personnes reste un cas difficile. Les corrections prioritaires sont : preservation poutres brutes (P1), warm shift (P2), et equipements fixes en passe 1 (P2).
 
 ---
 
