@@ -19,7 +19,7 @@ import {
   MAX_ITERATIONS,
   PASS1_TTL_MS,
 } from "@/lib/iteration-prompt";
-import { applyRoomTypeOverrides } from "@/lib/room-types";
+import { applyRoomTypeOverrides, ROOM_TYPES } from "@/lib/room-types";
 import { applyOutdoorSubtypeOverrides, OUTDOOR_SUBTYPES } from "@/lib/outdoor-subtypes";
 import { saveUserPhoto } from "@/lib/user-photos";
 import {
@@ -1003,7 +1003,19 @@ export async function POST(request: NextRequest) {
       // If dedicated builder exists: use raw style surfacePrompt (builder handles room specifics)
       // Otherwise: use the concatenated effectiveSurfacePrompt (room override appended)
       trimmedSurface = hasDedicatedBuilder ? surfacePrompt.trim() : effectiveSurfacePrompt;
-      trimmedFurniture = effectiveFurniturePrompt;
+
+      // CRITICAL FIX: For dedicated builders, do NOT inject the full style furniturePrompt
+      // (which contains living room items like sofa, coffee table, rug).
+      // Instead use the room-specific furniture override + a brief style hint.
+      // The full MERGE is only needed for rooms without dedicated builders (living_room, office, etc.)
+      if (hasDedicatedBuilder && roomType) {
+        const rt = ROOM_TYPES[roomType];
+        trimmedFurniture = rt?.roomFurnitureOverride
+          ? `${rt.roomFurnitureOverride} Match the ${styleId || "contemporary"} design style for all materials, finishes, and color palette.`
+          : furniturePrompt.trim();
+      } else {
+        trimmedFurniture = effectiveFurniturePrompt;
+      }
     }
 
     const t0 = Date.now();

@@ -4,7 +4,7 @@
  * NO dependency on NextRequest/NextResponse/session/headers.
  */
 import OpenAI from "openai";
-import { applyRoomTypeOverrides } from "@/lib/room-types";
+import { applyRoomTypeOverrides, ROOM_TYPES } from "@/lib/room-types";
 import { applyOutdoorSubtypeOverrides, OUTDOOR_SUBTYPES } from "@/lib/outdoor-subtypes";
 
 // Singleton OpenAI client — reuses HTTP connections across passes
@@ -630,7 +630,7 @@ export interface PipelineResult {
 
 export async function runGenerationPipeline(params: PipelineParams): Promise<PipelineResult> {
   const {
-    inputBase64, surfacePrompt, furniturePrompt,
+    inputBase64, surfacePrompt, furniturePrompt, styleId,
     roomType, isOutdoor, outdoorSubtype, width, height,
     withFurniture = true,
   } = params;
@@ -659,7 +659,18 @@ export async function runGenerationPipeline(params: PipelineParams): Promise<Pip
     const { effectiveSurfacePrompt, effectiveFurniturePrompt } =
       applyRoomTypeOverrides(surfacePrompt.trim(), furniturePrompt.trim(), roomType ?? null);
     trimmedSurface = hasDedicatedBuilder ? surfacePrompt.trim() : effectiveSurfacePrompt;
-    trimmedFurniture = effectiveFurniturePrompt;
+
+    // CRITICAL FIX: For dedicated builders, do NOT inject the full style furniturePrompt
+    // (which contains living room items like sofa, coffee table, rug).
+    // Instead use the room-specific furniture override + a brief style hint.
+    if (hasDedicatedBuilder && roomType) {
+      const rt = ROOM_TYPES[roomType];
+      trimmedFurniture = rt?.roomFurnitureOverride
+        ? `${rt.roomFurnitureOverride} Match the ${styleId || "contemporary"} design style for all materials, finishes, and color palette.`
+        : furniturePrompt.trim();
+    } else {
+      trimmedFurniture = effectiveFurniturePrompt;
+    }
   }
 
   const t0 = Date.now();
