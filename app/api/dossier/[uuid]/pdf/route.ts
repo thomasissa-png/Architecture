@@ -14,7 +14,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PDFDocument, rgb, StandardFonts, PDFPage, PDFFont, PDFName, PDFString, PDFArray } from "pdf-lib";
 import * as QRCode from "qrcode";
-import { getImage, saveImage } from "@/lib/db";
+import { getImage, saveRawBuffer } from "@/lib/db";
 import {
   getDossierByUuid,
   getDossierPhotos,
@@ -978,9 +978,9 @@ export async function GET(
       console.warn(`PDF for dossier ${uuid} is ${sizeMB.toFixed(1)}MB`);
     }
 
-    // Save PDF to Object Storage
-    const pdfBase64 = Buffer.from(pdfBytes).toString("base64");
-    const pdfKey = await saveImage(pdfBase64, `dossier_${uuid}_pdf`).catch((err) => {
+    // Save PDF to Object Storage (raw buffer, proper .pdf key)
+    const pdfStorageKey = `dossiers/${uuid}/dossier.pdf`;
+    const pdfKey = await saveRawBuffer(Buffer.from(pdfBytes), pdfStorageKey).then(() => pdfStorageKey).catch((err) => {
       console.error("Failed to save PDF to storage:", err);
       return null;
     });
