@@ -24,13 +24,10 @@ export function buildIterationFurnitureResponsesPrompt(
 
   return [
     "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation.",
-    "Room structure is LOCKED — walls, floor, ceiling, paint, windows, doors must remain visually identical to the input. Same colors, same textures, same geometry. If the input has zero windows, the output must have zero windows. Shadows from furniture are expected and natural.",
-    "IMPORTANT: All furniture, decoration, and objects currently visible in this photo must REMAIN exactly as they are. Do not remove, move, or resize any existing item.",
-    "This is a REFINEMENT of a previous generation. The room surfaces in this photo are FINAL and PERFECT. They must not change in any way — not even subtle color shifts, lighting changes, or texture smoothing.",
-    "Focus ONLY on adjusting the furniture and decoration as described below.",
+    "Room structure is LOCKED — walls, floor, ceiling, paint, openings visually identical to input. Preserve exact count and position of all openings. All existing furniture and objects must REMAIN exactly as they are — do not remove, move, or resize anything.",
+    "This is a REFINEMENT. Room surfaces are FINAL. Focus ONLY on the changes below.",
     `APPLY THESE CHANGES:\n${modBlock}`,
-    "Add ONLY the items described above. Everything else in the photo — all existing furniture, rugs, plants, lamps — stays untouched.",
-    "Do NOT add any other furniture, decoration, rug, lamp, plant, or object not explicitly mentioned. The room should contain ONLY what the user asked for — leave the rest of the floor empty.",
+    "Add ONLY the items described above. Everything else stays untouched. Leave the rest of the floor empty.",
     "If the room is deep, distribute furniture across its full depth — primary group foreground, secondary piece further back if space allows.",
     "Every piece must appear firmly grounded on the floor with visible contact shadows — especially furniture placed in the back of the room. Match shadow hardness to the lighting type.",
     "Preserve existing light direction and color temperature from the input photo. No warm tint or yellow cast.",
@@ -47,7 +44,7 @@ export function buildIterationFurnitureResponsesPrompt(
       ? "Small space — do not overcrowd. Freestanding items only: console, coat rack, small bench, runner rug."
       : meta.allowWallMounted
       ? "Wall-mounted items are allowed ONLY for the items explicitly requested by the user."
-      : "ONLY add freestanding objects. Do NOT attach anything to walls. No wall-mounted art, no framed paintings, no prints, no mirrors, no built-in shelving.",
+      : "ONLY add freestanding objects resting on the floor. Do not attach anything to walls.",
     "Preserve all wall-mounted fixed equipment: radiators, heaters, vents, thermostats, switches. Do not place furniture in front of radiators.",
     "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, subtle sensor grain (ISO 200), natural corner vignetting. Photo-realistic interior photograph. No text, watermarks, or logos.",
   ].join(" ");
