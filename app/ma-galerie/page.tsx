@@ -73,6 +73,7 @@ export default function GaleriePage() {
   const [associatingPhotoId, setAssociatingPhotoId] = useState<string | null>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [showArchived, setShowArchived] = useState(false);
   const detailModalRef = useRef<HTMLDivElement>(null);
   useScrollLock(!!selectedPhoto);
 
@@ -121,6 +122,7 @@ export default function GaleriePage() {
       if (filterStyle) params.set("styleId", filterStyle);
       if (filterRoomType) params.set("roomType", filterRoomType);
       if (filterAssociated) params.set("associated", filterAssociated);
+      if (showArchived) params.set("archived", "true");
 
       const res = await fetch(`/api/user/photos?${params.toString()}`);
       if (res.ok) {
@@ -132,7 +134,7 @@ export default function GaleriePage() {
     } finally {
       setIsLoading(false);
     }
-  }, [filterStyle, filterRoomType, filterAssociated]);
+  }, [filterStyle, filterRoomType, filterAssociated, showArchived]);
 
   const fetchProperties = useCallback(async () => {
     try {
@@ -195,6 +197,25 @@ export default function GaleriePage() {
     } catch {
       console.error("Erreur archivage photo");
       setToastMsg("Erreur lors de l'archivage. Réessayez.");
+    }
+  };
+
+  const handleUnarchivePhoto = async (photoId: string) => {
+    try {
+      const res = await fetch(`/api/user/photos/${photoId}/archive`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "unarchive" }),
+      });
+      if (res.ok) {
+        setToastMsg("Photo désarchivée.");
+        fetchPhotos();
+      } else {
+        setToastMsg("Erreur lors de la désarchivage. Réessayez.");
+      }
+    } catch {
+      console.error("Erreur désarchivage photo");
+      setToastMsg("Erreur lors de la désarchivage. Réessayez.");
     }
   };
 
@@ -276,12 +297,18 @@ export default function GaleriePage() {
           <div>
             <h1 className="text-2xl font-semibold text-foreground tracking-tight">Ma galerie</h1>
             <p className="text-sm text-muted font-light mt-1">
-              {photos.length} photo{photos.length !== 1 ? "s" : ""} générée{photos.length !== 1 ? "s" : ""}
+              {photos.length} photo{photos.length !== 1 ? "s" : ""} {showArchived ? "archivée" : "générée"}{photos.length !== 1 ? "s" : ""}
             </p>
           </div>
 
           {/* Filters */}
           <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => { setShowArchived(!showArchived); setIsLoading(true); }}
+              className="text-xs text-muted hover:text-foreground font-light transition-colors px-3 py-2 rounded-xl border border-foreground/10 hover:border-foreground/20"
+            >
+              {showArchived ? "Masquer archivées" : "Voir archivées"}
+            </button>
             <select
               value={filterStyle}
               onChange={(e) => { setFilterStyle(e.target.value); setIsLoading(true); }}
@@ -405,32 +432,46 @@ export default function GaleriePage() {
 
                 {/* Action buttons — top right */}
                 <div className="absolute top-2 right-2 flex gap-1.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                  {!photo.property_id && properties.length > 0 && (
+                  {showArchived ? (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        setAssociatingPhotoId(associatingPhotoId === photo.id ? null : photo.id);
+                        handleUnarchivePhoto(photo.id);
                       }}
-                      className="bg-background/90 text-foreground text-xs px-2 py-1 rounded-lg font-medium hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                      className="bg-background/90 text-sage text-xs px-2 py-1 rounded-lg font-medium hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                     >
-                      Associer
+                      Désarchiver
                     </button>
+                  ) : (
+                    <>
+                    {!photo.property_id && properties.length > 0 && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setAssociatingPhotoId(associatingPhotoId === photo.id ? null : photo.id);
+                        }}
+                        className="bg-background/90 text-foreground text-xs px-2 py-1 rounded-lg font-medium hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                      >
+                        Associer
+                      </button>
+                    )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (confirm("Archiver cette photo ? Elle disparaîtra de la galerie.")) {
+                          handleArchivePhoto(photo.id);
+                        }
+                      }}
+                      className="bg-background/90 text-foreground/60 hover:text-red-500 text-xs px-1.5 py-1 rounded-lg hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                      aria-label="Archiver cette photo"
+                      title="Archiver"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0-3-3m3 3 3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
+                      </svg>
+                    </button>
+                    </>
                   )}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (confirm("Archiver cette photo ? Elle disparaîtra de la galerie.")) {
-                        handleArchivePhoto(photo.id);
-                      }
-                    }}
-                    className="bg-background/90 text-foreground/60 hover:text-red-500 text-xs px-1.5 py-1 rounded-lg hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
-                    aria-label="Archiver cette photo"
-                    title="Archiver"
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0-3-3m3 3 3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
-                    </svg>
-                  </button>
                 </div>
 
                 {/* Association dropdown */}
@@ -561,7 +602,7 @@ export default function GaleriePage() {
         )}
         {/* Inline toast */}
         {toastMsg && (
-          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-red-500/90 text-white text-xs font-medium px-4 py-2.5 rounded-full shadow-lg animate-fade-in">
+          <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 text-white text-xs font-medium px-4 py-2.5 rounded-full shadow-lg animate-fade-in ${toastMsg.includes("Erreur") ? "bg-red-500/90" : "bg-sage/90"}`}>
             {toastMsg}
           </div>
         )}

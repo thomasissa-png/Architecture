@@ -1310,14 +1310,14 @@ export default function PropertyDetailPage() {
                 setToastMsg("Erreur lors de l'archivage. Réessayez.");
               }
             }}
-            className="text-xs text-muted font-light hover:text-foreground transition-colors"
+            className="text-xs text-muted font-light hover:text-foreground transition-colors min-h-[44px] flex items-center"
           >
             Archiver ce bien
           </button>
           <button
             onClick={() => setShowDeleteConfirm(true)}
             disabled={isDeletingProperty}
-            className="text-xs text-red-400 font-light hover:text-red-500 transition-colors disabled:opacity-50"
+            className="text-xs text-red-400 font-light hover:text-red-500 transition-colors disabled:opacity-50 min-h-[44px] flex items-center"
           >
             {isDeletingProperty ? "Suppression..." : "Supprimer ce bien"}
           </button>

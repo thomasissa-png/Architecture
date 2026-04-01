@@ -55,6 +55,7 @@ export default function MesBiensPage() {
   const [newPrice, setNewPrice] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
+  const [showArchived, setShowArchived] = useState(false);
 
   // Search + sort
   const [searchQuery, setSearchQuery] = useState("");
@@ -76,9 +77,10 @@ export default function MesBiensPage() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
-  const fetchProperties = useCallback(async () => {
+  const fetchProperties = useCallback(async (archived = false) => {
     try {
-      const res = await fetch("/api/properties");
+      const params = archived ? "?archived=true" : "";
+      const res = await fetch(`/api/properties${params}`);
       if (res.ok) {
         const data = await res.json();
         setProperties(data.properties || []);
@@ -92,9 +94,9 @@ export default function MesBiensPage() {
 
   useEffect(() => {
     if (session?.user?.id) {
-      fetchProperties();
+      fetchProperties(showArchived);
     }
-  }, [session, fetchProperties]);
+  }, [session, fetchProperties, showArchived]);
 
   // Address autocomplete with debounce
   const handleAddressInput = (value: string) => {
@@ -197,16 +199,24 @@ export default function MesBiensPage() {
           <div>
             <h1 className="text-2xl font-semibold text-foreground tracking-tight">Mes biens</h1>
             <p className="text-sm text-muted font-light mt-1">
-              {properties.length} bien{properties.length !== 1 ? "s" : ""} enregistré{properties.length !== 1 ? "s" : ""}
+              {properties.length} bien{properties.length !== 1 ? "s" : ""} {showArchived ? "archivé" : "enregistré"}{properties.length !== 1 ? "s" : ""}
             </p>
           </div>
 
-          <button
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowArchived(!showArchived)}
+              className="text-xs text-muted hover:text-foreground font-light transition-colors px-3 py-1.5 rounded-full border border-foreground/10 hover:border-foreground/20 min-h-[36px]"
+            >
+              {showArchived ? "Masquer archivés" : "Voir archivés"}
+            </button>
+            {!showArchived && <button
             onClick={() => setShowCreateForm(!showCreateForm)}
             className="text-xs bg-foreground text-background px-4 py-2 min-h-[44px] flex items-center rounded-full font-medium hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
           >
             + Nouveau bien
-          </button>
+          </button>}
+          </div>
         </div>
 
         {/* Create form */}
@@ -431,6 +441,22 @@ export default function MesBiensPage() {
                   </p>
                 )}
 
+                {showArchived ? (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      fetch(`/api/properties/${property.id}/archive`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ action: "unarchive" }),
+                      }).then(() => fetchProperties(true)).catch(() => {});
+                    }}
+                    className="mt-3 text-xs text-sage border border-sage/20 px-3 py-1.5 rounded-full hover:bg-sage/5 transition-colors min-h-[44px] flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                  >
+                    Désarchiver
+                  </button>
+                ) : (
+                <>
                 {((property.dossier_count ?? 0) > 0 || property.annonce_uuid) && (
                   <div className="flex gap-2 mt-2">
                     {(property.dossier_count ?? 0) > 0 && property.last_dossier_uuid && (
@@ -456,6 +482,8 @@ export default function MesBiensPage() {
                       </a>
                     )}
                   </div>
+                )}
+                </>
                 )}
               </div>
             ))}

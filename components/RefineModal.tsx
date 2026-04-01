@@ -227,8 +227,7 @@ export default function RefineModal({
 
           {/* Iteration cost notice */}
           <p className="mt-4 text-xs text-muted/60 font-light text-center">
-            Consommera 1 itération ({iterationsRemaining} restante
-            {iterationsRemaining > 1 ? "s" : ""})
+            Affinage gratuit ({iterationsRemaining} restant{iterationsRemaining > 1 ? "s" : ""} sur 3)
           </p>
 
           {/* Actions */}

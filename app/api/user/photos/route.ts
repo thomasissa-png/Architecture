@@ -21,12 +21,14 @@ export async function GET(request: NextRequest) {
     const styleId = url.searchParams.get("styleId") || undefined;
     const roomType = url.searchParams.get("roomType") || undefined;
     const associated = url.searchParams.get("associated"); // "true", "false", or absent
+    const archived = url.searchParams.get("archived") === "true";
 
     const photos = await getUserPhotos(session.user.id, {
       styleId,
       roomType,
       associatedOnly: associated === "true" ? true : undefined,
       unassociatedOnly: associated === "false" ? true : undefined,
+      archived,
     });
 
     return NextResponse.json({ photos });

@@ -107,12 +107,16 @@ export async function getUserPhotos(
     roomType?: string | null;
     associatedOnly?: boolean;
     unassociatedOnly?: boolean;
+    archived?: boolean;
   }
 ): Promise<UserPhoto[]> {
   await ensureUserPhotosTable();
   const db = getPool();
 
-  const conditions = ["user_id = $1", "(status IS NULL OR status != 'archived')"];
+  const statusCondition = filters?.archived
+    ? "status = 'archived'"
+    : "(status IS NULL OR status != 'archived')";
+  const conditions = ["user_id = $1", statusCondition];
   const values: (string | boolean | null)[] = [userId];
   let paramIdx = 2;
 

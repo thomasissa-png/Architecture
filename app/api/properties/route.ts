@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
 }
 
 // ─── GET: List user's properties ─────────────────────────────────────
-export async function GET() {
+export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json(
@@ -73,8 +73,10 @@ export async function GET() {
   }
 
   try {
-    console.log(`[GET /api/properties] userId="${session.user.id}" email="${session.user.email}"`);
-    const properties = await getPropertiesByUser(session.user.id);
+    const url = request.nextUrl;
+    const archived = url.searchParams.get("archived") === "true";
+    console.log(`[GET /api/properties] userId="${session.user.id}" email="${session.user.email}" archived=${archived}`);
+    const properties = await getPropertiesByUser(session.user.id, { archived });
     console.log(`[GET /api/properties] found=${properties.length} biens for userId="${session.user.id}"`);
     return NextResponse.json({ properties });
   } catch (err) {

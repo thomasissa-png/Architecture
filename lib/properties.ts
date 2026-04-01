@@ -225,18 +225,22 @@ export async function findOrCreatePropertyByAddress(
   });
 }
 
-export async function getPropertiesByUser(userId: string): Promise<Property[]> {
+export async function getPropertiesByUser(userId: string, options?: { archived?: boolean }): Promise<Property[]> {
   await ensurePropertiesTable();
   const db = getPool();
 
+  const statusFilter = options?.archived
+    ? "p.status = 'archived'"
+    : "(p.status IS NULL OR p.status != 'archived')";
+
   const result = await db.query(
     `SELECT p.*,
-      (SELECT COUNT(*) FROM user_photos up WHERE up.property_id = p.id) as photo_count,
+      (SELECT COUNT(*) FROM user_photos up WHERE up.property_id = p.id AND (up.status IS NULL OR up.status != 'archived')) as photo_count,
       (SELECT COUNT(*) FROM dossiers d WHERE LOWER(TRIM(d.bien_adresse)) = LOWER(TRIM(p.address_raw)) AND d.user_id = p.user_id AND (d.status IS NULL OR d.status != 'archived')) as dossier_count,
       (SELECT d.uuid FROM dossiers d WHERE LOWER(TRIM(d.bien_adresse)) = LOWER(TRIM(p.address_raw)) AND d.user_id = p.user_id AND (d.status IS NULL OR d.status != 'archived') ORDER BY d.created_at DESC LIMIT 1) as last_dossier_uuid,
       (SELECT COALESCE(a.slug, a.uuid) FROM annonces a WHERE a.property_id = p.id::text AND a.user_id = p.user_id AND a.status = 'active' AND a.expires_at > NOW() ORDER BY a.created_at DESC LIMIT 1) as annonce_uuid
     FROM properties p
-    WHERE p.user_id = $1 AND (p.status IS NULL OR p.status != 'archived')
+    WHERE p.user_id = $1 AND ${statusFilter}
     ORDER BY p.updated_at DESC`,
     [userId]
   );
