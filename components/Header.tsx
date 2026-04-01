@@ -53,14 +53,12 @@ export default function Header({ variant = "internal", activePage }: HeaderProps
                 )}
               </a>
             ))}
-          {variant === "home" && (
-            <a
-              href="#pricing"
-              className="text-xs text-muted font-light hover:text-foreground transition-colors"
-            >
-              Tarifs
-            </a>
-          )}
+          <a
+            href={variant === "home" ? "#pricing" : "/#pricing"}
+            className="text-xs text-muted font-light hover:text-foreground transition-colors"
+          >
+            Tarifs
+          </a>
           {variant === "home" && !session && (
             <a
               href="#outil"
@@ -69,9 +67,9 @@ export default function Header({ variant = "internal", activePage }: HeaderProps
               Essayer gratuitement
             </a>
           )}
-          {variant === "home" && session && (
+          {session && (
             <a
-              href="#outil"
+              href={variant === "home" ? "#outil" : "/"}
               className="text-xs bg-foreground text-background px-3 py-2 rounded-full font-medium hover:bg-foreground/85 transition-colors"
             >
               Nouveau visuel
@@ -123,15 +121,13 @@ export default function Header({ variant = "internal", activePage }: HeaderProps
                 )}
               </a>
             ))}
-          {variant === "home" && (
-            <a
-              href="#pricing"
-              onClick={() => setMobileOpen(false)}
-              className="block py-3 text-sm text-foreground font-light"
-            >
-              Tarifs
-            </a>
-          )}
+          <a
+            href={variant === "home" ? "#pricing" : "/#pricing"}
+            onClick={() => setMobileOpen(false)}
+            className="block py-3 text-sm text-foreground font-light"
+          >
+            Tarifs
+          </a>
           {variant === "home" && !session && (
             <a
               href="#outil"
@@ -141,9 +137,9 @@ export default function Header({ variant = "internal", activePage }: HeaderProps
               Essayer gratuitement
             </a>
           )}
-          {variant === "home" && session && (
+          {session && (
             <a
-              href="#outil"
+              href={variant === "home" ? "#outil" : "/"}
               onClick={() => setMobileOpen(false)}
               className="block mt-2 text-center text-sm bg-foreground text-background px-4 py-3 rounded-full font-medium"
             >
