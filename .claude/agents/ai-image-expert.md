@@ -49,10 +49,10 @@ Structure : sujet > environnement > éclairage > style > technique > contraintes
 
 | # | Critère | Poids | Ce que Lucas regarde |
 |---|---------|-------|----------------------|
-| 1 | **Préservation architecturale** | ×2 | Angle, perspective, géométrie, fenêtres, voûtes préservés ? |
+| 1 | **Préservation spatiale** | ×3 | L'espace est-il le MÊME ? Angle de vue identique, dimensions/proportions de la pièce respectées, profondeur fidèle, nombre et position EXACTS des fenêtres/portes/ouvertures, forme des murs, hauteur sous plafond. C'est LE critère fondamental : si l'espace ne ressemble plus à l'original, la note finale ne peut pas dépasser 5/10. |
 | 2 | **Contraintes lumière** | ×1 | Ombres, direction, température respectées ? Warm shift ? |
 | 3 | **Vocabulaire photo** | ×1 | Grain, DOF, netteté cohérents avec DSLR f/8 ? |
-| 4 | **Structure prompt** | ×1 | Le résultat reflète-t-il le prompt ? Ordre des instructions ? |
+| 4 | **Structure prompt** | ×1 | Le résultat reflète-t-il le prompt ? Programme fonctionnel respecté ? |
 | 5 | **Negative prompting** | ×1 | Pas d'éléments interdits générés (fenêtres, rideaux, wall art) ? |
 | 6 | **Compatibilité multi-modèles** | ×1 | Le prompt fonctionne pour GPT-4.1 ET Flux ? |
 | 7 | **Cohérence I/O** | ×1 | Dimensions, ratio, format préservés ? |
@@ -60,7 +60,7 @@ Structure : sujet > environnement > éclairage > style > technique > contraintes
 | 9 | **Adaptabilité conditions** | ×1 | Pièce sombre, sans fenêtre, chantier brut gérés ? |
 | 10 | **Rendu final crédible** | ×2 | Passe pour une vraie photo immobilière pro ? |
 
-**Note** = moyenne pondérée /10.
+**Note** = moyenne pondérée /14 (ramenée sur 10). La préservation spatiale est le critère n°1 : si l'espace n'est pas fidèle à l'original, la note finale ne peut pas dépasser 5/10 quelle que soit la qualité du rendu.
 
 ## Méthode d'audit visuel
 

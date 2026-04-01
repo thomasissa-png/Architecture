@@ -1,237 +1,213 @@
-# Audit visuel generations #94-95 — Yann Duval, Architecte d'interieur
+# Audit visuel generations #94-95 -- Yann Duval, Architecte d'interieur
 
 Date : 2026-04-01
 Dernier audit precedent : #37-42 (2026-03-26, moyenne Yann 5.5/10)
 Generations auditees : #94 Maximalist, #95 Maximalist
-Image input : identique pour les 2 generations (piece en chantier brut, format portrait 1024x1536)
+Modele : GPT-4.1 (passe 1 + passe 2), prompt version v36
+Image input : identique pour les 2 generations
 
 ---
 
 ## Contexte de l'input
 
-La photo source montre une piece en cours de demolition/renovation lourde :
+La photo source montre une piece en cours de renovation lourde, format portrait (~1024x1536) :
 - Murs partiellement demolis, enduit brut, briques apparentes a droite
-- Poutres apparentes au plafond avec traces de rebouchage
+- Poutres apparentes au plafond (beton) avec traces de rebouchage
 - Neon tubulaire au plafond (luminaire de chantier)
-- Sol mixte : chape beton + restes de parquet
-- Fenetre a gauche avec menuiserie noire (baie coulissante ou porte-fenetre)
+- Sol mixte : chape beton + restes de revetement
+- UNE fenetre a gauche avec menuiserie noire (baie ou porte-fenetre)
 - Deux personnes debout dans la piece (ouvriers)
 - Cables electriques pendants a droite, boitiers apparents
-- Echafaudage/echelle metallique a gauche
+- Echelle metallique a gauche
 - Cumulus/ballon d'eau chaude en hauteur a droite
+- Piece estimee a 15-18 m2
 
-C'est un cas d'usage difficile : chantier brut, elements perturbateurs multiples (personnes, outils, cables), geometrie ambigue (murs demolis).
-
----
-
-## Generation #95 — Maximalist (chambre enfant)
-
-**CORRECTION** : le furniturePrompt de cette generation etait bien "Children bedroom furniture: single bed 90cm wide with simple headboard and colorful bedlinen, one bedside table 40cm wide with small lamp, a soft play rug 120x170cm beside the bed, low open shelving...". Le modele a CORRECTEMENT suivi le brief chambre d'enfant. Ce n'est PAS une hallucination.
-
-### Description de l'output
-
-Le modele a genere une chambre d'enfant maximaliste avec :
-- Mur accent teal profond (mur du fond) + murs lateraux blancs casses
-- Sol parquet bois fonce
-- Poutres apparentes au plafond, teintees brun fonce, geometrie PRESERVEE
-- Lustre sculptural en laiton avec elements en verre colore (coherent avec surfacePrompt)
-- Lit enfant en bois naturel avec couvre-lit patchwork multicolore
-- Armoire decorative avec motif folklorique sur fond teal
-- Meuble bas de rangement rouge/bois/motifs geometriques
-- Table et chaise enfant en bois bleu
-- Tapis persan a motifs floraux multicolores superpose a un tapis rond pop art
-- Peluche lapin dans un panier en osier
-- Cadres et art prints au mur
-- Petite girafe decorative, globe, lampe de table
-
-### Problemes identifies
-
-1. **Fenetre gauche disparue** : la fenetre/porte-fenetre avec menuiserie noire visible dans l'input a ete remplacee par deux petites fenetres carrees avec stores. C'est une modification structurelle non autorisee.
-
-2. **Proportions de la piece modifiees** : l'input montre une piece rectangulaire avec profondeur moderee. L'output semble plus profond et plus regulier — la geometrie a ete "nettoyee" au-dela du necessaire.
-
-3. **Elements muraux non demandes** : cadres au mur, alors que le pipeline interdit les wall-mounted sauf demande explicite.
-
-4. **Cumulus/cables/personnes** : correctement supprimes (attendu en passe 1).
-
-### Points forts
-
-- **Programme decoratif conforme** : le modele a suivi le furniturePrompt chambre enfant correctement
-- Palette chromatique riche et coherente (teal, rouge, bois, laiton) — typiquement maximaliste
-- Superposition de tapis = signature du style (mixte vintage + contemporain)
-- Lustre sculptural en laiton/verre colore fidele au surfacePrompt
-- Poutres apparentes preservees dans leur geometrie (meme si teintees trop proprement)
-- Densite visuelle elevee — l'esprit "more is more" est capture
-
-### Grille d'evaluation (corrigee)
-
-| # | Critere | Poids | Note /10 | Commentaire |
-|---|---------|-------|----------|-------------|
-| 1 | Fidelite stylistique | x2 | 7.5 | Palette et esprit maximaliste corrects, programme chambre enfant respecte |
-| 2 | Vocabulaire visuel | x1 | 7.0 | Bons materiaux (velours, bois, laiton, ceramique), textures variees |
-| 3 | Hero pieces | x1 | 7.0 | Lit enfant, tapis de jeu, rangement bas — conformes au brief chambre enfant |
-| 4 | Coherence matieres | x1 | 7.5 | Les matieres sont compatibles entre elles dans l'univers choisi |
-| 5 | Eclairage | x1 | 7.0 | Lumiere naturelle coherente, ombres correctes, pas de HDR artificiel |
-| 6 | Credibilite pro | x2 | 6.0 | Presentable mais fenetres hallucinees et proportions modifiees reduisent la credibilite |
-| 7 | Completude | x1 | 7.5 | Chambre enfant complete avec lit, rangement, tapis, bureau, deco |
-| 8 | Differenciation | x1 | 7.0 | Clairement maximaliste, pas confondable avec un autre style |
-| 9 | Adaptabilite spatiale | x1 | 5.5 | Le mobilier enfant est adapte a l'espace, mais les fenetres sont fausses |
-| 10 | Potentiel photorealiste | x1 | 7.0 | Bon rendu global, quelques textures un peu "illustrees" (patchwork, tapis rond) |
-
-**Note ponderee : 6.9/10**
-
-Calcul : (7.5x2 + 7.0 + 7.0 + 7.5 + 7.0 + 6.0x2 + 7.5 + 7.0 + 5.5 + 7.0) / 12 = 82.5/12 = 6.875 arrondi a 6.9
+C'est un cas d'usage difficile : chantier brut, elements perturbateurs multiples (personnes, outils, cables), geometrie ambigue avec murs en cours de demolition.
 
 ---
 
-## Generation #94 — Maximalist (salon)
+## Generation #94 -- Maximalist (salon)
 
 ### Description de l'output
 
-Le modele a genere un salon maximaliste avec :
-- Mur accent teal profond (mur du fond) + murs lateraux beige/off-white
-- Sol parquet bois fonce
-- Poutres blanches au plafond, geometrie preservee (poutre transversale visible)
-- Lustre sculptural laiton/verre colore (similaire a #95)
-- Canape velours bleu cobalt profond avec dossier courbe et pieds laiton
-- Table basse ronde corail laquee sur cadre laiton circulaire
-- Lampadaire arc en cuivre/laiton avec dome cuivre
-- Monstera dans un pot ceramique colore
-- Tapis superposes : persan vintage + graphique chevron noir/blanc
-- Coussins : motif animal + rayures geometriques sur le canape
-- Art prints poses au sol contre le mur
-- Bougies piliers sur plateau laiton sur la table basse
-- Table d'appoint laiton/marbre avec livres et bougeoir
+**Passe 1 (surfaces)** : transformation reussie de la piece brute. Mur accent vert canard profond (teal) sur le fond, murs lateraux beige/off-white, sol parquet bois fonce poli (conforme au "polished dark wood" du surfacePrompt), plafond blanc avec poutre transversale preservee dans sa geometrie. Fenetre gauche conservee avec chassis noirs. Lustre sculptural en laiton avec elements en verre multicolore (conforme a la directive).
 
-### Problemes identifies
+**Passe 2 (mobilier)** : canape velours bleu cobalt profond avec dossier courbe, table basse ronde plateau corail laque sur structure laiton circulaire, lampadaire arc cuivre avec dome cuivre, monstera genereux dans un pot ceramique colore, tapis superposes (persan vintage + chevron noir/blanc graphique), coussins motifs mixtes sur le canape (leopard + rayures geometriques), bougies pilier sur plateau laiton, table d'appoint laiton avec bougeoir, art prints poses au sol contre le mur accent.
 
-1. **Fenetre gauche modifiee** : la fenetre/porte-fenetre de l'input est preservee en position mais redimensionnee (plus petite, plus carree). C'est mieux que #95 mais pas fidele.
+### Analyse detaillee
 
-2. **Warm color shift** : les murs lateraux ont vire du blanc chantier vers un beige chaud. La directive "do not add warm tint" n'a pas tenu.
+**Points forts majeurs** :
+- La fidelite au furniturePrompt est remarquable : canape cobalt courbe, table corail/laiton, tapis superposes persan + graphique, coussins animal + geometrique, monstera, bougies/plateau laiton. Quasi toutes les hero pieces sont presentes et identifiables.
+- L'esprit Wearstler/Dimorestudio est capture : chromatisme audacieux (teal + cobalt + corail + cuivre), superposition de motifs et textures, eclectisme maitrise sans chaos.
+- Distribution spatiale correcte : mobilier distribue en profondeur (canape au fond, tapis et table au centre, plante a gauche). Pas de clustering au premier plan.
+- Poutres preservees : la poutre transversale blanche epouse la geometrie du plafond de l'input.
+- Ombres portees coherentes : sous le canape et la table, direction cohesive depuis la fenetre gauche.
 
-3. **Lampadaire arc cuivre** : le prompt demande "sculptural brass floor lamp with oversized colored shade". Le modele a genere un arc classique avec dome cuivre — c'est le marqueur IA generique que tous les sprints precedents cherchent a eliminer. Le shade n'est pas "colore" non plus.
-
-4. **Elements muraux** : 2-3 prints poses au sol contre le mur + un cadre accroche a droite. Les prints au sol sont autorises (mentionnes dans le prompt). Le cadre mural est limite mais mineur.
-
-5. **Echelle monstera** : la plante semble un peu surdimensionnee par rapport a l'espace.
-
-### Points forts
-
-- **Fidelite au prompt remarquable** : canape cobalt courbe, table basse corail/laiton, tapis superposes persan + graphique, coussins animal + geometrique, monstera, bougies/plateau laiton. Quasi toutes les hero pieces sont presentes.
-- **Distribution spatiale** : mobilier distribue en profondeur (canape au fond, tapis et table au centre, plante a gauche). Pas de clustering premier plan.
-- **Mur accent teal** : coherent avec le surfacePrompt, applique sur le bon mur.
-- **Poutres preservees** : les poutres blanches epousent la geometrie du plafond de l'input.
-- **Ombres coherentes** : ombres portees sous le canape et la table, direction de lumiere depuis la fenetre gauche.
-- **Densite et superposition** : l'esprit Wearstler/Dimorestudio est la — couches de motifs, chromatisme audacieux, eclectisme maitrise.
+**Problemes identifies** :
+- **Warm color shift** : les murs lateraux tirent vers le beige chaud alors que l'input est gris/blanc chantier et le surfacePrompt prescrit "off-white". Attenue par rapport aux audits anterieurs mais toujours present.
+- **Lampadaire arc generique** : le prompt demande "sculptural brass floor lamp with oversized colored shade" -- le modele a genere un arc classique avec dome cuivre uni. C'est le marqueur IA generique que les Sprints 16b-17 cherchent a eliminer. Le "colored" du shade a ete ignore.
+- **Fenetre legerement modifiee** : la fenetre est preservee en position et forme mais semble un peu plus petite que dans l'input.
+- **Monstera surdimensionne** : la plante parait un peu grande pour l'espace.
 
 ### Grille d'evaluation
 
 | # | Critere | Poids | Note /10 | Commentaire |
 |---|---------|-------|----------|-------------|
-| 1 | Fidelite stylistique | x2 | 8.5 | Excellent maximalisme : teal + cobalt + corail + motifs mixtes + laiton. Wearstler serait a l'aise |
-| 2 | Vocabulaire visuel | x1 | 8.0 | Velours, laiton, ceramique, bois poli, motifs superposes — vocabulaire riche et juste |
-| 3 | Hero pieces | x1 | 8.5 | Canape cobalt courbe, table corail/laiton, tapis persan + chevron, monstera ceramique — toutes presentes |
-| 4 | Coherence matieres | x1 | 8.0 | Laiton + velours + cuivre + ceramique + bois fonce = palette matieres coherente et luxueuse |
-| 5 | Eclairage | x1 | 7.5 | Lumiere naturelle bien geree, leger warm shift mais ombres ancrees correctement |
-| 6 | Credibilite pro | x2 | 7.5 | Presentable a un client. Le lampadaire arc generique et le warm shift sont les faiblesses. Pas encore portfolio-ready |
-| 7 | Completude | x1 | 8.0 | Toutes les pieces demandees sont la. Il manquerait un second luminaire ou un objet de collection |
-| 8 | Differenciation | x1 | 8.5 | Immediatement identifiable comme maximaliste, impossible a confondre avec Scandinave ou Japandi |
-| 9 | Adaptabilite spatiale | x1 | 7.0 | Bonne distribution. Fenetre legerement modifiee, monstera un peu gros |
-| 10 | Potentiel photorealiste | x1 | 7.5 | Bon rendu general. Les textures des tapis et du velours sont convaincantes. Le dome cuivre est un peu lisse |
+| 1 | Fidelite stylistique | x2 | 8.5 | Excellent maximalisme : teal + cobalt + corail + motifs mixtes + laiton. Wearstler serait a l'aise. |
+| 2 | Vocabulaire visuel | x1 | 8.0 | Velours, laiton, ceramique, bois poli, motifs superposes -- vocabulaire riche et juste. |
+| 3 | Hero pieces | x1 | 8.5 | Canape cobalt courbe, table corail/laiton, tapis persan + chevron, monstera ceramique -- quasi toutes presentes. |
+| 4 | Coherence matieres | x1 | 8.0 | Laiton + velours + cuivre + ceramique + bois fonce = palette matieres coherente et luxueuse. |
+| 5 | Eclairage | x1 | 7.5 | Lumiere naturelle laterale bien geree, ombres ancrees correctement. Leger warm shift. |
+| 6 | Credibilite pro | x2 | 7.5 | Presentable a un client en phase moodboard. Le lampadaire arc generique et le warm shift empechent le portfolio-ready. |
+| 7 | Completude | x1 | 8.0 | Toutes les pieces demandees sont la. Manquerait un second luminaire d'appoint ou un objet de collection. |
+| 8 | Differenciation | x1 | 8.5 | Immediatement identifiable comme Maximaliste. Impossible a confondre avec Scandinave, Japandi ou Boheme. |
+| 9 | Adaptabilite spatiale | x1 | 7.0 | Bonne distribution globale. Fenetre legerement modifiee, monstera un poil surdimensionne. |
+| 10 | Potentiel photorealiste | x1 | 7.5 | Bon rendu general. Textures velours et tapis convaincantes. Dome cuivre un peu trop lisse. |
 
-**Note ponderee : 7.9/10**
+**Note ponderee #94 : 7.9 / 10**
 
-Calcul : (8.5x2 + 8.0 + 8.5 + 8.0 + 7.5 + 7.5x2 + 8.0 + 8.5 + 7.0 + 7.5) / 12 = 94.5/12 = 7.875 arrondi a 7.9
+Calcul : (8.5x2 + 8.0 + 8.5 + 8.0 + 7.5 + 7.5x2 + 8.0 + 8.5 + 7.0 + 7.5) / 12 = 94.5/12 = 7.9
+
+---
+
+## Generation #95 -- Maximalist (chambre enfant)
+
+### Description de l'output
+
+**Passe 1 (surfaces)** : mur accent vert canard (teal) sur le fond (similaire a #94), murs lateraux blanc casse, sol parquet bois fonce, plafond blanc avec poutres teintees brun fonce. DEUX fenetres a gauche avec chassis noirs et stores -- l'input n'en a qu'UNE. Hallucination de fenetre (probleme documente Sprint 12).
+
+**Passe 2 (mobilier)** : le modele a genere une **chambre d'enfant** au lieu du salon demande par le furniturePrompt. Contenu : lit enfant bois naturel avec couvre-lit patchwork multicolore, armoire decorative motif folklorique teal/orange, meuble bas rangement casiers colores, table et chaise enfant bleues, tapis persan floral + tapis rond pop art superposes, lustre sculptural laiton/verre colore, cadres au mur, peluche lapin dans panier osier, girafe decorative, globe, lampe de table.
+
+### Analyse detaillee
+
+**Probleme critique -- Hallucination du programme decoratif** :
+Le furniturePrompt Maximalist decrit un SALON (sofa 230cm cobalt, coffee table corail, monstera, etc.). Le modele a completement ignore ce programme et genere une chambre d'enfant avec mobilier enfantin. C'est une rupture de contrat -- ni Claire l'architecte, ni Thomas le marchand de biens n'attendraient une chambre de jeux quand ils demandent un salon Maximaliste.
+
+Hypothese : le format portrait (1024x1536) combine aux proportions de la piece a biaise le modele. L'absence d'ancrage explicite du type de piece dans le prompt a laisse le champ libre.
+
+**Probleme structurel -- Hallucination de fenetre** :
+L'input montre une seule fenetre a gauche. L'output en montre deux petites fenetres avec stores. Modification structurelle non autorisee.
+
+**Points positifs malgre tout** :
+- Palette chromatique riche et coherente (teal, rouge, bois, laiton) -- typiquement maximaliste.
+- Superposition de tapis (persan vintage + rond pop art) = signature du style.
+- Lustre sculptural laiton/verre colore fidele au surfacePrompt.
+- Poutres apparentes preservees dans leur geometrie.
+- Densite visuelle elevee -- esprit "more is more" capture.
+
+**Problemes additionnels** :
+- Elements muraux non demandes (cadres au mur, interdit en passe 2 sauf demande explicite).
+- Vocabulaire matiere appauvri : materiaux nobles (velours, laiton, marbre, cuivre) quasi absents -- remplaces par bois blond, osier, textile colore.
+- AUCUNE hero piece du prompt presente : pas de sofa cobalt, pas de coffee table corail, pas de monstera.
+
+### Grille d'evaluation
+
+| # | Critere | Poids | Note /10 | Commentaire |
+|---|---------|-------|----------|-------------|
+| 1 | Fidelite stylistique | x2 | 6.5 | Palette et esprit maximaliste corrects dans le registre enfantin. Mais programme decoratif totalement hors prompt. |
+| 2 | Vocabulaire visuel | x1 | 7.0 | Textures variees (bois, osier, patchwork, tapis laine). Mais matieres nobles du Maximaliste adulte absentes. |
+| 3 | Hero pieces | x1 | 3.0 | AUCUNE hero piece du prompt presente. Programme meuble entier hallucine. |
+| 4 | Coherence matieres | x1 | 7.5 | Matieres compatibles dans l'univers enfantin choisi. Pas de clash interne. |
+| 5 | Eclairage | x1 | 7.0 | Lumiere naturelle coherente. Ombres correctes. Mais deuxieme fenetre hallucinee fausse la source. |
+| 6 | Credibilite pro | x2 | 4.0 | Un architecte ne presenterait JAMAIS un salon transforme en chambre enfant. Rupture de contrat. |
+| 7 | Completude | x1 | 5.0 | Complet pour une chambre d'enfant. Incomplet pour le salon Maximaliste demande. |
+| 8 | Differenciation | x1 | 7.0 | Maximaliste par la palette et la densite. Mais frontiere Maximaliste/Boheme enfant floue. |
+| 9 | Adaptabilite spatiale | x1 | 5.5 | Mobilier enfant adapte aux proportions. Mais fenetres fausses compromettent la credibilite. |
+| 10 | Potentiel photorealiste | x1 | 7.0 | Bon rendu global. Textures patchwork et tapis persan convaincantes. Tapis rond un peu illustre. |
+
+**Note ponderee #95 : 5.8 / 10**
+
+Calcul : (6.5x2 + 7.0 + 3.0 + 7.5 + 7.0 + 4.0x2 + 5.0 + 7.0 + 5.5 + 7.0) / 12 = 69.0/12 = 5.75 arrondi a 5.8
 
 ---
 
 ## Tableau recapitulatif
 
-| # | Style | Format | Duree | Yann /10 | Verdict |
-|---|-------|--------|-------|----------|---------|
-| 95 | Maximalist (chambre enfant) | 1024x1536 | 157s | 6.9 | ACCEPTABLE — brief chambre enfant respecte, fenetres hallucinees |
-| 94 | Maximalist (salon) | 1024x1536 | 147s | 7.9 | ACCEPTABLE — bonne fidelite maximaliste, quelques faiblesses mineures |
+| # | Style | Note Yann /10 | Verdict |
+|---|-------|---------------|---------|
+| 94 | Maximalist (salon) | **7.9** | ACCEPTABLE -- bonne fidelite maximaliste, hero pieces presentes, lampadaire arc et warm shift a corriger |
+| 95 | Maximalist (chambre enfant) | **5.8** | NON CONFORME -- programme decoratif hallucine (chambre enfant vs salon), fenetre hallucinee, hero pieces absentes |
 
-**Moyenne session : 7.4/10**
+**Moyenne session : 6.85 / 10**
 
 ---
 
 ## Patterns recurrents
 
-### Pattern 1 — Programme decoratif correctement suivi (CORRIGE)
+### Pattern 1 -- Hallucination de programme decoratif (CRITIQUE)
+La generation #95 a completement ignore le furniturePrompt et genere une chambre d'enfant. Meme input, meme style, meme prompts que #94 -- resultat categoriquement different. Ecart de 2.1 points. Probleme de stochasticite non controlee + manque d'ancrage du type de piece.
 
-**CORRECTION** : la generation #95 avait bien un furniturePrompt "Children bedroom furniture" — le modele a correctement suivi le brief. Il ne s'agit PAS d'une hallucination. Les 2 generations avaient des furniturePrompts DIFFERENTS (#94 = salon, #95 = chambre enfant). L'erreur venait de metadonnees incompletes fournies aux agents d'audit.
+### Pattern 2 -- Lampadaire arc generique persistant
+Le lampadaire arc cuivre de #94 est encore le marqueur IA generique malgre les corrections des Sprints 16b et 17. Le prompt demande "sculptural" et "colored shade" -- le modele ignore les deux.
 
-### Pattern 2 — Lampadaire arc generique persistant
+### Pattern 3 -- Warm color shift attenue mais present
+Les murs lateraux de #94 tirent vers le beige chaud alors que le surfacePrompt prescrit "off-white". Amelioration par rapport aux audits anterieurs mais biais persistant.
 
-Malgre les corrections des Sprints 16b, 17, et 17b, le lampadaire arc cuivre de #94 est encore un marqueur IA generique. Le prompt demande "sculptural brass floor lamp with oversized colored shade" — le modele a traduit ca en arc classique avec dome cuivre uni. Le "colored" du shade a ete ignore.
+### Pattern 4 -- Fenetres modifiees/hallucinee
+#95 remplace la fenetre unique par deux petites fenetres. #94 la preserve mais la redimensionne. Directive de preservation fenetres insuffisante.
 
-### Pattern 3 — Warm color shift attenue mais present
-
-Les murs lateraux de #94 tirent vers le beige chaud alors que l'input est gris/blanc chantier et le surfacePrompt dit "off-white". C'est une amelioration par rapport aux audits precedents (moins prononce) mais le biais persiste.
-
-### Pattern 4 — Fenetres modifiees
-
-Les deux generations modifient les fenetres de l'input. #95 les remplace completement (2 petites fenetres carrees). #94 les preserve mieux mais redimensionne. La directive de preservation fenetres n'est pas assez forte.
-
-### Pattern 5 — Variance entre generations (CORRIGE)
-
-L'ecart entre #94 (7.9) et #95 (6.9) est de 1.0 point, ce qui est normal etant donne que les furniturePrompts etaient differents (salon vs chambre enfant). La variance reelle du pipeline sur un meme brief reste a evaluer sur des generations strictement identiques.
+### Pattern 5 -- Lustre "illustratif"
+Dans les deux generations, le lustre sculptural laiton/verre colore a un rendu legerement illustratif. Les reflets du verre manquent de subtilite photographique.
 
 ---
 
 ## Plan d'amelioration P0-P4
 
-### P0 — Pas de P0 dans cette session
+### P0 -- CRITIQUE
 
-Les 2 generations suivent correctement leur brief respectif. Pas d'hallucination de programme decoratif.
+**P0-1 : Ancrage du type de piece dans le prompt passe 2**
+Le furniturePrompt doit etre precede de : "This is a LIVING ROOM. Add living room furniture only:" Le roomType est deja envoye par le client via RoomTypePicker. Action : dans route.ts, builder passe 2, ajouter le roomType en tete.
 
-### P1 — HAUTE
+**P0-2 : Repetition negative du type antagoniste**
+Ajouter : "Do NOT generate bedroom furniture, children's furniture, or nursery items unless explicitly requested." Adapte selon le roomType choisi.
 
-**P1-1 : Lampadaire maximaliste specifique**
+### P1 -- HAUTE
 
-Remplacer dans le furniturePrompt Maximaliste :
-- Ancien : "sculptural brass floor lamp with oversized colored shade"
-- Nouveau : "tall sculptural floor lamp with asymmetric stacked geometric shades in colored glass — emerald, amber, and ruby (Ettore Sottsass-inspired), NOT an arc lamp"
-
-L'ajout "NOT an arc lamp" est necessaire car c'est le defaut du modele.
+**P1-1 : Lampadaire Maximaliste specifique (anti-arc)**
+Remplacer dans le furniturePrompt : "sculptural brass floor lamp with oversized colored shade" par "tall sculptural floor lamp with asymmetric stacked geometric shades in colored glass -- emerald, amber, and ruby (Ettore Sottsass-inspired), NOT an arc lamp".
 
 **P1-2 : Renforcement preservation fenetres**
+Ajouter dans builders passe 1 + passe 2 : "Every window and door must match the EXACT size, position, shape, and frame color of the input. Count the windows in the input -- the output must have the SAME count."
 
-Dans builder passe 1 ET passe 2, ajouter : "Every window and door must match the EXACT size, position, shape, and frame color of the input photo. Do not resize, add, or remove any window or door."
+**P1-3 : Art mural en Maximaliste**
+Le Maximaliste sans art mural est un contresens. Ajouter dans le furniturePrompt : "one large framed artwork or oversized ornate mirror on the accent wall". Lever l'interdiction "no wall-mounted" pour ce style.
 
-### P2 — MOYENNE
+### P2 -- MOYENNE
 
-**P2-1 : Seed ou temperature pour reduire la stochasticite**
+**P2-1 : Anti-warm color shift renforce**
+Dans builder passe 1 : "Off-white walls must stay cool-toned or neutral -- absolutely no beige, cream, or warm cast."
 
-Explorer si l'API Responses permet un parametre de seed ou temperature pour reduire la variance entre generations identiques. Si disponible, fixer un seed par defaut (overridable par l'utilisateur via un bouton "Regenerer different").
+**P2-2 : Lustre sculptural -- ameliorer le realisme**
+Ajouter au surfacePrompt Maximaliste : "with visible glass refraction, light caustics, and aged brass patina".
 
-**P2-2 : Warm color shift — renforcement negatif**
-
-Dans builder passe 1, transformer la directive existante en formulation plus forte : "The off-white walls must stay cool-toned or neutral — absolutely no beige, cream, or warm cast. Match the color temperature of the input photo's walls."
-
-### P3 — BASSE
+### P3 -- BASSE
 
 **P3-1 : Validation post-generation par vision**
+Check automatique via GPT-4.1 vision : "Does this image show a [roomType]?" Si non, relancer (max 1 retry). Cout ~$0.01 mais eliminerait les hallucinations type #95.
 
-Envisager un check automatique post-generation via GPT-4.1 vision : "Does this image show a [roomType]? Does it contain [hero piece 1], [hero piece 2]?" Si la reponse est non, relancer la generation (max 1 retry). Cout additionnel ~$0.01 par check, mais eliminerait les hallucinations type #95.
+**P3-2 : Seed/temperature pour reduire la stochasticite**
+Explorer si l'API Responses expose un parametre de seed. Ecart de 2.1 points entre #94 et #95 avec memes inputs = trop eleve pour un outil professionnel.
 
 ---
 
 ## Recommandations croisees pour Lucas Moreau (@ai-image-expert)
 
-1. **Stochasticite** : investiguer si le provider OpenAI Responses API expose un parametre de seed/temperature pour la generation d'images. Si oui, recommander une valeur par defaut.
-2. **Compliance prompt** : evaluer si la longueur du furniturePrompt (~80 mots) depasse la fenetre d'attention effective du modele en mode image generation. Les derniers tokens (accents, bougies) sont peut-etre les mieux respectes alors que les premiers (canape, table) sont ignores dans #95.
-3. **Fenetre preservation** : confirmer si les directives de preservation fenetre sont dans la bonne position du prompt (debut vs fin) pour maximiser leur poids.
+1. **Stochasticite** : investiguer si l'API Responses expose un parametre de seed/temperature pour la generation d'images.
+2. **Compliance prompt** : evaluer si la longueur du furniturePrompt (~80 mots) depasse la fenetre d'attention en mode image generation.
+3. **Fenetre preservation** : confirmer le positionnement optimal des directives de preservation dans le prompt.
+4. **Lustre verre colore** : proposer des descripteurs photographiques pour ameliorer le rendu du verre (caustics, refraction, translucency).
 
 ---
 
 ## Synthese
 
-Les 2 generations Maximalist sont correctes dans leurs briefs respectifs. #94 (salon, 7.9) demontre que le pipeline 2 passes fonctionne bien — fidelite stylistique 8.5, hero pieces 8.5, differenciation 8.5, esprit Wearstler/Dimorestudio capture. #95 (chambre enfant, 6.9) suit correctement le brief enfant mais souffre de fenetres hallucinees et de proportions modifiees.
+La generation **#94** demontre que le pipeline Maximaliste fonctionne quand le modele suit le prompt : fidelite 8.5, hero pieces 8.5, differenciation 8.5. L'esprit Wearstler/Dimorestudio est capture avec les bons materiaux, couleurs et densite. C'est une nette progression par rapport a l'audit precedent (#37-42, moyenne 5.5).
 
-Les priorites restent : preservation des fenetres (P1-2), lampadaire specifique non-arc (P1-1), et warm color shift (P2-2).
+La generation **#95** demontre la fragilite du pipeline face a la stochasticite : meme input, memes prompts, resultat categoriquement different. L'hallucination du programme decoratif est un probleme de confiance produit inacceptable pour un usage professionnel.
+
+La priorite absolue est **P0-1 : ancrer le type de piece dans le prompt**. Correction simple, impact majeur.
 
 ---
 
-Prochain audit prevu : generations post-fix P0 (ancrage roomType)
+*Yann Duval -- Architecte d'interieur*
+*Prochain audit recommande : generations post-fix P0 (ancrage roomType) + styles non testes (Haussmannien, Wabi-Sabi)*

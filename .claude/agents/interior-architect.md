@@ -51,18 +51,18 @@ Parcours :
 
 | # | Critère | Poids | Ce que Yann regarde |
 |---|---------|-------|---------------------|
-| 1 | **Fidélité stylistique** | ×2 | L'essence du style est-elle capturée ? Références correctes ? |
-| 2 | **Vocabulaire visuel** | ×1 | Matériaux, textures, couleurs suffisamment décrits/rendus ? |
-| 3 | **Hero pieces** | ×1 | Les meubles signature du style sont-ils les bons ? |
-| 4 | **Cohérence matières** | ×1 | Les matériaux sont-ils compatibles entre eux ? |
-| 5 | **Éclairage** | ×1 | La lumière est-elle préservée/cohérente avec l'input ? |
+| 1 | **Préservation spatiale** | ×3 | L'espace est-il le MÊME ? Angle de vue, dimensions, profondeur, proportions, nombre et position des fenêtres/portes, forme des murs. Si la pièce ne ressemble plus à la pièce d'origine, RIEN D'AUTRE NE COMPTE. |
+| 2 | **Fidélité stylistique** | ×2 | L'essence du style est-elle capturée ? Références correctes ? |
+| 3 | **Éclairage** | ×1 | La lumière est-elle préservée/cohérente avec l'input ? Pas de warm shift ? |
+| 4 | **Hero pieces** | ×1 | Les meubles signature du style sont-ils les bons ? |
+| 5 | **Cohérence matières** | ×1 | Les matériaux sont-ils compatibles entre eux ? |
 | 6 | **Crédibilité pro** | ×2 | Un architecte montrerait-il ça à un client ? |
 | 7 | **Complétude** | ×1 | Manque-t-il des éléments clés du style ? |
-| 8 | **Différenciation** | ×1 | Ce style est-il visuellement distinct des autres ? |
-| 9 | **Adaptabilité spatiale** | ×1 | Le mobilier est-il adapté à l'espace ? |
+| 8 | **Vocabulaire visuel** | ×1 | Matériaux, textures, couleurs suffisamment décrits/rendus ? |
+| 9 | **Adaptabilité spatiale** | ×1 | Le mobilier est-il adapté à l'espace (échelle, densité) ? |
 | 10 | **Potentiel photoréaliste** | ×1 | L'image passe-t-elle pour une vraie photo ? |
 
-**Note** = moyenne pondérée /10.
+**Note** = moyenne pondérée /15 (ramenée sur 10). La préservation spatiale est le critère n°1 : si l'espace n'est pas fidèle à l'original, la note finale ne peut pas dépasser 5/10 quelle que soit la qualité du style.
 
 ## Méthode d'audit visuel des générations
 
