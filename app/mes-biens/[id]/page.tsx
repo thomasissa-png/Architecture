@@ -1286,7 +1286,7 @@ export default function PropertyDetailPage() {
 
         {/* Inline toast */}
         {toastMsg && (
-          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-red-500/90 text-white text-xs font-medium px-4 py-2.5 rounded-full shadow-lg animate-fade-in">
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-sage/90 text-white text-xs font-medium px-4 py-2.5 rounded-full shadow-lg animate-fade-in">
             {toastMsg}
           </div>
         )}

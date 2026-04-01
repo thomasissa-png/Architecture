@@ -100,17 +100,20 @@ export default function MesBiensPage() {
   }, [session, fetchProperties, showArchived]);
 
   const handleArchiveFromList = async (propertyId: string) => {
-    if (!confirm("Archiver ce bien ? Il disparaîtra de la liste.")) return;
+    const isUnarchive = showArchived;
+    if (!isUnarchive && !confirm("Archiver ce bien ? Il disparaîtra de la liste.")) return;
     setArchivingId(propertyId);
     try {
-      const action = showArchived ? "unarchive" : "archive";
+      const action = isUnarchive ? "unarchive" : "archive";
       const res = await fetch(`/api/properties/${propertyId}/archive`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action }),
       });
       if (res.ok) fetchProperties(showArchived);
-    } catch { /* silent */ }
+    } catch {
+      console.error("Erreur archivage bien");
+    }
     setArchivingId(null);
   };
 
@@ -222,7 +225,7 @@ export default function MesBiensPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowArchived(!showArchived)}
-              className="text-xs text-muted hover:text-foreground font-light transition-colors px-3 py-1.5 rounded-full border border-foreground/10 hover:border-foreground/20 min-h-[36px]"
+              className="text-xs text-muted hover:text-foreground font-light transition-colors px-3 py-1.5 rounded-full border border-foreground/10 hover:border-foreground/20 min-h-[44px] flex items-center"
             >
               {showArchived ? "Masquer archivés" : "Voir archivés"}
             </button>

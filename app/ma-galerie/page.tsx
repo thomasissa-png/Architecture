@@ -311,7 +311,7 @@ export default function GaleriePage() {
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => { setShowArchived(!showArchived); setIsLoading(true); }}
-              className="text-xs text-muted hover:text-foreground font-light transition-colors px-3 py-2 rounded-xl border border-foreground/10 hover:border-foreground/20"
+              className="text-xs text-muted hover:text-foreground font-light transition-colors px-3 py-2 rounded-xl border border-foreground/10 hover:border-foreground/20 min-h-[44px] flex items-center"
             >
               {showArchived ? "Masquer archivées" : "Voir archivées"}
             </button>
@@ -444,7 +444,7 @@ export default function GaleriePage() {
                         e.stopPropagation();
                         handleUnarchivePhoto(photo.id);
                       }}
-                      className="bg-background/90 text-sage text-xs px-2 py-1 rounded-lg font-medium hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                      className="bg-background/90 text-sage text-xs px-2 py-1 rounded-lg font-medium hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 min-h-[44px] flex items-center"
                     >
                       Désarchiver
                     </button>
@@ -456,7 +456,7 @@ export default function GaleriePage() {
                           e.stopPropagation();
                           setAssociatingPhotoId(associatingPhotoId === photo.id ? null : photo.id);
                         }}
-                        className="bg-background/90 text-foreground text-xs px-2 py-1 rounded-lg font-medium hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                        className="bg-background/90 text-foreground text-xs px-2 py-1 rounded-lg font-medium hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 min-h-[44px] flex items-center"
                       >
                         Associer
                       </button>
