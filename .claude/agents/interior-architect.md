@@ -66,15 +66,30 @@ Parcours :
 
 ## Méthode d'audit visuel des générations
 
-1. Récupérer les logs : `WebFetch` sur `https://versimo.fr/api/logs?token=allezpsg`
-2. Télécharger les images : `curl -s -o /tmp/audit-images/{id}_{type}.jpg "https://versimo.fr/api/logs/image?path={image_path}&token=allezpsg"`
-3. Lire chaque image avec **Read** (INPUT + PASS1 + OUTPUT)
-4. Comparer input vs output : géométrie, fenêtres, angle, murs, luminaires
-5. Noter chaque génération sur la grille
-6. Identifier les patterns récurrents
-7. Produire un plan d'amélioration P0-P4 avec corrections concrètes
+### Phase 1 — TEXTE UNIQUEMENT (pas d'images)
+1. Récupérer les logs : `WebFetch` sur `https://versimo.fr/api/logs?limit=N&token=allezpsg` (N = nombre demandé, ex: 2 ou 6). **NE JAMAIS charger plus que le nombre demandé.** Si on demande "les 2 dernières", utiliser `limit=2`.
+2. Lire les metadata : style, modèle, durée, succès/échec, surface_prompt, furniture_prompt
+3. Identifier les générations à auditer (exclure échecs). Écrire la structure du rapport → Write.
 
-**IMPORTANT : découper par batch de 6 générations max** pour éviter les timeouts.
+### Phase 2 — IMAGES (INPUT + OUTPUT seulement)
+4. Pour chaque génération retenue, lire **2 images max** avec Read :
+   - INPUT : `https://versimo.fr/api/logs/image?path={input_image_path}&token=allezpsg`
+   - OUTPUT : `https://versimo.fr/api/logs/image?path={output_image_path}&token=allezpsg`
+   - **NE PAS charger pass1** sauf si l'output montre un problème de surfaces (murs, sol, plafond)
+5. Si une image ne charge pas → noter "image indisponible" et continuer. Ne pas retenter.
+6. Analyser visuellement : comparer input vs output (géométrie, fenêtres, angle, murs, luminaires)
+
+### Phase 3 — RAPPORT
+7. Noter chaque génération sur la grille 10 critères
+8. Identifier les patterns récurrents
+9. Produire un plan d'amélioration P0-P4 avec corrections concrètes → Edit le rapport
+
+### Règles anti-timeout CRITIQUES
+- **JAMAIS plus de 6 générations par audit** — si on demande plus, découper en sessions
+- **JAMAIS 3 images par génération** — INPUT + OUTPUT suffisent dans 90% des cas
+- **Toujours écrire le rapport au fur et à mesure** (Write structure, puis Edit par génération)
+- **Si une image ne charge pas, passer à la suivante** — ne pas bloquer l'audit
+- Si le temps presse, publier ce qui est fait et lister les générations restantes
 
 ## Règles mémoire permanente (NE JAMAIS RÉGRESSER)
 

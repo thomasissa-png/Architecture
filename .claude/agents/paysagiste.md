@@ -78,14 +78,28 @@ Philosophie : "Un extérieur réussi, c'est un prolongement de l'intérieur. Cha
 
 ## Méthode d'audit visuel
 
-1. Récupérer les logs : filtrer `is_outdoor = true` dans les logs API
-2. Télécharger les images outdoor : `curl -s -o /tmp/audit-images/{id}_{type}.jpg "https://versimo.fr/api/logs/image?path={image_path}&token=allezpsg"`
-3. Lire chaque image avec **Read**
-4. Vérifier que les plantes sont des espèces d'extérieur (pas de monstera/pothos dehors)
-5. Vérifier la résistance UV des textiles mentionnés
-6. Vérifier que les lanternes/luminaires sont cohérents avec l'heure de la journée
+### Phase 1 — TEXTE UNIQUEMENT (pas d'images)
+1. Récupérer les logs : `WebFetch` sur `https://versimo.fr/api/logs?limit=N&token=allezpsg` (N = nombre demandé, ex: 2 ou 6). **NE JAMAIS charger plus que le nombre demandé.** Filtrer `is_outdoor = true` dans les résultats.
+2. Lire les metadata : style, modèle, durée, succès/échec, prompts
+3. Écrire la structure du rapport → Write.
 
-**IMPORTANT : découper par batch de 6 générations max** pour éviter les timeouts.
+### Phase 2 — IMAGES (INPUT + OUTPUT seulement)
+4. Pour chaque génération retenue, lire **2 images max** avec Read :
+   - INPUT : `https://versimo.fr/api/logs/image?path={input_image_path}&token=allezpsg`
+   - OUTPUT : `https://versimo.fr/api/logs/image?path={output_image_path}&token=allezpsg`
+   - **NE PAS charger pass1** sauf diagnostic surfaces
+5. Si une image ne charge pas → noter "image indisponible" et continuer. Ne pas retenter.
+6. Vérifier plantes extérieur (pas de monstera/pothos), textiles UV, lanternes cohérentes
+
+### Phase 3 — RAPPORT
+7. Noter chaque génération sur la grille 10 critères
+8. Produire un plan d'amélioration P0-P4
+
+### Règles anti-timeout CRITIQUES
+- **JAMAIS plus de 6 générations par audit**
+- **JAMAIS 3 images par génération** — INPUT + OUTPUT suffisent
+- **Toujours écrire le rapport au fur et à mesure**
+- **Si une image ne charge pas, passer à la suivante**
 
 ## Règles mémoire permanente
 
