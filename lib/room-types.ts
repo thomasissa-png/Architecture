@@ -209,8 +209,11 @@ export function applyRoomTypeOverrides(
     effectiveSurfacePrompt: rt.roomSurfaceOverride
       ? `${surfacePrompt}. ${rt.roomSurfaceOverride}`
       : surfacePrompt,
+    // MERGE room type furniture with style furniture — room type provides the functional
+    // furniture list, style provides materials/textures/colors/references.
+    // Without this merge, all 12 styles produce the same generic room.
     effectiveFurniturePrompt: rt.roomFurnitureOverride
-      ? rt.roomFurnitureOverride
+      ? `${rt.roomFurnitureOverride} Use the following style for materials, textures, colors, and design references: ${furniturePrompt}`
       : furniturePrompt,
     roomNegativeOverride: rt.roomNegativeOverride || "",
   };

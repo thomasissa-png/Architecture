@@ -233,7 +233,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       "Built-in cabinetry and countertops against walls. Add island ONLY if kitchen appears >10m2. If compact, skip island.",
       DEPTH_DISTRIBUTION,
       CONTACT_SHADOWS,
-      "Scale references: door = 204cm, sill = 90cm. Preserve existing light direction and color temperature. No warm tint or yellow cast. No curtains.",
+      "Scale references: door = 204cm, sill = 90cm. Preserve existing light direction and color temperature. No warm tint or yellow cast. Freestanding objects only.",
       "Result should look like a luxury real estate listing photo. DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Subtle film grain. No text or watermarks.",
     ].join(" ");
   }
@@ -247,7 +247,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       "Wall-mounted vanity and mirror expected. Other items freestanding. If compact (wall <2m), use 60cm vanity, skip stool/basket. Shower max one-third of any wall.",
       "Scale references: ceiling ~250cm, tile size, plumbing. 60cm min passage width.",
       CONTACT_SHADOWS,
-      "Preserve existing light direction and color temperature. No warm tint or yellow cast. No curtains.",
+      "Preserve existing light direction and color temperature. No warm tint or yellow cast. Freestanding objects only.",
       "Result should look like a luxury real estate listing photo. DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Subtle film grain. No text or watermarks.",
     ].join(" ");
   }
@@ -260,7 +260,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       `Add the following WC fixtures to this photo of a finished room: ${furniturePrompt}.`,
       "Very small space — minimal items. Wall-hung or floor toilet, compact hand basin with mirror above.",
       CONTACT_SHADOWS,
-      "Scale reference: door = 204cm. Preserve existing light direction and color temperature. No warm tint. No curtains.",
+      "Scale reference: door = 204cm. Preserve existing light direction and color temperature. No warm tint. Freestanding objects only.",
       "DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Subtle film grain. No text or watermarks.",
     ].join(" ");
   }
@@ -271,7 +271,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       `${CAMERA_PRESERVATION} Room structure LOCKED: walls, floor, ceiling, windows visually identical to input — same geometry, same number of openings.`,
       EQUIPMENT_PRESERVATION,
       `Add the following bedroom furniture to this photo of a finished room: ${furniturePrompt}.`,
-      "Freestanding only — bed, nightstands, rug, wardrobe/dresser as background anchor. No wall art, no shelving, no curtains. Furniture must not touch walls.",
+      "Freestanding only — bed, nightstands, rug, wardrobe/dresser as background anchor. No wall art, no shelving. Furniture must not touch walls.",
       DEPTH_DISTRIBUTION,
       CONTACT_SHADOWS,
       "Scale bed to room: if compact, 140cm bed instead of 160cm, skip bench. Door = 204cm reference. Preserve existing light direction and color temperature. No warm tint.",
@@ -285,7 +285,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       `${CAMERA_PRESERVATION} Room structure LOCKED: walls, floor, ceiling, doors visually identical to input — same geometry.`,
       EQUIPMENT_PRESERVATION,
       `Add the following entryway furniture to this photo of a finished room: ${furniturePrompt}.`,
-      "Small space — do not overcrowd. Console max 60% of wall width. Freestanding only: console, mirror propped on console, coat rack, bench, runner rug. No wall art, no curtains.",
+      "Small space — do not overcrowd. Console max 60% of wall width. Freestanding only: console, mirror propped on console, coat rack, bench, runner rug. No wall art.",
       CONTACT_SHADOWS,
       "Door = 204cm reference. Preserve existing light direction and color temperature. No warm tint.",
       "DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Subtle film grain. No text or watermarks.",
@@ -300,7 +300,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       `Add the following laundry equipment to this photo of a finished room: ${furniturePrompt}.`,
       "Functional layout — washing machine, cabinet, drying rack, basket. No decorative objects. If compact (<4m2), skip folding table and drying rack.",
       CONTACT_SHADOWS,
-      "Door = 204cm reference. Preserve existing light direction and color temperature. No warm tint. No curtains.",
+      "Door = 204cm reference. Preserve existing light direction and color temperature. No warm tint. Freestanding objects only.",
       "DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Subtle film grain. No text or watermarks.",
     ].join(" ");
   }
@@ -325,7 +325,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       EQUIPMENT_PRESERVATION,
       `Add the following furniture and decoration into this photo of a finished room: ${furniturePrompt}.`,
       "Center dining table with chairs. If deep room, add sideboard as background anchor. If compact, round table 120cm + 4 chairs instead of rectangular 180cm + 6.",
-      "Freestanding only — no wall art, no shelving, no curtains. Furniture must not touch walls.",
+      "Freestanding only — no wall art, no shelving. Furniture must not touch walls.",
       CONTACT_SHADOWS,
       "Door = 204cm, sill = 90cm references. Preserve existing light direction and color temperature. No warm tint.",
       "Result should look like a luxury real estate listing photo. DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Subtle film grain. No text or watermarks.",
@@ -338,7 +338,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
     `${CAMERA_PRESERVATION} Room structure is LOCKED: walls, floor, ceiling, windows, doors visually identical to input — same angles, same geometry, same number of openings. If input has zero windows, output has zero windows.`,
     EQUIPMENT_PRESERVATION,
     `Add the following furniture and decoration into this photo of a finished room: ${furniturePrompt}.`,
-    "Freestanding objects only — no wall art, no shelving, no curtains. Furniture must not touch walls.",
+    "Freestanding objects only — no wall art, no shelving. Furniture must not touch walls.",
     "Distribute furniture across FULL DEPTH and WIDTH: primary group foreground, secondary group further back if space allows.",
     CONTACT_SHADOWS,
     "Scale references: door = 204cm, handle = 100cm, sill = 90cm. Scale furniture to room volume — if compact (<4m wide), use smaller pieces. Scale up if ceiling >3m.",

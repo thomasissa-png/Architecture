@@ -53,7 +53,7 @@ export const STYLES: StyleOption[] = [
     palette: ["#F0EDE5", "#C4B99A", "#6B705C"],
     preview: "/api/demo?style=japandi&image=after",
     surfacePrompt:
-      "Japandi: soft warm white walls with very subtle sand undertone keeping the same overall brightness as the input photo, light ash wide-plank flooring with matte finish, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs, round washi paper pendant light in natural off-white",
+      "Japandi: soft off-white walls with very subtle sand undertone keeping the same overall brightness as the input photo, light ash wide-plank flooring with matte finish, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs, round washi paper pendant light in natural off-white",
     furniturePrompt:
       "A meditative room with deliberately sparse furnishing and balanced asymmetry — every empty space is intentional. Japandi furniture with precise geometric lines and balanced asymmetry: low-profile platform sofa with clean lines in natural undyed linen in warm ecru with exposed light ash wood frame 220cm wide, light ash rectangular coffee table with rounded edges and short legs 100cm, flat-weave natural fiber rug in warm straw tone 200x250cm, single ikebana dried branch arrangement in geometric cylindrical ceramic vase, floor cushion in muted clay tone beside the table, minimal round side table in light ash 40cm with black cast iron teapot (tetsubin) as signature piece, potted single-stem orchid in unglazed charcoal pottery, thin cashmere throw in warm sand tone draped over one sofa arm, intentional negative space with only 30 percent of room furnished",
   },
@@ -64,7 +64,7 @@ export const STYLES: StyleOption[] = [
     palette: ["#1C1C1E", "#C5A55A", "#2D5A3D"],
     preview: "/api/demo?style=art-deco&image=after",
     surfacePrompt:
-      "Art Deco: slightly warm white walls with smooth finish keeping the same overall brightness as the input photo, dark stained herringbone parquet flooring, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs, brass and frosted glass geometric pendant chandelier",
+      "Art Deco: off-white walls with smooth finish keeping the same overall brightness as the input photo, dark stained herringbone parquet flooring, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs, brass and frosted glass geometric pendant chandelier",
     furniturePrompt:
       "An opulent salon with geometric precision and theatrical glamour — every surface gleams. Art Deco furniture: channel-tufted velvet sofa in deep emerald green with polished brass legs 230cm wide arranged symmetrically in the room, round polished brass coffee table with smoked glass top on pedestal base 90cm diameter, geometric patterned area rug in black gold and cream 200x300cm, fluted dark lacquer drinks cabinet with brass handles 120cm tall, marble-top brass side table with crystal decanter and gold-rimmed glasses, tall brass floor lamp with pleated cream silk shade, brass sunburst mirror leaning against the wall resting on top of the drinks cabinet as signature piece, potted areca palm in polished brass planter, matching pair of brass table lamps on side tables flanking the sofa, velvet cushions in sapphire and gold with geometric patterns",
   },
@@ -75,7 +75,7 @@ export const STYLES: StyleOption[] = [
     palette: ["#D4A03C", "#5B3A29", "#2E8B8B"],
     preview: "/api/demo?style=mid-century&image=after",
     surfacePrompt:
-      "Mid-Century Modern: soft white walls with barely visible warm tint keeping the same overall brightness as the input photo, warm walnut-toned wood plank flooring with satin finish, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs, Sputnik-style brass and black multi-arm ceiling pendant",
+      "Mid-Century Modern: soft off-white walls with subtle ivory undertone keeping the same overall brightness as the input photo, warm walnut-toned wood plank flooring with satin finish, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs, Sputnik-style brass and black multi-arm ceiling pendant",
     furniturePrompt:
       "A sunlit retro living room with optimistic colors and iconic design pieces — everything has legs and light passes beneath. Mid-Century Modern furniture, all pieces raised on legs with visible daylight beneath: curved organic sofa in mustard woven fabric with walnut tapered legs 220cm wide, sculptural free-form walnut coffee table with biomorphic shape 120cm, warm-toned geometric area rug in cream mustard and teal 200x300cm, walnut credenza with sliding doors and brass pulls 160cm wide as background anchor, black leather and walnut bentwood lounge chair with matching ottoman, walnut and brass tripod floor lamp with natural linen cone shade (60s-style), potted fiddle leaf fig in warm terracotta planter, stacked vintage design books and small brass starburst clock on the credenza, two cushions in teal and burnt orange",
   },
@@ -108,7 +108,7 @@ export const STYLES: StyleOption[] = [
     palette: ["#F5EDE0", "#C9B99A", "#A0522D"],
     preview: "/api/demo?style=cosy&image=after",
     surfacePrompt:
-      "Modern cozy: soft white walls with barely visible warm tint keeping the same overall brightness as the input photo, light oak wide-plank flooring with matte finish, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs, warm fabric drum pendant light in cream tone",
+      "Modern cozy: soft off-white walls with subtle cream undertone keeping the same overall brightness as the input photo, light oak wide-plank flooring with matte finish, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs, warm fabric drum pendant light in cream tone",
     furniturePrompt:
       "A cocooning nest where warmth is layered — soft throws, candlelight, and textures you want to sink into. Modern cozy furniture densely layered with mixed textures, all rounded organic forms: generously proportioned three-seat boucle sofa in warm cream 260cm wide with chunky knit throw in cream wool draped over sofa arm and soft sheepskin draped over seat, camel boucle armchair, round light oak coffee table 100cm diameter with cluster of 3 pillar candles on wooden tray and stack of hardcover books with earth-tone covers, layered cushions in mixed textures velvet linen and boucle in cream camel and warm cognac, cream wool area rug 200x300cm, warm ceramic table lamp with linen drum shade on oak side table, string of pearls in cream ribbed ceramic hanging planter",
   },
@@ -130,7 +130,7 @@ export const STYLES: StyleOption[] = [
     palette: ["#1B4D6E", "#C5533B", "#C5A55A"],
     preview: "/api/demo?style=maximalist&image=after",
     surfacePrompt:
-      "Maximalist eclectic: rich deep teal accent on the largest visible surface with remaining areas in warm white keeping the same overall brightness as the input photo, polished dark wood flooring, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs, dramatic sculptural pendant light in brass with colored glass elements",
+      "Maximalist eclectic: rich deep teal accent on the largest visible surface with remaining areas in off-white keeping the same overall brightness as the input photo, polished dark wood flooring, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs, dramatic sculptural pendant light in brass with colored glass elements",
     furniturePrompt:
       "A bold, personality-filled room where more is more — vibrant colors, mixed patterns, and curated eclecticism. Maximalist furniture: bold jewel-toned velvet sofa in deep cobalt blue with curved sculptural back and brass legs 230cm wide, round lacquered coral coffee table on brass circular frame 100cm, layered rugs mixing faded vintage Persian and contemporary bold graphic patterns 200x300cm, two framed art prints propped on the floor against the baseboard, sculptural brass floor lamp with oversized colored shade, one cushion in animal print velvet and one in bold geometric stripe, large potted monstera in colorful glazed ceramic pot, brass and marble side table with stacked art books and two curated objects, vintage brass tray with pillar candles on the coffee table, ornate vintage brass candlestick holder on the side table",
   },
@@ -141,7 +141,7 @@ export const STYLES: StyleOption[] = [
     palette: ["#F0EBE0", "#8B7355", "#C5A55A"],
     preview: "/api/demo?style=haussmannian&image=after",
     surfacePrompt:
-      "Haussmannian Parisian: soft warm white walls keeping the same overall brightness as the input photo, classic light oak herringbone parquet flooring with satin finish, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs preserving existing crown moldings and cornices, classic French chandelier with crystal drops and gilt bronze arms 60cm diameter",
+      "Haussmannian Parisian: soft off-white walls keeping the same overall brightness as the input photo, classic light oak herringbone parquet flooring with satin finish, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs preserving existing crown moldings and cornices, classic French chandelier with crystal drops and gilt bronze arms 60cm diameter",
     furniturePrompt:
       "A refined Parisian apartment where classic elegance meets understated comfort — timeless proportions and quiet luxury. Haussmannian Parisian furniture: elegant three-seat sofa in soft dove grey linen with low rolled arms and dark walnut turned legs 230cm wide, round marble-top gueridon side table with dark patinated brass legs 50cm, classic French bergere armchair in cream linen with dark walnut frame as accent piece, warm-toned Persian-inspired area rug in muted rose ivory and navy 200x300cm, tall dark walnut bookcase with brass gallery rail 180cm as background anchor with leather-bound books and small brass objects, classic brass pharmacy floor lamp with cream shade, white marble mantel clock and brass candlesticks on the bookcase, potted white orchid in aged brass cachepot, two cushions in dusty rose and soft sage velvet",
   },
