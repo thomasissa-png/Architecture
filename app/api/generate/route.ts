@@ -123,7 +123,7 @@ function getOutputSize(
 const DSLR_LINE = "DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Subtle photographic film grain must be visible at 100% zoom — not smooth CGI rendering. Natural lens vignetting darkening the corners by 5-10%. No text or watermarks.";
 const CEILING_PRESERVATION = "Preserve ceiling 3D geometry — vaults, beams, ribs keep shape. Refinish ceiling surface: smooth plaster over raw concrete, formwork marks, seams. Beams keep 3D shape but receive clean painted finish.";
 const LIGHT_PRESERVATION = "Preserve existing light direction, shadow positions, and relative intensity. Maintain wall color temperature from input. Do not artificially brighten darker areas. Do not add any warm tint or yellow cast — if the input walls are cool-toned or neutral, the output walls must remain the same temperature.";
-const WALL_PRESERVATION = "Wall geometry must stay identical: same angles, same corners, same depth. Wall finishing means changing color and texture only — never add or remove volume, never round corners, never change wall thickness.";
+const WALL_PRESERVATION = "Wall geometry must stay identical: same angles, same corners, same depth. Wall finishing means changing color and texture only — never add or remove volume, never round corners, never change wall thickness. Do not add baseboards or moldings unless already present in the input.";
 const CAMERA_PRESERVATION = "Same camera angle, lens distortion, vanishing points, field of view, orientation.";
 
 // ── Pass 1: Surface finishing ────────────────────────────────────────
@@ -238,7 +238,7 @@ function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string
 // ── Pass 2: Furniture placement ──────────────────────────────────────
 
 // Shared compact fragments for pass 2
-const EQUIPMENT_PRESERVATION = "Keep all wall-mounted equipment visible (radiators, vents, switches, outlets). Do not place furniture in front of radiators.";
+const EQUIPMENT_PRESERVATION = "Keep all wall-mounted equipment visible (radiators, vents, switches, outlets). Do not place furniture in front of radiators. No curtains.";
 const CONTACT_SHADOWS = "Every piece must appear firmly grounded on the floor with visible contact shadows — especially furniture placed in the back of the room.";
 const DEPTH_DISTRIBUTION = "Distribute furniture across the FULL DEPTH of the room. Place a primary seating group in the foreground third and at least one secondary anchor (side table, floor lamp, accent chair) in the back third. Never cluster all furniture in one zone.";
 
