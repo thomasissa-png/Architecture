@@ -39,4 +39,4 @@ public/logs/
 # Playwright
 playwright-report/
 test-results/
-audit-data/*.jpg
+audit-data/
