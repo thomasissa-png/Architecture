@@ -6,7 +6,6 @@
  * never from a previous iteration output.
  */
 
-const MAX_ITERATIONS = 3;
 const PASS1_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 // ─── OpenAI Responses API — Iteration furniture prompt ──────────────
@@ -140,4 +139,4 @@ export function buildAdjustOutdoorResponsesPrompt(
   ].join(" ");
 }
 
-export { MAX_ITERATIONS, PASS1_TTL_MS };
+export { PASS1_TTL_MS };
