@@ -1498,8 +1498,10 @@ export default function Home() {
               <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
                 03 — Options
               </h3>
-              <div className="flex items-center justify-center gap-3">
+              <div className="flex items-center justify-center gap-3" role="radiogroup" aria-label="Mode de génération">
                 <button
+                  role="radio"
+                  aria-checked={!withFurniture}
                   onClick={() => setWithFurniture(false)}
                   className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
                     !withFurniture
@@ -1507,9 +1509,11 @@ export default function Home() {
                       : "bg-foreground/5 text-muted hover:bg-foreground/10"
                   }`}
                 >
-                  Surfaces uniquement
+                  Finitions seulement
                 </button>
                 <button
+                  role="radio"
+                  aria-checked={withFurniture}
                   onClick={() => setWithFurniture(true)}
                   className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
                     withFurniture
@@ -1517,13 +1521,13 @@ export default function Home() {
                       : "bg-foreground/5 text-muted hover:bg-foreground/10"
                   }`}
                 >
-                  Surfaces + Mobilier
+                  Finitions + Mobilier
                 </button>
               </div>
               <p className="text-center text-xs text-muted font-light mt-2">
                 {withFurniture
                   ? "Finitions et mobilier complet"
-                  : "Pièce finie sans meuble — idéal pour voir les surfaces"}
+                  : "Pièce finie sans meuble — idéal pour visualiser les finitions"}
               </p>
             </div>
           )}

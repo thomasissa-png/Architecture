@@ -96,25 +96,25 @@ export default function GalleryGate({ children }: GalleryGateProps) {
       </div>
 
       <h1 className="text-2xl font-bold text-foreground tracking-tight mb-3">
-        Votre galerie vous attend
+        Retrouvez tous vos visuels
       </h1>
       <p className="text-sm text-muted font-light mb-8 max-w-sm mx-auto leading-relaxed">
-        L&apos;historique de vos visuels est disponible dès votre premier pack.
+        L&apos;historique de vos visuels générés, téléchargeables à tout moment.
       </p>
 
       <div className="flex flex-col items-center gap-3">
         <a
-          href="/#pricing"
+          href="/pricing"
           className="inline-flex items-center justify-center px-8 py-3 bg-sage text-white rounded-full text-sm font-medium hover:opacity-90 active:scale-[0.99] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
         >
-          Pack Starter — 14,90&nbsp;&#8364;
+          Pro — 50 visuels — 29&nbsp;&#8364;/mois
         </a>
 
         <a
           href="/pricing"
           className="text-sm text-muted font-light hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-sage/50 rounded-sm"
         >
-          Voir les formules
+          ou Pack Starter — 15 visuels — 14,90&nbsp;&#8364;
         </a>
       </div>
 
@@ -124,7 +124,7 @@ export default function GalleryGate({ children }: GalleryGateProps) {
           onClick={fetchAccess}
           className="underline hover:text-muted/80 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-sage/50 rounded-sm min-h-[44px] inline-flex items-center"
         >
-          Rafraîchir la page
+          Vérifier mon accès
         </button>
       </p>
     </div>
