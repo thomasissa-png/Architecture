@@ -650,16 +650,7 @@ export async function POST(request: NextRequest) {
   const session = isInternalDossierCall ? null : await getServerSession(authOptions);
   console.log(`[generate] session: userId="${session?.user?.id || "NONE"}" email="${session?.user?.email || "NONE"}" isInternal=${isInternalDossierCall}`);
 
-  if (!isInternalDossierCall && session?.user?.id) {
-    // Connected user — decrement credit optimistically
-    const decremented = await decrementCredit(session.user.id);
-    if (!decremented) {
-      return NextResponse.json(
-        { error: "Plus de visuels disponibles. Rechargez pour continuer." },
-        { status: 402 }
-      );
-    }
-  }
+  // Credit check is deferred after body parsing — see below (after pass1Key detection)
   // Anonymous users pass through — protected by IP rate limit (10 req/min)
 
   let styleId = "unknown";
@@ -674,6 +665,7 @@ export async function POST(request: NextRequest) {
   let _isOutdoor = false;
   let _outdoorSubtype: string | null = null;
   let _withFurniture = true;
+  let _pass1Key: string | undefined;
 
   try {
     const body = await request.json();
@@ -717,7 +709,20 @@ export async function POST(request: NextRequest) {
     // Assign to hoisted vars for queue fallback in catch
     _image = image; _surfacePrompt = surfacePrompt; _furniturePrompt = furniturePrompt;
     _width = width; _height = height; _roomType = roomType; _isOutdoor = isOutdoor;
-    _outdoorSubtype = outdoorSubtype; _withFurniture = withFurniture;
+    _outdoorSubtype = outdoorSubtype; _withFurniture = withFurniture; _pass1Key = pass1Key;
+
+    // Credit check — AFTER body parsing so we know if it's an iteration
+    // Iterations do NOT consume a credit (spec F1). Only new generations do.
+    const isIteration = !!pass1Key;
+    if (!isInternalDossierCall && session?.user?.id && !isIteration) {
+      const decremented = await decrementCredit(session.user.id);
+      if (!decremented) {
+        return NextResponse.json(
+          { error: "Plus de visuels disponibles. Rechargez pour continuer." },
+          { status: 402 }
+        );
+      }
+    }
 
     // ── F1 Iteration flow: adjust (edit furnished) or restyle (re-pass 2) ──
     if (pass1Key) {
@@ -947,7 +952,7 @@ export async function POST(request: NextRequest) {
         ]);
       }
 
-      // Generation succeeded — credit was already decremented optimistically
+      // Iteration succeeded — no credit consumed (iterations are free)
 
       return response;
     }
@@ -1148,7 +1153,8 @@ export async function POST(request: NextRequest) {
       console.warn("Pass 2 failed after 2 attempts — delivering pass 1 (surfaces only)");
 
       // Refund the credit — delivering an empty room (surfaces only) is not the paid service.
-      if (session?.user?.id) {
+      // Only refund if a credit was actually decremented (not for iterations)
+      if (session?.user?.id && !_pass1Key) {
         addCredits(session.user.id, 1).catch((refundErr) => {
           console.error("CRITICAL: Credit refund (pass2 failed) failed for user", session.user.id, refundErr);
         });
@@ -1299,7 +1305,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Standard error handling: refund credit + return error
-    if (session?.user?.id) {
+    // Only refund if a credit was actually decremented (not for iterations)
+    if (session?.user?.id && !_pass1Key) {
       addCredits(session.user.id, 1).catch((refundErr) => {
         console.error("CRITICAL: Credit refund failed for user", session.user.id, refundErr);
         getPool().query(
