@@ -27,7 +27,7 @@ function getOpenAI(): OpenAI {
  * v32 (revert gpt-image-1.5 → gpt-image-1 — regression spatiale confirmee par audit Lucas, modele configurable via env),
  * v33 (audit Yann: propagation DEPTH_DISTRIBUTION + CONTACT_SHADOWS aux 7 builders dedies — bedroom, kitchen, bathroom, WC, entryway, laundry, cellar + preservation lumiere passe 2 tous builders),
  * v34 (audit Yann structurel: DEPTH_DISTRIBUTION imperatif, densite adaptative, furniturePrompts avec placement spatial) */
-export const PROMPT_VERSION = "v38";
+export const PROMPT_VERSION = "v39";
 
 // ─── Image generation model ─────────────────────────────────────────
 // v36: configurable via env var. Default gpt-image-1 (v32 reverted gpt-image-1.5 for spatial regression).
@@ -237,6 +237,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       CONTACT_SHADOWS,
       EQUIPMENT_PRESERVATION,
       "Scale references: door = 204cm, sill = 90cm. Freestanding objects only.",
+      "Place furniture INSIDE the room only — do not add any object on exterior terraces, balconies, or patios visible through windows or glazing.",
       "Result should look like a luxury real estate listing photo.",
       `${CAMERA_PRESERVATION} Room structure LOCKED: walls, floor, ceiling, windows visually identical to input — same geometry, same openings. Preserve existing light direction and color temperature. Even if the style uses warm materials, the room's overall lighting temperature must match the input. No warm tint or yellow cast.`,
       "DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Subtle film grain. No text or watermarks.",
@@ -251,6 +252,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       "Scale references: ceiling ~250cm, tile size, plumbing proportions. 60cm min passage width.",
       CONTACT_SHADOWS,
       EQUIPMENT_PRESERVATION,
+      "Place furniture INSIDE the room only — do not add any object on exterior terraces, balconies, or patios visible through windows or glazing.",
       "Result should look like a luxury real estate listing photo.",
       `${CAMERA_PRESERVATION} Room structure LOCKED: walls, floor, ceiling, windows visually identical to input — same geometry, same openings. Preserve existing light direction and color temperature. Even if the style uses warm materials, the room's overall lighting temperature must match the input. No warm tint or yellow cast.`,
       "DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Subtle film grain. No text or watermarks.",
@@ -279,6 +281,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       CONTACT_SHADOWS,
       EQUIPMENT_PRESERVATION,
       "Scale bed to room: if compact, 140cm bed instead of 160cm, skip bench. Door = 204cm reference.",
+      "Place furniture INSIDE the room only — do not add any object on exterior terraces, balconies, or patios visible through windows or glazing.",
       "Result should look like a luxury real estate listing photo.",
       `${CAMERA_PRESERVATION} Room structure LOCKED: walls, floor, ceiling, windows visually identical to input — same geometry, same number of openings. Preserve existing light direction and color temperature. Even if the style uses warm materials, the room's overall lighting temperature must match the input. No warm tint.`,
       "DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Subtle film grain. No text or watermarks.",
@@ -330,6 +333,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       CONTACT_SHADOWS,
       EQUIPMENT_PRESERVATION,
       "Door = 204cm, sill = 90cm references.",
+      "Place furniture INSIDE the room only — do not add any object on exterior terraces, balconies, or patios visible through windows or glazing.",
       "Result should look like a luxury real estate listing photo.",
       `${CAMERA_PRESERVATION} Room structure LOCKED: walls, floor, ceiling, windows visually identical to input — same geometry, same openings. Preserve existing light direction and color temperature. Even if the style uses warm materials, the room's overall lighting temperature must match the input. No warm tint.`,
       "DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Subtle film grain. No text or watermarks.",
