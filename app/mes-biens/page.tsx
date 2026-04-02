@@ -432,7 +432,7 @@ export default function MesBiensPage() {
               >
                 {/* Archive/Unarchive button */}
                 <button
-                  onClick={(e) => { e.stopPropagation(); handleArchiveFromList(property.id, property.label || property.address); }}
+                  onClick={(e) => { e.stopPropagation(); handleArchiveFromList(property.id, property.address_normalized || property.address_raw || "Ce bien"); }}
                   disabled={archivingId === property.id}
                   className="absolute top-3 right-3 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity bg-background/90 text-foreground/50 hover:text-foreground text-xs p-1.5 rounded-lg hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 min-w-[44px] min-h-[44px] flex items-center justify-center disabled:opacity-40"
                   aria-label={showArchived ? "Désarchiver ce bien" : "Archiver ce bien"}
