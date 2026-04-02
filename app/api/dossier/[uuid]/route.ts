@@ -616,6 +616,12 @@ async function generateSinglePhoto(
     furniturePrompt = style.furniturePrompt;
   }
 
+  // Add micro-variation to prompt for regeneration to produce different results
+  // GPT-image-1 is near-deterministic with identical inputs — a small variation
+  // in the furniture prompt forces a different composition while preserving style
+  const variationSuffix = ` Variation seed: ${Date.now()}.`;
+  const variedFurniturePrompt = furniturePrompt + variationSuffix;
+
   // Call generate API with internal fetch
   const response = await fetch(generateUrl, {
     method: "POST",
@@ -627,7 +633,7 @@ async function generateSinglePhoto(
     body: JSON.stringify({
       image: `data:image/jpeg;base64,${inputBase64}`,
       surfacePrompt,
-      furniturePrompt,
+      furniturePrompt: variedFurniturePrompt,
       styleId: effectiveStyleId,
       withFurniture,
       width: outputWidth,
