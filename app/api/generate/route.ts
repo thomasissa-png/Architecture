@@ -165,7 +165,7 @@ function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string
       "Waterproof floor — small ceramic tiles or vinyl. Washable matte paint or tiles on lower walls.",
       "Remove construction leftovers: outlets, cables, junction boxes — blend into wall finish. Keep radiators, heaters, water heater (cylindrical tank), vents, switches in position.",
       "Room stays COMPLETELY EMPTY — no fixtures, no objects. EXACTLY the same number of windows and doors as the input — same positions, same sizes. Walls without windows must remain solid.",
-      CEILING_PRESERVATION, WALL_PRESERVATION,
+      CEILING_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
       `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
       DSLR_LINE,
     ].join(" ");
@@ -178,7 +178,7 @@ function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string
       "Flooring per style description above. Ceiling light per style description. If ONE accent wall exists, preserve it — apply style color to other walls only.",
       "Remove construction leftovers: dangling cables, junction boxes, exposed wiring, electrical outlets, cable exits — blend into wall finish. Keep radiators, heaters, water heater (cylindrical tank), vents, switches in position.",
       "Room stays COMPLETELY EMPTY — no furniture, no objects. EXACTLY the same number of windows and doors as the input — same positions, same sizes. Walls without windows must remain solid.",
-      CEILING_PRESERVATION, WALL_PRESERVATION,
+      CEILING_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
       `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
       DSLR_LINE,
     ].join(" ");
@@ -191,7 +191,7 @@ function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string
       "Waterproof floor — white or light grey ceramic tiles matte. Walls in washable matte white paint.",
       "Remove construction leftovers: outlets, cables, junction boxes — blend into wall finish. Keep radiators, heaters, water heater (cylindrical tank), vents, switches in position.",
       "Room stays COMPLETELY EMPTY — no appliances, no objects. EXACTLY the same number of windows and doors as the input — same positions, same sizes. Walls without windows must remain solid.",
-      CEILING_PRESERVATION, WALL_PRESERVATION,
+      CEILING_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
       `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
       DSLR_LINE,
     ].join(" ");
@@ -204,7 +204,7 @@ function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string
       "Concrete or stone floor as-is or with sealant. Clean matte white or light grey paint over masonry.",
       "Remove construction leftovers: outlets, cables, junction boxes — blend into wall finish. Keep radiators, heaters, water heater (cylindrical tank), vents, switches in position.",
       "Room stays COMPLETELY EMPTY — bare floors, bare walls. EXACTLY the same number of windows and doors as the input — same positions, same sizes. Walls without windows must remain solid.",
-      CEILING_PRESERVATION, WALL_PRESERVATION,
+      CEILING_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
       `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
       DSLR_LINE,
     ].join(" ");
@@ -217,7 +217,7 @@ function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string
       "Durable entrance floor — ceramic tiles, natural stone, or hard-wearing wood. Ceiling light per style description.",
       "Remove construction leftovers: outlets, cables, junction boxes — blend into wall finish. Keep radiators, heaters, water heater (cylindrical tank), vents, switches in position.",
       "Room stays COMPLETELY EMPTY — no furniture, no objects. EXACTLY the same number of windows and doors as the input — same positions, same sizes. Walls without windows must remain solid.",
-      CEILING_PRESERVATION, WALL_PRESERVATION,
+      CEILING_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
       `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
       DSLR_LINE,
     ].join(" ");
@@ -227,12 +227,12 @@ function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string
   // v36: Action FIRST (v30 lesson), camera/light at END
   return [
     `Edit this photo of a room. Apply this surface finish: ${surfacePrompt}.`,
-    "Refinish the floor and repaint or replaster the walls. For the ceiling light fixture, follow the style description above exactly.",
+    "Apply the described finish to the existing floor and walls. Do not add structural elements that are absent from the input. For the ceiling light fixture, follow the style description above exactly.",
     "If the input has ONE accent wall (different color or texture), preserve it as-is — apply the style's wall color to the other walls only.",
     "Remove all visible construction elements: dangling cables, junction boxes, exposed wiring, electrical outlets, round black wall boxes, cable exits — blend into wall finish.",
     "Preserve all wall-mounted fixed equipment: radiators, heaters, water heater (cylindrical tank), vents, thermostats, switches, boiler in exact position.",
     "Keep the room COMPLETELY EMPTY — no furniture, no rugs, no objects. EXACTLY the same number of windows and doors as the input — same positions, same sizes. Walls without windows must remain solid.",
-    CEILING_PRESERVATION, WALL_PRESERVATION,
+    CEILING_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
     `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
     DSLR_LINE,
   ].join(" ");
@@ -720,8 +720,9 @@ export async function POST(request: NextRequest) {
     if (styleId && styleId !== "custom" && !isOutdoor && furniturePrompt && image) {
       try {
         const { selectVariant } = await import("@/lib/style-variants");
-        // Use first 32 chars of base64 image as hash for deterministic variant selection
-        const imageHash = image.slice(image.indexOf(",") + 1, image.indexOf(",") + 33);
+        const crypto = await import("crypto");
+        const imageData = image.slice(image.indexOf(",") + 1);
+        const imageHash = crypto.createHash("sha256").update(imageData).digest("hex").slice(0, 16);
         const variant = selectVariant(imageHash, styleId);
         if (variant.furniturePrompt) {
           resolvedFurniturePrompt = variant.furniturePrompt;
