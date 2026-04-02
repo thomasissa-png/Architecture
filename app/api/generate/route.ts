@@ -40,7 +40,7 @@ import { enqueueGeneration, shouldQueue } from "@/lib/generation-queue";
  * v33 (audit Yann: propagation DEPTH_DISTRIBUTION + CONTACT_SHADOWS aux 7 builders dedies — bedroom, kitchen, bathroom, WC, entryway, laundry, cellar + preservation lumiere passe 2 tous builders),
  * v34 (audit Yann structurel: DEPTH_DISTRIBUTION imperatif sans conditionnels, densite adaptative, furniturePrompts 12 styles avec FOREGROUND/LATERAL/BACKGROUND/ACCENTS, pre-processor custom enrichi few-shot + filtrage assoupli),
  * v37 (audit croise Yann+Lucas #91-95: P0 anti-fenetre hallucinee comptage explicite, P0 equipements muraux water heater nomme, P1 anti-warm shift materiaux chauds, P2 texture poutres conditionnelle, P2 camera position LOCKED, P1 pierre brute limewash) */
-export const PROMPT_VERSION = "v39";
+export const PROMPT_VERSION = "v40";
 
 // ─── Image generation model ─────────────────────────────────────────
 // v36: configurable via env var. Default gpt-image-1 (v32 reverted gpt-image-1.5 for spatial regression).
@@ -121,10 +121,11 @@ function getOutputSize(
 
 // ── Shared prompt fragments (constants to avoid duplication) ─────────
 const DSLR_LINE = "DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Subtle photographic film grain must be visible at 100% zoom — not smooth CGI rendering. Natural lens vignetting darkening the corners by 5-10%. No text or watermarks.";
-const CEILING_PRESERVATION = "Preserve ceiling 3D geometry — vaults, beams, ribs keep shape. Smooth plaster over ceiling surface BETWEEN beams only — formwork marks, seams refinished. Beams themselves: if they show raw concrete, aged wood, or exposed metal (IPN), preserve their exact surface texture and patina — do NOT smooth, paint, or refinish beams unless the surfacePrompt explicitly requests it.";
-const LIGHT_PRESERVATION = "Preserve existing light direction, shadow positions, and relative intensity. Maintain input's color temperature — warm-toned materials (brass, wood, copper) reflect existing light, they do NOT shift the overall lighting warm. Do not artificially brighten dark areas. No warm tint or yellow cast. Raw concrete, bare masonry, and grey plaster must stay cool-grey — do not shift to beige, sand, or warm stone.";
+const CEILING_PRESERVATION = "Preserve ceiling 3D geometry — vaults, beams, ribs keep shape. If the ceiling has visible beams: smooth plaster BETWEEN beams only, formwork marks and seams refinished. If the ceiling is stripped, damaged, or shows bare structure (metal joists, hollow-core slabs, cables): apply a flat white finish without adding any ornamental geometry — no coffers, no moldings, no vaults. Beams themselves: if they show raw concrete, aged wood, or exposed metal (IPN), preserve their exact surface texture and patina — do NOT smooth, paint, or refinish beams unless the surfacePrompt explicitly requests it.";
+const LIGHT_PRESERVATION = "Preserve existing light direction, shadow positions, and relative intensity. Maintain input's color temperature — warm-toned materials (brass, wood, copper) reflect existing light, they do NOT shift the overall lighting warm. Do not artificially brighten dark areas. No warm tint or yellow cast. The output color temperature must match the input exactly — measure by the whites (walls, ceiling, window frames). Raw concrete, bare masonry, and grey plaster must stay cool-grey — do not shift to beige, sand, or warm stone. Warm-toned MATERIALS (wood, brass, leather) have warm LOCAL color but must NOT shift the GLOBAL white balance.";
 const WALL_PRESERVATION = "Wall geometry must stay identical: same angles, same corners, same depth. Wall finishing means changing color and texture only — never add or remove volume, never round corners, never change wall thickness. Do not add baseboards or moldings unless already present in the input. If walls show raw stone, exposed brick, or masonry, apply a limewash or transparent finish over the existing texture — do NOT cover with opaque paint unless the surfacePrompt explicitly requests it.";
 const CAMERA_PRESERVATION = "Same camera angle, lens distortion, vanishing points, field of view, orientation. Camera position is LOCKED: same height, same tilt angle, same horizontal rotation as input.";
+const ANTI_INVENTION = "Do NOT invent architectural elements absent from the input: no arches, no vaults, no glass partitions, no columns, no niches, no decorative ceiling coffers. If the ceiling is damaged or stripped, apply a simple flat white finish — do not reconstruct ornamental geometry. If a wall is partially demolished, keep it as-is — do not complete or extend it.";
 
 // ── Pass 1: Surface finishing ────────────────────────────────────────
 // v36: ACTION FIRST in all builders (v30 lesson — GPT-image-1 weights early tokens more)
@@ -138,7 +139,7 @@ function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string
       "FLOOR OVERRIDE: ceramic or natural stone floor tiles suited for a kitchen — NOT wood, NOT parquet. Subway tile or smooth splashback behind work area. Ceiling light per style description.",
       "Remove construction leftovers: dangling cables, junction boxes, exposed wiring, electrical outlets, round black wall boxes, cable exits — blend into wall finish. Keep radiators, water heater (cylindrical tank), switches, vents in exact position.",
       "Room stays COMPLETELY EMPTY — no furniture, no appliances. EXACTLY the same number of windows and doors as the input — same positions, same sizes. Walls without windows must remain solid.",
-      CEILING_PRESERVATION, WALL_PRESERVATION,
+      CEILING_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
       `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
       DSLR_LINE,
     ].join(" ");
@@ -151,7 +152,7 @@ function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string
       "Floor-to-ceiling ceramic tiles in shower zone and vanity area. Water-resistant floor — ceramic or stone, matte non-slip. Recessed IP44 ceiling spotlights.",
       "Remove construction leftovers: dangling cables, junction boxes, exposed wiring, electrical outlets, cable exits — blend into wall finish. Keep radiators, heaters, water heater (cylindrical tank), vents, switches in exact position.",
       "Room stays COMPLETELY EMPTY — no fixtures, no objects. EXACTLY the same number of windows and doors as the input — same positions, same sizes. Walls without windows must remain solid.",
-      CEILING_PRESERVATION, WALL_PRESERVATION,
+      CEILING_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
       `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
       DSLR_LINE,
     ].join(" ");

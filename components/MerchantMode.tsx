@@ -88,6 +88,7 @@ export default function MerchantMode() {
   // Photos
   const [files, setFiles] = useState<File[]>([]);
   const [photoEntries, setPhotoEntries] = useState<PhotoEntry[]>([]);
+  const [photoWarnings, setPhotoWarnings] = useState<Record<number, string>>({});
 
   // Global style
   const [globalStyles, setGlobalStyles] = useState<string[]>([]);
@@ -165,6 +166,60 @@ export default function MerchantMode() {
       }, 150);
     }
   }, [files, currentStep]);
+
+  // ── Vision pre-check: validate each photo is a room/space (non-blocking) ──
+  useEffect(() => {
+    if (files.length === 0) {
+      setPhotoWarnings({});
+      return;
+    }
+
+    let cancelled = false;
+
+    async function validatePhotos() {
+      const newWarnings: Record<number, string> = {};
+
+      await Promise.allSettled(
+        files.map(async (file, index) => {
+          try {
+            const bitmap = await createImageBitmap(file);
+            const scale = Math.min(1, 512 / Math.max(bitmap.width, bitmap.height));
+            const w = Math.round(bitmap.width * scale);
+            const h = Math.round(bitmap.height * scale);
+            const canvas = document.createElement("canvas");
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext("2d");
+            if (!ctx) return;
+            ctx.drawImage(bitmap, 0, 0, w, h);
+            const dataUri = canvas.toDataURL("image/jpeg", 0.6);
+
+            const res = await fetch("/api/validate-image", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ image: dataUri }),
+            });
+
+            if (!res.ok) return;
+
+            const data = await res.json();
+            if (!data.isRoom && !cancelled) {
+              newWarnings[index] = "Cette photo ne semble pas être une pièce. Les résultats pourraient ne pas être optimaux.";
+            }
+          } catch {
+            // fail-open
+          }
+        })
+      );
+
+      if (!cancelled) {
+        setPhotoWarnings(newWarnings);
+      }
+    }
+
+    validatePhotos();
+    return () => { cancelled = true; };
+  }, [files]);
 
   // ── Fetch existing properties for quick select ──
   useEffect(() => {
@@ -631,6 +686,11 @@ export default function MerchantMode() {
                   <p className="text-xs text-foreground font-medium truncate">
                     Photo {index + 1}
                   </p>
+                  {photoWarnings[index] && (
+                    <p className="text-[10px] text-amber-600 font-medium leading-tight">
+                      {photoWarnings[index]}
+                    </p>
+                  )}
 
                   {/* Indoor / Outdoor toggle */}
                   <div className="flex gap-1 p-0.5 bg-foreground/5 rounded-lg" data-testid={`merchant-annotate-mode-${index}`}>
@@ -855,6 +915,7 @@ export default function MerchantMode() {
             files={files}
             onFilesChange={setFiles}
             maxFiles={MAX_PHOTOS}
+            photoWarnings={photoWarnings}
           />
 
           {/* Navigation */}

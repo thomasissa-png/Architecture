@@ -7,12 +7,13 @@ interface UploadZoneProps {
   files: File[];
   onFilesChange: (files: File[]) => void;
   maxFiles?: number;
+  photoWarnings?: Record<number, string>;
 }
 
 const DEFAULT_MAX_FILES = 3;
 const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 
-export default function UploadZone({ files, onFilesChange, maxFiles }: UploadZoneProps) {
+export default function UploadZone({ files, onFilesChange, maxFiles, photoWarnings }: UploadZoneProps) {
   const MAX_FILES = maxFiles ?? DEFAULT_MAX_FILES;
   const [uploadFeedback, setUploadFeedback] = useState<string | null>(null);
 
@@ -159,6 +160,11 @@ export default function UploadZone({ files, onFilesChange, maxFiles }: UploadZon
               <p className="text-xs text-muted/70 mt-1.5 truncate font-light">
                 {file.name}
               </p>
+              {photoWarnings?.[index] && (
+                <p className="text-[10px] text-amber-600 font-medium mt-0.5 leading-tight">
+                  {photoWarnings[index]}
+                </p>
+              )}
             </div>
           ))}
         </div>
