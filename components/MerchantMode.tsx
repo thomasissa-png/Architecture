@@ -1297,7 +1297,7 @@ export default function MerchantMode() {
                 setCurrentStep("photos");
                 setWithFurniture(true);
                 setAttachDone(false);
-                setAttachMode(null);
+                setAttachMode("none");
                 setSelectedPropertyId(null);
                 setError(null);
               }}
