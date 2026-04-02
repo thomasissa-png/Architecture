@@ -248,7 +248,10 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
   if (roomTypeId === "bathroom") {
     return [
       `Add the following bathroom fixtures and accessories to this photo of a finished room: ${furniturePrompt}.`,
-      "Wall-mounted vanity and mirror expected. Other items freestanding. If compact (wall <2m), use 60cm vanity, skip stool/basket. Shower max one-third of any wall.",
+      "If a bathtub, shower, sink, or toilet is visible in the input, it must appear in the output at the SAME position, SAME size, SAME shape. Treat existing fixtures as LOCKED elements.",
+      "This is a compact bathroom by default. ONE vanity, ONE basin — never a double vanity. Use 60cm vanity, skip stool and basket, no freestanding tub. Only use 80cm vanity or add freestanding tub if the room is clearly wider than 2.5m. Ignore shower and tub dimensions from the style if room is compact — use 80cm shower maximum.",
+      "Do not duplicate any fixture already visible. If a shower exists, do not add another. If a tub exists, do not add a shower stall.",
+      "The bathroom width and depth must match the input exactly — do not widen or deepen the room to fit more fixtures.",
       "Scale references: ceiling ~250cm, tile size, plumbing proportions. 60cm min passage width.",
       CONTACT_SHADOWS,
       EQUIPMENT_PRESERVATION,
