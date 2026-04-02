@@ -288,25 +288,28 @@
 | Expert IA Image (Lucas) | 2026-04-01 | docs/reviews/audit-visuel-v34-lucas.md | Audit v34 : 3 problemes fondateur (espaces, remplissage, custom). P0-1 : revert gpt-image-1.5 vers gpt-image-1 (regression geometrie DEJA confirmee en v32, re-activee sans audit visuel). P0-3 : few-shot custom prompt (GPT-4.1-mini produit des prompts vagues sans exemples). P0-4 : fix fallback vide /api/preprocess-prompt. P1-1 : distribution spatiale position 5/10 au lieu de 2/10. P1-3 : dimensions mobilier fixes (230cm) contredisent le builder conditionnel. Note estimee 5.6/10 (sans images). | gpt-image-1.5 re-active en v34 par decision fondateur ("Hardcoded, no fallback, no env var"). Le changelog v32 confirme la regression spatiale de ce modele. Les prompts sont structurellement corrects (v31-v33 ont applique toutes les corrections v30). Le custom prompt est le 2e probleme independant : preprocessCustomPrompt n'a aucun few-shot, le fallback retourne des chaines vides, et aucune validation de longueur/qualite du resultat GPT-4.1-mini. |
 
 | Expert IA Image (Lucas) | 2026-04-01 | docs/reviews/audit-visuel-v36-lucas.md | Audit structurel v36 : 3 generations (#91 Scandinavian kitchen, #92 Contemporary kitchen, #93 Scandinavian bedroom). Moyenne estimee 7.7/10. P0 contradiction sol cuisine Scandinave (bois vs carrelage). P1 double luminaire passe 1 vs passe 2. P2 style hints trop generiques pour pieces specialisees. P4 contradiction sol chambre (cool vs warm). Critere 6 (multi-modeles) marque N/A desormais (Flux desactive en prod). | Audit structurel uniquement (images Object Storage inaccessibles depuis env dev sans bash). Les builders dedies v36 (kitchen, bedroom) sont nettement plus robustes que le fallback generique. Le split roomFurnitureOverride + getStyleMaterialHint est correct mais les style hints ne transmettent pas les pieces iconiques (Wegner, AJ lamp). La contradiction surfacePrompt (bois blanchi) vs builder cuisine (NOT wood) est la P0 car les premiers tokens pesent plus dans gpt-image-1. |
+| @ia | 2026-04-02 | route.ts, generation-pipeline.ts (v37) | Validation 6 corrections P0 audit Yann+Lucas #91-95 : anti-fenêtre hallucinée (comptage EXACTLY), water heater préservation, anti-warm shift matériaux, texture poutres conditionnelle, camera LOCKED, pierre brute limewash. Propagées dans 3 fichiers (route.ts, generation-pipeline.ts, iteration-prompt.ts). Fix cellar builder manquant détecté par @qa. | Corrections ADDITIVES uniquement — zéro substitution pour éviter régression. Le cellar builder était le seul builder sans les directives anti-fenêtre/anti-warm, identifié par @qa post-implémentation. |
+| @fullstack | 2026-04-02 | lib/pdf-generator.ts | Fix PDF headers/footers Puppeteer : ajout displayHeaderFooter: false | Puppeteer ajoute par défaut le titre/date en header et l'URL en footer — une seule ligne supprime ce chrome navigateur. |
+| @fullstack | 2026-04-02 | app/page.tsx, components/InlineGenerator.tsx | Scroll fix (150ms→600ms pour CSS 700ms animations), VersionSelector visible pendant refine, dernier window.confirm() remplacé par modal inline dans InlineGenerator | scrollToElement trop rapide = scroll avant que le DOM ne soit rendu. VersionSelector caché pendant refine empêchait de voir v1. Dernier confirm() natif = rupture UX vs les ArchiveConfirmModal déjà créés. |
+| @design | 2026-04-02 | components/ArchiveConfirmModal.tsx, app/mes-biens/page.tsx, app/mes-biens/[id]/page.tsx, app/ma-galerie/page.tsx | Remplacement de 3 window.confirm() par ArchiveConfirmModal (backdrop blur, focus trap, useScrollLock, Sage tones, focus Cancel par défaut) | Safety pattern : focus sur Annuler par défaut car l'archivage est destructif. useScrollLock réutilisé de RefineModal. |
+| Yann Duval | 2026-04-02 | docs/reviews/audit-visuel-2026-04-02-yann.md | Audit #97 Japandi cuisine base 8.0/10, #98 itération 5.9/10 (régression -2.1). Four encastré disparu, crédence supprimée, meubles hauts lissés, meuble halluciné. 3 recommandations P0 (inventaire explicite, SURGICAL EDIT, masking localisé). | L'itération régénère la scène au lieu d'éditer chirurgicalement — problème systémique du pipeline adjust. |
+| Lucas Moreau | 2026-04-02 | docs/reviews/audit-visuel-2026-04-02-lucas.md | Audit #97 Japandi cuisine 7.4/10 (poutres halluccinées), #98 itération 4.5/10 (four/crédence/accessoires disparus, warm shift, meuble halluciné). Cause racine : prompt d'itération sans préservation mobilier existant. | Confirmation croisée avec Yann : le prompt adjust manque d'inventaire concret et de framing SURGICAL EDIT. |
+| @ia + @qa | 2026-04-02 | lib/iteration-prompt.ts, route.ts, generation-pipeline.ts (v38) | SURGICAL EDIT framing (2 adjust builders), inventaire mental (4 builders), anti-régénération, Camera LOCKED (4 builders), anti-hallucination retrait, kitchen appliance preservation. PROMPT_VERSION v37→v38. Validé @ia (GO) + @qa (6/6 PASS après fix Camera LOCKED restyle). | "pixel-identical" évité (leçon Sprint 17) au profit de "95%+ identical pixels" — assez agressif sans être impossible. Directive remplissage zone vide ajoutée sur recommandation @ia (P1). |
 
 ---
 
 ## Mémo de reprise — dernière session
 
-- **Date et heure de clôture** : 2026-03-31 (session 29)
+- **Date et heure de clôture** : 2026-04-02 (session 30)
 - **Branch** : `claude/session-recovery-analysis-jNy97`
 - **Résumé de la session** :
-  - **Latence** : Phase 1 optimisations appliquées (R3 MAX_DIMENSION 2048→1536, R6 singleton OpenAI client, R4 savePass1Cache parallélisé, R8 Flux PNG→JPEG). Gain estimé 3-8s. Phase 2 audit produit (docs/ia/latency-phase2-audit.md) sans application.
-  - **Produit** : 3 changements majeurs — crédits gratuits 3→2, auth obligatoire avant génération (pendingGeneration pattern), sélection multi-styles (radio→checkboxes, batch generation 2 concurrent).
-  - **UX** : hint multi-style, RoomTypePicker "(optionnel)"→"requis pour générer", generate button clarté sans compte.
-  - **Modal scroll** : bug fondateur — RefineModal remontait en haut. Fix : useScrollLock hook partagé (position:fixed + top:-scrollY) appliqué aux 6 modals (RefineModal, AuthModal, ExportPortailModal, Lightbox, ma-galerie, mes-biens).
-  - **Font** : font-light→font-normal revert immédiat (fondateur : "c'est moche"). Solution : --muted color #6B6B6E→#58585B (~6.5:1 ratio) pour lisibilité avec font-light (300).
-  - **Prompts** : audit Yann Duval 7.8/10, Lucas Moreau 8.1/10 (docs/reviews/). P1 corrections appliquées : Bohème kilim pouf, Haussmannien chandelier détaillé, pass2 condensé 250→180 mots. FLUX_NEGATIVE_PROMPT vérifié complet.
-  - **Audit production** : 50 générations en DB, images accessibles via Object Storage. Audits visuels Yann+Lucas lancés sur #74-81 (bohemian, scandinavian, contemporary, provencal).
-  - **QA** : 0 critique, 7 bugs mineurs corrigés (ESLint, accents, labels).
+  - **Prompts v37** : 6 corrections P0 audit Yann+Lucas #91-95 implémentées dans 3 fichiers (route.ts, generation-pipeline.ts, iteration-prompt.ts). Anti-fenêtre hallucinée, water heater, anti-warm shift, texture poutres, camera LOCKED, pierre brute limewash. Fix cellar builder manquant détecté par @qa.
+  - **UX** : PDF headers/footers supprimés (Puppeteer displayHeaderFooter:false). VersionSelector visible pendant refine (v1 accessible). Scroll fix 150→600ms. 4 window.confirm() remplacés par modals (ArchiveConfirmModal ×3 + InlineGenerator inline ×1).
+  - **Audit itération #97/#98** : Yann 8.0→5.9 (-2.1), Lucas 7.4→4.5 — l'itération régénère la scène au lieu d'éditer chirurgicalement. Cause racine : prompt adjust sans inventaire concret.
+  - **Prompts v38** : SURGICAL EDIT framing, inventaire mental, anti-régénération, camera LOCKED propagé, anti-hallucination retrait, kitchen appliance preservation. Validé @ia (GO) + @qa (6/6 PASS).
 
 - **Travaux en cours** :
-  1. **Audits visuels production** — Yann+Lucas évaluent les photos réelles #74-81. Résultats à intégrer.
+  1. **Tester v38 en production** — les corrections SURGICAL EDIT n'ont pas encore été testées sur de vraies itérations. @ia recommande de surveiller les 5 prochaines : si output = input (modèle trop conservateur), reformuler "95% identical pixels".
   2. **CGV** — toujours à mettre à jour (abonnement Pro).
   3. **Images galerie landing pages** — en attente de visuels réels.
 
@@ -317,27 +320,28 @@
   4. Clés API prod — Stripe, Google OAuth, Sentry (action fondateur)
   5. F5 Mode Décorateur — specs prêtes, pas implémenté
   6. Comparateur mobile — curseur touch events manquants
+  7. 7/12 styles non testés en pipeline 2 passes complet
 
 - **Préférences fondateur documentées** :
   - font-light (300) sacré — NE JAMAIS changer vers font-normal
   - Ne jamais demander permission pour fixer un bug QA — fixer directement
   - --muted à #58585B minimum pour lisibilité
+  - Gros problème sur l'itération = priorité absolue (session 30)
 
 - **Prochaines actions recommandées** :
-  1. **Intégrer résultats audits visuels** : si Yann/Lucas détectent des patterns récurrents (ex: color shift, flottement), ouvrir un sprint prompt dédié.
-  2. **Déployer sur Replit** : valider les 3 changements produit (auth gate, multi-styles, crédits) + P1 prompt corrections en production.
-  3. **CGV** : mettre à jour le modèle économique. @legal.
-  4. **Clés API Stripe** : activer le parcours d'achat réel.
-  5. **Tester 7 styles non testés** : Contemporain, Bohème, Méditerranéen (2 passes), Cosy, Wabi-Sabi, Maximaliste, Haussmannien.
+  1. **Déployer v38 + tester itérations** : valider que SURGICAL EDIT empêche la régénération sans rendre le modèle inactif. @ia à relancer si problème.
+  2. **CGV abonnement Pro** : mettre à jour le modèle économique. @legal.
+  3. **Clés API Stripe** : activer le parcours d'achat réel.
+  4. **Tester 7 styles non testés** : audit visuel complet.
 
 - **Blockers** :
-  - Déploiement Replit requis pour tester changements produit
+  - Déploiement Replit requis pour tester v38 et changements produit
   - Clés Stripe non configurées
   - Domaine versimo.fr
 
 - **Commande de reprise suggérée** :
 ```
-@orchestrator Reprends Versimo. Session 29 : latence Phase 1 appliquée (-3-8s), 3 changements produit (auth obligatoire, multi-styles, crédits 3→2), modal scroll fix (6 modals), font-light préservé (--muted assombri), P1 prompts corrigés (Bohème pouf, Haussmannien chandelier, pass2 condensé). Priorités : (1) déployer Replit + tester en prod, (2) intégrer résultats audits visuels Yann+Lucas, (3) CGV abonnement, (4) tester les 7 styles non couverts.
+@orchestrator Reprends Versimo. Session 30 : v37 (6 corrections audit #91-95) + v38 (SURGICAL EDIT iteration fix — audit #97/#98 Yann 5.9, Lucas 4.5 → prompt adjust reécrit). 4 confirm() remplacés par modals. PDF headers supprimés. Scroll fix. VersionSelector visible pendant refine. Priorités : (1) déployer v38 + tester 5 itérations en prod (surveiller si modèle trop conservateur), (2) CGV abonnement, (3) tester 7 styles non couverts.
 ```
 
 ---

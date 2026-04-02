@@ -655,6 +655,29 @@ agents/
 171. Corrections propagees dans 3 fichiers : route.ts, generation-pipeline.ts, iteration-prompt.ts.
 172. Notes audit : Yann moyenne 6.73/10 (2 CAPpees), Lucas moyenne 5.8/10 (3 CAPpees). Meilleure : #91 Scandinave cuisine (Yann 8.04, Lucas 7.1). Pires : #94/#95 Maximaliste chantier brut (CAPpees a 5.0).
 
+### Sprint 24 — Fix iteration (audit #97/#98, v38)
+173. CRITIQUE : Audit croise Yann (5.9/10) + Lucas (4.5/10) sur iteration #98 Japandi cuisine — le modele REGENERE la scene au lieu d'editer chirurgicalement
+    - Commentaire utilisateur : "enlever quelque chose au sol" — le modele supprime four, credence, accessoires, modifie murs
+    - Cause racine : prompt adjust sans inventaire concret du mobilier existant, pas de framing SURGICAL EDIT
+174. CRITIQUE : SURGICAL EDIT framing dans les 2 builders adjust (indoor + outdoor)
+    - "SURGICAL EDIT — Make the SMALLEST possible change. Do NOT regenerate the scene. Output must be 95%+ identical pixels to the input."
+175. CRITIQUE : Inventaire mental explicite dans les 4 builders d'iteration
+    - "Before editing, mentally list every object visible in this photo [...] ALL of these must appear at the SAME position, SAME size, SAME color"
+176. HAUTE : Anti-regeneration renforcee dans adjust builders
+    - "That is the ONLY modification allowed. Every other pixel must remain untouched."
+    - "Do NOT add any item not described. Do NOT rearrange furniture. Do NOT change wall color/texture/floor."
+177. HAUTE : Kitchen/bathroom appliance preservation explicite
+    - "Preserve ALL built-in cabinetry, appliances (oven, stove, fridge, dishwasher), countertops, backsplash, and sink"
+178. HAUTE : Anti-hallucination retrait d'objet (recommandation @ia)
+    - "If removing an object, fill the vacated area with the surrounding floor/wall texture — do not place a new object in its place"
+179. HAUTE : Camera LOCKED propage dans les 2 builders restyle (indoor + outdoor) — fix @qa
+180. PROMPT_VERSION v37 → v38
+181. Apprentissages :
+    - Le prompt adjust disait "keep everything" mais le modele ne savait pas QUOI garder — l'inventaire mental force l'enumeration
+    - "95%+ identical pixels" est physiquement impossible au sens strict (ajout ombre = pixels changes) mais pousse le modele vers la conservation maximale
+    - A surveiller : si le modele devient trop conservateur (output = input), reformuler en "visually identical EXCEPT the requested change"
+    - Les builders restyle avaient Camera LOCKED dans les adjust mais pas chez eux — inconsistance detectee par @qa
+
 ## Workflow d'audit visuel des generations (REGLE CRITIQUE)
 
 Les agents d'audit visuel (Yann @interior-architect, Lucas @ai-image-expert, Camille @paysagiste) n'ont **PAS acces a WebFetch**. Les outils disponibles sont definis par le subagent_type cote systeme — modifier le frontmatter .md ne change rien. Ces agents ne peuvent PAS fetcher des URLs HTTP.
