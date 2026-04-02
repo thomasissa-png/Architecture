@@ -140,6 +140,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [generationElapsed, setGenerationElapsed] = useState(0);
   const [preprocessWarnings, setPreprocessWarnings] = useState<string[]>([]);
+  const [photoWarnings, setPhotoWarnings] = useState<Record<number, string>>({});
 
   // Async queue polling (when generation falls back to background processing)
   const { status: queueStatus, isPolling: isQueuePolling, startPolling: startQueuePolling, clearQueue } = useQueueStatus();
@@ -411,10 +412,31 @@ export default function Home() {
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
-    setIsGenerating(true);
     setError(null);
     setResults([]);
     setPreprocessWarnings([]);
+
+    // Pre-check: validate that uploaded photos are rooms (blocking)
+    try {
+      for (let i = 0; i < filePreviewUrls.length; i++) {
+        const res = await fetch("/api/validate-image", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ image: filePreviewUrls[i] }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (!data.isRoom) {
+            setError(`La photo ${filePreviewUrls.length > 1 ? (i + 1) : ""} ne semble pas être une pièce ou un espace. Versimo fonctionne avec des photos de pièces vides (intérieur ou extérieur).`);
+            return;
+          }
+        }
+      }
+    } catch {
+      // Fail-open: if validation fails, continue with generation
+    }
+
+    setIsGenerating(true);
     scrollToElement("step-loading");
 
     // Resolve the list of styles to generate
@@ -769,6 +791,7 @@ export default function Home() {
     setError(null);
     setIsGenerating(false);
     setPreprocessWarnings([]);
+    setPhotoWarnings({});
     // Reset F1 state
     setVersions([]);
     setActiveVersions([]);
@@ -1252,7 +1275,7 @@ export default function Home() {
             <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
               Upload
             </h3>
-            <UploadZone files={files} onFilesChange={setFiles} />
+            <UploadZone files={files} onFilesChange={setFiles} photoWarnings={photoWarnings} />
           </div>
 
           {/* Step 2a: Type d'espace (intérieur/extérieur + sous-type) — hidden when multi-photo (per-photo mode takes over) */}
@@ -1378,6 +1401,11 @@ export default function Home() {
                           alt={`Photo ${index + 1}`}
                           className="w-full aspect-[4/3] object-cover rounded-xl"
                         />
+                        {photoWarnings[index] && (
+                          <p className="text-[10px] text-amber-600 font-medium leading-tight">
+                            {photoWarnings[index]}
+                          </p>
+                        )}
 
                         {/* Toggle Intérieur / Extérieur */}
                         <div className="flex rounded-full bg-foreground/5 p-0.5">
