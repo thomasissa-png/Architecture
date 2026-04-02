@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { useScrollLock } from "@/lib/hooks/useScrollLock";
 
 interface RefineModalProps {
@@ -99,7 +100,7 @@ export default function RefineModal({
 
   const canSubmit = comment.trim().length > 0 && !isLoading;
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
       role="dialog"
@@ -289,6 +290,7 @@ export default function RefineModal({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
