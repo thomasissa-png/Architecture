@@ -184,6 +184,39 @@ export async function hasGalleryAccess(userId: string): Promise<boolean> {
   return Number(result.rows[0]?.total ?? 0) >= 15;
 }
 
+/**
+ * Get maximum iterations allowed for a user based on their plan.
+ * - Anonymous (no userId) = 0
+ * - Découverte (no purchase) = 0
+ * - Starter (purchased >= 15 credits but not Pro) = 1
+ * - Pro (hasProAccess) = 3
+ * - Admin = 3
+ */
+export async function getMaxIterations(userId: string | null): Promise<number> {
+  if (!userId) return 0;
+
+  // Pro or admin = 3 iterations
+  const pro = await hasProAccess(userId);
+  if (pro) return 3;
+
+  // Check total credits purchased (Starter threshold = 15)
+  await ensureTable();
+  const db = getPool();
+  const result = await db.query(
+    `SELECT COALESCE(SUM(credits_purchased), 0) AS total
+     FROM purchases
+     WHERE user_id = $1 AND status = 'completed'`,
+    [userId]
+  );
+  const totalPurchased = Number(result.rows[0]?.total ?? 0);
+
+  // Starter (>= 15 credits purchased) = 1 iteration
+  if (totalPurchased >= 15) return 1;
+
+  // Découverte (no purchase) = 0 iterations
+  return 0;
+}
+
 export async function addCredits(
   userId: string,
   amount: number

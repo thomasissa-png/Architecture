@@ -9,7 +9,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { getUserCredits, decrementCredit, addCredits } from "@/lib/credits";
+import { getUserCredits, decrementCredit, addCredits, getMaxIterations } from "@/lib/credits";
 import { saveImage, getImage } from "@/lib/db";
 import { saveUserPhoto } from "@/lib/user-photos";
 import {
@@ -288,11 +288,14 @@ export async function PATCH(
         );
       }
 
-      // Check iteration limit (3 max)
+      // Check iteration limit based on user plan
       const currentIterations = targetPhoto.iteration_count ?? 0;
-      if (currentIterations >= 3) {
+      const maxIter = await getMaxIterations(session.user.id);
+      if (currentIterations >= maxIter) {
         return NextResponse.json(
-          { error: "Maximum 3 itérations atteint. Regénérez pour repartir de zéro." },
+          { error: maxIter === 0
+            ? "Les itérations ne sont pas disponibles avec le plan Découverte. Passez au Starter ou Pro."
+            : `Maximum ${maxIter} itération${maxIter > 1 ? "s" : ""} atteint. Regénérez pour repartir de zéro.` },
           { status: 400 }
         );
       }
@@ -377,7 +380,8 @@ export async function PATCH(
           success: true,
           image: data.image,
           iterationCount: newCount,
-          iterationsRemaining: 3 - newCount,
+          iterationsRemaining: maxIter - newCount,
+          maxIterations: maxIter,
         });
       } catch (err) {
         return NextResponse.json(

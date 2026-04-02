@@ -37,8 +37,6 @@ interface VersionEntry {
   model: string;
 }
 
-const MAX_ITERATIONS = 3;
-
 function getSessionId(): string {
   if (typeof window === "undefined") return "";
   let sessionId = localStorage.getItem("versimo_session_id");
@@ -178,6 +176,24 @@ export default function Home() {
     }
   }, []);
 
+  // Fetch maxIterations from API when session changes
+  useEffect(() => {
+    if (!session?.user?.id) {
+      setMaxIterations(0);
+      setIterationsRemaining(0);
+      return;
+    }
+    fetch("/api/user/credits")
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (data?.maxIterations !== undefined) {
+          setMaxIterations(data.maxIterations);
+          setIterationsRemaining(data.maxIterations);
+        }
+      })
+      .catch(() => { /* silently fail — iterations stay at 0 */ });
+  }, [session?.user?.id]);
+
   // --- Direct checkout from homepage pricing ---
   const [pendingPackId, setPendingPackId] = useState<string | null>(null);
   const [loadingPack, setLoadingPack] = useState<string | null>(null);
@@ -247,8 +263,9 @@ export default function Home() {
   const [outdoorSubtype, setOutdoorSubtype] = useState<string | null>("terrasse");
   const [selectedOutdoorStyle, setSelectedOutdoorStyle] = useState<string | null>(null);
 
-  // F1 — Iteration state
-  const [iterationsRemaining, setIterationsRemaining] = useState(MAX_ITERATIONS);
+  // F1 — Iteration state (maxIterations fetched from API based on user pack)
+  const [maxIterations, setMaxIterations] = useState(0);
+  const [iterationsRemaining, setIterationsRemaining] = useState(0);
   const [versions, setVersions] = useState<VersionEntry[][]>([]); // per-result versions
   const [activeVersions, setActiveVersions] = useState<number[]>([]); // active version index per result
   const [isRefineModalOpen, setIsRefineModalOpen] = useState(false);
@@ -700,7 +717,7 @@ export default function Home() {
           ])
         );
         setActiveVersions(allResults.map(() => 0));
-        setIterationsRemaining(MAX_ITERATIONS);
+        setIterationsRemaining(maxIterations);
         scrollToElement("step-results");
       }
     }
@@ -724,7 +741,7 @@ export default function Home() {
     // Reset F1 state
     setVersions([]);
     setActiveVersions([]);
-    setIterationsRemaining(MAX_ITERATIONS);
+    setIterationsRemaining(maxIterations);
     setRefineError(null);
     setRefineWarnings([]);
     setLastRefineComment("");
@@ -754,7 +771,7 @@ export default function Home() {
     // Reset F1 state
     setVersions([]);
     setActiveVersions([]);
-    setIterationsRemaining(MAX_ITERATIONS);
+    setIterationsRemaining(maxIterations);
     setIsRefineModalOpen(false);
     setRefineTargetIndex(0);
     setIsRefining(false);
