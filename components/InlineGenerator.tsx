@@ -5,6 +5,7 @@ import StylePicker, { STYLES } from "@/components/StylePicker";
 import ImageComparator from "@/components/ImageComparator";
 import UploadZone from "@/components/UploadZone";
 
+
 // ─── Types ──────────────────────────────────────────────────────────
 
 interface UserPhoto {
@@ -437,21 +438,26 @@ export default function InlineGenerator({
 
   // ── Close with confirmation if generating ──
 
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+
   const handleClose = useCallback(() => {
     if (isGenerating) {
-      const confirmed = window.confirm(
-        "La génération est en cours, voulez-vous annuler ?"
-      );
-      if (!confirmed) return;
-      abortRef.current?.abort();
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-      setIsGenerating(false);
+      setShowCancelConfirm(true);
+      return;
     }
     onClose();
   }, [isGenerating, onClose]);
+
+  const handleConfirmCancel = useCallback(() => {
+    abortRef.current?.abort();
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    setIsGenerating(false);
+    setShowCancelConfirm(false);
+    onClose();
+  }, [onClose]);
 
   // ── Derived state ──
 
@@ -778,6 +784,46 @@ export default function InlineGenerator({
           </div>
         )}
       </div>
+
+      {/* Cancel generation confirmation modal */}
+      {showCancelConfirm && (
+        <div
+          className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="cancel-gen-title"
+        >
+          <div
+            className="absolute inset-0 bg-foreground/40 backdrop-blur-sm"
+            onClick={() => setShowCancelConfirm(false)}
+            aria-hidden="true"
+          />
+          <div className="relative w-full max-w-sm mx-4 bg-background rounded-t-2xl sm:rounded-2xl shadow-xl border border-gray-200/60 animate-fade-in-up" style={{ animationDuration: "280ms" }}>
+            <div className="p-6">
+              <h3 id="cancel-gen-title" className="text-base font-semibold text-foreground mb-2">
+                Annuler la génération ?
+              </h3>
+              <p className="text-sm text-muted font-light mb-5">
+                La génération est en cours. Si vous annulez, les images non terminées seront perdues.
+              </p>
+              <div className="flex items-center justify-end gap-3">
+                <button
+                  onClick={() => setShowCancelConfirm(false)}
+                  className="px-5 min-h-[44px] py-2.5 rounded-full text-sm font-medium text-muted border border-gray-300 hover:bg-gray-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+                >
+                  Continuer
+                </button>
+                <button
+                  onClick={handleConfirmCancel}
+                  className="px-5 min-h-[44px] py-2.5 rounded-full text-sm font-medium bg-foreground text-background hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+                >
+                  Annuler la génération
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

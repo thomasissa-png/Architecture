@@ -71,10 +71,10 @@ function useReveal() {
   return ref;
 }
 
-function scrollToElement(id: string) {
+function scrollToElement(id: string, delay = 600) {
   setTimeout(() => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, 150);
+  }, delay);
 }
 
 /** Fetch with 180s timeout + 1 automatic retry on network/timeout errors. */
