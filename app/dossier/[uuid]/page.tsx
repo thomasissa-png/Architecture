@@ -204,7 +204,7 @@ export default async function DossierPage({ params }: PageProps) {
             <StorageImage
               imageKey={completedPhotos[0].output_image_key}
               alt={title}
-              className="w-full aspect-[4/3] sm:aspect-[16/9] lg:aspect-[21/9] object-cover"
+              className="w-full aspect-[4/3] sm:aspect-[16/9] lg:aspect-[21/9] object-contain bg-foreground/5"
               loading="eager"
             />
           </div>

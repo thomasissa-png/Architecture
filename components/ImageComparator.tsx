@@ -158,21 +158,23 @@ export default function ImageComparator({
           <span className="flex-1 h-px bg-foreground/10" />
         </div>
       )}
-      <div className="rounded-2xl overflow-hidden border border-gray-200/80" style={{ touchAction: "none" }}>
+      <div className="rounded-2xl overflow-hidden border border-gray-200/80 bg-foreground/5" style={{ touchAction: "none" }}>
         <ReactCompareSlider
           itemOne={
             <ReactCompareSliderImage
               src={originalUrl}
               alt="Avant \u2014 Photo originale"
+              style={{ objectFit: "contain", backgroundColor: "rgba(28, 28, 30, 0.05)" }}
             />
           }
           itemTwo={
             <ReactCompareSliderImage
               src={generatedUrl}
               alt="Après — Visualisation IA"
+              style={{ objectFit: "contain", backgroundColor: "rgba(28, 28, 30, 0.05)" }}
             />
           }
-          className="aspect-[4/3] sm:aspect-[16/10]"
+          className=""
           style={{ width: "100%" }}
           handle={
             <div className="flex flex-col items-center h-full" role="slider" aria-label="Comparer avant et après — glissez horizontalement" aria-valuemin={0} aria-valuemax={100} aria-valuenow={50}>

@@ -955,7 +955,7 @@ export default function PropertyDetailPage() {
                       <img
                         src={`/api/logs/image?path=${encodeURIComponent(photo.output_image_key)}`}
                         alt={photo.style_id || "Photo"}
-                        className="w-full aspect-[4/3] object-cover"
+                        className="w-full aspect-[4/3] object-contain bg-foreground/5"
                         loading="lazy"
                       />
                     ) : (
@@ -1113,7 +1113,7 @@ export default function PropertyDetailPage() {
                           <img
                             src={`/api/logs/image?path=${encodeURIComponent(photo.output_image_key)}`}
                             alt=""
-                            className="w-full aspect-square object-cover"
+                            className="w-full aspect-square object-contain bg-foreground/5"
                             loading="lazy"
                           />
                         ) : (
@@ -1244,7 +1244,7 @@ export default function PropertyDetailPage() {
                                 <img
                                   src={`/api/logs/image?path=${encodeURIComponent(photo.output_image_key)}`}
                                   alt=""
-                                  className="w-full aspect-square object-cover"
+                                  className="w-full aspect-square object-contain bg-foreground/5"
                                   loading="lazy"
                                 />
                               ) : (

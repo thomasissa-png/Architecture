@@ -405,7 +405,7 @@ export default function GaleriePage() {
                   <img
                     src={`/api/logs/image?path=${encodeURIComponent(photo.output_image_key)}`}
                     alt={photo.style_id || "Photo générée"}
-                    className="w-full aspect-[4/3] object-cover"
+                    className="w-full aspect-[4/3] object-contain bg-foreground/5"
                     loading="lazy"
                     onError={(e) => {
                       const target = e.currentTarget;

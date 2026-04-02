@@ -1777,13 +1777,13 @@ export default function Home() {
                     <div key={index} className="space-y-5">
                       {/* Refine loading state */}
                       {isRefining && isRefineTarget && (
-                        <div className="relative rounded-2xl overflow-hidden border border-foreground/10">
-                          <div className="aspect-[4/3] sm:aspect-[16/10] relative">
+                        <div className="relative rounded-2xl overflow-hidden border border-foreground/10 bg-foreground/5">
+                          <div className="relative">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={displayUrl}
                               alt=""
-                              className="w-full h-full object-cover blur-sm brightness-95 transition-all duration-700"
+                              className="w-full h-auto object-contain blur-sm brightness-95 transition-all duration-700"
                             />
                             <div className="absolute inset-0 flex flex-col items-center justify-center">
                               <div className="bg-background/90 backdrop-blur-sm rounded-xl px-5 py-4 shadow-sm text-center max-w-xs">

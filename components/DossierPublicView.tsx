@@ -102,11 +102,11 @@ export default function DossierPublicView({
                 onClick={() => { const idx = lightboxIndexMap[photoIndex]?.[1]; if (idx !== undefined && idx >= 0) setLightboxIndex(idx); }}
                 aria-label={`Agrandir ${photo.roomLabel} — après`}
               >
-                <div className="aspect-[4/3]">
+                <div className="aspect-[4/3] bg-foreground/5">
                   <StorageImage
                     imageKey={photo.outputImageKey}
                     alt={`${photo.roomLabel} — apres`}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                     loading="lazy"
                   />
                 </div>

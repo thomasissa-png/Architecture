@@ -61,7 +61,7 @@ export default function AnnonceGallery({ photosByRoom, allPhotos }: AnnonceGalle
                   <StorageImage
                     imageKey={photo.outputImageKey}
                     alt={photo.roomLabel || group.roomLabel || "Photo"}
-                    className="w-full aspect-[4/3] object-cover"
+                    className="w-full aspect-[4/3] object-contain bg-foreground/5"
                     loading="lazy"
                   />
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/40 to-transparent p-2">
@@ -96,7 +96,7 @@ export default function AnnonceGallery({ photosByRoom, allPhotos }: AnnonceGalle
                   <StorageImage
                     imageKey={photo.outputImageKey}
                     alt={photo.roomLabel || "Photo"}
-                    className="w-full aspect-[4/3] object-cover"
+                    className="w-full aspect-[4/3] object-contain bg-foreground/5"
                     loading="lazy"
                   />
                   {photo.roomLabel && (
