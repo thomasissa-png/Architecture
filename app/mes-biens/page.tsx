@@ -11,6 +11,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import ProGate from "@/components/ProGate";
 import Header from "@/components/Header";
+import ArchiveConfirmModal from "@/components/ArchiveConfirmModal";
 import { TYPE_LABELS } from "@/lib/constants";
 
 interface Property {
@@ -57,6 +58,7 @@ export default function MesBiensPage() {
   const [createError, setCreateError] = useState<string | null>(null);
   const [showArchived, setShowArchived] = useState(false);
   const [archivingId, setArchivingId] = useState<string | null>(null);
+  const [archiveTarget, setArchiveTarget] = useState<{ id: string; label: string } | null>(null);
 
   // Search + sort
   const [searchQuery, setSearchQuery] = useState("");
@@ -99,12 +101,10 @@ export default function MesBiensPage() {
     }
   }, [session, fetchProperties, showArchived]);
 
-  const handleArchiveFromList = async (propertyId: string) => {
-    const isUnarchive = showArchived;
-    if (!isUnarchive && !confirm("Archiver ce bien ? Il disparaîtra de la liste.")) return;
+  const doArchive = async (propertyId: string) => {
     setArchivingId(propertyId);
     try {
-      const action = isUnarchive ? "unarchive" : "archive";
+      const action = showArchived ? "unarchive" : "archive";
       const res = await fetch(`/api/properties/${propertyId}/archive`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -115,6 +115,22 @@ export default function MesBiensPage() {
       console.error("Erreur archivage bien");
     }
     setArchivingId(null);
+  };
+
+  const handleArchiveFromList = (propertyId: string, propertyLabel?: string) => {
+    if (showArchived) {
+      // Unarchive directly — no confirmation needed
+      doArchive(propertyId);
+      return;
+    }
+    // Open confirmation modal
+    setArchiveTarget({ id: propertyId, label: propertyLabel ?? "" });
+  };
+
+  const handleArchiveConfirm = async () => {
+    if (!archiveTarget) return;
+    await doArchive(archiveTarget.id);
+    setArchiveTarget(null);
   };
 
   // Address autocomplete with debounce
@@ -416,7 +432,7 @@ export default function MesBiensPage() {
               >
                 {/* Archive/Unarchive button */}
                 <button
-                  onClick={(e) => { e.stopPropagation(); handleArchiveFromList(property.id); }}
+                  onClick={(e) => { e.stopPropagation(); handleArchiveFromList(property.id, property.label || property.address); }}
                   disabled={archivingId === property.id}
                   className="absolute top-3 right-3 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity bg-background/90 text-foreground/50 hover:text-foreground text-xs p-1.5 rounded-lg hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 min-w-[44px] min-h-[44px] flex items-center justify-center disabled:opacity-40"
                   aria-label={showArchived ? "Désarchiver ce bien" : "Archiver ce bien"}
@@ -511,6 +527,13 @@ export default function MesBiensPage() {
         )}
       </main>
     </div>
+    <ArchiveConfirmModal
+      isOpen={archiveTarget !== null}
+      onClose={() => setArchiveTarget(null)}
+      onConfirm={handleArchiveConfirm}
+      propertyLabel={archiveTarget?.label}
+      isLoading={archivingId !== null}
+    />
     </ProGate>
   );
 }

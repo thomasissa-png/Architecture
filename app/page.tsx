@@ -790,9 +790,13 @@ export default function Home() {
       setRefineWarnings([]);
       setLastRefineComment(comment);
 
-      // Build previousModifications from existing versions
+      // Build previousModifications from versions UP TO the active version only.
+      // This allows the user to select v1, click "Affiner", and iterate from v1
+      // (ignoring v2/v3 comments) instead of always iterating from the latest.
       const targetVersions = versions[refineTargetIndex] || [];
+      const activeIdx = activeVersions[refineTargetIndex] || 0;
       const previousModifications = targetVersions
+        .slice(0, activeIdx + 1)
         .filter((v) => v.comment)
         .map((v) => v.comment as string);
 
@@ -892,7 +896,7 @@ export default function Home() {
         }
       }
     },
-    [results, refineTargetIndex, versions, customPrompt, isOutdoor, selectedOutdoorStyle, outdoorSubtype]
+    [results, refineTargetIndex, versions, activeVersions, customPrompt, isOutdoor, selectedOutdoorStyle, outdoorSubtype]
   );
 
   const handleRefineRetry = useCallback(() => {
@@ -1799,33 +1803,32 @@ export default function Home() {
                         />
                       )}
 
-                      {/* Version selector */}
-                      {!isRefining && (
-                        <VersionSelector
-                          versions={resultVersions}
-                          activeVersion={activeIdx}
-                          onSelect={(vIdx) => {
-                            setActiveVersions((prev) => {
+                      {/* Version selector — stays visible during refine so user can see/switch previous versions */}
+                      <VersionSelector
+                        versions={resultVersions}
+                        activeVersion={activeIdx}
+                        onSelect={(vIdx) => {
+                          if (isRefining && isRefineTarget) return; // Disable switching while this result is refining
+                          setActiveVersions((prev) => {
+                            const updated = [...prev];
+                            updated[index] = vIdx;
+                            return updated;
+                          });
+                          // Update the comparator display
+                          const selectedVersion = resultVersions[vIdx];
+                          if (selectedVersion) {
+                            setResults((prev) => {
                               const updated = [...prev];
-                              updated[index] = vIdx;
+                              updated[index] = {
+                                ...updated[index],
+                                generatedUrl: selectedVersion.imageUrl,
+                                model: selectedVersion.model,
+                              };
                               return updated;
                             });
-                            // Update the comparator display
-                            const selectedVersion = resultVersions[vIdx];
-                            if (selectedVersion) {
-                              setResults((prev) => {
-                                const updated = [...prev];
-                                updated[index] = {
-                                  ...updated[index],
-                                  generatedUrl: selectedVersion.imageUrl,
-                                  model: selectedVersion.model,
-                                };
-                                return updated;
-                              });
-                            }
-                          }}
-                        />
-                      )}
+                          }
+                        }}
+                      />
 
                       {/* Refine error */}
                       {refineError && isRefineTarget && !isRefining && (
@@ -1877,10 +1880,10 @@ export default function Home() {
                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                                   <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
                                 </svg>
-                                Affiner ce résultat
+                                Affiner {resultVersions.length > 1 ? `v${activeIdx + 1}` : "ce résultat"}
                               </button>
                               <p className="text-xs text-muted font-light">
-                                {iterationsRemaining} itération{iterationsRemaining > 1 ? "s" : ""} restante{iterationsRemaining > 1 ? "s" : ""} &mdash; affinez le mobilier, les couleurs ou la composition
+                                {iterationsRemaining} itération{iterationsRemaining > 1 ? "s" : ""} restante{iterationsRemaining > 1 ? "s" : ""} &mdash; {resultVersions.length > 1 && activeIdx < resultVersions.length - 1 ? `itérera depuis la v${activeIdx + 1}` : "affinez le mobilier, les couleurs ou la composition"}
                               </p>
                             </>
                           ) : (

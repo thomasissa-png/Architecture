@@ -11,6 +11,7 @@ import { useScrollLock } from "@/lib/hooks/useScrollLock";
 import { useParams } from "next/navigation";
 import Header from "@/components/Header";
 import InlineGenerator from "@/components/InlineGenerator";
+import ArchiveConfirmModal from "@/components/ArchiveConfirmModal";
 import { STYLE_LABELS, TYPE_LABELS } from "@/lib/constants";
 
 interface Property {
@@ -107,6 +108,8 @@ export default function PropertyDetailPage() {
   // Delete property
   const [isDeletingProperty, setIsDeletingProperty] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showArchiveModal, setShowArchiveModal] = useState(false);
+  const [isArchiving, setIsArchiving] = useState(false);
 
   // Inline generator
   const [showGenerator, setShowGenerator] = useState(false);
@@ -1293,23 +1296,7 @@ export default function PropertyDetailPage() {
         {/* Archive + Delete property — bottom of page, discrete */}
         <div className="mt-16 pt-8 border-t border-foreground/5 flex items-center gap-6">
           <button
-            onClick={async () => {
-              if (!confirm("Archiver ce bien ? Il disparaîtra de la liste de vos biens.")) return;
-              try {
-                const res = await fetch(`/api/properties/${property.id}/archive`, {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ action: "archive" }),
-                });
-                if (res.ok) {
-                  window.location.href = "/mes-biens";
-                } else {
-                  setToastMsg("Erreur lors de l'archivage. Réessayez.");
-                }
-              } catch {
-                setToastMsg("Erreur lors de l'archivage. Réessayez.");
-              }
-            }}
+            onClick={() => setShowArchiveModal(true)}
             className="text-xs text-muted font-light hover:text-foreground transition-colors min-h-[44px] flex items-center"
           >
             Archiver ce bien
@@ -1357,6 +1344,32 @@ export default function PropertyDetailPage() {
           </div>
         )}
       </main>
+      <ArchiveConfirmModal
+        isOpen={showArchiveModal}
+        onClose={() => setShowArchiveModal(false)}
+        onConfirm={async () => {
+          setIsArchiving(true);
+          try {
+            const res = await fetch(`/api/properties/${property.id}/archive`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ action: "archive" }),
+            });
+            if (res.ok) {
+              window.location.href = "/mes-biens";
+            } else {
+              setToastMsg("Erreur lors de l'archivage. Réessayez.");
+              setShowArchiveModal(false);
+            }
+          } catch {
+            setToastMsg("Erreur lors de l'archivage. Réessayez.");
+            setShowArchiveModal(false);
+          }
+          setIsArchiving(false);
+        }}
+        propertyLabel={property.label || property.address}
+        isLoading={isArchiving}
+      />
     </div>
   );
 }

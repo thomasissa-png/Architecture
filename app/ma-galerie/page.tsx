@@ -12,6 +12,7 @@ import { useScrollLock } from "@/lib/hooks/useScrollLock";
 import { useQueueStatus } from "@/lib/hooks/useQueueStatus";
 import AuthModal from "@/components/AuthModal";
 import Header from "@/components/Header";
+import ArchiveConfirmModal from "@/components/ArchiveConfirmModal";
 import { STYLE_LABELS, translateRoomLabel } from "@/lib/constants";
 
 /** Format relatif intelligent : "Aujourd'hui", "Hier", "Il y a 3 jours", puis "15 mars" au-dela de 7 jours */
@@ -74,6 +75,7 @@ export default function GaleriePage() {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [showArchived, setShowArchived] = useState(false);
+  const [archivePhotoTarget, setArchivePhotoTarget] = useState<string | null>(null);
   const detailModalRef = useRef<HTMLDivElement>(null);
   useScrollLock(!!selectedPhoto);
 
@@ -464,9 +466,7 @@ export default function GaleriePage() {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (confirm("Archiver cette photo ? Elle disparaîtra de la galerie.")) {
-                          handleArchivePhoto(photo.id);
-                        }
+                        setArchivePhotoTarget(photo.id);
                       }}
                       className="bg-background/90 text-foreground/60 hover:text-red-500 text-xs px-1.5 py-1 rounded-lg hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                       aria-label="Archiver cette photo"
@@ -613,6 +613,17 @@ export default function GaleriePage() {
           </div>
         )}
       </main>
+      <ArchiveConfirmModal
+        isOpen={archivePhotoTarget !== null}
+        onClose={() => setArchivePhotoTarget(null)}
+        onConfirm={async () => {
+          if (archivePhotoTarget) {
+            await handleArchivePhoto(archivePhotoTarget);
+            setArchivePhotoTarget(null);
+          }
+        }}
+        propertyLabel="Cette photo"
+      />
     </div>
   );
 }
