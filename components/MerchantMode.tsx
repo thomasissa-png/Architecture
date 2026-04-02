@@ -33,6 +33,7 @@ interface PhotoEntry {
   isOutdoor: boolean;
   outdoorStyleId: string | null;
   outdoorSubtype: string | null;
+  withFurniture: boolean; // per-photo: true = finitions + mobilier, false = finitions seulement
 }
 
 interface DossierPhotoStatus {
@@ -147,6 +148,7 @@ export default function MerchantMode() {
           isOutdoor: false,
           outdoorStyleId: null,
           outdoorSubtype: null,
+          withFurniture: true,
         };
       });
       return next;
@@ -335,6 +337,7 @@ export default function MerchantMode() {
             outdoorStyleId: p.entry?.outdoorStyleId || null,
             outdoorSubtype: p.entry?.outdoorSubtype || null,
             photoIndex: p.index,
+            withFurniture: p.entry?.withFurniture !== false,
           })),
         }),
       });
@@ -766,44 +769,33 @@ export default function MerchantMode() {
                       />
                     </div>
                   )}
+
+                  {/* Per-photo: Finitions seulement / Finitions + Mobilier */}
+                  <div className="flex gap-1 p-0.5 bg-foreground/5 rounded-lg" data-testid={`merchant-annotate-furniture-${index}`}>
+                    <button
+                      onClick={() => updatePhotoEntry(index, { withFurniture: true })}
+                      className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 ${
+                        entry.withFurniture
+                          ? "bg-background text-foreground shadow-sm"
+                          : "text-muted hover:text-foreground"
+                      }`}
+                    >
+                      Finitions + Mobilier
+                    </button>
+                    <button
+                      onClick={() => updatePhotoEntry(index, { withFurniture: false })}
+                      className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 ${
+                        !entry.withFurniture
+                          ? "bg-background text-foreground shadow-sm"
+                          : "text-muted hover:text-foreground"
+                      }`}
+                    >
+                      Finitions seulement
+                    </button>
+                  </div>
                 </div>
               );
             })}
-          </div>
-
-          {/* Toggle surfaces / mobilier */}
-          <div className={`flex flex-col items-center gap-2 pt-4 border-t border-foreground/5 ${isGenerating ? "opacity-50 pointer-events-none" : ""}`}>
-            <div className="flex items-center justify-center gap-3" role="radiogroup" aria-label="Mode de génération">
-              <button
-                role="radio"
-                aria-checked={!withFurniture}
-                onClick={() => setWithFurniture(false)}
-                className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
-                  !withFurniture
-                    ? "bg-foreground text-background shadow-sm"
-                    : "bg-foreground/5 text-muted hover:bg-foreground/10"
-                }`}
-              >
-                Finitions seulement
-              </button>
-              <button
-                role="radio"
-                aria-checked={withFurniture}
-                onClick={() => setWithFurniture(true)}
-                className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
-                  withFurniture
-                    ? "bg-foreground text-background shadow-sm"
-                    : "bg-foreground/5 text-muted hover:bg-foreground/10"
-                }`}
-              >
-                Finitions + Mobilier
-              </button>
-            </div>
-            <p className="text-xs text-muted font-light">
-              {withFurniture
-                ? "Finitions et mobilier complet"
-                : "Pièce finie sans meuble — idéal pour visualiser les finitions"}
-            </p>
           </div>
 
           {/* Navigation */}
@@ -929,41 +921,6 @@ export default function MerchantMode() {
             selectedOutdoorStyle={null}
             onSelectOutdoorStyle={() => {}}
           />
-
-          {/* Toggle surfaces / mobilier */}
-          <div className={`flex flex-col items-center gap-2 pt-4 border-t border-foreground/5 ${isGenerating ? "opacity-50 pointer-events-none" : ""}`}>
-            <div className="flex items-center justify-center gap-3" role="radiogroup" aria-label="Mode de génération">
-              <button
-                role="radio"
-                aria-checked={!withFurniture}
-                onClick={() => setWithFurniture(false)}
-                className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
-                  !withFurniture
-                    ? "bg-foreground text-background shadow-sm"
-                    : "bg-foreground/5 text-muted hover:bg-foreground/10"
-                }`}
-              >
-                Finitions seulement
-              </button>
-              <button
-                role="radio"
-                aria-checked={withFurniture}
-                onClick={() => setWithFurniture(true)}
-                className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
-                  withFurniture
-                    ? "bg-foreground text-background shadow-sm"
-                    : "bg-foreground/5 text-muted hover:bg-foreground/10"
-                }`}
-              >
-                Finitions + Mobilier
-              </button>
-            </div>
-            <p className="text-xs text-muted font-light">
-              {withFurniture
-                ? "Finitions et mobilier complet"
-                : "Pièce finie sans meuble — idéal pour visualiser les finitions"}
-            </p>
-          </div>
 
           {/* Generate button */}
           {(globalStyles.length > 0 || customPrompt.trim()) && (
