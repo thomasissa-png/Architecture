@@ -1367,7 +1367,7 @@ export default function PropertyDetailPage() {
           }
           setIsArchiving(false);
         }}
-        propertyLabel={property.label || property.address}
+        propertyLabel={property.address_normalized || property.address_raw || "Ce bien"}
         isLoading={isArchiving}
       />
     </div>

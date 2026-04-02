@@ -721,7 +721,7 @@ export default function Home() {
         scrollToElement("step-results");
       }
     }
-  }, [files, selectedStyles, customPrompt, withFurniture, filePreviewUrls, isOutdoor, selectedOutdoorStyle, outdoorSubtype, selectedRoomType, perPhotoStyles, perPhotoRoomTypes, perPhotoCustomPrompts, perPhotoOutdoor, authStatus, startQueuePolling]);
+  }, [files, selectedStyles, customPrompt, withFurniture, filePreviewUrls, isOutdoor, selectedOutdoorStyle, outdoorSubtype, selectedRoomType, perPhotoStyles, perPhotoRoomTypes, perPhotoCustomPrompts, perPhotoOutdoor, authStatus, startQueuePolling, maxIterations]);
 
   // Changement 2 — Garder la ref à jour pour le useEffect post-auth
   handleGenerateRef.current = handleGenerate;
