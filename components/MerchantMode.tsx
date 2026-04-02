@@ -478,12 +478,6 @@ export default function MerchantMode() {
     }
   }, [dossierUuid]);
 
-  // ── Download PDF ──
-  const handleDownloadPdf = useCallback(() => {
-    if (!dossierUuid) return;
-    window.open(`/api/dossier/${dossierUuid}/pdf`, "_blank");
-  }, [dossierUuid]);
-
   // ── Share link ──
   const handleShareLink = useCallback(async () => {
     if (!dossierIdentifier) return;

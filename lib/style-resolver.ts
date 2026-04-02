@@ -11,6 +11,7 @@
  */
 
 import { OUTDOOR_STYLES } from "@/lib/outdoor-styles";
+import { selectVariant } from "@/lib/style-variants";
 
 export interface StylePrompts {
   id: string;
@@ -128,7 +129,6 @@ export function getStyleById(
 
   // Use style variant if available and imageHash provided
   if (imageHash) {
-    const { selectVariant } = require("@/lib/style-variants");
     const variant = selectVariant(imageHash, styleId);
     if (variant.furniturePrompt) {
       return {
