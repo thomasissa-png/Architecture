@@ -415,6 +415,7 @@ export default function Home() {
     setError(null);
     setResults([]);
     setPreprocessWarnings([]);
+    scrollToElement("step-loading");
 
     // Resolve the list of styles to generate
     // In outdoor mode, use single outdoor style
@@ -1579,7 +1580,7 @@ export default function Home() {
 
           {/* Loading state with blur preview */}
           {isGenerating && (
-            <div className="space-y-6 py-8">
+            <div id="step-loading" className="space-y-6 py-8">
               {/* Blur preview placeholders */}
               <div className={`grid gap-4 mx-auto ${files.length === 1 ? "grid-cols-1 max-w-xl" : "grid-cols-1 sm:grid-cols-2 max-w-4xl"}`}>
                 {files.map((file, i) => {
