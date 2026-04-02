@@ -132,6 +132,9 @@ export default function InlineGenerator({
   const [customPrompt, setCustomPrompt] = useState("");
   const [selectedOutdoorStyle, setSelectedOutdoorStyle] = useState<string | null>(null);
 
+  // Toggle surfaces+mobilier vs surfaces uniquement
+  const [withFurniture, setWithFurniture] = useState(true);
+
   // Step 3: generating
   const [results, setResults] = useState<GenerationResult[]>([]);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -263,6 +266,7 @@ export default function InlineGenerator({
             width,
             height,
             isOutdoor: false,
+            withFurniture,
           }),
           signal: abortController.signal,
         });
@@ -321,7 +325,7 @@ export default function InlineGenerator({
 
     // If any succeeded, move to results
     setStep("results");
-  }, [photos, selectedPhotoIds, uploadedFiles, getPrompts]);
+  }, [photos, selectedPhotoIds, uploadedFiles, getPrompts, withFurniture]);
 
   // ── Retry a single failed photo ──
 
@@ -372,6 +376,7 @@ export default function InlineGenerator({
             width,
             height,
             isOutdoor: false,
+            withFurniture,
           }),
         });
 
@@ -405,7 +410,7 @@ export default function InlineGenerator({
         );
       }
     },
-    [photos, results, uploadedFiles, getPrompts]
+    [photos, results, uploadedFiles, getPrompts, withFurniture]
   );
 
   // ── Associate results to property ──
@@ -647,6 +652,37 @@ export default function InlineGenerator({
               selectedOutdoorStyle={selectedOutdoorStyle}
               onSelectOutdoorStyle={setSelectedOutdoorStyle}
             />
+
+            {/* Toggle surfaces / mobilier */}
+            <div className={`flex flex-col items-center gap-2 pt-4 border-t border-foreground/5 ${isGenerating ? "opacity-50 pointer-events-none" : ""}`}>
+              <div className="flex items-center justify-center gap-3">
+                <button
+                  onClick={() => setWithFurniture(false)}
+                  className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
+                    !withFurniture
+                      ? "bg-foreground text-background shadow-sm"
+                      : "bg-foreground/5 text-muted hover:bg-foreground/10"
+                  }`}
+                >
+                  Surfaces uniquement
+                </button>
+                <button
+                  onClick={() => setWithFurniture(true)}
+                  className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
+                    withFurniture
+                      ? "bg-foreground text-background shadow-sm"
+                      : "bg-foreground/5 text-muted hover:bg-foreground/10"
+                  }`}
+                >
+                  Surfaces + Mobilier
+                </button>
+              </div>
+              <p className="text-xs text-muted font-light">
+                {withFurniture
+                  ? "Finitions et mobilier complet"
+                  : "Pièce finie sans meuble — idéal pour voir les surfaces"}
+              </p>
+            </div>
 
             <div className="flex justify-end">
               <button

@@ -13,6 +13,7 @@ import { useQueueStatus } from "@/lib/hooks/useQueueStatus";
 import AuthModal from "@/components/AuthModal";
 import Header from "@/components/Header";
 import ArchiveConfirmModal from "@/components/ArchiveConfirmModal";
+import GalleryGate from "@/components/GalleryGate";
 import { STYLE_LABELS, translateRoomLabel } from "@/lib/constants";
 
 /** Format relatif intelligent : "Aujourd'hui", "Hier", "Il y a 3 jours", puis "15 mars" au-dela de 7 jours */
@@ -300,6 +301,7 @@ export default function GaleriePage() {
       {/* Header */}
       <Header activePage="ma-galerie" />
 
+      <GalleryGate>
       <main className="pt-24 pb-16 px-5 sm:px-8 max-w-6xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
@@ -624,6 +626,7 @@ export default function GaleriePage() {
         }}
         propertyLabel="Cette photo"
       />
+      </GalleryGate>
     </div>
   );
 }

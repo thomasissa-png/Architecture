@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { getUserCredits, hasProAccess } from "@/lib/credits";
+import { getUserCredits, hasProAccess, hasGalleryAccess } from "@/lib/credits";
 
 export async function GET() {
   try {
@@ -15,14 +15,16 @@ export async function GET() {
       );
     }
 
-    const [credits, hasPro] = await Promise.all([
+    const [credits, hasPro, hasGallery] = await Promise.all([
       getUserCredits(session.user.id),
       hasProAccess(session.user.id),
+      hasGalleryAccess(session.user.id),
     ]);
 
     return NextResponse.json({
       credits,
       hasPro,
+      hasGalleryAccess: hasGallery,
       email: session.user.email,
       name: session.user.name,
     });

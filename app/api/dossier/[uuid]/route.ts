@@ -197,12 +197,13 @@ export async function PATCH(
 
   try {
     const body = await request.json();
-    const { action, photoId, styleId, isOutdoor, regeneratePhotoId } = body as {
+    const { action, photoId, styleId, isOutdoor, regeneratePhotoId, withFurniture } = body as {
       action: "generate" | "update_style" | "regenerate" | "attach" | "iterate";
       photoId?: number;
       styleId?: string;
       isOutdoor?: boolean;
       regeneratePhotoId?: number;
+      withFurniture?: boolean;
     };
 
     // ── Attach dossier to property (post-generation) ──
@@ -489,7 +490,7 @@ export async function PATCH(
 
       // Start batch generation in background (non-blocking response)
       // The client will poll GET /api/dossier/[uuid] for progress
-      processBatchGeneration(uuid, pendingPhotos, dossier, session.user.id).catch(
+      processBatchGeneration(uuid, pendingPhotos, dossier, session.user.id, withFurniture !== false).catch(
         (err) => console.error("Batch generation error:", err)
       );
 
@@ -518,7 +519,8 @@ import type { DossierPhoto, Dossier } from "@/lib/dossier";
 
 async function generateSinglePhoto(
   photo: DossierPhoto,
-  dossier: Dossier
+  dossier: Dossier,
+  withFurniture: boolean = true
 ): Promise<{ outputKey: string; pass1Key?: string }> {
   // Read input image from storage
   const inputImageData = await getImage(photo.input_image_key!);
@@ -623,7 +625,7 @@ async function generateSinglePhoto(
       surfacePrompt,
       furniturePrompt,
       styleId: effectiveStyleId,
-      withFurniture: true,
+      withFurniture,
       width: outputWidth,
       height: outputHeight,
       roomType: photo.room_type_id,
@@ -654,7 +656,8 @@ async function processBatchGeneration(
   dossierUuid: string,
   photos: DossierPhoto[],
   dossier: Dossier,
-  userId: string
+  userId: string,
+  withFurniture: boolean = true
 ): Promise<void> {
   const startTime = Date.now();
   let successCount = 0;
@@ -676,7 +679,7 @@ async function processBatchGeneration(
         await updateDossierPhotoStatus(photo.id, "generating");
 
         const photoStart = Date.now();
-        const result = await generateSinglePhoto(photo, dossier);
+        const result = await generateSinglePhoto(photo, dossier, withFurniture);
 
         await updateDossierPhotoStatus(photo.id, "completed", {
           outputImageKey: result.outputKey,
