@@ -619,11 +619,21 @@ async function generateSinglePhoto(
     furniturePrompt = style.furniturePrompt;
   }
 
-  // Add micro-variation to prompt for regeneration to produce different results
-  // GPT-image-1 is near-deterministic with identical inputs — a small variation
-  // in the furniture prompt forces a different composition while preserving style
-  const variationSuffix = ` Variation seed: ${Date.now()}.`;
-  const variedFurniturePrompt = furniturePrompt + variationSuffix;
+  // Semantic variation to produce genuinely different compositions
+  // GPT-image-1 ignores non-semantic text like timestamps — real layout hints
+  // force the model to explore different furniture arrangements
+  const COMPOSITION_HINTS = [
+    "Arrange furniture asymmetrically, slightly off-center.",
+    "Place the main seating group closer to the window side.",
+    "Create an intimate conversation nook with chairs angled inward.",
+    "Position the sofa facing away from the entrance for a cocooning effect.",
+    "Use a diagonal furniture arrangement across the room.",
+    "Anchor the main group to the left third of the room.",
+    "Create two distinct zones: a seating area and a reading corner.",
+    "Place the coffee table slightly off-center toward the lateral chair.",
+  ];
+  const hint = COMPOSITION_HINTS[Date.now() % COMPOSITION_HINTS.length];
+  const variedFurniturePrompt = furniturePrompt + ` Composition: ${hint}`;
 
   // Call generate API with internal fetch
   const response = await fetch(generateUrl, {

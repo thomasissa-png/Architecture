@@ -151,11 +151,11 @@ export default function DossierResult({
 
                 {/* After */}
                 <div className="relative">
-                  <div className="aspect-[4/3]">
+                  <div className="aspect-[4/3] bg-foreground/5">
                     <StorageImage
                       imageKey={photo.outputImageKey}
                       alt={`${translateRoomLabel(photo.roomLabel, "Photo")} — après`}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                       loading="lazy"
                     />
                   </div>

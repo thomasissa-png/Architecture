@@ -239,7 +239,10 @@ export default function MerchantMode() {
           }
           setIsGenerating(false);
           setCurrentStep("results");
-          merchantRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+          // Scroll to results after render
+          setTimeout(() => {
+            document.querySelector('[data-testid="merchant-step-results"]')?.scrollIntoView({ behavior: "smooth", block: "start" });
+          }, 300);
           // Auto-open dossier page in new tab (primary action)
           const dossierPath = dossier.slug || dossier.uuid || uuid;
           window.open(`/dossier/${dossierPath}`, '_blank');
