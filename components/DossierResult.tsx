@@ -26,8 +26,6 @@ interface DossierPhotoResult {
 
 interface DossierResultProps {
   photos: DossierPhotoResult[];
-  dossierUuid?: string;
-  onDownloadPdf: () => void;
   onRegenerate?: (photoId: number) => void;
   onIterate?: (photoId: number, comment: string, previousModifications: string[]) => Promise<void>;
   isRegenerating?: number | null;
@@ -38,8 +36,6 @@ interface DossierResultProps {
 
 export default function DossierResult({
   photos,
-  dossierUuid,
-  onDownloadPdf,
   onRegenerate,
   onIterate,
   isRegenerating,
@@ -77,36 +73,6 @@ export default function DossierResult({
 
   return (
     <div className="space-y-6" data-testid="dossier-result">
-      {/* Action bar — view dossier + PDF */}
-      <div className="flex flex-wrap items-center gap-2">
-        {dossierUuid && (
-          <a
-            href={`/dossier/${dossierUuid}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Voir le dossier"
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-medium bg-sage text-white hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
-            data-testid="dossier-view-page"
-          >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-            </svg>
-            Voir le dossier
-          </a>
-        )}
-        <button
-          onClick={onDownloadPdf}
-          aria-label="Télécharger le PDF du dossier"
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-medium bg-foreground/5 text-foreground hover:bg-foreground/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
-          data-testid="dossier-download-pdf"
-        >
-          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-          PDF
-        </button>
-      </div>
-
       {/* Photos grid */}
       <div className="space-y-4">
         {completedPhotos.map((photo) => {
@@ -131,7 +97,7 @@ export default function DossierResult({
                     <button
                       onClick={() => handleOpenRefine(photo.id)}
                       disabled={isIterating === photo.id || isRegenerating === photo.id}
-                      className="text-xs text-sage font-medium hover:text-sage/80 transition-colors disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 min-h-[44px] inline-flex items-center gap-1"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-sage/40 text-sage hover:bg-sage/5 transition-colors disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 min-h-[36px]"
                       data-testid={`dossier-iterate-${photo.id}`}
                     >
                       {isIterating === photo.id ? (
@@ -157,7 +123,7 @@ export default function DossierResult({
                     <button
                       onClick={() => onRegenerate(photo.id)}
                       disabled={isRegenerating === photo.id || isIterating === photo.id}
-                      className="text-xs text-muted font-light hover:text-foreground transition-colors disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 min-h-[44px] inline-flex items-center"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium text-foreground/50 border border-foreground/10 hover:text-foreground hover:border-foreground/20 transition-colors disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 min-h-[36px]"
                       data-testid={`dossier-regenerate-${photo.id}`}
                     >
                       {isRegenerating === photo.id ? "En cours..." : "Regénérer"}

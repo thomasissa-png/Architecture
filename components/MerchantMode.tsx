@@ -1034,8 +1034,6 @@ export default function MerchantMode() {
 
           <DossierResult
             photos={dossierPhotos}
-            dossierUuid={dossierIdentifier || dossierUuid}
-            onDownloadPdf={handleDownloadPdf}
             onRegenerate={handleRegenerate}
             onIterate={handleIterate}
             isRegenerating={isRegenerating}
@@ -1293,6 +1291,27 @@ export default function MerchantMode() {
               </a>
             </div>
           )}
+
+          {/* New batch button */}
+          <div className="pt-4 border-t border-foreground/5">
+            <button
+              onClick={() => {
+                setPhotos([]);
+                setDossierPhotos([]);
+                setDossierUuid(null);
+                setDossierIdentifier(null);
+                setCurrentStep("photos");
+                setWithFurniture(true);
+                setAttachDone(false);
+                setAttachMode(null);
+                setSelectedPropertyId(null);
+                setError(null);
+              }}
+              className="w-full py-3 rounded-full text-sm font-medium border border-foreground/10 text-foreground hover:bg-foreground/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 min-h-[44px]"
+            >
+              Générer de nouveaux visuels
+            </button>
+          </div>
         </div>
       )}
     </div>
