@@ -102,7 +102,7 @@ export default function RefineModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="refine-modal-title"
@@ -117,7 +117,7 @@ export default function RefineModal({
       {/* Modal */}
       <div
         ref={modalRef}
-        className="relative w-full max-w-lg mx-4 mb-0 sm:mb-0 bg-background rounded-t-2xl sm:rounded-2xl shadow-xl border border-gray-200/60 animate-fade-in-up"
+        className="relative w-full max-w-lg bg-background rounded-2xl shadow-xl border border-gray-200/60 animate-fade-in-up max-h-[90vh] overflow-y-auto"
         style={{ animationDuration: "300ms" }}
       >
         <div className="p-6 sm:p-8">
