@@ -714,8 +714,24 @@ export async function POST(request: NextRequest) {
 
     styleId = bodyStyleId;
 
+    // Select style variant for furniture diversity (indoor named styles only)
+    let resolvedFurniturePrompt = furniturePrompt;
+    if (styleId && styleId !== "custom" && !isOutdoor && furniturePrompt && image) {
+      try {
+        const { selectVariant } = await import("@/lib/style-variants");
+        // Use first 32 chars of base64 image as hash for deterministic variant selection
+        const imageHash = image.slice(image.indexOf(",") + 1, image.indexOf(",") + 33);
+        const variant = selectVariant(imageHash, styleId);
+        if (variant.furniturePrompt) {
+          resolvedFurniturePrompt = variant.furniturePrompt;
+        }
+      } catch {
+        // Fallback to original furniturePrompt
+      }
+    }
+
     // Assign to hoisted vars for queue fallback in catch
-    _image = image; _surfacePrompt = surfacePrompt; _furniturePrompt = furniturePrompt;
+    _image = image; _surfacePrompt = surfacePrompt; _furniturePrompt = resolvedFurniturePrompt;
     _width = width; _height = height; _roomType = roomType; _isOutdoor = isOutdoor;
     _outdoorSubtype = outdoorSubtype; _withFurniture = withFurniture; _pass1Key = pass1Key;
 
@@ -966,7 +982,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ── Standard generation flow (pass 1 + pass 2) ────────────────────
-    if (!image || !surfacePrompt || !furniturePrompt) {
+    if (!image || !surfacePrompt || !resolvedFurniturePrompt) {
       return NextResponse.json(
         { error: "Image et style requis" },
         { status: 400 }
@@ -998,7 +1014,7 @@ export async function POST(request: NextRequest) {
     if (isOutdoor) {
       // Outdoor mode: apply subtype overrides, no room type
       const { effectiveSurfacePrompt, effectiveFurniturePrompt } =
-        applyOutdoorSubtypeOverrides(surfacePrompt.trim(), furniturePrompt.trim(), outdoorSubtype ?? null);
+        applyOutdoorSubtypeOverrides(surfacePrompt.trim(), resolvedFurniturePrompt.trim(), outdoorSubtype ?? null);
       trimmedSurface = effectiveSurfacePrompt;
       trimmedFurniture = effectiveFurniturePrompt;
 
@@ -1019,7 +1035,7 @@ export async function POST(request: NextRequest) {
       const hasDedicatedBuilder = roomType && ROOMS_WITH_DEDICATED_BUILDERS.includes(roomType);
 
       const { effectiveSurfacePrompt, effectiveFurniturePrompt } =
-        applyRoomTypeOverrides(surfacePrompt.trim(), furniturePrompt.trim(), roomType ?? null);
+        applyRoomTypeOverrides(surfacePrompt.trim(), resolvedFurniturePrompt.trim(), roomType ?? null);
 
       // If dedicated builder exists: use raw style surfacePrompt (builder handles room specifics)
       // Otherwise: use the concatenated effectiveSurfacePrompt (room override appended)
@@ -1033,7 +1049,7 @@ export async function POST(request: NextRequest) {
         const rt = ROOM_TYPES[roomType];
         trimmedFurniture = rt?.roomFurnitureOverride
           ? `${rt.roomFurnitureOverride} ${getStyleMaterialHint(styleId)}`
-          : furniturePrompt.trim();
+          : resolvedFurniturePrompt.trim();
       } else {
         trimmedFurniture = effectiveFurniturePrompt;
       }

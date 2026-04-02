@@ -110,7 +110,8 @@ const INDOOR_STYLES: Record<string, StylePrompts> = {
 
 export function getStyleById(
   styleId: string,
-  isOutdoor: boolean = false
+  isOutdoor: boolean = false,
+  imageHash?: string
 ): StylePrompts | null {
   if (isOutdoor) {
     const style = OUTDOOR_STYLES[styleId];
@@ -122,7 +123,22 @@ export function getStyleById(
     };
   }
 
-  return INDOOR_STYLES[styleId] ?? null;
+  const style = INDOOR_STYLES[styleId];
+  if (!style) return null;
+
+  // Use style variant if available and imageHash provided
+  if (imageHash) {
+    const { selectVariant } = require("@/lib/style-variants");
+    const variant = selectVariant(imageHash, styleId);
+    if (variant.furniturePrompt) {
+      return {
+        ...style,
+        furniturePrompt: variant.furniturePrompt,
+      };
+    }
+  }
+
+  return style;
 }
 
 export function getAllIndoorStyles(): StylePrompts[] {

@@ -321,7 +321,8 @@ export async function PATCH(
           furniturePrompt = targetPhoto.custom_prompt || "";
         } else {
           const { getStyleById } = await import("@/lib/style-resolver");
-          const style = getStyleById(effectiveStyleId, targetPhoto.is_outdoor);
+          const imageHash = targetPhoto.input_image_key || String(targetPhoto.id);
+          const style = getStyleById(effectiveStyleId, targetPhoto.is_outdoor, imageHash);
           if (style) {
             surfacePrompt = style.surfacePrompt;
             furniturePrompt = style.furniturePrompt;
@@ -605,9 +606,10 @@ async function generateSinglePhoto(
       }
     }
   } else {
-    // Named style: resolve from style-resolver
+    // Named style: resolve from style-resolver with variant selection
     const { getStyleById } = await import("@/lib/style-resolver");
-    const style = getStyleById(effectiveStyleId, photo.is_outdoor);
+    const imageHash = photo.input_image_key || String(photo.id);
+    const style = getStyleById(effectiveStyleId, photo.is_outdoor, imageHash);
 
     if (!style) {
       throw new Error(`Style introuvable: ${effectiveStyleId}`);
