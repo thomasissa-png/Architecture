@@ -11,8 +11,6 @@ import { translateRoomLabel } from "@/lib/constants";
  * Summary bar removed — share buttons are in MerchantMode.tsx, not here.
  */
 
-const MAX_ITERATIONS = 3;
-
 interface DossierPhotoResult {
   id: number;
   photoIndex: number;
@@ -34,6 +32,8 @@ interface DossierResultProps {
   onIterate?: (photoId: number, comment: string, previousModifications: string[]) => Promise<void>;
   isRegenerating?: number | null;
   isIterating?: number | null;
+  /** Max iterations allowed for this user's plan (0=Découverte, 1=Starter, 3=Pro/Admin) */
+  maxIterations?: number;
 }
 
 export default function DossierResult({
@@ -44,6 +44,7 @@ export default function DossierResult({
   onIterate,
   isRegenerating,
   isIterating,
+  maxIterations = 3,
 }: DossierResultProps) {
   const completedPhotos = photos.filter((p) => p.status === "completed");
   const failedPhotos = photos.filter((p) => p.status === "failed");
@@ -55,7 +56,7 @@ export default function DossierResult({
 
   const refinePhoto = completedPhotos.find((p) => p.id === refinePhotoId);
   const refineIterationsUsed = refinePhoto?.iterationCount ?? 0;
-  const refineIterationsRemaining = MAX_ITERATIONS - refineIterationsUsed;
+  const refineIterationsRemaining = maxIterations - refineIterationsUsed;
 
   const handleOpenRefine = (photoId: number) => {
     setRefinePhotoId(photoId);
@@ -110,7 +111,7 @@ export default function DossierResult({
       <div className="space-y-4">
         {completedPhotos.map((photo) => {
           const iterationsUsed = photo.iterationCount ?? 0;
-          const iterationsLeft = MAX_ITERATIONS - iterationsUsed;
+          const iterationsLeft = maxIterations - iterationsUsed;
           const canIterate = iterationsLeft > 0 && !!photo.pass1ImageKey && !!onIterate;
 
           return (
@@ -146,9 +147,9 @@ export default function DossierResult({
                     </button>
                   )}
                   {/* Iterations exhausted indicator */}
-                  {iterationsUsed >= MAX_ITERATIONS && (
+                  {iterationsUsed >= maxIterations && (
                     <span className="text-xs text-muted/50 font-light min-h-[44px] inline-flex items-center">
-                      3/3 affinages
+                      {iterationsUsed}/{maxIterations} affinages
                     </span>
                   )}
                   {/* Regenerate button */}

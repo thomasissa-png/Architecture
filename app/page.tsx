@@ -1885,8 +1885,8 @@ export default function Home() {
                         </div>
                       )}
 
-                      {/* Refine button */}
-                      {!isRefining && (
+                      {/* Refine button — hidden entirely for Découverte (maxIterations === 0) */}
+                      {!isRefining && maxIterations > 0 && (
                         <div className="text-center space-y-1.5">
                           {iterationsRemaining > 0 ? (
                             <>

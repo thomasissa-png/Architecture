@@ -106,6 +106,7 @@ export default function MerchantMode() {
   const [isAttaching, setIsAttaching] = useState(false);
   const [attachDone, setAttachDone] = useState(false);
   const [userCredits, setUserCredits] = useState<number | null>(null);
+  const [userMaxIterations, setUserMaxIterations] = useState(3);
 
   // Toggle surfaces+mobilier vs surfaces uniquement
   const [withFurniture, setWithFurniture] = useState(true);
@@ -181,6 +182,7 @@ export default function MerchantMode() {
       .then((res) => res.ok ? res.json() : null)
       .then((data) => {
         if (data?.credits !== undefined) setUserCredits(data.credits);
+        if (data?.maxIterations !== undefined) setUserMaxIterations(data.maxIterations);
       })
       .catch(() => {});
   }, [session]);
@@ -1030,6 +1032,7 @@ export default function MerchantMode() {
             onIterate={handleIterate}
             isRegenerating={isRegenerating}
             isIterating={isIterating}
+            maxIterations={userMaxIterations}
           />
 
           {/* ── Share buttons ── */}

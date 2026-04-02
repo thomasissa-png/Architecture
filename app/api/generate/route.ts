@@ -11,12 +11,11 @@ function getOpenAI(): OpenAI {
 }
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { decrementCredit, addCredits } from "@/lib/credits";
+import { decrementCredit, addCredits, getMaxIterations } from "@/lib/credits";
 import { logGeneration, savePass1Cache, getPass1Cache, getPool, saveIterationBase, getIterationBase, saveImage } from "@/lib/db";
 import { preprocessIterationComment, classifyIterationIntent } from "@/lib/custom-prompt";
 import {
   buildIterationFurnitureResponsesPrompt,
-  MAX_ITERATIONS,
   PASS1_TTL_MS,
 } from "@/lib/iteration-prompt";
 import { applyRoomTypeOverrides, ROOM_TYPES, getStyleMaterialHint } from "@/lib/room-types";
@@ -747,10 +746,13 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Check max iterations
-      if (previousModifications.length >= MAX_ITERATIONS) {
+      // Check max iterations based on user plan
+      const userMaxIter = await getMaxIterations(session?.user?.id ?? null);
+      if (previousModifications.length >= userMaxIter) {
         return NextResponse.json(
-          { error: `Nombre maximum d'itérations atteint (${MAX_ITERATIONS}).` },
+          { error: userMaxIter === 0
+            ? "Les itérations ne sont pas disponibles avec le plan Découverte. Passez au Starter ou Pro."
+            : `Nombre maximum d'itérations atteint (${userMaxIter}).` },
           { status: 403 }
         );
       }
