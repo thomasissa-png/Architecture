@@ -23,8 +23,9 @@ export function buildIterationFurnitureResponsesPrompt(
     .join("\n");
 
   return [
-    "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation.",
-    "Room structure is LOCKED — walls, floor, ceiling, paint, openings visually identical to input. Preserve exact count and position of all openings. All existing furniture and objects must REMAIN exactly as they are — do not remove, move, or resize anything.",
+    "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation. Camera position is LOCKED: same height, same tilt angle, same horizontal rotation.",
+    "Room structure is LOCKED — walls, floor, ceiling, paint, openings visually identical to input. Preserve exact count and position of all openings. EXACTLY the same number of windows and doors — same positions, same sizes. Walls without windows must remain solid.",
+    "Before editing, mentally list every object visible in this photo. All existing furniture and objects must REMAIN exactly as they are — do not remove, move, or resize anything unless explicitly requested below.",
     "This is a REFINEMENT. Room surfaces are FINAL. Focus ONLY on the changes below.",
     `APPLY THESE CHANGES:\n${modBlock}`,
     "Add ONLY the items described above. Everything else stays untouched. Leave the rest of the floor empty.",
@@ -68,9 +69,9 @@ export function buildIterationOutdoorFurnitureResponsesPrompt(
     .join("\n");
 
   return [
-    "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation.",
+    "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation. Camera position is LOCKED: same height, same tilt angle, same horizontal rotation.",
     "Ground surface and vertical structures are LOCKED — guard rails, walls, facades, gates, fences must remain visually identical to the input. Same colors, same textures, same geometry. Shadows from furniture are expected and natural.",
-    "IMPORTANT: All furniture, decoration, and objects currently visible in this photo must REMAIN exactly as they are. Do not remove, move, or resize any existing item.",
+    "Before editing, mentally list every object visible in this photo: every piece of furniture, every planter, every lamp, every decoration. ALL of these must REMAIN exactly as they are — do not remove, move, or resize any existing item.",
     "This is a REFINEMENT of a previous outdoor generation. The ground surface and vertical structures in this photo are FINAL and PERFECT. They must not change in any way — not even subtle color shifts or texture changes.",
     "Focus ONLY on adjusting the outdoor furniture and decoration as described below.",
     `APPLY THESE CHANGES:\n${modBlock}`,
@@ -95,17 +96,18 @@ export function buildAdjustResponsesPrompt(
   meta: { roomType?: string | null; allowWallMounted?: boolean },
 ): string {
   return [
-    "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation.",
-    "Room structure is LOCKED — walls, floor, ceiling, paint, windows, doors must remain visually identical to the input.",
-    "IMPORTANT: All furniture, decoration, and objects currently visible in this photo must REMAIN exactly as they are. Do not remove, move, or resize any existing item.",
-    "Edit this furnished room photo. Keep ALL existing furniture, decorations, and room surfaces EXACTLY as they are.",
-    `APPLY THIS CHANGE ONLY: ${enrichedComment}`,
-    "Add ONLY the items described above. Everything else in the photo — all existing furniture, rugs, plants, lamps — stays untouched.",
-    "Do NOT remove, move, or modify any existing item unless the user explicitly asks for it.",
-    "The room must look identical to the input except for the requested change.",
+    "SURGICAL EDIT — Make the SMALLEST possible change to this photo. Do NOT regenerate the scene. Do NOT reimagine the room. Output must be 95%+ identical pixels to the input.",
+    "Before editing, mentally list every object visible in this photo: every piece of furniture, every appliance, every decoration, every fixture. ALL of these must appear in your output at the SAME position, SAME size, SAME color, SAME texture.",
+    "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation. Camera position is LOCKED: same height, same tilt angle, same horizontal rotation.",
+    "Room structure is LOCKED — walls, floor, ceiling, paint, windows, doors must remain visually identical to the input. EXACTLY the same number of windows and doors — same positions, same sizes.",
+    `APPLY THIS SINGLE CHANGE ONLY: ${enrichedComment}`,
+    "That is the ONLY modification allowed. Every other pixel of this image must remain untouched.",
+    "Do NOT remove, move, resize, or recolor any existing item unless the user explicitly asks for it in the change above.",
+    "Do NOT add any item not described in the change above. Do NOT rearrange furniture. Do NOT change wall color or texture. Do NOT change floor material or color.",
+    "If removing an object, fill the vacated area with the surrounding floor or wall texture — do not place a new object in its place.",
     // Room-type-specific rules
     meta.roomType === "kitchen" || meta.roomType === "bathroom"
-      ? "Built-in cabinetry, vanity units, and countertops are expected for this room type."
+      ? "Preserve ALL built-in cabinetry, appliances (oven, stove, fridge, dishwasher), countertops, backsplash, and sink exactly as they appear."
       : meta.roomType === "wc"
       ? "Very small space — do not overcrowd."
       : "",
@@ -121,14 +123,19 @@ export function buildAdjustOutdoorResponsesPrompt(
   enrichedComment: string,
 ): string {
   return [
-    "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation.",
+    "SURGICAL EDIT — Make the SMALLEST possible change to this photo. Do NOT regenerate the scene. Do NOT reimagine the space. Output must be 95%+ identical pixels to the input.",
+    "Before editing, mentally list every object visible in this photo: every piece of furniture, every planter, every lamp, every decoration. ALL of these must appear in your output at the SAME position, SAME size, SAME color, SAME texture.",
+    "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation. Camera position is LOCKED: same height, same tilt angle, same horizontal rotation.",
     "Ground surface and vertical structures are LOCKED — guard rails, walls, facades, gates, fences must remain visually identical.",
-    "Edit this furnished outdoor space photo. Keep ALL existing furniture, decorations, and ground surfaces EXACTLY as they are.",
-    `APPLY THIS CHANGE ONLY: ${enrichedComment}`,
-    "Do NOT remove, move, or modify any existing item unless the user explicitly asks for it.",
-    "The space must look identical to the input except for the requested change.",
+    `APPLY THIS SINGLE CHANGE ONLY: ${enrichedComment}`,
+    "That is the ONLY modification allowed. Every other pixel of this image must remain untouched.",
+    "Do NOT remove, move, resize, or recolor any existing item unless the user explicitly asks for it in the change above.",
+    "Do NOT add any item not described in the change above. Do NOT rearrange furniture.",
+    "If removing an object, fill the vacated area with the surrounding ground texture — do not place a new object in its place.",
     "Every piece must appear firmly grounded on the ground with visible contact shadows consistent with the existing natural light direction.",
-    "Preserve existing vegetation in the background.",
+    "Preserve existing vegetation in the background. Do not alter tree lines, hedges, or background plants.",
+    "Open-air space — no ceiling. Sky preserved as-is.",
+    "Preserve the exact lighting conditions from the input — same shadow hardness, same direction, same color temperature.",
     "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, subtle sensor grain (ISO 200), natural corner vignetting. Photo-realistic outdoor photograph. No text, watermarks, or logos.",
   ].join(" ");
 }
