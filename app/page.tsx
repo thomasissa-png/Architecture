@@ -1928,17 +1928,8 @@ export default function Home() {
                   const isRefineTarget = refineTargetIndex === index;
 
                   return (
-                    <div key={index} className="relative space-y-5">
-                      {/* Remove result button — hidden during generation */}
-                      {!isGenerating && !isRefining && (
-                        <button
-                          onClick={() => handleRemoveResult(index)}
-                          aria-label="Supprimer ce résultat"
-                          className="absolute top-2 right-2 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-foreground/60 hover:bg-foreground/80 text-background text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage"
-                        >
-                          ×
-                        </button>
-                      )}
+                    <div key={index} className="space-y-5">
+
                       {/* Refine loading state */}
                       {isRefining && isRefineTarget && (
                         <div className="relative rounded-2xl overflow-hidden border border-foreground/10 bg-foreground/5">
@@ -1974,6 +1965,16 @@ export default function Home() {
                       {/* Comparator (hidden during refine loading for this target) */}
                       {!(isRefining && isRefineTarget) && (
                         <div className="relative">
+                          {/* Remove result button — on the image itself */}
+                          {!isGenerating && !isRefining && (
+                            <button
+                              onClick={() => handleRemoveResult(index)}
+                              aria-label="Supprimer ce résultat"
+                              className="absolute top-2 right-2 z-20 w-8 h-8 flex items-center justify-center rounded-full bg-foreground/70 hover:bg-foreground/90 text-background text-base font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage shadow-md"
+                            >
+                              ×
+                            </button>
+                          )}
                           <ImageComparator
                             originalUrl={result.originalUrl}
                             generatedUrl={displayUrl}
