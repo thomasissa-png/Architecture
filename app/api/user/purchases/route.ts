@@ -19,7 +19,7 @@ export async function GET() {
     const result = await db.query(
       `SELECT pack_id, credits_purchased, amount_cents, status, created_at
        FROM purchases
-       WHERE user_id = $1
+       WHERE user_id = $1 AND status = 'completed'
        ORDER BY created_at DESC
        LIMIT 50`,
       [session.user.id]
