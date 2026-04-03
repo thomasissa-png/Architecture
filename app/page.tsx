@@ -974,6 +974,11 @@ export default function Home() {
         }
 
         const data = await response.json();
+        console.log("[refine] response:", { hasImage: !!data.image, model: data.model, iterationNumber: data.iterationNumber });
+
+        if (!data.image) {
+          throw new Error("Le serveur n'a pas retourné d'image. Réessayez.");
+        }
 
         // Success: add new version, decrement iterations
         setVersions((prev) => {
