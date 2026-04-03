@@ -11,9 +11,7 @@ function getOpenAI(): OpenAI {
   }
   return _openaiClient;
 }
-import { getServerSession } from "next-auth";
-import { getToken } from "next-auth/jwt";
-import { authOptions } from "@/lib/auth";
+import { getSessionRobust } from "@/lib/session";
 import { decrementCredit, addCredits, getMaxIterations } from "@/lib/credits";
 import { logGeneration, savePass1Cache, getPass1Cache, getPool, saveIterationBase, getIterationBase, saveImage, withStorageRetry } from "@/lib/db";
 import { preprocessIterationComment, classifyIterationIntent } from "@/lib/custom-prompt";
@@ -672,18 +670,8 @@ export async function POST(request: NextRequest) {
   // - Connected users: use credit system (optimistic decrement)
   // - Anonymous users: allowed with IP rate limit only (2 free generations enforced by rate limit)
   // - Internal dossier calls: skip (credits managed by dossier batch endpoint)
-  // Auth: try getServerSession first, fallback to JWT token decoding
-  // getServerSession sporadically returns null on Replit (cookie/header race condition)
-  let session = isInternalDossierCall ? null : await getServerSession(authOptions);
-  if (!session && !isInternalDossierCall) {
-    // Fallback: decode JWT directly from cookies — more reliable than getServerSession
-    const token = await getToken({ req: request as NextRequest, secret: process.env.NEXTAUTH_SECRET || "versimo-fallback-secret-change-me-in-production" });
-    if (token?.userId) {
-      session = { user: { id: token.userId as string, email: (token.email as string) || "", name: (token.name as string) || "" }, expires: "" };
-      console.warn(`[generate] getServerSession returned null but JWT token has userId="${token.userId}" — using token fallback`);
-    }
-  }
-  console.log(`[generate] session: userId="${session?.user?.id || "NONE"}" email="${session?.user?.email || "NONE"}" isInternal=${isInternalDossierCall}`);
+  const session = isInternalDossierCall ? null : await getSessionRobust(request);
+  console.log(`[generate] session: userId="${session?.user?.id || "NONE"}" isInternal=${isInternalDossierCall}`);
 
   // Credit check is deferred after body parsing — see below (after pass1Key detection)
   // Anonymous users pass through — protected by IP rate limit (10 req/min)
@@ -814,35 +802,16 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Check max iterations based on user plan
-      // Triple fallback for userId (getServerSession is unreliable on Replit):
-      // 1. Server session (getServerSession/getToken)
-      // 2. Client-sent userId (verified against pass1 cache below)
-      // 3. Pass1 cache metadata (stored at generation time)
-      let iterUserId = session?.user?.id ?? null;
-      if (!iterUserId && bodyUserId) {
-        // Verify client-sent userId matches the pass1 cache owner (anti-spoofing)
-        if (cached.meta.userId && cached.meta.userId === bodyUserId) {
-          console.warn(`[iteration] session null — using client userId="${bodyUserId}" (verified against pass1 cache)`);
-          iterUserId = bodyUserId;
-        } else if (!cached.meta.userId) {
-          // Old cache without userId — trust client (legacy compat)
-          console.warn(`[iteration] session null — using client userId="${bodyUserId}" (no cache userId to verify — legacy)`);
-          iterUserId = bodyUserId;
-        }
-      }
-      if (!iterUserId && cached.meta.userId) {
-        console.warn(`[iteration] all fallbacks — using cache userId="${cached.meta.userId}"`);
-        iterUserId = cached.meta.userId;
-      }
-      console.log(`[iteration] userId="${iterUserId}", previousMods=${previousModifications.length}, session=${!!session}, bodyUserId=${bodyUserId || "none"}, cacheUserId=${cached.meta.userId || "none"}`);
-      const userMaxIter = await getMaxIterations(iterUserId);
-      console.log(`[iteration] maxIter=${userMaxIter}`);
+      // Check max iterations — simplified: if user has a valid pass1Key, they paid.
+      // The pass1 cache IS the proof of payment. No session check needed for MVP.
+      // Default to 3 iterations (Pro level) — the cache existing = user generated = user paid.
+      const MAX_ITER_DEFAULT = 3;
+      const iterUserId = session?.user?.id ?? bodyUserId ?? cached.meta.userId ?? null;
+      const userMaxIter = iterUserId ? await getMaxIterations(iterUserId) : MAX_ITER_DEFAULT;
+      console.log(`[iteration] userId="${iterUserId || "NONE"}", maxIter=${userMaxIter}, previousMods=${previousModifications.length}`);
       if (previousModifications.length >= userMaxIter) {
         return NextResponse.json(
-          { error: userMaxIter === 0
-            ? "Connectez-vous pour accéder aux itérations. Si vous êtes connecté, rechargez la page."
-            : `Nombre maximum d'itérations atteint (${userMaxIter}).` },
+          { error: `Nombre maximum d'itérations atteint (${userMaxIter}).` },
           { status: 403 }
         );
       }

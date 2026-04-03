@@ -7,8 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getSessionRobust } from "@/lib/session";
 import { getUserCredits, decrementCredit, addCredits, getMaxIterations } from "@/lib/credits";
 import { saveImage, getImage } from "@/lib/db";
 import { saveUserPhoto } from "@/lib/user-photos";
@@ -74,7 +73,7 @@ export async function POST(
   request: NextRequest,
   { params }: { params: { uuid: string } }
 ) {
-  const session = await getServerSession(authOptions);
+  const session = await getSessionRobust(request);
   if (!session?.user?.id) {
     return NextResponse.json(
       { error: "Connexion requise." },
@@ -174,7 +173,7 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: { uuid: string } }
 ) {
-  const session = await getServerSession(authOptions);
+  const session = await getSessionRobust(request);
   if (!session?.user?.id) {
     return NextResponse.json(
       { error: "Connexion requise." },

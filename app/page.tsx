@@ -691,6 +691,7 @@ export default function Home() {
           }
 
           // ── Split-mode: pass1 returned, launch pass2 in background ──
+          console.log("[split-mode client] response data:", { pendingPass2: data.pendingPass2, pass1_key: !!data.pass1_key, splitMode: withFurniture, hasImage: !!data.image });
           if (data.pendingPass2 && data.pass1_key) {
             const partialResult: GenerationResult = {
               originalUrl: filePreviewUrls[job.img.fileIndex],
