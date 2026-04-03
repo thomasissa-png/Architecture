@@ -1214,6 +1214,7 @@ export default function MerchantMode() {
           <div className="pt-4 border-t border-foreground/5">
             <button
               onClick={() => {
+                setFiles([]);
                 setPhotoEntries([]);
                 setDossierPhotos([]);
                 setDossierUuid(null);
