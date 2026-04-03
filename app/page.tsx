@@ -191,6 +191,9 @@ export default function Home() {
           setMaxIterations(data.maxIterations);
           setIterationsRemaining(data.maxIterations);
         }
+        if (data?.hasPro !== undefined) {
+          setHasPro(data.hasPro);
+        }
       })
       .catch(() => { /* silently fail — iterations stay at 0 */ });
   }, [session?.user?.id]);
@@ -263,6 +266,9 @@ export default function Home() {
   const [isOutdoor, setIsOutdoor] = useState(false);
   const [outdoorSubtype, setOutdoorSubtype] = useState<string | null>("terrasse");
   const [selectedOutdoorStyle, setSelectedOutdoorStyle] = useState<string | null>(null);
+
+  // User plan state
+  const [hasPro, setHasPro] = useState(false);
 
   // F1 — Iteration state (maxIterations fetched from API based on user pack)
   const [maxIterations, setMaxIterations] = useState(0);
@@ -1258,17 +1264,15 @@ export default function Home() {
             </p>
           </div>
 
-          {/* F4 — Mode Pro par défaut pour les utilisateurs connectés (toggle masqué) */}
-
-          {/* F4 — Merchant Mode (default for authenticated users) */}
-          {session && (
+          {/* F4 — Merchant Mode (Pro users only) */}
+          {session && hasPro && (
             <div className="animate-fade-in-up">
               <MerchantMode />
             </div>
           )}
 
-          {/* Standard Mode — only for unauthenticated users */}
-          {!session && (
+          {/* Standard Mode — anonymous users + connected non-Pro (Starter/Découverte) */}
+          {(!session || !hasPro) && (
           <>
           <StepIndicator currentStep={currentStep} />
 
