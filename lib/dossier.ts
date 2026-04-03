@@ -38,6 +38,7 @@ export interface Dossier {
   carte_image_key: string | null;
   prix_moyen_m2: number | null;
   nb_pieces: number | null;
+  property_id: string | null;
   created_at: string;
   expires_at: string;
 }
@@ -214,6 +215,7 @@ export async function ensureDossierTables(): Promise<void> {
   await db.query(`
     DO $$ BEGIN ALTER TABLE dossier_photos ADD COLUMN with_furniture BOOLEAN DEFAULT true; EXCEPTION WHEN duplicate_column THEN NULL; END $$;
     DO $$ BEGIN ALTER TABLE dossier_photos ADD COLUMN output_format VARCHAR(20) DEFAULT 'original'; EXCEPTION WHEN duplicate_column THEN NULL; END $$;
+    DO $$ BEGIN ALTER TABLE dossiers ADD COLUMN property_id VARCHAR(255); EXCEPTION WHEN duplicate_column THEN NULL; END $$;
   `);
 
   dossierTablesEnsured = true;
@@ -348,6 +350,7 @@ export async function updateDossierInfo(
     bienSurface?: number | null;
     bienPrix?: number | null;
     bienType?: string | null;
+    propertyId?: string | null;
     latitude?: number | null;
     longitude?: number | null;
     ville?: string | null;
@@ -370,6 +373,7 @@ export async function updateDossierInfo(
     ["bien_surface", info.bienSurface],
     ["bien_prix", info.bienPrix],
     ["bien_type", info.bienType],
+    ["property_id", info.propertyId],
     ["latitude", info.latitude],
     ["longitude", info.longitude],
     ["ville", info.ville],

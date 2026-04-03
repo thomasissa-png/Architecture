@@ -230,7 +230,24 @@ export async function PATCH(
         descriptionCommerciale: descriptionCommerciale || null,
         carteImageKey: carteImageKey || null,
         prixMoyenM2: prixMoyenM2 ? Number(prixMoyenM2) : null,
+        propertyId: propertyId || null,
       });
+
+      // If propertyId provided, also update all user_photos from this dossier
+      // so they appear on the property page
+      if (propertyId) {
+        const photos = await getDossierPhotos(uuid);
+        const { getPool: getDbPool } = await import("@/lib/db");
+        const db = getDbPool();
+        for (const photo of photos) {
+          if (photo.output_image_key) {
+            await db.query(
+              `UPDATE user_photos SET property_id = $1 WHERE user_id = $2 AND output_image_key = $3`,
+              [propertyId, session.user.id, photo.output_image_key]
+            );
+          }
+        }
+      }
 
       // Auto-create property if address provided and no propertyId
       if (bienAdresse && !propertyId) {
@@ -450,7 +467,7 @@ export async function PATCH(
           roomType: targetPhoto.room_type_id || null,
           roomLabel: targetPhoto.room_label || null,
           isOutdoor: targetPhoto.is_outdoor || false,
-          propertyId: null,
+          propertyId: dossier.property_id || null,
         }).catch((err) => console.error("[Gallery] Failed to save regenerated dossier photo:", err));
 
         return NextResponse.json({ success: true, photo: targetPhoto });
@@ -734,7 +751,7 @@ async function processBatchGeneration(
           roomType: photo.room_type_id || null,
           roomLabel: photo.room_label || null,
           isOutdoor: photo.is_outdoor || false,
-          propertyId: null,
+          propertyId: dossier.property_id || null,
         }).catch((err) => console.error("[Gallery] Failed to save dossier photo:", err));
 
         successCount++;
