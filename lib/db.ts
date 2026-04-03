@@ -319,6 +319,8 @@ export interface Pass1Meta {
   pendingPass2?: boolean; // true = pass2 not yet executed, awaiting pass2Only call
   outputSize?: string; // OpenAI size string (e.g. "1536x1024")
   withFurniture?: boolean; // whether furniture pass was requested
+  // Auth fallback: getServerSession can return null on Replit sporadically
+  userId?: string;
 }
 
 export async function savePass1Cache(

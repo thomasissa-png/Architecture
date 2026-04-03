@@ -788,7 +788,14 @@ export async function POST(request: NextRequest) {
       }
 
       // Check max iterations based on user plan
-      const iterUserId = session?.user?.id ?? null;
+      // Workaround: getServerSession can sporadically return null on Replit
+      // despite the user being authenticated. If session is null, try to recover
+      // the userId from the pass1 cache metadata (it stores the session context).
+      let iterUserId = session?.user?.id ?? null;
+      if (!iterUserId && cached.meta.userId) {
+        console.warn(`[iteration] getServerSession returned null but pass1 cache has userId="${cached.meta.userId}" — using cached userId`);
+        iterUserId = cached.meta.userId;
+      }
       console.log(`[iteration] userId="${iterUserId}", previousMods=${previousModifications.length}, session=${!!session}`);
       const userMaxIter = await getMaxIterations(iterUserId);
       console.log(`[iteration] maxIter=${userMaxIter}`);
@@ -1261,6 +1268,8 @@ export async function POST(request: NextRequest) {
       roomType: isOutdoor ? null : (roomType ?? null),
       isOutdoor: isOutdoor || undefined,
       outdoorSubtype: isOutdoor ? (outdoorSubtype ?? undefined) : undefined,
+      // Store userId for iteration fallback (getServerSession can return null on Replit)
+      userId: session?.user?.id ?? undefined,
       // Split-mode: store pass2 info so pass2Only call can resume
       ...(splitMode && withFurniture ? {
         pendingPass2: true,
