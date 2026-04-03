@@ -1485,10 +1485,22 @@ export default function Home() {
                         <button
                           type="button"
                           onClick={() => {
+                            // Reindex all per-photo Maps when removing a photo
+                            const reindex = <T,>(m: Map<number, T>): Map<number, T> => {
+                              const next = new Map<number, T>();
+                              m.forEach((v, k) => { if (k < index) next.set(k, v); else if (k > index) next.set(k - 1, v); });
+                              return next;
+                            };
                             setFiles((prev) => prev.filter((_, i) => i !== index));
+                            setPerPhotoStyles(reindex(perPhotoStyles));
+                            setPerPhotoRoomTypes(reindex(perPhotoRoomTypes));
+                            setPerPhotoCustomPrompts(reindex(perPhotoCustomPrompts));
+                            setPerPhotoOutdoor(reindex(perPhotoOutdoor));
+                            setPerPhotoWithFurniture((prev) => reindex(prev));
+                            setPerPhotoFormat((prev) => reindex(prev));
                           }}
                           aria-label={`Supprimer la photo ${index + 1}`}
-                          className="absolute top-2 right-2 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-foreground/70 hover:bg-foreground/90 text-background text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage shadow-sm"
+                          className="absolute top-1.5 right-1.5 z-10 w-9 h-9 flex items-center justify-center rounded-full bg-foreground/70 hover:bg-foreground/90 text-background text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage focus-visible:ring-offset-2 shadow-sm"
                         >
                           ×
                         </button>
@@ -1515,7 +1527,7 @@ export default function Home() {
                               const rm = new Map(perPhotoRoomTypes); rm.delete(index); setPerPhotoRoomTypes(rm);
                               const sm = new Map(perPhotoStyles); sm.delete(index); setPerPhotoStyles(sm);
                             }}
-                            className={`flex-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${!isPhotoOutdoor ? "bg-foreground text-background" : "text-muted"}`}
+                            className={`flex-1 px-3 py-2 min-h-[44px] flex items-center justify-center rounded-full text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 ${!isPhotoOutdoor ? "bg-foreground text-background shadow-sm" : "text-muted"}`}
                           >
                             Intérieur
                           </button>
@@ -1528,7 +1540,7 @@ export default function Home() {
                               const rm = new Map(perPhotoRoomTypes); rm.delete(index); setPerPhotoRoomTypes(rm);
                               const sm = new Map(perPhotoStyles); sm.delete(index); setPerPhotoStyles(sm);
                             }}
-                            className={`flex-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${isPhotoOutdoor ? "bg-foreground text-background" : "text-muted"}`}
+                            className={`flex-1 px-3 py-2 min-h-[44px] flex items-center justify-center rounded-full text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 ${isPhotoOutdoor ? "bg-foreground text-background shadow-sm" : "text-muted"}`}
                           >
                             Extérieur
                           </button>
@@ -1573,7 +1585,7 @@ export default function Home() {
                                   key={s.id}
                                   type="button"
                                   onClick={() => togglePhotoStyle(s.id)}
-                                  className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all ${
+                                  className={`px-3 py-1.5 min-h-[36px] rounded-lg text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 ${
                                     checked
                                       ? "bg-foreground text-background"
                                       : "bg-foreground/5 text-muted hover:bg-foreground/10"
@@ -1608,7 +1620,7 @@ export default function Home() {
                             }}
                             placeholder="Décrivez le style souhaité..."
                             rows={2}
-                            className="w-full text-xs font-light border border-foreground/10 rounded-lg px-3 py-2 resize-none focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
+                            className="w-full text-xs font-light border border-foreground/10 rounded-lg px-3 py-2 resize-none focus:border-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 transition-colors placeholder:text-foreground/30"
                           />
                         )}
 
