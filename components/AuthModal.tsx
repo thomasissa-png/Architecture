@@ -20,6 +20,7 @@
 
 import { signIn } from "next-auth/react";
 import { useState, useEffect, useCallback, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useScrollLock } from "@/lib/hooks/useScrollLock";
 
 interface AuthModalProps {
@@ -198,7 +199,7 @@ export default function AuthModal({ isOpen, onClose, callbackUrl, onAuthSuccess 
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-[100]"
       role="dialog"
@@ -415,6 +416,7 @@ export default function AuthModal({ isOpen, onClose, callbackUrl, onAuthSuccess 
         </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

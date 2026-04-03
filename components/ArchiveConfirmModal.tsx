@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useScrollLock } from "@/lib/hooks/useScrollLock";
 
 interface ArchiveConfirmModalProps {
@@ -78,7 +79,7 @@ export default function ArchiveConfirmModal({
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
       role="dialog"
@@ -215,6 +216,7 @@ export default function ArchiveConfirmModal({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

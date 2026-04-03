@@ -1965,8 +1965,8 @@ export default function Home() {
                       {/* Comparator (hidden during refine loading for this target) */}
                       {!(isRefining && isRefineTarget) && (
                         <div className="relative">
-                          {/* Remove result button — on the image itself */}
-                          {!isGenerating && !isRefining && (
+                          {/* Remove result button — visible as soon as this result exists, even during batch */}
+                          {!isRefining && !result.pass2Pending && (
                             <button
                               onClick={() => handleRemoveResult(index)}
                               aria-label="Supprimer ce résultat"
