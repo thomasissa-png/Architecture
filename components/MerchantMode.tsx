@@ -14,7 +14,7 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import UploadZone from "@/components/UploadZone";
-import StylePicker, { StyleOption, STYLES } from "@/components/StylePicker";
+import { StyleOption, STYLES } from "@/components/StylePicker";
 import { ROOM_TYPE_LIST } from "@/lib/room-types";
 import { OUTDOOR_STYLE_LIST } from "@/lib/outdoor-styles";
 import { OUTDOOR_SUBTYPE_LIST } from "@/lib/outdoor-subtypes";
@@ -91,9 +91,9 @@ export default function MerchantMode() {
   const [photoEntries, setPhotoEntries] = useState<PhotoEntry[]>([]);
   const [photoWarnings, setPhotoWarnings] = useState<Record<number, string>>({});
 
-  // Global style
-  const [globalStyles, setGlobalStyles] = useState<string[]>([]);
-  const [customPrompt, setCustomPrompt] = useState("");
+  // Global style (fallback in handleGenerate — setters no longer exposed in UI)
+  const [globalStyles] = useState<string[]>([]);
+  const [customPrompt] = useState("");
 
   // Dossier state
   const [dossierUuid, setDossierUuid] = useState<string | null>(null);
@@ -335,8 +335,8 @@ export default function MerchantMode() {
     }
 
     const allHaveOverride = photoEntries.every((e) => e.styleOverride !== null);
-    if (!allHaveOverride && globalStyles.length === 0 && !customPrompt.trim()) {
-      setError("Choisissez un style global ou un style pour chaque photo.");
+    if (!allHaveOverride) {
+      setError("Choisissez un style pour chaque photo.");
       return;
     }
 
@@ -782,7 +782,7 @@ export default function MerchantMode() {
                         className="w-full text-sm font-light border border-foreground/10 rounded-lg px-3 py-2 bg-background focus:border-foreground focus:outline-none transition-colors"
                         data-testid={`merchant-annotate-outdoor-style-${index}`}
                       >
-                        <option value="">Style global</option>
+                        <option value="">Choisir un style</option>
                         {OUTDOOR_STYLE_LIST.map((os) => (
                           <option key={os.id} value={os.id}>
                             {os.emoji} {os.label}
@@ -808,7 +808,7 @@ export default function MerchantMode() {
                         className="w-full text-sm font-light border border-foreground/10 rounded-lg px-3 py-2 bg-background focus:border-foreground focus:outline-none transition-colors"
                         data-testid={`merchant-annotate-style-${index}`}
                       >
-                        <option value="">Style global</option>
+                        <option value="">Choisir un style</option>
                         {STYLES.map((s) => (
                           <option key={s.id} value={s.id}>
                             {s.name}
@@ -901,26 +901,16 @@ export default function MerchantMode() {
           {/* Navigation */}
           <div className="flex items-center gap-3 pt-4">
             <button
-              onClick={() => {
-                // Check if all photos have a style override (none needs global)
-                const allHaveOverride = photoEntries.every((e) => e.styleOverride !== null);
-                if (allHaveOverride) {
-                  // All photos have individual styles — generate directly
-                  handleGenerate();
-                } else {
-                  // Need global style for photos without override
-                  setCurrentStep("style");
-                  merchantRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-                }
-              }}
-              disabled={isGenerating}
+              onClick={() => handleGenerate()}
+              disabled={isGenerating || !photoEntries.every((e) => e.styleOverride !== null)}
               className="px-8 py-3 bg-foreground text-background rounded-xl font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
               data-testid="merchant-next-annotate-continue"
             >
-              {photoEntries.every((e) => e.styleOverride !== null)
-                ? `Générer (${creditsNeeded} visuel${creditsNeeded > 1 ? "s" : ""})`
-                : "Choisir un style global"}
+              {`Générer (${creditsNeeded} visuel${creditsNeeded > 1 ? "s" : ""})`}
             </button>
+            {!photoEntries.every((e) => e.styleOverride !== null) && (
+              <p className="text-xs text-muted/60 font-light">Choisissez un style pour chaque photo</p>
+            )}
             {userCredits !== null && (
               <span className={`text-xs font-light ${userCredits < creditsNeeded ? "text-red-500" : "text-muted"}`}>
                 {userCredits} crédit{userCredits > 1 ? "s" : ""} restant{userCredits > 1 ? "s" : ""}
@@ -976,73 +966,7 @@ export default function MerchantMode() {
         </div>
       )}
 
-      {/* ── Step: Style ── */}
-      {currentStep === "style" && (
-        <div className="space-y-6 animate-fade-in-up" data-testid="merchant-step-style">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-1">
-                Style global
-              </h3>
-              <p className="text-xs text-muted/60 font-light">
-                Appliqué aux photos sans style individuel.
-              </p>
-            </div>
-            <button
-              onClick={() => {
-                setCurrentStep("annotate");
-                merchantRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-              }}
-              className="text-xs text-muted font-light hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded"
-            >
-              Retour
-            </button>
-          </div>
-
-          <p className="text-xs text-muted/60 font-light -mt-2">
-            Ce style sera appliqué aux photos sans style individuel.
-          </p>
-
-          <StylePicker
-            selectedStyles={globalStyles}
-            customPrompt={customPrompt}
-            onStyleToggle={(styleId) => {
-              // BUG-8 fix: single style selection (only globalStyles[0] was ever used)
-              setGlobalStyles((prev) => {
-                if (prev.includes(styleId)) {
-                  // Deselect = clear (allows switching to custom)
-                  return [];
-                }
-                // Replace any previous selection with the new one
-                return [styleId];
-              });
-            }}
-            onCustomPromptChange={setCustomPrompt}
-            isOutdoor={false}
-            selectedOutdoorStyle={null}
-            onSelectOutdoorStyle={() => {}}
-          />
-
-          {/* Generate button */}
-          {(globalStyles.length > 0 || customPrompt.trim()) && (
-            <div className="flex items-center gap-3 pt-4">
-              <button
-                onClick={handleGenerate}
-                disabled={isGenerating}
-                className="px-8 py-3 bg-sage text-white rounded-xl font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
-                data-testid="merchant-generate-from-style"
-              >
-                {isGenerating ? "Génération en cours..." : `Générer (${creditsNeeded} visuel${creditsNeeded > 1 ? "s" : ""})`}
-              </button>
-              {userCredits !== null && (
-                <span className={`text-xs font-light ${userCredits < creditsNeeded ? "text-red-500" : "text-muted"}`}>
-                  {userCredits} crédit{userCredits > 1 ? "s" : ""} restant{userCredits > 1 ? "s" : ""}
-                </span>
-              )}
-            </div>
-          )}
-        </div>
-      )}
+      {/* Step Style global supprimé — le style est choisi par photo uniquement */}
 
 
       {/* ── Step: Generating ── */}
