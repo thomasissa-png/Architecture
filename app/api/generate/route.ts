@@ -12,6 +12,7 @@ function getOpenAI(): OpenAI {
   return _openaiClient;
 }
 import { getServerSession } from "next-auth";
+import { getToken } from "next-auth/jwt";
 import { authOptions } from "@/lib/auth";
 import { decrementCredit, addCredits, getMaxIterations } from "@/lib/credits";
 import { logGeneration, savePass1Cache, getPass1Cache, getPool, saveIterationBase, getIterationBase, saveImage, withStorageRetry } from "@/lib/db";
@@ -659,7 +660,17 @@ export async function POST(request: NextRequest) {
   // - Connected users: use credit system (optimistic decrement)
   // - Anonymous users: allowed with IP rate limit only (2 free generations enforced by rate limit)
   // - Internal dossier calls: skip (credits managed by dossier batch endpoint)
-  const session = isInternalDossierCall ? null : await getServerSession(authOptions);
+  // Auth: try getServerSession first, fallback to JWT token decoding
+  // getServerSession sporadically returns null on Replit (cookie/header race condition)
+  let session = isInternalDossierCall ? null : await getServerSession(authOptions);
+  if (!session && !isInternalDossierCall) {
+    // Fallback: decode JWT directly from cookies — more reliable than getServerSession
+    const token = await getToken({ req: request as NextRequest, secret: process.env.NEXTAUTH_SECRET || "versimo-fallback-secret-change-me-in-production" });
+    if (token?.userId) {
+      session = { user: { id: token.userId as string, email: (token.email as string) || "", name: (token.name as string) || "" }, expires: "" };
+      console.warn(`[generate] getServerSession returned null but JWT token has userId="${token.userId}" — using token fallback`);
+    }
+  }
   console.log(`[generate] session: userId="${session?.user?.id || "NONE"}" email="${session?.user?.email || "NONE"}" isInternal=${isInternalDossierCall}`);
 
   // Credit check is deferred after body parsing — see below (after pass1Key detection)
@@ -722,6 +733,8 @@ export async function POST(request: NextRequest) {
     };
 
     styleId = bodyStyleId;
+
+    console.log(`[generate] splitMode=${splitMode}, pass2Only=${pass2Only}, withFurniture=${withFurniture}, pass1Key=${pass1Key ? "yes" : "no"}`);
 
     // Select style variant for furniture diversity (indoor named styles only)
     let resolvedFurniturePrompt = furniturePrompt;
@@ -1301,10 +1314,15 @@ export async function POST(request: NextRequest) {
         promptVersion: PROMPT_VERSION,
       }).catch((err) => console.error("DB log (splitMode pass1) failed:", err));
 
+      // Always return pass1_key in split mode — if cache failed, pass2Only will fail
+      // gracefully and the user still sees the pass1 result immediately
+      if (!pass1Saved) {
+        console.error(`[splitMode] pass1 cache save FAILED — pass2Only will not work for key ${pass1CacheKey}`);
+      }
       return NextResponse.json({
         image: pass1.image,
         model: pass1.model,
-        ...(pass1Saved ? { pass1_key: pass1CacheKey } : {}),
+        pass1_key: pass1CacheKey,
         pendingPass2: true,
       });
     }
