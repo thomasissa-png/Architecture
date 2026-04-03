@@ -23,7 +23,7 @@ export function buildIterationFurnitureResponsesPrompt(
 
   return [
     "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation. Camera position is LOCKED: same height, same tilt angle, same horizontal rotation.",
-    "Room structure is LOCKED — walls, floor, ceiling, paint, openings visually identical to input. Preserve exact count and position of all openings. EXACTLY the same number of windows and doors — same positions, same sizes. Walls without windows must remain solid.",
+    "EXACTLY the same number of windows and doors — same positions, same sizes. Walls without windows must remain solid. Room structure is LOCKED — walls, floor, ceiling, paint, openings visually identical to input. Preserve exact count and position of all openings. Each structural column or pillar must remain as a separate vertical element at its exact position. Do NOT merge columns into arches or decorative frames.",
     "Before editing, mentally list every object visible in this photo. All existing furniture and objects must REMAIN exactly as they are — do not remove, move, or resize anything unless explicitly requested below.",
     "This is a REFINEMENT. Room surfaces are FINAL. Focus ONLY on the changes below.",
     `APPLY THESE CHANGES:\n${modBlock}`,
@@ -46,7 +46,7 @@ export function buildIterationFurnitureResponsesPrompt(
       ? "Wall-mounted items are allowed ONLY for the items explicitly requested by the user."
       : "ONLY add freestanding objects resting on the floor. Do not attach anything to walls.",
     "Preserve all wall-mounted fixed equipment: radiators, heaters, water heater (cylindrical tank), vents, thermostats, switches, boiler. Do not place furniture in front of radiators.",
-    "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, Clean digital rendering, NO film grain, NO noise, NO vignetting. Photo-realistic interior photograph. No text, watermarks, or logos.",
+    "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus. Clean digital rendering. Photo-realistic interior photograph. No text, watermarks, or logos. Subtle film grain visible at 100% zoom (ISO 200 sensor noise), natural lens vignetting darkening corners 5-10%.",
   ].join(" ");
 }
 
@@ -83,7 +83,7 @@ export function buildIterationOutdoorFurnitureResponsesPrompt(
     "Preserve existing vegetation in the background. Do not alter tree lines, hedges, or background plants.",
     "Open-air space — no ceiling. Sky preserved as-is.",
     "Preserve the exact lighting conditions from the input — same shadow hardness, same direction, same color temperature.",
-    "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, Clean digital rendering, NO film grain, NO noise, NO vignetting. Photo-realistic outdoor photograph. No text, watermarks, or logos.",
+    "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus. Clean digital rendering. Photo-realistic outdoor photograph. No text, watermarks, or logos. Subtle film grain visible at 100% zoom (ISO 200 sensor noise), natural lens vignetting darkening corners 5-10%.",
   ].join(" ");
 }
 
@@ -98,7 +98,7 @@ export function buildAdjustResponsesPrompt(
     "SURGICAL EDIT — Make the SMALLEST possible change to this photo. Do NOT regenerate the scene. Do NOT reimagine the room. Output must be 95%+ identical pixels to the input.",
     "Before editing, mentally list every object visible in this photo: every piece of furniture, every appliance, every decoration, every fixture. ALL of these must appear in your output at the SAME position, SAME size, SAME color, SAME texture.",
     "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation. Camera position is LOCKED: same height, same tilt angle, same horizontal rotation.",
-    "Room structure is LOCKED — walls, floor, ceiling, paint, windows, doors must remain visually identical to the input. EXACTLY the same number of windows and doors — same positions, same sizes.",
+    "EXACTLY the same number of windows and doors — same positions, same sizes. Walls without windows must remain solid. Room structure is LOCKED — walls, floor, ceiling, paint, windows, doors must remain visually identical to the input. Each structural column or pillar must remain as a separate vertical element at its exact position.",
     `APPLY THIS SINGLE CHANGE ONLY: ${enrichedComment}`,
     "That is the ONLY modification allowed. Every other pixel of this image must remain untouched.",
     "Do NOT remove, move, resize, or recolor any existing item unless the user explicitly asks for it in the change above.",
@@ -113,7 +113,7 @@ export function buildAdjustResponsesPrompt(
     "Every piece must appear firmly grounded on the floor with visible contact shadows. Match shadow hardness to the lighting type.",
     "Preserve existing light direction and color temperature from the input photo. Even if the style uses warm materials, the room's overall lighting temperature must match the input. No warm tint or yellow cast.",
     "Preserve all wall-mounted fixed equipment: radiators, heaters, water heater (cylindrical tank), vents, thermostats, switches, boiler.",
-    "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, Clean digital rendering, NO film grain, NO noise, NO vignetting. Photo-realistic interior photograph. No text, watermarks, or logos.",
+    "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus. Clean digital rendering. Photo-realistic interior photograph. No text, watermarks, or logos. Subtle film grain visible at 100% zoom (ISO 200 sensor noise), natural lens vignetting darkening corners 5-10%.",
   ].filter(Boolean).join(" ");
 }
 
@@ -135,7 +135,7 @@ export function buildAdjustOutdoorResponsesPrompt(
     "Preserve existing vegetation in the background. Do not alter tree lines, hedges, or background plants.",
     "Open-air space — no ceiling. Sky preserved as-is.",
     "Preserve the exact lighting conditions from the input — same shadow hardness, same direction, same color temperature.",
-    "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, Clean digital rendering, NO film grain, NO noise, NO vignetting. Photo-realistic outdoor photograph. No text, watermarks, or logos.",
+    "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus. Clean digital rendering. Photo-realistic outdoor photograph. No text, watermarks, or logos. Subtle film grain visible at 100% zoom (ISO 200 sensor noise), natural lens vignetting darkening corners 5-10%.",
   ].join(" ");
 }
 
