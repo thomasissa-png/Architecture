@@ -24,7 +24,7 @@ export default function AuthButton() {
         const data = await res.json();
         setCredits(data.credits);
         setHasPro(data.hasPro === true);
-        setHasStarter(data.hasStarter === true || (data.credits > 0 && !data.hasPro));
+        setHasStarter(data.hasStarter === true);
       }
     } catch (err) {
       console.error("Erreur chargement credits:", err);

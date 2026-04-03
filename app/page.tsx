@@ -197,10 +197,9 @@ export default function Home() {
         }
         if (data?.hasPro !== undefined) {
           setHasPro(data.hasPro);
-          // Any logged-in user with credits who isn't Pro is considered Starter
-          if (!data.hasPro && data.credits > 0) {
-            setHasStarter(true);
-          }
+        }
+        if (data?.hasStarter !== undefined) {
+          setHasStarter(data.hasStarter);
         }
       })
       .catch(() => { /* silently fail — iterations stay at 0 */ });

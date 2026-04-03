@@ -192,6 +192,22 @@ export async function hasGalleryAccess(userId: string): Promise<boolean> {
  * - Pro (hasProAccess) = 3
  * - Admin = 3
  */
+
+/**
+ * Check if user has Starter access (has purchased at least 1 pack).
+ * Distinguishes free users (2 credits gratuits) from paying Starter users.
+ */
+export async function hasStarterAccess(userId: string): Promise<boolean> {
+  await ensureTable();
+  const db = getPool();
+  const result = await db.query(
+    `SELECT COUNT(*) as count FROM purchases
+     WHERE user_id = $1 AND status = 'completed'`,
+    [userId]
+  );
+  return Number(result.rows[0]?.count ?? 0) > 0;
+}
+
 export async function getMaxIterations(userId: string | null): Promise<number> {
   if (!userId) return 0;
 
@@ -199,12 +215,11 @@ export async function getMaxIterations(userId: string | null): Promise<number> {
   const pro = await hasProAccess(userId);
   if (pro) return 3;
 
-  // Any user with credits remaining = at least 1 iteration (Starter level)
-  // Simple rule: if you have credits, you've paid → you get iterations
-  const credits = await getUserCredits(userId);
-  if (credits > 0) return 1;
+  // Starter (has purchased at least 1 pack) = 1 iteration
+  const starter = await hasStarterAccess(userId);
+  if (starter) return 1;
 
-  // Découverte (no credits) = 0 iterations
+  // Découverte (free credits only, no purchase) = 0 iterations
   return 0;
 }
 
