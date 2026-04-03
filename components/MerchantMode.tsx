@@ -928,6 +928,7 @@ export default function MerchantMode() {
                   status: p.status,
                   errorMessage: p.errorMessage,
                   outputImageKey: p.outputImageKey,
+                  pass1ImageKey: p.pass1ImageKey,
                 }))
               : files.map((_, i) => ({
                   id: i,

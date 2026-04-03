@@ -544,7 +544,8 @@ import type { DossierPhoto, Dossier } from "@/lib/dossier";
 async function generateSinglePhoto(
   photo: DossierPhoto,
   dossier: Dossier,
-  withFurniture: boolean = true
+  withFurniture: boolean = true,
+  onPass1Ready?: (pass1Key: string) => Promise<void>,
 ): Promise<{ outputKey: string; pass1Key?: string }> {
   // Read input image from storage
   const inputImageData = await getImage(photo.input_image_key!);
@@ -677,6 +678,7 @@ async function generateSinglePhoto(
       furniturePrompt: variedFurniturePrompt,
       styleId: effectiveStyleId,
       withFurniture,
+      splitMode: withFurniture && !!onPass1Ready, // Split mode for progressive display
       width: outputWidth,
       height: outputHeight,
       roomType: photo.room_type_id,
@@ -693,7 +695,42 @@ async function generateSinglePhoto(
 
   const data = await response.json();
 
-  // Save output image to storage
+  // Split mode: pass1 returned, save it and launch pass2
+  if (data.pendingPass2 && data.pass1_key && onPass1Ready) {
+    // Save pass1 image to storage for preview
+    const pass1Base64 = data.image.replace(/^data:image\/[\w+]+;base64,/, "");
+    const pass1Key = await saveImage(pass1Base64, `dossier_${dossier.uuid}_${photo.photo_index}_pass1`);
+
+    // Notify caller (updates DB status so polling sees the preview)
+    await onPass1Ready(pass1Key);
+
+    // Now launch pass2
+    const p2Response = await fetch(generateUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Internal-Dossier": "true",
+        "X-Internal-Secret": process.env.INTERNAL_API_SECRET || "",
+      },
+      body: JSON.stringify({
+        pass2Only: true,
+        pass1_key: data.pass1_key,
+      }),
+    });
+
+    if (!p2Response.ok) {
+      // Pass2 failed — return pass1 result (surfaces only, better than nothing)
+      console.error(`[dossier] pass2 failed for photo ${photo.id}, returning pass1`);
+      return { outputKey: pass1Key, pass1Key: pass1Key };
+    }
+
+    const p2Data = await p2Response.json();
+    const p2Base64 = p2Data.image.replace(/^data:image\/[\w+]+;base64,/, "");
+    const outputKey = await saveImage(p2Base64, `dossier_${dossier.uuid}_${photo.photo_index}_output`);
+    return { outputKey, pass1Key };
+  }
+
+  // Non-split mode: standard response
   const outputBase64 = data.image.replace(/^data:image\/[\w+]+;base64,/, "");
   const outputKey = await saveImage(
     outputBase64,
@@ -730,7 +767,10 @@ async function processBatchGeneration(
 
         const photoStart = Date.now();
         const photoWithFurniture = photo.with_furniture !== false;
-        const result = await generateSinglePhoto(photo, dossier, photoWithFurniture);
+        const result = await generateSinglePhoto(photo, dossier, photoWithFurniture, async (pass1Key) => {
+          // Progressive display: update DB with pass1 image so polling shows the preview
+          await updateDossierPhotoStatus(photo.id, "generating", { pass1ImageKey: pass1Key });
+        });
 
         await updateDossierPhotoStatus(photo.id, "completed", {
           outputImageKey: result.outputKey,

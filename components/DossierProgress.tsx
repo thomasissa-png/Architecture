@@ -13,6 +13,7 @@ interface PhotoStatus {
   status: "pending" | "generating" | "completed" | "failed";
   errorMessage?: string | null;
   outputImageKey?: string | null;
+  pass1ImageKey?: string | null;
 }
 
 interface DossierProgressProps {
@@ -119,6 +120,14 @@ export default function DossierProgress({
                   className="w-12 h-12 rounded-lg object-cover border border-foreground/5"
                 />
               )}
+              {photo.status === "generating" && photo.pass1ImageKey && (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={`/api/logs/image?path=${encodeURIComponent(photo.pass1ImageKey)}`}
+                  alt=""
+                  className="w-12 h-12 rounded-lg object-cover border border-sage/30"
+                />
+              )}
               <div className="text-right">
                 <span className={`text-xs font-light ${
                   photo.status === "completed" ? "text-sage" :
@@ -127,7 +136,8 @@ export default function DossierProgress({
                   "text-muted/60"
                 }`}>
                   {photo.status === "completed" && "Prêt"}
-                  {photo.status === "generating" && "En cours..."}
+                  {photo.status === "generating" && photo.pass1ImageKey && "Surfaces prêtes — ameublement…"}
+                  {photo.status === "generating" && !photo.pass1ImageKey && "En cours…"}
                   {photo.status === "failed" && "Échec"}
                   {photo.status === "pending" && "En attente"}
                 </span>
