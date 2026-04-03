@@ -138,19 +138,22 @@ export default function ComptePage() {
     setPortalLoading(true);
     setPortalError(null);
 
+    const stripeTab = window.open("about:blank", "_blank");
     try {
       const res = await fetch("/api/stripe/portal", { method: "POST" });
       const data = await res.json();
 
       if (!res.ok) {
+        if (stripeTab) stripeTab.close();
         setPortalError(data.error || "Erreur lors de l'accès au portail.");
         return;
       }
 
       if (data.url) {
-        window.location.href = data.url;
+        if (stripeTab) { stripeTab.location.href = data.url; } else { window.location.href = data.url; }
       }
     } catch {
+      if (stripeTab) stripeTab.close();
       setPortalError("Erreur de connexion.");
     } finally {
       setPortalLoading(false);

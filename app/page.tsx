@@ -220,6 +220,7 @@ export default function Home() {
       return;
     }
     setLoadingPack(packId);
+    const stripeTab = window.open("about:blank", "_blank");
     try {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
@@ -232,9 +233,10 @@ export default function Home() {
       }
       const data = await res.json();
       if (data.url) {
-        window.location.href = data.url;
+        if (stripeTab) { stripeTab.location.href = data.url; } else { window.location.href = data.url; }
       }
     } catch {
+      if (stripeTab) stripeTab.close();
       setLoadingPack(null);
     }
   }

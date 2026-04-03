@@ -78,6 +78,8 @@ export default function AuthButton() {
   async function handleRecharge(packId: string) {
     setLoadingPack(packId);
     setRechargeError(null);
+    // Pré-ouvrir l'onglet dans le tick du clic (évite popup blocker Safari)
+    const stripeTab = window.open("about:blank", "_blank");
     try {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
@@ -86,12 +88,14 @@ export default function AuthButton() {
       });
       const data = await res.json();
       if (data.url) {
-        window.location.href = data.url;
+        if (stripeTab) { stripeTab.location.href = data.url; } else { window.location.href = data.url; }
       } else {
+        if (stripeTab) stripeTab.close();
         setRechargeError(data.error || "Erreur lors de la recharge. Réessayez.");
         setLoadingPack(null);
       }
     } catch {
+      if (stripeTab) stripeTab.close();
       setRechargeError("Erreur réseau. Réessayez.");
       setLoadingPack(null);
     }

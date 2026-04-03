@@ -123,6 +123,7 @@ function PricingContent() {
 
     setLoadingPack(packId);
     setError(null);
+    const stripeTab = window.open("about:blank", "_blank");
 
     try {
       const res = await fetch("/api/stripe/checkout", {
@@ -138,9 +139,10 @@ function PricingContent() {
 
       const data = await res.json();
       if (data.url) {
-        window.location.href = data.url;
+        if (stripeTab) { stripeTab.location.href = data.url; } else { window.location.href = data.url; }
       }
     } catch (err) {
+      if (stripeTab) stripeTab.close();
       setError(
         err instanceof Error ? err.message : "Erreur lors du paiement."
       );
