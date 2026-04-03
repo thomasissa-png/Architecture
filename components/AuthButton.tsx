@@ -8,8 +8,11 @@ export default function AuthButton() {
   const { data: session, status } = useSession();
   const [credits, setCredits] = useState<number | null>(null);
   const [hasPro, setHasPro] = useState(false);
+  const [hasStarter, setHasStarter] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [rechargeOpen, setRechargeOpen] = useState(false);
+  const [loadingPack, setLoadingPack] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   async function fetchCredits() {
@@ -19,6 +22,7 @@ export default function AuthButton() {
         const data = await res.json();
         setCredits(data.credits);
         setHasPro(data.hasPro === true);
+        setHasStarter(data.hasStarter === true || (data.credits > 0 && !data.hasPro));
       }
     } catch (err) {
       console.error("Erreur chargement credits:", err);
@@ -58,6 +62,37 @@ export default function AuthButton() {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [menuOpen]);
+
+  // Close recharge modal on Escape
+  useEffect(() => {
+    if (!rechargeOpen) return;
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setRechargeOpen(false);
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [rechargeOpen]);
+
+  async function handleRecharge(packId: string) {
+    setLoadingPack(packId);
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ packId }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert(data.error || "Erreur lors de la recharge");
+        setLoadingPack(null);
+      }
+    } catch {
+      alert("Erreur réseau. Réessayez.");
+      setLoadingPack(null);
+    }
+  }
 
   // Loading state — render nothing to avoid layout shift
   if (status === "loading") {
@@ -159,13 +194,21 @@ export default function AuthButton() {
                 {credits !== null ? credits : "..."}
               </span>
             </div>
-            {credits !== null && credits <= 3 && (
+            {credits !== null && credits <= 3 && (hasStarter || hasPro) && (
+              <button
+                className="block w-full mt-2 text-center text-xs bg-sage/10 text-sage px-3 py-1.5 rounded-full font-medium hover:bg-sage/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                onClick={() => { setMenuOpen(false); setRechargeOpen(true); }}
+              >
+                Recharger
+              </button>
+            )}
+            {credits !== null && credits <= 3 && !hasStarter && !hasPro && (
               <a
-                href={hasPro ? "/pricing" : "/pricing?buy=starter"}
+                href="/pricing"
                 className="block mt-2 text-center text-xs bg-sage/10 text-sage px-3 py-1.5 rounded-full font-medium hover:bg-sage/20 transition-colors"
                 onClick={() => setMenuOpen(false)}
               >
-                Recharger
+                Acheter des visuels
               </a>
             )}
           </div>
@@ -203,13 +246,22 @@ export default function AuthButton() {
           </div>
 
           <div className="px-2 py-1">
-            <a
-              href={hasPro ? "/pricing" : "/pricing?buy=starter"}
-              className="block px-3 py-2 text-sm text-muted font-light hover:text-foreground hover:bg-foreground/5 rounded-xl transition-colors"
-              onClick={() => setMenuOpen(false)}
-            >
-              {hasPro ? "Recharger des visuels" : "Acheter des visuels"}
-            </a>
+            {(hasStarter || hasPro) ? (
+              <button
+                className="block w-full text-left px-3 py-2 text-sm text-muted font-light hover:text-foreground hover:bg-foreground/5 rounded-xl transition-colors"
+                onClick={() => { setMenuOpen(false); setRechargeOpen(true); }}
+              >
+                Recharger des visuels
+              </button>
+            ) : (
+              <a
+                href="/pricing"
+                className="block px-3 py-2 text-sm text-muted font-light hover:text-foreground hover:bg-foreground/5 rounded-xl transition-colors"
+                onClick={() => setMenuOpen(false)}
+              >
+                Acheter des visuels
+              </a>
+            )}
             <button
               onClick={() => {
                 setMenuOpen(false);
@@ -219,6 +271,79 @@ export default function AuthButton() {
             >
               Se déconnecter
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Recharge modal — inline, no navigation */}
+      {rechargeOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/30 backdrop-blur-sm"
+          onClick={(e) => { if (e.target === e.currentTarget) setRechargeOpen(false); }}
+        >
+          <div className="bg-background border border-foreground/10 rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6 animate-fade-in-up relative">
+            <button
+              onClick={() => setRechargeOpen(false)}
+              aria-label="Fermer"
+              className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full hover:bg-foreground/5 text-muted hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+            >
+              ×
+            </button>
+            <h3 className="text-base font-semibold text-foreground mb-1">Recharger des visuels</h3>
+            <p className="text-xs text-muted font-light mb-5">
+              {credits !== null ? `${credits} visuel${credits !== 1 ? "s" : ""} restant${credits !== 1 ? "s" : ""}` : ""}
+              {hasPro ? " · Compte Pro" : hasStarter ? " · Compte Starter" : ""}
+            </p>
+
+            {hasPro ? (
+              <div className="space-y-2.5">
+                <button
+                  onClick={() => handleRecharge("recharge-pro-20")}
+                  disabled={loadingPack !== null}
+                  className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-sage/20 hover:bg-sage/5 transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 disabled:opacity-40"
+                >
+                  <span className="text-sm text-foreground font-light">+20 visuels</span>
+                  <span className="text-sm font-medium text-foreground">{loadingPack === "recharge-pro-20" ? "..." : "9 €"}</span>
+                </button>
+                <button
+                  onClick={() => handleRecharge("recharge-pro-50")}
+                  disabled={loadingPack !== null}
+                  className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-sage/20 hover:bg-sage/5 transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 disabled:opacity-40"
+                >
+                  <span className="text-sm text-foreground font-light">+50 visuels</span>
+                  <span className="text-sm font-medium text-foreground">{loadingPack === "recharge-pro-50" ? "..." : "19 €"}</span>
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                <button
+                  onClick={() => handleRecharge("recharge-starter-10")}
+                  disabled={loadingPack !== null}
+                  className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-foreground/10 hover:bg-foreground/5 transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 disabled:opacity-40"
+                >
+                  <span className="text-sm text-foreground font-light">+10 visuels</span>
+                  <span className="text-sm font-medium text-foreground">{loadingPack === "recharge-starter-10" ? "..." : "5,90 €"}</span>
+                </button>
+                <button
+                  onClick={() => handleRecharge("recharge-starter-25")}
+                  disabled={loadingPack !== null}
+                  className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-foreground/10 hover:bg-foreground/5 transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 disabled:opacity-40"
+                >
+                  <span className="text-sm text-foreground font-light">+25 visuels</span>
+                  <span className="text-sm font-medium text-foreground">{loadingPack === "recharge-starter-25" ? "..." : "12,90 €"}</span>
+                </button>
+              </div>
+            )}
+
+            <div className="mt-4 pt-3 border-t border-foreground/5">
+              <a
+                href="/pricing"
+                className="text-xs text-muted font-light hover:text-foreground transition-colors underline underline-offset-4"
+                onClick={() => setRechargeOpen(false)}
+              >
+                {hasPro ? "Changer d'offre" : "Passer au Pro"}
+              </a>
+            </div>
           </div>
         </div>
       )}
