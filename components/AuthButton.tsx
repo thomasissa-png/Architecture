@@ -236,13 +236,6 @@ export default function AuthButton() {
             >
               Ma galerie
             </a>
-            <a
-              href="/mes-dossiers"
-              className="block px-3 py-2 text-sm text-muted font-light hover:text-foreground hover:bg-foreground/5 rounded-xl transition-colors"
-              onClick={() => setMenuOpen(false)}
-            >
-              Mes dossiers
-            </a>
           </div>
 
           <div className="px-2 py-1">

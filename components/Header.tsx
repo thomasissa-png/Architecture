@@ -7,7 +7,7 @@ import AuthButton from "@/components/AuthButton";
 
 interface HeaderProps {
   variant?: "home" | "internal";
-  activePage?: "mes-biens" | "ma-galerie" | "mes-dossiers";
+  activePage?: "mes-biens" | "ma-galerie";
 }
 
 const navLinksLoggedIn = [

@@ -12,6 +12,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useSession } from "next-auth/react";
 import AuthButton from "@/components/AuthButton";
+import Header from "@/components/Header";
 
 // ─── Purchase type ──────────────────────────────────────────────────
 interface Purchase {
@@ -385,23 +386,10 @@ export default function ComptePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-foreground/5 bg-background/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto px-5 sm:px-8 py-3 sm:py-4 flex items-center justify-between">
-          <a href="/" className="text-xl font-semibold text-foreground tracking-tighter">
-            Versimo
-          </a>
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-muted font-light hidden sm:inline">
-              {session.user?.email}
-            </span>
-            <AuthButton />
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Content */}
-      <main className="max-w-4xl mx-auto px-5 sm:px-8 py-8 sm:py-12">
+      <main className="max-w-4xl mx-auto px-5 sm:px-8 pt-24 pb-12">
         <h1 className="text-2xl font-semibold text-foreground tracking-tight mb-8">
           Mon compte
         </h1>
