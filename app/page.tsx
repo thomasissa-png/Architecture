@@ -297,6 +297,10 @@ export default function Home() {
   const [refineError, setRefineError] = useState<string | null>(null);
   const [lastRefineComment, setLastRefineComment] = useState<string>("");
   const [refineWarnings, setRefineWarnings] = useState<string[]>([]);
+
+  // Regenerate state
+  const [regenerateConfirmIndex, setRegenerateConfirmIndex] = useState<number | null>(null);
+  const [isRegenerating, setIsRegenerating] = useState(false);
   const [refineElapsed, setRefineElapsed] = useState(0);
 
   const heroRef = useReveal();
@@ -840,6 +844,9 @@ export default function Home() {
     setRefineError(null);
     setRefineWarnings([]);
     setLastRefineComment("");
+    // Reset regenerate state
+    setRegenerateConfirmIndex(null);
+    setIsRegenerating(false);
   };
 
   const handleCancelGeneration = () => {
@@ -884,6 +891,9 @@ export default function Home() {
     setIsOutdoor(false);
     setOutdoorSubtype("terrasse");
     setSelectedOutdoorStyle(null);
+    // Reset regenerate state
+    setRegenerateConfirmIndex(null);
+    setIsRegenerating(false);
     // Reset Changement 2 state
     setPendingGeneration(false);
   };
@@ -1033,6 +1043,192 @@ export default function Home() {
     setRefineError(null);
     setIsRefineModalOpen(true);
   }, []);
+
+  const handleRegenerate = useCallback(async (index: number) => {
+    const result = results[index];
+    if (!result) return;
+
+    setRegenerateConfirmIndex(null);
+    setIsRegenerating(true);
+    setError(null);
+
+    // Cancel any previous in-flight requests
+    abortControllerRef.current?.abort();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    // Resolve surfacePrompt and furniturePrompt from styleId
+    let surfacePrompt = "";
+    let furniturePrompt = "";
+    const styleId = result.styleId || "custom";
+
+    if (result.customPromptUsed) {
+      surfacePrompt = result.customPromptUsed;
+      furniturePrompt = result.customPromptUsed;
+    } else if (result.isOutdoor && OUTDOOR_STYLES[styleId]) {
+      surfacePrompt = OUTDOOR_STYLES[styleId].surfacePrompt;
+      furniturePrompt = OUTDOOR_STYLES[styleId].furniturePrompt;
+    } else {
+      const style = STYLES.find((s) => s.id === styleId);
+      if (style) {
+        surfacePrompt = style.surfacePrompt;
+        furniturePrompt = style.furniturePrompt;
+      }
+    }
+
+    // Recover original image dimensions from the data URI
+    let width = 0;
+    let height = 0;
+    try {
+      const img = new Image();
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => { width = img.naturalWidth; height = img.naturalHeight; resolve(); };
+        img.onerror = reject;
+        img.src = result.originalUrl;
+      });
+    } catch {
+      // Dimensions unknown — server will handle 0x0
+    }
+
+    try {
+      const response = await resilientFetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          image: result.originalUrl,
+          surfacePrompt,
+          furniturePrompt,
+          customPrompt: result.customPromptUsed || undefined,
+          styleId,
+          withFurniture: true,
+          outputFormat: "original",
+          width,
+          height,
+          sessionId: getSessionId(),
+          isOutdoor: result.isOutdoor || false,
+          outdoorSubtype: result.isOutdoor ? result.outdoorSubtype : undefined,
+          splitMode: true,
+        }),
+      }, controller.signal);
+
+      if (!response.ok) {
+        let errorMsg = "Erreur lors de la régénération";
+        try {
+          const data = await response.json();
+          errorMsg = data.error || errorMsg;
+        } catch {
+          errorMsg = `Erreur serveur (${response.status}). Réessayez dans quelques instants.`;
+        }
+        throw new Error(errorMsg);
+      }
+
+      const data = await response.json();
+
+      if (data.pendingPass2 && data.pass1_key) {
+        // Update result with pass1 immediately
+        setResults((prev) => {
+          const updated = [...prev];
+          updated[index] = {
+            ...result,
+            generatedUrl: data.image,
+            model: data.model,
+            pass1Key: data.pass1_key,
+            pass2Pending: true,
+            pass1Url: data.image,
+          };
+          return updated;
+        });
+
+        // Reset versions for this index
+        setVersions((prev) => {
+          const updated = [...prev];
+          updated[index] = [{ imageUrl: data.image, comment: undefined, model: data.model }];
+          return updated;
+        });
+        setActiveVersions((prev) => {
+          const updated = [...prev];
+          updated[index] = 0;
+          return updated;
+        });
+
+        // Launch pass 2 in background
+        const p2Pass1Key = data.pass1_key;
+        resilientFetch("/api/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            pass2Only: true,
+            pass1_key: p2Pass1Key,
+            sessionId: getSessionId(),
+          }),
+        }, controller.signal)
+          .then(async (p2Response) => {
+            if (!p2Response.ok) {
+              console.error("[regenerate pass2] failed");
+              setResults((prev) => prev.map((r) =>
+                r.pass1Key === p2Pass1Key
+                  ? { ...r, pass2Pending: false, model: `${r.model} (ameublement échoué)` }
+                  : r
+              ));
+              return;
+            }
+            const p2Data = await p2Response.json();
+            setResults((prev) => prev.map((r) =>
+              r.pass1Key === p2Pass1Key
+                ? { ...r, generatedUrl: p2Data.image, model: p2Data.model, pass2Pending: false, photoId: p2Data.photoId || r.photoId }
+                : r
+            ));
+            setVersions((prev) => prev.map((entries, i) => {
+              if (i === index) {
+                return [{ imageUrl: p2Data.image, comment: undefined, model: p2Data.model }];
+              }
+              return entries;
+            }));
+          })
+          .catch((err) => {
+            if (err instanceof Error && err.name === "AbortError") return;
+            console.error("[regenerate pass2] error:", err);
+            setResults((prev) => prev.map((r) =>
+              r.pass1Key === p2Pass1Key
+                ? { ...r, pass2Pending: false, model: `${r.model} (ameublement échoué)` }
+                : r
+            ));
+          })
+          .finally(() => {
+            setIsRegenerating(false);
+          });
+      } else {
+        // Non-split response — replace directly
+        setResults((prev) => {
+          const updated = [...prev];
+          updated[index] = {
+            ...result,
+            generatedUrl: data.image,
+            model: data.model,
+            pass1Key: data.pass1_key,
+            photoId: data.photoId,
+            pass2Pending: false,
+          };
+          return updated;
+        });
+        setVersions((prev) => {
+          const updated = [...prev];
+          updated[index] = [{ imageUrl: data.image, comment: undefined, model: data.model }];
+          return updated;
+        });
+        setActiveVersions((prev) => {
+          const updated = [...prev];
+          updated[index] = 0;
+          return updated;
+        });
+        setIsRegenerating(false);
+      }
+    } catch (e: unknown) {
+      if (e instanceof Error && e.name === "AbortError") return;
+      setError(e instanceof Error ? e.message : "Erreur lors de la régénération.");
+      setIsRegenerating(false);
+    }
+  }, [results, session?.user?.id, startQueuePolling]);
 
   const handleDownloadAll = async () => {
     for (let index = 0; index < results.length; index++) {
@@ -2043,6 +2239,49 @@ export default function Home() {
                                 </a>
                               </div>
                             </>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Regenerate button — visible for Starter+ plans, hidden for Découverte */}
+                      {!isRefining && !result.pass2Pending && (hasStarter || hasPro) && (
+                        <div className="text-center">
+                          {regenerateConfirmIndex === index ? (
+                            <div className="bg-foreground/5 border border-foreground/10 rounded-xl p-4 max-w-sm mx-auto space-y-3">
+                              <p className="text-xs text-muted font-light">
+                                Consomme 1 visuel — votre résultat actuel sera remplacé
+                              </p>
+                              <div className="flex items-center justify-center gap-3">
+                                <button
+                                  onClick={() => handleRegenerate(index)}
+                                  disabled={isRegenerating}
+                                  className="inline-flex items-center gap-1.5 bg-sage text-white px-4 min-h-[36px] py-1.5 rounded-full text-xs font-medium hover:bg-sage/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+                                >
+                                  {isRegenerating && (
+                                    <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                    </svg>
+                                  )}
+                                  Confirmer
+                                </button>
+                                <button
+                                  onClick={() => setRegenerateConfirmIndex(null)}
+                                  disabled={isRegenerating}
+                                  className="text-xs text-muted underline underline-offset-4 hover:text-foreground transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded"
+                                >
+                                  Annuler
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setRegenerateConfirmIndex(index)}
+                              disabled={isRegenerating}
+                              className="text-xs text-muted font-light underline underline-offset-4 hover:text-foreground transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded"
+                            >
+                              {isRegenerating ? "Régénération en cours\u2026" : "Régénérer"}
+                            </button>
                           )}
                         </div>
                       )}
