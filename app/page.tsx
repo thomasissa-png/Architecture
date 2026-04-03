@@ -1157,21 +1157,23 @@ export default function Home() {
 
           {/* Social proof line */}
           <p className="text-xs text-muted font-light mb-6">
-            12 styles disponibles &middot; Résultat en 90 secondes &middot; Téléchargement HD gratuit
+            12 styles disponibles · Résultat en 90 secondes · Téléchargement HD{!session && " gratuit"}
           </p>
 
           <a
             href="#outil"
             className="inline-flex items-center gap-3 bg-foreground text-background px-8 py-4 rounded-full font-medium hover:bg-foreground/85 active:scale-[0.99] transition-all duration-200 text-sm tracking-wide focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
           >
-            Essayer gratuitement
+            {session ? "Générer un visuel" : "Essayer gratuitement"}
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
             </svg>
           </a>
-          <p className="text-sm text-foreground/60 font-light mt-3">
-            2 visuels offerts · Sans carte bancaire · <a href="#pricing" className="underline hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm">Tarifs à partir de 9,90 €</a>
-          </p>
+          {!session && (
+            <p className="text-sm text-foreground/60 font-light mt-3">
+              2 visuels offerts · Sans carte bancaire · <a href="#pricing" className="underline hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded-sm">Tarifs à partir de 9,90 €</a>
+            </p>
+          )}
 
           {/* Persona cards — 3 profils */}
           <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-3xl mx-auto text-left">
@@ -1220,7 +1222,7 @@ export default function Home() {
                 Votre pièce dans le style que vous choisissez — pas le salon de quelqu&apos;un d&apos;autre.
               </p>
               <span className="text-sm text-sage font-medium mt-1 group-hover:translate-x-0.5 transition-transform duration-200 inline-block">
-                Commencer gratuitement →
+                {session ? "Découvrir →" : "Commencer gratuitement →"}
               </span>
             </a>
 
@@ -1953,10 +1955,10 @@ export default function Home() {
                               </p>
                               <div className="mt-2 bg-foreground/5 border border-foreground/10 rounded-xl p-4 max-w-sm mx-auto">
                                 <p className="text-xs text-muted font-light mb-2">
-                                  Pour continuer à affiner, continuez avec un pack — à partir de 9,90 €.
+                                  Pour continuer à affiner, rechargez vos crédits.
                                 </p>
                                 <a
-                                  href="#pricing"
+                                  href="/pricing"
                                   className="text-xs text-sage font-medium hover:text-sage/80 transition-colors underline underline-offset-4"
                                 >
                                   Voir les offres
@@ -2009,7 +2011,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Pricing */}
+      {/* Pricing — masqué pour les utilisateurs connectés (gestion compte via /compte) */}
+      {!session && (
       <section id="pricing" className="py-10 sm:py-14 px-5 sm:px-8 bg-background/40">
         <div ref={pricingRef} className="reveal max-w-5xl mx-auto">
           <div className="text-center mb-14">
@@ -2149,6 +2152,7 @@ export default function Home() {
           </p>
         </div>
       </section>
+      )}
 
       {/* Disclaimer */}
       <div className="text-center px-5 sm:px-8 pb-6 pt-8">
