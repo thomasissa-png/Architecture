@@ -97,7 +97,7 @@ export default function DossierResult({
                     <button
                       onClick={() => handleOpenRefine(photo.id)}
                       disabled={isIterating === photo.id || isRegenerating === photo.id}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-sage/40 text-sage hover:bg-sage/5 transition-colors disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 min-h-[36px]"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-sage/40 text-sage hover:bg-sage/5 transition-colors disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 min-h-[44px]"
                       data-testid={`dossier-iterate-${photo.id}`}
                     >
                       {isIterating === photo.id ? (
@@ -123,7 +123,7 @@ export default function DossierResult({
                     <button
                       onClick={() => onRegenerate(photo.id)}
                       disabled={isRegenerating === photo.id || isIterating === photo.id}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium text-foreground/50 border border-foreground/10 hover:text-foreground hover:border-foreground/20 transition-colors disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 min-h-[36px]"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium text-foreground/50 border border-foreground/10 hover:text-foreground hover:border-foreground/20 transition-colors disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 min-h-[44px]"
                       data-testid={`dossier-regenerate-${photo.id}`}
                     >
                       {isRegenerating === photo.id ? "En cours..." : "Regénérer"}
