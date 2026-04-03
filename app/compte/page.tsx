@@ -13,6 +13,15 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useSession } from "next-auth/react";
 import AuthButton from "@/components/AuthButton";
 
+// ─── Purchase type ──────────────────────────────────────────────────
+interface Purchase {
+  pack_id: string;
+  credits_purchased: number;
+  amount_cents: number;
+  status: string;
+  created_at: string;
+}
+
 // ─── Types ───────────────────────────────────────────────────────────
 
 const FONT_OPTIONS = [
@@ -60,6 +69,12 @@ export default function ComptePage() {
   const [showResults, setShowResults] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
 
+  // Purchases state
+  const [purchases, setPurchases] = useState<Purchase[]>([]);
+  const [purchasesLoading, setPurchasesLoading] = useState(true);
+  const [portalLoading, setPortalLoading] = useState(false);
+  const [portalError, setPortalError] = useState<string | null>(null);
+
   const logoInputRef = useRef<HTMLInputElement>(null);
 
   // ── Load profile on mount ──
@@ -96,6 +111,50 @@ export default function ComptePage() {
 
     loadProfile();
   }, [status]);
+
+  // ── Load purchases on mount ──
+  useEffect(() => {
+    if (status !== "authenticated") return;
+
+    async function loadPurchases() {
+      try {
+        const res = await fetch("/api/user/purchases");
+        if (!res.ok) return;
+        const data = await res.json();
+        setPurchases(data.purchases || []);
+      } catch (err) {
+        console.error("Erreur chargement achats:", err);
+      } finally {
+        setPurchasesLoading(false);
+      }
+    }
+
+    loadPurchases();
+  }, [status]);
+
+  // ── Open Stripe Customer Portal ──
+  const handleOpenPortal = useCallback(async () => {
+    setPortalLoading(true);
+    setPortalError(null);
+
+    try {
+      const res = await fetch("/api/stripe/portal", { method: "POST" });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setPortalError(data.error || "Erreur lors de l'accès au portail.");
+        return;
+      }
+
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch {
+      setPortalError("Erreur de connexion.");
+    } finally {
+      setPortalLoading(false);
+    }
+  }, []);
 
   // ── SIRET lookup ──
   const handleSiretLookup = useCallback(async () => {
@@ -755,6 +814,117 @@ export default function ComptePage() {
                 </a>
               </div>
             )}
+
+            {/* ── Mes achats ── */}
+            <div className="border border-foreground/5 rounded-2xl p-5 space-y-4" data-testid="purchases-section">
+              <h2 className="text-xs font-medium text-foreground/40 uppercase tracking-widest">
+                Mes achats
+              </h2>
+
+              {purchasesLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="w-5 h-5 border-2 border-foreground/20 border-t-sage rounded-full animate-spin" />
+                </div>
+              ) : purchases.length === 0 ? (
+                <p className="text-sm text-muted font-light py-4">
+                  Aucun achat pour le moment.{" "}
+                  <a href="/pricing" className="underline hover:text-sage transition-colors">
+                    Voir les tarifs
+                  </a>
+                </p>
+              ) : (
+                <div className="overflow-x-auto -mx-5 px-5">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-foreground/5">
+                        <th className="text-left text-xs font-medium text-foreground/40 uppercase tracking-widest py-2 pr-4">
+                          Date
+                        </th>
+                        <th className="text-left text-xs font-medium text-foreground/40 uppercase tracking-widest py-2 pr-4">
+                          Pack
+                        </th>
+                        <th className="text-right text-xs font-medium text-foreground/40 uppercase tracking-widest py-2 pr-4">
+                          Montant
+                        </th>
+                        <th className="text-right text-xs font-medium text-foreground/40 uppercase tracking-widest py-2">
+                          Statut
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {purchases.map((p, i) => (
+                        <tr
+                          key={`${p.created_at}-${i}`}
+                          className="border-b border-foreground/[0.03] last:border-b-0"
+                        >
+                          <td className="py-3 pr-4 text-foreground font-light whitespace-nowrap">
+                            {new Date(p.created_at).toLocaleDateString("fr-FR", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            })}
+                          </td>
+                          <td className="py-3 pr-4 text-foreground font-light">
+                            {p.pack_id}
+                            <span className="text-muted ml-1">
+                              ({p.credits_purchased} visuel{p.credits_purchased > 1 ? "s" : ""})
+                            </span>
+                          </td>
+                          <td className="py-3 pr-4 text-foreground font-light text-right whitespace-nowrap tabular-nums">
+                            {(p.amount_cents / 100).toLocaleString("fr-FR", {
+                              style: "currency",
+                              currency: "EUR",
+                            })}
+                          </td>
+                          <td className="py-3 text-right">
+                            <span
+                              className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
+                                p.status === "completed"
+                                  ? "bg-sage/10 text-sage"
+                                  : p.status === "pending"
+                                    ? "bg-amber-50 text-amber-600"
+                                    : "bg-foreground/5 text-muted"
+                              }`}
+                            >
+                              {p.status === "completed"
+                                ? "Payé"
+                                : p.status === "pending"
+                                  ? "En attente"
+                                  : p.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* Stripe Customer Portal button */}
+              <div className="pt-2 border-t border-foreground/5">
+                <button
+                  onClick={handleOpenPortal}
+                  disabled={portalLoading}
+                  className="w-full sm:w-auto px-6 py-3 border border-foreground/10 rounded-full text-sm font-medium text-foreground hover:bg-foreground/[0.03] transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage focus-visible:ring-offset-2"
+                  data-testid="stripe-portal-button"
+                >
+                  {portalLoading ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      Chargement...
+                    </span>
+                  ) : (
+                    "Gérer mon abonnement et mes factures"
+                  )}
+                </button>
+                {portalError && (
+                  <p className="text-xs text-red-500 font-light mt-2">{portalError}</p>
+                )}
+              </div>
+            </div>
           </div>
         )}
       </main>

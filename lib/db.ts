@@ -138,6 +138,11 @@ export async function ensureTable(): Promise<void> {
     ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20) DEFAULT 'user';
   `);
 
+  // Add stripe_customer_id for Customer Portal access (idempotent)
+  await db.query(`
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT;
+  `);
+
   tableEnsured = true;
 }
 

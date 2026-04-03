@@ -64,6 +64,15 @@ export async function POST(request: Request) {
 
         await addCredits(userId, credits);
 
+        // Store Stripe customer ID for Customer Portal access
+        const stripeCustomerId = typeof session.customer === "string" ? session.customer : null;
+        if (stripeCustomerId) {
+          await pool.query(
+            `UPDATE users SET stripe_customer_id = $1 WHERE id = $2`,
+            [stripeCustomerId, userId]
+          );
+        }
+
         // Update purchase status
         await pool.query(
           `UPDATE purchases SET status = 'completed'
