@@ -334,7 +334,7 @@ export default function MerchantMode() {
       return;
     }
 
-    const allHaveOverride = photoEntries.every((e) => e.styleOverride !== null);
+    const allHaveOverride = photoEntries.every((e) => e.isOutdoor ? e.outdoorStyleId !== null : e.styleOverride !== null);
     if (!allHaveOverride) {
       setError("Choisissez un style pour chaque photo.");
       return;
@@ -902,13 +902,13 @@ export default function MerchantMode() {
           <div className="flex items-center gap-3 pt-4">
             <button
               onClick={() => handleGenerate()}
-              disabled={isGenerating || !photoEntries.every((e) => e.styleOverride !== null)}
+              disabled={isGenerating || !photoEntries.every((e) => e.isOutdoor ? e.outdoorStyleId !== null : e.styleOverride !== null)}
               className="px-8 py-3 bg-foreground text-background rounded-xl font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
               data-testid="merchant-next-annotate-continue"
             >
               {`Générer (${creditsNeeded} visuel${creditsNeeded > 1 ? "s" : ""})`}
             </button>
-            {!photoEntries.every((e) => e.styleOverride !== null) && (
+            {!photoEntries.every((e) => e.isOutdoor ? e.outdoorStyleId !== null : e.styleOverride !== null) && (
               <p className="text-xs text-muted/60 font-light">Choisissez un style pour chaque photo</p>
             )}
             {userCredits !== null && (
