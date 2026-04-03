@@ -2,6 +2,7 @@
 
 import { useSession, signOut } from "next-auth/react";
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import AuthModal from "@/components/AuthModal";
 
 export default function AuthButton() {
@@ -270,8 +271,8 @@ export default function AuthButton() {
         </div>
       )}
 
-      {/* Recharge modal — inline, no navigation */}
-      {rechargeOpen && (
+      {/* Recharge modal — portal to body to escape header backdrop-blur containing block */}
+      {rechargeOpen && createPortal(
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/30 backdrop-blur-sm"
           onClick={(e) => { if (e.target === e.currentTarget) setRechargeOpen(false); }}
@@ -372,7 +373,8 @@ export default function AuthButton() {
               </a>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
