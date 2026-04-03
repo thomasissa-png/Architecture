@@ -329,6 +329,7 @@
   - Ne jamais demander permission pour fixer un bug QA — fixer directement
   - --muted à #58585B minimum pour lisibilité
   - Gros problème sur l'itération = priorité absolue (session 30)
+  - **PAS DE GRAIN PHOTOGRAPHIQUE** — rendu lisse et propre voulu. INTERDIT : film grain, ISO noise, sensor noise, vignetting. Régressé 2 fois (Sprint 16b ajouté, Sprint 19 retiré, v42 retiré, v43 re-ajouté par erreur @ia puis re-retiré). RÈGLE ABSOLUE.
 
 - **Prochaines actions recommandées** :
   1. **Déployer v38 + tester itérations** : valider que SURGICAL EDIT empêche la régénération sans rendre le modèle inactif. @ia à relancer si problème.

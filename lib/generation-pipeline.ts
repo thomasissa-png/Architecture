@@ -105,7 +105,7 @@ export function getOutputSize(
 
 // ── Shared prompt fragments (constants to avoid duplication) ─────────
 const DSLR_LINE = "DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Clean digital rendering. Do NOT add HDR processing, color grading, or cinematic tone mapping. No text or watermarks.";
-const PHOTO_GRAIN = "Subtle film grain visible at 100% zoom (ISO 200 sensor noise), natural lens vignetting darkening corners 5-10%. This prevents CGI-clean rendering.";
+// PHOTO_GRAIN supprimé — décision fondateur : rendu lisse voulu, pas de grain/vignetting
 const CEILING_PRESERVATION = "CEILING RULE: If the ceiling shows ANY demolition damage (hanging plaster, exposed lath, holes, torn surfaces, peeling paint, cables, structural chaos), treat it as a BLANK CANVAS — cover EVERYTHING with smooth fresh plaster coat followed by the style ceiling finish. Do NOT preserve demolition damage as geometry. Only preserve INTENTIONAL structural elements (concrete beams, wooden rafters, brick arches, IPN metal beams) — keep their exact surface texture and patina. Smooth plaster BETWEEN beams only. Preserve ceiling CURVATURE exactly — vaults, arches, barrel ceilings, and curved surfaces must keep their exact profile. Do NOT flatten any curved ceiling into a flat plane.";
 const COLUMN_PRESERVATION = "Each structural column or pillar must remain as a separate vertical element at its exact position. Do NOT merge columns into arches or decorative frames.";
 const LIGHT_PRESERVATION = "Preserve existing light direction, shadow positions, and relative intensity. Maintain input's color temperature — warm-toned materials (brass, wood, copper) reflect existing light, they do NOT shift the overall lighting warm. Do not artificially brighten dark areas. Do not add any warm tint, amber cast, or golden color grading. Match the exact white balance of the input photo. The output color temperature must match the input exactly — measure by the whites (walls, ceiling, window frames). Raw concrete, bare masonry, and grey plaster must stay cool-grey — do not shift to beige, sand, or warm stone. Warm-toned MATERIALS (wood, brass, leather) have warm LOCAL color but must NOT shift the GLOBAL white balance.";
@@ -129,7 +129,6 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
       CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
       `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
       DSLR_LINE,
-      PHOTO_GRAIN,
     ].join(" ");
   }
 
@@ -144,7 +143,6 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
       CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
       `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
       DSLR_LINE,
-      PHOTO_GRAIN,
     ].join(" ");
   }
 
@@ -159,7 +157,6 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
       CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
       `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
       DSLR_LINE,
-      PHOTO_GRAIN,
     ].join(" ");
   }
 
@@ -174,7 +171,6 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
       CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
       `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
       DSLR_LINE,
-      PHOTO_GRAIN,
     ].join(" ");
   }
 
@@ -189,7 +185,6 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
       CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
       `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
       DSLR_LINE,
-      PHOTO_GRAIN,
     ].join(" ");
   }
 
@@ -204,7 +199,6 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
       CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
       `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
       DSLR_LINE,
-      PHOTO_GRAIN,
     ].join(" ");
   }
 
@@ -219,7 +213,6 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
       CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
       `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
       DSLR_LINE,
-      PHOTO_GRAIN,
     ].join(" ");
   }
 
@@ -236,7 +229,6 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
     CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
     `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
     DSLR_LINE,
-    PHOTO_GRAIN,
   ].join(" ");
 }
 
@@ -264,7 +256,6 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       "Result should look like a luxury real estate listing photo.",
       `${CAMERA_PRESERVATION} Room structure LOCKED: walls, floor, ceiling, windows visually identical to input — same geometry, same openings. Preserve existing light direction and color temperature. Even if the style uses warm materials, the room's overall lighting temperature must match the input. No warm tint or yellow cast.`,
       "DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Clean digital rendering. Do NOT add HDR processing, color grading, or cinematic tone mapping. No text or watermarks.",
-      PHOTO_GRAIN,
     ].join(" ");
   }
 
@@ -283,7 +274,6 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       "Result should look like a luxury real estate listing photo.",
       `${CAMERA_PRESERVATION} Room structure LOCKED: walls, floor, ceiling, windows visually identical to input — same geometry, same openings. Preserve existing light direction and color temperature. Even if the style uses warm materials, the room's overall lighting temperature must match the input. No warm tint or yellow cast.`,
       "DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Clean digital rendering. Do NOT add HDR processing, color grading, or cinematic tone mapping. No text or watermarks.",
-      PHOTO_GRAIN,
     ].join(" ");
   }
 
@@ -296,7 +286,6 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       EQUIPMENT_PRESERVATION, COLUMN_PRESERVATION,
       `${CAMERA_PRESERVATION} Room structure LOCKED: walls, floor, ceiling visually identical to input — same geometry. Scale reference: door = 204cm. Preserve existing light direction and color temperature. Even if the style uses warm materials, the room's overall lighting temperature must match the input. No warm tint.`,
       "DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Clean digital rendering. Do NOT add HDR processing, color grading, or cinematic tone mapping. No text or watermarks.",
-      PHOTO_GRAIN,
     ].join(" ");
   }
 
@@ -314,7 +303,6 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       "Result should look like a luxury real estate listing photo.",
       `${CAMERA_PRESERVATION} Room structure LOCKED: walls, floor, ceiling, windows visually identical to input — same geometry, same number of openings. Preserve existing light direction and color temperature. Even if the style uses warm materials, the room's overall lighting temperature must match the input. No warm tint.`,
       "DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Clean digital rendering. Do NOT add HDR processing, color grading, or cinematic tone mapping. No text or watermarks.",
-      PHOTO_GRAIN,
     ].join(" ");
   }
 
@@ -327,7 +315,6 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       EQUIPMENT_PRESERVATION, COLUMN_PRESERVATION,
       `${CAMERA_PRESERVATION} Room structure LOCKED: walls, floor, ceiling, doors visually identical to input — same geometry. Door = 204cm reference. Preserve existing light direction and color temperature. Even if the style uses warm materials, the room's overall lighting temperature must match the input. No warm tint.`,
       "DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Clean digital rendering. Do NOT add HDR processing, color grading, or cinematic tone mapping. No text or watermarks.",
-      PHOTO_GRAIN,
     ].join(" ");
   }
 
@@ -340,7 +327,6 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       EQUIPMENT_PRESERVATION, COLUMN_PRESERVATION,
       `${CAMERA_PRESERVATION} Room structure LOCKED: walls, floor, ceiling visually identical to input — same geometry. Door = 204cm reference. Preserve existing light direction and color temperature. Even if the style uses warm materials, the room's overall lighting temperature must match the input. No warm tint.`,
       "DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Clean digital rendering. Do NOT add HDR processing, color grading, or cinematic tone mapping. No text or watermarks.",
-      PHOTO_GRAIN,
     ].join(" ");
   }
 
@@ -353,7 +339,6 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       EQUIPMENT_PRESERVATION, COLUMN_PRESERVATION,
       `${CAMERA_PRESERVATION} Room structure LOCKED: walls, floor, ceiling visually identical to input — same geometry. Door = 204cm reference. Preserve existing light direction and color temperature. Even if the style uses warm materials, the room's overall lighting temperature must match the input. No warm tint.`,
       "DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Clean digital rendering. Do NOT add HDR processing, color grading, or cinematic tone mapping. No text or watermarks.",
-      PHOTO_GRAIN,
     ].join(" ");
   }
 
@@ -370,7 +355,6 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       "Result should look like a luxury real estate listing photo.",
       `${CAMERA_PRESERVATION} Room structure LOCKED: walls, floor, ceiling, windows visually identical to input — same geometry, same openings. Preserve existing light direction and color temperature. Even if the style uses warm materials, the room's overall lighting temperature must match the input. No warm tint.`,
       "DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Clean digital rendering. Do NOT add HDR processing, color grading, or cinematic tone mapping. No text or watermarks.",
-      PHOTO_GRAIN,
     ].join(" ");
   }
 
@@ -389,7 +373,6 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
     "Place furniture INSIDE the room only — do not add any object on exterior terraces, balconies, or patios visible through windows or glazing.",
     `${CAMERA_PRESERVATION} Room structure is LOCKED: walls, floor, ceiling, windows, doors visually identical to input — same angles, same geometry, same number of openings. Preserve exact count and position of all openings. Preserve existing light direction and color temperature. Even if the style uses warm materials, the room's overall lighting temperature must match the input. No warm tint or yellow cast.`,
     "DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Clean digital rendering. Do NOT add HDR processing, color grading, or cinematic tone mapping. No text or watermarks.",
-    PHOTO_GRAIN,
   ].join(" ");
 }
 
@@ -413,7 +396,6 @@ export function buildOutdoorSurfacesResponsesPrompt(
     "Preserve the exact lighting conditions from the input — same shadow hardness, same direction, same color temperature.",
     "No furniture in this pass — EMPTY outdoor space with finished ground only.",
     "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus. Clean digital rendering.",
-    PHOTO_GRAIN,
   ]
     .filter(Boolean)
     .join(" ");
@@ -437,7 +419,6 @@ export function buildOutdoorFurnitureResponsesPrompt(
     "Every piece must cast realistic shadows consistent with the existing natural light direction.",
     "Preserve the exact lighting conditions from the input — same shadow hardness, same direction, same color temperature.",
     "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus. Clean digital rendering. Photo-realistic outdoor photograph. No text, watermarks, or logos.",
-    PHOTO_GRAIN,
   ]
     .filter(Boolean)
     .join(" ");

@@ -630,7 +630,7 @@ agents/
 - **Passe 1 : nettoyer les prises electriques** — "Cover all visible electrical outlets, junction boxes, cable exits with the wall finish" (les boitiers ronds noirs restent visibles sinon).
 - **Passe 1 : pas de warm color shift** — "Do not add any warm tint or yellow cast" (les murs cool/neutres doivent rester cool/neutres).
 - **Passe 2 TOUJOURS lancee** apres passe 1 reussie. Si passe 2 echoue, retry 1 fois puis livrer passe 1 seule avec message.
-- **Grain photographique obligatoire** — "Subtle film grain visible at 100% zoom, natural lens vignetting darkening corners 5-10%" (empeche le rendu CGI-clean).
+- **PAS de grain photographique** — Décision fondateur : rendu lisse et propre voulu. NE JAMAIS ajouter de grain ISO, noise, film grain, sensor grain, ni vignetting dans les prompts. Les directives "Subtle film grain", "ISO 200 sensor noise", "natural lens vignetting" sont INTERDITES.
 - **PRESERVATION SPATIALE = CRITERE N°1 DES AUDITS VISUELS** — Les 3 agents d'audit (Yann, Lucas, Camille) evaluent la preservation spatiale en critere n°1 (poids ×3). Si une generation modifie l'espace (angle de vue, dimensions, profondeur, fenetres, portes, forme des murs), aucune qualite stylistique ne peut compenser : note plafonnee a 5/10. L'espace vient AVANT le style.
 
 ### Sprint 22 — Audit visuel croise Yann Duval + Lucas Moreau (12 generations #31-42)
