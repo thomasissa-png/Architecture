@@ -106,7 +106,7 @@ export default function DossierPublicView({
                   <StorageImage
                     imageKey={photo.outputImageKey}
                     alt={`${photo.roomLabel} — apres`}
-                    className="w-full h-full object-contain"
+                    className="w-full h-full object-cover"
                     loading="lazy"
                   />
                 </div>

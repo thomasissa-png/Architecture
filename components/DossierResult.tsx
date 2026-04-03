@@ -155,7 +155,7 @@ export default function DossierResult({
                     <StorageImage
                       imageKey={photo.outputImageKey}
                       alt={`${translateRoomLabel(photo.roomLabel, "Photo")} — après`}
-                      className="w-full h-full object-contain"
+                      className="w-full h-full object-cover"
                       loading="lazy"
                     />
                   </div>
