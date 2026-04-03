@@ -713,6 +713,7 @@ export async function POST(request: NextRequest) {
       // Split-mode: progressive display (pass1 shown while pass2 runs)
       splitMode = false,
       pass2Only = false,
+      userId: bodyUserId,
     } = body as {
       image?: string;
       surfacePrompt?: string;
@@ -730,6 +731,7 @@ export async function POST(request: NextRequest) {
       outdoorSubtype?: string | null;
       splitMode?: boolean;
       pass2Only?: boolean;
+      userId?: string;
     };
 
     styleId = bodyStyleId;
@@ -801,15 +803,27 @@ export async function POST(request: NextRequest) {
       }
 
       // Check max iterations based on user plan
-      // Workaround: getServerSession can sporadically return null on Replit
-      // despite the user being authenticated. If session is null, try to recover
-      // the userId from the pass1 cache metadata (it stores the session context).
+      // Triple fallback for userId (getServerSession is unreliable on Replit):
+      // 1. Server session (getServerSession/getToken)
+      // 2. Client-sent userId (verified against pass1 cache below)
+      // 3. Pass1 cache metadata (stored at generation time)
       let iterUserId = session?.user?.id ?? null;
+      if (!iterUserId && bodyUserId) {
+        // Verify client-sent userId matches the pass1 cache owner (anti-spoofing)
+        if (cached.meta.userId && cached.meta.userId === bodyUserId) {
+          console.warn(`[iteration] session null — using client userId="${bodyUserId}" (verified against pass1 cache)`);
+          iterUserId = bodyUserId;
+        } else if (!cached.meta.userId) {
+          // Old cache without userId — trust client (legacy compat)
+          console.warn(`[iteration] session null — using client userId="${bodyUserId}" (no cache userId to verify — legacy)`);
+          iterUserId = bodyUserId;
+        }
+      }
       if (!iterUserId && cached.meta.userId) {
-        console.warn(`[iteration] getServerSession returned null but pass1 cache has userId="${cached.meta.userId}" — using cached userId`);
+        console.warn(`[iteration] all fallbacks — using cache userId="${cached.meta.userId}"`);
         iterUserId = cached.meta.userId;
       }
-      console.log(`[iteration] userId="${iterUserId}", previousMods=${previousModifications.length}, session=${!!session}`);
+      console.log(`[iteration] userId="${iterUserId}", previousMods=${previousModifications.length}, session=${!!session}, bodyUserId=${bodyUserId || "none"}, cacheUserId=${cached.meta.userId || "none"}`);
       const userMaxIter = await getMaxIterations(iterUserId);
       console.log(`[iteration] maxIter=${userMaxIter}`);
       if (previousModifications.length >= userMaxIter) {

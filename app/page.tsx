@@ -990,6 +990,7 @@ export default function Home() {
             iterationComment: enrichedComment,
             previousModifications,
             sessionId: getSessionId(),
+            userId: session?.user?.id || undefined,
             surfacePrompt: isOutdoor && selectedOutdoorStyle
               ? (OUTDOOR_STYLES[selectedOutdoorStyle]?.surfacePrompt || "")
               : (targetResult.styleId && targetResult.styleId !== "custom"
@@ -1065,7 +1066,7 @@ export default function Home() {
         }
       }
     },
-    [results, refineTargetIndex, versions, activeVersions, customPrompt, isOutdoor, selectedOutdoorStyle, outdoorSubtype]
+    [results, refineTargetIndex, versions, activeVersions, customPrompt, isOutdoor, selectedOutdoorStyle, outdoorSubtype, session?.user?.id]
   );
 
   const handleRefineRetry = useCallback(() => {
@@ -1740,20 +1741,33 @@ export default function Home() {
               {/* Blur preview placeholders */}
               <div className={`grid gap-4 mx-auto ${files.length === 1 ? "grid-cols-1 max-w-xl" : "grid-cols-1 sm:grid-cols-2 max-w-4xl"}`}>
                 {files.map((file, i) => {
-                  const done = i < results.length;
-                  const active = i >= currentProcessing && i < currentProcessing + 2 && !done;
+                  // Check if this photo has a partial result (pass1 surfaces visible)
+                  const partialResult = results.find((r) => r.pass2Pending && r.originalUrl === filePreviewUrls[i]);
+                  const done = results.some((r) => !r.pass2Pending && r.originalUrl === filePreviewUrls[i]);
+                  const showPass1 = !!partialResult;
+                  const active = i >= currentProcessing && i < currentProcessing + 2 && !done && !showPass1;
                   return (
                     <div key={i} className="relative rounded-2xl overflow-hidden border border-foreground/10">
                       <div className="aspect-[4/3]">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src={filePreviewUrls[i]}
+                          src={showPass1 ? partialResult.generatedUrl : filePreviewUrls[i]}
                           alt=""
-                          className={`w-full h-full object-cover transition-all duration-700 ${done ? "" : "blur-sm brightness-95"}`}
+                          className={`w-full h-full object-cover transition-all duration-700 ${done || showPass1 ? "" : "blur-sm brightness-95"}`}
                         />
                       </div>
                       <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-500 ${done ? "opacity-0" : "opacity-100"}`}>
-                        {active ? (
+                        {showPass1 ? (
+                          <div className="bg-background/90 backdrop-blur-sm rounded-xl px-5 py-3 shadow-sm text-center">
+                            <div className="flex justify-center gap-1 mb-2">
+                              <div className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                              <div className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                              <div className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                            </div>
+                            <p className="text-sm text-foreground font-medium">Surfaces terminées</p>
+                            <p className="text-xs text-muted font-light">Ameublement en cours…</p>
+                          </div>
+                        ) : active ? (
                           <div className="bg-background/90 backdrop-blur-sm rounded-xl px-4 py-2.5 flex items-center gap-3 shadow-sm">
                             <div className="flex gap-1">
                               <div className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
@@ -1768,7 +1782,7 @@ export default function Home() {
                           </div>
                         )}
                       </div>
-                      {done && (
+                      {done && !showPass1 && (
                         <div className="absolute top-2 right-2 w-6 h-6 bg-sage rounded-full flex items-center justify-center">
                           <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
