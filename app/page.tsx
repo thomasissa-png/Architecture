@@ -721,19 +721,23 @@ export default function Home() {
                 if (!p2Response.ok) {
                   const p2Err = await p2Response.json().catch(() => ({}));
                   console.error("[pass2] failed:", p2Err.error);
-                  setResults((prev) =>
-                    prev.map((r) =>
+                  setResults((prev) => {
+                    const updated = prev.map((r) =>
                       r.pass1Key === p2Pass1Key
                         ? { ...r, pass2Pending: false, model: `${r.model} (ameublement échoué)` }
                         : r
-                    )
-                  );
+                    );
+                    if (!updated.some((r) => r.pass2Pending)) {
+                      setTimeout(() => setIsGenerating(false), 0);
+                    }
+                    return updated;
+                  });
                   return;
                 }
                 const p2Data = await p2Response.json();
                 // Replace pass1 image with furnished result
-                setResults((prev) =>
-                  prev.map((r) =>
+                setResults((prev) => {
+                  const updated = prev.map((r) =>
                     r.pass1Key === p2Pass1Key
                       ? {
                           ...r,
@@ -743,8 +747,13 @@ export default function Home() {
                           photoId: p2Data.photoId || r.photoId,
                         }
                       : r
-                  )
-                );
+                  );
+                  // If no more pending pass2, clear isGenerating
+                  if (!updated.some((r) => r.pass2Pending)) {
+                    setTimeout(() => setIsGenerating(false), 0);
+                  }
+                  return updated;
+                });
                 // Update versions array for this result
                 setVersions((prev) =>
                   prev.map((entries) => {
@@ -758,13 +767,17 @@ export default function Home() {
               .catch((err) => {
                 if (err instanceof Error && err.name === "AbortError") return;
                 console.error("[pass2] error:", err);
-                setResults((prev) =>
-                  prev.map((r) =>
+                setResults((prev) => {
+                  const updated = prev.map((r) =>
                     r.pass1Key === p2Pass1Key
                       ? { ...r, pass2Pending: false, model: `${r.model} (ameublement échoué)` }
                       : r
-                  )
-                );
+                  );
+                  if (!updated.some((r) => r.pass2Pending)) {
+                    setTimeout(() => setIsGenerating(false), 0);
+                  }
+                  return updated;
+                });
               });
 
             return partialResult;
@@ -811,7 +824,12 @@ export default function Home() {
     }
 
     if (!controller.signal.aborted) {
-      setIsGenerating(false);
+      // Don't clear isGenerating if there are pending pass2 results — keep loading visible
+      // The pass2 completion handler will clear isGenerating when all pass2 are done
+      const hasPendingPass2 = allResults.some((r) => r.pass2Pending);
+      if (!hasPendingPass2) {
+        setIsGenerating(false);
+      }
       if (hasQueued && allResults.length === 0) {
         // All jobs were queued — show info message
         setQueueToast({
