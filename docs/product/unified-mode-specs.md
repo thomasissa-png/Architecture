@@ -85,35 +85,26 @@ Résultats : ImageComparator × N photos
 
 **Fichiers modifiés** : `app/page.tsx` (ajout conditionnel Pro)
 
-### Étape 3 — Dossier PDF post-génération (Pro only)
-
-**Objectif** : bouton "Créer un dossier" qui génère un dossier PDF à partir des photos associées.
-
-1. L'utilisateur sélectionne un bien → voit ses photos → clique "Créer un dossier"
-2. Appel à `/api/dossier` POST pour créer le dossier
-3. Appel à `/api/dossier/[uuid]` PATCH pour attacher les photos
-
-**Fichiers modifiés** : composant dédié (à créer), APIs dossier existantes
-
-### Étape 4 — Nettoyage
+### Étape 3 — Nettoyage
 
 1. Supprimer `MerchantMode.tsx`
 2. Supprimer `DossierProgress.tsx`, `DossierResult.tsx`
 3. Supprimer les références dans les imports
-4. Nettoyer les APIs dossier (retirer la logique de génération, garder uniquement gestion/PDF)
+4. Nettoyer les APIs dossier (retirer la logique de génération, garder uniquement gestion/PDF depuis /mes-biens)
+
+> Note : les dossiers PDF se créent UNIQUEMENT depuis la fiche bien (`/mes-biens/[id]`). Pas de bouton "Créer un dossier" sur la page de génération. Décision fondateur 2026-04-03.
 
 ## Estimation
 
 - Étape 1 : le plus gros, ~4-6h agent
 - Étape 2 : ~1h
-- Étape 3 : ~2h
-- Étape 4 : ~1h nettoyage
+- Étape 3 : ~1h nettoyage
 
 ## Risques
 
 - **Régression itérations** : le mode standard a déjà les itérations via RefineModal → /api/generate. C'est le flow à garder.
 - **Régression batch** : le mode standard orchestre déjà le batch côté client (Promise.allSettled). C'est le flow à garder.
-- **Perte fonctionnalité dossier** : les dossiers restent créables post-génération. Ce n'est plus le point d'entrée.
+- **Dossiers PDF** : créés uniquement depuis `/mes-biens/[id]`. Les APIs dossier restent mais ne sont plus le point d'entrée de la génération.
 
 ---
 
