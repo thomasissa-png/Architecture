@@ -14,7 +14,7 @@ function getOpenAI(): OpenAI {
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { decrementCredit, addCredits, getMaxIterations } from "@/lib/credits";
-import { logGeneration, savePass1Cache, getPass1Cache, getPool, saveIterationBase, getIterationBase, saveImage } from "@/lib/db";
+import { logGeneration, savePass1Cache, getPass1Cache, getPool, saveIterationBase, getIterationBase, saveImage, withStorageRetry } from "@/lib/db";
 import { preprocessIterationComment, classifyIterationIntent } from "@/lib/custom-prompt";
 import {
   buildIterationFurnitureResponsesPrompt,
@@ -41,8 +41,9 @@ import { enqueueGeneration, shouldQueue } from "@/lib/generation-queue";
  * v32 (revert gpt-image-1.5 → gpt-image-1 — regression spatiale confirmee par audit Lucas, modele configurable via env),
  * v33 (audit Yann: propagation DEPTH_DISTRIBUTION + CONTACT_SHADOWS aux 7 builders dedies — bedroom, kitchen, bathroom, WC, entryway, laundry, cellar + preservation lumiere passe 2 tous builders),
  * v34 (audit Yann structurel: DEPTH_DISTRIBUTION imperatif sans conditionnels, densite adaptative, furniturePrompts 12 styles avec FOREGROUND/LATERAL/BACKGROUND/ACCENTS, pre-processor custom enrichi few-shot + filtrage assoupli),
- * v37 (audit croise Yann+Lucas #91-95: P0 anti-fenetre hallucinee comptage explicite, P0 equipements muraux water heater nomme, P1 anti-warm shift materiaux chauds, P2 texture poutres conditionnelle, P2 camera position LOCKED, P1 pierre brute limewash) */
-export const PROMPT_VERSION = "v41";
+ * v37 (audit croise Yann+Lucas #91-95: P0 anti-fenetre hallucinee comptage explicite, P0 equipements muraux water heater nomme, P1 anti-warm shift materiaux chauds, P2 texture poutres conditionnelle, P2 camera position LOCKED, P1 pierre brute limewash),
+ * v42 (density conditionals: kitchen 3-tier width scaling, dining room compact/large, office compact skip bookshelf — fix gen #112 overcrowded compact kitchen) */
+export const PROMPT_VERSION = "v42";
 
 // ─── Image generation model ─────────────────────────────────────────
 // v36: configurable via env var. Default gpt-image-1 (v32 reverted gpt-image-1.5 for spatial regression).
@@ -698,6 +699,9 @@ export async function POST(request: NextRequest) {
       // F3 outdoor
       isOutdoor = false,
       outdoorSubtype = null,
+      // Split-mode: progressive display (pass1 shown while pass2 runs)
+      splitMode = false,
+      pass2Only = false,
     } = body as {
       image?: string;
       surfacePrompt?: string;
@@ -713,6 +717,8 @@ export async function POST(request: NextRequest) {
       roomType?: string | null;
       isOutdoor?: boolean;
       outdoorSubtype?: string | null;
+      splitMode?: boolean;
+      pass2Only?: boolean;
     };
 
     styleId = bodyStyleId;
@@ -739,10 +745,11 @@ export async function POST(request: NextRequest) {
     _width = width; _height = height; _roomType = roomType; _isOutdoor = isOutdoor;
     _outdoorSubtype = outdoorSubtype; _withFurniture = withFurniture; _pass1Key = pass1Key;
 
-    // Credit check — AFTER body parsing so we know if it's an iteration
+    // Credit check — AFTER body parsing so we know if it's an iteration or pass2Only
     // Iterations do NOT consume a credit (spec F1). Only new generations do.
-    const isIteration = !!pass1Key;
-    if (!isInternalDossierCall && session?.user?.id && !isIteration) {
+    // pass2Only does NOT consume a credit (already debited in the splitMode pass1 call).
+    const isIteration = !!pass1Key && !pass2Only;
+    if (!isInternalDossierCall && session?.user?.id && !isIteration && !pass2Only) {
       const decremented = await decrementCredit(session.user.id);
       if (!decremented) {
         return NextResponse.json(
@@ -753,7 +760,8 @@ export async function POST(request: NextRequest) {
     }
 
     // ── F1 Iteration flow: adjust (edit furnished) or restyle (re-pass 2) ──
-    if (pass1Key) {
+    // Skip iteration flow when pass2Only — that's handled by the split-mode pass2Only block below.
+    if (pass1Key && !pass2Only) {
       if (!iterationComment || !iterationComment.trim()) {
         return NextResponse.json(
           { error: "Le commentaire d'itération est requis." },
@@ -988,6 +996,157 @@ export async function POST(request: NextRequest) {
       return response;
     }
 
+    // ── Split-mode pass 2 only: resume from cached pass 1 ─────────────
+    if (pass2Only && pass1Key) {
+      const cached = await getPass1Cache(pass1Key);
+      if (!cached) {
+        return NextResponse.json(
+          { error: "Passe 1 introuvable. Veuillez regénérer depuis l'image originale." },
+          { status: 404 }
+        );
+      }
+
+      // Verify this is a pending pass2 (single-use anti-replay)
+      if (!cached.meta.pendingPass2) {
+        return NextResponse.json(
+          { error: "Cette passe 2 a déjà été exécutée." },
+          { status: 409 }
+        );
+      }
+
+      // Clear the pendingPass2 flag (single-use) by re-saving meta without it
+      const updatedMeta = { ...cached.meta, pendingPass2: false };
+      const metaKey = pass1Key.replace(".jpg", "_meta.json");
+      const metaBuffer = Buffer.from(JSON.stringify(updatedMeta), "utf-8");
+      await withStorageRetry(
+        (client) => client.uploadFromBytes(metaKey, metaBuffer),
+        `clearPendingPass2(${metaKey})`
+      ).catch((err) => console.error("Failed to clear pendingPass2 flag:", err));
+
+      const p2OutputSize = getOutputSize(cached.meta.width, cached.meta.height);
+      const p2RoomType = cached.meta.isOutdoor ? null : (cached.meta.roomType ?? null);
+
+      // Rebuild outdoor param if needed
+      let p2OutdoorParam: { isOutdoor: boolean; subtypeSurfaceOverride?: string; subtypeFurnitureOverride?: string } | undefined;
+      if (cached.meta.isOutdoor) {
+        const sub = cached.meta.outdoorSubtype ? OUTDOOR_SUBTYPES[cached.meta.outdoorSubtype] : null;
+        p2OutdoorParam = {
+          isOutdoor: true,
+          subtypeSurfaceOverride: sub?.subtypeSurfaceOverride ?? "",
+          subtypeFurnitureOverride: sub?.subtypeFurnitureOverride ?? "",
+        };
+      }
+
+      const p2t0 = Date.now();
+      console.log(`[pass2Only] Starting pass 2 from cache key: ${pass1Key}`);
+
+      let pass2Result: { image: string; model: string } | null = null;
+      let pass2Err: string | null = null;
+
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        try {
+          pass2Result = await generatePass(
+            cached.imageBase64,
+            cached.meta.surfacePrompt,
+            cached.meta.furniturePrompt,
+            2,
+            p2OutputSize,
+            p2RoomType,
+            p2OutdoorParam
+          );
+          break;
+        } catch (err) {
+          pass2Err = err instanceof Error ? err.message : String(err);
+          console.error(`[pass2Only] attempt ${attempt}/2 failed: ${pass2Err}`);
+        }
+      }
+
+      const p2t1 = Date.now();
+
+      if (!pass2Result) {
+        // Pass 2 failed — refund credit
+        if (session?.user?.id) {
+          addCredits(session.user.id, 1).catch((refundErr) => {
+            console.error("CRITICAL: Credit refund (pass2Only failed) failed:", refundErr);
+          });
+          console.log(`[pass2Only] Credit refunded for user ${session.user.id}`);
+        }
+        return NextResponse.json(
+          { error: `L'ameublement a échoué. ${pass2Err ?? ""}`.trim(), pass2Failed: true },
+          { status: 500 }
+        );
+      }
+
+      const p2OutputBase64 = pass2Result.image.replace(/^data:image\/[\w+]+;base64,/, "");
+
+      // Save iteration base for future adjustments
+      if (sessionId) {
+        saveIterationBase(sessionId, p2OutputBase64).catch((err) =>
+          console.error("saveIterationBase (pass2Only) failed:", err)
+        );
+      }
+
+      // Save to user gallery BEFORE response (Replit autoscale kills worker after response)
+      let photoId: string | null = null;
+      if (session?.user?.id) {
+        try {
+          const ts = Date.now();
+          let outputKey = await saveImage(p2OutputBase64, `user_photo_${ts}_output`).catch(() => null);
+          if (!outputKey) {
+            await new Promise((r) => setTimeout(r, 1000));
+            outputKey = await saveImage(p2OutputBase64, `user_photo_${ts}_output_r`).catch(() => null);
+          }
+          if (outputKey) {
+            const pass1ImageKey = await saveImage(cached.imageBase64, `user_photo_${ts}_pass1`).catch(() => null);
+            photoId = await saveUserPhoto({
+              userId: session.user.id,
+              inputImageKey: null,
+              outputImageKey: outputKey,
+              pass1ImageKey: pass1ImageKey,
+              styleId: cached.meta.styleId || null,
+              roomType: cached.meta.isOutdoor ? null : (cached.meta.roomType || null),
+              roomLabel: null,
+              isOutdoor: cached.meta.isOutdoor || false,
+              propertyId: null,
+            });
+          }
+        } catch (err) {
+          console.error("[saveUserPhoto pass2Only] FAILED:", err);
+        }
+      }
+
+      // Build prompt for logging
+      const p2BuiltPrompt = cached.meta.isOutdoor
+        ? buildOutdoorFurnitureResponsesPrompt(cached.meta.furniturePrompt, p2OutdoorParam?.subtypeFurnitureOverride ?? "")
+        : buildFurnitureResponsesPrompt(cached.meta.furniturePrompt, p2RoomType);
+
+      await logGeneration({
+        ip, styleId: cached.meta.styleId,
+        surfacePrompt: cached.meta.surfacePrompt, furniturePrompt: cached.meta.furniturePrompt,
+        withFurniture: true, inputWidth: cached.meta.width, inputHeight: cached.meta.height,
+        modelUsed: `pass2Only: ${pass2Result.model}`,
+        pass2Model: pass2Result.model,
+        durationMs: p2t1 - p2t0, pass2DurationMs: p2t1 - p2t0,
+        success: true,
+        builtPromptPass2: p2BuiltPrompt,
+        outputBase64: p2OutputBase64,
+        pass1Base64: cached.imageBase64,
+        sessionId: sessionId ?? undefined,
+        pass1CacheKey: pass1Key,
+        roomType: cached.meta.isOutdoor ? undefined : (cached.meta.roomType ?? undefined),
+        isOutdoor: cached.meta.isOutdoor || undefined,
+        outdoorSubtype: cached.meta.isOutdoor ? (cached.meta.outdoorSubtype ?? undefined) : undefined,
+        promptVersion: PROMPT_VERSION,
+      }).catch((err) => console.error("DB log (pass2Only) failed:", err));
+
+      return NextResponse.json({
+        image: pass2Result.image,
+        model: pass2Result.model,
+        pass1_key: pass1Key,
+        ...(photoId ? { photoId } : {}),
+      });
+    }
+
     // ── Standard generation flow (pass 1 + pass 2) ────────────────────
     if (!image || !surfacePrompt || !resolvedFurniturePrompt) {
       return NextResponse.json(
@@ -1102,9 +1261,44 @@ export async function POST(request: NextRequest) {
       roomType: isOutdoor ? null : (roomType ?? null),
       isOutdoor: isOutdoor || undefined,
       outdoorSubtype: isOutdoor ? (outdoorSubtype ?? undefined) : undefined,
+      // Split-mode: store pass2 info so pass2Only call can resume
+      ...(splitMode && withFurniture ? {
+        pendingPass2: true,
+        outputSize: outputSize.openai,
+        withFurniture: true,
+      } : {}),
     })
       .then(() => { pass1Saved = true; })
       .catch((err) => console.error("Pass1 cache save failed:", err));
+
+    // ── Split-mode: return pass 1 immediately, client will call pass2Only later ──
+    if (splitMode && withFurniture) {
+      await pass1CachePromise;
+
+      // Log pass 1 as partial success
+      logGeneration({
+        ip, styleId, surfacePrompt: trimmedSurface, furniturePrompt: trimmedFurniture,
+        withFurniture: true, inputWidth: width, inputHeight: height,
+        modelUsed: `${pass1.model} (splitMode pass1)`,
+        pass1Model: pass1.model, durationMs: t1 - t0, pass1DurationMs: t1 - t0,
+        success: true,
+        builtPromptPass1,
+        inputBase64: base64Image, pass1Base64,
+        sessionId: sessionId ?? undefined,
+        pass1CacheKey,
+        roomType: isOutdoor ? undefined : (roomType ?? undefined),
+        isOutdoor: isOutdoor || undefined,
+        outdoorSubtype: isOutdoor ? (outdoorSubtype ?? undefined) : undefined,
+        promptVersion: PROMPT_VERSION,
+      }).catch((err) => console.error("DB log (splitMode pass1) failed:", err));
+
+      return NextResponse.json({
+        image: pass1.image,
+        model: pass1.model,
+        ...(pass1Saved ? { pass1_key: pass1CacheKey } : {}),
+        pendingPass2: true,
+      });
+    }
 
     // If surfaces-only mode, return pass 1 result directly
     if (!withFurniture) {

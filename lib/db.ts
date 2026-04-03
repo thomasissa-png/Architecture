@@ -164,7 +164,7 @@ function getStorage(): StorageClient {
 }
 
 /** Run a storage operation with 1 automatic retry (reinit client on failure). */
-async function withStorageRetry<T>(
+export async function withStorageRetry<T>(
   operation: (client: StorageClient) => Promise<T>,
   label: string
 ): Promise<T> {
@@ -310,6 +310,10 @@ export interface Pass1Meta {
   roomType?: string | null; // F2: room type for iteration coherence
   isOutdoor?: boolean; // F3: outdoor mode
   outdoorSubtype?: string | null; // F3: terrasse, balcon, patio, jardin, rooftop
+  // Split-mode fields (progressive display: pass1 shown while pass2 runs)
+  pendingPass2?: boolean; // true = pass2 not yet executed, awaiting pass2Only call
+  outputSize?: string; // OpenAI size string (e.g. "1536x1024")
+  withFurniture?: boolean; // whether furniture pass was requested
 }
 
 export async function savePass1Cache(

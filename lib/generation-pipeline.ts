@@ -26,8 +26,9 @@ function getOpenAI(): OpenAI {
  * v31 (audit Lucas v30: distribution spatiale remontee position 2, ancrage sol contact shadows, preservation lumiere passe 2, echelle conditionnelle),
  * v32 (revert gpt-image-1.5 → gpt-image-1 — regression spatiale confirmee par audit Lucas, modele configurable via env),
  * v33 (audit Yann: propagation DEPTH_DISTRIBUTION + CONTACT_SHADOWS aux 7 builders dedies — bedroom, kitchen, bathroom, WC, entryway, laundry, cellar + preservation lumiere passe 2 tous builders),
- * v34 (audit Yann structurel: DEPTH_DISTRIBUTION imperatif, densite adaptative, furniturePrompts avec placement spatial) */
-export const PROMPT_VERSION = "v41";
+ * v34 (audit Yann structurel: DEPTH_DISTRIBUTION imperatif, densite adaptative, furniturePrompts avec placement spatial),
+ * v42 (density conditionals: kitchen 3-tier width scaling, dining room compact/large, office compact skip bookshelf — fix gen #112 overcrowded compact kitchen) */
+export const PROMPT_VERSION = "v42";
 
 // ─── Image generation model ─────────────────────────────────────────
 // v36: configurable via env var. Default gpt-image-1 (v32 reverted gpt-image-1.5 for spatial regression).
@@ -234,6 +235,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
     return [
       `Add the following kitchen elements to this photo of a finished room: ${furniturePrompt}.`,
       "Built-in cabinetry and countertops against walls. Add island ONLY if kitchen appears >10m2. If compact, skip island. Do NOT add a ceiling pendant — the ceiling light was already placed in pass 1.",
+      "KITCHEN DENSITY — estimate width from reference points (door = 80cm, standard counter depth = 60cm). If kitchen appears compact (≤3m wide): MAXIMUM 4 elements total (cabinetry + oven + cooktop + sink). No island, no stools, no decorative counter accessories. Keep counters mostly clear. If kitchen appears medium (3-5m wide): add 1-2 stools ONLY if island/peninsula exists. Max 2 counter accessories. If kitchen appears large (>5m wide): full furniture set as described in the style prompt.",
       DEPTH_DISTRIBUTION_KITCHEN,
       CONTACT_SHADOWS,
       EQUIPMENT_PRESERVATION,

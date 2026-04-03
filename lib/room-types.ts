@@ -85,7 +85,7 @@ export const ROOM_TYPES: Record<string, RoomType> = {
     roomSurfaceOverride:
       "Additionally for this kitchen: ceramic or natural stone floor tiles suited for a kitchen. IMPORTANT OVERRIDE: the floor MUST be ceramic tiles or natural stone — NOT wood, NOT parquet, NOT herringbone wood. Subway tile or smooth splashback on the wall behind the work area.",
     roomFurnitureOverride:
-      "Kitchen furnishing: countertop work surface 60cm deep with integrated sink, upper cabinetry 70cm tall mounted at 140cm from floor in neutral finish, lower cabinetry 85cm tall in matching finish, built-in oven 60cm wide and cooktop 60cm wide, two or three bar stools 75cm seat height at an island or peninsula if space allows, cutting board and ceramic jar 15cm with utensils on the counter, small herb pots 12cm (basil, rosemary) on a shelf or windowsill, fruit bowl 25cm on the counter. Functional and organized layout. No armchairs, no lounge chairs, no floor lamps. Do NOT add a ceiling light — already placed in pass 1.",
+      "Kitchen furnishing: countertop work surface 60cm deep with integrated sink, upper cabinetry 70cm tall mounted at 140cm from floor in neutral finish, lower cabinetry 85cm tall in matching finish, built-in oven 60cm wide and cooktop 60cm wide. If the kitchen appears compact (≤3m wide or ≤5 counter-widths visible): MAXIMUM 4 built-in elements (cabinetry + oven + cooktop + sink), NO island, NO bar stools, keep counters mostly clear — at most 1 cutting board OR 1 ceramic jar, not both, NO herb pots, NO fruit bowl. If the kitchen appears medium (3-5m wide): one or two bar stools 75cm seat height ONLY if an island or peninsula exists, max 2 counter accessories (cutting board + ceramic jar 15cm). If the kitchen appears large (>5m wide): up to three bar stools, cutting board, ceramic jar 15cm with utensils, small herb pots 12cm on a shelf or windowsill, fruit bowl 25cm on the counter. Functional and organized layout. No armchairs, no lounge chairs, no floor lamps. Do NOT add a ceiling light — already placed in pass 1.",
     roomNegativeOverride:
       "sofa, coffee table, TV unit, bed, wardrobe, floor lamp, arc lamp, area rug, armchair, lounge chair",
   },
@@ -97,7 +97,7 @@ export const ROOM_TYPES: Record<string, RoomType> = {
     description: "Mobilier adapté : bureau, fauteuil, bibliotheque",
     roomSurfaceOverride: "",
     roomFurnitureOverride:
-      "Home office furniture: desk 140cm wide 70cm deep 75cm tall with clean lines, ergonomic desk chair 65cm wide 45cm seat height with padded seat, desk lamp 45cm tall with adjustable arm, open bookshelf 80cm wide or storage unit as background anchor 160cm tall, small plant 20cm on the desk, organized desk accessories (pen holder, notebook, monitor or laptop), comfortable reading chair 70cm wide in a corner if space allows, area rug 160x230cm under the desk area. Productive but inviting atmosphere — not a corporate office.",
+      "Home office furniture: desk 140cm wide 70cm deep 75cm tall with clean lines, ergonomic desk chair 65cm wide 45cm seat height with padded seat, desk lamp 45cm tall with adjustable arm. If office appears compact (≤3m wide): skip bookshelf, skip reading chair, skip area rug, keep desk accessories to pen holder + laptop only. If office appears medium or large: open bookshelf 80cm wide or storage unit as background anchor 160cm tall, comfortable reading chair 70cm wide in a corner if space allows, area rug 160x230cm under the desk area. Always: small plant 20cm on the desk, organized desk accessories (pen holder, notebook, monitor or laptop). Productive but inviting atmosphere — not a corporate office.",
     roomNegativeOverride:
       "sofa, coffee table, TV unit, bed, wardrobe, dining table",
   },
@@ -122,7 +122,7 @@ export const ROOM_TYPES: Record<string, RoomType> = {
     description: "Mobilier adapté : table, chaises, buffet",
     roomSurfaceOverride: "",
     roomFurnitureOverride:
-      "Dining room furniture: rectangular dining table 180cm long with matching set of 6 chairs, pendant light or chandelier centered above the table, table setting with ceramic plates and glassware for 4 place settings, linen table runner, sideboard or buffet 160cm wide as background anchor with decorative objects and candles, area rug 200x300cm under the table, potted plant or vase with fresh branches as centerpiece. Convivial and elegant atmosphere.",
+      "Dining room furniture: If dining room appears compact (≤3m wide): round table 120cm diameter with 4 chairs, skip sideboard, use smaller rug 160x230cm, max 1 decorative accessory on the table. If dining room appears medium or large: rectangular dining table 180cm long with matching set of 6 chairs, sideboard or buffet 160cm wide as background anchor with decorative objects and candles, area rug 200x300cm under the table. Always: pendant light or chandelier centered above the table, table setting with ceramic plates and glassware for 4 place settings, linen table runner, potted plant or vase with fresh branches as centerpiece. Convivial and elegant atmosphere.",
     roomNegativeOverride:
       "sofa, TV unit, bed, wardrobe, office desk",
   },

@@ -29,6 +29,8 @@ interface GenerationResult {
   photoId?: string;
   styleId?: string;
   styleName?: string;
+  pass2Pending?: boolean;  // passe 2 en cours
+  pass1Url?: string;       // URL de l'image passe 1 (preview)
 }
 
 interface VersionEntry {
@@ -660,6 +662,8 @@ export default function Home() {
               roomType: job.roomType,
               isOutdoor: job.isOutdoor,
               outdoorSubtype: job.outdoorSubtype,
+              // Progressive display: get pass1 immediately, pass2 separately
+              splitMode: withFurniture,
             }),
           }, controller.signal);
 
@@ -679,10 +683,89 @@ export default function Home() {
           // Handle async queue fallback (202 — generation queued for background processing)
           if (data.queued && data.queueId) {
             startQueuePolling(data.queueId);
-            // Throw a special error so the batch handler knows this isn't a failure
             const queueError = new Error("__QUEUED__");
             queueError.name = "QueuedError";
             throw queueError;
+          }
+
+          // ── Split-mode: pass1 returned, launch pass2 in background ──
+          if (data.pendingPass2 && data.pass1_key) {
+            const partialResult: GenerationResult = {
+              originalUrl: filePreviewUrls[job.img.fileIndex],
+              generatedUrl: data.image,
+              model: data.model,
+              pass1Key: data.pass1_key,
+              styleId: job.styleId,
+              styleName: job.styleName,
+              pass2Pending: true,
+              pass1Url: data.image,
+            };
+
+            // Add partial result immediately so user sees surfaces
+            setResults((prev) => [...prev, partialResult]);
+
+            // Launch pass 2 in background (fire-and-forget from batch perspective)
+            const p2Pass1Key = data.pass1_key;
+            resilientFetch("/api/generate", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                pass2Only: true,
+                pass1_key: p2Pass1Key,
+                sessionId: getSessionId(),
+              }),
+            }, controller.signal)
+              .then(async (p2Response) => {
+                if (!p2Response.ok) {
+                  const p2Err = await p2Response.json().catch(() => ({}));
+                  console.error("[pass2] failed:", p2Err.error);
+                  setResults((prev) =>
+                    prev.map((r) =>
+                      r.pass1Key === p2Pass1Key
+                        ? { ...r, pass2Pending: false, model: `${r.model} (ameublement échoué)` }
+                        : r
+                    )
+                  );
+                  return;
+                }
+                const p2Data = await p2Response.json();
+                // Replace pass1 image with furnished result
+                setResults((prev) =>
+                  prev.map((r) =>
+                    r.pass1Key === p2Pass1Key
+                      ? {
+                          ...r,
+                          generatedUrl: p2Data.image,
+                          model: p2Data.model,
+                          pass2Pending: false,
+                          photoId: p2Data.photoId || r.photoId,
+                        }
+                      : r
+                  )
+                );
+                // Update versions array for this result
+                setVersions((prev) =>
+                  prev.map((entries) => {
+                    if (entries.length > 0 && entries[0].imageUrl === partialResult.generatedUrl) {
+                      return [{ imageUrl: p2Data.image, comment: undefined, model: p2Data.model }];
+                    }
+                    return entries;
+                  })
+                );
+              })
+              .catch((err) => {
+                if (err instanceof Error && err.name === "AbortError") return;
+                console.error("[pass2] error:", err);
+                setResults((prev) =>
+                  prev.map((r) =>
+                    r.pass1Key === p2Pass1Key
+                      ? { ...r, pass2Pending: false, model: `${r.model} (ameublement échoué)` }
+                      : r
+                  )
+                );
+              });
+
+            return partialResult;
           }
 
           return {
@@ -700,7 +783,10 @@ export default function Home() {
       for (const result of batchResults) {
         if (result.status === "fulfilled") {
           allResults.push(result.value);
-          setResults((prev) => [...prev, result.value]);
+          // Split-mode results are already added to results via setResults in the split handler
+          if (!result.value.pass2Pending && !result.value.pass1Url) {
+            setResults((prev) => [...prev, result.value]);
+          }
         } else {
           if (result.reason?.name === "AbortError") continue;
           // Queued jobs are not errors — they're being processed in the background
@@ -775,6 +861,36 @@ export default function Home() {
     setRefineWarnings([]);
     setLastRefineComment("");
   };
+
+  const handleRemoveResult = useCallback((index: number) => {
+    setResults((prev) => {
+      const updated = prev.filter((_, i) => i !== index);
+      if (updated.length === 0) {
+        // Last result removed — reset to style selection state
+        setError(null);
+        setPreprocessWarnings([]);
+        setVersions([]);
+        setActiveVersions([]);
+        setIterationsRemaining(maxIterations);
+        setRefineError(null);
+        setRefineWarnings([]);
+        setLastRefineComment("");
+      }
+      return updated;
+    });
+    // Clean up versions and activeVersions for this index
+    setVersions((prev) => prev.filter((_, i) => i !== index));
+    setActiveVersions((prev) => prev.filter((_, i) => i !== index));
+    // Clean up dismissedAssociators — shift indices above the removed one
+    setDismissedAssociators((prev) => {
+      const next = new Set<number>();
+      Array.from(prev).forEach((idx) => {
+        if (idx < index) next.add(idx);
+        else if (idx > index) next.add(idx - 1);
+      });
+      return next;
+    });
+  }, [maxIterations]);
 
   const handleCancelGeneration = () => {
     abortControllerRef.current?.abort();
@@ -1808,7 +1924,17 @@ export default function Home() {
                   const isRefineTarget = refineTargetIndex === index;
 
                   return (
-                    <div key={index} className="space-y-5">
+                    <div key={index} className="relative space-y-5">
+                      {/* Remove result button — hidden during generation */}
+                      {!isGenerating && !isRefining && (
+                        <button
+                          onClick={() => handleRemoveResult(index)}
+                          aria-label="Supprimer ce résultat"
+                          className="absolute top-2 right-2 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-foreground/60 hover:bg-foreground/80 text-background text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+                        >
+                          ×
+                        </button>
+                      )}
                       {/* Refine loading state */}
                       {isRefining && isRefineTarget && (
                         <div className="relative rounded-2xl overflow-hidden border border-foreground/10 bg-foreground/5">
@@ -1843,12 +1969,32 @@ export default function Home() {
 
                       {/* Comparator (hidden during refine loading for this target) */}
                       {!(isRefining && isRefineTarget) && (
-                        <ImageComparator
-                          originalUrl={result.originalUrl}
-                          generatedUrl={displayUrl}
-                          styleLabel={results.length > 1 ? result.styleName : undefined}
-                          model={resultVersions[activeIdx]?.model || result.model}
-                        />
+                        <div className="relative">
+                          <ImageComparator
+                            originalUrl={result.originalUrl}
+                            generatedUrl={displayUrl}
+                            styleLabel={results.length > 1 ? result.styleName : undefined}
+                            model={resultVersions[activeIdx]?.model || result.model}
+                          />
+                          {/* Pass 2 pending overlay — surfaces shown while furniture generates */}
+                          {result.pass2Pending && (
+                            <div className="absolute inset-0 flex items-end justify-center pb-6 pointer-events-none z-10">
+                              <div className="pointer-events-auto bg-background/90 backdrop-blur-sm rounded-xl px-5 py-3 shadow-sm border border-foreground/10 text-center max-w-xs">
+                                <div className="flex justify-center gap-1 mb-2">
+                                  <div className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                                  <div className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                                  <div className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                                </div>
+                                <p className="text-sm text-foreground font-medium">
+                                  Surfaces terminées — ameublement en cours
+                                </p>
+                                <p className="text-xs text-muted font-light mt-0.5">
+                                  Encore 30 à 60 secondes
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       )}
 
                       {/* Photo associator for merchants */}
@@ -1924,8 +2070,8 @@ export default function Home() {
                         </div>
                       )}
 
-                      {/* Refine button — hidden entirely for Découverte (maxIterations === 0) */}
-                      {!isRefining && maxIterations > 0 && (
+                      {/* Refine button — hidden during pass2 pending and entirely for Découverte (maxIterations === 0) */}
+                      {!isRefining && !result.pass2Pending && maxIterations > 0 && (
                         <div className="text-center space-y-1.5">
                           {iterationsRemaining > 0 ? (
                             <>
