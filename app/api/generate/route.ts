@@ -714,6 +714,7 @@ export async function POST(request: NextRequest) {
       splitMode = false,
       pass2Only = false,
       userId: bodyUserId,
+      outputFormat,
     } = body as {
       image?: string;
       surfacePrompt?: string;
@@ -732,6 +733,7 @@ export async function POST(request: NextRequest) {
       splitMode?: boolean;
       pass2Only?: boolean;
       userId?: string;
+      outputFormat?: "original" | "landscape" | "portrait";
     };
 
     styleId = bodyStyleId;
@@ -1170,8 +1172,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Calculate output size matching the input aspect ratio
-    const outputSize = getOutputSize(width, height);
+    // Calculate output size — respect outputFormat override for Pro users
+    const outputSize = outputFormat === "landscape"
+      ? { openai: "1536x1024", w: 1536, h: 1024 }
+      : outputFormat === "portrait"
+      ? { openai: "1024x1536", w: 1024, h: 1536 }
+      : getOutputSize(width, height);
 
     const base64Image = image.replace(/^data:image\/[\w+]+;base64,/, "");
 
