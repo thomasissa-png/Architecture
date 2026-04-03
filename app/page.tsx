@@ -897,6 +897,10 @@ export default function Home() {
     setIsGenerating(false);
     setError(null);
     setPreprocessWarnings([]);
+    // Clear pass2Pending on any results that were waiting for pass 2
+    setResults((prev) =>
+      prev.map((r) => r.pass2Pending ? { ...r, pass2Pending: false } : r)
+    );
   };
 
   const handleFullReset = () => {
