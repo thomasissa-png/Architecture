@@ -667,6 +667,7 @@ export default function MerchantMode() {
               onFilesChange={setFiles}
               maxFiles={MAX_PHOTOS}
               photoWarnings={photoWarnings}
+              hidePreviews
             />
           )}
 

@@ -1403,7 +1403,7 @@ export default function Home() {
             <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
               Upload
             </h3>
-            <UploadZone files={files} onFilesChange={setFiles} photoWarnings={photoWarnings} />
+            <UploadZone files={files} onFilesChange={setFiles} photoWarnings={photoWarnings} hidePreviews={files.length > 1} />
           </div>
 
           {/* Step 2a: Type d'espace (intérieur/extérieur + sous-type) — hidden when multi-photo (per-photo mode takes over) */}

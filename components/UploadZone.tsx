@@ -8,12 +8,13 @@ interface UploadZoneProps {
   onFilesChange: (files: File[]) => void;
   maxFiles?: number;
   photoWarnings?: Record<number, string>;
+  hidePreviews?: boolean;
 }
 
 const DEFAULT_MAX_FILES = 3;
 const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 
-export default function UploadZone({ files, onFilesChange, maxFiles, photoWarnings }: UploadZoneProps) {
+export default function UploadZone({ files, onFilesChange, maxFiles, photoWarnings, hidePreviews }: UploadZoneProps) {
   const MAX_FILES = maxFiles ?? DEFAULT_MAX_FILES;
   const [uploadFeedback, setUploadFeedback] = useState<string | null>(null);
 
@@ -138,7 +139,7 @@ export default function UploadZone({ files, onFilesChange, maxFiles, photoWarnin
         </div>
       )}
 
-      {files.length > 0 && (
+      {files.length > 0 && !hidePreviews && (
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           {files.map((file, index) => (
             <div key={`${file.name}-${index}`} className="relative group">
