@@ -240,13 +240,14 @@ export default async function AnnoncePage({ params }: PageProps) {
       {/* Hero photo — first completed photo, full-width above the fold */}
       {completedPhotos.length > 0 && (() => {
         // Prefer first photo from living_room group, fallback to first overall
+        // Portrait photos are handled by aspect-[4/3] sm:aspect-[16/9] object-cover (same as dossier)
         const heroPhoto = (photosByRoom["living_room"]?.[0]) || completedPhotos[0];
         return (
-          <div className="w-full">
+          <div className="w-full overflow-hidden rounded-b-2xl">
             <StorageImage
               imageKey={heroPhoto.output_image_key}
               alt={heroPhoto.room_label || "Photo principale"}
-              className="w-full max-h-[50vh] sm:max-h-[60vh] object-contain bg-foreground/5 rounded-b-2xl"
+              className="w-full aspect-[4/3] sm:aspect-[16/9] object-cover"
               loading="eager"
             />
           </div>
