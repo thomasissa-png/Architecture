@@ -28,8 +28,12 @@ interface GenerationResult {
   photoId?: string;
   styleId?: string;
   styleName?: string;
-  pass2Pending?: boolean;  // passe 2 en cours
-  pass1Url?: string;       // URL de l'image passe 1 (preview)
+  pass2Pending?: boolean;
+  pass1Url?: string;
+  // Per-result metadata for handleRefine (avoids dependency on global states)
+  isOutdoor?: boolean;
+  outdoorSubtype?: string;
+  customPromptUsed?: string;
 }
 
 interface VersionEntry {
@@ -651,6 +655,9 @@ export default function Home() {
               styleName: job.styleName,
               pass2Pending: true,
               pass1Url: data.image,
+              isOutdoor: job.isOutdoor,
+              outdoorSubtype: job.outdoorSubtype,
+              customPromptUsed: job.customPrompt || undefined,
             };
 
             // Add partial result immediately so user sees surfaces
@@ -741,6 +748,9 @@ export default function Home() {
             photoId: data.photoId,
             styleId: job.styleId,
             styleName: job.styleName,
+            isOutdoor: job.isOutdoor,
+            outdoorSubtype: job.outdoorSubtype,
+            customPromptUsed: job.customPrompt || undefined,
           } as GenerationResult;
         })
       );
@@ -961,24 +971,23 @@ export default function Home() {
             previousModifications,
             sessionId: getSessionId(),
             userId: session?.user?.id || undefined,
-            surfacePrompt: isOutdoor && selectedOutdoorStyle
-              ? (OUTDOOR_STYLES[selectedOutdoorStyle]?.surfacePrompt || "")
+            // Use per-result metadata (not global states) for outdoor/custom
+            surfacePrompt: targetResult.isOutdoor && targetResult.styleId
+              ? (OUTDOOR_STYLES[targetResult.styleId]?.surfacePrompt || "")
               : (targetResult.styleId && targetResult.styleId !== "custom"
-                ? (STYLES.find((s) => s.id === targetResult.styleId)?.surfacePrompt || customPrompt.trim())
-                : customPrompt.trim()),
-            furniturePrompt: isOutdoor && selectedOutdoorStyle
-              ? (OUTDOOR_STYLES[selectedOutdoorStyle]?.furniturePrompt || "")
+                ? (STYLES.find((s) => s.id === targetResult.styleId)?.surfacePrompt || targetResult.customPromptUsed || "")
+                : (targetResult.customPromptUsed || "")),
+            furniturePrompt: targetResult.isOutdoor && targetResult.styleId
+              ? (OUTDOOR_STYLES[targetResult.styleId]?.furniturePrompt || "")
               : (targetResult.styleId && targetResult.styleId !== "custom"
-                ? (STYLES.find((s) => s.id === targetResult.styleId)?.furniturePrompt || customPrompt.trim())
-                : customPrompt.trim()),
-            styleId: isOutdoor && selectedOutdoorStyle
-              ? selectedOutdoorStyle
-              : (targetResult.styleId ?? "custom"),
+                ? (STYLES.find((s) => s.id === targetResult.styleId)?.furniturePrompt || targetResult.customPromptUsed || "")
+                : (targetResult.customPromptUsed || "")),
+            styleId: targetResult.styleId ?? "custom",
             withFurniture: true,
-            width: 0, // Server uses pass1 dimensions
+            width: 0,
             height: 0,
-            isOutdoor,
-            outdoorSubtype: isOutdoor ? outdoorSubtype : undefined,
+            isOutdoor: targetResult.isOutdoor || false,
+            outdoorSubtype: targetResult.isOutdoor ? targetResult.outdoorSubtype : undefined,
           }),
         }, controller.signal);
 
@@ -1036,7 +1045,7 @@ export default function Home() {
         }
       }
     },
-    [results, refineTargetIndex, versions, activeVersions, customPrompt, isOutdoor, selectedOutdoorStyle, outdoorSubtype, session?.user?.id]
+    [results, refineTargetIndex, versions, activeVersions, session?.user?.id]
   );
 
   const handleRefineRetry = useCallback(() => {
