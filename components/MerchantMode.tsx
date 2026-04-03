@@ -34,6 +34,7 @@ interface PhotoEntry {
   outdoorStyleId: string | null;
   outdoorSubtype: string | null;
   withFurniture: boolean; // per-photo: true = finitions + mobilier, false = finitions seulement
+  outputFormat: "original" | "landscape" | "portrait"; // per-photo output format override
 }
 
 interface DossierPhotoStatus {
@@ -150,6 +151,7 @@ export default function MerchantMode() {
           outdoorStyleId: null,
           outdoorSubtype: null,
           withFurniture: true,
+          outputFormat: "original",
         };
       });
       return next;
@@ -396,6 +398,7 @@ export default function MerchantMode() {
             outdoorSubtype: p.entry?.outdoorSubtype || null,
             photoIndex: p.index,
             withFurniture: p.entry?.withFurniture !== false,
+            outputFormat: p.entry?.outputFormat || "original",
           })),
         }),
       });
@@ -854,6 +857,40 @@ export default function MerchantMode() {
                       }`}
                     >
                       Finitions seulement
+                    </button>
+                  </div>
+
+                  {/* Per-photo: Output format (Pro only) */}
+                  <div className="flex gap-1 p-0.5 bg-foreground/5 rounded-lg" data-testid={`merchant-annotate-format-${index}`}>
+                    <button
+                      onClick={() => updatePhotoEntry(index, { outputFormat: "original" })}
+                      className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 ${
+                        entry.outputFormat === "original"
+                          ? "bg-background text-foreground shadow-sm"
+                          : "text-muted hover:text-foreground"
+                      }`}
+                    >
+                      Original
+                    </button>
+                    <button
+                      onClick={() => updatePhotoEntry(index, { outputFormat: "landscape" })}
+                      className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 ${
+                        entry.outputFormat === "landscape"
+                          ? "bg-background text-foreground shadow-sm"
+                          : "text-muted hover:text-foreground"
+                      }`}
+                    >
+                      Paysage
+                    </button>
+                    <button
+                      onClick={() => updatePhotoEntry(index, { outputFormat: "portrait" })}
+                      className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 ${
+                        entry.outputFormat === "portrait"
+                          ? "bg-background text-foreground shadow-sm"
+                          : "text-muted hover:text-foreground"
+                      }`}
+                    >
+                      Portrait
                     </button>
                   </div>
                 </div>

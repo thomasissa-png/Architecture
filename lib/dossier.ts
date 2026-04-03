@@ -61,6 +61,7 @@ export interface DossierPhoto {
   duration_ms: number | null;
   iteration_count: number;
   with_furniture: boolean;
+  output_format: string | null;
   created_at: string;
 }
 
@@ -95,6 +96,7 @@ export interface DossierPhotoInput {
   outdoorSubtype?: string;
   inputImageKey: string;
   withFurniture?: boolean;
+  outputFormat?: string;
 }
 
 // ─── Constants ───────────────────────────────────────────────────────
@@ -211,6 +213,7 @@ export async function ensureDossierTables(): Promise<void> {
   // ── with_furniture per photo (default true = surfaces + mobilier) ──
   await db.query(`
     DO $$ BEGIN ALTER TABLE dossier_photos ADD COLUMN with_furniture BOOLEAN DEFAULT true; EXCEPTION WHEN duplicate_column THEN NULL; END $$;
+    DO $$ BEGIN ALTER TABLE dossier_photos ADD COLUMN output_format VARCHAR(20) DEFAULT 'original'; EXCEPTION WHEN duplicate_column THEN NULL; END $$;
   `);
 
   dossierTablesEnsured = true;
@@ -451,8 +454,8 @@ export async function addDossierPhoto(input: DossierPhotoInput): Promise<Dossier
   const db = getPool();
 
   const result = await db.query(
-    `INSERT INTO dossier_photos (dossier_uuid, photo_index, room_label, room_type_id, style_id, custom_prompt, is_outdoor, outdoor_style_id, outdoor_subtype, input_image_key, with_furniture)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+    `INSERT INTO dossier_photos (dossier_uuid, photo_index, room_label, room_type_id, style_id, custom_prompt, is_outdoor, outdoor_style_id, outdoor_subtype, input_image_key, with_furniture, output_format)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
      RETURNING *`,
     [
       input.dossierUuid,
@@ -466,6 +469,7 @@ export async function addDossierPhoto(input: DossierPhotoInput): Promise<Dossier
       input.outdoorSubtype || null,
       input.inputImageKey,
       input.withFurniture !== false,
+      input.outputFormat || "original",
     ]
   );
 

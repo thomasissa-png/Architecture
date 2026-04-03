@@ -113,6 +113,7 @@ export async function POST(
         outdoorSubtype?: string;
         photoIndex: number;
         withFurniture?: boolean;
+        outputFormat?: string;
       }>;
     };
 
@@ -152,6 +153,7 @@ export async function POST(
         outdoorSubtype: photo.outdoorSubtype,
         inputImageKey: imageKey,
         withFurniture: photo.withFurniture !== false,
+        outputFormat: photo.outputFormat || "original",
       });
 
       addedPhotos.push(dossierPhoto);
@@ -562,10 +564,20 @@ async function generateSinglePhoto(
   } catch {
     // Fallback to landscape defaults
   }
-  // Map to closest OpenAI-compatible size
-  const ratio = imgWidth / imgHeight;
-  const outputWidth = ratio > 1.3 ? 1536 : ratio < 0.77 ? 1024 : 1024;
-  const outputHeight = ratio > 1.3 ? 1024 : ratio < 0.77 ? 1536 : 1024;
+  // Map to closest OpenAI-compatible size — respect format override for Pro users
+  const formatOverride = photo.output_format || "original";
+  let outputWidth: number;
+  let outputHeight: number;
+  if (formatOverride === "landscape") {
+    outputWidth = 1536; outputHeight = 1024;
+  } else if (formatOverride === "portrait") {
+    outputWidth = 1024; outputHeight = 1536;
+  } else {
+    // "original" — preserve input aspect ratio
+    const ratio = imgWidth / imgHeight;
+    outputWidth = ratio > 1.3 ? 1536 : ratio < 0.77 ? 1024 : 1024;
+    outputHeight = ratio > 1.3 ? 1024 : ratio < 0.77 ? 1536 : 1024;
+  }
 
   // Resolve style prompts — use outdoor_style_id for outdoor photos (BUG-2 fix)
   const effectiveStyleId = photo.is_outdoor
