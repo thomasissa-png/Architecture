@@ -16,7 +16,6 @@ import { OUTDOOR_STYLES, OUTDOOR_STYLE_LIST } from "@/lib/outdoor-styles";
 import { useQueueStatus } from "@/lib/hooks/useQueueStatus";
 import { useSession } from "next-auth/react";
 import AuthModal from "@/components/AuthModal";
-import MerchantMode from "@/components/MerchantMode";
 import PhotoAssociator from "@/components/PhotoAssociator";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
@@ -134,7 +133,10 @@ export default function Home() {
   const [perPhotoRoomTypes, setPerPhotoRoomTypes] = useState<Map<number, string>>(new Map());
   const [perPhotoCustomPrompts, setPerPhotoCustomPrompts] = useState<Map<number, string>>(new Map());
   const [perPhotoOutdoor, setPerPhotoOutdoor] = useState<Map<number, boolean>>(new Map());
-  const [withFurniture, setWithFurniture] = useState(true);
+  const [perPhotoWithFurniture, setPerPhotoWithFurniture] = useState<Map<number, boolean>>(new Map());
+  const [perPhotoFormat, setPerPhotoFormat] = useState<Map<number, "original" | "landscape" | "portrait">>(new Map());
+  // withFurniture removed — per-photo toggle is the primary control (perPhotoWithFurniture)
+  // handleRefine uses withFurniture: true directly
   const [selectedRoomType, setSelectedRoomType] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [results, setResults] = useState<GenerationResult[]>([]);
@@ -195,6 +197,10 @@ export default function Home() {
         }
         if (data?.hasPro !== undefined) {
           setHasPro(data.hasPro);
+          // Any logged-in user with credits who isn't Pro is considered Starter
+          if (!data.hasPro && data.credits > 0) {
+            setHasStarter(true);
+          }
         }
       })
       .catch(() => { /* silently fail — iterations stay at 0 */ });
@@ -273,6 +279,9 @@ export default function Home() {
 
   // User plan state
   const [hasPro, setHasPro] = useState(false);
+  // Unified max photos based on plan: anonymous/Découverte=3, Starter=5, Pro=15
+  const [hasStarter, setHasStarter] = useState(false);
+  const maxPhotos = hasPro ? 15 : hasStarter ? 5 : 3;
 
   // F1 — Iteration state (maxIterations fetched from API based on user pack)
   const [maxIterations, setMaxIterations] = useState(0);
@@ -387,23 +396,31 @@ export default function Home() {
     };
   }, [filePreviewUrls]);
 
-  // Reset per-photo style overrides when files change
+  // Reset per-photo overrides when files change
   useEffect(() => {
     setPerPhotoStyles(new Map());
     setPerPhotoRoomTypes(new Map());
     setPerPhotoCustomPrompts(new Map());
     setPerPhotoOutdoor(new Map());
+    setPerPhotoWithFurniture(new Map());
+    setPerPhotoFormat(new Map());
   }, [files]);
 
   // Abort controller for cancelling in-flight requests
   const abortControllerRef = useRef<AbortController | null>(null);
 
+  // Unified: all photos must have at least one style selected via per-photo cards
+  const canGenerate =
+    files.length > 0 &&
+    perPhotoStyles.size === files.length &&
+    (Array.from(perPhotoStyles.values()) as string[][]).every((v) => v.length > 0);
+
   const currentStep =
     results.length > 0
       ? 4
-      : (selectedStyles.length > 0 || customPrompt || selectedOutdoorStyle) && files.length > 0
+      : canGenerate
       ? 3
-      : files.length > 0 || selectedStyles.length > 0 || customPrompt || selectedOutdoorStyle || selectedRoomType || isOutdoor
+      : files.length > 0
       ? 2
       : 1;
 
@@ -449,36 +466,8 @@ export default function Home() {
     setIsGenerating(true);
     scrollToElement("step-loading");
 
-    // Resolve the list of styles to generate
-    // In outdoor mode, use single outdoor style
-    // In multi-photo mode with per-photo styles, each photo has its own style list
-    // In single-photo mode, use selectedStyles (multi-select)
-
-    // Pre-process custom prompt if "custom" is among selectedStyles
-    let preprocessedSurfacePrompt = customPrompt.trim();
-    let preprocessedFurniturePrompt = customPrompt.trim();
-
-    if (selectedStyles.includes("custom") && customPrompt.trim()) {
-      try {
-        const ppResponse = await fetch("/api/preprocess-prompt", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt: customPrompt.trim() }),
-          signal: controller.signal,
-        });
-        if (ppResponse.ok) {
-          const ppData = await ppResponse.json();
-          if (ppData.surfacePrompt) preprocessedSurfacePrompt = ppData.surfacePrompt;
-          if (ppData.furniturePrompt) preprocessedFurniturePrompt = ppData.furniturePrompt;
-          if (Array.isArray(ppData.warnings) && ppData.warnings.length > 0) {
-            setPreprocessWarnings(ppData.warnings);
-          }
-        }
-      } catch (e: unknown) {
-        if (e instanceof Error && e.name === "AbortError") return;
-      }
-      if (controller.signal.aborted) return;
-    }
+    // Custom prompt preprocessing is handled per-photo at the job level
+    // (per-photo custom prompts are sent raw, same as the old multi-photo behavior)
 
     // Step 1: Validate all images (fast, parallel)
     try {
@@ -521,110 +510,70 @@ export default function Home() {
       isOutdoor: boolean;
       outdoorSubtype: string | undefined;
       customPrompt: string;
+      jobWithFurniture: boolean;
+      outputFormat: "original" | "landscape" | "portrait";
     }
 
     const jobs: GenerationJob[] = [];
 
+    // Unified: always use per-photo styles (even for 1 photo)
     for (const img of processedImages) {
       const imgIsOutdoor = perPhotoOutdoor.get(img.fileIndex) || isOutdoor;
       const overrideRoomType = perPhotoRoomTypes.get(img.fileIndex);
       const imgRoomType = overrideRoomType || selectedRoomType;
+      const photoStyleIds = perPhotoStyles.get(img.fileIndex) || [];
+      const overrideCustomPrompt = perPhotoCustomPrompts.get(img.fileIndex);
+      const jobFurniture = perPhotoWithFurniture.get(img.fileIndex) !== false;
+      const jobFormat = perPhotoFormat.get(img.fileIndex) || "original";
 
-      if (files.length > 1) {
-        // Multi-photo mode: per-photo styles (can be multi-style per photo)
-        const photoStyleIds = perPhotoStyles.get(img.fileIndex) || [];
-        const overrideCustomPrompt = perPhotoCustomPrompts.get(img.fileIndex);
-
-        for (const styleId of photoStyleIds) {
-          if (styleId === "custom" && overrideCustomPrompt) {
-            jobs.push({
-              img,
-              styleId: "custom",
-              styleName: "Personnalisé",
-              surfacePrompt: overrideCustomPrompt,
-              furniturePrompt: overrideCustomPrompt,
-              roomType: imgRoomType,
-              isOutdoor: imgIsOutdoor,
-              outdoorSubtype: imgIsOutdoor ? (overrideRoomType || outdoorSubtype || undefined) : undefined,
-              customPrompt: overrideCustomPrompt,
-            });
-          } else if (imgIsOutdoor) {
-            const oStyle = OUTDOOR_STYLES[styleId];
-            if (oStyle) {
-              jobs.push({
-                img,
-                styleId: oStyle.id,
-                styleName: oStyle.label || styleId,
-                surfacePrompt: oStyle.surfacePrompt,
-                furniturePrompt: oStyle.furniturePrompt,
-                roomType: imgRoomType,
-                isOutdoor: true,
-                outdoorSubtype: overrideRoomType || outdoorSubtype || undefined,
-                customPrompt: "",
-              });
-            }
-          } else {
-            const style = STYLES.find((s) => s.id === styleId);
-            if (style) {
-              jobs.push({
-                img,
-                styleId: style.id,
-                styleName: style.name,
-                surfacePrompt: style.surfacePrompt,
-                furniturePrompt: style.furniturePrompt,
-                roomType: imgRoomType,
-                isOutdoor: false,
-                outdoorSubtype: undefined,
-                customPrompt: "",
-              });
-            }
-          }
-        }
-      } else {
-        // Single-photo mode: use global selectedStyles (multi-select)
-        if (imgIsOutdoor && selectedOutdoorStyle) {
-          const oStyle = OUTDOOR_STYLES[selectedOutdoorStyle];
+      for (const styleId of photoStyleIds) {
+        if (styleId === "custom" && overrideCustomPrompt) {
           jobs.push({
             img,
-            styleId: selectedOutdoorStyle,
-            styleName: oStyle?.label || selectedOutdoorStyle,
-            surfacePrompt: oStyle?.surfacePrompt || "",
-            furniturePrompt: oStyle?.furniturePrompt || "",
+            styleId: "custom",
+            styleName: "Personnalisé",
+            surfacePrompt: overrideCustomPrompt,
+            furniturePrompt: overrideCustomPrompt,
             roomType: imgRoomType,
-            isOutdoor: true,
-            outdoorSubtype: outdoorSubtype || undefined,
-            customPrompt: "",
+            isOutdoor: imgIsOutdoor,
+            outdoorSubtype: imgIsOutdoor ? (overrideRoomType || outdoorSubtype || undefined) : undefined,
+            customPrompt: overrideCustomPrompt,
+            jobWithFurniture: jobFurniture,
+            outputFormat: jobFormat,
           });
+        } else if (imgIsOutdoor) {
+          const oStyle = OUTDOOR_STYLES[styleId];
+          if (oStyle) {
+            jobs.push({
+              img,
+              styleId: oStyle.id,
+              styleName: oStyle.label || styleId,
+              surfacePrompt: oStyle.surfacePrompt,
+              furniturePrompt: oStyle.furniturePrompt,
+              roomType: imgRoomType,
+              isOutdoor: true,
+              outdoorSubtype: overrideRoomType || outdoorSubtype || undefined,
+              customPrompt: "",
+              jobWithFurniture: jobFurniture,
+              outputFormat: jobFormat,
+            });
+          }
         } else {
-          for (const styleId of selectedStyles) {
-            if (styleId === "custom") {
-              jobs.push({
-                img,
-                styleId: "custom",
-                styleName: "Personnalisé",
-                surfacePrompt: preprocessedSurfacePrompt,
-                furniturePrompt: preprocessedFurniturePrompt,
-                roomType: imgRoomType,
-                isOutdoor: false,
-                outdoorSubtype: undefined,
-                customPrompt: customPrompt.trim(),
-              });
-            } else {
-              const style = STYLES.find((s) => s.id === styleId);
-              if (style) {
-                jobs.push({
-                  img,
-                  styleId: style.id,
-                  styleName: style.name,
-                  surfacePrompt: style.surfacePrompt,
-                  furniturePrompt: style.furniturePrompt,
-                  roomType: imgRoomType,
-                  isOutdoor: false,
-                  outdoorSubtype: undefined,
-                  customPrompt: "",
-                });
-              }
-            }
+          const style = STYLES.find((s) => s.id === styleId);
+          if (style) {
+            jobs.push({
+              img,
+              styleId: style.id,
+              styleName: style.name,
+              surfacePrompt: style.surfacePrompt,
+              furniturePrompt: style.furniturePrompt,
+              roomType: imgRoomType,
+              isOutdoor: false,
+              outdoorSubtype: undefined,
+              customPrompt: "",
+              jobWithFurniture: jobFurniture,
+              outputFormat: jobFormat,
+            });
           }
         }
       }
@@ -657,7 +606,8 @@ export default function Home() {
               furniturePrompt: job.furniturePrompt,
               customPrompt: job.customPrompt || undefined,
               styleId: job.styleId,
-              withFurniture,
+              withFurniture: job.jobWithFurniture,
+              outputFormat: job.outputFormat,
               width: job.img.width,
               height: job.img.height,
               sessionId: getSessionId(),
@@ -665,7 +615,7 @@ export default function Home() {
               isOutdoor: job.isOutdoor,
               outdoorSubtype: job.outdoorSubtype,
               // Progressive display: get pass1 immediately, pass2 separately
-              splitMode: withFurniture,
+              splitMode: job.jobWithFurniture,
             }),
           }, controller.signal);
 
@@ -691,7 +641,7 @@ export default function Home() {
           }
 
           // ── Split-mode: pass1 returned, launch pass2 in background ──
-          console.log("[split-mode client] response data:", { pendingPass2: data.pendingPass2, pass1_key: !!data.pass1_key, splitMode: withFurniture, hasImage: !!data.image });
+          console.log("[split-mode client] response data:", { pendingPass2: data.pendingPass2, pass1_key: !!data.pass1_key, splitMode: job.jobWithFurniture, hasImage: !!data.image });
           if (data.pendingPass2 && data.pass1_key) {
             const partialResult: GenerationResult = {
               originalUrl: filePreviewUrls[job.img.fileIndex],
@@ -857,7 +807,7 @@ export default function Home() {
         scrollToElement("step-results");
       }
     }
-  }, [files, selectedStyles, customPrompt, withFurniture, filePreviewUrls, isOutdoor, selectedOutdoorStyle, outdoorSubtype, selectedRoomType, perPhotoStyles, perPhotoRoomTypes, perPhotoCustomPrompts, perPhotoOutdoor, authStatus, startQueuePolling, maxIterations]);
+  }, [files, filePreviewUrls, isOutdoor, outdoorSubtype, selectedRoomType, perPhotoStyles, perPhotoRoomTypes, perPhotoCustomPrompts, perPhotoOutdoor, perPhotoWithFurniture, perPhotoFormat, authStatus, startQueuePolling, maxIterations]);
 
   // Changement 2 — Garder la ref à jour pour le useEffect post-auth
   handleGenerateRef.current = handleGenerate;
@@ -933,6 +883,8 @@ export default function Home() {
     setPerPhotoRoomTypes(new Map());
     setPerPhotoCustomPrompts(new Map());
     setPerPhotoOutdoor(new Map());
+    setPerPhotoWithFurniture(new Map());
+    setPerPhotoFormat(new Map());
     setSelectedRoomType(null);
     setResults([]);
     setError(null);
@@ -1132,22 +1084,14 @@ export default function Home() {
     }
   };
 
-  // Auto-scroll to style step when files are added
+  // Auto-scroll to per-photo config cards when files are added
   const prevFilesLength = useRef(0);
   useEffect(() => {
     if (files.length > 0 && prevFilesLength.current === 0) {
-      scrollToElement("step-space-type");
+      scrollToElement("step-photo-config");
     }
     prevFilesLength.current = files.length;
   }, [files.length]);
-
-  const canGenerate =
-    files.length > 0 &&
-    (files.length > 1
-      ? perPhotoStyles.size === files.length && (Array.from(perPhotoStyles.values()) as string[][]).every((v) => v.length > 0)
-      : isOutdoor
-        ? selectedOutdoorStyle !== null
-        : selectedStyles.length > 0 || (selectedStyles.includes("custom") && customPrompt.trim().length > 0));
 
   return (
     <div className="min-h-screen bg-background">
@@ -1406,16 +1350,7 @@ export default function Home() {
             </p>
           </div>
 
-          {/* F4 — Merchant Mode (Pro users only) */}
-          {session && hasPro && (
-            <div className="animate-fade-in-up">
-              <MerchantMode />
-            </div>
-          )}
-
-          {/* Standard Mode — anonymous users + connected non-Pro (Starter/Découverte) */}
-          {(!session || !hasPro) && (
-          <>
+          {/* Unified flow — all users (Découverte, Starter, Pro) */}
           <StepIndicator currentStep={currentStep} />
 
           {/* Step 1: Upload */}
@@ -1423,11 +1358,11 @@ export default function Home() {
             <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
               Upload
             </h3>
-            <UploadZone files={files} onFilesChange={setFiles} photoWarnings={photoWarnings} hidePreviews={files.length > 1} />
+            <UploadZone files={files} onFilesChange={setFiles} photoWarnings={photoWarnings} hidePreviews={files.length > 0} maxFiles={maxPhotos} />
           </div>
 
-          {/* Step 2a: Type d'espace (intérieur/extérieur + sous-type) — hidden when multi-photo (per-photo mode takes over) */}
-          <div id="step-space-type" className={`mb-10 scroll-mt-20 transition-all duration-700 ${files.length === 0 || files.length > 1 ? "hidden" : "animate-fade-in-up"}`}>
+          {/* Step 2a: Type d'espace — HIDDEN (unified mode: per-photo cards handle this) — states kept for handleRefine compatibility */}
+          <div id="step-space-type" className="hidden">
             <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
               01 — Type d&apos;espace
             </h3>
@@ -1492,8 +1427,8 @@ export default function Home() {
             )}
           </div>
 
-          {/* Step 2b: Style — hidden when multi-photo */}
-          <div id="step-style" className={`mb-10 scroll-mt-20 transition-all duration-700 ${files.length === 0 || files.length > 1 ? "hidden" : "animate-fade-in-up animate-delay-300"}`}>
+          {/* Step 2b: Style — HIDDEN (unified mode: per-photo cards handle this) — states kept for handleRefine compatibility */}
+          <div id="step-style" className="hidden">
             <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-1">
               02 — Style
             </h3>
@@ -1513,11 +1448,11 @@ export default function Home() {
             />
           </div>
 
-          {/* Multi-photo mode: per-photo config (OUTSIDE the hidden step-style div) */}
-            {files.length > 1 && (
-              <div className="mb-10 scroll-mt-20 animate-fade-in-up">
+          {/* Per-photo config cards — always shown when files are uploaded */}
+            {files.length > 0 && (
+              <div id="step-photo-config" className="mb-10 scroll-mt-20 animate-fade-in-up">
                 <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
-                  Configurez chaque photo
+                  {files.length === 1 ? "Configurez votre photo" : "Configurez chaque photo"}
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {files.map((file, index) => {
@@ -1541,8 +1476,22 @@ export default function Home() {
                       ? OUTDOOR_STYLE_LIST.map((s) => ({ id: s.id, name: s.label }))
                       : STYLES.map((s) => ({ id: s.id, name: s.name }));
 
+                    const photoWithFurniture = perPhotoWithFurniture.get(index) !== false;
+                    const photoFormat = perPhotoFormat.get(index) || "original";
+
                     return (
-                      <div key={`per-photo-${index}-${file.name}`} className="border border-foreground/5 rounded-2xl p-4 space-y-3">
+                      <div key={`per-photo-${index}-${file.name}`} className="border border-foreground/5 rounded-2xl p-4 space-y-3 relative">
+                        {/* Remove photo button */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFiles((prev) => prev.filter((_, i) => i !== index));
+                          }}
+                          aria-label={`Supprimer la photo ${index + 1}`}
+                          className="absolute top-2 right-2 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-foreground/70 hover:bg-foreground/90 text-background text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage shadow-sm"
+                        >
+                          ×
+                        </button>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={filePreviewUrls[index]}
@@ -1662,6 +1611,81 @@ export default function Home() {
                             className="w-full text-xs font-light border border-foreground/10 rounded-lg px-3 py-2 resize-none focus:border-foreground focus:outline-none transition-colors placeholder:text-foreground/30"
                           />
                         )}
+
+                        {/* Finitions + Mobilier / Finitions seulement */}
+                        <div className="flex gap-1 p-0.5 bg-foreground/5 rounded-lg">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const m = new Map(perPhotoWithFurniture);
+                              m.set(index, true);
+                              setPerPhotoWithFurniture(m);
+                            }}
+                            className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 ${
+                              photoWithFurniture ? "bg-background text-foreground shadow-sm" : "text-muted hover:text-foreground"
+                            }`}
+                          >
+                            Finitions + Mobilier
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const m = new Map(perPhotoWithFurniture);
+                              m.set(index, false);
+                              setPerPhotoWithFurniture(m);
+                            }}
+                            className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 ${
+                              !photoWithFurniture ? "bg-background text-foreground shadow-sm" : "text-muted hover:text-foreground"
+                            }`}
+                          >
+                            Finitions seulement
+                          </button>
+                        </div>
+
+                        {/* Output format — Pro only */}
+                        {hasPro && (
+                          <div className="flex gap-1 p-0.5 bg-foreground/5 rounded-lg">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const m = new Map(perPhotoFormat);
+                                m.set(index, "original");
+                                setPerPhotoFormat(m);
+                              }}
+                              className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 ${
+                                photoFormat === "original" ? "bg-background text-foreground shadow-sm" : "text-muted hover:text-foreground"
+                              }`}
+                            >
+                              Original
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const m = new Map(perPhotoFormat);
+                                m.set(index, "landscape");
+                                setPerPhotoFormat(m);
+                              }}
+                              className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 ${
+                                photoFormat === "landscape" ? "bg-background text-foreground shadow-sm" : "text-muted hover:text-foreground"
+                              }`}
+                            >
+                              Paysage
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const m = new Map(perPhotoFormat);
+                                m.set(index, "portrait");
+                                setPerPhotoFormat(m);
+                              }}
+                              className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 ${
+                                photoFormat === "portrait" ? "bg-background text-foreground shadow-sm" : "text-muted hover:text-foreground"
+                              }`}
+                            >
+                              Portrait
+                            </button>
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -1669,52 +1693,14 @@ export default function Home() {
               </div>
             )}
 
-          {/* Step 2c: Options (furniture toggle) */}
-          {canGenerate && results.length === 0 && !isGenerating && (
-            <div className="mb-8 animate-fade-in-up">
-              <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
-                03 — Options
-              </h3>
-              <div className="flex items-center justify-center gap-3" role="radiogroup" aria-label="Mode de génération">
-                <button
-                  role="radio"
-                  aria-checked={!withFurniture}
-                  onClick={() => setWithFurniture(false)}
-                  className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
-                    !withFurniture
-                      ? "bg-foreground text-background shadow-sm"
-                      : "bg-foreground/5 text-muted hover:bg-foreground/10"
-                  }`}
-                >
-                  Finitions seulement
-                </button>
-                <button
-                  role="radio"
-                  aria-checked={withFurniture}
-                  onClick={() => setWithFurniture(true)}
-                  className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
-                    withFurniture
-                      ? "bg-foreground text-background shadow-sm"
-                      : "bg-foreground/5 text-muted hover:bg-foreground/10"
-                  }`}
-                >
-                  Finitions + Mobilier
-                </button>
-              </div>
-              <p className="text-center text-xs text-muted font-light mt-2">
-                {withFurniture
-                  ? "Finitions et mobilier complet"
-                  : "Pièce finie sans meuble — idéal pour visualiser les finitions"}
-              </p>
-            </div>
-          )}
+          {/* Global options section removed — withFurniture + format toggles are now per-photo in the cards above */}
 
           {/* Generate Button */}
           {canGenerate && results.length === 0 && (
             <div id="step-generate" className="text-center mb-8 animate-fade-in-up sticky bottom-6 z-40">
               <button
                 onClick={handleGenerate}
-                disabled={isGenerating || (files.length <= 1 && !isOutdoor && selectedStyles.length > 0 && !selectedRoomType)}
+                disabled={isGenerating}
                 className="inline-flex items-center gap-3 bg-foreground text-background px-10 py-4 rounded-full font-medium text-base hover:bg-foreground/85 transition-all disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 shadow-sm"
               >
                 {isGenerating ? (
@@ -1723,24 +1709,13 @@ export default function Home() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                     </svg>
-                    Génération en cours… ({results.length + 1}/{(() => {
-                      if (files.length > 1) {
-                        return (Array.from(perPhotoStyles.values()) as string[][]).reduce((sum, v) => sum + v.length, 0) || files.length;
-                      }
-                      return isOutdoor ? files.length : files.length * selectedStyles.length;
-                    })()})
+                    Génération en cours… ({results.length + 1}/{(Array.from(perPhotoStyles.values()) as string[][]).reduce((sum, v) => sum + v.length, 0) || files.length})
                   </>
                 ) : (
                   <>
                     {(() => {
-                      const nbPhotos = Math.max(1, files.length);
                       const perPhotoStyleValues = Array.from(perPhotoStyles.values()) as string[][];
-                      const nbStyles = files.length > 1
-                        ? Math.max(...perPhotoStyleValues.map((v) => v.length), 1)
-                        : (isOutdoor ? 1 : selectedStyles.length);
-                      const totalCredits: number = files.length > 1
-                        ? perPhotoStyleValues.reduce((sum, v) => sum + v.length, 0)
-                        : nbPhotos * nbStyles;
+                      const totalCredits: number = perPhotoStyleValues.reduce((sum, v) => sum + v.length, 0);
                       return totalCredits > 1
                         ? `Générer — ${totalCredits} visuels`
                         : "Générer le visuel";
@@ -2196,8 +2171,6 @@ export default function Home() {
           )}
 
           {/* Refine Modal — rendered at root level, see below AuthModal */}
-          </>
-          )}
         </div>
       </section>
 
