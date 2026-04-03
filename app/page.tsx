@@ -302,6 +302,7 @@ export default function Home() {
   // Regenerate state
   const [regenerateConfirmIndex, setRegenerateConfirmIndex] = useState<number | null>(null);
   const [isRegenerating, setIsRegenerating] = useState(false);
+  const [regeneratedIndex, setRegeneratedIndex] = useState<number | null>(null);
   const [refineElapsed, setRefineElapsed] = useState(0);
 
   const heroRef = useReveal();
@@ -1115,7 +1116,7 @@ export default function Home() {
       }, controller.signal);
 
       if (!response.ok) {
-        let errorMsg = "Erreur lors de la régénération";
+        let errorMsg = "La régénération a échoué. Vérifiez votre connexion et réessayez";
         try {
           const data = await response.json();
           errorMsg = data.error || errorMsg;
@@ -1199,6 +1200,8 @@ export default function Home() {
           })
           .finally(() => {
             setIsRegenerating(false);
+            setRegeneratedIndex(index);
+            setTimeout(() => setRegeneratedIndex(null), 3000);
           });
       } else {
         // Non-split response — replace directly
@@ -1225,10 +1228,13 @@ export default function Home() {
           return updated;
         });
         setIsRegenerating(false);
+        // Show "Nouveau résultat" badge briefly
+        setRegeneratedIndex(index);
+        setTimeout(() => setRegeneratedIndex(null), 3000);
       }
     } catch (e: unknown) {
       if (e instanceof Error && e.name === "AbortError") return;
-      setError(e instanceof Error ? e.message : "Erreur lors de la régénération.");
+      setError(e instanceof Error ? e.message : "La régénération a échoué. Vérifiez votre connexion et réessayez.");
       setIsRegenerating(false);
     }
   }, [results, session?.user?.id, startQueuePolling]);
@@ -2169,7 +2175,12 @@ export default function Home() {
                       {/* Comparator (hidden during refine loading for this target) */}
                       {!(isRefining && isRefineTarget) && (
                         <div className="relative">
-                          {/* Bouton × supprimé — décision fondateur : pas de sens de supprimer un résultat généré */}
+                          {/* "Nouveau résultat" badge after regeneration */}
+                          {regeneratedIndex === index && (
+                            <div className="absolute top-3 left-3 z-20 bg-sage text-white text-xs font-medium px-3 py-1 rounded-full shadow-sm animate-fade-in-up">
+                              Nouveau résultat
+                            </div>
+                          )}
                           <ImageComparator
                             originalUrl={result.originalUrl}
                             generatedUrl={displayUrl}
