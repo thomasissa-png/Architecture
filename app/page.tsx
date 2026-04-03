@@ -842,36 +842,6 @@ export default function Home() {
     setLastRefineComment("");
   };
 
-  const handleRemoveResult = useCallback((index: number) => {
-    setResults((prev) => {
-      const updated = prev.filter((_, i) => i !== index);
-      if (updated.length === 0) {
-        // Last result removed — reset to style selection state
-        setError(null);
-        setPreprocessWarnings([]);
-        setVersions([]);
-        setActiveVersions([]);
-        setIterationsRemaining(maxIterations);
-        setRefineError(null);
-        setRefineWarnings([]);
-        setLastRefineComment("");
-      }
-      return updated;
-    });
-    // Clean up versions and activeVersions for this index
-    setVersions((prev) => prev.filter((_, i) => i !== index));
-    setActiveVersions((prev) => prev.filter((_, i) => i !== index));
-    // Clean up dismissedAssociators — shift indices above the removed one
-    setDismissedAssociators((prev) => {
-      const next = new Set<number>();
-      Array.from(prev).forEach((idx) => {
-        if (idx < index) next.add(idx);
-        else if (idx > index) next.add(idx - 1);
-      });
-      return next;
-    });
-  }, [maxIterations]);
-
   const handleCancelGeneration = () => {
     abortControllerRef.current?.abort();
     setIsGenerating(false);
@@ -1943,8 +1913,8 @@ export default function Home() {
             </div>
           ) : null}
 
-          {/* Step 3: Results */}
-          {results.length > 0 && (
+          {/* Step 3: Results — hidden during generation (split mode shows pass1 in loading block) */}
+          {results.length > 0 && !isGenerating && (
             <div id="step-results" className="animate-fade-in-up scroll-mt-28">
               <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-6">
                 03 — Résultat
@@ -1995,16 +1965,7 @@ export default function Home() {
                       {/* Comparator (hidden during refine loading for this target) */}
                       {!(isRefining && isRefineTarget) && (
                         <div className="relative">
-                          {/* Remove result button — visible as soon as this result exists, even during batch */}
-                          {!isRefining && !result.pass2Pending && (
-                            <button
-                              onClick={() => handleRemoveResult(index)}
-                              aria-label="Supprimer ce résultat"
-                              className="absolute top-2 right-2 z-20 w-8 h-8 flex items-center justify-center rounded-full bg-foreground/70 hover:bg-foreground/90 text-background text-base font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage shadow-md"
-                            >
-                              ×
-                            </button>
-                          )}
+                          {/* Bouton × supprimé — décision fondateur : pas de sens de supprimer un résultat généré */}
                           <ImageComparator
                             originalUrl={result.originalUrl}
                             generatedUrl={displayUrl}

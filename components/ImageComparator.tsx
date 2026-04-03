@@ -158,28 +158,29 @@ export default function ImageComparator({
           <span className="flex-1 h-px bg-foreground/10" />
         </div>
       )}
-      <div className="rounded-2xl overflow-hidden border border-gray-200/80 bg-foreground/5" style={{ touchAction: "none" }}>
+      <div className="rounded-2xl overflow-hidden border border-foreground/10 bg-foreground/[0.03]">
         <ReactCompareSlider
           itemOne={
             <ReactCompareSliderImage
               src={originalUrl}
-              alt="Avant \u2014 Photo originale"
-              style={{ objectFit: "contain", backgroundColor: "rgba(28, 28, 30, 0.05)" }}
+              alt="Avant — Photo originale"
+              style={{ objectFit: "contain", width: "100%", height: "100%", backgroundColor: "var(--background)" }}
             />
           }
           itemTwo={
             <ReactCompareSliderImage
               src={generatedUrl}
               alt="Après — Visualisation IA"
-              style={{ objectFit: "contain", backgroundColor: "rgba(28, 28, 30, 0.05)" }}
+              style={{ objectFit: "contain", width: "100%", height: "100%", backgroundColor: "var(--background)" }}
             />
           }
           className=""
-          style={{ width: "100%" }}
+          style={{ width: "100%", touchAction: "pan-y" }}
+          onlyHandleDraggable
           handle={
-            <div className="flex flex-col items-center h-full" role="slider" aria-label="Comparer avant et après — glissez horizontalement" aria-valuemin={0} aria-valuemax={100} aria-valuenow={50}>
+            <div className="flex flex-col items-center h-full" role="slider" aria-label="Comparer avant et après — glissez horizontalement" aria-valuemin={0} aria-valuemax={100} aria-valuenow={50} style={{ touchAction: "none" }}>
               <div className="w-0.5 h-full bg-white/90 shadow-sm" />
-              <div className="absolute top-1/2 -translate-y-1/2 w-12 h-12 sm:w-10 sm:h-10 bg-white rounded-full shadow-lg flex items-center justify-center cursor-grab active:cursor-grabbing">
+              <div className="absolute top-1/2 -translate-y-1/2 w-14 h-14 sm:w-10 sm:h-10 bg-white rounded-full shadow-lg flex items-center justify-center cursor-grab active:cursor-grabbing" style={{ touchAction: "none" }}>
                 {/* Left/right arrows — explicit horizontal drag affordance */}
                 <svg className="w-5 h-5 sm:w-4 sm:h-4 text-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
