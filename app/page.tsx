@@ -1993,6 +1993,55 @@ export default function Home() {
                         </div>
                       )}
 
+                      {/* Refine button — right after comparator, before share/associate */}
+                      {!isRefining && !result.pass2Pending && maxIterations > 0 && (
+                        <div className="text-center space-y-1.5">
+                          {iterationsRemaining > 0 ? (
+                            <>
+                              <button
+                                onClick={() => handleOpenRefineModal(index)}
+                                className="inline-flex items-center gap-2 border border-sage/40 text-sage px-5 min-h-[44px] py-2.5 rounded-full text-sm font-medium hover:bg-sage/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+                              >
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                                </svg>
+                                Affiner {resultVersions.length > 1 ? `v${activeIdx + 1}` : "ce résultat"}
+                              </button>
+                              <p className="text-xs text-muted font-light">
+                                {iterationsRemaining} itération{iterationsRemaining > 1 ? "s" : ""} restante{iterationsRemaining > 1 ? "s" : ""} &mdash; {resultVersions.length > 1 && activeIdx < resultVersions.length - 1 ? `itérera depuis la v${activeIdx + 1}` : "affinez le mobilier, les couleurs ou la composition"}
+                              </p>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                disabled
+                                title="Itérations épuisées — rechargez des visuels pour continuer"
+                                className="inline-flex items-center gap-2 border border-foreground/10 text-muted px-5 min-h-[44px] py-2.5 rounded-full text-sm font-medium cursor-not-allowed"
+                              >
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                                </svg>
+                                Affiner ce résultat
+                              </button>
+                              <p className="text-xs text-muted font-light">
+                                0 itération restante
+                              </p>
+                              <div className="mt-2 bg-foreground/5 border border-foreground/10 rounded-xl p-4 max-w-sm mx-auto">
+                                <p className="text-xs text-muted font-light mb-2">
+                                  Pour continuer à affiner, rechargez vos visuels.
+                                </p>
+                                <a
+                                  href="/pricing"
+                                  className="text-xs text-sage font-medium hover:text-sage/80 transition-colors underline underline-offset-4"
+                                >
+                                  Voir les offres
+                                </a>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      )}
+
                       {/* Photo associator for merchants */}
                       {session && result.photoId && !dismissedAssociators.has(index) && (
                         <PhotoAssociator
@@ -2066,54 +2115,6 @@ export default function Home() {
                         </div>
                       )}
 
-                      {/* Refine button — hidden during pass2 pending and entirely for Découverte (maxIterations === 0) */}
-                      {!isRefining && !result.pass2Pending && maxIterations > 0 && (
-                        <div className="text-center space-y-1.5">
-                          {iterationsRemaining > 0 ? (
-                            <>
-                              <button
-                                onClick={() => handleOpenRefineModal(index)}
-                                className="inline-flex items-center gap-2 border border-sage/40 text-sage px-5 min-h-[44px] py-2.5 rounded-full text-sm font-medium hover:bg-sage/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
-                              >
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-                                </svg>
-                                Affiner {resultVersions.length > 1 ? `v${activeIdx + 1}` : "ce résultat"}
-                              </button>
-                              <p className="text-xs text-muted font-light">
-                                {iterationsRemaining} itération{iterationsRemaining > 1 ? "s" : ""} restante{iterationsRemaining > 1 ? "s" : ""} &mdash; {resultVersions.length > 1 && activeIdx < resultVersions.length - 1 ? `itérera depuis la v${activeIdx + 1}` : "affinez le mobilier, les couleurs ou la composition"}
-                              </p>
-                            </>
-                          ) : (
-                            <>
-                              <button
-                                disabled
-                                title="Itérations épuisées — rechargez des visuels pour continuer"
-                                className="inline-flex items-center gap-2 border border-foreground/10 text-muted px-5 min-h-[44px] py-2.5 rounded-full text-sm font-medium cursor-not-allowed"
-                              >
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-                                </svg>
-                                Affiner ce résultat
-                              </button>
-                              <p className="text-xs text-muted font-light">
-                                0 itération restante
-                              </p>
-                              <div className="mt-2 bg-foreground/5 border border-foreground/10 rounded-xl p-4 max-w-sm mx-auto">
-                                <p className="text-xs text-muted font-light mb-2">
-                                  Pour continuer à affiner, rechargez vos visuels.
-                                </p>
-                                <a
-                                  href="/pricing"
-                                  className="text-xs text-sage font-medium hover:text-sage/80 transition-colors underline underline-offset-4"
-                                >
-                                  Voir les offres
-                                </a>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      )}
                     </div>
                   );
                 })}

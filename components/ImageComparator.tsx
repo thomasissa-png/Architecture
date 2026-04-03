@@ -1,10 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import {
-  ReactCompareSlider,
-  ReactCompareSliderImage,
-} from "react-compare-slider";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 interface ImageComparatorProps {
   originalUrl: string;
@@ -27,7 +23,6 @@ function dataUriToBlob(dataUri: string): Blob {
 
 /**
  * Adds a discrete watermark to an image (EU AI Act Art. 50 compliance).
- * Returns a new data URI with the watermark applied.
  */
 function addWatermark(dataUri: string): Promise<Blob> {
   return new Promise((resolve) => {
@@ -38,26 +33,114 @@ function addWatermark(dataUri: string): Promise<Blob> {
       canvas.height = img.height;
       const ctx = canvas.getContext("2d")!;
       ctx.drawImage(img, 0, 0);
-
       const fontSize = Math.max(12, Math.round(img.width * 0.012));
       ctx.font = `${fontSize}px Inter, system-ui, sans-serif`;
       ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
       ctx.textAlign = "right";
       const padding = Math.round(img.width * 0.015);
-      ctx.fillText(
-        "Généré par IA — Versimo",
-        img.width - padding,
-        img.height - padding
-      );
-
-      canvas.toBlob(
-        (blob) => resolve(blob || dataUriToBlob(dataUri)),
-        "image/jpeg",
-        0.92
-      );
+      ctx.fillText("Généré par IA — Versimo", img.width - padding, img.height - padding);
+      canvas.toBlob((blob) => resolve(blob || dataUriToBlob(dataUri)), "image/jpeg", 0.92);
     };
     img.src = dataUri;
   });
+}
+
+/**
+ * Custom compare slider — native touch support, no library dependency issues.
+ */
+function CompareSlider({ beforeSrc, afterSrc }: { beforeSrc: string; afterSrc: string }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [position, setPosition] = useState(50); // percentage
+  const isDragging = useRef(false);
+
+  const getPosition = useCallback((clientX: number) => {
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return 50;
+    const x = clientX - rect.left;
+    return Math.max(0, Math.min(100, (x / rect.width) * 100));
+  }, []);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const onPointerDown = (e: PointerEvent) => {
+      // Only start drag if near the handle (±30px)
+      const rect = el.getBoundingClientRect();
+      const handleX = rect.left + (position / 100) * rect.width;
+      if (Math.abs(e.clientX - handleX) > 30) return;
+
+      isDragging.current = true;
+      el.setPointerCapture(e.pointerId);
+      setPosition(getPosition(e.clientX));
+      e.preventDefault();
+    };
+
+    const onPointerMove = (e: PointerEvent) => {
+      if (!isDragging.current) return;
+      setPosition(getPosition(e.clientX));
+      e.preventDefault();
+    };
+
+    const onPointerUp = () => {
+      isDragging.current = false;
+    };
+
+    el.addEventListener("pointerdown", onPointerDown);
+    el.addEventListener("pointermove", onPointerMove);
+    el.addEventListener("pointerup", onPointerUp);
+    el.addEventListener("pointercancel", onPointerUp);
+
+    return () => {
+      el.removeEventListener("pointerdown", onPointerDown);
+      el.removeEventListener("pointermove", onPointerMove);
+      el.removeEventListener("pointerup", onPointerUp);
+      el.removeEventListener("pointercancel", onPointerUp);
+    };
+  }, [position, getPosition]);
+
+  return (
+    <div
+      ref={containerRef}
+      className="relative w-full overflow-hidden select-none"
+      style={{ touchAction: "pan-y" }}
+    >
+      {/* After image (background, full width) */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={afterSrc} alt="Après — Visualisation IA" className="block w-full h-auto" draggable={false} />
+
+      {/* Before image (clipped to position) */}
+      <div
+        className="absolute inset-0 overflow-hidden"
+        style={{ width: `${position}%` }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={beforeSrc}
+          alt="Avant — Photo originale"
+          className="block h-full object-cover"
+          style={{ width: containerRef.current?.offsetWidth || "100%", maxWidth: "none" }}
+          draggable={false}
+        />
+      </div>
+
+      {/* Handle */}
+      <div
+        className="absolute top-0 bottom-0"
+        style={{ left: `${position}%`, transform: "translateX(-50%)", touchAction: "none" }}
+      >
+        <div className="w-0.5 h-full bg-white/90 shadow-sm" />
+        <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 left-1/2 w-14 h-14 sm:w-10 sm:h-10 bg-white rounded-full shadow-lg flex items-center justify-center cursor-grab active:cursor-grabbing">
+          <svg className="w-5 h-5 sm:w-4 sm:h-4 text-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+          </svg>
+          <svg className="w-5 h-5 sm:w-4 sm:h-4 text-foreground -ml-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+          </svg>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function ImageComparator({
@@ -69,7 +152,6 @@ export default function ImageComparator({
   const [copied, setCopied] = useState(false);
   const [canShare, setCanShare] = useState(false);
 
-  // Avoid hydration mismatch: check navigator.share on client only
   useEffect(() => {
     setCanShare(!!navigator.share);
   }, []);
@@ -159,39 +241,7 @@ export default function ImageComparator({
         </div>
       )}
       <div className="rounded-2xl overflow-hidden border border-foreground/10 bg-foreground/[0.03]">
-        <ReactCompareSlider
-          itemOne={
-            <ReactCompareSliderImage
-              src={originalUrl}
-              alt="Avant — Photo originale"
-              style={{ objectFit: "contain", width: "100%", height: "100%", backgroundColor: "var(--background)" }}
-            />
-          }
-          itemTwo={
-            <ReactCompareSliderImage
-              src={generatedUrl}
-              alt="Après — Visualisation IA"
-              style={{ objectFit: "contain", width: "100%", height: "100%", backgroundColor: "var(--background)" }}
-            />
-          }
-          className=""
-          style={{ width: "100%", touchAction: "pan-y" }}
-          onlyHandleDraggable
-          handle={
-            <div className="flex flex-col items-center h-full" role="slider" aria-label="Comparer avant et après — glissez horizontalement" aria-valuemin={0} aria-valuemax={100} aria-valuenow={50} style={{ touchAction: "none" }}>
-              <div className="w-0.5 h-full bg-white/90 shadow-sm" />
-              <div className="absolute top-1/2 -translate-y-1/2 w-14 h-14 sm:w-10 sm:h-10 bg-white rounded-full shadow-lg flex items-center justify-center cursor-grab active:cursor-grabbing" style={{ touchAction: "none" }}>
-                {/* Left/right arrows — explicit horizontal drag affordance */}
-                <svg className="w-5 h-5 sm:w-4 sm:h-4 text-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-                </svg>
-                <svg className="w-5 h-5 sm:w-4 sm:h-4 text-foreground -ml-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                </svg>
-              </div>
-            </div>
-          }
-        />
+        <CompareSlider beforeSrc={originalUrl} afterSrc={generatedUrl} />
         <p className="text-center text-xs text-muted font-light py-1.5 sm:hidden">
           Glissez pour comparer
         </p>
