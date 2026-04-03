@@ -114,7 +114,7 @@ export default function GalleryGate({ children }: GalleryGateProps) {
           href="/pricing"
           className="text-sm text-muted font-light hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-sage/50 rounded-sm"
         >
-          ou Pack Starter — 15 visuels — 14,90&nbsp;&#8364;
+          ou Pack Starter — 15 visuels — 9,90&nbsp;&#8364;
         </a>
       </div>
 

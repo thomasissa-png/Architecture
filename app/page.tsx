@@ -329,7 +329,7 @@ export default function Home() {
     if (queueStatus.status === "done") {
       setQueueToast({
         type: "success",
-        message: "Votre visuel est prêt ! Consultez votre galerie.",
+        message: "Votre visuel est prêt. Consultez votre galerie.",
       });
     } else if (queueStatus.status === "failed") {
       const reason = queueStatus.abandonReason;
@@ -337,7 +337,7 @@ export default function Home() {
       if (reason === "timeout") msg = "La génération a expiré après 45 minutes.";
       else if (reason === "max_retries") msg = "La génération a échoué après plusieurs tentatives.";
       else if (reason === "non_transient") msg = "La génération a rencontré une erreur définitive.";
-      if (queueStatus.creditRefunded) msg += " Votre crédit a été remboursé.";
+      if (queueStatus.creditRefunded) msg += " Votre visuel a été remboursé automatiquement.";
       setQueueToast({ type: "error", message: msg });
     }
   }, [queueStatus]);
@@ -1720,8 +1720,8 @@ export default function Home() {
                         ? perPhotoStyleValues.reduce((sum, v) => sum + v.length, 0)
                         : nbPhotos * nbStyles;
                       return totalCredits > 1
-                        ? `Générer — ${totalCredits} crédits`
-                        : "Générer la visualisation";
+                        ? `Générer — ${totalCredits} visuels`
+                        : "Générer le visuel";
                     })()}
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -1846,7 +1846,7 @@ export default function Home() {
           {queueStatus && queueStatus.status === "done" && (
             <div className="mb-8 bg-green-50/50 border border-green-200/60 rounded-2xl p-5 text-center animate-fade-in">
               <p className="text-sm text-foreground font-medium mb-1">
-                Votre visuel est prêt !
+                Votre visuel est prêt.
               </p>
               <div className="flex items-center justify-center gap-3 mt-3">
                 <a
@@ -2097,7 +2097,7 @@ export default function Home() {
                             <>
                               <button
                                 disabled
-                                title="Itérations épuisées — rechargez un pack"
+                                title="Itérations épuisées — rechargez des visuels pour continuer"
                                 className="inline-flex items-center gap-2 border border-foreground/10 text-muted px-5 min-h-[44px] py-2.5 rounded-full text-sm font-medium cursor-not-allowed"
                               >
                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -2110,7 +2110,7 @@ export default function Home() {
                               </p>
                               <div className="mt-2 bg-foreground/5 border border-foreground/10 rounded-xl p-4 max-w-sm mx-auto">
                                 <p className="text-xs text-muted font-light mb-2">
-                                  Pour continuer à affiner, rechargez vos crédits.
+                                  Pour continuer à affiner, rechargez vos visuels.
                                 </p>
                                 <a
                                   href="/pricing"

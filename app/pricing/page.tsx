@@ -202,7 +202,7 @@ function PricingContent() {
           {/* CTA gratuit bandeau */}
           <div className="bg-sage/8 border border-sage/20 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 mb-10 max-w-2xl mx-auto">
             <p className="text-sm text-foreground font-light text-center sm:text-left">
-              Essayez avec <strong className="font-semibold">2 photos gratuites</strong> — sans carte bancaire
+              Essayez avec <strong className="font-semibold">2 visuels offerts</strong> — sans carte bancaire
             </p>
             <a
               href="/#outil"
@@ -243,7 +243,7 @@ function PricingContent() {
                 </p>
                 <p className="text-xs text-muted font-light mb-1">
                   {pack.id === "decouverte"
-                    ? `${pack.credits} photos offertes`
+                    ? `${pack.credits} visuels offerts`
                     : `${pack.credits} visuels · ${pack.perPhoto} €/visuel`}
                 </p>
                 {pack.id === "starter" && <p className="text-xs text-sage font-medium mb-1">Achat unique — sans abonnement</p>}
