@@ -50,7 +50,7 @@ interface DossierPhotoStatus {
   iterationCount: number;
 }
 
-type MerchantStep = "photos" | "annotate" | "style" | "generating" | "results";
+type MerchantStep = "photos" | "generating" | "results";
 
 const MAX_PHOTOS = 15;
 
@@ -157,14 +157,13 @@ export default function MerchantMode() {
       return next;
     });
 
-    // Auto-transition: when new photos are added and we're still on "photos" step
+    // Auto-scroll when first photo added
     const hadNewFiles = files.length > prevFilesCountRef.current;
     prevFilesCountRef.current = files.length;
 
     if (hadNewFiles && files.length > 0 && currentStep === "photos") {
-      setCurrentStep("annotate");
       setTimeout(() => {
-        document.getElementById("merchant-annotate")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        merchantRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 150);
     }
   }, [files, currentStep]);
@@ -430,7 +429,7 @@ export default function MerchantMode() {
         : msg || "Une erreur est survenue. Réessayez — vos visuels n'ont pas été consommés.";
       setError(displayMsg);
       setIsGenerating(false);
-      setCurrentStep("annotate");
+      setCurrentStep("photos");
     }
   }
 
@@ -648,183 +647,183 @@ export default function MerchantMode() {
         </div>
       )}
 
-      {/* ── Step: Annotate (per-photo room type + style override) ── */}
-      {currentStep === "annotate" && (
-        <div id="merchant-annotate" className="space-y-6 animate-fade-in-up" data-testid="merchant-step-annotate">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-1">
-                Pièce et style par photo
-              </h3>
-              <p className="text-xs text-muted/60 font-light">
-                Choisissez le type de pièce et le style pour chaque photo.
-              </p>
-            </div>
-            <button
-              onClick={() => {
-                setCurrentStep("photos");
-                merchantRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-              }}
-              className="text-xs text-muted font-light hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 rounded"
-            >
-              Retour
-            </button>
+
+      {/* ── Step: Photos (step 1 — first visible) ── */}
+      {currentStep === "photos" && (
+        <div className="space-y-6 animate-fade-in-up" data-testid="merchant-step-photos">
+          <div>
+            <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-1">
+              Photos du bien
+            </h3>
+            <p className="text-xs text-muted/60 font-light">
+              Jusqu&apos;à {MAX_PHOTOS} photos — choisissez le type de pièce et le style pour chaque photo.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {files.map((file, index) => {
-              const entry = photoEntries[index];
-              if (!entry) return null;
-              return (
-                <div key={index} className="border border-foreground/10 rounded-xl p-3 space-y-3" data-testid={`merchant-annotate-card-${index}`}>
-                  {/* Thumbnail */}
-                  <div className="aspect-[4/3] rounded-lg overflow-hidden bg-foreground/5">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={previewUrls[index]}
-                      alt={`Photo ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <p className="text-xs text-foreground font-medium truncate">
-                    Photo {index + 1}
-                  </p>
-                  {photoWarnings[index] && (
-                    <p className="text-[10px] text-amber-600 font-medium leading-tight">
-                      {photoWarnings[index]}
+          {/* Upload zone — visible tant qu'on n'a pas atteint le max */}
+          {files.length < MAX_PHOTOS && (
+            <UploadZone
+              files={files}
+              onFilesChange={setFiles}
+              maxFiles={MAX_PHOTOS}
+              photoWarnings={photoWarnings}
+            />
+          )}
+
+          {/* Per-photo cards — directly after upload, no intermediate step */}
+          {files.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {files.map((file, index) => {
+                const entry = photoEntries[index];
+                if (!entry) return null;
+                return (
+                  <div key={index} className="relative border border-foreground/10 rounded-xl p-3 space-y-3" data-testid={`merchant-annotate-card-${index}`}>
+                    {/* Remove photo button */}
+                    <button
+                      onClick={() => {
+                        const newFiles = files.filter((_, i) => i !== index);
+                        setFiles(newFiles);
+                      }}
+                      aria-label={`Supprimer photo ${index + 1}`}
+                      className="absolute top-1.5 right-1.5 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-foreground/60 hover:bg-foreground/80 text-background text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+                    >
+                      ×
+                    </button>
+                    {/* Thumbnail */}
+                    <div className="aspect-[4/3] rounded-lg overflow-hidden bg-foreground/5">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={previewUrls[index]}
+                        alt={`Photo ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <p className="text-xs text-foreground font-medium truncate">
+                      Photo {index + 1}
                     </p>
-                  )}
-
-                  {/* Indoor / Outdoor toggle */}
-                  <div className="flex gap-1 p-0.5 bg-foreground/5 rounded-lg" data-testid={`merchant-annotate-mode-${index}`}>
-                    <button
-                      onClick={() => updatePhotoEntry(index, {
-                        isOutdoor: false,
-                        outdoorStyleId: null,
-                        outdoorSubtype: null,
-                        roomTypeId: null,
-                        styleOverride: null,
-                        customPromptOverride: "",
-                      })}
-                      className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 ${
-                        !entry.isOutdoor
-                          ? "bg-background text-foreground shadow-sm"
-                          : "text-muted hover:text-foreground"
-                      }`}
-                    >
-                      Intérieur
-                    </button>
-                    <button
-                      onClick={() => updatePhotoEntry(index, {
-                        isOutdoor: true,
-                        roomTypeId: null,
-                        styleOverride: null,
-                        customPromptOverride: "",
-                      })}
-                      className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 ${
-                        entry.isOutdoor
-                          ? "bg-background text-foreground shadow-sm"
-                          : "text-muted hover:text-foreground"
-                      }`}
-                    >
-                      Extérieur
-                    </button>
-                  </div>
-
-                  {/* Room type / Outdoor subtype dropdown */}
-                  <div>
-                    <label className="text-[11px] text-muted font-light block mb-1">
-                      {entry.isOutdoor ? "Type d'espace" : "Pièce"}
-                    </label>
-                    {entry.isOutdoor ? (
-                      <select
-                        value={entry.outdoorSubtype || ""}
-                        onChange={(e) => updatePhotoEntry(index, { outdoorSubtype: e.target.value || null })}
-                        className="w-full text-sm font-light border border-foreground/10 rounded-lg px-3 py-2 bg-background focus:border-foreground focus:outline-none transition-colors"
-                        data-testid={`merchant-annotate-subtype-${index}`}
-                      >
-                        <option value="">Non spécifié</option>
-                        {OUTDOOR_SUBTYPE_LIST.map((st) => (
-                          <option key={st.id} value={st.id}>
-                            {st.emoji} {st.label}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <select
-                        value={entry.roomTypeId || ""}
-                        onChange={(e) => updatePhotoEntry(index, { roomTypeId: e.target.value || null })}
-                        className="w-full text-sm font-light border border-foreground/10 rounded-lg px-3 py-2 bg-background focus:border-foreground focus:outline-none transition-colors"
-                        data-testid={`merchant-annotate-room-${index}`}
-                      >
-                        <option value="">Non spécifié</option>
-                        {ROOM_TYPE_LIST.map((rt) => (
-                          <option key={rt.id} value={rt.id}>
-                            {rt.emoji} {rt.label}
-                          </option>
-                        ))}
-                      </select>
+                    {photoWarnings[index] && (
+                      <p className="text-[10px] text-amber-600 font-medium leading-tight">
+                        {photoWarnings[index]}
+                      </p>
                     )}
-                  </div>
 
-                  {/* Style override dropdown — indoor or outdoor */}
-                  <div>
-                    <label className="text-[11px] text-muted font-light block mb-1">
-                      Style
-                    </label>
-                    {entry.isOutdoor ? (
-                      <select
-                        value={entry.outdoorStyleId || ""}
-                        onChange={(e) => {
-                          const val = e.target.value || null;
-                          updatePhotoEntry(index, { outdoorStyleId: val });
-                        }}
-                        className="w-full text-sm font-light border border-foreground/10 rounded-lg px-3 py-2 bg-background focus:border-foreground focus:outline-none transition-colors"
-                        data-testid={`merchant-annotate-outdoor-style-${index}`}
+                    {/* Indoor / Outdoor toggle */}
+                    <div className="flex gap-1 p-0.5 bg-foreground/5 rounded-lg" data-testid={`merchant-annotate-mode-${index}`}>
+                      <button
+                        onClick={() => updatePhotoEntry(index, {
+                          isOutdoor: false,
+                          outdoorStyleId: null,
+                          outdoorSubtype: null,
+                          roomTypeId: null,
+                          styleOverride: null,
+                          customPromptOverride: "",
+                        })}
+                        className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 ${
+                          !entry.isOutdoor
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted hover:text-foreground"
+                        }`}
                       >
-                        <option value="">Choisir un style</option>
-                        {OUTDOOR_STYLE_LIST.map((os) => (
-                          <option key={os.id} value={os.id}>
-                            {os.emoji} {os.label}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <select
-                        value={entry.styleOverride?.id || ""}
-                        onChange={(e) => {
-                          const styleId = e.target.value;
-                          if (!styleId) {
-                            updatePhotoEntry(index, { styleOverride: null, customPromptOverride: "" });
-                          } else if (styleId === "custom") {
-                            updatePhotoEntry(index, {
-                              styleOverride: { id: "custom", name: "Personnalisé", description: "", surfacePrompt: "", furniturePrompt: "", palette: [] },
-                            });
-                          } else {
-                            const style = STYLES.find((s) => s.id === styleId) || null;
-                            updatePhotoEntry(index, { styleOverride: style, customPromptOverride: "" });
-                          }
-                        }}
-                        className="w-full text-sm font-light border border-foreground/10 rounded-lg px-3 py-2 bg-background focus:border-foreground focus:outline-none transition-colors"
-                        data-testid={`merchant-annotate-style-${index}`}
+                        Intérieur
+                      </button>
+                      <button
+                        onClick={() => updatePhotoEntry(index, {
+                          isOutdoor: true,
+                          roomTypeId: null,
+                          styleOverride: null,
+                          customPromptOverride: "",
+                        })}
+                        className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 ${
+                          entry.isOutdoor
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted hover:text-foreground"
+                        }`}
                       >
-                        <option value="">Choisir un style</option>
-                        {STYLES.map((s) => (
-                          <option key={s.id} value={s.id}>
-                            {s.name}
-                          </option>
-                        ))}
-                        <option value="custom">Personnalisé</option>
-                      </select>
-                    )}
-                  </div>
+                        Extérieur
+                      </button>
+                    </div>
 
-                  {/* Custom prompt textarea (when "Personnalise" selected, indoor only) */}
-                  {!entry.isOutdoor && entry.styleOverride?.id === "custom" && (
+                    {/* Room type / Outdoor subtype dropdown */}
                     <div>
                       <label className="text-[11px] text-muted font-light block mb-1">
-                        Décrivez le style souhaité
+                        {entry.isOutdoor ? "Type d'espace" : "Pièce"}
                       </label>
+                      {entry.isOutdoor ? (
+                        <select
+                          value={entry.outdoorSubtype || ""}
+                          onChange={(e) => updatePhotoEntry(index, { outdoorSubtype: e.target.value || null })}
+                          className="w-full text-sm font-light border border-foreground/10 rounded-lg px-3 py-2 bg-background focus:border-foreground focus:outline-none transition-colors"
+                          data-testid={`merchant-annotate-subtype-${index}`}
+                        >
+                          <option value="">Non spécifié</option>
+                          {OUTDOOR_SUBTYPE_LIST.map((st) => (
+                            <option key={st.id} value={st.id}>
+                              {st.emoji} {st.label}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <select
+                          value={entry.roomTypeId || ""}
+                          onChange={(e) => updatePhotoEntry(index, { roomTypeId: e.target.value || null })}
+                          className="w-full text-sm font-light border border-foreground/10 rounded-lg px-3 py-2 bg-background focus:border-foreground focus:outline-none transition-colors"
+                          data-testid={`merchant-annotate-room-${index}`}
+                        >
+                          <option value="">Non spécifié</option>
+                          {ROOM_TYPE_LIST.map((rt) => (
+                            <option key={rt.id} value={rt.id}>
+                              {rt.emoji} {rt.label}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
+
+                    {/* Style override dropdown */}
+                    <div>
+                      <label className="text-[11px] text-muted font-light block mb-1">Style</label>
+                      {entry.isOutdoor ? (
+                        <select
+                          value={entry.outdoorStyleId || ""}
+                          onChange={(e) => updatePhotoEntry(index, { outdoorStyleId: e.target.value || null })}
+                          className="w-full text-sm font-light border border-foreground/10 rounded-lg px-3 py-2 bg-background focus:border-foreground focus:outline-none transition-colors"
+                          data-testid={`merchant-annotate-outdoor-style-${index}`}
+                        >
+                          <option value="">Choisir un style</option>
+                          {OUTDOOR_STYLE_LIST.map((os) => (
+                            <option key={os.id} value={os.id}>{os.emoji} {os.label}</option>
+                          ))}
+                        </select>
+                      ) : (
+                        <select
+                          value={entry.styleOverride?.id || ""}
+                          onChange={(e) => {
+                            const styleId = e.target.value;
+                            if (!styleId) {
+                              updatePhotoEntry(index, { styleOverride: null, customPromptOverride: "" });
+                            } else if (styleId === "custom") {
+                              updatePhotoEntry(index, {
+                                styleOverride: { id: "custom", name: "Personnalisé", description: "", surfacePrompt: "", furniturePrompt: "", palette: [] },
+                              });
+                            } else {
+                              const style = STYLES.find((s) => s.id === styleId) || null;
+                              updatePhotoEntry(index, { styleOverride: style, customPromptOverride: "" });
+                            }
+                          }}
+                          className="w-full text-sm font-light border border-foreground/10 rounded-lg px-3 py-2 bg-background focus:border-foreground focus:outline-none transition-colors"
+                          data-testid={`merchant-annotate-style-${index}`}
+                        >
+                          <option value="">Choisir un style</option>
+                          {STYLES.map((s) => (
+                            <option key={s.id} value={s.id}>{s.name}</option>
+                          ))}
+                          <option value="custom">Personnalisé</option>
+                        </select>
+                      )}
+                    </div>
+
+                    {/* Custom prompt textarea */}
+                    {!entry.isOutdoor && entry.styleOverride?.id === "custom" && (
                       <textarea
                         value={entry.customPromptOverride}
                         onChange={(e) => updatePhotoEntry(index, { customPromptOverride: e.target.value })}
@@ -833,141 +832,84 @@ export default function MerchantMode() {
                         className="w-full text-sm font-light border border-foreground/10 rounded-lg px-3 py-2 bg-background focus:border-foreground focus:outline-none transition-colors resize-none placeholder:text-foreground/30"
                         data-testid={`merchant-annotate-custom-prompt-${index}`}
                       />
+                    )}
+
+                    {/* Finitions + Mobilier / Finitions seulement */}
+                    <div className="flex gap-1 p-0.5 bg-foreground/5 rounded-lg">
+                      <button
+                        onClick={() => updatePhotoEntry(index, { withFurniture: true })}
+                        className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 ${
+                          entry.withFurniture ? "bg-background text-foreground shadow-sm" : "text-muted hover:text-foreground"
+                        }`}
+                      >
+                        Finitions + Mobilier
+                      </button>
+                      <button
+                        onClick={() => updatePhotoEntry(index, { withFurniture: false })}
+                        className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 ${
+                          !entry.withFurniture ? "bg-background text-foreground shadow-sm" : "text-muted hover:text-foreground"
+                        }`}
+                      >
+                        Finitions seulement
+                      </button>
                     </div>
-                  )}
 
-                  {/* Per-photo: Finitions seulement / Finitions + Mobilier */}
-                  <div className="flex gap-1 p-0.5 bg-foreground/5 rounded-lg" data-testid={`merchant-annotate-furniture-${index}`}>
-                    <button
-                      onClick={() => updatePhotoEntry(index, { withFurniture: true })}
-                      className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 ${
-                        entry.withFurniture
-                          ? "bg-background text-foreground shadow-sm"
-                          : "text-muted hover:text-foreground"
-                      }`}
-                    >
-                      Finitions + Mobilier
-                    </button>
-                    <button
-                      onClick={() => updatePhotoEntry(index, { withFurniture: false })}
-                      className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 ${
-                        !entry.withFurniture
-                          ? "bg-background text-foreground shadow-sm"
-                          : "text-muted hover:text-foreground"
-                      }`}
-                    >
-                      Finitions seulement
-                    </button>
+                    {/* Output format */}
+                    <div className="flex gap-1 p-0.5 bg-foreground/5 rounded-lg">
+                      <button
+                        onClick={() => updatePhotoEntry(index, { outputFormat: "original" })}
+                        className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 ${
+                          entry.outputFormat === "original" ? "bg-background text-foreground shadow-sm" : "text-muted hover:text-foreground"
+                        }`}
+                      >
+                        Original
+                      </button>
+                      <button
+                        onClick={() => updatePhotoEntry(index, { outputFormat: "landscape" })}
+                        className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 ${
+                          entry.outputFormat === "landscape" ? "bg-background text-foreground shadow-sm" : "text-muted hover:text-foreground"
+                        }`}
+                      >
+                        Paysage
+                      </button>
+                      <button
+                        onClick={() => updatePhotoEntry(index, { outputFormat: "portrait" })}
+                        className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 ${
+                          entry.outputFormat === "portrait" ? "bg-background text-foreground shadow-sm" : "text-muted hover:text-foreground"
+                        }`}
+                      >
+                        Portrait
+                      </button>
+                    </div>
                   </div>
-
-                  {/* Per-photo: Output format (Pro only) */}
-                  <div className="flex gap-1 p-0.5 bg-foreground/5 rounded-lg" data-testid={`merchant-annotate-format-${index}`}>
-                    <button
-                      onClick={() => updatePhotoEntry(index, { outputFormat: "original" })}
-                      className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 ${
-                        entry.outputFormat === "original"
-                          ? "bg-background text-foreground shadow-sm"
-                          : "text-muted hover:text-foreground"
-                      }`}
-                    >
-                      Original
-                    </button>
-                    <button
-                      onClick={() => updatePhotoEntry(index, { outputFormat: "landscape" })}
-                      className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 ${
-                        entry.outputFormat === "landscape"
-                          ? "bg-background text-foreground shadow-sm"
-                          : "text-muted hover:text-foreground"
-                      }`}
-                    >
-                      Paysage
-                    </button>
-                    <button
-                      onClick={() => updatePhotoEntry(index, { outputFormat: "portrait" })}
-                      className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 ${
-                        entry.outputFormat === "portrait"
-                          ? "bg-background text-foreground shadow-sm"
-                          : "text-muted hover:text-foreground"
-                      }`}
-                    >
-                      Portrait
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Navigation */}
-          <div className="flex items-center gap-3 pt-4">
-            <button
-              onClick={() => handleGenerate()}
-              disabled={isGenerating || !photoEntries.every((e) => e.isOutdoor ? e.outdoorStyleId !== null : e.styleOverride !== null)}
-              className="px-8 py-3 bg-foreground text-background rounded-xl font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
-              data-testid="merchant-next-annotate-continue"
-            >
-              {`Générer (${creditsNeeded} visuel${creditsNeeded > 1 ? "s" : ""})`}
-            </button>
-            {!photoEntries.every((e) => e.isOutdoor ? e.outdoorStyleId !== null : e.styleOverride !== null) && (
-              <p className="text-xs text-muted/60 font-light">Choisissez un style pour chaque photo</p>
-            )}
-            {userCredits !== null && (
-              <span className={`text-xs font-light ${userCredits < creditsNeeded ? "text-red-500" : "text-muted"}`}>
-                {userCredits} crédit{userCredits > 1 ? "s" : ""} restant{userCredits > 1 ? "s" : ""}
-              </span>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* ── Step: Photos (step 1 — first visible) ── */}
-      {currentStep === "photos" && (
-        <div className="space-y-6 animate-fade-in-up" data-testid="merchant-step-photos">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-1">
-                Photos du bien
-              </h3>
-              <p className="text-xs text-muted/60 font-light">
-                Jusqu&apos;à {MAX_PHOTOS} photos — 1 visuel par photo
-              </p>
+                );
+              })}
             </div>
-          </div>
+          )}
 
-          <p className="text-xs text-muted/60 font-light -mt-2">
-            Photographiez chaque pièce du bien. Les photos sont traitées une par une.
-          </p>
-
-          <UploadZone
-            files={files}
-            onFilesChange={setFiles}
-            maxFiles={MAX_PHOTOS}
-            photoWarnings={photoWarnings}
-          />
-
-          {/* Navigation */}
+          {/* Generate button */}
           {files.length > 0 && (
             <div className="flex items-center gap-3 pt-4">
               <button
-                onClick={() => {
-                  setCurrentStep("annotate");
-                  merchantRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-                }}
-                className="px-8 py-3 bg-foreground text-background rounded-xl font-medium text-sm hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
-                data-testid="merchant-next-photos"
+                onClick={() => handleGenerate()}
+                disabled={isGenerating || !photoEntries.every((e) => e.isOutdoor ? e.outdoorStyleId !== null : e.styleOverride !== null)}
+                className="px-8 py-3 bg-sage text-white rounded-xl font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+                data-testid="merchant-generate"
               >
-                Annoter les photos
+                {`Générer (${creditsNeeded} visuel${creditsNeeded > 1 ? "s" : ""})`}
               </button>
-              <span className="text-xs text-muted font-light">
-                {files.length} photo{files.length > 1 ? "s" : ""} — {files.length} visuel{files.length > 1 ? "s" : ""}
-              </span>
+              {!photoEntries.every((e) => e.isOutdoor ? e.outdoorStyleId !== null : e.styleOverride !== null) && (
+                <p className="text-xs text-muted/60 font-light">Choisissez un style pour chaque photo</p>
+              )}
+              {userCredits !== null && (
+                <span className={`text-xs font-light ${userCredits < creditsNeeded ? "text-red-500" : "text-muted"}`}>
+                  {userCredits} visuel{userCredits > 1 ? "s" : ""} restant{userCredits > 1 ? "s" : ""}
+                </span>
+              )}
             </div>
           )}
         </div>
       )}
-
-      {/* Step Style global supprimé — le style est choisi par photo uniquement */}
-
 
       {/* ── Step: Generating ── */}
       {currentStep === "generating" && (
