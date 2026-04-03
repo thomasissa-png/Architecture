@@ -46,7 +46,7 @@ export function buildIterationFurnitureResponsesPrompt(
       ? "Wall-mounted items are allowed ONLY for the items explicitly requested by the user."
       : "ONLY add freestanding objects resting on the floor. Do not attach anything to walls.",
     "Preserve all wall-mounted fixed equipment: radiators, heaters, water heater (cylindrical tank), vents, thermostats, switches, boiler. Do not place furniture in front of radiators.",
-    "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, subtle sensor grain (ISO 200), natural corner vignetting. Photo-realistic interior photograph. No text, watermarks, or logos.",
+    "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, Clean digital rendering, NO film grain, NO noise, NO vignetting. Photo-realistic interior photograph. No text, watermarks, or logos.",
   ].join(" ");
 }
 
@@ -83,7 +83,7 @@ export function buildIterationOutdoorFurnitureResponsesPrompt(
     "Preserve existing vegetation in the background. Do not alter tree lines, hedges, or background plants.",
     "Open-air space — no ceiling. Sky preserved as-is.",
     "Preserve the exact lighting conditions from the input — same shadow hardness, same direction, same color temperature.",
-    "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, subtle sensor grain (ISO 200), natural corner vignetting. Photo-realistic outdoor photograph. No text, watermarks, or logos.",
+    "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, Clean digital rendering, NO film grain, NO noise, NO vignetting. Photo-realistic outdoor photograph. No text, watermarks, or logos.",
   ].join(" ");
 }
 
@@ -113,7 +113,7 @@ export function buildAdjustResponsesPrompt(
     "Every piece must appear firmly grounded on the floor with visible contact shadows. Match shadow hardness to the lighting type.",
     "Preserve existing light direction and color temperature from the input photo. Even if the style uses warm materials, the room's overall lighting temperature must match the input. No warm tint or yellow cast.",
     "Preserve all wall-mounted fixed equipment: radiators, heaters, water heater (cylindrical tank), vents, thermostats, switches, boiler.",
-    "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, subtle sensor grain (ISO 200), natural corner vignetting. Photo-realistic interior photograph. No text, watermarks, or logos.",
+    "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, Clean digital rendering, NO film grain, NO noise, NO vignetting. Photo-realistic interior photograph. No text, watermarks, or logos.",
   ].filter(Boolean).join(" ");
 }
 
@@ -135,7 +135,7 @@ export function buildAdjustOutdoorResponsesPrompt(
     "Preserve existing vegetation in the background. Do not alter tree lines, hedges, or background plants.",
     "Open-air space — no ceiling. Sky preserved as-is.",
     "Preserve the exact lighting conditions from the input — same shadow hardness, same direction, same color temperature.",
-    "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, subtle sensor grain (ISO 200), natural corner vignetting. Photo-realistic outdoor photograph. No text, watermarks, or logos.",
+    "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, Clean digital rendering, NO film grain, NO noise, NO vignetting. Photo-realistic outdoor photograph. No text, watermarks, or logos.",
   ].join(" ");
 }
 

@@ -379,7 +379,7 @@ function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: str
     "Result should look like a luxury real estate listing photo — lived-in, not a sterile catalog.",
     "Place furniture INSIDE the room only — do not add any object on exterior terraces, balconies, or patios visible through windows or glazing.",
     `${CAMERA_PRESERVATION} Room structure is LOCKED: walls, floor, ceiling, windows, doors visually identical to input — same angles, same geometry, same number of openings. Preserve exact count and position of all openings. Preserve existing light direction and color temperature. Even if the style uses warm materials, the room's overall lighting temperature must match the input. No warm tint or yellow cast.`,
-    "DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Very subtle film grain, barely perceptible at normal viewing size. Do NOT add HDR processing, color grading, or cinematic tone mapping. Natural lens vignetting 5-10%. No text or watermarks.",
+    "DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Clean digital rendering, NO film grain, NO noise, NO vignetting. Do NOT add HDR processing, color grading, or cinematic tone mapping. No text or watermarks.",
   ].join(" ");
 }
 
@@ -402,7 +402,7 @@ function buildOutdoorSurfacesResponsesPrompt(
     "Maintain the exact wall and facade color temperature from the input — do not warm or cool the surfaces.",
     "Preserve the exact lighting conditions from the input — same shadow hardness, same direction, same color temperature.",
     "No furniture in this pass — EMPTY outdoor space with finished ground only.",
-    "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, subtle sensor grain (ISO 200), natural corner vignetting.",
+    "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus. Clean digital rendering, NO film grain, NO noise, NO vignetting.",
   ]
     .filter(Boolean)
     .join(" ");
@@ -425,7 +425,7 @@ function buildOutdoorFurnitureResponsesPrompt(
     "Keep glass doors and full-height windows unobstructed. If overhead structure exists (pergola, beams), consider one hanging plant or lantern.",
     "Every piece must cast realistic shadows consistent with the existing natural light direction.",
     "Preserve the exact lighting conditions from the input — same shadow hardness, same direction, same color temperature.",
-    "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus, subtle sensor grain (ISO 200), natural corner vignetting. Photo-realistic outdoor photograph. No text, watermarks, or logos.",
+    "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus. Clean digital rendering, NO film grain, NO noise, NO vignetting. Photo-realistic outdoor photograph. No text, watermarks, or logos.",
   ]
     .filter(Boolean)
     .join(" ");
