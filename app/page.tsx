@@ -30,10 +30,11 @@ interface GenerationResult {
   styleName?: string;
   pass2Pending?: boolean;
   pass1Url?: string;
-  // Per-result metadata for handleRefine (avoids dependency on global states)
+  // Per-result metadata for handleRefine/handleRegenerate
   isOutdoor?: boolean;
   outdoorSubtype?: string;
   customPromptUsed?: string;
+  roomType?: string;
 }
 
 interface VersionEntry {
@@ -662,6 +663,7 @@ export default function Home() {
               isOutdoor: job.isOutdoor,
               outdoorSubtype: job.outdoorSubtype,
               customPromptUsed: job.customPrompt || undefined,
+              roomType: job.roomType || undefined,
             };
 
             // Add partial result immediately so user sees surfaces
@@ -1107,6 +1109,7 @@ export default function Home() {
           sessionId: getSessionId(),
           isOutdoor: result.isOutdoor || false,
           outdoorSubtype: result.isOutdoor ? result.outdoorSubtype : undefined,
+          roomType: result.roomType || undefined,
           splitMode: true,
         }),
       }, controller.signal);
