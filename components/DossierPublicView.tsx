@@ -82,14 +82,12 @@ export default function DossierPublicView({
                 onClick={() => { const idx = lightboxIndexMap[photoIndex]?.[0]; if (idx !== undefined && idx >= 0) setLightboxIndex(idx); }}
                 aria-label={`Agrandir ${photo.roomLabel} — avant`}
               >
-                <div className="aspect-[4/3]">
-                  <StorageImage
-                    imageKey={photo.inputImageKey}
-                    alt={`${photo.roomLabel} — avant`}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                </div>
+                <StorageImage
+                  imageKey={photo.inputImageKey}
+                  alt={`${photo.roomLabel} — avant`}
+                  className="w-full h-auto"
+                  loading="lazy"
+                />
                 <span className="absolute bottom-2.5 left-2.5 text-[11px] font-medium tracking-widest uppercase text-white/70">
                   AVANT
                 </span>
@@ -98,18 +96,16 @@ export default function DossierPublicView({
               {/* After */}
               <button
                 type="button"
-                className="relative bg-background cursor-zoom-in text-left"
+                className="relative bg-foreground/5 cursor-zoom-in text-left"
                 onClick={() => { const idx = lightboxIndexMap[photoIndex]?.[1]; if (idx !== undefined && idx >= 0) setLightboxIndex(idx); }}
                 aria-label={`Agrandir ${photo.roomLabel} — après`}
               >
-                <div className="aspect-[4/3] bg-foreground/5">
-                  <StorageImage
-                    imageKey={photo.outputImageKey}
-                    alt={`${photo.roomLabel} — apres`}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                </div>
+                <StorageImage
+                  imageKey={photo.outputImageKey}
+                  alt={`${photo.roomLabel} — après`}
+                  className="w-full h-auto"
+                  loading="lazy"
+                />
                 <span className="absolute bottom-2.5 left-2.5 text-[11px] font-medium tracking-widest uppercase text-sage">
                   APRÈS
                 </span>

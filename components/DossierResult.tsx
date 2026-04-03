@@ -136,29 +136,25 @@ export default function DossierResult({
               <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0">
                 {/* Before */}
                 <div className="relative">
-                  <div className="aspect-[4/3]">
-                    <StorageImage
-                      imageKey={photo.inputImageKey}
-                      alt={`${translateRoomLabel(photo.roomLabel, "Photo")} — avant`}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                  </div>
+                  <StorageImage
+                    imageKey={photo.inputImageKey}
+                    alt={`${translateRoomLabel(photo.roomLabel, "Photo")} — avant`}
+                    className="w-full h-auto"
+                    loading="lazy"
+                  />
                   <span className="absolute bottom-2 left-2 text-[11px] font-medium tracking-widest uppercase text-white/70">
                     AVANT
                   </span>
                 </div>
 
                 {/* After */}
-                <div className="relative">
-                  <div className="aspect-[4/3] bg-foreground/5">
-                    <StorageImage
-                      imageKey={photo.outputImageKey}
-                      alt={`${translateRoomLabel(photo.roomLabel, "Photo")} — après`}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                  </div>
+                <div className="relative bg-foreground/5">
+                  <StorageImage
+                    imageKey={photo.outputImageKey}
+                    alt={`${translateRoomLabel(photo.roomLabel, "Photo")} — après`}
+                    className="w-full h-auto"
+                    loading="lazy"
+                  />
                   <span className="absolute bottom-2 left-2 text-[11px] font-medium tracking-widest uppercase text-sage">
                     APRÈS
                   </span>
