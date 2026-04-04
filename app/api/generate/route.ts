@@ -32,9 +32,9 @@ import {
 import { enqueueGeneration, shouldQueue } from "@/lib/generation-queue";
 
 // Global deadline for the entire route — prevents Replit proxy 504.
-// Budget: pass1 up to 120s + pass2 up to 120s = 240s worst case.
-// We cap at 150s to leave margin before Replit proxy timeout (~180s).
 const ROUTE_DEADLINE_MS = 150_000;
+const MAX_PASS_RETRIES = 2; // 1 initial + 1 retry
+const RETRY_DELAY_MS = 2_000;
 
 /** Check if an error is a safety system rejection */
 function isSafetyRejection(err: Error): boolean {
@@ -113,9 +113,6 @@ async function generateIterationPass(
 
   throw new Error(`Échec itération après ${MAX_PASS_RETRIES} tentatives. ${lastError?.message ?? ""}`);
 }
-
-const MAX_PASS_RETRIES = 2; // 1 initial + 1 retry
-const RETRY_DELAY_MS = 2_000;
 
 // ─── API Route Handler ──────────────────────────────────────────────
 export async function POST(request: NextRequest) {

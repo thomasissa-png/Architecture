@@ -609,30 +609,8 @@ export async function tryOpenAIResponsesWithPrompt(
   };
 }
 
-export async function generateIterationPass(
-  base64Image: string,
-  responsesPrompt: string,
-  outputSize: { openai: string; w: number; h: number }
-): Promise<{ image: string; model: string }> {
-  if (!process.env.OPENAI_API_KEY) {
-    throw new Error("Clé API OpenAI requise pour les itérations.");
-  }
-
-  let lastError: Error | null = null;
-  for (let attempt = 0; attempt < MAX_PASS_RETRIES; attempt++) {
-    try {
-      return await tryOpenAIResponsesWithPrompt(base64Image, responsesPrompt, outputSize.openai);
-    } catch (err) {
-      lastError = err instanceof Error ? err : new Error(String(err));
-      console.error(`OpenAI iteration attempt ${attempt + 1}/${MAX_PASS_RETRIES} failed:`, lastError.message);
-      if (attempt < MAX_PASS_RETRIES - 1) {
-        await new Promise(r => setTimeout(r, RETRY_DELAY_MS));
-      }
-    }
-  }
-
-  throw new Error(`Échec itération après ${MAX_PASS_RETRIES} tentatives. ${lastError?.message ?? ""}`);
-}
+// generateIterationPass lives in route.ts (has safety retry logic).
+// Do NOT duplicate here — see QA audit generation-robustness-audit.md.
 
 // ─── Generate one pass with retry (GPT-4.1 only, no Flux fallback) ──
 const MAX_PASS_RETRIES = 2; // 1 initial + 1 retry
