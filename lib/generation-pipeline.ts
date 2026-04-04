@@ -4,6 +4,7 @@
  * NO dependency on NextRequest/NextResponse/session/headers.
  */
 import OpenAI from "openai";
+import sharp from "sharp";
 import { applyRoomTypeOverrides, ROOM_TYPES, getStyleMaterialHint } from "@/lib/room-types";
 import { applyOutdoorSubtypeOverrides, OUTDOOR_SUBTYPES } from "@/lib/outdoor-subtypes";
 
@@ -708,67 +709,45 @@ export async function tryOpenAIResponsesWithPrompt(
 // generateIterationPass lives in route.ts (has safety retry logic).
 // Do NOT duplicate here — see QA audit generation-robustness-audit.md.
 
-// ─── Best-of-2 scoring: spatial preservation via GPT-4.1-mini vision ──
-const SCORE_TIMEOUT_MS = 5_000;
+// ─── Best-of-2 scoring: local SSIM structural similarity (no API call) ──
 
 /**
  * Score how well an output image preserves the original room's geometry.
- * Uses GPT-4.1-mini in vision mode. Fail-open: returns 5 on any error.
+ * Uses local SSIM calculation via sharp — zero API cost, ~50ms.
+ * Fail-open: returns 5 on any error.
  */
-export async function scorePreservation(inputBase64: string, outputBase64: string): Promise<number> {
+export async function scorePreservationLocal(inputBase64: string, outputBase64: string): Promise<number> {
   try {
-    const openai = getOpenAI();
-    const inputMime = detectMimeType(inputBase64);
-    const outputMime = detectMimeType(outputBase64);
+    const SIZE = 256;
+    const [inputBuf, outputBuf] = await Promise.all([
+      sharp(Buffer.from(inputBase64, "base64")).resize(SIZE, SIZE, { fit: "fill" }).greyscale().raw().toBuffer(),
+      sharp(Buffer.from(outputBase64, "base64")).resize(SIZE, SIZE, { fit: "fill" }).greyscale().raw().toBuffer(),
+    ]);
 
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), SCORE_TIMEOUT_MS);
-
-    const response = await openai.chat.completions.create(
-      {
-        model: "gpt-4.1-mini",
-        max_tokens: 3,
-        messages: [
-          {
-            role: "user",
-            content: [
-              {
-                type: "image_url",
-                image_url: {
-                  url: `data:${inputMime};base64,${inputBase64}`,
-                  detail: "low",
-                },
-              },
-              {
-                type: "image_url",
-                image_url: {
-                  url: `data:${outputMime};base64,${outputBase64}`,
-                  detail: "low",
-                },
-              },
-              {
-                type: "text",
-                text: "Compare these two photos. The first is the original empty room. The second is the same room with furniture added. Rate from 1 to 10 how well the second image preserves the original room's geometry: same camera angle, same windows count and position, same doors, same walls, same ceiling shape, same room dimensions. Reply with ONLY a number 1-10.",
-              },
-            ],
-          },
-        ],
-      },
-      { signal: controller.signal },
-    );
-
-    clearTimeout(timer);
-
-    const raw = response.choices[0]?.message?.content?.trim() ?? "";
-    const score = parseInt(raw, 10);
-    if (isNaN(score) || score < 1 || score > 10) {
-      console.warn(`[scorePreservation] Unexpected response "${raw}", defaulting to 5`);
-      return 5;
+    const n = inputBuf.length;
+    let sumInput = 0, sumOutput = 0, sumInputSq = 0, sumOutputSq = 0, sumCross = 0;
+    for (let i = 0; i < n; i++) {
+      const a = inputBuf[i], b = outputBuf[i];
+      sumInput += a; sumOutput += b;
+      sumInputSq += a * a; sumOutputSq += b * b;
+      sumCross += a * b;
     }
+    const meanA = sumInput / n, meanB = sumOutput / n;
+    const varA = sumInputSq / n - meanA * meanA;
+    const varB = sumOutputSq / n - meanB * meanB;
+    const covAB = sumCross / n - meanA * meanB;
+
+    const C1 = 6.5025, C2 = 58.5225; // (0.01*255)^2, (0.03*255)^2
+    const ssim = ((2 * meanA * meanB + C1) * (2 * covAB + C2)) /
+                 ((meanA * meanA + meanB * meanB + C1) * (varA + varB + C2));
+
+    // Map SSIM (0-1) to score (1-10)
+    const score = Math.round(Math.max(1, Math.min(10, ssim * 10)));
+    console.log(`[scorePreservationLocal] SSIM=${ssim.toFixed(4)} → score=${score}`);
     return score;
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    console.warn(`[scorePreservation] Failed (fail-open): ${msg}`);
+    console.warn(`[scorePreservationLocal] Failed (fail-open): ${msg}`);
     return 5;
   }
 }
@@ -792,8 +771,11 @@ export async function generatePass(
     throw new Error("Clé API OpenAI non configurée.");
   }
 
-  // Pass 1 or no original image: single generation with retry
-  if (pass === 1 || !originalImageBase64) {
+  // Determine if room is complex enough to warrant best-of-2
+  const isComplexRoom = roomInventory && /vault|beam|mezzanine|double.height|L.shaped|loft|cathedral|arch|3\s*window|4\s*window|5\s*window/i.test(roomInventory);
+
+  // Single generation with retry — used for pass 1, or pass 2 on simple rooms
+  const generateSingle = async (): Promise<{ image: string; model: string }> => {
     let lastError: Error | null = null;
     for (let attempt = 0; attempt < MAX_PASS_RETRIES; attempt++) {
       try {
@@ -807,28 +789,20 @@ export async function generatePass(
       }
     }
     throw new Error(`Échec passe ${pass} après ${MAX_PASS_RETRIES} tentatives. ${lastError?.message ?? ""}`);
-  }
-
-  // Pass 2 with best-of-2: generate 2 candidates in parallel, keep best spatial preservation
-  console.log("[best-of-2] Generating 2 pass-2 candidates in parallel...");
-
-  const generate = async (): Promise<{ image: string; model: string }> => {
-    let lastError: Error | null = null;
-    for (let attempt = 0; attempt < MAX_PASS_RETRIES; attempt++) {
-      try {
-        return await tryOpenAIResponses(base64Image, surfacePrompt, furniturePrompt, pass, outputSize.openai, roomTypeId, outdoor, roomInventory);
-      } catch (err) {
-        lastError = err instanceof Error ? err : new Error(String(err));
-        console.error(`OpenAI pass 2 candidate attempt ${attempt + 1}/${MAX_PASS_RETRIES} failed:`, lastError.message);
-        if (attempt < MAX_PASS_RETRIES - 1) {
-          await new Promise(r => setTimeout(r, RETRY_DELAY_MS));
-        }
-      }
-    }
-    throw lastError ?? new Error("Échec génération candidat passe 2");
   };
 
-  const results = await Promise.allSettled([generate(), generate()]);
+  // Pass 1, no original image, or simple room pass 2: single generation
+  if (pass === 1 || !originalImageBase64 || !isComplexRoom) {
+    if (pass === 2) {
+      console.log(`[best-of-2] SKIPPED — room is ${isComplexRoom ? "complex" : "simple"}, single candidate`);
+    }
+    return await generateSingle();
+  }
+
+  // Pass 2 on complex room: best-of-2 — generate 2 candidates in parallel, keep best spatial preservation
+  console.log("[best-of-2] Complex room detected, generating 2 pass-2 candidates in parallel...");
+
+  const results = await Promise.allSettled([generateSingle(), generateSingle()]);
 
   const candidates: Array<{ image: string; model: string }> = [];
   for (const r of results) {
@@ -845,15 +819,15 @@ export async function generatePass(
     return candidates[0];
   }
 
-  // Score both candidates against the ORIGINAL input image (not pass 1)
+  // Score both candidates against the ORIGINAL input image (not pass 1) — local SSIM, zero API cost
   const extractB64 = (img: string) => img.replace(/^data:image\/[\w+]+;base64,/, "");
   const [score1, score2] = await Promise.all([
-    scorePreservation(originalImageBase64, extractB64(candidates[0].image)),
-    scorePreservation(originalImageBase64, extractB64(candidates[1].image)),
+    scorePreservationLocal(originalImageBase64, extractB64(candidates[0].image)),
+    scorePreservationLocal(originalImageBase64, extractB64(candidates[1].image)),
   ]);
 
   const chosen = score1 >= score2 ? 0 : 1;
-  console.log(`[best-of-2] Scores: candidate1=${score1}, candidate2=${score2} → chose candidate${chosen + 1}`);
+  console.log(`[best-of-2] SSIM scores: candidate1=${score1}, candidate2=${score2} → chose candidate${chosen + 1}`);
 
   return candidates[chosen];
 }
