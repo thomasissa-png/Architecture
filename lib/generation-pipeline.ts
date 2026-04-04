@@ -708,6 +708,71 @@ export async function tryOpenAIResponsesWithPrompt(
 // generateIterationPass lives in route.ts (has safety retry logic).
 // Do NOT duplicate here — see QA audit generation-robustness-audit.md.
 
+// ─── Best-of-2 scoring: spatial preservation via GPT-4.1-mini vision ──
+const SCORE_TIMEOUT_MS = 5_000;
+
+/**
+ * Score how well an output image preserves the original room's geometry.
+ * Uses GPT-4.1-mini in vision mode. Fail-open: returns 5 on any error.
+ */
+export async function scorePreservation(inputBase64: string, outputBase64: string): Promise<number> {
+  try {
+    const openai = getOpenAI();
+    const inputMime = detectMimeType(inputBase64);
+    const outputMime = detectMimeType(outputBase64);
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), SCORE_TIMEOUT_MS);
+
+    const response = await openai.chat.completions.create(
+      {
+        model: "gpt-4.1-mini",
+        max_tokens: 3,
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "image_url",
+                image_url: {
+                  url: `data:${inputMime};base64,${inputBase64}`,
+                  detail: "low",
+                },
+              },
+              {
+                type: "image_url",
+                image_url: {
+                  url: `data:${outputMime};base64,${outputBase64}`,
+                  detail: "low",
+                },
+              },
+              {
+                type: "text",
+                text: "Compare these two photos. The first is the original empty room. The second is the same room with furniture added. Rate from 1 to 10 how well the second image preserves the original room's geometry: same camera angle, same windows count and position, same doors, same walls, same ceiling shape, same room dimensions. Reply with ONLY a number 1-10.",
+              },
+            ],
+          },
+        ],
+      },
+      { signal: controller.signal },
+    );
+
+    clearTimeout(timer);
+
+    const raw = response.choices[0]?.message?.content?.trim() ?? "";
+    const score = parseInt(raw, 10);
+    if (isNaN(score) || score < 1 || score > 10) {
+      console.warn(`[scorePreservation] Unexpected response "${raw}", defaulting to 5`);
+      return 5;
+    }
+    return score;
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.warn(`[scorePreservation] Failed (fail-open): ${msg}`);
+    return 5;
+  }
+}
+
 // ─── Generate one pass with retry (GPT-4.1 only, no Flux fallback) ──
 const MAX_PASS_RETRIES = 2; // 1 initial + 1 retry
 const RETRY_DELAY_MS = 2_000;
@@ -720,26 +785,77 @@ export async function generatePass(
   outputSize: { openai: string; w: number; h: number },
   roomTypeId?: string | null,
   outdoor?: { isOutdoor: boolean; subtypeSurfaceOverride?: string; subtypeFurnitureOverride?: string },
-  roomInventory?: string
+  roomInventory?: string,
+  originalImageBase64?: string
 ): Promise<{ image: string; model: string }> {
   if (!process.env.OPENAI_API_KEY) {
     throw new Error("Clé API OpenAI non configurée.");
   }
 
-  let lastError: Error | null = null;
-  for (let attempt = 0; attempt < MAX_PASS_RETRIES; attempt++) {
-    try {
-      return await tryOpenAIResponses(base64Image, surfacePrompt, furniturePrompt, pass, outputSize.openai, roomTypeId, outdoor, roomInventory);
-    } catch (err) {
-      lastError = err instanceof Error ? err : new Error(String(err));
-      console.error(`OpenAI pass ${pass} attempt ${attempt + 1}/${MAX_PASS_RETRIES} failed:`, lastError.message);
-      if (attempt < MAX_PASS_RETRIES - 1) {
-        await new Promise(r => setTimeout(r, RETRY_DELAY_MS));
+  // Pass 1 or no original image: single generation with retry
+  if (pass === 1 || !originalImageBase64) {
+    let lastError: Error | null = null;
+    for (let attempt = 0; attempt < MAX_PASS_RETRIES; attempt++) {
+      try {
+        return await tryOpenAIResponses(base64Image, surfacePrompt, furniturePrompt, pass, outputSize.openai, roomTypeId, outdoor, roomInventory);
+      } catch (err) {
+        lastError = err instanceof Error ? err : new Error(String(err));
+        console.error(`OpenAI pass ${pass} attempt ${attempt + 1}/${MAX_PASS_RETRIES} failed:`, lastError.message);
+        if (attempt < MAX_PASS_RETRIES - 1) {
+          await new Promise(r => setTimeout(r, RETRY_DELAY_MS));
+        }
       }
     }
+    throw new Error(`Échec passe ${pass} après ${MAX_PASS_RETRIES} tentatives. ${lastError?.message ?? ""}`);
   }
 
-  throw new Error(`Échec passe ${pass} après ${MAX_PASS_RETRIES} tentatives. ${lastError?.message ?? ""}`);
+  // Pass 2 with best-of-2: generate 2 candidates in parallel, keep best spatial preservation
+  console.log("[best-of-2] Generating 2 pass-2 candidates in parallel...");
+
+  const generate = async (): Promise<{ image: string; model: string }> => {
+    let lastError: Error | null = null;
+    for (let attempt = 0; attempt < MAX_PASS_RETRIES; attempt++) {
+      try {
+        return await tryOpenAIResponses(base64Image, surfacePrompt, furniturePrompt, pass, outputSize.openai, roomTypeId, outdoor, roomInventory);
+      } catch (err) {
+        lastError = err instanceof Error ? err : new Error(String(err));
+        console.error(`OpenAI pass 2 candidate attempt ${attempt + 1}/${MAX_PASS_RETRIES} failed:`, lastError.message);
+        if (attempt < MAX_PASS_RETRIES - 1) {
+          await new Promise(r => setTimeout(r, RETRY_DELAY_MS));
+        }
+      }
+    }
+    throw lastError ?? new Error("Échec génération candidat passe 2");
+  };
+
+  const results = await Promise.allSettled([generate(), generate()]);
+
+  const candidates: Array<{ image: string; model: string }> = [];
+  for (const r of results) {
+    if (r.status === "fulfilled") candidates.push(r.value);
+  }
+
+  if (candidates.length === 0) {
+    const firstErr = results[0].status === "rejected" ? results[0].reason : new Error("Unknown");
+    throw firstErr instanceof Error ? firstErr : new Error(String(firstErr));
+  }
+
+  if (candidates.length === 1) {
+    console.log("[best-of-2] Only 1 candidate succeeded, using it directly");
+    return candidates[0];
+  }
+
+  // Score both candidates against the ORIGINAL input image (not pass 1)
+  const extractB64 = (img: string) => img.replace(/^data:image\/[\w+]+;base64,/, "");
+  const [score1, score2] = await Promise.all([
+    scorePreservation(originalImageBase64, extractB64(candidates[0].image)),
+    scorePreservation(originalImageBase64, extractB64(candidates[1].image)),
+  ]);
+
+  const chosen = score1 >= score2 ? 0 : 1;
+  console.log(`[best-of-2] Scores: candidate1=${score1}, candidate2=${score2} → chose candidate${chosen + 1}`);
+
+  return candidates[chosen];
 }
 
 
@@ -847,19 +963,16 @@ export async function runGenerationPipeline(params: PipelineParams): Promise<Pip
     };
   }
 
-  // Pass 2: furniture (retry up to 2 attempts)
+  // Pass 2: furniture with best-of-2 scoring (originalImageBase64 = input for spatial comparison)
   let pass2: { image: string; model: string } | null = null;
   let pass2Failed = false;
-  for (let attempt = 1; attempt <= 2; attempt++) {
-    try {
-      pass2 = await generatePass(pass1Base64, trimmedSurface, trimmedFurniture, 2, outputSize, isOutdoor ? null : roomType, outdoorParam, roomInventory);
-      break;
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      console.error(`Pipeline pass 2 attempt ${attempt}/2 failed: ${msg}`);
-    }
+  try {
+    pass2 = await generatePass(pass1Base64, trimmedSurface, trimmedFurniture, 2, outputSize, isOutdoor ? null : roomType, outdoorParam, roomInventory, inputBase64);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error(`Pipeline pass 2 failed: ${msg}`);
+    pass2Failed = true;
   }
-  if (!pass2) pass2Failed = true;
 
   const t2 = Date.now();
   const finalBase64 = pass2

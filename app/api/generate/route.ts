@@ -16,7 +16,7 @@ import {
   extractRoomInventory,
 } from "@/lib/generation-pipeline";
 import { decrementCredit, addCredits, getMaxIterations } from "@/lib/credits";
-import { logGeneration, savePass1Cache, getPass1Cache, getPool, saveIterationBase, getIterationBase, saveImage, withStorageRetry } from "@/lib/db";
+import { logGeneration, savePass1Cache, getPass1Cache, getPool, saveIterationBase, getIterationBase, saveImage, getImage, withStorageRetry } from "@/lib/db";
 import { preprocessIterationComment, classifyIterationIntent } from "@/lib/custom-prompt";
 import {
   buildIterationFurnitureResponsesPrompt,
@@ -31,6 +31,7 @@ import {
   buildAdjustOutdoorResponsesPrompt,
 } from "@/lib/iteration-prompt";
 import { enqueueGeneration, shouldQueue } from "@/lib/generation-queue";
+import { compositeStructuralElements } from "@/lib/compositing";
 
 // Global deadline for the entire route — prevents Replit proxy 504.
 const ROUTE_DEADLINE_MS = 150_000;
@@ -527,28 +528,41 @@ export async function POST(request: NextRequest) {
         };
       }
 
+      // Retrieve original input image for best-of-2 scoring (fail-open: no scoring if unavailable)
+      let originalBase64ForScoring: string | undefined;
+      if (cached.meta.inputImageKey) {
+        try {
+          const inputBytes = await getImage(cached.meta.inputImageKey);
+          if (inputBytes) {
+            originalBase64ForScoring = Buffer.from(inputBytes).toString("base64");
+            console.log(`[pass2Only] Retrieved original input image for best-of-2 scoring`);
+          }
+        } catch (err) {
+          console.warn(`[pass2Only] Could not retrieve original input for scoring (fail-open):`, err);
+        }
+      }
+
       const p2t0 = Date.now();
       console.log(`[pass2Only] Starting pass 2 from cache key: ${pass1Key}`);
 
       let pass2Result: { image: string; model: string } | null = null;
       let pass2Err: string | null = null;
 
-      for (let attempt = 1; attempt <= 2; attempt++) {
-        try {
-          pass2Result = await generatePass(
-            cached.imageBase64,
-            cached.meta.surfacePrompt,
-            cached.meta.furniturePrompt,
-            2,
-            p2OutputSize,
-            p2RoomType,
-            p2OutdoorParam
-          );
-          break;
-        } catch (err) {
-          pass2Err = err instanceof Error ? err.message : String(err);
-          console.error(`[pass2Only] attempt ${attempt}/2 failed: ${pass2Err}`);
-        }
+      try {
+        pass2Result = await generatePass(
+          cached.imageBase64,
+          cached.meta.surfacePrompt,
+          cached.meta.furniturePrompt,
+          2,
+          p2OutputSize,
+          p2RoomType,
+          p2OutdoorParam,
+          undefined,
+          originalBase64ForScoring
+        );
+      } catch (err) {
+        pass2Err = err instanceof Error ? err.message : String(err);
+        console.error(`[pass2Only] failed: ${pass2Err}`);
       }
 
       const p2t1 = Date.now();
@@ -737,7 +751,21 @@ export async function POST(request: NextRequest) {
       ? buildOutdoorFurnitureResponsesPrompt(trimmedFurniture, outdoorParam?.subtypeFurnitureOverride ?? "")
       : buildFurnitureResponsesPrompt(trimmedFurniture, roomType, roomInventory);
 
-    const pass1Base64 = pass1.image.replace(/^data:image\/[\w+]+;base64,/, "");
+    let pass1Base64 = pass1.image.replace(/^data:image\/[\w+]+;base64,/, "");
+
+    // Compositing: re-superpose structural elements (windows, doors, radiators) from original
+    // onto pass 1 result. Guarantees physical preservation regardless of model stochasticity.
+    // Only for initial generations (not iterations, not pass2Only).
+    // Fail-open: if compositing fails, pass1Base64 stays unchanged.
+    try {
+      const compositedBase64 = await compositeStructuralElements(base64Image, pass1Base64);
+      if (compositedBase64 !== pass1Base64) {
+        pass1Base64 = compositedBase64;
+        console.log("[generate] Compositing applied — structural elements preserved from original");
+      }
+    } catch (err) {
+      console.warn("[generate] Compositing failed (fail-open):", err instanceof Error ? err.message : String(err));
+    }
 
     // Save input image to Object Storage for gallery "avant" in iterations
     const inputTs = Date.now();
@@ -889,7 +917,7 @@ export async function POST(request: NextRequest) {
     if (!pass2Failed) for (let attempt = 1; attempt <= 2; attempt++) {
       pass2Attempts = attempt;
       try {
-        pass2 = await generatePass(pass1Base64, trimmedSurface, trimmedFurniture, 2, outputSize, isOutdoor ? null : roomType, outdoorParam, roomInventory);
+        pass2 = await generatePass(pass1Base64, trimmedSurface, trimmedFurniture, 2, outputSize, isOutdoor ? null : roomType, outdoorParam, roomInventory, base64Image);
         break; // success
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
