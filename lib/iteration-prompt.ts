@@ -22,8 +22,9 @@ export function buildIterationFurnitureResponsesPrompt(
     .join("\n");
 
   return [
-    "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation. Keep the same camera height, tilt angle, and horizontal rotation.",
-    "Keep the same number of windows and doors at the same positions and sizes. Walls without windows must remain solid. Room structure preserved — walls, floor, ceiling, paint, openings visually identical to input. Keep exact count and position of all openings. Each structural column or pillar must remain as a separate vertical element at its exact position.",
+    "Edit this photo. PRESERVE EXACTLY: all surfaces (walls, floor, ceiling), camera angle, every window and door at the same position and count.",
+    "Keep the same camera height, tilt angle, horizontal rotation, lens distortion, vanishing points, field of view.",
+    "Walls without windows must remain solid. Each structural column or pillar must remain as a separate vertical element at its exact position.",
     "Keep all existing furniture and objects exactly as they are — do not remove, move, or resize anything unless explicitly requested below.",
     "This is a refinement. Room surfaces are final. Focus only on the changes below.",
     `Apply these changes:\n${modBlock}`,
@@ -68,8 +69,9 @@ export function buildIterationOutdoorFurnitureResponsesPrompt(
     .join("\n");
 
   return [
-    "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation. Keep the same camera height, tilt angle, and horizontal rotation.",
-    "Ground surface and vertical structures are preserved — guard rails, walls, facades, gates, fences must remain visually identical to the input. Same colors, same textures, same geometry. Shadows from furniture are expected and natural.",
+    "Edit this outdoor photo. PRESERVE EXACTLY: all ground surfaces, guard rails, walls, facades, gates, fences, sky, camera angle.",
+    "Keep the same camera height, tilt angle, horizontal rotation, lens distortion, vanishing points, field of view.",
+    "Ground surface and vertical structures must remain visually identical to the input. Same colors, same textures, same geometry. Shadows from furniture are expected and natural.",
     "Keep all existing furniture, planters, lamps, and decorations exactly as they are — do not remove, move, or resize any existing item.",
     "This is a refinement of a previous outdoor generation. The ground surface and vertical structures in this photo are final. They must not change — not even subtle color shifts or texture changes.",
     "Focus only on adjusting the outdoor furniture and decoration as described below.",
@@ -95,7 +97,7 @@ export function buildAdjustResponsesPrompt(
   meta: { roomType?: string | null; allowWallMounted?: boolean },
 ): string {
   return [
-    "Make a small, precise edit to this photo. Edit the existing image, do not recreate it. Keep everything else unchanged.",
+    "Edit this photo. SURGICAL EDIT — Make the SMALLEST possible change. Do NOT regenerate the scene. Output must be 95%+ identical pixels to the input.",
     "Keep all visible furniture, appliances, decorations, and fixtures at the same position, same size, same color, same texture.",
     "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation. Keep the same camera height, tilt angle, and horizontal rotation.",
     "Keep the same number of windows and doors at the same positions and sizes. Walls without windows must remain solid. Room structure preserved — walls, floor, ceiling, paint, windows, doors must remain visually identical to the input. Each structural column or pillar must remain as a separate vertical element at its exact position.",
@@ -122,7 +124,7 @@ export function buildAdjustOutdoorResponsesPrompt(
   enrichedComment: string,
 ): string {
   return [
-    "Make a small, precise edit to this photo. Edit the existing image, do not recreate it. Keep everything else unchanged.",
+    "Edit this outdoor photo. SURGICAL EDIT — Make the SMALLEST possible change. Do NOT regenerate the scene. Output must be 95%+ identical pixels to the input.",
     "Keep all visible furniture, planters, lamps, and decorations at the same position, same size, same color, same texture.",
     "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation. Keep the same camera height, tilt angle, and horizontal rotation.",
     "Ground surface and vertical structures are preserved — guard rails, walls, facades, gates, fences must remain visually identical.",
