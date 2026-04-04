@@ -306,8 +306,12 @@
 
 ## Mémo de reprise — dernière session
 
-- **Date et heure de clôture** : 2026-04-04 (session 32)
+- **Date et heure de clôture** : 2026-04-04 (session 32, mise à jour fin de session)
 - **Branch** : `claude/extract-project-context-HN2CR`
+- **Ajouts fin de session** :
+  - **Fix tab-switch** : resilientFetch avec flag `wentHiddenDuringFetch` + suppression des 3 checks `request.signal.aborted` côté serveur. QA validé 20/24 PASS.
+  - **Specs synchronisées** : functional-specs, pricing-strategy, product-vision, roadmap mis à jour par @product-manager (11 écarts corrigés).
+  - **Audits en cours** : @design (audit visuel interface génération mobile+desktop) et @ux (parcours personas Claire/Thomas/Léa) — ont timeout, à relancer.
 - **Résumé de la session** :
   - **FIX P0 CRITIQUE** : route.ts avait ~600 lignes de code mort (copies locales des builders) qui masquaient les vrais prompts v45 de generation-pipeline.ts. Les prompts v45 (PASS1_PREAMBLE + PASS2_PREAMBLE = préservation-first) n'ont JAMAIS tourné en production. En plus, `action: "edit"` était absent du tool image_generation — gpt-image-1.5 était en mode "auto" et régénérait les scènes au lieu de les éditer.
   - **Fix appliqué** : suppression des copies locales dans route.ts, import depuis generation-pipeline.ts. `action: "edit"` + PREAMBLES v45 + `detectMimeType()` sont maintenant actifs. Audit @ia : PASS sur toute la ligne.
