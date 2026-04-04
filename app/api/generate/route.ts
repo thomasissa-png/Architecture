@@ -457,7 +457,7 @@ export async function POST(request: NextRequest) {
 
             await saveUserPhoto({
               userId: session.user.id,
-              inputImageKey: null, // original input not available in iteration cache
+              inputImageKey: cached.meta.inputImageKey || null,
               outputImageKey: outputKey,
               pass1ImageKey: pass1ImageKey,
               styleId: cached.meta.styleId || null,
@@ -589,7 +589,7 @@ export async function POST(request: NextRequest) {
             const pass1ImageKey = await saveImage(cached.imageBase64, `user_photo_${ts}_pass1`).catch(() => null);
             photoId = await saveUserPhoto({
               userId: session.user.id,
-              inputImageKey: null,
+              inputImageKey: cached.meta.inputImageKey || null,
               outputImageKey: outputKey,
               pass1ImageKey: pass1ImageKey,
               styleId: cached.meta.styleId || null,
@@ -734,6 +734,10 @@ export async function POST(request: NextRequest) {
 
     const pass1Base64 = pass1.image.replace(/^data:image\/[\w+]+;base64,/, "");
 
+    // Save input image to Object Storage for gallery "avant" in iterations
+    const inputTs = Date.now();
+    const inputImageKey = await saveImage(base64Image, `user_input_${inputTs}`).catch(() => null);
+
     // Cache pass 1 for F1 iterations (fire-and-forget)
     const pass1CacheKey = sessionId
       ? `sessions/${sessionId}/pass1_${Date.now()}.jpg`
@@ -753,6 +757,8 @@ export async function POST(request: NextRequest) {
       outdoorSubtype: isOutdoor ? (outdoorSubtype ?? undefined) : undefined,
       // Store userId for iteration fallback (getServerSession can return null on Replit)
       userId: session?.user?.id ?? undefined,
+      // Store input image key for gallery "avant" in iterations
+      inputImageKey: inputImageKey ?? undefined,
       // Split-mode: store pass2 info so pass2Only call can resume
       ...(splitMode && withFurniture ? {
         pendingPass2: true,
