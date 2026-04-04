@@ -81,81 +81,45 @@ function scrollToElement(id: string, delay = 600) {
   }, delay);
 }
 
-/** Wait for the page to be visible (resolves immediately if already visible). */
-function waitForVisible(): Promise<void> {
-  if (document.visibilityState === "visible") return Promise.resolve();
-  return new Promise((resolve) => {
-    const handler = () => {
-      if (document.visibilityState === "visible") {
-        document.removeEventListener("visibilitychange", handler);
-        resolve();
-      }
-    };
-    document.addEventListener("visibilitychange", handler);
-  });
-}
-
-/** Fetch with 180s timeout. Survives mobile tab-switching. */
+/** Fetch WITHOUT AbortController signal — survives mobile tab-switch.
+ *  The old MerchantMode used plain fetch() and never had this problem.
+ *  AbortController + signal causes the browser to kill the fetch on tab-switch.
+ *  We use Promise.race for timeout instead, which doesn't kill the fetch. */
 async function resilientFetch(
   url: string,
   init: RequestInit,
   parentSignal?: AbortSignal
 ): Promise<Response> {
-  const TIMEOUT_MS = 180_000; // 3 min — pipeline 2 passes can take 60-90s
-  // 1 retry when fetch is killed by mobile tab-switch (not user-initiated).
-  // The server continues processing — the retry just reconnects to get the result.
-  const MAX_RETRIES = 1;
+  const TIMEOUT_MS = 180_000; // 3 min
 
-  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-    const timeoutController = new AbortController();
-    const timer = setTimeout(() => timeoutController.abort(), TIMEOUT_MS);
+  // parentSignal is ONLY used for explicit user cancel (Annuler button).
+  // We do NOT pass it to fetch — that would let the browser kill the fetch on tab-switch.
+  // Instead we check it manually after the fetch completes.
+  const fetchPromise = fetch(url, init);
 
-    // Track if the page went to background DURING this fetch attempt.
-    // We check this in the catch block — by then visibilityState may already
-    // be "visible" again, so we need a flag.
-    let wentHiddenDuringFetch = false;
-    const onVisChange = () => {
-      if (document.visibilityState === "hidden") wentHiddenDuringFetch = true;
-    };
-    document.addEventListener("visibilitychange", onVisChange);
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    setTimeout(() => reject(new Error("La génération a pris trop de temps. Vérifiez votre connexion et réessayez.")), TIMEOUT_MS);
+  });
 
-    // Combine parent signal (user cancel) with timeout signal
-    const onParentAbort = () => timeoutController.abort();
-    parentSignal?.addEventListener("abort", onParentAbort);
+  // If user cancelled, reject immediately
+  const cancelPromise = parentSignal
+    ? new Promise<never>((_, reject) => {
+        if (parentSignal.aborted) reject(new Error("Annulé"));
+        parentSignal.addEventListener("abort", () => reject(new Error("Annulé")));
+      })
+    : new Promise<never>(() => {}); // never resolves
 
-    try {
-      const response = await fetch(url, {
-        ...init,
-        signal: timeoutController.signal,
-      });
-      return response;
-    } catch (err) {
-      // If the user explicitly cancelled via UI button, don't retry
-      if (parentSignal?.aborted) throw err;
-
-      // Mobile tab-switch: browser kills the fetch when page goes to background.
-      // wentHiddenDuringFetch catches the case where the page is already back
-      // to visible by the time we reach this catch block.
-      if (attempt < MAX_RETRIES && wentHiddenDuringFetch) {
-        console.warn("Fetch interrompu par changement d'onglet — attente du retour...");
-        await waitForVisible();
-        console.log("Page visible à nouveau — relance du fetch...");
-        continue;
-      }
-
-      // Final failure — throw user-friendly error
-      if (err instanceof Error && err.name === "AbortError") {
-        throw new Error("La génération a pris trop de temps. Vérifiez votre connexion et réessayez.");
-      }
+  try {
+    const response = await Promise.race([fetchPromise, timeoutPromise, cancelPromise]);
+    return response;
+  } catch (err) {
+    if (parentSignal?.aborted) throw err;
+    if (err instanceof TypeError) {
+      // Network error (not timeout, not cancel)
       throw new Error("Connexion perdue pendant la génération. Vérifiez votre réseau et réessayez.");
-    } finally {
-      clearTimeout(timer);
-      document.removeEventListener("visibilitychange", onVisChange);
-      parentSignal?.removeEventListener("abort", onParentAbort);
     }
+    throw err;
   }
-  // Unreachable but TypeScript needs it
-  throw new Error("La génération a échoué après plusieurs tentatives.");
 }
 
 export default function Home() {
@@ -507,17 +471,23 @@ export default function Home() {
     setPreprocessWarnings([]);
 
     // Pre-check: validate that uploaded photos are rooms (blocking)
+    // Convert blob URLs to data URIs for the validation API
     try {
-      for (let i = 0; i < filePreviewUrls.length; i++) {
+      for (let i = 0; i < files.length; i++) {
+        const dataUri = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(files[i]);
+        });
         const res = await fetch("/api/validate-image", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ image: filePreviewUrls[i] }),
+          body: JSON.stringify({ image: dataUri }),
         });
         if (res.ok) {
           const data = await res.json();
           if (!data.isRoom) {
-            setError(`La photo ${filePreviewUrls.length > 1 ? (i + 1) : ""} ne semble pas être une pièce ou un espace. Versimo fonctionne avec des photos de pièces vides (intérieur ou extérieur).`);
+            setError(`La photo ${files.length > 1 ? (i + 1) + " " : ""}ne semble pas être une pièce ou un espace. Versimo fonctionne avec des photos de pièces vides (intérieur ou extérieur).`);
             return;
           }
         }
