@@ -13,6 +13,7 @@ import {
   tryOpenAIResponsesWithPrompt,
   generatePass,
   detectMimeType,
+  extractRoomInventory,
 } from "@/lib/generation-pipeline";
 import { decrementCredit, addCredits, getMaxIterations } from "@/lib/credits";
 import { logGeneration, savePass1Cache, getPass1Cache, getPool, saveIterationBase, getIterationBase, saveImage, withStorageRetry } from "@/lib/db";
@@ -714,6 +715,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Pre-pass vision: extract room geometry inventory (fail-open, 5s timeout)
+    // Only for initial generations (not iterations, not pass2Only)
+    const roomInventory = await extractRoomInventory(base64Image);
+
     const t0 = Date.now();
 
     // NOTE: do NOT check request.signal.aborted here.
@@ -721,16 +726,16 @@ export async function POST(request: NextRequest) {
     // intends to come back. The generation must continue to completion.
 
     console.log(`Starting pass 1 (surfaces)... Output size: ${outputSize.openai}${isOutdoor ? ` outdoor subtype: ${outdoorSubtype}` : roomType ? ` roomType: ${roomType}` : ""}`);
-    const pass1 = await generatePass(base64Image, trimmedSurface, trimmedFurniture, 1, outputSize, isOutdoor ? null : roomType, outdoorParam);
+    const pass1 = await generatePass(base64Image, trimmedSurface, trimmedFurniture, 1, outputSize, isOutdoor ? null : roomType, outdoorParam, roomInventory);
     const t1 = Date.now();
 
     // Build the final prompts for logging (what the model actually receives)
     const builtPromptPass1 = isOutdoor
       ? buildOutdoorSurfacesResponsesPrompt(trimmedSurface, outdoorParam?.subtypeSurfaceOverride ?? "")
-      : buildSurfacesResponsesPrompt(trimmedSurface, roomType);
+      : buildSurfacesResponsesPrompt(trimmedSurface, roomType, roomInventory);
     const builtPromptPass2 = isOutdoor
       ? buildOutdoorFurnitureResponsesPrompt(trimmedFurniture, outdoorParam?.subtypeFurnitureOverride ?? "")
-      : buildFurnitureResponsesPrompt(trimmedFurniture, roomType);
+      : buildFurnitureResponsesPrompt(trimmedFurniture, roomType, roomInventory);
 
     const pass1Base64 = pass1.image.replace(/^data:image\/[\w+]+;base64,/, "");
 
@@ -788,6 +793,7 @@ export async function POST(request: NextRequest) {
         isOutdoor: isOutdoor || undefined,
         outdoorSubtype: isOutdoor ? (outdoorSubtype ?? undefined) : undefined,
         promptVersion: PROMPT_VERSION,
+        roomInventory: roomInventory || undefined,
       }).catch((err) => console.error("DB log (splitMode pass1) failed:", err));
 
       // Always return pass1_key in split mode — if cache failed, pass2Only will fail
@@ -848,6 +854,7 @@ export async function POST(request: NextRequest) {
         isOutdoor: isOutdoor || undefined,
         outdoorSubtype: isOutdoor ? (outdoorSubtype ?? undefined) : undefined,
         promptVersion: PROMPT_VERSION,
+        roomInventory: roomInventory || undefined,
       }).catch((err) => console.error("DB log failed:", err));
 
       return NextResponse.json({
@@ -882,7 +889,7 @@ export async function POST(request: NextRequest) {
     if (!pass2Failed) for (let attempt = 1; attempt <= 2; attempt++) {
       pass2Attempts = attempt;
       try {
-        pass2 = await generatePass(pass1Base64, trimmedSurface, trimmedFurniture, 2, outputSize, isOutdoor ? null : roomType, outdoorParam);
+        pass2 = await generatePass(pass1Base64, trimmedSurface, trimmedFurniture, 2, outputSize, isOutdoor ? null : roomType, outdoorParam, roomInventory);
         break; // success
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
@@ -1001,6 +1008,7 @@ export async function POST(request: NextRequest) {
       isOutdoor: isOutdoor || undefined,
       outdoorSubtype: isOutdoor ? (outdoorSubtype ?? undefined) : undefined,
       promptVersion: PROMPT_VERSION,
+      roomInventory: roomInventory || undefined,
     }).catch((err) => console.error("DB log failed:", err));
 
     // Generation succeeded — credit was already decremented optimistically

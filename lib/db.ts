@@ -91,6 +91,8 @@ export async function ensureTable(): Promise<void> {
     { name: "outdoor_subtype", type: "VARCHAR(50)" },
     // Prompt versioning — correlate generation quality with prompt version
     { name: "prompt_version", type: "VARCHAR(10)" },
+    // Pre-pass vision: room geometry inventory extracted by GPT-4.1-mini
+    { name: "room_inventory", type: "TEXT" },
     // Sprint 20 — replay
     { name: "is_replay", type: "BOOLEAN DEFAULT FALSE" },
     { name: "replay_source_id", type: "INT" },
@@ -472,6 +474,8 @@ export interface GenerationLogParams {
   colorShiftScore?: number | null;
   // Prompt versioning
   promptVersion?: string;
+  // Pre-pass vision: room geometry inventory
+  roomInventory?: string;
 }
 
 export async function logGeneration(params: GenerationLogParams): Promise<void> {
@@ -518,8 +522,9 @@ export async function logGeneration(params: GenerationLogParams): Promise<void> 
       user_comment_raw, user_comment_enriched, pass1_cache_key,
       room_type, is_outdoor, outdoor_subtype,
       is_replay, replay_source_id, replay_label,
-      pixel_diff_pct, color_shift_score, prompt_version
-    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35)`,
+      pixel_diff_pct, color_shift_score, prompt_version,
+      room_inventory
+    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36)`,
     [
       params.ip,
       params.styleId,
@@ -556,6 +561,7 @@ export async function logGeneration(params: GenerationLogParams): Promise<void> 
       params.pixelDiffPct ?? null,
       params.colorShiftScore ?? null,
       params.promptVersion ?? null,
+      params.roomInventory ?? null,
     ]
   );
 }
@@ -603,8 +609,9 @@ export async function logGenerationReturningId(params: GenerationLogParams): Pro
       user_comment_raw, user_comment_enriched, pass1_cache_key,
       room_type, is_outdoor, outdoor_subtype,
       is_replay, replay_source_id, replay_label,
-      pixel_diff_pct, color_shift_score, prompt_version
-    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35)
+      pixel_diff_pct, color_shift_score, prompt_version,
+      room_inventory
+    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36)
     RETURNING id`,
     [
       params.ip,
@@ -642,6 +649,7 @@ export async function logGenerationReturningId(params: GenerationLogParams): Pro
       params.pixelDiffPct ?? null,
       params.colorShiftScore ?? null,
       params.promptVersion ?? null,
+      params.roomInventory ?? null,
     ]
   );
 

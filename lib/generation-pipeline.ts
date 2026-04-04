@@ -16,6 +16,63 @@ function getOpenAI(): OpenAI {
   return _openaiClient;
 }
 
+// ─── Pre-pass vision: extract room geometry inventory ───────────────
+// Uses GPT-4.1-mini in vision mode to describe the room's geometry
+// before generation. The inventory is injected into pass 1 and pass 2
+// prompts so the model knows what to preserve.
+// Fail-open: if this fails or times out, generation continues normally.
+const VISION_TIMEOUT_MS = 5_000;
+
+export async function extractRoomInventory(imageBase64: string): Promise<string> {
+  try {
+    const openai = getOpenAI();
+    const mimeType = detectMimeType(imageBase64);
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), VISION_TIMEOUT_MS);
+
+    const response = await openai.chat.completions.create(
+      {
+        model: "gpt-4.1-mini",
+        max_tokens: 150,
+        messages: [
+          {
+            role: "system",
+            content:
+              "Describe this room's geometry in one concise paragraph. Count: windows (number, positions), doors (number, positions), ceiling type (flat/vaulted/beamed), visible equipment (radiators, heaters, water heater, electrical panel), floor material, approximate room shape. Be factual, no opinions.",
+          },
+          {
+            role: "user",
+            content: [
+              {
+                type: "image_url",
+                image_url: {
+                  url: `data:${mimeType};base64,${imageBase64}`,
+                  detail: "low",
+                },
+              },
+            ],
+          },
+        ],
+      },
+      { signal: controller.signal },
+    );
+
+    clearTimeout(timer);
+
+    const text = response.choices[0]?.message?.content?.trim() ?? "";
+    if (text) {
+      console.log(`[extractRoomInventory] OK (${text.length} chars): ${text.substring(0, 120)}...`);
+    }
+    return text;
+  } catch (err) {
+    // Fail-open: log and return empty string — generation continues without inventory
+    const msg = err instanceof Error ? err.message : String(err);
+    console.warn(`[extractRoomInventory] Failed (fail-open): ${msg}`);
+    return "";
+  }
+}
+
 /** Prompt version — increment when modifying any prompt builder or style prompt.
  * Used by audit agents (Yann Duval, Lucas Moreau) to correlate generation quality with prompt version.
  * History: v1-v5 (Sprints 1-7), v6-v10 (Sprints 8-12), v11-v15 (Sprints 13-16), v16-v17 (Sprint 17),
@@ -30,7 +87,7 @@ function getOpenAI(): OpenAI {
  * v42 (density conditionals: kitchen 3-tier width scaling, dining room compact/large, office compact skip bookshelf — fix gen #112 overcrowded compact kitchen),
  * v43 (audit croise Yann+Lucas #111-117: P0 COLUMN_PRESERVATION active tous builders, P0 ANTI_FENETRE remonte position 2, P1 anti-warm shift renforce white balance, P1 Cosy marqueurs tactiles quantites, P1 PHOTO_GRAIN restaure ISO 200 + vignetting),
  * v45 (gpt-image-1.5 preservation-first: PASS1_PREAMBLE+PASS2_PREAMBLE en tete de TOUS les builders — les 8 passe 1 + 9 passe 2 + 2 outdoor. Preservation AVANT style pour forcer le mode edition. "CHANGE ONLY" en passe 1, "ADD" en passe 2. Suppression doublons CAMERA/LIGHT en fin de prompt — deja dans les constantes en tete.) */
-export const PROMPT_VERSION = "v47";
+export const PROMPT_VERSION = "v48";
 
 // ─── Image generation model ─────────────────────────────────────────
 // v36: configurable via env var. Default gpt-image-1 (v32 reverted gpt-image-1.5 for spatial regression).
@@ -121,12 +178,15 @@ const PASS2_PREAMBLE = "Edit this photo of a finished room. The wall colors, flo
 
 // ── Pass 1: Surface finishing ────────────────────────────────────────
 // v36: ACTION FIRST in all builders (v30 lesson — GPT-image-1 weights early tokens more)
-export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string | null): string {
+export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string | null, roomInventory?: string): string {
+  // Inject room inventory right after PREAMBLE if available
+  const inventoryLine = roomInventory ? `This room has: ${roomInventory}` : "";
   // Kitchen: v44 — preservation FIRST, then style
   if (roomTypeId === "kitchen") {
     const kitchenSurface = surfacePrompt.replace(/,?\s*(wide-plank|herringbone|wood|ash|oak|walnut|parquet)\s+flooring[^,.]*/gi, "");
     return [
       PASS1_PREAMBLE,
+      inventoryLine,
       ANTI_FENETRE,
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
@@ -142,6 +202,7 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
   if (roomTypeId === "bathroom") {
     return [
       PASS1_PREAMBLE,
+      inventoryLine,
       ANTI_FENETRE,
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
@@ -157,6 +218,7 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
   if (roomTypeId === "wc") {
     return [
       PASS1_PREAMBLE,
+      inventoryLine,
       ANTI_FENETRE,
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
@@ -172,6 +234,7 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
   if (roomTypeId === "bedroom_adults" || roomTypeId === "bedroom_children") {
     return [
       PASS1_PREAMBLE,
+      inventoryLine,
       ANTI_FENETRE,
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
@@ -187,6 +250,7 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
   if (roomTypeId === "laundry") {
     return [
       PASS1_PREAMBLE,
+      inventoryLine,
       ANTI_FENETRE,
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
@@ -202,6 +266,7 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
   if (roomTypeId === "cellar") {
     return [
       PASS1_PREAMBLE,
+      inventoryLine,
       ANTI_FENETRE,
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
@@ -217,6 +282,7 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
   if (roomTypeId === "entryway") {
     return [
       PASS1_PREAMBLE,
+      inventoryLine,
       ANTI_FENETRE,
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
@@ -232,6 +298,7 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
   // v45: preservation FIRST for gpt-image-1.5
   return [
     PASS1_PREAMBLE,
+    inventoryLine,
     ANTI_FENETRE,
     CAMERA_PRESERVATION, LIGHT_PRESERVATION,
     CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
@@ -268,13 +335,16 @@ function resolveChooseOne(prompt: string): string {
 }
 
 // v36: ACTION FIRST in all builders (v30 lesson), camera/structure at END
-export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: string | null): string {
+export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: string | null, roomInventory?: string): string {
   // Resolve "choose one:" alternatives randomly for variety between generations
   const resolvedPrompt = resolveChooseOne(furniturePrompt);
+  // Inject room inventory right after PREAMBLE if available
+  const inventoryLine = roomInventory ? `This room has: ${roomInventory}` : "";
   // Kitchen: v45 — preservation FIRST for gpt-image-1.5, then add elements
   if (roomTypeId === "kitchen") {
     return [
       PASS2_PREAMBLE,
+      inventoryLine,
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       COLUMN_PRESERVATION,
       EQUIPMENT_PRESERVATION,
@@ -294,6 +364,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
   if (roomTypeId === "bathroom") {
     return [
       PASS2_PREAMBLE,
+      inventoryLine,
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       COLUMN_PRESERVATION,
       EQUIPMENT_PRESERVATION,
@@ -314,6 +385,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
   if (roomTypeId === "wc") {
     return [
       PASS2_PREAMBLE,
+      inventoryLine,
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       COLUMN_PRESERVATION,
       EQUIPMENT_PRESERVATION,
@@ -329,6 +401,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
   if (roomTypeId === "bedroom_adults" || roomTypeId === "bedroom_children") {
     return [
       PASS2_PREAMBLE,
+      inventoryLine,
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       COLUMN_PRESERVATION,
       EQUIPMENT_PRESERVATION,
@@ -349,6 +422,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
   if (roomTypeId === "entryway") {
     return [
       PASS2_PREAMBLE,
+      inventoryLine,
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       COLUMN_PRESERVATION,
       EQUIPMENT_PRESERVATION,
@@ -364,6 +438,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
   if (roomTypeId === "laundry") {
     return [
       PASS2_PREAMBLE,
+      inventoryLine,
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       COLUMN_PRESERVATION,
       EQUIPMENT_PRESERVATION,
@@ -379,6 +454,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
   if (roomTypeId === "cellar") {
     return [
       PASS2_PREAMBLE,
+      inventoryLine,
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       COLUMN_PRESERVATION,
       EQUIPMENT_PRESERVATION,
@@ -394,6 +470,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
   if (roomTypeId === "dining_room") {
     return [
       PASS2_PREAMBLE,
+      inventoryLine,
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       COLUMN_PRESERVATION,
       EQUIPMENT_PRESERVATION,
@@ -413,6 +490,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
   // v45: preservation FIRST for gpt-image-1.5
   return [
     PASS2_PREAMBLE,
+    inventoryLine,
     CAMERA_PRESERVATION, LIGHT_PRESERVATION,
     COLUMN_PRESERVATION,
     EQUIPMENT_PRESERVATION,
@@ -490,7 +568,8 @@ export async function tryOpenAIResponses(
   pass: 1 | 2,
   size: string,
   roomTypeId?: string | null,
-  outdoor?: { isOutdoor: boolean; subtypeSurfaceOverride?: string; subtypeFurnitureOverride?: string }
+  outdoor?: { isOutdoor: boolean; subtypeSurfaceOverride?: string; subtypeFurnitureOverride?: string },
+  roomInventory?: string
 ): Promise<{ image: string; model: string }> {
   const openai = getOpenAI();
 
@@ -503,8 +582,8 @@ export async function tryOpenAIResponses(
   } else {
     prompt =
       pass === 1
-        ? buildSurfacesResponsesPrompt(surfacePrompt, roomTypeId)
-        : buildFurnitureResponsesPrompt(furniturePrompt, roomTypeId);
+        ? buildSurfacesResponsesPrompt(surfacePrompt, roomTypeId, roomInventory)
+        : buildFurnitureResponsesPrompt(furniturePrompt, roomTypeId, roomInventory);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- image_generation tool not in SDK types
@@ -638,7 +717,8 @@ export async function generatePass(
   pass: 1 | 2,
   outputSize: { openai: string; w: number; h: number },
   roomTypeId?: string | null,
-  outdoor?: { isOutdoor: boolean; subtypeSurfaceOverride?: string; subtypeFurnitureOverride?: string }
+  outdoor?: { isOutdoor: boolean; subtypeSurfaceOverride?: string; subtypeFurnitureOverride?: string },
+  roomInventory?: string
 ): Promise<{ image: string; model: string }> {
   if (!process.env.OPENAI_API_KEY) {
     throw new Error("Clé API OpenAI non configurée.");
@@ -647,7 +727,7 @@ export async function generatePass(
   let lastError: Error | null = null;
   for (let attempt = 0; attempt < MAX_PASS_RETRIES; attempt++) {
     try {
-      return await tryOpenAIResponses(base64Image, surfacePrompt, furniturePrompt, pass, outputSize.openai, roomTypeId, outdoor);
+      return await tryOpenAIResponses(base64Image, surfacePrompt, furniturePrompt, pass, outputSize.openai, roomTypeId, outdoor, roomInventory);
     } catch (err) {
       lastError = err instanceof Error ? err : new Error(String(err));
       console.error(`OpenAI pass ${pass} attempt ${attempt + 1}/${MAX_PASS_RETRIES} failed:`, lastError.message);
@@ -688,6 +768,7 @@ export interface PipelineResult {
   builtPromptPass2: string;
   trimmedSurface: string;
   trimmedFurniture: string;
+  roomInventory: string;
 }
 
 export async function runGenerationPipeline(params: PipelineParams): Promise<PipelineResult> {
@@ -735,20 +816,23 @@ export async function runGenerationPipeline(params: PipelineParams): Promise<Pip
     }
   }
 
+  // Pre-pass vision: extract room geometry inventory (fail-open, 5s timeout)
+  const roomInventory = await extractRoomInventory(inputBase64);
+
   const t0 = Date.now();
 
   // Pass 1: surfaces
-  const pass1 = await generatePass(inputBase64, trimmedSurface, trimmedFurniture, 1, outputSize, isOutdoor ? null : roomType, outdoorParam);
+  const pass1 = await generatePass(inputBase64, trimmedSurface, trimmedFurniture, 1, outputSize, isOutdoor ? null : roomType, outdoorParam, roomInventory);
   const t1 = Date.now();
   const pass1Base64 = pass1.image.replace(/^data:image\/[\w+]+;base64,/, "");
 
   // Build prompts for logging
   const builtPromptPass1 = isOutdoor
     ? buildOutdoorSurfacesResponsesPrompt(trimmedSurface, outdoorParam?.subtypeSurfaceOverride ?? "")
-    : buildSurfacesResponsesPrompt(trimmedSurface, roomType);
+    : buildSurfacesResponsesPrompt(trimmedSurface, roomType, roomInventory);
   const builtPromptPass2 = isOutdoor
     ? buildOutdoorFurnitureResponsesPrompt(trimmedFurniture, outdoorParam?.subtypeFurnitureOverride ?? "")
-    : buildFurnitureResponsesPrompt(trimmedFurniture, roomType);
+    : buildFurnitureResponsesPrompt(trimmedFurniture, roomType, roomInventory);
 
   // Surfaces-only mode
   if (!withFurniture) {
@@ -757,6 +841,7 @@ export async function runGenerationPipeline(params: PipelineParams): Promise<Pip
       pass1Model: pass1.model, pass2Model: null, pass2Failed: false,
       durationMs: t1 - t0, pass1DurationMs: t1 - t0, pass2DurationMs: 0,
       builtPromptPass1, builtPromptPass2, trimmedSurface, trimmedFurniture,
+      roomInventory,
     };
   }
 
@@ -765,7 +850,7 @@ export async function runGenerationPipeline(params: PipelineParams): Promise<Pip
   let pass2Failed = false;
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
-      pass2 = await generatePass(pass1Base64, trimmedSurface, trimmedFurniture, 2, outputSize, isOutdoor ? null : roomType, outdoorParam);
+      pass2 = await generatePass(pass1Base64, trimmedSurface, trimmedFurniture, 2, outputSize, isOutdoor ? null : roomType, outdoorParam, roomInventory);
       break;
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -784,5 +869,6 @@ export async function runGenerationPipeline(params: PipelineParams): Promise<Pip
     pass1Model: pass1.model, pass2Model: pass2?.model ?? null, pass2Failed,
     durationMs: t2 - t0, pass1DurationMs: t1 - t0, pass2DurationMs: t2 - t1,
     builtPromptPass1, builtPromptPass2, trimmedSurface, trimmedFurniture,
+    roomInventory,
   };
 }
