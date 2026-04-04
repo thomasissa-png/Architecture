@@ -471,18 +471,31 @@ export default function Home() {
     setPreprocessWarnings([]);
 
     // Pre-check: validate that uploaded photos are rooms (blocking)
-    // Convert blob URLs to data URIs for the validation API
+    // Send a small thumbnail (max 512px) to avoid body size limits
     try {
       for (let i = 0; i < files.length; i++) {
-        const dataUri = await new Promise<string>((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.readAsDataURL(files[i]);
+        const thumbnail = await new Promise<string>((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => {
+            const maxDim = 512;
+            const scale = Math.min(maxDim / img.width, maxDim / img.height, 1);
+            const canvas = document.createElement("canvas");
+            canvas.width = Math.round(img.width * scale);
+            canvas.height = Math.round(img.height * scale);
+            const ctx = canvas.getContext("2d");
+            if (!ctx) { resolve(""); return; }
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            resolve(canvas.toDataURL("image/jpeg", 0.6));
+            URL.revokeObjectURL(img.src);
+          };
+          img.onerror = () => { URL.revokeObjectURL(img.src); reject(); };
+          img.src = URL.createObjectURL(files[i]);
         });
+        if (!thumbnail) continue;
         const res = await fetch("/api/validate-image", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ image: dataUri }),
+          body: JSON.stringify({ image: thumbnail }),
         });
         if (res.ok) {
           const data = await res.json();
