@@ -75,20 +75,20 @@ export default function PhotoAssociator({ photoId, onDismiss }: PhotoAssociatorP
             key={p.id}
             onClick={() => handleAssociate(p.id)}
             disabled={isAssociating}
-            className="min-h-[44px] text-[11px] font-light bg-foreground/5 text-foreground px-3 py-1.5 rounded-xl hover:bg-sage/10 hover:text-sage transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+            className="min-h-[44px] text-xs sm:text-[11px] font-light bg-foreground/5 text-foreground px-3 py-2 rounded-xl hover:bg-sage/10 hover:text-sage transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 inline-flex items-center break-words text-left max-w-full"
           >
-            {(p.address_normalized || p.address_raw || p.city || "Bien sans adresse").substring(0, 30)}
+            {p.address_normalized || p.address_raw || p.city || "Bien sans adresse"}
           </button>
         ))}
         <a
           href="/mes-biens?create=true"
-          className="min-h-[44px] inline-flex items-center text-[11px] font-light bg-sage/10 text-sage px-3 py-1.5 rounded-xl hover:bg-sage/20 transition-colors"
+          className="min-h-[44px] inline-flex items-center text-xs sm:text-[11px] font-light bg-sage/10 text-sage px-3 py-2 rounded-xl hover:bg-sage/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
         >
           + Nouveau bien
         </a>
         <button
           onClick={onDismiss}
-          className="min-h-[44px] inline-flex items-center text-[11px] font-light text-muted px-3 py-1.5 rounded-xl hover:text-foreground transition-colors"
+          className="min-h-[44px] inline-flex items-center text-xs sm:text-[11px] font-light text-muted px-3 py-2 rounded-xl hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
         >
           Ignorer
         </button>

@@ -470,7 +470,7 @@ export default function GaleriePage() {
                         e.stopPropagation();
                         setArchivePhotoTarget(photo.id);
                       }}
-                      className="bg-background/90 text-foreground/60 hover:text-red-500 text-xs px-1.5 py-1 rounded-lg hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                      className="bg-background/90 text-foreground/60 hover:text-red-500 text-xs px-2 py-2 rounded-lg hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 min-h-[44px] min-w-[44px] flex items-center justify-center"
                       aria-label="Archiver cette photo"
                       title="Archiver"
                     >
@@ -485,15 +485,15 @@ export default function GaleriePage() {
                 {/* Association dropdown */}
                 {associatingPhotoId === photo.id && (
                   <div
-                    className="absolute top-10 right-0 sm:right-2 bg-background border border-foreground/10 rounded-xl shadow-lg p-2 z-10 min-w-[200px] max-w-[calc(100vw-2rem)]"
+                    className="absolute top-10 left-0 right-0 sm:left-auto sm:right-2 bg-background border border-foreground/10 rounded-xl shadow-lg p-2 z-10 min-w-[180px] sm:min-w-[200px] max-w-[calc(100vw-2rem)]"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <p className="text-xs text-muted font-light px-2 pb-1 border-b border-foreground/5">Associer à un bien :</p>
+                    <p className="text-xs text-muted font-light px-2 pb-1 border-b border-foreground/5 break-words">Associer à un bien :</p>
                     {properties.map((p) => (
                       <button
                         key={p.id}
                         onClick={() => handleAssociate(photo.id, p.id)}
-                        className="w-full text-left text-xs font-light px-2 py-1.5 min-h-[44px] flex items-center hover:bg-foreground/5 rounded-lg transition-colors"
+                        className="w-full text-left text-xs font-light px-2 py-1.5 min-h-[44px] flex items-center hover:bg-foreground/5 rounded-lg transition-colors break-words"
                       >
                         {p.address_normalized || p.address_raw || p.city || "Bien sans adresse"}
                       </button>
@@ -597,7 +597,7 @@ export default function GaleriePage() {
                           handleAssociate(selectedPhoto.id, p.id);
                           setSelectedPhoto(null);
                         }}
-                        className="text-xs font-light bg-foreground/5 px-3 py-1.5 rounded-xl hover:bg-sage/10 hover:text-sage transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                        className="text-xs font-light bg-foreground/5 px-3 py-2 rounded-xl hover:bg-sage/10 hover:text-sage transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 min-h-[44px] inline-flex items-center break-words text-left"
                       >
                         {p.address_normalized || p.address_raw || "Bien sans adresse"}
                       </button>
@@ -610,7 +610,7 @@ export default function GaleriePage() {
         )}
         {/* Inline toast */}
         {toastMsg && (
-          <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 text-white text-xs font-medium px-4 py-2.5 rounded-full shadow-lg animate-fade-in ${toastMsg.includes("Erreur") ? "bg-red-500/90" : "bg-sage/90"}`}>
+          <div className={`fixed bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:max-w-md z-50 text-white text-xs font-medium px-4 py-2.5 rounded-2xl sm:rounded-full shadow-lg animate-fade-in text-center ${toastMsg.includes("Erreur") ? "bg-red-500/90" : "bg-sage/90"}`}>
             {toastMsg}
           </div>
         )}
