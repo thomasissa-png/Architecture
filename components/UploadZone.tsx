@@ -82,14 +82,14 @@ export default function UploadZone({ files, onFilesChange, maxFiles, photoWarnin
             ? "border-foreground bg-foreground/[0.02] scale-[1.01]"
             : files.length >= MAX_FILES
             ? "border-gray-200 bg-gray-50/50 cursor-not-allowed opacity-50"
-            : "border-gray-300 hover:border-gray-400"
+            : "border-foreground/20 hover:border-foreground/40 hover:bg-foreground/[0.02]"
         }`}
       >
         <input {...getInputProps()} />
         <div className="flex flex-col items-center gap-4">
           <svg
             className={`w-8 h-8 transition-colors duration-300 ${
-              isDragActive ? "text-foreground" : "text-gray-300"
+              isDragActive ? "text-foreground" : "text-foreground/25"
             }`}
             fill="none"
             viewBox="0 0 24 24"
@@ -154,7 +154,7 @@ export default function UploadZone({ files, onFilesChange, maxFiles, photoWarnin
               <button
                 onClick={() => removeFile(index)}
                 aria-label={`Supprimer ${file.name}`}
-                className="absolute -top-2 -right-2 w-7 h-7 sm:w-5 sm:h-5 bg-foreground text-background rounded-full flex items-center justify-center text-xs sm:text-xs sm:opacity-60 sm:group-hover:opacity-100 transition-opacity focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                className="absolute -top-3 -right-3 w-11 h-11 sm:w-8 sm:h-8 bg-foreground text-background rounded-full flex items-center justify-center text-sm sm:text-sm sm:opacity-60 sm:group-hover:opacity-100 transition-opacity focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
               >
                 &times;
               </button>

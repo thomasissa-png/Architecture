@@ -1909,7 +1909,7 @@ export default function Home() {
                           />
                         )}
 
-                        {/* Finitions + Mobilier / Finitions seulement */}
+                        {/* Pièce meublée / Surfaces uniquement */}
                         <div className="flex gap-1 p-0.5 bg-foreground/5 rounded-lg">
                           <button
                             type="button"
@@ -1922,7 +1922,7 @@ export default function Home() {
                               photoWithFurniture ? "bg-background text-foreground shadow-sm" : "text-muted hover:text-foreground"
                             }`}
                           >
-                            Finitions + Mobilier
+                            Pièce meublée
                           </button>
                           <button
                             type="button"
@@ -1935,7 +1935,7 @@ export default function Home() {
                               !photoWithFurniture ? "bg-background text-foreground shadow-sm" : "text-muted hover:text-foreground"
                             }`}
                           >
-                            Finitions seulement
+                            Surfaces uniquement
                           </button>
                         </div>
 
@@ -1983,6 +1983,41 @@ export default function Home() {
                             </button>
                           </div>
                         )}
+
+                        {/* Appliquer à toutes — visible uniquement si plusieurs photos */}
+                        {files.length > 1 && photoStyleIds.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newStyles = new Map(perPhotoStyles);
+                              const newRoomTypes = new Map(perPhotoRoomTypes);
+                              const newOutdoor = new Map(perPhotoOutdoor);
+                              const newFurniture = new Map(perPhotoWithFurniture);
+                              const newFormat = new Map(perPhotoFormat);
+                              const newCustom = new Map(perPhotoCustomPrompts);
+                              for (let i = 0; i < files.length; i++) {
+                                if (i === index) continue;
+                                newStyles.set(i, [...photoStyleIds]);
+                                const rt = perPhotoRoomTypes.get(index);
+                                if (rt) newRoomTypes.set(i, rt); else newRoomTypes.delete(i);
+                                newOutdoor.set(i, isPhotoOutdoor);
+                                newFurniture.set(i, photoWithFurniture);
+                                newFormat.set(i, photoFormat);
+                                const cp = perPhotoCustomPrompts.get(index);
+                                if (cp) newCustom.set(i, cp); else newCustom.delete(i);
+                              }
+                              setPerPhotoStyles(newStyles);
+                              setPerPhotoRoomTypes(newRoomTypes);
+                              setPerPhotoOutdoor(newOutdoor);
+                              setPerPhotoWithFurniture(newFurniture);
+                              setPerPhotoFormat(newFormat);
+                              setPerPhotoCustomPrompts(newCustom);
+                            }}
+                            className="w-full text-center text-xs text-sage hover:text-sage-dark font-medium py-1.5 rounded-lg hover:bg-sage/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                          >
+                            Appliquer à toutes les photos
+                          </button>
+                        )}
                       </div>
                     );
                   })}
@@ -1994,7 +2029,7 @@ export default function Home() {
 
           {/* Generate Button */}
           {canGenerate && results.length === 0 && (
-            <div id="step-generate" className="text-center mb-8 animate-fade-in-up sticky bottom-6 z-40">
+            <div id="step-generate" className="text-center mb-8 animate-fade-in-up sticky bottom-6 z-40 pb-[env(safe-area-inset-bottom)]">
               <button
                 onClick={handleGenerate}
                 disabled={isGenerating}
@@ -2023,6 +2058,27 @@ export default function Home() {
                   </>
                 )}
               </button>
+              {/* QW3 — Récapitulatif condensé sous le CTA */}
+              {!isGenerating && (
+                <p className="text-xs text-background/60 mt-2 font-light">
+                  {(() => {
+                    const allStyleIds = new Set<string>();
+                    perPhotoStyles.forEach((ids) => ids.forEach((id) => allStyleIds.add(id)));
+                    const styleNames = Array.from(allStyleIds).map((id) => {
+                      if (id === "custom") return "Personnalisé";
+                      const indoor = STYLES.find((s) => s.id === id);
+                      if (indoor) return indoor.name;
+                      const outdoor = OUTDOOR_STYLE_LIST.find((s) => s.id === id);
+                      if (outdoor) return outdoor.label;
+                      return id;
+                    });
+                    const allFurniture = Array.from(perPhotoWithFurniture.values());
+                    const hasMixed = allFurniture.some((v) => v === true) && allFurniture.some((v) => v === false);
+                    const modeLabel = hasMixed ? "Mixte" : (perPhotoWithFurniture.get(0) !== false ? "Pièce meublée" : "Surfaces uniquement");
+                    return `${files.length} photo${files.length > 1 ? "s" : ""} · ${styleNames.length > 0 ? styleNames.join(", ") : "—"} · ${modeLabel}`;
+                  })()}
+                </p>
+              )}
             </div>
           )}
 

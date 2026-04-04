@@ -26,7 +26,7 @@ export default function RoomTypePicker({
         <p className="text-sm font-medium text-foreground tracking-tight">
           Type de pièce
         </p>
-        <span className="text-xs text-sage font-normal">— requis pour générer</span>
+        <span className="inline-flex items-center gap-1 text-xs text-amber-600 font-medium bg-amber-50 px-2 py-0.5 rounded-full">Requis</span>
       </div>
 
       <div

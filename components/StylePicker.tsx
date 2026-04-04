@@ -236,7 +236,7 @@ export default function StylePicker({
             >
               {/* Badge numéroté */}
               {isSelected && (
-                <span className="absolute top-2 right-2 w-5 h-5 bg-foreground text-background text-[10px] font-semibold rounded-md flex items-center justify-center" aria-label={`Sélection ${selectionIndex + 1}`}>
+                <span className="absolute top-2 right-2 w-5 h-5 bg-foreground text-background text-xs font-semibold rounded-md flex items-center justify-center" aria-label={`Sélection ${selectionIndex + 1}`}>
                   {selectionIndex + 1}
                 </span>
               )}
@@ -252,7 +252,7 @@ export default function StylePicker({
               <h4 className="text-sm font-semibold text-foreground mb-0.5 sm:mb-1 tracking-tight">
                 {style.name}
               </h4>
-              <p className="text-xs sm:text-[11px] text-muted font-light leading-relaxed">
+              <p className="text-xs sm:text-xs text-muted font-light leading-relaxed">
                 {style.description}
               </p>
               {/* Checkbox indicator */}
@@ -279,7 +279,7 @@ export default function StylePicker({
           } ${disabled ? "opacity-60 cursor-not-allowed" : ""}`}
         >
           {isCustomSelected && (
-            <span className="absolute top-2 right-2 w-5 h-5 bg-foreground text-background text-[10px] font-semibold rounded-md flex items-center justify-center" aria-label={`Sélection ${selectedStyles.indexOf("custom") + 1}`}>
+            <span className="absolute top-2 right-2 w-5 h-5 bg-foreground text-background text-xs font-semibold rounded-md flex items-center justify-center" aria-label={`Sélection ${selectedStyles.indexOf("custom") + 1}`}>
               {selectedStyles.indexOf("custom") + 1}
             </span>
           )}
@@ -291,7 +291,7 @@ export default function StylePicker({
           <h4 className="text-sm font-semibold text-foreground mb-1 tracking-tight">
             Personnalisé
           </h4>
-          <p className="text-[11px] text-muted font-light leading-relaxed">
+          <p className="text-xs text-muted font-light leading-relaxed">
             Décrivez votre style idéal
           </p>
           {/* Checkbox indicator */}
