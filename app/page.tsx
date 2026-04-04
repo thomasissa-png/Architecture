@@ -81,44 +81,56 @@ function scrollToElement(id: string, delay = 600) {
   }, delay);
 }
 
-/** Fetch WITHOUT AbortController signal — survives mobile tab-switch.
- *  The old MerchantMode used plain fetch() and never had this problem.
- *  AbortController + signal causes the browser to kill the fetch on tab-switch.
- *  We use Promise.race for timeout instead, which doesn't kill the fetch. */
+/** iOS kills HTTP connections when app goes to background, even for 1-2 seconds.
+ *  The server continues processing and saves the result to the gallery.
+ *  We detect this case (TypeError + page went hidden) and throw a SPECIAL error
+ *  so the UI shows "Votre visuel sera dans votre galerie" instead of "Connexion perdue". */
+class BackgroundDisconnectError extends Error {
+  constructor() {
+    super("BACKGROUND_DISCONNECT");
+    this.name = "BackgroundDisconnectError";
+  }
+}
+
 async function resilientFetch(
   url: string,
   init: RequestInit,
   parentSignal?: AbortSignal
 ): Promise<Response> {
-  const TIMEOUT_MS = 180_000; // 3 min
+  const TIMEOUT_MS = 180_000;
 
-  // parentSignal is ONLY used for explicit user cancel (Annuler button).
-  // We do NOT pass it to fetch — that would let the browser kill the fetch on tab-switch.
-  // Instead we check it manually after the fetch completes.
-  const fetchPromise = fetch(url, init);
+  let wentHidden = false;
+  const trackHidden = () => { if (document.visibilityState === "hidden") wentHidden = true; };
+  document.addEventListener("visibilitychange", trackHidden);
 
-  const timeoutPromise = new Promise<never>((_, reject) => {
-    setTimeout(() => reject(new Error("La génération a pris trop de temps. Vérifiez votre connexion et réessayez.")), TIMEOUT_MS);
-  });
-
-  // If user cancelled, reject immediately
   const cancelPromise = parentSignal
     ? new Promise<never>((_, reject) => {
         if (parentSignal.aborted) reject(new Error("Annulé"));
         parentSignal.addEventListener("abort", () => reject(new Error("Annulé")));
       })
-    : new Promise<never>(() => {}); // never resolves
+    : new Promise<never>(() => {});
+
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    setTimeout(() => reject(new Error("La génération a pris trop de temps. Vérifiez votre connexion et réessayez.")), TIMEOUT_MS);
+  });
 
   try {
-    const response = await Promise.race([fetchPromise, timeoutPromise, cancelPromise]);
+    const response = await Promise.race([fetch(url, init), timeoutPromise, cancelPromise]);
     return response;
   } catch (err) {
     if (parentSignal?.aborted) throw err;
+    // iOS killed the connection while in background.
+    // The server continues processing — result will be in the gallery.
+    // Do NOT retry (would consume a second credit).
+    if (err instanceof TypeError && wentHidden) {
+      throw new BackgroundDisconnectError();
+    }
     if (err instanceof TypeError) {
-      // Network error (not timeout, not cancel)
       throw new Error("Connexion perdue pendant la génération. Vérifiez votre réseau et réessayez.");
     }
     throw err;
+  } finally {
+    document.removeEventListener("visibilitychange", trackHidden);
   }
 }
 
@@ -818,6 +830,13 @@ export default function Home() {
           // Queued jobs are not errors — they're being processed in the background
           if (result.reason?.name === "QueuedError") {
             hasQueued = true;
+            continue;
+          }
+          // iOS killed the connection while app was in background.
+          // The server is still processing — result will appear in gallery.
+          // Show a friendly message, not an error.
+          if (result.reason?.name === "BackgroundDisconnectError") {
+            hasQueued = true; // reuse queue toast for "check gallery" message
             continue;
           }
           hasPartialError = true;
