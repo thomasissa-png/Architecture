@@ -758,31 +758,24 @@ export default function Home() {
                   return;
                 }
                 const p2Data = await p2Response.json();
-                // Replace pass1 image with furnished result
-                setResults((prev) => {
-                  const updated = prev.map((r) =>
+                // Replace pass1 image with furnished result + sync versions (avoids stale closure)
+                setResults((currentResults) => {
+                  const idx = currentResults.findIndex((r) => r.pass1Key === p2Pass1Key);
+                  if (idx !== -1) {
+                    setVersions((prevV) => {
+                      const updatedV = [...prevV];
+                      updatedV[idx] = [{ imageUrl: p2Data.image, comment: undefined, model: p2Data.model }];
+                      return updatedV;
+                    });
+                  }
+                  const updated = currentResults.map((r) =>
                     r.pass1Key === p2Pass1Key
-                      ? {
-                          ...r,
-                          generatedUrl: p2Data.image,
-                          model: p2Data.model,
-                          pass2Pending: false,
-                          photoId: p2Data.photoId || r.photoId,
-                        }
+                      ? { ...r, generatedUrl: p2Data.image, model: p2Data.model, pass2Pending: false, photoId: p2Data.photoId || r.photoId }
                       : r
                   );
-                  // If no more pending pass2, clear isGenerating
                   if (!updated.some((r) => r.pass2Pending)) {
                     setTimeout(() => setIsGenerating(false), 0);
                   }
-                  return updated;
-                });
-                // Update versions array — match by pass1Key (stable) not imageUrl (race condition)
-                setVersions((prev) => {
-                  const resultIndex = results.findIndex((r) => r.pass1Key === p2Pass1Key);
-                  if (resultIndex === -1) return prev;
-                  const updated = [...prev];
-                  updated[resultIndex] = [{ imageUrl: p2Data.image, comment: undefined, model: p2Data.model }];
                   return updated;
                 });
               })
