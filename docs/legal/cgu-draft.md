@@ -273,8 +273,6 @@ En tout état de cause, la responsabilité de Versimo ne saurait excéder le mon
 
 Conformément aux articles L612-1 et suivants du Code de la consommation, en cas de litige non résolu à l'amiable entre Versimo et un consommateur, ce dernier peut recourir gratuitement à un médiateur de la consommation.
 
-**Médiateur désigné** : [A DESIGNER — obligation légale avant la première vente B2C — liste des médiateurs agréés disponible sur https://www.economie.gouv.fr/mediation-conso]
-
 La demande de médiation doit être adressée après avoir préalablement contacté Versimo par email à contact@versimo.fr et ne pas avoir obtenu de réponse satisfaisante dans un délai de 60 jours.
 
 La plateforme européenne de règlement en ligne des litiges est accessible à : https://ec.europa.eu/consumers/odr
@@ -318,6 +316,5 @@ Adresse : 54 rue Henri Barbusse, 92000 Nanterre
 - [A VERIFIER AVEC JURISTE] Articulation droit de rétractation / première utilisation sur l'abonnement Pro : la position retenue à l'Art. 5.3 (rétractation éteinte dès le premier crédit utilisé, même sous abonnement) est la plus défensive — à confirmer par un avocat
 - [A VERIFIER AVEC JURISTE] Qualification juridique de la recharge Pro : service numérique à exécution immédiate (rétractation éteinte dès utilisation) ou "bon d'achat" (rétractation de 14 jours) — impact sur la modalité de consentement
 - [A VERIFIER AVEC JURISTE] Conformité de la modalité de recueil du consentement de rétractation via page de confirmation Stripe (Art. 5.2) — s'assurer que la preuve de consentement est horodatée et conservée de manière probante
-- [A DESIGNER] Médiateur de la consommation agréé (Art. 10) — obligatoire avant la première vente B2C
 - [A VERIFIER AVEC JURISTE] Chaîne de titularité des images générées OpenAI → Versimo → Utilisateur
 - [A VERIFIER] Chartes spécifiques des portails immobiliers (SeLoger, LeBonCoin Immo, Bien'ici) sur les visuels IA avant commercialisation Mode Pro
