@@ -799,16 +799,35 @@ export async function POST(request: NextRequest) {
 
     // If surfaces-only mode, return pass 1 result directly
     if (!withFurniture) {
-      // Await cache save before responding (need pass1Saved flag + Replit kills worker after response)
       await pass1CachePromise;
       const outputBase64 = pass1Base64;
-      const response = NextResponse.json({
-        image: pass1.image,
-        model: `${pass1.model} (surfaces uniquement)`,
-        ...(pass1Saved ? { pass1_key: pass1CacheKey } : {}),
-      });
 
-      // Fire-and-forget: log to DB + save images to filesystem
+      // Save to gallery BEFORE response (Replit autoscale kills worker after response)
+      let photoId: string | null = null;
+      if (session?.user?.id) {
+        try {
+          const ts = Date.now();
+          const outputKey = await saveImage(outputBase64, `user_photo_${ts}_output`).catch(() => null);
+          if (outputKey) {
+            const inputKey = await saveImage(base64Image, `user_photo_${ts}_input`).catch(() => null);
+            photoId = await saveUserPhoto({
+              userId: session.user.id,
+              inputImageKey: inputKey,
+              outputImageKey: outputKey,
+              pass1ImageKey: null,
+              styleId: styleId || null,
+              roomType: isOutdoor ? null : (roomType || null),
+              roomLabel: null,
+              isOutdoor: isOutdoor || false,
+              propertyId: null,
+            });
+          }
+        } catch (err) {
+          console.error("[saveUserPhoto surfaces-only] FAILED:", err);
+        }
+      }
+
+      // Log to DB (fire-and-forget after gallery save)
       logGeneration({
         ip, styleId, surfacePrompt: trimmedSurface, furniturePrompt: trimmedFurniture,
         withFurniture: false, inputWidth: width, inputHeight: height,
@@ -825,9 +844,12 @@ export async function POST(request: NextRequest) {
         promptVersion: PROMPT_VERSION,
       }).catch((err) => console.error("DB log failed:", err));
 
-      // Generation succeeded — credit was already decremented optimistically
-
-      return response;
+      return NextResponse.json({
+        image: pass1.image,
+        model: `${pass1.model} (surfaces uniquement)`,
+        ...(pass1Saved ? { pass1_key: pass1CacheKey } : {}),
+        ...(photoId ? { photoId } : {}),
+      });
     }
 
     // Pass 2 is ALWAYS attempted after a successful pass 1 (audit #36, #39, #40: empty rooms = no client value).
