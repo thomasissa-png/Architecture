@@ -2407,8 +2407,8 @@ export default function Home() {
                         </div>
                       )}
 
-                      {/* Photo associator for merchants */}
-                      {session && result.photoId && !dismissedAssociators.has(index) && (
+                      {/* Photo associator — masqué après affinage/régénération */}
+                      {session && result.photoId && !dismissedAssociators.has(index) && resultVersions.length <= 1 && regeneratedIndex !== index && (
                         <PhotoAssociator
                           photoId={result.photoId}
                           onDismiss={() => setDismissedAssociators((prev) => { const next = new Set(prev); next.add(index); return next; })}
