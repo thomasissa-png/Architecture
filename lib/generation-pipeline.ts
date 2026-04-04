@@ -48,7 +48,7 @@ export async function extractRoomInventory(imageBase64: string): Promise<string>
                 type: "image_url",
                 image_url: {
                   url: `data:${mimeType};base64,${imageBase64}`,
-                  detail: "low",
+                  detail: "high",
                 },
               },
             ],
