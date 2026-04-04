@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPool, ensureTable, getImage, logGenerationReturningId } from "@/lib/db";
 import { compareImages } from "@/lib/image-metrics";
-import { PROMPT_VERSION } from "@/app/api/generate/route";
+import { PROMPT_VERSION } from "@/lib/generation-pipeline";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300; // 5 min — pipeline 2 passes can be slow
