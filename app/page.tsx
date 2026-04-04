@@ -777,15 +777,14 @@ export default function Home() {
                   }
                   return updated;
                 });
-                // Update versions array for this result
-                setVersions((prev) =>
-                  prev.map((entries) => {
-                    if (entries.length > 0 && entries[0].imageUrl === partialResult.generatedUrl) {
-                      return [{ imageUrl: p2Data.image, comment: undefined, model: p2Data.model }];
-                    }
-                    return entries;
-                  })
-                );
+                // Update versions array — match by pass1Key (stable) not imageUrl (race condition)
+                setVersions((prev) => {
+                  const resultIndex = results.findIndex((r) => r.pass1Key === p2Pass1Key);
+                  if (resultIndex === -1) return prev;
+                  const updated = [...prev];
+                  updated[resultIndex] = [{ imageUrl: p2Data.image, comment: undefined, model: p2Data.model }];
+                  return updated;
+                });
               })
               .catch((err) => {
                 if (err instanceof Error && err.name === "AbortError") return;
