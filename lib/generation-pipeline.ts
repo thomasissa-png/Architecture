@@ -131,7 +131,7 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
       `CHANGE ONLY the surface finishes: ${kitchenSurface}.`,
-      "FLOOR OVERRIDE: ceramic or natural stone floor tiles suited for a kitchen — NOT wood, NOT parquet. Subway tile or smooth splashback behind work area. Ceiling light per style description.",
+      "Floor: ceramic or natural stone tiles (kitchen-appropriate). Subway tile or smooth splashback behind work area. Ceiling light per style description.",
       "Remove construction leftovers: dangling cables, junction boxes, exposed wiring, electrical outlets, round black wall boxes, cable exits — blend into wall finish. Keep radiators, water heater (cylindrical tank), switches, vents in exact position.",
       "Room stays COMPLETELY EMPTY — no furniture, no appliances.",
       DSLR_LINE,
@@ -263,7 +263,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       COLUMN_PRESERVATION,
       EQUIPMENT_PRESERVATION,
       `ADD the following kitchen elements: ${furniturePrompt}.`,
-      "Built-in cabinetry and countertops against walls. Add island ONLY if kitchen appears >10m2. If compact, skip island. Do NOT add a ceiling pendant — the ceiling light was already placed in pass 1.",
+      "Built-in cabinetry and countertops against walls. Add island only if kitchen appears larger than 10m2. If compact, skip island. The ceiling light was already placed in pass 1 — keep it as-is.",
       "KITCHEN DENSITY — estimate width from reference points (door = 80cm, standard counter depth = 60cm). If kitchen appears compact (≤3m wide): MAXIMUM 4 elements total (cabinetry + oven + cooktop + sink). No island, no stools, no decorative counter accessories. Keep counters mostly clear. If kitchen appears medium (3-5m wide): add 1-2 stools ONLY if island/peninsula exists. Max 2 counter accessories. If kitchen appears large (>5m wide): full furniture set as described in the style prompt.",
       DEPTH_DISTRIBUTION_KITCHEN,
       CONTACT_SHADOWS,
@@ -282,7 +282,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       COLUMN_PRESERVATION,
       EQUIPMENT_PRESERVATION,
       `ADD the following bathroom fixtures and accessories: ${furniturePrompt}.`,
-      "If a bathtub, shower, sink, or toilet is visible in the input, it must appear in the output at the SAME position, SAME size, SAME shape. Treat existing fixtures as LOCKED elements.",
+      "If a bathtub, shower, sink, or toilet is visible in the input, keep it at the same position, same size, same shape.",
       "This is a compact bathroom by default. ONE vanity, ONE basin — never a double vanity. Use 60cm vanity, skip stool and basket, no freestanding tub. Only use 80cm vanity or add freestanding tub if the room is clearly wider than 2.5m. Ignore shower and tub dimensions from the style if room is compact — use 80cm shower maximum.",
       "Do not duplicate any fixture already visible. If a shower exists, do not add another. If a tub exists, do not add a shower stall.",
       "The bathroom width and depth must match the input exactly — do not widen or deepen the room to fit more fixtures.",
@@ -442,17 +442,14 @@ export function buildOutdoorFurnitureResponsesPrompt(
   subtypeOverride: string
 ): string {
   return [
-    "Edit this photo of a finished outdoor space. PRESERVE EXACTLY: all ground surfaces (material, color, texture), guard rails, walls, facades, sky — these are FINAL and must not change. Same camera angle, same geometry.",
-    `ADD outdoor furniture and decoration: ${furniturePrompt}.`,
+    "Edit this outdoor photo. Keep all ground surfaces, guard rails, walls, facades, and sky unchanged. Same camera angle. Open-air space — no ceiling.",
+    `Add outdoor furniture and decoration: ${furniturePrompt}.`,
     subtypeOverride ? subtypeOverride : "",
-    "Distribute furniture naturally across the available floor space. If space is large, create a primary seating group and a secondary accent further back.",
-    "Use visible architectural cues as scale references — a standard guard rail is 100cm tall, a French door is 215cm tall, a floor tile 60x60cm. All furniture must be proportional to these references.",
-    "All lighting fixtures OFF in daylight — unlit lanterns, dark string light bulbs, zero flames. Textiles must be outdoor-rated weather-resistant.",
-    "Scale plants to space: balcony/small terrace max 120cm, garden max 200cm. If space under 10m2, use bistro-scale furniture.",
-    "Keep glass doors and full-height windows unobstructed. If overhead structure exists (pergola, beams), consider one hanging plant or lantern.",
-    "Every piece must cast realistic shadows consistent with the existing natural light direction.",
-    "Preserve the exact lighting conditions from the input — same shadow hardness, same direction, same color temperature.",
-    "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus. Clean digital rendering. Photo-realistic outdoor photograph. No text, watermarks, or logos.",
+    "Distribute furniture across the full depth and width of the space. If large, create a primary group and a secondary accent further back or to the side.",
+    "Outdoor plants only — no houseplants (no monstera, no fiddle leaf, no pothos). Scale plants to space: balcony max 120cm, garden max 200cm.",
+    "All lighting fixtures off in daylight. Textiles must be outdoor-rated. If space under 10m2, use bistro-scale furniture.",
+    "Furniture must have contact shadows on the ground. Keep existing lighting direction.",
+    "DSLR wide-angle, deep DOF, sharp focus. Photo-realistic outdoor. No text or watermarks.",
   ]
     .filter(Boolean)
     .join(" ");
