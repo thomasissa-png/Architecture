@@ -468,6 +468,9 @@ async function tryOpenAIResponses(
         : buildFurnitureResponsesPrompt(furniturePrompt, roomTypeId);
   }
 
+  // Detect actual MIME type to avoid mismatch (PNG data sent as image/jpeg)
+  const mimeType = detectMimeType(imageBase64);
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- image_generation tool not in SDK types
   const response = await withTimeout(
     openai.responses.create({
@@ -478,7 +481,7 @@ async function tryOpenAIResponses(
           content: [
             {
               type: "input_image",
-              image_url: `data:image/jpeg;base64,${imageBase64}`,
+              image_url: `data:${mimeType};base64,${imageBase64}`,
               detail: "high",
             },
             {
@@ -492,7 +495,6 @@ async function tryOpenAIResponses(
         {
           type: "image_generation",
           model: IMAGE_MODEL,
-          action: "edit",
           quality: "high",
           input_fidelity: "high",
           size: size as "1024x1024" | "1536x1024" | "1024x1536",
@@ -524,6 +526,18 @@ async function tryOpenAIResponses(
   };
 }
 
+// ─── Detect base64 image MIME type from magic bytes ─────────────────
+function detectMimeType(base64: string): string {
+  // Check first few bytes of the base64 data for magic numbers
+  // PNG: iVBOR (base64 of 0x89504E47)
+  // JPEG: /9j/ (base64 of 0xFFD8FF)
+  // WEBP: UklGR (base64 of "RIFF")
+  if (base64.startsWith("iVBOR")) return "image/png";
+  if (base64.startsWith("/9j/")) return "image/jpeg";
+  if (base64.startsWith("UklGR")) return "image/webp";
+  return "image/jpeg"; // default fallback
+}
+
 // ─── Iteration-specific generation (pre-built prompt) ────────────────
 async function tryOpenAIResponsesWithPrompt(
   imageBase64: string,
@@ -531,6 +545,12 @@ async function tryOpenAIResponsesWithPrompt(
   size: string
 ): Promise<{ image: string; model: string }> {
   const openai = getOpenAI();
+
+  // Detect actual MIME type to avoid mismatch (PNG data sent as image/jpeg)
+  const mimeType = detectMimeType(imageBase64);
+
+  console.log(`[iteration-openai] Sending to OpenAI: imageSize=${imageBase64.length} chars, mimeType=${mimeType}, promptLength=${prompt.length} chars, size=${size}`);
+  console.log(`[iteration-openai] Prompt first 200 chars: ${prompt.substring(0, 200)}...`);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- image_generation tool not in SDK types
   const response = await withTimeout(
@@ -542,7 +562,7 @@ async function tryOpenAIResponsesWithPrompt(
           content: [
             {
               type: "input_image",
-              image_url: `data:image/jpeg;base64,${imageBase64}`,
+              image_url: `data:${mimeType};base64,${imageBase64}`,
               detail: "high",
             },
             { type: "input_text", text: prompt },
@@ -553,7 +573,6 @@ async function tryOpenAIResponsesWithPrompt(
         {
           type: "image_generation",
           model: IMAGE_MODEL,
-          action: "edit",
           quality: "high",
           input_fidelity: "high",
           size: size as "1024x1024" | "1536x1024" | "1024x1536",
@@ -585,6 +604,44 @@ async function tryOpenAIResponsesWithPrompt(
   };
 }
 
+/** Check if an error is a safety system rejection */
+function isSafetyRejection(err: Error): boolean {
+  const msg = err.message.toLowerCase();
+  return msg.includes("safety system") || msg.includes("content_policy") || msg.includes("moderation");
+}
+
+/** Build a simplified fallback prompt for safety rejection retries.
+ *  Strips potentially problematic phrasing (SURGICAL, LOCKED, identical pixels, etc.)
+ *  and keeps only the core instruction. */
+function simplifyPromptForSafetyRetry(originalPrompt: string): string {
+  // Extract the user's actual change request from APPLY THIS/THESE CHANGE(S)
+  const changeMatch = originalPrompt.match(/APPLY\s+(?:THIS\s+SINGLE\s+CHANGE\s+ONLY|THESE\s+CHANGES):\s*\n?([\s\S]*?)(?:(?:That is the ONLY|Add ONLY|Do NOT|ONLY add|Every piece|Preserve|DSLR|Distribute)\b)/i);
+  const changeRequest = changeMatch?.[1]?.trim() || "";
+
+  if (changeRequest) {
+    // Adjust mode: simplified prompt with just the change
+    return [
+      "Edit this furnished room photo. Keep everything the same except for this change:",
+      changeRequest,
+      "Keep the same camera angle, room structure, lighting, and all existing furniture.",
+      "Photo-realistic interior photograph. No text or watermarks.",
+    ].join(" ");
+  }
+
+  // Restyle mode or fallback: strip aggressive language
+  return originalPrompt
+    .replace(/SURGICAL EDIT[^.]*\./gi, "")
+    .replace(/Output must be 95\+% identical[^.]*\./gi, "")
+    .replace(/Camera position is LOCKED[^.]*\./gi, "Keep the same camera angle.")
+    .replace(/Room structure is LOCKED[^.]*\./gi, "Keep the same room structure.")
+    .replace(/EXACTLY the same number[^.]*\./gi, "Keep the same windows and doors.")
+    .replace(/mentally list every object[^.]*\./gi, "")
+    .replace(/That is the ONLY modification[^.]*\./gi, "")
+    .replace(/Every other pixel[^.]*\./gi, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
 async function generateIterationPass(
   base64Image: string,
   responsesPrompt: string,
@@ -595,16 +652,31 @@ async function generateIterationPass(
   }
 
   let lastError: Error | null = null;
-  for (let attempt = 0; attempt < MAX_PASS_RETRIES; attempt++) {
-    try {
-      return await tryOpenAIResponsesWithPrompt(base64Image, responsesPrompt, outputSize.openai);
-    } catch (err) {
-      lastError = err instanceof Error ? err : new Error(String(err));
-      console.error(`OpenAI iteration attempt ${attempt + 1}/${MAX_PASS_RETRIES} failed:`, lastError.message);
-      if (attempt < MAX_PASS_RETRIES - 1) {
-        await new Promise(r => setTimeout(r, RETRY_DELAY_MS));
-      }
-    }
+
+  // Attempt 1: original prompt
+  try {
+    return await tryOpenAIResponsesWithPrompt(base64Image, responsesPrompt, outputSize.openai);
+  } catch (err) {
+    lastError = err instanceof Error ? err : new Error(String(err));
+    console.error(`OpenAI iteration attempt 1/${MAX_PASS_RETRIES} failed:`, lastError.message);
+  }
+
+  // Attempt 2: if safety rejection, try with simplified prompt; otherwise retry same prompt
+  await new Promise(r => setTimeout(r, RETRY_DELAY_MS));
+
+  const useSimplified = lastError && isSafetyRejection(lastError);
+  const retryPrompt = useSimplified ? simplifyPromptForSafetyRetry(responsesPrompt) : responsesPrompt;
+
+  if (useSimplified) {
+    console.log(`[iteration] Safety rejection detected. Retrying with simplified prompt (${retryPrompt.length} chars vs ${responsesPrompt.length} chars)`);
+    console.log(`[iteration] Simplified prompt: ${retryPrompt.substring(0, 300)}...`);
+  }
+
+  try {
+    return await tryOpenAIResponsesWithPrompt(base64Image, retryPrompt, outputSize.openai);
+  } catch (err) {
+    lastError = err instanceof Error ? err : new Error(String(err));
+    console.error(`OpenAI iteration attempt 2/${MAX_PASS_RETRIES} failed:`, lastError.message);
   }
 
   throw new Error(`Échec itération après ${MAX_PASS_RETRIES} tentatives. ${lastError?.message ?? ""}`);
@@ -907,7 +979,9 @@ export async function POST(request: NextRequest) {
         throw new Error("Client disconnecté avant le début de l'itération.");
       }
 
-      console.log(`Starting iteration (${intent})... Output size: ${outputSize.openai}`);
+      console.log(`[iteration] Starting (${intent}): outputSize=${outputSize.openai}, imageSize=${sourceImageBase64.length} chars, mimeDetected=${detectMimeType(sourceImageBase64)}, promptLength=${responsesPrompt.length} chars`);
+      console.log(`[iteration] enrichedComment: "${preprocessResult.enrichedComment}"`);
+      console.log(`[iteration] Full prompt:\n${responsesPrompt}`);
       const result = await generateIterationPass(sourceImageBase64, responsesPrompt, outputSize);
       const t1 = Date.now();
 
