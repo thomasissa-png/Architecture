@@ -130,10 +130,10 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
       ANTI_FENETRE,
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
-      `CHANGE ONLY the surface finishes: ${kitchenSurface}.`,
+      `Change only the surface finishes: ${kitchenSurface}.`,
       "Floor: ceramic or natural stone tiles (kitchen-appropriate). Subway tile or smooth splashback behind work area. Ceiling light per style description.",
       "Remove construction leftovers: dangling cables, junction boxes, exposed wiring, electrical outlets, round black wall boxes, cable exits — blend into wall finish. Keep radiators, water heater (cylindrical tank), switches, vents in exact position.",
-      "Room stays COMPLETELY EMPTY — no furniture, no appliances.",
+      "Room stays completely empty — no furniture, no appliances.",
       DSLR_LINE,
     ].join(" ");
   }
@@ -145,10 +145,10 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
       ANTI_FENETRE,
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
-      `CHANGE ONLY the surface finishes: ${surfacePrompt}.`,
+      `Change only the surface finishes: ${surfacePrompt}.`,
       "Floor-to-ceiling ceramic tiles in shower zone and vanity area. Water-resistant floor — ceramic or stone, matte non-slip. Recessed IP44 ceiling spotlights.",
       "Remove construction leftovers: dangling cables, junction boxes, exposed wiring, electrical outlets, cable exits — blend into wall finish. Keep radiators, heaters, water heater (cylindrical tank), vents, switches in exact position.",
-      "Room stays COMPLETELY EMPTY — no fixtures, no objects.",
+      "Room stays completely empty — no fixtures, no objects.",
       DSLR_LINE,
     ].join(" ");
   }
@@ -160,10 +160,10 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
       ANTI_FENETRE,
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
-      `CHANGE ONLY the surface finishes: ${surfacePrompt}.`,
+      `Change only the surface finishes: ${surfacePrompt}.`,
       "Waterproof floor — small ceramic tiles or vinyl. Washable matte paint or tiles on lower walls.",
       "Remove construction leftovers: outlets, cables, junction boxes — blend into wall finish. Keep radiators, heaters, water heater (cylindrical tank), vents, switches in position.",
-      "Room stays COMPLETELY EMPTY — no fixtures, no objects.",
+      "Room stays completely empty — no fixtures, no objects.",
       DSLR_LINE,
     ].join(" ");
   }
@@ -175,10 +175,10 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
       ANTI_FENETRE,
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
-      `CHANGE ONLY the surface finishes: ${surfacePrompt}.`,
+      `Change only the surface finishes: ${surfacePrompt}.`,
       "Flooring per style description above. Ceiling light per style description. If ONE accent wall exists, preserve it — apply style color to other walls only.",
       "Remove construction leftovers: dangling cables, junction boxes, exposed wiring, electrical outlets, cable exits — blend into wall finish. Keep radiators, heaters, water heater (cylindrical tank), vents, switches in position.",
-      "Room stays COMPLETELY EMPTY — no furniture, no objects.",
+      "Room stays completely empty — no furniture, no objects.",
       DSLR_LINE,
     ].join(" ");
   }
@@ -190,10 +190,10 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
       ANTI_FENETRE,
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
-      `CHANGE ONLY the surface finishes: ${surfacePrompt}.`,
+      `Change only the surface finishes: ${surfacePrompt}.`,
       "Waterproof floor — white or light grey ceramic tiles matte. Walls in washable matte white paint.",
       "Remove construction leftovers: outlets, cables, junction boxes — blend into wall finish. Keep radiators, heaters, water heater (cylindrical tank), vents, switches in position.",
-      "Room stays COMPLETELY EMPTY — no appliances, no objects.",
+      "Room stays completely empty — no appliances, no objects.",
       DSLR_LINE,
     ].join(" ");
   }
@@ -205,10 +205,10 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
       ANTI_FENETRE,
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
-      `CHANGE ONLY the surface finishes: ${surfacePrompt}.`,
+      `Change only the surface finishes: ${surfacePrompt}.`,
       "Concrete or stone floor as-is or with sealant. Clean matte white or light grey paint over masonry.",
       "Remove construction leftovers: outlets, cables, junction boxes — blend into wall finish. Keep radiators, heaters, water heater (cylindrical tank), vents, switches in position.",
-      "Room stays COMPLETELY EMPTY — bare floors, bare walls.",
+      "Room stays completely empty — bare floors, bare walls.",
       DSLR_LINE,
     ].join(" ");
   }
@@ -220,10 +220,10 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
       ANTI_FENETRE,
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
-      `CHANGE ONLY the surface finishes: ${surfacePrompt}.`,
+      `Change only the surface finishes: ${surfacePrompt}.`,
       "Durable entrance floor — ceramic tiles, natural stone, or hard-wearing wood. Ceiling light per style description.",
       "Remove construction leftovers: outlets, cables, junction boxes — blend into wall finish. Keep radiators, heaters, water heater (cylindrical tank), vents, switches in position.",
-      "Room stays COMPLETELY EMPTY — no furniture, no objects.",
+      "Room stays completely empty — no furniture, no objects.",
       DSLR_LINE,
     ].join(" ");
   }
@@ -235,12 +235,12 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
     ANTI_FENETRE,
     CAMERA_PRESERVATION, LIGHT_PRESERVATION,
     CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
-    `CHANGE ONLY the surface finishes: ${surfacePrompt}.`,
+    `Change only the surface finishes: ${surfacePrompt}.`,
     "Apply the described finish to the existing floor and walls. Do not add structural elements that are absent from the input. For the ceiling light fixture, follow the style description above exactly.",
     "If the input has ONE accent wall (different color or texture), preserve it as-is — apply the style's wall color to the other walls only.",
     "Remove all visible construction elements: dangling cables, junction boxes, exposed wiring, electrical outlets, round black wall boxes, cable exits — blend into wall finish.",
     "Preserve all wall-mounted fixed equipment: radiators, heaters, water heater (cylindrical tank), vents, thermostats, switches, boiler in exact position.",
-    "Keep the room COMPLETELY EMPTY — no furniture, no rugs, no objects.",
+    "Keep the room completely empty — no furniture, no rugs, no objects.",
     DSLR_LINE,
   ].join(" ");
 }
@@ -250,8 +250,8 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
 // Shared compact fragments for pass 2
 const EQUIPMENT_PRESERVATION = "Keep wall-mounted equipment visible (radiators, heaters, vents, switches).";
 const CONTACT_SHADOWS = "Every piece must have visible contact shadows on the floor.";
-const DEPTH_DISTRIBUTION_KITCHEN = "Distribute kitchen elements across the FULL DEPTH of the room. Work zones along walls, island or table in the middle zone if space allows. Counter accessories spread across the full counter length — never cluster on one end.";
-const DEPTH_DISTRIBUTION_BEDROOM = "Distribute bedroom furniture across the FULL DEPTH of the room. Bed as primary anchor, dresser or wardrobe as background anchor in the back third. Never cluster all furniture against one wall.";
+const DEPTH_DISTRIBUTION_KITCHEN = "Distribute kitchen elements across the full depth of the room. Work zones along walls, island or table in the middle zone if space allows. Counter accessories spread across the full counter length — never cluster on one end.";
+const DEPTH_DISTRIBUTION_BEDROOM = "Distribute bedroom furniture across the full depth of the room. Bed as primary anchor, dresser or wardrobe as background anchor in the back third. Avoid clustering all furniture against one wall.";
 
 // v36: ACTION FIRST in all builders (v30 lesson), camera/structure at END
 export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: string | null): string {
@@ -264,7 +264,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       EQUIPMENT_PRESERVATION,
       `ADD the following kitchen elements: ${furniturePrompt}.`,
       "Built-in cabinetry and countertops against walls. Add island only if kitchen appears larger than 10m2. If compact, skip island. The ceiling light was already placed in pass 1 — keep it as-is.",
-      "KITCHEN DENSITY — estimate width from reference points (door = 80cm, standard counter depth = 60cm). If kitchen appears compact (≤3m wide): MAXIMUM 4 elements total (cabinetry + oven + cooktop + sink). No island, no stools, no decorative counter accessories. Keep counters mostly clear. If kitchen appears medium (3-5m wide): add 1-2 stools ONLY if island/peninsula exists. Max 2 counter accessories. If kitchen appears large (>5m wide): full furniture set as described in the style prompt.",
+      "Scale kitchen to apparent width — fewer elements if compact, full set if spacious. Skip island under 10m2.",
       DEPTH_DISTRIBUTION_KITCHEN,
       CONTACT_SHADOWS,
       "Scale references: door = 204cm, sill = 90cm. Freestanding objects only.",
@@ -400,7 +400,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
     EQUIPMENT_PRESERVATION,
     `ADD the following furniture and decoration: ${furniturePrompt}.`,
     "Freestanding objects only, resting on the floor. Furniture must not touch walls.",
-    "Distribute furniture across FULL DEPTH and WIDTH of the room. Primary seating group in the foreground third, at least one secondary anchor (side table, accent chair, floor lamp) in the back third. Never cluster everything in one zone.",
+    "Distribute furniture across full depth and width of the room. Primary seating group in the foreground third, at least one secondary anchor (side table, accent chair, floor lamp) in the back third. Avoid clustering everything in one zone.",
     "Adapt density to room size: if the visible floor area appears compact, keep 5-6 key pieces only. If the room is very large or deep, add a second furniture grouping in the back zone.",
     CONTACT_SHADOWS,
     "Scale references: door = 204cm, handle = 100cm, sill = 90cm. Scale furniture to room volume — if compact (<4m wide), use smaller pieces. Scale up if ceiling >3m.",
@@ -417,7 +417,7 @@ export function buildOutdoorSurfacesResponsesPrompt(
   subtypeOverride: string
 ): string {
   return [
-    "Edit this exact outdoor photo. PRESERVE EXACTLY: the space geometry, camera angle, every wall and fence position, every opening, ground level changes, sky.",
+    "Edit this exact outdoor photo. Preserve exactly: the space geometry, camera angle, every wall and fence position, every opening, ground level changes, sky.",
     "Open-air space — no ceiling, sky preserved as-is. Preserve highlights — do not recover blown-out sky.",
     `CHANGE ONLY the ground surface finish: ${surfacePrompt}.`,
     subtypeOverride ? subtypeOverride : "",
