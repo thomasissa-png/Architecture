@@ -1782,7 +1782,24 @@ export default function Home() {
                             };
                             setFiles((prev) => prev.filter((_, i) => i !== index));
                             // Supprimer les résultats générés pour cette photo
-                            setResults((prev) => prev.filter((r) => r.originalUrl !== filePreviewUrls[index]));
+                            const removedUrl = filePreviewUrls[index];
+                            setResults((prev) => prev.filter((r) => r.originalUrl !== removedUrl));
+                            // Nettoyer les versions correspondantes
+                            setVersions((prev) => prev.filter((_, i) => {
+                              const r = results[i];
+                              return r ? r.originalUrl !== removedUrl : true;
+                            }));
+                            setActiveVersions((prev) => prev.filter((_, i) => {
+                              const r = results[i];
+                              return r ? r.originalUrl !== removedUrl : true;
+                            }));
+                            // Si plus aucune photo, reset complet du state de génération
+                            if (files.length <= 1) {
+                              setIsGenerating(false);
+                              setIsRefining(false);
+                              setError(null);
+                              setIterationsRemaining(maxIterations);
+                            }
                             setPerPhotoStyles(reindex(perPhotoStyles));
                             setPerPhotoRoomTypes(reindex(perPhotoRoomTypes));
                             setPerPhotoCustomPrompts(reindex(perPhotoCustomPrompts));
