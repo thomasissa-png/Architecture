@@ -920,6 +920,7 @@ export default function Home() {
     setRegenerateConfirmIndex(null);
     setIsRegenerating(false);
     setRegeneratingIndex(null);
+    setDismissedAssociators(new Set());
   };
 
   const handleCancelGeneration = () => {
@@ -971,6 +972,7 @@ export default function Home() {
     setRegeneratingIndex(null);
     // Reset Changement 2 state
     setPendingGeneration(false);
+    setDismissedAssociators(new Set());
   };
 
   const handleOpenRefineModal = useCallback((resultIndex: number) => {
@@ -2523,7 +2525,7 @@ export default function Home() {
                       )}
 
                       {/* Photo associator — visible UNIQUEMENT sur une image finie (pas pendant affinage, régénération, ou passe 2) */}
-                      {session && result.photoId && !dismissedAssociators.has(index)
+                      {session && hasPro && result.photoId && !dismissedAssociators.has(index)
                         && !result.pass2Pending
                         && !(isRefining && isRefineTarget)
                         && !(isRegenerating && regeneratingIndex === index)
