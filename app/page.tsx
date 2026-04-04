@@ -211,7 +211,7 @@ export default function Home() {
         }
       })
       .catch(() => { /* silently fail — iterations stay at 0 */ });
-  }, [session?.user?.id]);
+  }, [session?.user?.id, checkoutSuccess]); // Re-fetch after Stripe checkout
 
   // --- Direct checkout from homepage pricing ---
   const [pendingPackId, setPendingPackId] = useState<string | null>(null);
@@ -447,6 +447,13 @@ export default function Home() {
       return;
     }
 
+    // Check credits vs total jobs before launching
+    const totalJobs = (Array.from(perPhotoStyles.values()) as string[][]).reduce((sum, v) => sum + v.length, 0);
+    if (userCredits !== null && totalJobs > userCredits) {
+      setError(`Vous avez ${userCredits} visuel${userCredits > 1 ? "s" : ""} restant${userCredits > 1 ? "s" : ""}, mais cette génération en nécessite ${totalJobs}. Réduisez le nombre de styles ou rechargez votre compte.`);
+      return;
+    }
+
     // Cancel any previous in-flight requests
     abortControllerRef.current?.abort();
     const controller = new AbortController();
@@ -671,6 +678,9 @@ export default function Home() {
               roomType: job.roomType || undefined,
             };
 
+            // Optimistic credit decrement (server already debited)
+            setUserCredits((prev) => prev !== null ? Math.max(0, prev - 1) : prev);
+
             // Add partial result immediately so user sees surfaces
             setResults((prev) => [...prev, partialResult]);
 
@@ -751,6 +761,9 @@ export default function Home() {
             return partialResult;
           }
 
+          // Optimistic credit decrement (server already debited)
+          setUserCredits((prev) => prev !== null ? Math.max(0, prev - 1) : prev);
+
           return {
             originalUrl: filePreviewUrls[job.img.fileIndex],
             generatedUrl: data.image,
@@ -827,7 +840,7 @@ export default function Home() {
         scrollToElement("step-results");
       }
     }
-  }, [files, filePreviewUrls, isOutdoor, outdoorSubtype, selectedRoomType, perPhotoStyles, perPhotoRoomTypes, perPhotoCustomPrompts, perPhotoOutdoor, perPhotoWithFurniture, perPhotoFormat, authStatus, startQueuePolling, maxIterations]);
+  }, [files, filePreviewUrls, isOutdoor, outdoorSubtype, selectedRoomType, perPhotoStyles, perPhotoRoomTypes, perPhotoCustomPrompts, perPhotoOutdoor, perPhotoWithFurniture, perPhotoFormat, authStatus, startQueuePolling, maxIterations, userCredits]);
 
   // Changement 2 — Garder la ref à jour pour le useEffect post-auth
   handleGenerateRef.current = handleGenerate;
@@ -1550,7 +1563,17 @@ export default function Home() {
             <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
               Upload
             </h3>
-            <UploadZone files={files} onFilesChange={setFiles} photoWarnings={photoWarnings} hidePreviews={files.length > 0} maxFiles={maxPhotos} />
+            {maxPhotos === 0 && userCredits === 0 ? (
+              <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-6 text-center">
+                <p className="text-sm text-foreground font-medium mb-2">Plus de visuels disponibles</p>
+                <p className="text-xs text-muted font-light mb-3">Rechargez votre compte pour continuer à générer.</p>
+                <a href="/pricing" className="text-xs text-sage font-medium underline underline-offset-4 hover:text-sage/80 transition-colors">
+                  Recharger
+                </a>
+              </div>
+            ) : (
+              <UploadZone files={files} onFilesChange={setFiles} photoWarnings={photoWarnings} hidePreviews={files.length > 0} maxFiles={maxPhotos} />
+            )}
           </div>
 
           {/* Step 2a: Type d'espace — HIDDEN (unified mode: per-photo cards handle this) — states kept for handleRefine compatibility */}
