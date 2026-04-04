@@ -330,7 +330,7 @@
   - --muted à #58585B minimum pour lisibilité
   - Gros problème sur l'itération = priorité absolue (session 30)
   - **PAS DE GRAIN PHOTOGRAPHIQUE** — rendu lisse et propre voulu. INTERDIT : film grain, ISO noise, sensor noise, vignetting. RÈGLE ABSOLUE.
-  - **UN SEUL MODÈLE : gpt-image-1.5** — hardcodé, pas de variable d'env, pas de fallback Flux/Replicate/DALL-E. Si erreur, retry + joli message. RÈGLE ABSOLUE.
+  - **UN SEUL MODÈLE : gpt-image-1** — hardcodé, pas de variable d'env, pas de fallback. gpt-image-1.5 INTERDIT (détruit la géométrie, audit 2-3/10, régressé 2 fois). RÈGLE ABSOLUE.
 
 - **Prochaines actions recommandées** :
   1. **Déployer v38 + tester itérations** : valider que SURGICAL EDIT empêche la régénération sans rendre le modèle inactif. @ia à relancer si problème.

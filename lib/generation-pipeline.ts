@@ -33,8 +33,9 @@ export const PROMPT_VERSION = "v43";
 
 // ─── Image generation model ─────────────────────────────────────────
 // v36: configurable via env var. Default gpt-image-1 (v32 reverted gpt-image-1.5 for spatial regression).
-// Décision fondateur : gpt-image-1.5 uniquement, pas de fallback, pas de variable d'env.
-const IMAGE_MODEL = "gpt-image-1.5";
+// ROLLBACK : gpt-image-1.5 détruit la géométrie (audit Lucas 2-3/10).
+// gpt-image-1 préserve l'espace. NE PAS remettre 1.5 sans audit complet.
+const IMAGE_MODEL = "gpt-image-1";
 
 // ─── Timeout wrapper for external API calls ─────────────────────────
 const API_TIMEOUT_MS = 120_000;
