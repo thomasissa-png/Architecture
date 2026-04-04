@@ -1781,6 +1781,8 @@ export default function Home() {
                               return next;
                             };
                             setFiles((prev) => prev.filter((_, i) => i !== index));
+                            // Supprimer les résultats générés pour cette photo
+                            setResults((prev) => prev.filter((r) => r.originalUrl !== filePreviewUrls[index]));
                             setPerPhotoStyles(reindex(perPhotoStyles));
                             setPerPhotoRoomTypes(reindex(perPhotoRoomTypes));
                             setPerPhotoCustomPrompts(reindex(perPhotoCustomPrompts));
@@ -2496,8 +2498,12 @@ export default function Home() {
                         </div>
                       )}
 
-                      {/* Photo associator — masqué après affinage/régénération */}
-                      {session && result.photoId && !dismissedAssociators.has(index) && resultVersions.length <= 1 && regeneratedIndex !== index && (
+                      {/* Photo associator — visible UNIQUEMENT sur une image finie (pas pendant affinage, régénération, ou passe 2) */}
+                      {session && result.photoId && !dismissedAssociators.has(index)
+                        && !result.pass2Pending
+                        && !(isRefining && isRefineTarget)
+                        && !(isRegenerating && regeneratingIndex === index)
+                        && (
                         <PhotoAssociator
                           photoId={result.photoId}
                           onDismiss={() => setDismissedAssociators((prev) => { const next = new Set(prev); next.add(index); return next; })}
