@@ -305,34 +305,27 @@
 
 ## Mémo de reprise — dernière session
 
-- **Date et heure de clôture** : 2026-04-04 (session 31)
-- **Branch** : `claude/review-context-image-gen-zWz91`
+- **Date et heure de clôture** : 2026-04-04 (session 32)
+- **Branch** : `claude/extract-project-context-HN2CR`
 - **Résumé de la session** :
-  - **MODE UNIFIÉ** : fusion MerchantMode + Standard en 1 seul flow pour tous (gratuit/Starter/Pro). Cartes per-photo toujours visibles. MerchantMode retiré de page.tsx (fichier conservé pour référence).
-  - **Prompts v45** : restructuration complète pour gpt-image-1.5 — "Edit" en premier token, préservation AVANT le style. PASS2_PREAMBLE ajouté aux 9 builders passe 2 (cause racine de la régression).
-  - **Modèle gpt-image-1.5** : décision fondateur absolue. On adapte les prompts au modèle, pas l'inverse.
-  - **Crédits** : max photos = min(crédits, 10), validation avant génération, décrémentation temps réel, re-fetch après checkout Stripe.
-  - **Bouton Régénérer** : relance de zéro (1 crédit), confirmation inline, loading overlay, badge "Nouveau résultat". Visible Starter+Pro, masqué Découverte.
-  - **Split mode** : visuel intermédiaire (passe 1 visible) dans le loading — fix React batching (isGenerating reste true pendant pass2Pending).
-  - **Itérations** : prompts adoucis (plus de "SURGICAL EDIT", "LOCKED", "95% identical pixels" → formulations neutres). Safety system rejection résolu. Session robuste (getSessionRobust : getServerSession + getToken fallback). userId dans le body client.
-  - **Comparateur custom** : Pointer Events natifs, plus de react-compare-slider (touch mobile cassé).
-  - **Modale recharge** : inline dans AuthButton, plus de redirect /pricing. Audit design 7.2→~8.8, copy 6.8→~8.5.
-  - **Stripe** : checkout/portal nouvel onglet, historique achats sur /compte, Customer Portal.
-  - **Distinction Découverte/Starter** : par historique d'achat (hasStarterAccess), pas credits > 0.
-  - **Ma galerie** : accessible tous comptes connectés (plus de gate 15 crédits).
-  - **Audits visuels** : Yann + Lucas confirment gpt-image-1.5 détruit la géométrie AVEC LES ANCIENS PROMPTS (2-3/10). Les prompts v45 restructurés doivent résoudre ça — À TESTER.
+  - **FIX P0 CRITIQUE** : route.ts avait ~600 lignes de code mort (copies locales des builders) qui masquaient les vrais prompts v45 de generation-pipeline.ts. Les prompts v45 (PASS1_PREAMBLE + PASS2_PREAMBLE = préservation-first) n'ont JAMAIS tourné en production. En plus, `action: "edit"` était absent du tool image_generation — gpt-image-1.5 était en mode "auto" et régénérait les scènes au lieu de les éditer.
+  - **Fix appliqué** : suppression des copies locales dans route.ts, import depuis generation-pipeline.ts. `action: "edit"` + PREAMBLES v45 + `detectMimeType()` sont maintenant actifs. Audit @ia : PASS sur toute la ligne.
+  - **Variantes mobilier** : 12 styles intérieurs + 8 extérieurs enrichis avec alternatives "choose one:" (canapé, table, luminaire, plantes, positionnement). Évite les générations identiques.
+  - **Audit Yann styles** : 8.7/10 en moyenne sur les 12 styles. Tous au-dessus de 8.0. Cosy le plus faible (8.0, variété 7.5 — palette monochrome par design).
+  - **Audits Lucas + Camille** : lancés mais ont timeout avant de produire leurs rapports. À relancer.
+  - **Pages légales complètes** : société Versi SAS, SIRET 912862612, 54 rue Henri Barbusse Nanterre. contact@versimo.fr partout. CGV v2.1 à jour (comptes en prod, Replicate retiré, crédits Découverte corrigés 2→2).
+  - **Contradictions résolues** : CLAUDE.md + project-context.md alignés sur gpt-image-1.5. Bloc mémo session 30 résiduel supprimé.
 
 - **Travaux en cours** :
-  1. **Tester v45 + gpt-image-1.5 en production** — les prompts restructurés (préservation-first) n'ont PAS encore été testés visuellement. PRIORITÉ ABSOLUE. Si la géométrie est toujours détruite, investiguer `input_fidelity` et le comportement spécifique de 1.5.
-  2. **Audit visuel v45** — lancer Yann+Lucas sur les premières générations v45 pour valider la préservation spatiale.
+  1. **TESTER EN PROD** — les vrais prompts v45 + action:"edit" sont enfin branchés. JAMAIS testés visuellement. PRIORITÉ ABSOLUE.
+  2. **Relancer audits Lucas + Camille** sur les styles/prompts (ont timeout en session 32).
 
 - **Travaux reportés (sessions précédentes, toujours valides)** :
-  1. CGV — mettre à jour (abonnement Pro)
-  2. Blog seed — `npx tsx scripts/seed-blog.ts` sur Replit
-  3. Domaine versimo.fr — blocker SEO/GEO n°1, action fondateur
-  4. SIRET/médiateur — placeholders pages légales
-  5. Clés API prod — Stripe, Google OAuth, Sentry (action fondateur)
-  6. Nettoyage : supprimer MerchantMode.tsx, DossierProgress.tsx, DossierResult.tsx (dead code)
+  1. Blog seed — `npx tsx scripts/seed-blog.ts` sur Replit
+  2. Domaine versimo.fr — blocker SEO/GEO n°1, action fondateur
+  3. Médiateur consommation — obligatoire avant première vente B2C
+  4. Clés API prod — Stripe, Google OAuth, Sentry (action fondateur)
+  5. Nettoyage : supprimer MerchantMode.tsx, DossierProgress.tsx, DossierResult.tsx (dead code)
 
 - **Préférences fondateur documentées** :
   - font-light (300) sacré — NE JAMAIS changer vers font-normal
@@ -344,12 +337,15 @@
   - **Ne jamais abandonner un outil par paresse** — si ça ne marche pas, on fixe les prompts.
 
 - **Prochaines actions recommandées** :
-  1. **Déployer et tester v45 + gpt-image-1.5** — générer 3-5 photos dans différents styles, vérifier la préservation spatiale
-  2. **Si OK** → lancer audit Yann+Lucas sur les nouvelles images
-  3. **Si KO** → investiguer `input_fidelity`, ajouter des instructions de comptage explicites (fenêtres, portes, dimensions)
-  4. **CGV** — mettre à jour pour l'abonnement Pro
+  1. **Déployer sur Replit et tester** — générer 3-5 photos (Scandinave facile + Méditerranéen difficile). Vérifier que la géométrie est préservée.
+  2. **Si OK (>7/10)** → lancer audit Yann+Lucas sur les nouvelles images. STOP, v45 suffit.
+  3. **Si KO (<6/10)** → passer à Phase 3 du plan @ia (docs/ia/fix-gpt-image-1.5-plan.md) : ancrage géométrique par comptage, prompts compacts ~120 mots, neutralisation stylistique passe 1.
+  4. **Relancer audits styles** : Lucas (technique prompts) + Camille (extérieurs) ont timeout.
 
 - **Commande de reprise suggérée** :
+```
+@orchestrator Reprends Versimo. Session 32 : FIX P0 livré — route.ts branchée sur generation-pipeline.ts (v45 builders + action:"edit" actifs pour la 1ère fois). Variantes mobilier ajoutées. TESTER EN PROD : déployer, générer 3-5 images, vérifier préservation spatiale. Si OK, audit Yann+Lucas. Si KO, Phase 3 du plan docs/ia/fix-gpt-image-1.5-plan.md.
+```
 ```
 @orchestrator Reprends Versimo. Session 31 : mode unifié livré (fusion MerchantMode), prompts v45 pour gpt-image-1.5 (restructuration préservation-first). À TESTER EN PROD : la géométrie est-elle préservée avec v45 ? Si oui, audit Yann+Lucas. Si non, investiguer input_fidelity et renforcer les instructions.
 ```
