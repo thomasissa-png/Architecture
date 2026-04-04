@@ -30,7 +30,7 @@ function getOpenAI(): OpenAI {
  * v42 (density conditionals: kitchen 3-tier width scaling, dining room compact/large, office compact skip bookshelf — fix gen #112 overcrowded compact kitchen),
  * v43 (audit croise Yann+Lucas #111-117: P0 COLUMN_PRESERVATION active tous builders, P0 ANTI_FENETRE remonte position 2, P1 anti-warm shift renforce white balance, P1 Cosy marqueurs tactiles quantites, P1 PHOTO_GRAIN restaure ISO 200 + vignetting),
  * v45 (gpt-image-1.5 preservation-first: PASS1_PREAMBLE+PASS2_PREAMBLE en tete de TOUS les builders — les 8 passe 1 + 9 passe 2 + 2 outdoor. Preservation AVANT style pour forcer le mode edition. "CHANGE ONLY" en passe 1, "ADD" en passe 2. Suppression doublons CAMERA/LIGHT en fin de prompt — deja dans les constantes en tete.) */
-export const PROMPT_VERSION = "v45";
+export const PROMPT_VERSION = "v47";
 
 // ─── Image generation model ─────────────────────────────────────────
 // v36: configurable via env var. Default gpt-image-1 (v32 reverted gpt-image-1.5 for spatial regression).
@@ -106,10 +106,10 @@ export function getOutputSize(
 
 // ── Shared prompt fragments (constants to avoid duplication) ─────────
 const DSLR_LINE = "DSLR full-frame wide-angle, deep DOF, sharp focus. Clean rendering, no HDR, no color grading, no text.";
-const CEILING_PRESERVATION = "Ceiling: if demolition damage visible, apply smooth plaster coat then style finish. Preserve intentional elements (beams, rafters, arches) with original texture. Keep ceiling curvature exactly.";
+const CEILING_PRESERVATION = "Ceiling: if demolition damage visible, apply smooth plaster coat then style finish. Preserve intentional elements (beams, rafters, arches, slab undersides) with original texture — keep raw concrete formwork marks, aged wood grain, and metal patina intact. Paint over the texture, not a smooth coat. Keep ceiling curvature exactly.";
 const COLUMN_PRESERVATION = "Keep each column or pillar as a separate vertical element at its exact position.";
 const LIGHT_PRESERVATION = "Preserve existing light direction and shadow positions. Keep the input's color temperature — warm materials reflect existing light without shifting overall tone. Keep whites neutral.";
-const WALL_PRESERVATION = "Wall geometry stays identical: same angles, corners, depth. Only change color and texture. Keep raw stone or brick visible with limewash unless style explicitly requests opaque paint.";
+const WALL_PRESERVATION = "Wall geometry stays identical: same angles, corners, depth. Only change color and texture. Keep raw stone or brick visible with limewash unless style explicitly requests opaque paint. Structural elements (IPN beams, concrete columns, mezzanine slab edges, metal lintels) keep their original surface material and texture — apply paint over the texture, not a smooth coat.";
 const CAMERA_PRESERVATION = "Same camera angle, height, tilt, and field of view as input.";
 const ANTI_FENETRE = "Same number of windows and doors as input, same positions, same sizes. Solid walls stay solid.";
 const ANTI_INVENTION = "Only modify surfaces as described. No new architectural elements (arches, vaults, columns, niches, coffers) unless already in the input.";
@@ -251,7 +251,7 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
 const EQUIPMENT_PRESERVATION = "Keep wall-mounted equipment visible (radiators, heaters, vents, switches).";
 const CONTACT_SHADOWS = "Every piece must have visible contact shadows on the floor.";
 const DEPTH_DISTRIBUTION_KITCHEN = "Distribute kitchen elements across the full depth of the room. Work zones along walls, island or table in the middle zone if space allows. Counter accessories spread across the full counter length — never cluster on one end.";
-const DEPTH_DISTRIBUTION_BEDROOM = "Distribute bedroom furniture across the full depth of the room. Bed as primary anchor, dresser or wardrobe as background anchor in the back third. Avoid clustering all furniture against one wall.";
+const DEPTH_DISTRIBUTION_BEDROOM = "Distribute bedroom furniture across the full depth and width of the room. Bed as primary anchor, dresser or wardrobe as background anchor in the back third. Balance nightstands on both sides when space allows. If one side of the room appears empty, place a floor lamp or bench to balance the composition laterally.";
 
 /**
  * Pre-resolve "choose one:" alternatives in a prompt by randomly picking one option.
@@ -338,8 +338,9 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       DEPTH_DISTRIBUTION_BEDROOM,
       CONTACT_SHADOWS,
       "Scale bed to room: if compact, 140cm bed instead of 160cm, skip bench. Door = 204cm reference.",
+      "Include 2-3 lived-in details: an open book on the nightstand, a casually draped throw on the bed, a ceramic mug on a side table.",
       "Place furniture INSIDE the room only — do not add any object on exterior terraces, balconies, or patios visible through windows or glazing.",
-      "Result should look like a luxury real estate listing photo.",
+      "Result should look like a luxury real estate listing photo — lived-in, not a sterile catalog.",
       DSLR_LINE,
     ].join(" ");
   }
@@ -397,12 +398,13 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       COLUMN_PRESERVATION,
       EQUIPMENT_PRESERVATION,
       `ADD the following furniture and decoration: ${resolvedPrompt}.`,
-      "Center dining table with chairs. If deep room, add sideboard as background anchor. If compact, round table 120cm + 4 chairs instead of rectangular 180cm + 6.",
+      "Center dining table with chairs, balanced across the room width. If deep room, add sideboard as background anchor in the back third. If one side is empty, place a floor lamp or console to balance laterally. If compact, round table 120cm + 4 chairs instead of rectangular 180cm + 6.",
       "Freestanding only — no wall art, no shelving. Furniture must not touch walls.",
       CONTACT_SHADOWS,
       "Door = 204cm, sill = 90cm references.",
+      "Include 2-3 lived-in details: a ceramic vase with a branch, a linen napkin casually folded, a carafe on the table.",
       "Place furniture INSIDE the room only — do not add any object on exterior terraces, balconies, or patios visible through windows or glazing.",
-      "Result should look like a luxury real estate listing photo.",
+      "Result should look like a luxury real estate listing photo — lived-in, not a sterile catalog.",
       DSLR_LINE,
     ].join(" ");
   }
@@ -416,12 +418,12 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
     EQUIPMENT_PRESERVATION,
     `ADD the following furniture and decoration: ${resolvedPrompt}.`,
     "Freestanding objects only, resting on the floor. Furniture must not touch walls.",
-    "Distribute furniture across full depth and width of the room. Primary seating group in the foreground third, at least one secondary anchor (side table, accent chair, floor lamp) in the back third. Avoid clustering everything in one zone.",
+    "Distribute furniture across full depth AND full width of the room — use both left and right sides. Primary seating group in the foreground third, at least one secondary anchor (side table, accent chair, floor lamp) in the back third. If the room has a recess or secondary zone behind a partition, place at least one piece there. Balance items laterally so neither side is empty.",
     "Adapt density to room size: if the visible floor area appears compact, keep 5-6 key pieces only. If the room is very large or deep, add a second furniture grouping in the back zone.",
     CONTACT_SHADOWS,
     "Scale references: door = 204cm, handle = 100cm, sill = 90cm. Scale furniture to room volume — if compact (<4m wide), use smaller pieces. Scale up if ceiling >3m.",
     "No duplicate items unless style calls for a pair.",
-    "Result should look like a luxury real estate listing photo — lived-in, not a sterile catalog.",
+    "Include 2-3 lived-in details: an open book, a coffee cup on a side table, a casually draped throw. Result should look like a luxury real estate listing photo — lived-in, not a sterile catalog.",
     "Place furniture INSIDE the room only — do not add any object on exterior terraces, balconies, or patios visible through windows or glazing.",
     DSLR_LINE,
   ].join(" ");
@@ -462,7 +464,7 @@ export function buildOutdoorFurnitureResponsesPrompt(
     "Edit this outdoor photo. Keep all ground surfaces, guard rails, walls, facades, and sky unchanged. Same camera angle. Open-air space — no ceiling.",
     `Add outdoor furniture and decoration: ${resolvedPrompt}.`,
     subtypeOverride ? subtypeOverride : "",
-    "Distribute furniture across the full depth and width of the space. If large, create a primary group and a secondary accent further back or to the side.",
+    "Distribute furniture across the full depth and width of the space — use both left and right sides. If large, create a primary group and a secondary accent further back or to the side.",
     "Outdoor plants only — no houseplants (no monstera, no fiddle leaf, no pothos). Scale plants to space: balcony max 120cm, garden max 200cm.",
     "All lighting fixtures off in daylight. Textiles must be outdoor-rated. If space under 10m2, use bistro-scale furniture.",
     "Furniture must have contact shadows on the ground. Keep existing lighting direction.",

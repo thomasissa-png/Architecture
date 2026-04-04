@@ -23,8 +23,8 @@ export function buildIterationFurnitureResponsesPrompt(
 
   return [
     "Edit this photo. Keep all surfaces (walls, floor, ceiling) unchanged. Same camera angle, same windows and doors.",
-    "Keep all existing furniture and objects exactly as they are — do not remove, move, or resize anything unless explicitly requested below.",
-    "This is a refinement. Room surfaces are final. Focus only on the changes below.",
+    "Before editing, note every visible object in this photo. All of them stay at their current position, size, and color — except changes explicitly requested below.",
+    "This is a refinement. Room surfaces are final. Existing furniture keeps its exact color and texture. Focus only on the changes below.",
     `Apply these changes:\n${modBlock}`,
     "Add only the described items. Everything else stays untouched.",
     "Distribute furniture across the full depth. Furniture must have contact shadows on the floor.",
@@ -66,7 +66,7 @@ export function buildIterationOutdoorFurnitureResponsesPrompt(
 
   return [
     "Edit this outdoor photo. Keep all ground surfaces, structures, fences, sky unchanged. Same camera angle.",
-    "Keep all existing furniture, planters, and decorations at their current positions.",
+    "Before editing, note every visible object in this photo. All of them stay at their current position, size, and color — except changes explicitly requested below.",
     `Apply these changes:\n${modBlock}`,
     "Add only the described items. Everything else stays untouched.",
     "Distribute furniture across the full depth. Freestanding objects only.",
@@ -86,7 +86,7 @@ export function buildAdjustResponsesPrompt(
     "Edit this photo. Make a small, precise change. Keep everything else unchanged.",
     "Before editing, mentally list every visible object. All must stay at same position, same size, same color — except the one change described below.",
     `The only change to make: ${enrichedComment}`,
-    "Keep all existing furniture, appliances, and decorations at their current positions. Keep walls, floor, ceiling, windows, and doors as they are. Same camera angle.",
+    "Keep all existing furniture, appliances, and decorations at their current positions, sizes, and colors. Keep walls, floor, ceiling, windows, and doors as they are. Same camera angle. After editing, verify each object is still at its original position except the one modified.",
     meta.roomType === "kitchen" || meta.roomType === "bathroom"
       ? "Keep all built-in cabinetry, appliances, countertops, and sink as they appear."
       : meta.roomType === "wc"
@@ -106,7 +106,7 @@ export function buildAdjustOutdoorResponsesPrompt(
     "Edit this outdoor photo. Make a small, precise change. Keep everything else unchanged.",
     "Before editing, mentally list every visible object. All must stay at same position, same size, same color — except the one change described below.",
     `The only change to make: ${enrichedComment}`,
-    "Keep all existing furniture, planters, lamps, and decorations at their current positions. Keep ground surface, walls, fences, and structures as they are. Same camera angle.",
+    "Keep all existing furniture, planters, lamps, and decorations at their current positions, sizes, and colors. Keep ground surface, walls, fences, and structures as they are. Same camera angle. After editing, verify each object is still at its original position except the one modified.",
     "If removing an object, fill the area with the surrounding ground texture.",
     "Keep existing vegetation and background plants. Open-air space — sky stays as-is.",
     "Keep existing lighting direction and shadows. Furniture must have contact shadows on the ground.",
