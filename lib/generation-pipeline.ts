@@ -459,6 +459,14 @@ export function buildOutdoorFurnitureResponsesPrompt(
     .join(" ");
 }
 
+// ─── Detect base64 image MIME type from magic bytes ─────────────────
+export function detectMimeType(base64: string): string {
+  if (base64.startsWith("iVBOR")) return "image/png";
+  if (base64.startsWith("/9j/")) return "image/jpeg";
+  if (base64.startsWith("UklGR")) return "image/webp";
+  return "image/jpeg";
+}
+
 // ─── OpenAI Responses API (PRIMARY) ─────────────────────────────────
 export async function tryOpenAIResponses(
   imageBase64: string,
@@ -494,7 +502,7 @@ export async function tryOpenAIResponses(
           content: [
             {
               type: "input_image",
-              image_url: `data:image/jpeg;base64,${imageBase64}`,
+              image_url: `data:${detectMimeType(imageBase64)};base64,${imageBase64}`,
               detail: "high",
             },
             {
@@ -558,7 +566,7 @@ export async function tryOpenAIResponsesWithPrompt(
           content: [
             {
               type: "input_image",
-              image_url: `data:image/jpeg;base64,${imageBase64}`,
+              image_url: `data:${detectMimeType(imageBase64)};base64,${imageBase64}`,
               detail: "high",
             },
             { type: "input_text", text: prompt },
