@@ -52,7 +52,7 @@ export function buildIterationFurnitureResponsesPrompt(
 
 // ─── Outdoor Iteration Builders ─────────────────────────────────────
 // Same logic as indoor but:
-// - No "walls, floor, ceiling" → "Ground surface and vertical structures are LOCKED"
+// - No "walls, floor, ceiling" → "Ground surface and vertical structures are preserved"
 // - No ceiling/luminaire directives
 // - No indoor-specific rules (radiators, zero windows check)
 
