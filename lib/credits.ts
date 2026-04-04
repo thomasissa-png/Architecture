@@ -167,21 +167,10 @@ export async function hasProAccess(userId: string): Promise<boolean> {
  * 1. User has Pro access (role 'pro'/'admin' or purchased 50+ credits)
  * 2. User has purchased at least 15 credits total (Starter pack threshold)
  */
-export async function hasGalleryAccess(userId: string): Promise<boolean> {
-  // Path 1: Pro or admin — reuse existing logic
-  const pro = await hasProAccess(userId);
-  if (pro) return true;
-
-  // Path 2: Total credits purchased >= 15 (Starter threshold)
-  await ensureTable();
-  const db = getPool();
-  const result = await db.query(
-    `SELECT COALESCE(SUM(credits_purchased), 0) AS total
-     FROM purchases
-     WHERE user_id = $1 AND status = 'completed'`,
-    [userId]
-  );
-  return Number(result.rows[0]?.total ?? 0) >= 15;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function hasGalleryAccess(_userId: string): Promise<boolean> {
+  // Galerie accessible à TOUS les utilisateurs connectés (décision fondateur 2026-04-04)
+  return true;
 }
 
 /**
