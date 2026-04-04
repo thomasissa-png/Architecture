@@ -306,7 +306,9 @@ export default function Home() {
   // Regenerate state
   const [regenerateConfirmIndex, setRegenerateConfirmIndex] = useState<number | null>(null);
   const [isRegenerating, setIsRegenerating] = useState(false);
+  const [regeneratingIndex, setRegeneratingIndex] = useState<number | null>(null);
   const [regeneratedIndex, setRegeneratedIndex] = useState<number | null>(null);
+  const [regenerateElapsed, setRegenerateElapsed] = useState(0);
   const [refineElapsed, setRefineElapsed] = useState(0);
 
   const heroRef = useReveal();
@@ -397,6 +399,18 @@ export default function Home() {
     }, 1000);
     return () => clearInterval(interval);
   }, [isRefining]);
+
+  // Timer for regenerate elapsed time
+  useEffect(() => {
+    if (!isRegenerating) {
+      setRegenerateElapsed(0);
+      return;
+    }
+    const interval = setInterval(() => {
+      setRegenerateElapsed((prev) => prev + 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [isRegenerating]);
 
   // Stable object URLs for file previews (no leak on re-render)
   const filePreviewUrls = useMemo(() => {
@@ -867,6 +881,7 @@ export default function Home() {
     // Reset regenerate state
     setRegenerateConfirmIndex(null);
     setIsRegenerating(false);
+    setRegeneratingIndex(null);
   };
 
   const handleCancelGeneration = () => {
@@ -914,6 +929,7 @@ export default function Home() {
     // Reset regenerate state
     setRegenerateConfirmIndex(null);
     setIsRegenerating(false);
+    setRegeneratingIndex(null);
     // Reset Changement 2 state
     setPendingGeneration(false);
   };
@@ -1070,6 +1086,8 @@ export default function Home() {
 
     setRegenerateConfirmIndex(null);
     setIsRegenerating(true);
+    setRegeneratingIndex(index);
+    setUserCredits((prev) => prev !== null ? Math.max(0, prev - 1) : prev);
     setError(null);
 
     // Cancel any previous in-flight requests
@@ -1110,6 +1128,7 @@ export default function Home() {
       } catch {
         setError("Impossible de lire l'image originale. Rechargez la page et réessayez.");
         setIsRegenerating(false);
+        setRegeneratingIndex(null);
         setRegenerateConfirmIndex(null);
         return;
       }
@@ -1236,6 +1255,7 @@ export default function Home() {
           })
           .finally(() => {
             setIsRegenerating(false);
+            setRegeneratingIndex(null);
             setRegeneratedIndex(index);
             setTimeout(() => setRegeneratedIndex(null), 3000);
           });
@@ -1264,6 +1284,7 @@ export default function Home() {
           return updated;
         });
         setIsRegenerating(false);
+        setRegeneratingIndex(null);
         // Show "Nouveau résultat" badge briefly
         setRegeneratedIndex(index);
         setTimeout(() => setRegeneratedIndex(null), 3000);
@@ -1272,6 +1293,7 @@ export default function Home() {
       if (e instanceof Error && e.name === "AbortError") return;
       setError(e instanceof Error ? e.message : "La régénération a échoué. Vérifiez votre connexion et réessayez.");
       setIsRegenerating(false);
+      setRegeneratingIndex(null);
     }
   }, [results, session?.user?.id, startQueuePolling]);
 
@@ -2218,8 +2240,47 @@ export default function Home() {
                         </div>
                       )}
 
-                      {/* Comparator (hidden during refine loading for this target) */}
-                      {!(isRefining && isRefineTarget) && (
+                      {/* Regenerate loading state */}
+                      {isRegenerating && regeneratingIndex === index && (
+                        <div className="relative rounded-2xl overflow-hidden border border-foreground/10 bg-foreground/5">
+                          <div className="relative">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={displayUrl}
+                              alt=""
+                              className="w-full h-auto object-contain blur-sm brightness-95 transition-all duration-700"
+                            />
+                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                              <div className="bg-background/90 backdrop-blur-sm rounded-xl px-5 py-4 shadow-sm text-center max-w-xs">
+                                <div className="flex justify-center gap-1 mb-3">
+                                  <div className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                                  <div className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                                  <div className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                                </div>
+                                <p className="text-sm text-foreground font-medium mb-1">
+                                  Régénération en cours… jusqu&apos;à 2 minutes
+                                </p>
+                                <p className="text-xs text-muted font-light">
+                                  {regenerateElapsed}s
+                                </p>
+                              </div>
+                              <button
+                                onClick={() => {
+                                  abortControllerRef.current?.abort();
+                                  setIsRegenerating(false);
+                                  setRegeneratingIndex(null);
+                                }}
+                                className="mt-3 inline-flex items-center gap-1.5 bg-background/90 backdrop-blur-sm border border-foreground/10 text-muted px-4 min-h-[36px] py-1.5 rounded-full text-xs font-medium hover:text-foreground hover:border-foreground/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+                              >
+                                Annuler
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Comparator (hidden during refine loading or regenerate loading for this target) */}
+                      {!(isRefining && isRefineTarget) && !(isRegenerating && regeneratingIndex === index) && (
                         <div className="relative">
                           {/* "Nouveau résultat" badge after regeneration */}
                           {regeneratedIndex === index && (
@@ -2303,8 +2364,8 @@ export default function Home() {
                         </div>
                       )}
 
-                      {/* Regenerate button — visible for Starter+ plans, hidden for Découverte */}
-                      {!isRefining && !result.pass2Pending && (hasStarter || hasPro) && (
+                      {/* Regenerate button — visible for Starter+ plans, hidden during regeneration loading */}
+                      {!isRefining && !result.pass2Pending && !(isRegenerating && regeneratingIndex === index) && (hasStarter || hasPro) && (
                         <div className="text-center">
                           {regenerateConfirmIndex === index ? (
                             <div className="bg-foreground/5 border border-foreground/10 rounded-xl p-4 max-w-sm mx-auto space-y-3">
@@ -2620,6 +2681,7 @@ export default function Home() {
         onClose={() => setIsRefineModalOpen(false)}
         onSubmit={handleRefine}
         iterationsRemaining={iterationsRemaining}
+        maxIterations={maxIterations}
         isLoading={isRefining}
         warnings={refineWarnings}
       />

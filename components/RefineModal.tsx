@@ -9,6 +9,7 @@ interface RefineModalProps {
   onClose: () => void;
   onSubmit: (comment: string) => void;
   iterationsRemaining: number;
+  maxIterations: number;
   isLoading: boolean;
   warnings?: string[];
 }
@@ -18,6 +19,7 @@ export default function RefineModal({
   onClose,
   onSubmit,
   iterationsRemaining,
+  maxIterations,
   isLoading,
   warnings = [],
 }: RefineModalProps) {
@@ -228,7 +230,7 @@ export default function RefineModal({
 
           {/* Iteration cost notice */}
           <p className="mt-4 text-xs text-muted/60 font-light text-center">
-            Affinage gratuit ({iterationsRemaining} restant{iterationsRemaining > 1 ? "s" : ""} sur 3)
+            Affinage gratuit ({iterationsRemaining} restant{iterationsRemaining > 1 ? "s" : ""} sur {maxIterations})
           </p>
 
           {/* Actions */}
