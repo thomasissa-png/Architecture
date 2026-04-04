@@ -321,6 +321,8 @@ export interface Pass1Meta {
   withFurniture?: boolean; // whether furniture pass was requested
   // Auth fallback: getServerSession can return null on Replit sporadically
   userId?: string;
+  // Original input image key for gallery "avant" in iterations/pass2Only
+  inputImageKey?: string;
 }
 
 export async function savePass1Cache(
