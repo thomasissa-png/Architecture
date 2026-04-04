@@ -428,14 +428,20 @@ export default function Home() {
     };
   }, [filePreviewUrls]);
 
-  // Reset per-photo overrides when files change
+  // Reset per-photo overrides only when NEW files are added (not on delete).
+  // The delete handler does its own reindexing — this useEffect must not overwrite it.
+  const prevFilesCountRef = useRef(0);
   useEffect(() => {
-    setPerPhotoStyles(new Map());
-    setPerPhotoRoomTypes(new Map());
-    setPerPhotoCustomPrompts(new Map());
-    setPerPhotoOutdoor(new Map());
-    setPerPhotoWithFurniture(new Map());
-    setPerPhotoFormat(new Map());
+    if (files.length > prevFilesCountRef.current) {
+      // Files were added — reset overrides for fresh configuration
+      setPerPhotoStyles(new Map());
+      setPerPhotoRoomTypes(new Map());
+      setPerPhotoCustomPrompts(new Map());
+      setPerPhotoOutdoor(new Map());
+      setPerPhotoWithFurniture(new Map());
+      setPerPhotoFormat(new Map());
+    }
+    prevFilesCountRef.current = files.length;
   }, [files]);
 
   // Abort controller for cancelling in-flight requests
@@ -919,6 +925,7 @@ export default function Home() {
   const handleCancelGeneration = () => {
     abortControllerRef.current?.abort();
     setIsGenerating(false);
+    setCurrentProcessing(0);
     setError(null);
     setPreprocessWarnings([]);
     // Clear pass2Pending on any results that were waiting for pass 2
