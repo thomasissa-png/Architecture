@@ -386,9 +386,9 @@ export async function POST(request: NextRequest) {
       const outputBase64 = result.image.replace(/^data:image\/[\w+]+;base64,/, "");
       const iterationNumber = previousModifications.length + 1;
 
-      // Fire-and-forget: save the furnished result as the new iteration base
+      // CRITICAL: await before response — Replit autoscale kills worker after response
       const effectiveSessionId = sessionId ?? pass1Key;
-      saveIterationBase(effectiveSessionId, outputBase64).catch((err) =>
+      await saveIterationBase(effectiveSessionId, outputBase64).catch((err) =>
         console.error("saveIterationBase (iteration) failed:", err)
       );
 
@@ -568,9 +568,9 @@ export async function POST(request: NextRequest) {
 
       const p2OutputBase64 = pass2Result.image.replace(/^data:image\/[\w+]+;base64,/, "");
 
-      // Save iteration base for future adjustments
+      // CRITICAL: await before response — Replit autoscale kills worker after response
       if (sessionId) {
-        saveIterationBase(sessionId, p2OutputBase64).catch((err) =>
+        await saveIterationBase(sessionId, p2OutputBase64).catch((err) =>
           console.error("saveIterationBase (pass2Only) failed:", err)
         );
       }
@@ -907,9 +907,11 @@ export async function POST(request: NextRequest) {
     const finalImage = pass2 ? pass2.image : pass1.image;
     const outputBase64 = finalImage.replace(/^data:image\/[\w+]+;base64,/, "");
 
-    // Fire-and-forget: save furnished result as iteration base for future adjust iterations
+    // CRITICAL: save furnished result as iteration base BEFORE response.
+    // Replit autoscale kills the worker after response — fire-and-forget is lost.
+    // Without this, "Affiner" gets an empty pass1 image instead of the furnished result.
     if (sessionId) {
-      saveIterationBase(sessionId, outputBase64).catch((err) =>
+      await saveIterationBase(sessionId, outputBase64).catch((err) =>
         console.error("saveIterationBase (initial gen) failed:", err)
       );
     }
