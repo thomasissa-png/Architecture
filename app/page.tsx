@@ -781,6 +781,11 @@ export default function Home() {
               })
               .catch((err) => {
                 if (err instanceof Error && err.name === "AbortError") return;
+                // iOS background disconnect — server continues, don't mark as failed
+                if (err instanceof BackgroundDisconnectError) {
+                  console.log("[pass2] background disconnect — server continues");
+                  return;
+                }
                 console.error("[pass2] error:", err);
                 setResults((prev) => {
                   const updated = prev.map((r) =>
@@ -1280,6 +1285,11 @@ export default function Home() {
           })
           .catch((err) => {
             if (err instanceof Error && err.name === "AbortError") return;
+            // iOS background disconnect — server continues, don't mark as failed
+            if (err instanceof BackgroundDisconnectError) {
+              console.log("[regenerate pass2] background disconnect — server continues");
+              return;
+            }
             console.error("[regenerate pass2] error:", err);
             setResults((prev) => prev.map((r) =>
               r.pass1Key === p2Pass1Key
