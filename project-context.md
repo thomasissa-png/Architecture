@@ -302,23 +302,54 @@
 
 ## Mémo de reprise — dernière session
 
-- **Date et heure de clôture** : 2026-04-02 (session 30)
-- **Branch** : `claude/session-recovery-analysis-jNy97`
+- **Date et heure de clôture** : 2026-04-04 (session 31)
+- **Branch** : `claude/review-context-image-gen-zWz91`
 - **Résumé de la session** :
-  - **Prompts v37** : 6 corrections P0 audit Yann+Lucas #91-95 implémentées dans 3 fichiers (route.ts, generation-pipeline.ts, iteration-prompt.ts). Anti-fenêtre hallucinée, water heater, anti-warm shift, texture poutres, camera LOCKED, pierre brute limewash. Fix cellar builder manquant détecté par @qa.
-  - **UX** : PDF headers/footers supprimés (Puppeteer displayHeaderFooter:false). VersionSelector visible pendant refine (v1 accessible). Scroll fix 150→600ms. 4 window.confirm() remplacés par modals (ArchiveConfirmModal ×3 + InlineGenerator inline ×1).
-  - **Audit itération #97/#98** : Yann 8.0→5.9 (-2.1), Lucas 7.4→4.5 — l'itération régénère la scène au lieu d'éditer chirurgicalement. Cause racine : prompt adjust sans inventaire concret.
-  - **Prompts v38** : SURGICAL EDIT framing, inventaire mental, anti-régénération, camera LOCKED propagé, anti-hallucination retrait, kitchen appliance preservation. Validé @ia (GO) + @qa (6/6 PASS).
+  - **MODE UNIFIÉ** : fusion MerchantMode + Standard en 1 seul flow pour tous (gratuit/Starter/Pro). Cartes per-photo toujours visibles. MerchantMode retiré de page.tsx (fichier conservé pour référence).
+  - **Prompts v45** : restructuration complète pour gpt-image-1.5 — "Edit" en premier token, préservation AVANT le style. PASS2_PREAMBLE ajouté aux 9 builders passe 2 (cause racine de la régression).
+  - **Modèle gpt-image-1.5** : décision fondateur absolue. On adapte les prompts au modèle, pas l'inverse.
+  - **Crédits** : max photos = min(crédits, 10), validation avant génération, décrémentation temps réel, re-fetch après checkout Stripe.
+  - **Bouton Régénérer** : relance de zéro (1 crédit), confirmation inline, loading overlay, badge "Nouveau résultat". Visible Starter+Pro, masqué Découverte.
+  - **Split mode** : visuel intermédiaire (passe 1 visible) dans le loading — fix React batching (isGenerating reste true pendant pass2Pending).
+  - **Itérations** : prompts adoucis (plus de "SURGICAL EDIT", "LOCKED", "95% identical pixels" → formulations neutres). Safety system rejection résolu. Session robuste (getSessionRobust : getServerSession + getToken fallback). userId dans le body client.
+  - **Comparateur custom** : Pointer Events natifs, plus de react-compare-slider (touch mobile cassé).
+  - **Modale recharge** : inline dans AuthButton, plus de redirect /pricing. Audit design 7.2→~8.8, copy 6.8→~8.5.
+  - **Stripe** : checkout/portal nouvel onglet, historique achats sur /compte, Customer Portal.
+  - **Distinction Découverte/Starter** : par historique d'achat (hasStarterAccess), pas credits > 0.
+  - **Ma galerie** : accessible tous comptes connectés (plus de gate 15 crédits).
+  - **Audits visuels** : Yann + Lucas confirment gpt-image-1.5 détruit la géométrie AVEC LES ANCIENS PROMPTS (2-3/10). Les prompts v45 restructurés doivent résoudre ça — À TESTER.
 
 - **Travaux en cours** :
-  1. **Tester v38 en production** — les corrections SURGICAL EDIT n'ont pas encore été testées sur de vraies itérations. @ia recommande de surveiller les 5 prochaines : si output = input (modèle trop conservateur), reformuler "95% identical pixels".
-  2. **CGV** — toujours à mettre à jour (abonnement Pro).
-  3. **Images galerie landing pages** — en attente de visuels réels.
+  1. **Tester v45 + gpt-image-1.5 en production** — les prompts restructurés (préservation-first) n'ont PAS encore été testés visuellement. PRIORITÉ ABSOLUE. Si la géométrie est toujours détruite, investiguer `input_fidelity` et le comportement spécifique de 1.5.
+  2. **Audit visuel v45** — lancer Yann+Lucas sur les premières générations v45 pour valider la préservation spatiale.
 
 - **Travaux reportés (sessions précédentes, toujours valides)** :
-  1. Blog seed — `npx tsx scripts/seed-blog.ts` sur Replit
-  2. Domaine versimo.fr — blocker SEO/GEO n°1, action fondateur
-  3. SIRET/médiateur — placeholders pages légales
+  1. CGV — mettre à jour (abonnement Pro)
+  2. Blog seed — `npx tsx scripts/seed-blog.ts` sur Replit
+  3. Domaine versimo.fr — blocker SEO/GEO n°1, action fondateur
+  4. SIRET/médiateur — placeholders pages légales
+  5. Clés API prod — Stripe, Google OAuth, Sentry (action fondateur)
+  6. Nettoyage : supprimer MerchantMode.tsx, DossierProgress.tsx, DossierResult.tsx (dead code)
+
+- **Préférences fondateur documentées** :
+  - font-light (300) sacré — NE JAMAIS changer vers font-normal
+  - Ne jamais demander permission pour fixer un bug QA — fixer directement
+  - --muted à #58585B minimum pour lisibilité
+  - **PAS DE GRAIN PHOTOGRAPHIQUE** — rendu lisse et propre voulu. RÈGLE ABSOLUE.
+  - **UN SEUL MODÈLE : gpt-image-1.5** — on adapte les prompts au modèle, pas l'inverse. RÈGLE ABSOLUE.
+  - **Dossiers PDF uniquement depuis /mes-biens** — pas de bouton dossier sur la page de génération.
+  - **Ne jamais abandonner un outil par paresse** — si ça ne marche pas, on fixe les prompts.
+
+- **Prochaines actions recommandées** :
+  1. **Déployer et tester v45 + gpt-image-1.5** — générer 3-5 photos dans différents styles, vérifier la préservation spatiale
+  2. **Si OK** → lancer audit Yann+Lucas sur les nouvelles images
+  3. **Si KO** → investiguer `input_fidelity`, ajouter des instructions de comptage explicites (fenêtres, portes, dimensions)
+  4. **CGV** — mettre à jour pour l'abonnement Pro
+
+- **Commande de reprise suggérée** :
+```
+@orchestrator Reprends Versimo. Session 31 : mode unifié livré (fusion MerchantMode), prompts v45 pour gpt-image-1.5 (restructuration préservation-first). À TESTER EN PROD : la géométrie est-elle préservée avec v45 ? Si oui, audit Yann+Lucas. Si non, investiguer input_fidelity et renforcer les instructions.
+```
   4. Clés API prod — Stripe, Google OAuth, Sentry (action fondateur)
   5. F5 Mode Décorateur — specs prêtes, pas implémenté
   6. Comparateur mobile — curseur touch events manquants
