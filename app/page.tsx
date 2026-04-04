@@ -200,6 +200,9 @@ export default function Home() {
           setMaxIterations(data.maxIterations);
           setIterationsRemaining(data.maxIterations);
         }
+        if (data?.credits !== undefined) {
+          setUserCredits(data.credits);
+        }
         if (data?.hasPro !== undefined) {
           setHasPro(data.hasPro);
         }
@@ -283,9 +286,10 @@ export default function Home() {
 
   // User plan state
   const [hasPro, setHasPro] = useState(false);
-  // Unified max photos based on plan: anonymous/Découverte=3, Starter=5, Pro=15
   const [hasStarter, setHasStarter] = useState(false);
-  const maxPhotos = hasPro ? 15 : hasStarter ? 5 : 3;
+  const [userCredits, setUserCredits] = useState<number | null>(null);
+  // Max photos = min(crédits restants, 10) — pour tous les comptes
+  const maxPhotos = Math.min(userCredits ?? 2, 10);
 
   // F1 — Iteration state (maxIterations fetched from API based on user pack)
   const [maxIterations, setMaxIterations] = useState(0);
