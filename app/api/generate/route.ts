@@ -376,10 +376,9 @@ export async function POST(request: NextRequest) {
 
       const t0 = Date.now();
 
-      // Check if client disconnected before starting expensive iteration
-      if (request.signal?.aborted) {
-        throw new Error("Client disconnecté avant le début de l'itération.");
-      }
+      // NOTE: do NOT check request.signal.aborted here.
+      // On mobile, switching tabs/apps aborts the signal even though the user
+      // intends to come back. The generation must continue to completion.
 
       console.log(`[iteration] Starting (${intent}): outputSize=${outputSize.openai}, imageSize=${sourceImageBase64.length} chars, mimeDetected=${detectMimeType(sourceImageBase64)}, promptLength=${responsesPrompt.length} chars`);
       console.log(`[iteration] enrichedComment: "${preprocessResult.enrichedComment}"`);
@@ -720,12 +719,9 @@ export async function POST(request: NextRequest) {
 
     const t0 = Date.now();
 
-    // Check if client disconnected before starting expensive work.
-    // Next.js App Router provides request.signal that aborts when the client drops the connection.
-    // This prevents wasting OpenAI API credits on abandoned requests.
-    if (request.signal?.aborted) {
-      throw new Error("Client disconnecté avant le début de la génération.");
-    }
+    // NOTE: do NOT check request.signal.aborted here.
+    // On mobile, switching tabs/apps aborts the signal even though the user
+    // intends to come back. The generation must continue to completion.
 
     console.log(`Starting pass 1 (surfaces)... Output size: ${outputSize.openai}${isOutdoor ? ` outdoor subtype: ${outdoorSubtype}` : roomType ? ` roomType: ${roomType}` : ""}`);
     const pass1 = await generatePass(base64Image, trimmedSurface, trimmedFurniture, 1, outputSize, isOutdoor ? null : roomType, outdoorParam);
@@ -848,12 +844,10 @@ export async function POST(request: NextRequest) {
     let pass2Failed = false;
     let pass2Attempts = 0;
 
-    if (request.signal?.aborted) {
-      // Client disconnected after pass 1 — don't waste credits on pass 2
-      console.warn("Client disconnected after pass 1 — skipping pass 2");
-      pass2Failed = true;
-      pass2Attempts = 0;
-    } else if (remainingBudget < 30_000) {
+    // NOTE: do NOT skip pass 2 on request.signal.aborted.
+    // Mobile tab-switch aborts the signal but the user expects the full result.
+    // The generation must always complete both passes.
+    if (remainingBudget < 30_000) {
       // Less than 30s left — not enough for a pass 2 attempt. Deliver pass 1.
       console.warn(`Deadline approaching (${Math.round(remainingBudget / 1000)}s left) — skipping pass 2 to avoid 504`);
       pass2Failed = true;

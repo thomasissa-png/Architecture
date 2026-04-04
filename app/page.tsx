@@ -81,17 +81,30 @@ function scrollToElement(id: string, delay = 600) {
   }, delay);
 }
 
-/** Fetch with 180s timeout + 1 automatic retry on network/timeout errors. */
+/** Wait for the page to be visible (resolves immediately if already visible). */
+function waitForVisible(): Promise<void> {
+  if (document.visibilityState === "visible") return Promise.resolve();
+  return new Promise((resolve) => {
+    const handler = () => {
+      if (document.visibilityState === "visible") {
+        document.removeEventListener("visibilitychange", handler);
+        resolve();
+      }
+    };
+    document.addEventListener("visibilitychange", handler);
+  });
+}
+
+/** Fetch with 180s timeout. Survives mobile tab-switching. */
 async function resilientFetch(
   url: string,
   init: RequestInit,
   parentSignal?: AbortSignal
 ): Promise<Response> {
   const TIMEOUT_MS = 180_000; // 3 min — pipeline 2 passes can take 60-90s
-  // NO automatic retry: /api/generate debits credits upfront.
-  // A retry after timeout = double billing (server may still be processing).
-  // The user has an explicit "Réessayer" button instead.
-  const MAX_RETRIES = 0;
+  // 1 retry ONLY when fetch is killed by mobile tab-switch (not user-initiated).
+  // The server continues processing — the retry just reconnects to get the result.
+  const MAX_RETRIES = 1;
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     const timeoutController = new AbortController();
@@ -108,13 +121,19 @@ async function resilientFetch(
       });
       return response;
     } catch (err) {
-      // If the user explicitly cancelled, don't retry
+      // If the user explicitly cancelled via UI button, don't retry
       if (parentSignal?.aborted) throw err;
-      // If timeout or network error, retry once
-      if (attempt < MAX_RETRIES) {
-        console.warn(`Fetch attempt ${attempt + 1} failed, retrying...`, err instanceof Error ? err.message : err);
+
+      // Mobile tab-switch: browser kills the fetch when page goes to background.
+      // Wait for the user to come back, then retry once.
+      // The server keeps processing — no double billing.
+      if (attempt < MAX_RETRIES && document.visibilityState === "hidden") {
+        console.warn("Fetch interrompu par changement d'onglet — attente du retour...");
+        await waitForVisible();
+        console.log("Page visible à nouveau — relance du fetch...");
         continue;
       }
+
       // Final failure — throw user-friendly error
       if (err instanceof Error && err.name === "AbortError") {
         throw new Error("La génération a pris trop de temps. Vérifiez votre connexion et réessayez.");
