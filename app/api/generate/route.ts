@@ -43,7 +43,7 @@ import { enqueueGeneration, shouldQueue } from "@/lib/generation-queue";
  * v37 (audit croise Yann+Lucas #91-95: P0 anti-fenetre hallucinee comptage explicite, P0 equipements muraux water heater nomme, P1 anti-warm shift materiaux chauds, P2 texture poutres conditionnelle, P2 camera position LOCKED, P1 pierre brute limewash),
  * v42 (density conditionals: kitchen 3-tier width scaling, dining room compact/large, office compact skip bookshelf — fix gen #112 overcrowded compact kitchen),
  * v43 (audit croise Yann+Lucas #111-117: P0 COLUMN_PRESERVATION active tous builders, P0 ANTI_FENETRE remonte position 2, P1 anti-warm shift renforce white balance, P1 Cosy marqueurs tactiles quantites, P1 PHOTO_GRAIN restaure ISO 200 + vignetting) */
-export const PROMPT_VERSION = "v43";
+export const PROMPT_VERSION = "v45";
 
 // ─── Image generation model ─────────────────────────────────────────
 // gpt-image-1.5 — décision fondateur absolue. On le fait marcher.
