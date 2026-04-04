@@ -709,6 +709,7 @@ export default function Home() {
               }),
             }, controller.signal)
               .then(async (p2Response) => {
+                if (controller.signal.aborted) return;
                 if (!p2Response.ok) {
                   const p2Err = await p2Response.json().catch(() => ({}));
                   console.error("[pass2] failed:", p2Err.error);
@@ -1221,6 +1222,7 @@ export default function Home() {
           }),
         }, controller.signal)
           .then(async (p2Response) => {
+            if (controller.signal.aborted) return;
             if (!p2Response.ok) {
               console.error("[regenerate pass2] failed");
               setResults((prev) => prev.map((r) =>
