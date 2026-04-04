@@ -33,8 +33,8 @@ export const PROMPT_VERSION = "v43";
 
 // ─── Image generation model ─────────────────────────────────────────
 // v36: configurable via env var. Default gpt-image-1 (v32 reverted gpt-image-1.5 for spatial regression).
-// Set IMAGE_MODEL=gpt-image-1.5 in env to switch back if regression is resolved.
-const IMAGE_MODEL = (process.env.IMAGE_MODEL as string) || "gpt-image-1";
+// Décision fondateur : gpt-image-1.5 uniquement, pas de fallback, pas de variable d'env.
+const IMAGE_MODEL = "gpt-image-1.5";
 
 // ─── Timeout wrapper for external API calls ─────────────────────────
 const API_TIMEOUT_MS = 120_000;

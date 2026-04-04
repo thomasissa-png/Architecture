@@ -1096,7 +1096,26 @@ export default function Home() {
       }
     }
 
-    // Recover original image dimensions from the data URI
+    // Convert blob: URL to base64 data URI (blob URLs can't be sent to the server)
+    let imageDataUri = result.originalUrl;
+    if (result.originalUrl.startsWith("blob:")) {
+      try {
+        const resp = await fetch(result.originalUrl);
+        const blob = await resp.blob();
+        imageDataUri = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(blob);
+        });
+      } catch {
+        setError("Impossible de lire l'image originale. Rechargez la page et réessayez.");
+        setIsRegenerating(false);
+        setRegenerateConfirmIndex(null);
+        return;
+      }
+    }
+
+    // Recover original image dimensions
     let width = 0;
     let height = 0;
     try {
@@ -1104,7 +1123,7 @@ export default function Home() {
       await new Promise<void>((resolve, reject) => {
         img.onload = () => { width = img.naturalWidth; height = img.naturalHeight; resolve(); };
         img.onerror = reject;
-        img.src = result.originalUrl;
+        img.src = imageDataUri;
       });
     } catch {
       // Dimensions unknown — server will handle 0x0
@@ -1115,7 +1134,7 @@ export default function Home() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          image: result.originalUrl,
+          image: imageDataUri,
           surfacePrompt,
           furniturePrompt,
           customPrompt: result.customPromptUsed || undefined,

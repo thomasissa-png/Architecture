@@ -46,9 +46,8 @@ import { enqueueGeneration, shouldQueue } from "@/lib/generation-queue";
 export const PROMPT_VERSION = "v43";
 
 // ─── Image generation model ─────────────────────────────────────────
-// v36: configurable via env var. Default gpt-image-1 (v32 reverted gpt-image-1.5 for spatial regression).
-// Set IMAGE_MODEL=gpt-image-1.5 in env to switch back if regression is resolved.
-const IMAGE_MODEL = (process.env.IMAGE_MODEL as string) || "gpt-image-1";
+// v43: gpt-image-1.5 — décision fondateur. Le revert v32 (régression spatiale) est résolu par les prompts v43.
+const IMAGE_MODEL = "gpt-image-1.5";
 
 // ─── Timeout wrapper for external API calls ─────────────────────────
 const API_TIMEOUT_MS = 120_000;

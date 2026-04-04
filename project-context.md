@@ -53,8 +53,8 @@
 - **Authentification** : À implémenter (aucune en place) — requis pour le système de packages/crédits
 - **Hébergement** : Replit
 - **Outils IA utilisés** :
-  - **Primary** : OpenAI Responses API (gpt-4.1) avec tool image_generation + input_fidelity "high"
-  - **Fallback** : Flux Depth Pro via Replicate (black-forest-labs/flux-depth-pro)
+  - **UNIQUE** : OpenAI Responses API (gpt-4.1) avec tool image_generation model **gpt-image-1.5** + input_fidelity "high" — PAS DE FALLBACK, pas de Flux/Replicate/DALL-E (décision fondateur 2026-04-04)
+  - **Si erreur** : retry régulier, message joli, résultat dans la galerie quand prêt
   - **Pre-processing prompts custom** : GPT-4.1-mini (traduction FR→EN, split surface/furniture, enrichissement)
   - **Pipeline** : 2 passes — passe 1 surfaces (murs/sol/plafond/luminaire) → passe 2 mobilier (meubles/textiles/déco)
   - **Agents qualité prompts** : Yann Duval (architecte d'intérieur) + Lucas Moreau (expert IA image)
@@ -329,7 +329,8 @@
   - Ne jamais demander permission pour fixer un bug QA — fixer directement
   - --muted à #58585B minimum pour lisibilité
   - Gros problème sur l'itération = priorité absolue (session 30)
-  - **PAS DE GRAIN PHOTOGRAPHIQUE** — rendu lisse et propre voulu. INTERDIT : film grain, ISO noise, sensor noise, vignetting. Régressé 2 fois (Sprint 16b ajouté, Sprint 19 retiré, v42 retiré, v43 re-ajouté par erreur @ia puis re-retiré). RÈGLE ABSOLUE.
+  - **PAS DE GRAIN PHOTOGRAPHIQUE** — rendu lisse et propre voulu. INTERDIT : film grain, ISO noise, sensor noise, vignetting. RÈGLE ABSOLUE.
+  - **UN SEUL MODÈLE : gpt-image-1.5** — hardcodé, pas de variable d'env, pas de fallback Flux/Replicate/DALL-E. Si erreur, retry + joli message. RÈGLE ABSOLUE.
 
 - **Prochaines actions recommandées** :
   1. **Déployer v38 + tester itérations** : valider que SURGICAL EDIT empêche la régénération sans rendre le modèle inactif. @ia à relancer si problème.

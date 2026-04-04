@@ -606,8 +606,9 @@ agents/
 
 ## Regles Prompts IA (CRITIQUE)
 
-- **Responses API en priorite** : utiliser `openai.responses.create()` avec le tool `image_generation` + `input_fidelity: "high"` + `size` correspondant au ratio de l'input. Le modele VOIT l'image via la vision et genere une version editee.
-- **Flux Depth Pro en fallback** : modele Replicate qui extrait une depth map de l'input. Passer `width` + `height` + `negative_prompt` explicitement.
+- **UN SEUL MODÈLE : gpt-image-1.5** via `openai.responses.create()` avec le tool `image_generation` + `input_fidelity: "high"` + `size` correspondant au ratio de l'input. PAS DE FALLBACK. Si erreur, retry régulièrement jusqu'à succès (le résultat apparaîtra dans la galerie). Message utilisateur joli : "Génération en cours, réessayez dans quelques instants."
+- **NE PAS utiliser Flux Depth Pro / Replicate / DALL-E / SDXL** — décision fondateur, un seul modèle, pas de fallback.
+- **NE PAS utiliser gpt-image-1** — toujours gpt-image-1.5 (hardcodé, pas de variable d'env).
 - **NE PAS utiliser images.edit / SDXL img2img / DALL-E 2** — inadaptes ou deprecated.
 - **Pipeline 2 passes avec PROMPTS SEPARES** : le client envoie `surfacePrompt` et `furniturePrompt`. Chaque passe recoit UNIQUEMENT le prompt qui la concerne.
 - **Passe 1 = surfaces** : utilise `surfacePrompt` (couleur murs, sol, plafond, luminaire). Piece VIDE. Preserve lumiere, angle, format.
