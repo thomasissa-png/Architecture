@@ -1,7 +1,8 @@
 # Conditions Générales d'Utilisation et de Vente — Versimo
 > Produit par @copywriter — 2026-03-25
-> Version 2.0 — DRAFT — À valider par un avocat avant mise en ligne publique
+> Version 2.1 — DRAFT — À valider par un avocat avant mise en ligne publique
 > Mise à jour 2026-03-31 : modèle économique v3 (3 tiers : Découverte gratuit, Starter one-shot, Pro abonnement mensuel + recharges)
+> Mise à jour 2026-04-04 : entité juridique (Versi), compte utilisateur en production, fournisseur IA unique (OpenAI), modalité de consentement rétractation
 > Applicable à compter de : [DATE DE MISE EN LIGNE A COMPLETER]
 
 ---
@@ -14,7 +15,7 @@
 
 Versimo est un service de home staging virtuel par intelligence artificielle, accessible sur le site versimo.fr. Il permet à tout utilisateur — architecte d'intérieur, marchand de biens ou particulier — de générer des visuels de pièces meublées à partir de photos de pièces vides.
 
-Les présentes Conditions Générales d'Utilisation et de Vente (ci-après "CGU/CGV") régissent l'ensemble des relations entre Versimo (ci-après "nous" ou "Versimo") et toute personne utilisant le service (ci-après "l'Utilisateur").
+Les présentes Conditions Générales d'Utilisation et de Vente (ci-après "CGU/CGV") régissent l'ensemble des relations entre la société Versi, éditrice du service Versimo (ci-après "nous" ou "Versimo"), et toute personne utilisant le service (ci-après "l'Utilisateur").
 
 L'utilisation du service implique l'acceptation pleine et entière des présentes CGU/CGV.
 
@@ -22,10 +23,13 @@ L'utilisation du service implique l'acceptation pleine et entière des présente
 
 ## Article 1 — Identité du prestataire
 
-**Versimo**
+**Versi** (éditrice du service Versimo)
 [FORME JURIDIQUE A COMPLETER]
 SIRET : [SIRET A COMPLETER]
+Capital social : [A COMPLETER]
+RCS : [A COMPLETER]
 Adresse : [ADRESSE A COMPLETER]
+Site institutionnel : https://versi.fr
 Email : contact@versimo.fr
 
 ---
@@ -56,9 +60,14 @@ Le service propose 12 styles curatés : Scandinave, Contemporain, Industriel, Ja
 
 Versimo offre **2 générations gratuites** à toute personne accédant au service, sans nécessité de créer un compte ni de fournir des coordonnées bancaires. Ces générations gratuites sont accordées dans la limite d'une utilisation raisonnable par adresse IP.
 
-### 3.2 Compte utilisateur [FONCTIONNALITE EN COURS DE DEVELOPPEMENT]
+### 3.2 Compte utilisateur
 
-La création d'un compte sera nécessaire pour acheter des crédits et conserver l'historique des générations. Les conditions de création et de gestion des comptes seront précisées lors de l'activation de cette fonctionnalité.
+La création d'un compte est nécessaire pour acheter des crédits et conserver l'historique des générations. L'inscription est disponible via deux méthodes :
+
+- **Connexion Google** (OAuth 2.0 — authentification déléguée à Google)
+- **Email et mot de passe** (authentification gérée par Versimo via NextAuth.js)
+
+L'Utilisateur s'engage à fournir des informations exactes lors de la création de son compte et à maintenir la confidentialité de ses identifiants de connexion. Versimo ne peut être tenu responsable des accès non autorisés résultant d'une négligence de l'Utilisateur dans la conservation de ses identifiants.
 
 ---
 
@@ -109,7 +118,7 @@ Les crédits de recharge sont valables **90 jours** à compter de la date d'acha
 
 | Fonctionnalité | Découverte | Starter | Pro |
 |----------------|------------|---------|-----|
-| Générations (12 styles intérieurs + 8 styles extérieurs) | 3 (one-time) | 15 (achat unique) | 50/mois (renouvelés) |
+| Générations (12 styles intérieurs + 8 styles extérieurs) | 2 (one-time) | 15 (achat unique) | 50/mois (renouvelés) |
 | Comparateur avant/après | Oui | Oui | Oui |
 | Téléchargement HD sans filigrane | Oui | Oui | Oui |
 | Itérations par photo | 0 | 1 | 3 |
@@ -150,11 +159,11 @@ Conformément à l'article L221-28, 13° du Code de la consommation, **le droit 
 
 Il en va de même pour les recharges de crédits (Starter et Pro) : l'utilisation d'un crédit de recharge emporte renonciation au droit de rétractation pour ce pack de recharge.
 
-**Condition impérative** : avant de confirmer votre achat, vous devrez cocher la case suivante :
+**Condition impérative** : le consentement exprès de l'Utilisateur est recueilli lors de la confirmation de commande (page de récapitulatif Stripe), par l'affichage et la validation explicite de la mention suivante :
 
-> "Je comprends que l'exécution du service numérique commence immédiatement dès la première génération d'image et je renonce expressément à mon droit de rétractation de 14 jours."
+> "En confirmant cet achat, je reconnais que l'exécution du service numérique commence immédiatement dès la première génération d'image et je renonce expressément à mon droit de rétractation de 14 jours."
 
-Sans cette validation, l'achat ne peut pas être finalisé.
+La validation de cette confirmation est une condition impérative à la finalisation de l'achat. La preuve de ce consentement est conservée par Versimo à des fins de conformité.
 
 ### 5.3 Tier Pro (abonnement mensuel) — résiliation et rétractation
 
@@ -242,7 +251,7 @@ Le non-respect de ces obligations peut entraîner la suspension ou la résiliati
 
 ### 9.1 Qualité des rendus
 
-Les visuels générés par Versimo sont produits par des systèmes d'intelligence artificielle (OpenAI gpt-4.1, Flux Depth Pro). La qualité des rendus peut varier selon la qualité et les caractéristiques de la photo uploadée. Versimo ne garantit pas un résultat spécifique pour chaque génération.
+Les visuels générés par Versimo sont produits par le système d'intelligence artificielle d'OpenAI (modèle gpt-4.1 avec génération d'image). La qualité des rendus peut varier selon la qualité et les caractéristiques de la photo uploadée. Versimo ne garantit pas un résultat spécifique pour chaque génération.
 
 **Versimo ne saurait être tenu responsable** d'un rendu jugé insuffisant, d'une décision prise sur la base d'un visuel généré, ou de toute conséquence découlant de l'usage commercial des images produites.
 
@@ -252,7 +261,7 @@ Versimo s'efforce de maintenir le service disponible en continu. Des interruptio
 
 ### 9.3 Dépendance aux API tiers
 
-La génération de visuels dépend des API d'OpenAI et de Replicate. Toute indisponibilité de ces services peut temporairement affecter le service Versimo, sans que cela constitue un manquement de Versimo à ses obligations.
+La génération de visuels dépend de l'API d'OpenAI. Toute indisponibilité de ce service peut temporairement affecter le service Versimo, sans que cela constitue un manquement de Versimo à ses obligations contractuelles.
 
 ### 9.4 Plafond de responsabilité
 
@@ -297,7 +306,7 @@ Adresse : [ADRESSE A COMPLETER]
 
 ---
 
-*Version 2.0 — Draft — Mars 2026 (mise à jour 2026-03-31 : modèle économique v3)*
+*Version 2.1 — Draft — Mise à jour 2026-04-04 : entité éditrice Versi, compte utilisateur en production, fournisseur IA unique OpenAI, consentement rétractation via confirmation Stripe*
 
 *Ce document doit être validé par un avocat spécialisé en droit du numérique et droit de la consommation avant mise en ligne publique.*
 
@@ -307,9 +316,10 @@ Adresse : [ADRESSE A COMPLETER]
 
 - [A VERIFIER AVEC JURISTE] Politique de remboursement des crédits non consommés (prorata vs non-remboursable) — notamment pour le Pro abonné qui résilie en milieu de mois
 - [A VERIFIER AVEC JURISTE] Articulation droit de rétractation / première utilisation sur l'abonnement Pro : la position retenue à l'Art. 5.3 (rétractation éteinte dès le premier crédit utilisé, même sous abonnement) est la plus défensive — à confirmer par un avocat
-- [A VERIFIER AVEC JURISTE] Qualification juridique de la recharge Pro : service numérique à exécution immédiate (rétractation éteinte dès utilisation) ou "bon d'achat" (rétractation de 14 jours) — impact sur la case de consentement
-- [A COMPLETER] SIRET, forme juridique, adresse de Versimo (Art. 1)
+- [A VERIFIER AVEC JURISTE] Qualification juridique de la recharge Pro : service numérique à exécution immédiate (rétractation éteinte dès utilisation) ou "bon d'achat" (rétractation de 14 jours) — impact sur la modalité de consentement
+- [A VERIFIER AVEC JURISTE] Conformité de la modalité de recueil du consentement de rétractation via page de confirmation Stripe (Art. 5.2) — s'assurer que la preuve de consentement est horodatée et conservée de manière probante
+- [A COMPLETER] SIRET, forme juridique, capital, RCS et adresse de la société Versi (Art. 1)
 - [A DESIGNER] Médiateur de la consommation agréé (Art. 10) — obligatoire avant la première vente B2C
 - [A COMPLETER] Date d'entrée en vigueur (préambule et bas de page)
 - [A VERIFIER AVEC JURISTE] Chaîne de titularité des images générées OpenAI → Versimo → Utilisateur
-- [A VERIFIER] Chartes spécifiques des portails immobiliers (SeLoger, LeBonCoin Immo, Bien'ici) sur les visuels IA avant commercialisation Mode Marchand
+- [A VERIFIER] Chartes spécifiques des portails immobiliers (SeLoger, LeBonCoin Immo, Bien'ici) sur les visuels IA avant commercialisation Mode Pro

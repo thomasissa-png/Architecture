@@ -6,7 +6,7 @@
 
 ## 1. Qui collecte vos données ?
 
-Versimo ([SIRET A COMPLETER], [ADRESSE A COMPLETER]) est responsable du traitement de vos données personnelles au sens de l'article 4 du RGPD.
+La société Versi ([SIRET A COMPLETER], [ADRESSE A COMPLETER]), éditrice du service Versimo, est responsable du traitement de vos données personnelles au sens de l'article 4 du RGPD.
 
 Contact pour toute question relative à vos données : privacy@versimo.fr [A CREER]
 
@@ -104,17 +104,7 @@ Pour en savoir plus : https://openai.com/policies/privacy-policy
 
 ---
 
-### 4.2 Replicate Inc. (génération d'images — modèle de secours)
-
-**Données transmises** : vos photos uploadées peuvent être transmises à Replicate en cas d'indisponibilité d'OpenAI, pour la génération via Flux Depth Pro.
-
-**Localisation** : États-Unis. [HYPOTHESE : certification DPF de Replicate à vérifier sur dataprivacyframework.gov avant mise en production — si absent, des clauses contractuelles types (SCCs) doivent être signées conformément à l'Art. 46 RGPD]
-
-Pour en savoir plus : https://replicate.com/privacy
-
----
-
-### 4.3 Replit Inc. (hébergement et base de données)
+### 4.2 Replit Inc. (hébergement et base de données)
 
 **Données hébergées** : l'ensemble du service (code, base de données PostgreSQL, stockage d'images) est hébergé sur l'infrastructure Replit.
 
@@ -124,7 +114,7 @@ Pour en savoir plus : https://replit.com/privacy
 
 ---
 
-### 4.4 Stripe Inc. (paiement)
+### 4.3 Stripe Inc. (paiement)
 
 **Données traitées** : coordonnées bancaires, montants des transactions. Stripe agit en tant que responsable de traitement indépendant pour les données de paiement.
 
@@ -166,12 +156,11 @@ Cette politique de confidentialité peut être mise à jour, notamment lors de l
 
 ---
 
-*Dernière mise à jour : mars 2026*
+*Dernière mise à jour : avril 2026 (retrait Replicate, entité Versi)*
 
 ---
 
 > **Hypothèses à valider avant mise en ligne**
-> - [HYPOTHÈSE] Certification DPF de Replicate : à vérifier sur https://www.dataprivacyframework.gov — si absent, contacter Replicate pour signer des SCCs avant toute mise en production
 > - [A CREER] Adresse email privacy@versimo.fr — à créer avant la mise en ligne de cette page
-> - [A COMPLETER] SIRET et adresse juridique de Versimo dans la section 1
+> - [A COMPLETER] SIRET et adresse juridique de la société Versi dans la section 1
 > - [A VERIFIER AVEC JURISTE] La chaîne de titularité OpenAI API → Versimo → utilisateur final sur les images générées, à confirmer au regard des CGU OpenAI API en vigueur

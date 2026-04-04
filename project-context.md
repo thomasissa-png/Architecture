@@ -297,6 +297,8 @@
 | Yann Duval | 2026-04-02 | docs/reviews/audit-visuel-2026-04-02-yann.md | Audit #97 Japandi cuisine base 8.0/10, #98 itération 5.9/10 (régression -2.1). Four encastré disparu, crédence supprimée, meubles hauts lissés, meuble halluciné. 3 recommandations P0 (inventaire explicite, SURGICAL EDIT, masking localisé). | L'itération régénère la scène au lieu d'éditer chirurgicalement — problème systémique du pipeline adjust. |
 | Lucas Moreau | 2026-04-02 | docs/reviews/audit-visuel-2026-04-02-lucas.md | Audit #97 Japandi cuisine 7.4/10 (poutres halluccinées), #98 itération 4.5/10 (four/crédence/accessoires disparus, warm shift, meuble halluciné). Cause racine : prompt d'itération sans préservation mobilier existant. | Confirmation croisée avec Yann : le prompt adjust manque d'inventaire concret et de framing SURGICAL EDIT. |
 | @ia + @qa | 2026-04-02 | lib/iteration-prompt.ts, route.ts, generation-pipeline.ts (v38) | SURGICAL EDIT framing (2 adjust builders), inventaire mental (4 builders), anti-régénération, Camera LOCKED (4 builders), anti-hallucination retrait, kitchen appliance preservation. PROMPT_VERSION v37→v38. Validé @ia (GO) + @qa (6/6 PASS après fix Camera LOCKED restyle). | "pixel-identical" évité (leçon Sprint 17) au profit de "95%+ identical pixels" — assez agressif sans être impossible. Directive remplissage zone vide ajoutée sur recommandation @ia (P1). |
+| @orchestrator | 2026-04-04 | CLAUDE.md, project-context.md (nettoyage contradictions) | Alignement modèle IA : gpt-image-1.5 partout (CLAUDE.md + project-context.md). Suppression bloc mémo session 30 résiduel (doublon avec session 31). | Session 31 = source de vérité. Le bloc session 30 contredisait session 31 sur le modèle (gpt-image-1 vs 1.5). CLAUDE.md disait "INTERDIT gpt-image-1.5" alors que le fondateur l'exige — corrigé. |
+| @legal | 2026-04-04 | docs/legal/cgu-draft.md, docs/legal/mentions-legales.md, docs/legal/privacy-policy.md | Mise à jour entité juridique : société Versi (versi.fr). Comptes utilisateurs = en production. Retrait Replicate/Flux des sous-traitants. Cohérence crédits Découverte (2, pas 3). | Versimo = nom commercial du service, Versi = entité juridique. Checkbox rétractation supprimée côté UI (préférence fondateur) — consentement via confirmation de commande Stripe. |
 
 ---
 
@@ -350,35 +352,6 @@
 ```
 @orchestrator Reprends Versimo. Session 31 : mode unifié livré (fusion MerchantMode), prompts v45 pour gpt-image-1.5 (restructuration préservation-first). À TESTER EN PROD : la géométrie est-elle préservée avec v45 ? Si oui, audit Yann+Lucas. Si non, investiguer input_fidelity et renforcer les instructions.
 ```
-  4. Clés API prod — Stripe, Google OAuth, Sentry (action fondateur)
-  5. F5 Mode Décorateur — specs prêtes, pas implémenté
-  6. Comparateur mobile — curseur touch events manquants
-  7. 7/12 styles non testés en pipeline 2 passes complet
-
-- **Préférences fondateur documentées** :
-  - font-light (300) sacré — NE JAMAIS changer vers font-normal
-  - Ne jamais demander permission pour fixer un bug QA — fixer directement
-  - --muted à #58585B minimum pour lisibilité
-  - Gros problème sur l'itération = priorité absolue (session 30)
-  - **PAS DE GRAIN PHOTOGRAPHIQUE** — rendu lisse et propre voulu. INTERDIT : film grain, ISO noise, sensor noise, vignetting. RÈGLE ABSOLUE.
-  - **UN SEUL MODÈLE : gpt-image-1** — hardcodé, pas de variable d'env, pas de fallback. gpt-image-1.5 INTERDIT (détruit la géométrie, audit 2-3/10, régressé 2 fois). RÈGLE ABSOLUE.
-
-- **Prochaines actions recommandées** :
-  1. **Déployer v38 + tester itérations** : valider que SURGICAL EDIT empêche la régénération sans rendre le modèle inactif. @ia à relancer si problème.
-  2. **CGV abonnement Pro** : mettre à jour le modèle économique. @legal.
-  3. **Clés API Stripe** : activer le parcours d'achat réel.
-  4. **Tester 7 styles non testés** : audit visuel complet.
-
-- **Blockers** :
-  - Déploiement Replit requis pour tester v38 et changements produit
-  - Clés Stripe non configurées
-  - Domaine versimo.fr
-
-- **Commande de reprise suggérée** :
-```
-@orchestrator Reprends Versimo. Session 30 : v37 (6 corrections audit #91-95) + v38 (SURGICAL EDIT iteration fix — audit #97/#98 Yann 5.9, Lucas 4.5 → prompt adjust reécrit). 4 confirm() remplacés par modals. PDF headers supprimés. Scroll fix. VersionSelector visible pendant refine. Priorités : (1) déployer v38 + tester 5 itérations en prod (surveiller si modèle trop conservateur), (2) CGV abonnement, (3) tester 7 styles non couverts.
-```
-
 ---
 
 ## Performance des agents

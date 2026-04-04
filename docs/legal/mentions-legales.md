@@ -1,5 +1,6 @@
 # Mentions légales — Versimo
 > Produit par @copywriter — 2026-03-25
+> Mise à jour 2026-04-04 : entité éditrice Versi, retrait Flux/Replicate de la section technologies
 > Conforme LCEN Art. 6 III — Loi n°2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique
 
 ---
@@ -8,7 +9,8 @@
 
 Le site versimo.fr est édité par :
 
-**Versimo**
+**Versi** (société éditrice du service Versimo)
+Site institutionnel : https://versi.fr
 Forme juridique : [A COMPLETER — ex. SAS, SASU, Micro-entreprise]
 SIRET : [SIRET A COMPLETER]
 Adresse du siège social : [ADRESSE A COMPLETER]
@@ -22,7 +24,7 @@ Email données personnelles : privacy@versimo.fr [A CREER]
 
 ## 2. Directeur de la publication
 
-[NOM A COMPLETER], en qualité de [gérant / président / directeur général] de Versimo.
+[NOM A COMPLETER], en qualité de [gérant / président / directeur général] de Versi.
 
 ---
 
@@ -50,7 +52,7 @@ Toute reproduction, représentation, modification ou diffusion, totale ou partie
 
 ### 4.2 Images générées par le service
 
-Les visuels produits par Versimo à partir des photos uploadées par les utilisateurs sont générés par intelligence artificielle (OpenAI gpt-4.1, Flux Depth Pro). En droit français, les œuvres générées par IA sans intervention créative d'une personne physique identifiable ne bénéficient pas de la protection du droit d'auteur au sens des articles L111-1 et suivants du Code de la propriété intellectuelle.
+Les visuels produits par Versimo à partir des photos uploadées par les utilisateurs sont générés par intelligence artificielle (OpenAI — modèle gpt-4.1 avec génération d'image). En droit français, les œuvres générées par IA sans intervention créative d'une personne physique identifiable ne bénéficient pas de la protection du droit d'auteur au sens des articles L111-1 et suivants du Code de la propriété intellectuelle.
 
 L'utilisateur conserve tous les droits sur les photos qu'il uploade. Versimo lui accorde une licence d'utilisation large — y compris à des fins commerciales — sur les images générées à partir de ses photos, dans les conditions définies aux Conditions Générales d'Utilisation.
 
@@ -63,10 +65,10 @@ L'utilisateur conserve tous les droits sur les photos qu'il uploade. Versimo lui
 Le service Versimo repose sur les technologies suivantes :
 
 - **Framework** : Next.js 14 (Vercel Inc.) — licence MIT
-- **Génération d'images IA** : OpenAI Responses API (gpt-4.1) — OpenAI Inc., San Francisco, CA, USA
-- **Génération d'images IA (fallback)** : Flux Depth Pro via Replicate — Replicate Inc., San Francisco, CA, USA
+- **Génération d'images IA** : OpenAI Responses API (gpt-4.1, gpt-image-1) — OpenAI Inc., San Francisco, CA, USA
 - **Base de données** : PostgreSQL — The PostgreSQL Global Development Group, licence PostgreSQL
 - **Stockage images** : Replit Object Storage — Replit Inc.
+- **Authentification** : NextAuth.js — licence ISC
 - **Interface** : React (Meta Platforms Inc.) — licence MIT, Tailwind CSS (Tailwind Labs Inc.) — licence MIT
 
 Les marques et logos de ces technologies sont la propriété de leurs détenteurs respectifs.
@@ -94,7 +96,7 @@ Pour toute question relative au site ou à son contenu :
 Email : contact@versimo.fr
 Adresse postale : [ADRESSE A COMPLETER]
 
-*Dernière mise à jour : mars 2026*
+*Dernière mise à jour : avril 2026*
 
 ---
 
