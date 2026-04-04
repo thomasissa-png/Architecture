@@ -84,6 +84,7 @@ export function buildAdjustResponsesPrompt(
 ): string {
   return [
     "Edit this photo. Make a small, precise change. Keep everything else unchanged.",
+    "Before editing, mentally list every visible object. All must stay at same position, same size, same color — except the one change described below.",
     `The only change to make: ${enrichedComment}`,
     "Keep all existing furniture, appliances, and decorations at their current positions. Keep walls, floor, ceiling, windows, and doors as they are. Same camera angle.",
     meta.roomType === "kitchen" || meta.roomType === "bathroom"
@@ -103,6 +104,7 @@ export function buildAdjustOutdoorResponsesPrompt(
 ): string {
   return [
     "Edit this outdoor photo. Make a small, precise change. Keep everything else unchanged.",
+    "Before editing, mentally list every visible object. All must stay at same position, same size, same color — except the one change described below.",
     `The only change to make: ${enrichedComment}`,
     "Keep all existing furniture, planters, lamps, and decorations at their current positions. Keep ground surface, walls, fences, and structures as they are. Same camera angle.",
     "If removing an object, fill the area with the surrounding ground texture.",

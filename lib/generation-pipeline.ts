@@ -110,14 +110,14 @@ const CEILING_PRESERVATION = "Ceiling: if demolition damage visible, apply smoot
 const COLUMN_PRESERVATION = "Keep each column or pillar as a separate vertical element at its exact position.";
 const LIGHT_PRESERVATION = "Preserve existing light direction and shadow positions. Keep the input's color temperature — warm materials reflect existing light without shifting overall tone. Keep whites neutral.";
 const WALL_PRESERVATION = "Wall geometry stays identical: same angles, corners, depth. Only change color and texture. Keep raw stone or brick visible with limewash unless style explicitly requests opaque paint.";
-const CAMERA_PRESERVATION = "Same camera angle, same lens perspective, same field of view as input.";
+const CAMERA_PRESERVATION = "Same camera angle, height, tilt, and field of view as input.";
 const ANTI_FENETRE = "Same number of windows and doors as input, same positions, same sizes. Solid walls stay solid.";
 const ANTI_INVENTION = "Only modify surfaces as described. No new architectural elements (arches, vaults, columns, niches, coffers) unless already in the input.";
 
 // v44: gpt-image-1.5 preservation preambles — MUST be the FIRST tokens in every prompt.
 // gpt-image-1.5 is more creative than gpt-image-1 and regenerates scenes unless preservation is stated FIRST.
 const PASS1_PREAMBLE = "Edit this photo. Preserve the room geometry, camera angle, all windows and doors (same count, same positions), wall layout, ceiling shape, and room dimensions.";
-const PASS2_PREAMBLE = "Edit this photo of a finished room. The wall colors, floor material, and ceiling finish are final — keep them unchanged. Same camera angle, same room geometry, same windows, same doors.";
+const PASS2_PREAMBLE = "Edit this photo of a finished room. The wall colors, floor material, and ceiling finish are final — keep them unchanged. Same camera angle, same room geometry, same windows, same doors. No curtains, no drapes.";
 
 // ── Pass 1: Surface finishing ────────────────────────────────────────
 // v36: ACTION FIRST in all builders (v30 lesson — GPT-image-1 weights early tokens more)
@@ -248,7 +248,7 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
 // ── Pass 2: Furniture placement ──────────────────────────────────────
 
 // Shared compact fragments for pass 2
-const EQUIPMENT_PRESERVATION = "Keep wall-mounted equipment visible (radiators, heaters, vents, switches). No curtains.";
+const EQUIPMENT_PRESERVATION = "Keep wall-mounted equipment visible (radiators, heaters, vents, switches).";
 const CONTACT_SHADOWS = "Every piece must have visible contact shadows on the floor.";
 const DEPTH_DISTRIBUTION_KITCHEN = "Distribute kitchen elements across the FULL DEPTH of the room. Work zones along walls, island or table in the middle zone if space allows. Counter accessories spread across the full counter length — never cluster on one end.";
 const DEPTH_DISTRIBUTION_BEDROOM = "Distribute bedroom furniture across the FULL DEPTH of the room. Bed as primary anchor, dresser or wardrobe as background anchor in the back third. Never cluster all furniture against one wall.";
