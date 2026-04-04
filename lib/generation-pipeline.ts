@@ -110,9 +110,9 @@ const CEILING_PRESERVATION = "Ceiling: if demolition damage visible, apply smoot
 const COLUMN_PRESERVATION = "Keep each column or pillar as a separate vertical element at its exact position.";
 const LIGHT_PRESERVATION = "Preserve existing light direction and shadow positions. Keep the input's color temperature — warm materials reflect existing light without shifting overall tone. Keep whites neutral.";
 const WALL_PRESERVATION = "Wall geometry stays identical: same angles, corners, depth. Only change color and texture. Keep raw stone or brick visible with limewash unless style explicitly requests opaque paint. Structural elements (IPN beams, concrete columns, mezzanine slab edges, metal lintels) keep their original surface material and texture — apply paint over the texture, not a smooth coat.";
-const CAMERA_PRESERVATION = "Same camera angle, height, tilt, and field of view as input.";
-const ANTI_FENETRE = "Same number of windows and doors as input, same positions, same sizes. Solid walls stay solid.";
-const ANTI_INVENTION = "Only modify surfaces as described. No new architectural elements (arches, vaults, columns, niches, coffers) unless already in the input.";
+const CAMERA_PRESERVATION = "Same camera angle, height, tilt, and field of view as input. The frame edges must match the input exactly — walls that are cut off at the edge of the input photo must be cut off at the same position in the output. Do not widen or narrow the frame.";
+const ANTI_FENETRE = "Count the windows and doors visible in the input photo. The output must have the EXACT same count, at the same positions, same sizes. If a wall has no window in the input, it must remain a solid wall in the output — even if the wall extends beyond the visible frame. Do not add windows, doors, or openings to walls that are partially visible or out of frame.";
+const ANTI_INVENTION = "Only modify surfaces as described. No new architectural elements (arches, vaults, columns, niches, coffers, windows, doors) unless already in the input. Areas beyond the frame edges of the input are unknown — leave them as-is, do not invent what is there.";
 
 // v44: gpt-image-1.5 preservation preambles — MUST be the FIRST tokens in every prompt.
 // gpt-image-1.5 is more creative than gpt-image-1 and regenerates scenes unless preservation is stated FIRST.
