@@ -105,20 +105,19 @@ export function getOutputSize(
 // - furniturePrompt: freestanding objects with precise silhouettes + scale
 
 // ── Shared prompt fragments (constants to avoid duplication) ─────────
-const DSLR_LINE = "DSLR full-frame 16-35mm f/8, deep DOF, sharp focus. Clean digital rendering. Do NOT add HDR processing, color grading, or cinematic tone mapping. No text or watermarks.";
-// PHOTO_GRAIN supprimé — décision fondateur : rendu lisse voulu, pas de grain/vignetting
-const CEILING_PRESERVATION = "CEILING RULE: If the ceiling shows ANY demolition damage (hanging plaster, exposed lath, holes, torn surfaces, peeling paint, cables, structural chaos), treat it as a BLANK CANVAS — cover EVERYTHING with smooth fresh plaster coat followed by the style ceiling finish. Do NOT preserve demolition damage as geometry. Only preserve INTENTIONAL structural elements (concrete beams, wooden rafters, brick arches, IPN metal beams) — keep their exact surface texture and patina. Smooth plaster BETWEEN beams only. Preserve ceiling CURVATURE exactly — vaults, arches, barrel ceilings, and curved surfaces must keep their exact profile. Do NOT flatten any curved ceiling into a flat plane.";
-const COLUMN_PRESERVATION = "Each structural column or pillar must remain as a separate vertical element at its exact position. Do NOT merge columns into arches or decorative frames.";
-const LIGHT_PRESERVATION = "Preserve existing light direction, shadow positions, and relative intensity. Maintain input's color temperature — warm-toned materials (brass, wood, copper) reflect existing light, they do NOT shift the overall lighting warm. Do not artificially brighten dark areas. Do not add any warm tint, amber cast, or golden color grading. Match the exact white balance of the input photo. The output color temperature must match the input exactly — measure by the whites (walls, ceiling, window frames). Raw concrete, bare masonry, and grey plaster must stay cool-grey — do not shift to beige, sand, or warm stone. Warm-toned MATERIALS (wood, brass, leather) have warm LOCAL color but must NOT shift the GLOBAL white balance.";
-const WALL_PRESERVATION = "Wall geometry must stay identical: same angles, same corners, same depth. Wall finishing means changing color and texture only — never add or remove volume, never round corners, never change wall thickness. Do not add baseboards or moldings unless already present in the input. If walls show raw stone, exposed brick, or masonry, apply a limewash or transparent finish over the existing texture — do NOT cover with opaque paint unless the surfacePrompt explicitly requests it.";
-const CAMERA_PRESERVATION = "Same camera angle, lens distortion, vanishing points, field of view, orientation. Camera position is LOCKED: same height, same tilt angle, same horizontal rotation as input.";
-const ANTI_FENETRE = "EXACTLY the same number of windows and doors as the input — same positions, same sizes. Walls without windows must remain solid.";
-const ANTI_INVENTION = "Do NOT invent architectural elements absent from the input: no arches, no vaults, no glass partitions, no columns, no niches, no decorative ceiling coffers. If the ceiling is damaged or stripped, apply a simple flat white finish — do not reconstruct ornamental geometry. If a wall is partially demolished, keep it as-is — do not complete or extend it.";
+const DSLR_LINE = "DSLR full-frame wide-angle, deep DOF, sharp focus. Clean rendering, no HDR, no color grading, no text.";
+const CEILING_PRESERVATION = "Ceiling: if demolition damage visible, apply smooth plaster coat then style finish. Preserve intentional elements (beams, rafters, arches) with original texture. Keep ceiling curvature exactly.";
+const COLUMN_PRESERVATION = "Keep each column or pillar as a separate vertical element at its exact position.";
+const LIGHT_PRESERVATION = "Preserve existing light direction and shadow positions. Keep the input's color temperature — warm materials reflect existing light without shifting overall tone. Keep whites neutral.";
+const WALL_PRESERVATION = "Wall geometry stays identical: same angles, corners, depth. Only change color and texture. Keep raw stone or brick visible with limewash unless style explicitly requests opaque paint.";
+const CAMERA_PRESERVATION = "Same camera angle, same lens perspective, same field of view as input.";
+const ANTI_FENETRE = "Same number of windows and doors as input, same positions, same sizes. Solid walls stay solid.";
+const ANTI_INVENTION = "Only modify surfaces as described. No new architectural elements (arches, vaults, columns, niches, coffers) unless already in the input.";
 
 // v44: gpt-image-1.5 preservation preambles — MUST be the FIRST tokens in every prompt.
 // gpt-image-1.5 is more creative than gpt-image-1 and regenerates scenes unless preservation is stated FIRST.
-const PASS1_PREAMBLE = "Edit this exact photo. PRESERVE EXACTLY: the room geometry, camera angle, every window position and count, every door position and count, wall layout, ceiling shape, room dimensions. The output room must be geometrically identical to the input.";
-const PASS2_PREAMBLE = "Edit this photo of a finished room. PRESERVE EXACTLY: all wall colors, floor material, ceiling finish — these surfaces are FINAL and must not change. Same camera angle, same room geometry, same windows, same doors.";
+const PASS1_PREAMBLE = "Edit this photo. Preserve the room geometry, camera angle, all windows and doors (same count, same positions), wall layout, ceiling shape, and room dimensions.";
+const PASS2_PREAMBLE = "Edit this photo of a finished room. The wall colors, floor material, and ceiling finish are final — keep them unchanged. Same camera angle, same room geometry, same windows, same doors.";
 
 // ── Pass 1: Surface finishing ────────────────────────────────────────
 // v36: ACTION FIRST in all builders (v30 lesson — GPT-image-1 weights early tokens more)
@@ -249,8 +248,8 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
 // ── Pass 2: Furniture placement ──────────────────────────────────────
 
 // Shared compact fragments for pass 2
-const EQUIPMENT_PRESERVATION = "Keep ALL wall-mounted fixed equipment visible: water heater (cylindrical tank), radiator, convector, thermostat, ventilation grille, electrical panel, boiler — do not remove, hide, or cover them with furniture. Do not place furniture in front of radiators. No curtains.";
-const CONTACT_SHADOWS = "Every piece must appear firmly grounded on the floor with visible contact shadows — especially furniture placed in the back of the room.";
+const EQUIPMENT_PRESERVATION = "Keep wall-mounted equipment visible (radiators, heaters, vents, switches). No curtains.";
+const CONTACT_SHADOWS = "Every piece must have visible contact shadows on the floor.";
 const DEPTH_DISTRIBUTION_KITCHEN = "Distribute kitchen elements across the FULL DEPTH of the room. Work zones along walls, island or table in the middle zone if space allows. Counter accessories spread across the full counter length — never cluster on one end.";
 const DEPTH_DISTRIBUTION_BEDROOM = "Distribute bedroom furniture across the FULL DEPTH of the room. Bed as primary anchor, dresser or wardrobe as background anchor in the back third. Never cluster all furniture against one wall.";
 

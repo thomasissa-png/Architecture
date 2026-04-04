@@ -22,32 +22,28 @@ export function buildIterationFurnitureResponsesPrompt(
     .join("\n");
 
   return [
-    "Edit this photo. PRESERVE EXACTLY: all surfaces (walls, floor, ceiling), camera angle, every window and door at the same position and count.",
-    "Keep the same camera height, tilt angle, horizontal rotation, lens distortion, vanishing points, field of view.",
-    "Walls without windows must remain solid. Each structural column or pillar must remain as a separate vertical element at its exact position.",
+    "Edit this photo. Keep all surfaces (walls, floor, ceiling) unchanged. Same camera angle, same windows and doors.",
     "Keep all existing furniture and objects exactly as they are — do not remove, move, or resize anything unless explicitly requested below.",
     "This is a refinement. Room surfaces are final. Focus only on the changes below.",
     `Apply these changes:\n${modBlock}`,
-    "Add only the items described above. Everything else stays untouched. Leave the rest of the floor empty.",
-    "Distribute furniture across the full depth of the room. Place items in the foreground third and at least one anchor in the back third. Avoid clustering all furniture in one zone.",
-    "Every piece must appear firmly grounded on the floor with visible contact shadows — especially furniture placed in the back of the room. Match shadow hardness to the lighting type.",
-    "Preserve existing light direction and color temperature from the input photo. Even if the style uses warm materials, the room's overall lighting temperature must match the input. No warm tint or yellow cast.",
-    // Room-type-specific fixture rules
+    "Add only the described items. Everything else stays untouched.",
+    "Distribute furniture across the full depth. Furniture must have contact shadows on the floor.",
+    "Keep existing lighting direction and color temperature.",
     meta.roomType === "kitchen" || meta.roomType === "bathroom"
-      ? "Add room-appropriate fixtures and freestanding accessories. Built-in cabinetry, vanity units, and countertops are expected for this room type."
+      ? "Built-in cabinetry and countertops expected for this room type."
       : meta.roomType === "wc"
-      ? "Wall-hung toilet and wall-mounted hand basin expected. Other items (shelf, brush holder) freestanding only. Very small space — do not overcrowd."
+      ? "Small space — keep it simple."
       : meta.roomType === "laundry"
-      ? "Washing machine and functional equipment expected. Storage cabinet, drying rack, laundry basket. No decorative objects, no luxury items."
+      ? "Washing machine and functional storage expected."
       : meta.roomType === "cellar"
-      ? "Functional storage only — shelving, storage boxes, utility light. Wine rack if space allows. No luxury furniture, no decorative objects."
+      ? "Functional storage only."
       : meta.roomType === "entryway"
-      ? "Small space — do not overcrowd. Freestanding items only: console, coat rack, small bench, runner rug."
+      ? "Small space — console, coat rack, bench, runner rug."
       : meta.allowWallMounted
-      ? "Wall-mounted items are allowed ONLY for the items explicitly requested by the user."
-      : "ONLY add freestanding objects resting on the floor. Do not attach anything to walls.",
-    "Preserve all wall-mounted fixed equipment: radiators, heaters, water heater (cylindrical tank), vents, thermostats, switches, boiler. Do not place furniture in front of radiators.",
-    "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus. Clean digital rendering. Photo-realistic interior photograph. No text, watermarks, or logos. ",
+      ? "Wall-mounted items allowed for the items requested."
+      : "Freestanding objects only.",
+    "Keep wall-mounted equipment visible (radiators, heaters, vents).",
+    "DSLR wide-angle, deep DOF, sharp focus. Photo-realistic interior. No text or watermarks.",
   ].join(" ");
 }
 
@@ -69,22 +65,12 @@ export function buildIterationOutdoorFurnitureResponsesPrompt(
     .join("\n");
 
   return [
-    "Edit this outdoor photo. PRESERVE EXACTLY: all ground surfaces, guard rails, walls, facades, gates, fences, sky, camera angle.",
-    "Keep the same camera height, tilt angle, horizontal rotation, lens distortion, vanishing points, field of view.",
-    "Ground surface and vertical structures must remain visually identical to the input. Same colors, same textures, same geometry. Shadows from furniture are expected and natural.",
-    "Keep all existing furniture, planters, lamps, and decorations exactly as they are — do not remove, move, or resize any existing item.",
-    "This is a refinement of a previous outdoor generation. The ground surface and vertical structures in this photo are final. They must not change — not even subtle color shifts or texture changes.",
-    "Focus only on adjusting the outdoor furniture and decoration as described below.",
+    "Edit this outdoor photo. Keep all ground surfaces, structures, fences, sky unchanged. Same camera angle.",
+    "Keep all existing furniture, planters, and decorations at their current positions.",
     `Apply these changes:\n${modBlock}`,
-    "Add only the items described above. Everything else in the photo — all existing furniture, planters, lamps — stays untouched.",
-    "Do not add any other furniture, decoration, planter, lamp, or object not explicitly mentioned. Leave the rest of the space empty.",
-    "Distribute furniture across the full depth of the space. Primary group foreground, secondary anchor further back. Avoid clustering everything in one zone.",
-    "Place all objects naturally on the existing ground. Every piece of outdoor furniture must appear firmly grounded with visible contact shadows consistent with the existing natural light direction.",
-    "Only add freestanding outdoor objects. Do not attach anything to walls, guard rails, or facades.",
-    "Do not place opaque structures (screens, shelving, A-frames) directly in front of full-height windows or glass doors.",
-    "Preserve existing vegetation in the background. Do not alter tree lines, hedges, or background plants.",
-    "Open-air space — no ceiling. Sky preserved as-is.",
-    "Preserve the exact lighting conditions from the input — same shadow hardness, same direction, same color temperature.",
+    "Add only the described items. Everything else stays untouched.",
+    "Distribute furniture across the full depth. Freestanding objects only.",
+    "Keep existing vegetation and background plants. Sky stays as-is. Same lighting.",
     "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus. Clean digital rendering. Photo-realistic outdoor photograph. No text, watermarks, or logos. ",
   ].join(" ");
 }
@@ -97,25 +83,17 @@ export function buildAdjustResponsesPrompt(
   meta: { roomType?: string | null; allowWallMounted?: boolean },
 ): string {
   return [
-    "Edit this photo. SURGICAL EDIT — Make the SMALLEST possible change. Do NOT regenerate the scene. Output must be 95%+ identical pixels to the input.",
-    "Keep all visible furniture, appliances, decorations, and fixtures at the same position, same size, same color, same texture.",
-    "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation. Keep the same camera height, tilt angle, and horizontal rotation.",
-    "Keep the same number of windows and doors at the same positions and sizes. Walls without windows must remain solid. Room structure preserved — walls, floor, ceiling, paint, windows, doors must remain visually identical to the input. Each structural column or pillar must remain as a separate vertical element at its exact position.",
-    `Apply this single change only: ${enrichedComment}`,
-    "That is the only modification. Keep everything else in the image as it is.",
-    "Do not remove, move, resize, or recolor any existing item unless the user explicitly asks for it in the change above.",
-    "Do not add any item not described in the change above. Do not rearrange furniture. Do not change wall color or texture. Do not change floor material or color.",
-    "If removing an object, fill the vacated area with the surrounding floor or wall texture — do not place a new object in its place.",
-    // Room-type-specific rules
+    "Edit this photo. Make a small, precise change. Keep everything else unchanged.",
+    `The only change to make: ${enrichedComment}`,
+    "Keep all existing furniture, appliances, and decorations at their current positions. Keep walls, floor, ceiling, windows, and doors as they are. Same camera angle.",
     meta.roomType === "kitchen" || meta.roomType === "bathroom"
-      ? "Preserve all built-in cabinetry, appliances (oven, stove, fridge, dishwasher), countertops, backsplash, and sink exactly as they appear."
+      ? "Keep all built-in cabinetry, appliances, countertops, and sink as they appear."
       : meta.roomType === "wc"
-      ? "Very small space — do not overcrowd."
+      ? "Small space — keep it simple."
       : "",
-    "Every piece must appear firmly grounded on the floor with visible contact shadows. Match shadow hardness to the lighting type.",
-    "Preserve existing light direction and color temperature from the input photo. Even if the style uses warm materials, the room's overall lighting temperature must match the input. No warm tint or yellow cast.",
-    "Preserve all wall-mounted fixed equipment: radiators, heaters, water heater (cylindrical tank), vents, thermostats, switches, boiler.",
-    "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus. Clean digital rendering. Photo-realistic interior photograph. No text, watermarks, or logos. ",
+    "If removing an object, fill the area with the surrounding floor or wall texture.",
+    "Keep existing lighting direction and color temperature. Furniture must have contact shadows on the floor.",
+    "DSLR wide-angle, deep DOF, sharp focus. Photo-realistic interior. No text or watermarks.",
   ].filter(Boolean).join(" ");
 }
 
@@ -124,20 +102,13 @@ export function buildAdjustOutdoorResponsesPrompt(
   enrichedComment: string,
 ): string {
   return [
-    "Edit this outdoor photo. SURGICAL EDIT — Make the SMALLEST possible change. Do NOT regenerate the scene. Output must be 95%+ identical pixels to the input.",
-    "Keep all visible furniture, planters, lamps, and decorations at the same position, same size, same color, same texture.",
-    "Preserve the exact same camera angle, lens distortion, vanishing points, field of view, and image orientation. Keep the same camera height, tilt angle, and horizontal rotation.",
-    "Ground surface and vertical structures are preserved — guard rails, walls, facades, gates, fences must remain visually identical.",
-    `Apply this single change only: ${enrichedComment}`,
-    "That is the only modification. Keep everything else in the image as it is.",
-    "Do not remove, move, resize, or recolor any existing item unless the user explicitly asks for it in the change above.",
-    "Do not add any item not described in the change above. Do not rearrange furniture.",
-    "If removing an object, fill the vacated area with the surrounding ground texture — do not place a new object in its place.",
-    "Every piece must appear firmly grounded on the ground with visible contact shadows consistent with the existing natural light direction.",
-    "Preserve existing vegetation in the background. Do not alter tree lines, hedges, or background plants.",
-    "Open-air space — no ceiling. Sky preserved as-is.",
-    "Preserve the exact lighting conditions from the input — same shadow hardness, same direction, same color temperature.",
-    "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus. Clean digital rendering. Photo-realistic outdoor photograph. No text, watermarks, or logos. ",
+    "Edit this outdoor photo. Make a small, precise change. Keep everything else unchanged.",
+    `The only change to make: ${enrichedComment}`,
+    "Keep all existing furniture, planters, lamps, and decorations at their current positions. Keep ground surface, walls, fences, and structures as they are. Same camera angle.",
+    "If removing an object, fill the area with the surrounding ground texture.",
+    "Keep existing vegetation and background plants. Open-air space — sky stays as-is.",
+    "Keep existing lighting direction and shadows. Furniture must have contact shadows on the ground.",
+    "DSLR wide-angle, deep DOF, sharp focus. Photo-realistic outdoor. No text or watermarks.",
   ].join(" ");
 }
 
