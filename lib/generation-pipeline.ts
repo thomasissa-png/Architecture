@@ -175,7 +175,7 @@ const ANTI_INVENTION = "Only modify surfaces as described. No new architectural 
 
 // v44: gpt-image-1.5 preservation preambles — MUST be the FIRST tokens in every prompt.
 // gpt-image-1.5 is more creative than gpt-image-1 and regenerates scenes unless preservation is stated FIRST.
-const PASS1_PREAMBLE = "Edit this photo. Preserve the room geometry, camera angle, all windows and doors (same count, same positions), wall layout, ceiling shape, and room dimensions.";
+const PASS1_PREAMBLE = "Edit this photo. Preserve the room geometry, camera angle, all windows and doors (same count, same positions), wall layout, ceiling shape, and room dimensions. The output image must show the same framing as the input — same edges, same crop, same field of view.";
 const PASS2_PREAMBLE = "Edit this photo of a finished room. The wall colors, floor material, and ceiling finish are final — keep them unchanged. Same camera angle, same room geometry, same windows, same doors. No curtains, no drapes.";
 
 // ── Pass 1: Surface finishing ────────────────────────────────────────
@@ -317,7 +317,7 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
 // ── Pass 2: Furniture placement ──────────────────────────────────────
 
 // Shared compact fragments for pass 2
-const EQUIPMENT_PRESERVATION = "Keep wall-mounted equipment visible (radiators, heaters, vents, switches).";
+const EQUIPMENT_PRESERVATION = "Keep all wall-mounted equipment visible: radiators, electric convector heaters (low white wall units), water heaters, vents, thermostats, switches, electrical panels. These must stay at their exact position.";
 const CONTACT_SHADOWS = "Every piece must have visible contact shadows on the floor.";
 const DEPTH_DISTRIBUTION_KITCHEN = "Distribute kitchen elements across the full depth of the room. Work zones along walls, island or table in the middle zone if space allows. Counter accessories spread across the full counter length — never cluster on one end.";
 const DEPTH_DISTRIBUTION_BEDROOM = "Distribute bedroom furniture across the full depth and width of the room. Bed as primary anchor, dresser or wardrobe as background anchor in the back third. Balance nightstands on both sides when space allows. If one side of the room appears empty, place a floor lamp or bench to balance the composition laterally.";
