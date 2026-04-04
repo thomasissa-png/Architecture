@@ -39,7 +39,7 @@ export async function extractRoomInventory(imageBase64: string): Promise<string>
           {
             role: "system",
             content:
-              "Describe this room's geometry in one concise paragraph. Count: windows (number, positions), doors (number, positions), ceiling type (flat/vaulted/beamed), visible equipment (radiators, heaters, water heater, electrical panel), floor material, approximate room shape. Be factual, no opinions.",
+              "Describe this room's geometry in one concise paragraph. Count: windows (number, positions), doors (number, positions), ceiling type (flat/vaulted/beamed), visible equipment (radiators, heaters, water heater, electrical panel), floor material, approximate room shape. Also describe the framing: which walls or elements are cropped at the edges of the photo, and whether the lens appears wide-angle or standard. Be factual, no opinions.",
           },
           {
             role: "user",
@@ -143,8 +143,10 @@ export function getOutputSize(
     return { openai: "1024x1024", w: 1024, h: 1024 };
   }
   const ratio = width / height;
-  if (ratio > 1.3) return { openai: "1536x1024", w: 1536, h: 1024 }; // landscape
-  if (ratio < 0.77) return { openai: "1024x1536", w: 1024, h: 1536 }; // portrait
+  // Use 1536x1024 only for clearly wide images (16:9, 16:10).
+  // 4:3 (ratio 1.33) goes to 1024x1024 to avoid forced widening.
+  if (ratio > 1.45) return { openai: "1536x1024", w: 1536, h: 1024 }; // wide landscape (16:9, 16:10)
+  if (ratio < 0.69) return { openai: "1024x1536", w: 1024, h: 1536 }; // tall portrait
   return { openai: "1024x1024", w: 1024, h: 1024 }; // square-ish
 }
 
@@ -162,7 +164,7 @@ export function getOutputSize(
 // - furniturePrompt: freestanding objects with precise silhouettes + scale
 
 // ── Shared prompt fragments (constants to avoid duplication) ─────────
-const DSLR_LINE = "DSLR full-frame wide-angle, deep DOF, sharp focus. Clean rendering, no HDR, no color grading, no text.";
+const DSLR_LINE = "DSLR full-frame, deep DOF, sharp focus. Same focal length as the input photo. Clean rendering, no HDR, no color grading, no text.";
 const CEILING_PRESERVATION = "Ceiling: if demolition damage visible, apply smooth plaster coat then style finish. Preserve intentional elements (beams, rafters, arches, slab undersides) with original texture — keep raw concrete formwork marks, aged wood grain, and metal patina intact. Paint over the texture, not a smooth coat. Keep ceiling curvature exactly.";
 const COLUMN_PRESERVATION = "Keep each column or pillar as a separate vertical element at its exact position.";
 const LIGHT_PRESERVATION = "Preserve existing light direction and shadow positions. Keep the input's color temperature — warm materials reflect existing light without shifting overall tone. Keep whites neutral.";
@@ -526,7 +528,7 @@ export function buildOutdoorSurfacesResponsesPrompt(
     "Maintain the exact wall and facade color temperature from the input — do not warm or cool the surfaces.",
     "Preserve the exact lighting conditions from the input — same shadow hardness, same direction, same color temperature.",
     "No furniture in this pass — EMPTY outdoor space with finished ground only.",
-    "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus. Clean digital rendering.",
+    "DSLR full-frame, deep DOF, sharp focus. Same focal length as the input photo. Clean rendering.",
   ]
     .filter(Boolean)
     .join(" ");
@@ -546,7 +548,7 @@ export function buildOutdoorFurnitureResponsesPrompt(
     "Outdoor plants only — no houseplants (no monstera, no fiddle leaf, no pothos). Scale plants to space: balcony max 120cm, garden max 200cm.",
     "All lighting fixtures off in daylight. Textiles must be outdoor-rated. If space under 10m2, use bistro-scale furniture.",
     "Furniture must have contact shadows on the ground. Keep existing lighting direction.",
-    "DSLR wide-angle, deep DOF, sharp focus. Photo-realistic outdoor. No text or watermarks.",
+    "DSLR full-frame, deep DOF, sharp focus. Same focal length as the input photo. Photo-realistic outdoor. No text or watermarks.",
   ]
     .filter(Boolean)
     .join(" ");
