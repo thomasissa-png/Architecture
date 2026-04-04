@@ -454,8 +454,8 @@ export async function PATCH(
         const { getPool: getDbPool } = await import("@/lib/db");
         await getDbPool().query(`UPDATE dossier_photos SET iteration_count = 0 WHERE id = $1`, [targetPhoto.id]);
 
-        // Save regenerated photo to user's gallery
-        saveUserPhoto({
+        // CRITICAL: await before response — Replit autoscale kills worker after response
+        await saveUserPhoto({
           userId: session.user.id,
           inputImageKey: targetPhoto.input_image_key,
           outputImageKey: result.outputKey,
@@ -778,8 +778,8 @@ async function processBatchGeneration(
           durationMs: Date.now() - photoStart,
         });
 
-        // Save to user's personal gallery (so it appears in /ma-galerie)
-        saveUserPhoto({
+        // CRITICAL: await before response — Replit autoscale kills worker after response
+        await saveUserPhoto({
           userId,
           inputImageKey: photo.input_image_key,
           outputImageKey: result.outputKey,
