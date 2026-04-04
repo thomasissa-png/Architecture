@@ -226,6 +226,7 @@ export default function DossierResult({
         onClose={() => setRefinePhotoId(null)}
         onSubmit={handleRefineSubmit}
         iterationsRemaining={refineIterationsRemaining}
+        maxIterations={3}
         isLoading={isIterating === refinePhotoId}
         warnings={refineWarnings}
       />

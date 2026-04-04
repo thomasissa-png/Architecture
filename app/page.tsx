@@ -1295,7 +1295,7 @@ export default function Home() {
       setIsRegenerating(false);
       setRegeneratingIndex(null);
     }
-  }, [results, session?.user?.id, startQueuePolling]);
+  }, [results]);
 
   const handleDownloadAll = async () => {
     for (let index = 0; index < results.length; index++) {
