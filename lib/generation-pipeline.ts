@@ -29,13 +29,12 @@ function getOpenAI(): OpenAI {
  * v34 (audit Yann structurel: DEPTH_DISTRIBUTION imperatif, densite adaptative, furniturePrompts avec placement spatial),
  * v42 (density conditionals: kitchen 3-tier width scaling, dining room compact/large, office compact skip bookshelf — fix gen #112 overcrowded compact kitchen),
  * v43 (audit croise Yann+Lucas #111-117: P0 COLUMN_PRESERVATION active tous builders, P0 ANTI_FENETRE remonte position 2, P1 anti-warm shift renforce white balance, P1 Cosy marqueurs tactiles quantites, P1 PHOTO_GRAIN restaure ISO 200 + vignetting) */
-export const PROMPT_VERSION = "v43";
+export const PROMPT_VERSION = "v44";
 
 // ─── Image generation model ─────────────────────────────────────────
 // v36: configurable via env var. Default gpt-image-1 (v32 reverted gpt-image-1.5 for spatial regression).
-// ROLLBACK : gpt-image-1.5 détruit la géométrie (audit Lucas 2-3/10).
-// gpt-image-1 préserve l'espace. NE PAS remettre 1.5 sans audit complet.
-const IMAGE_MODEL = "gpt-image-1";
+// gpt-image-1.5 — décision fondateur absolue. On le fait marcher.
+const IMAGE_MODEL = "gpt-image-1.5";
 
 // ─── Timeout wrapper for external API calls ─────────────────────────
 const API_TIMEOUT_MS = 120_000;
@@ -115,62 +114,71 @@ const CAMERA_PRESERVATION = "Same camera angle, lens distortion, vanishing point
 const ANTI_FENETRE = "EXACTLY the same number of windows and doors as the input — same positions, same sizes. Walls without windows must remain solid.";
 const ANTI_INVENTION = "Do NOT invent architectural elements absent from the input: no arches, no vaults, no glass partitions, no columns, no niches, no decorative ceiling coffers. If the ceiling is damaged or stripped, apply a simple flat white finish — do not reconstruct ornamental geometry. If a wall is partially demolished, keep it as-is — do not complete or extend it.";
 
+// v44: gpt-image-1.5 preservation preambles — MUST be the FIRST tokens in every prompt.
+// gpt-image-1.5 is more creative than gpt-image-1 and regenerates scenes unless preservation is stated FIRST.
+const PASS1_PREAMBLE = "Edit this exact photo. PRESERVE EXACTLY: the room geometry, camera angle, every window position and count, every door position and count, wall layout, ceiling shape, room dimensions. The output room must be geometrically identical to the input.";
+const PASS2_PREAMBLE = "Edit this photo of a finished room. PRESERVE EXACTLY: all wall colors, floor material, ceiling finish — these surfaces are FINAL and must not change. Same camera angle, same room geometry, same windows, same doors.";
+
 // ── Pass 1: Surface finishing ────────────────────────────────────────
 // v36: ACTION FIRST in all builders (v30 lesson — GPT-image-1 weights early tokens more)
 export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string | null): string {
-  // Kitchen: action first — OVERRIDE floor from surfacePrompt (kitchens need tiles, not wood)
+  // Kitchen: v44 — preservation FIRST, then style
   if (roomTypeId === "kitchen") {
     const kitchenSurface = surfacePrompt.replace(/,?\s*(wide-plank|herringbone|wood|ash|oak|walnut|parquet)\s+flooring[^,.]*/gi, "");
     return [
-      `Edit this photo of a kitchen. Apply this surface finish: ${kitchenSurface}.`,
+      PASS1_PREAMBLE,
       ANTI_FENETRE,
+      CAMERA_PRESERVATION, LIGHT_PRESERVATION,
+      CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
+      `CHANGE ONLY the surface finishes: ${kitchenSurface}.`,
       "FLOOR OVERRIDE: ceramic or natural stone floor tiles suited for a kitchen — NOT wood, NOT parquet. Subway tile or smooth splashback behind work area. Ceiling light per style description.",
       "Remove construction leftovers: dangling cables, junction boxes, exposed wiring, electrical outlets, round black wall boxes, cable exits — blend into wall finish. Keep radiators, water heater (cylindrical tank), switches, vents in exact position.",
       "Room stays COMPLETELY EMPTY — no furniture, no appliances.",
-      CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
-      `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
       DSLR_LINE,
     ].join(" ");
   }
 
-  // Bathroom: action first
+  // Bathroom: v44 — preservation FIRST, then style
   if (roomTypeId === "bathroom") {
     return [
-      `Edit this photo of a room. Apply this surface finish: ${surfacePrompt}.`,
+      PASS1_PREAMBLE,
       ANTI_FENETRE,
+      CAMERA_PRESERVATION, LIGHT_PRESERVATION,
+      CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
+      `CHANGE ONLY the surface finishes: ${surfacePrompt}.`,
       "Floor-to-ceiling ceramic tiles in shower zone and vanity area. Water-resistant floor — ceramic or stone, matte non-slip. Recessed IP44 ceiling spotlights.",
       "Remove construction leftovers: dangling cables, junction boxes, exposed wiring, electrical outlets, cable exits — blend into wall finish. Keep radiators, heaters, water heater (cylindrical tank), vents, switches in exact position.",
       "Room stays COMPLETELY EMPTY — no fixtures, no objects.",
-      CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
-      `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
       DSLR_LINE,
     ].join(" ");
   }
 
-  // WC: action first
+  // WC: v44 — preservation FIRST, then style
   if (roomTypeId === "wc") {
     return [
-      `Edit this photo of a room. Apply this surface finish: ${surfacePrompt}.`,
+      PASS1_PREAMBLE,
       ANTI_FENETRE,
+      CAMERA_PRESERVATION, LIGHT_PRESERVATION,
+      CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
+      `CHANGE ONLY the surface finishes: ${surfacePrompt}.`,
       "Waterproof floor — small ceramic tiles or vinyl. Washable matte paint or tiles on lower walls.",
       "Remove construction leftovers: outlets, cables, junction boxes — blend into wall finish. Keep radiators, heaters, water heater (cylindrical tank), vents, switches in position.",
       "Room stays COMPLETELY EMPTY — no fixtures, no objects.",
-      CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
-      `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
       DSLR_LINE,
     ].join(" ");
   }
 
-  // Bedroom: action first — floor tone decided by surfacePrompt (not hardcoded warm)
+  // Bedroom: v44 — preservation FIRST, then style
   if (roomTypeId === "bedroom_adults" || roomTypeId === "bedroom_children") {
     return [
-      `Edit this photo of a room. Apply this surface finish: ${surfacePrompt}.`,
+      PASS1_PREAMBLE,
       ANTI_FENETRE,
+      CAMERA_PRESERVATION, LIGHT_PRESERVATION,
+      CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
+      `CHANGE ONLY the surface finishes: ${surfacePrompt}.`,
       "Flooring per style description above. Ceiling light per style description. If ONE accent wall exists, preserve it — apply style color to other walls only.",
       "Remove construction leftovers: dangling cables, junction boxes, exposed wiring, electrical outlets, cable exits — blend into wall finish. Keep radiators, heaters, water heater (cylindrical tank), vents, switches in position.",
       "Room stays COMPLETELY EMPTY — no furniture, no objects.",
-      CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
-      `${CAMERA_PRESERVATION} ${LIGHT_PRESERVATION}`,
       DSLR_LINE,
     ].join(" ");
   }

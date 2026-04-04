@@ -46,10 +46,8 @@ import { enqueueGeneration, shouldQueue } from "@/lib/generation-queue";
 export const PROMPT_VERSION = "v43";
 
 // ─── Image generation model ─────────────────────────────────────────
-// ROLLBACK : gpt-image-1.5 détruit la géométrie (audit Lucas 2-3/10 préservation spatiale).
-// gpt-image-1 préserve l'espace. Décision fondateur 2026-04-04 après audit.
-// NE PAS remettre gpt-image-1.5 sans audit visuel 12 styles complet.
-const IMAGE_MODEL = "gpt-image-1";
+// gpt-image-1.5 — décision fondateur absolue. On le fait marcher.
+const IMAGE_MODEL = "gpt-image-1.5";
 
 // ─── Timeout wrapper for external API calls ─────────────────────────
 const API_TIMEOUT_MS = 120_000;
