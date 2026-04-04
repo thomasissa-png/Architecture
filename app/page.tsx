@@ -102,13 +102,22 @@ async function resilientFetch(
   parentSignal?: AbortSignal
 ): Promise<Response> {
   const TIMEOUT_MS = 180_000; // 3 min — pipeline 2 passes can take 60-90s
-  // 1 retry ONLY when fetch is killed by mobile tab-switch (not user-initiated).
+  // 1 retry when fetch is killed by mobile tab-switch (not user-initiated).
   // The server continues processing — the retry just reconnects to get the result.
   const MAX_RETRIES = 1;
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     const timeoutController = new AbortController();
     const timer = setTimeout(() => timeoutController.abort(), TIMEOUT_MS);
+
+    // Track if the page went to background DURING this fetch attempt.
+    // We check this in the catch block — by then visibilityState may already
+    // be "visible" again, so we need a flag.
+    let wentHiddenDuringFetch = false;
+    const onVisChange = () => {
+      if (document.visibilityState === "hidden") wentHiddenDuringFetch = true;
+    };
+    document.addEventListener("visibilitychange", onVisChange);
 
     // Combine parent signal (user cancel) with timeout signal
     const onParentAbort = () => timeoutController.abort();
@@ -125,9 +134,9 @@ async function resilientFetch(
       if (parentSignal?.aborted) throw err;
 
       // Mobile tab-switch: browser kills the fetch when page goes to background.
-      // Wait for the user to come back, then retry once.
-      // The server keeps processing — no double billing.
-      if (attempt < MAX_RETRIES && document.visibilityState === "hidden") {
+      // wentHiddenDuringFetch catches the case where the page is already back
+      // to visible by the time we reach this catch block.
+      if (attempt < MAX_RETRIES && wentHiddenDuringFetch) {
         console.warn("Fetch interrompu par changement d'onglet — attente du retour...");
         await waitForVisible();
         console.log("Page visible à nouveau — relance du fetch...");
@@ -141,6 +150,7 @@ async function resilientFetch(
       throw new Error("Connexion perdue pendant la génération. Vérifiez votre réseau et réessayez.");
     } finally {
       clearTimeout(timer);
+      document.removeEventListener("visibilitychange", onVisChange);
       parentSignal?.removeEventListener("abort", onParentAbort);
     }
   }
