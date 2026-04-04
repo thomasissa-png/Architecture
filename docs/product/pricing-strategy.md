@@ -47,7 +47,7 @@
 | **Exclusions** | Mode Pro (dossiers), itérations, annonces publiques, export portails |
 | **Persona cible** | Léa (test), Claire (découverte), Thomas (évaluation) |
 
-**Justification** : 2 générations = tester 2 styles sur la même photo, suffisant pour démontrer la qualité du pipeline 2 passes et créer l'envie de continuer. Réduit le coût d'acquisition par rapport à 3 crédits (~0,30€/nouveau compte au lieu de ~0,50€). Crée une friction douce qui pousse vers le Starter à 9,90 €.
+**Justification** : 2 générations = tester 2 styles sur la même photo, suffisant pour démontrer la qualité du pipeline 2 passes et créer l'envie de continuer. Réduit le coût d'acquisition (~0,20€/nouveau compte). Crée une friction douce qui pousse vers le Starter à 9,90€.
 
 ---
 
@@ -189,8 +189,8 @@ Hypothèse : marge nette = marge brute - coûts fixes (hébergement ~50€/mois,
 | | Découverte | Starter | **Pro** |
 |---|---|---|---|
 | Prix | Gratuit | 9,90€ (one-shot) | **29€/mois** |
-| Crédits | 3 offertes | 15 (sans expiration) | **50/mois** |
-| Itérations | — | 1/photo | **3/photo** |
+| Crédits | **2 offertes** | 15 (sans expiration) | **50/mois** |
+| Itérations | — | 1/photo (gratuite) | **3/photo (gratuites)** |
 | Mode Pro | — | — | **✅ Complet** |
 | Recharge | — | Dès 5,90€ | **Dès 9€** |
 | CTA | Essayer | S'abonner | **S'abonner** |

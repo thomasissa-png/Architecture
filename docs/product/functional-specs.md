@@ -1,5 +1,7 @@
 # Specs Fonctionnelles — Versimo
-## Version 1.0 — 2026-03-24
+## Version 1.1 — 2026-04-04 (mise à jour specs vs code production)
+> Version 1.0 : 2026-03-24. Mise à jour 1.1 : alignement sur l'état réel du code (session 31+) — modèle IA, crédits, mode unifié, itérations, variantes mobilier, mobile resilience.
+
 
 ---
 
@@ -149,16 +151,19 @@ Re-génération passe 2 uniquement après commentaire utilisateur. 1-3 itératio
 ### F1.3 Règles métier
 
 **Crédits et itérations :**
-- Une itération = une re-passe 2 uniquement (pas de re-passe 1).
-- Chaque photo générée consomme 1 crédit. Chaque itération sur cette photo consomme 1 crédit supplémentaire.
-- Le quota d'itérations disponibles est défini par le package (voir section 7) : Gratuit = 0 itération, Starter (9,90€) = 1, Pro (29€) = 3, Business (79€) = 5.
+- Une itération = une re-passe 2 uniquement (pas de re-passe 1). Il existe deux types d'itérations : **restyle** (re-passe 2 complète depuis l'image passe 1 vide) et **adjust** (édition chirurgicale de l'image meublée existante). L'intent est classifié automatiquement par `classifyIterationIntent()` dans `lib/custom-prompt.ts`.
+- Chaque photo générée consomme 1 crédit. **Les itérations ne consomment PAS de crédit** (décision fondateur, confirmée dans le code `route.ts` commentaire "Iteration succeeded — no credit consumed").
+- Le quota d'itérations disponibles est défini par le tier (voir section 7) : Découverte = 0 itération, Starter (9,90€) = 1, Pro (29€/mois) = 3.
 - Les itérations ne sont pas transférables entre photos.
 - Si itérations = 0 : bouton "Affiner" grisé, tooltip "Rechargez un pack pour affiner".
 
 **Gestion de l'état :**
-- L'image input de la passe 2 = TOUJOURS le résultat de la passe 1 originale (jamais un résultat d'itération précédente).
+- **Mode restyle** : l'image input de la passe 2 = résultat de la passe 1 originale (pièce vide avec surfaces finies). Toutes les modifications précédentes sont réinterprétées depuis zéro.
+- **Mode adjust** : l'image input = dernier résultat meublé (`iterationBase` sauvegardé dans Object Storage par `saveIterationBase()`). L'ajustement s'applique sur le mobilier existant — SURGICAL EDIT, modification minimale.
 - Le commentaire utilisateur enrichit le furniturePrompt du style sélectionné. Il ne remplace pas le style.
 - Le résultat de passe 1 est mis en cache côté serveur (Object Storage) pendant 24h pour permettre les itérations.
+- Le dernier résultat meublé est sauvegardé séparément (`iterationBase`) pour les itérations adjust.
+- La classification intent (adjust vs restyle) est faite par `classifyIterationIntent()` qui analyse le commentaire (ex : "enlever", "remplacer" → adjust ; "tout changer", "style différent" → restyle).
 
 **Sans authentification (MVP) :**
 - Les itérations sont trackées par sessionId (cookie ou localStorage UUID).
@@ -173,7 +178,7 @@ Re-génération passe 2 uniquement après commentaire utilisateur. 1-3 itératio
 3. **Commentaire en langue étrangère** (arabe, chinois, etc.) : GPT-4.1-mini traduit en EN et traite normalement.
 4. **Passe 1 expirée (>24h)** : Le bouton "Affiner" est désactivé avec message "Les surfaces de cette génération ont expiré. Regénérez depuis l'image originale."
 5. **Timeout passe 2 (>90s)** : L'itération n'est PAS consommée (rollback compteur). Message : "Temps de génération dépassé. Votre itération a été conservée."
-6. **Flux Depth Pro en fallback sur itération** : Le fallback utilise le résultat de passe 1 comme image input (même logique). Pas de dégradation visible pour l'utilisateur.
+6. [NON APPLICABLE — Flux Depth Pro supprimé] Le modèle unique est `gpt-image-1.5` via Responses API. Aucun fallback Flux/SDXL. En cas d'échec, 1 retry automatique avec prompt simplifié (si rejet safety system), sinon message d'erreur et invitation à réessayer. Voir `simplifyPromptForSafetyRetry()` dans `route.ts`.
 7. **Commentaire demandant d'effacer tous les meubles** (ex. "pièce vide") : GPT-4.1-mini détecte et affiche : "Cette action n'est pas possible en mode affinage. Pour changer radicalement de style, regénérez depuis le début."
 
 ---
@@ -206,10 +211,12 @@ Re-génération passe 2 uniquement après commentaire utilisateur. 1-3 itératio
 ### F1.7 Performance
 
 - Pre-processing commentaire (GPT-4.1-mini) : < 1,5s
-- Re-passe 2 OpenAI (Responses API) : < 45s (pas de passe 1 = deux fois plus rapide)
-- Re-passe 2 Flux Depth Pro (fallback) : < 60s
+- Classif. intent (GPT-4.1-mini) : < 1s
+- Re-passe 2 gpt-image-1.5 (Responses API) : < 60s (pas de passe 1 = plus rapide)
+- [SUPPRIMÉ] Fallback Flux Depth Pro — modèle unique gpt-image-1.5
 - Chargement résultat comparateur : < 1s (image depuis Object Storage)
-- SLA cible itération complète : < 50s (P95)
+- SLA cible itération complète : < 65s (P95)
+- Retry automatique en cas de rejet safety : +2s délai, prompt simplifié
 
 ---
 
@@ -485,7 +492,7 @@ Les builders de `route.ts` détectent `isOutdoor: true` dans le body de la requ�
 1. **Photo avec ciel très surexposé (ciel blanc grillé)** : La directive "preserve highlights — do not recover blown-out sky" s'applique. Le résultat peut avoir un ciel blanc — acceptable. Ne pas inventer un ciel bleu absent de l'original.
 2. **Balcon de 4m² avec sous-type "Rooftop" sélectionné par erreur** : Combinaison incohérente. Pas de blocage côté système, mais le furniturePrompt Rooftop (banquette modulaire, parasol déporté) produit un résultat impraticable. Recommandation UX : le sous-type "Rooftop" affiche un tag "Grands espaces" pour guider l'utilisateur.
 3. **Jardin avec arbres existants en arrière-plan** : La passe 1 ne touche pas à la végétation. Directive explicite "preserve all existing trees, hedges and lawn — only update ground surface in the foreground zone". La passe 2 ajoute du mobilier au premier plan uniquement. Risque résiduel : le modèle peut coloriser légèrement la végétation pour cohérence colorimétrique — acceptable.
-4. **Rooftop avec garde-corps spécifique (corten, verre, inox)** : La directive "preserve guard rails and parapet walls exactly as in the input" est prioritaire. Le modèle ne doit ni supprimer ni remplacer le matériau du garde-corps. Risque : sur Flux Depth Pro, la depth map peut mal segmenter des garde-corps fins en verre — fallback OpenAI recommandé.
+4. **Rooftop avec garde-corps spécifique (corten, verre, inox)** : La directive "preserve guard rails and parapet walls exactly as in the input" est prioritaire. Le modèle ne doit ni supprimer ni remplacer le matériau du garde-corps. [NOTE : Flux Depth Pro supprimé — modèle unique gpt-image-1.5.]
 5. **Patio avec murs intérieurs partiels (mi-intérieur, mi-extérieur)** : Les murs du patio sont traités comme des façades extérieures (pas de peinture intérieure). Si le mode Extérieur est actif, les directives "wall paint color" ne s'appliquent pas, même si des murs sont visibles.
 6. **Custom prompt en mode Extérieur** : GPT-4.1-mini reçoit `isOutdoor: true` dans son system prompt. Il filtre automatiquement les éléments indoor du texte custom (canapé, parquet, lustre) et les remplace par des équivalents outdoor (canapé d'extérieur résine, dalles, lanterne). Un warning FR est affiché si des substitutions sont faites.
 7. **Mode Extérieur + F2 Type de pièce actif simultanément** : F2 (sélecteur de type de pièce intérieure) est masqué en mode Extérieur. Si l'utilisateur bascule de Intérieur vers Extérieur avec un type de pièce déjà sélectionné, le type est désélectionné automatiquement (pas d'override de pièce indoor en mode outdoor).
@@ -526,8 +533,8 @@ Les builders de `route.ts` détectent `isOutdoor: true` dans le body de la requ�
 
 ### F3.7 Performance
 
-- Pipeline outdoor = même latence que indoor : < 90s total P95 (2 passes OpenAI Responses API).
-- Fallback Flux Depth Pro outdoor : < 70s. La depth map fonctionne sur les espaces extérieurs (sol, garde-corps, meubles). Risque : vegetation dense peut dégrader la depth map.
+- Pipeline outdoor = même latence que indoor : < 120s total P95 (2 passes gpt-image-1.5 Responses API).
+- [SUPPRIMÉ] Fallback Flux Depth Pro — modèle unique gpt-image-1.5 via OpenAI Responses API.
 - Toggle Extérieur/Intérieur : instantané (client only, 0ms serveur).
 - Détection photo intérieure en mode Extérieur (GPT-4.1-mini) : < 2s, déclenché après upload en background sans bloquer l'étape 2.
 - Aucune requête supplémentaire au moment de la génération : toute la logique outdoor est une substitution de prompt côté serveur, sans surcoût de latence.
@@ -846,16 +853,17 @@ Produits réels (IKEA, Leroy Merlin). Shopping list avec prix/liens. Export PDF/
 
 | Composant | Coût unitaire |
 |---|---|
-| Passe 1 OpenAI Responses API (gpt-4.1) | ~0,04€ |
-| Passe 2 OpenAI Responses API (gpt-4.1) | ~0,04€ |
-| Passe 1 + 2 total (chemin nominal) | ~0,08€ |
-| Fallback Flux Depth Pro (Replicate) | ~0,03€/passe |
-| Passe 1 + 2 avec fallback | ~0,06€ |
+| Passe 1 gpt-image-1.5 Responses API | ~0,04-0,06€ |
+| Passe 2 gpt-image-1.5 Responses API | ~0,04-0,06€ |
+| Passe 1 + 2 total (chemin nominal) | ~0,10€ |
+| [SUPPRIMÉ] Fallback Flux Depth Pro — plus de fallback | — |
 | Pre-processing GPT-4.1-mini | ~0,001€ |
 | Shopping list GPT-4.1 | ~0,02€ |
 | Génération PDF (serverless) | ~0,01€ |
 | **Coût moyen par génération standard** | **~0,10€** |
 | **Coût moyen par génération avec shopping list + PDF** | **~0,13€** |
+
+> Note : gpt-image-1.5 est le seul modèle utilisé (décision fondateur 2026-04-04). Pas de fallback Flux Depth Pro, SDXL, ou DALL-E. En cas d'erreur API, retry 1× avec prompt simplifié, puis message utilisateur.
 
 ### 7.2 Grille des offres (modèle hybride — mis à jour 2026-03-27)
 
@@ -877,32 +885,38 @@ Produits réels (IKEA, Leroy Merlin). Shopping list avec prix/liens. Export PDF/
 
 > Crédits rachetés valables 90 jours. Non cumulables avec les crédits mensuels (file séparée).
 
-#### 3 tiers (pricing-strategy.md v3, décision fondateur 2026-03-27)
+#### 3 tiers (pricing-strategy.md v3, décision fondateur 2026-03-27 — mis à jour 2026-04-04)
 
 | Tier | Prix TTC | Crédits | Prix/crédit | Coût API/crédit | Marge brute | % marge |
 |---|---|---|---|---|---|---|
-| **Découverte** | GRATUIT | 3 | — | 0,10€ | -0,30€ | Acquisition |
+| **Découverte** | GRATUIT | **2** (one-time) | — | 0,10€ | -0,20€ | Acquisition |
 | **Starter** | 9,90€ one-shot | 15 | 0,66€ | 0,10€ | 8,40€ | 85% |
 | **Pro** | 29€/mois abo. | 50/mois | 0,58€ | 0,10€ | 24€ | 83% |
 
+> **Correction 2026-04-04** : Découverte = 2 crédits (non 3). Source : `lib/credits.ts` commentaire "2 free generations enforced by rate limit" et `pricing-strategy.md` section Tier 1.
 > Recharges : Starter +10 crédits = 5,90€. Pro +20 crédits = 9€. Voir pricing-strategy.md v3 pour le détail complet.
 
-### 7.3 Feature gating par offre (mis à jour 2026-03-27)
+### 7.3 Feature gating par offre (mis à jour 2026-04-04)
 
-| Feature | Gratuit | Découverte | Starter | Pro Abonnement |
-|---|---|---|---|---|
-| Générations standard (12 styles) | 3 | 5 | 20 | 50/mois |
-| Itérations par photo (F1) | 0 | 0 | 1 | 3 |
-| Type de pièce (F2) | Oui | Oui | Oui | Oui |
-| Mode Extérieur (F3) | Oui | Oui | Oui | Oui |
-| **Mode Pro** (ex Mode Marchand, F4) | Non | Non | Non | **Oui (max 15 photos/dossier)** |
-| **Dossiers de pré-commercialisation** (F4) | Non | Non | Non | **Oui — inclus** |
-| Shopping list / Mode Décorateur (F5) | Non | Non | Non | Oui (+1 crédit/liste) |
-| Export PDF | Non | Non | Non | Oui |
-| Lien partageable | Non | Non | Oui (7j) | **Oui — sans limite de durée** |
-| Téléchargement HD | Oui | Oui | Oui | Oui |
-| **Rachat crédits préférentiels** | Non | Non | Non | **Oui** |
+> Il n'y a que 3 tiers. Les colonnes "Gratuit" et "Découverte" ont été fusionnées en une seule colonne "Découverte". Source : `lib/credits.ts`, `pricing-strategy.md` v3.
 
+| Feature | Découverte (gratuit) | Starter (9,90€) | Pro (29€/mois) |
+|---|---|---|---|
+| Générations standard (12 styles intérieur + extérieur) | **2** crédits one-time | 15 crédits | 50 crédits/mois |
+| Itérations par photo (F1) — **sans crédit supplémentaire** | 0 | 1 | 3 |
+| Type de pièce (F2) | Oui | Oui | Oui |
+| Mode Extérieur (F3) | Oui | Oui | Oui |
+| Variantes mobilier automatiques | Oui | Oui | Oui |
+| Historique des générations (/ma-galerie) | **Oui** (tous connectés) | Oui | Oui |
+| **Mode Pro** (dossiers batch, ex Mode Marchand, F4) | Non | Non | **Oui (max 15 photos/dossier)** |
+| **Dossiers de pré-commercialisation** (F4) | Non | Non | **Oui — inclus** |
+| Shopping list / Mode Décorateur (F5) | Non | Non | Oui (+1 crédit/liste) |
+| Export PDF | Non | Non | Oui |
+| Lien partageable | Non | Oui (7j) | **Oui — sans limite de durée** |
+| Téléchargement HD | Oui | Oui | Oui |
+| **Recharge crédits** | Non | Oui (+10 = 5,90€) | Oui (+20 = 9€) |
+
+> **Note (2026-04-04)** : La galerie `/ma-galerie` est accessible à **tous les utilisateurs connectés** (décision fondateur 2026-04-04, source : commentaire `hasGalleryAccess()` dans `lib/credits.ts` : "Galerie accessible à TOUS les utilisateurs connectés").
 > **Note (2026-03-27) :** Le pack Pro one-shot 29€ est supprimé et remplacé par l'Abonnement Pro 29€/mois. À même prix, l'abonnement inclut le Mode Pro, les Dossiers de pré-commercialisation et les liens sans limite — aucune raison de proposer les deux.
 
 ### 7.4 Simulation atteinte KPI North Star (3 000€/mois marge nette) — modèle hybride
@@ -985,7 +999,7 @@ Produits réels (IKEA, Leroy Merlin). Shopping list avec prix/liens. Export PDF/
 │  — Claire D., architecte DPLG, Lyon                      │
 │                                                          │
 │  [ Générer votre première planche gratuitement → ]       │
-│  Sans carte bancaire · 3 générations offertes            │
+│  Sans carte bancaire · 2 générations offertes            │
 │                                                          │
 └──────────────────────────────────────────────────────────┘
 ```
@@ -1028,7 +1042,7 @@ Produits réels (IKEA, Leroy Merlin). Shopping list avec prix/liens. Export PDF/
 │  — Léa M., primo-accédante, Nantes                       │
 │                                                          │
 │  [ Essayer gratuitement — sans carte bancaire → ]        │
-│  3 générations offertes · 12 styles disponibles          │
+│  2 générations offertes · 12 styles disponibles          │
 │                                                          │
 └──────────────────────────────────────────────────────────┘
 ```
@@ -1080,3 +1094,113 @@ Produits réels (IKEA, Leroy Merlin). Shopping list avec prix/liens. Export PDF/
 - **Produit** : F7 est indépendant de F1-F6. Peut être implémenté en parallèle de l'Auth.
 - **Design** : Les avant/après de chaque page doivent respecter le design system (palette, typographie, composant ImageComparator existant).
 - **SEO** : Coordonner avec `docs/seo/metadata-templates.md` pour les balises title/description/OG de chaque page.
+
+---
+
+## F8 — Mode Unifié (fusion MerchantMode + Standard) [IMPLÉMENTÉ — non spécifié initialement]
+
+> Décision fondateur 2026-04-03. Source : `docs/product/unified-mode-specs.md`.
+
+Le mode Marchand (`MerchantMode.tsx`) a été fusionné avec le mode Standard dans `app/page.tsx`. Il n'y a plus qu'un seul flow pour tous les utilisateurs.
+
+### Architecture actuelle (code production)
+
+```
+Upload (UploadZone, max selon plan : 3 Découverte, 5 Starter, 15 Pro)
+    ↓
+Cartes per-photo (pièce + style + indoor/outdoor + format + withFurniture)
+    ↓
+Bouton Générer
+    ↓
+Loading avec visuels intermédiaires (passe 1 visible via splitMode)
+    ↓
+Résultats : ImageComparator × N photos
+    - Bouton × supprimer un résultat
+    - Bouton Affiner (RefineModal, itérations)
+    - Bouton Télécharger / Partager
+    ↓
+[Pro only] PhotoAssociator — association à un bien existant
+```
+
+### Composants supprimés
+- `MerchantMode.tsx` — fusionné dans page.tsx
+- `DossierProgress.tsx` — remplacé par le loading unifié
+- `DossierResult.tsx` — remplacé par ImageComparator
+
+### API unique
+- `/api/generate` est l'unique point d'entrée de génération (split mode + itérations).
+- `/api/dossier` reste pour la création et gestion de dossiers PDF, mais n'est plus le point d'entrée de génération.
+- Les dossiers PDF se créent uniquement depuis `/mes-biens/[id]`, pas depuis la page de génération.
+
+---
+
+## F9 — Variantes Mobilier Automatiques [IMPLÉMENTÉ — non spécifié initialement]
+
+> Source : `lib/style-variants.ts`, `app/api/generate/route.ts` (bloc `selectVariant`).
+
+Pour éviter que deux générations du même style sur des photos différentes produisent le même mobilier, le système sélectionne automatiquement une variante du `furniturePrompt` basée sur un hash de l'image input.
+
+### Règles métier
+- Applicable uniquement aux styles nommés intérieurs (pas au style Custom, pas aux styles outdoor).
+- Le hash SHA-256 des 16 premiers caractères de l'image base64 détermine la variante de façon déterministe.
+- Si `lib/style-variants.ts` n'a pas de variante pour un style donné, le `furniturePrompt` original est utilisé sans modification.
+- L'utilisateur ne voit pas ce mécanisme. Il génère un style, il obtient un résultat potentiellement différent à chaque upload d'image différente.
+- Les `furniturePrompts` dans `StylePicker.tsx` contiennent déjà des clauses `choose one:` pour induire la diversité au niveau du prompt lui-même.
+
+### Feature gating
+- Inclus dans tous les tiers (Découverte, Starter, Pro). Pas de feature premium.
+
+---
+
+## F10 — Résilience Mobile (tab-switch) [IMPLÉMENTÉ — non spécifié initialement]
+
+> Source : `app/page.tsx` fonctions `resilientFetch()` et `waitForVisible()`.
+
+Sur mobile, le navigateur peut tuer la connexion fetch quand l'utilisateur bascule vers une autre app ou met l'écran en veille pendant la génération. Sans protection, la génération est perdue et le crédit consommé.
+
+### Comportement implémenté
+- La fonction `resilientFetch()` (timeout 180s) détecte si le document est invisible (`document.visibilityState === "hidden"`) au moment où le fetch échoue.
+- Si la cause est un changement d'onglet mobile (non un abandon volontaire), elle attend le retour de l'utilisateur (`waitForVisible()`) puis réessaie une fois.
+- Si l'utilisateur a annulé explicitement (bouton Annuler → `parentSignal?.aborted`), pas de retry.
+- Le serveur continue le traitement pendant l'absence mobile — pas de double facturation.
+- MAX_RETRIES = 1 (une seule tentative de reconnexion).
+
+### Feature gating
+- Inclus dans tous les tiers. Comportement de base du client.
+
+---
+
+## F11 — File d'attente de génération [IMPLÉMENTÉ — non spécifié initialement]
+
+> Source : `lib/generation-queue.ts`, `lib/hooks/useQueueStatus.ts`, `app/api/generate/route.ts` (bloc `enqueueGeneration`).
+
+Quand la génération échoue avec un timeout (504 Replit proxy) ou une erreur réseau grave, la requête peut être mise en queue pour traitement asynchrone en arrière-plan.
+
+### Comportement implémenté
+- `shouldQueue()` détermine si la requête doit être mise en file plutôt que retournée en erreur immédiate.
+- `enqueueGeneration()` sauvegarde les paramètres de génération (image, prompts, styleId, etc.) en DB pour traitement différé.
+- Le client sonde l'état de la queue via `/api/queue/status` (hook `useQueueStatus`).
+- Un toast `queueToast` informe l'utilisateur que sa génération est en file.
+- Quand le résultat est disponible, il apparaît dans la galerie (`/ma-galerie`).
+
+### Feature gating
+- Inclus dans tous les tiers. Comportement de résilience système.
+
+---
+
+## Changelog des corrections 2026-04-04
+
+| Section | Avant | Après | Source |
+|---|---|---|---|
+| Version | 1.0 | 1.1 | — |
+| Modèle IA (mentionné) | gpt-4.1 + Flux Depth Pro fallback | gpt-image-1.5 uniquement, sans fallback | `generation-pipeline.ts` const IMAGE_MODEL + CLAUDE.md règles prompts |
+| Crédits Découverte | 3 crédits gratuits | 2 crédits gratuits | `lib/credits.ts` commentaire + pricing-strategy.md |
+| Itérations tier Business | Business 79€ = 5 itérations | Tier Business supprimé — 3 tiers uniquement | pricing-strategy.md v3 |
+| Itérations consomment crédit | Oui, 1 crédit/itération | Non — itérations gratuites | `route.ts` commentaire "no credit consumed" |
+| Types d'itération | Restyle uniquement | Adjust (chirurgical) + Restyle (classifié auto) | `route.ts` bloc intent classification |
+| Galerie /ma-galerie | Pro only | Tous les connectés | `lib/credits.ts` `hasGalleryAccess()` |
+| F1.3 passe 1 expirée | 24h | 24h (inchangé) | `lib/iteration-prompt.ts` PASS1_TTL_MS |
+| F3.7 performance outdoor | < 90s P95 + Flux fallback | < 120s P95, pas de fallback | Modèle unique |
+| F7 wireframes | "3 générations offertes" | "2 générations offertes" | pricing-strategy.md v3 |
+| 7.3 feature gating | 4 colonnes (Gratuit/Découverte/Starter/Pro) | 3 colonnes (Découverte/Starter/Pro) | pricing-strategy.md v3 |
+| Features nouvelles | — | F8 Mode Unifié, F9 Variantes Mobilier, F10 Résilience Mobile, F11 File d'attente | code production |

@@ -155,15 +155,17 @@ F4 (Mode Pro) et F5 (Mode Décorateur) sont des use cases distincts avec des per
 
 ## 4. Contraintes techniques
 
-### Auth provider — Choix entre Clerk et Auth.js
+### Auth provider — **Auth.js (NextAuth v5) implémenté** [DÉCISION FINALE 2026-04-04]
 
-| Critère | Clerk | Auth.js (NextAuth v5) |
+> **Clerk n'a pas été utilisé.** Auth.js (NextAuth v5) a été implémenté. Source : `useSession` dans `app/page.tsx`, `getSessionRobust()` dans `lib/session.ts`.
+
+| Critère | Clerk (écarté) | Auth.js (NextAuth v5) — **UTILISÉ** |
 |---|---|---|
 | Setup | 2j (SDK, webhooks) | 3-4j (config manuelle) |
 | Coût | Gratuit jusqu'à 10 000 MAU | Gratuit (open source) |
 | Webhooks Stripe sync | Natif (user metadata) | Manuel |
 | Gestion sessions | Cookie + JWT natif Next.js | JWT custom |
-| Recommandation | **Préféré** | Fallback si contrainte budget |
+| Décision finale | **Écarté** | **Implémenté** |
 
 ### Stripe — Architecture recommandée (modèle hybride)
 

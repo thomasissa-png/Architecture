@@ -1,5 +1,6 @@
 # Vision Produit — Versimo
 > Produit par @product-manager — 2026-03-24
+> Mis à jour : 2026-04-04 — alignement modèle IA (gpt-image-1.5), crédits Découverte (2), mode unifié.
 > Ancré sur : brand-platform.md, personas.md, competitive-benchmark.md, project-context.md
 
 ---

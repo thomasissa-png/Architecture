@@ -73,7 +73,7 @@
   - Seuil de rentabilité KPI North Star : ~110 abonnés Pro actifs
 - **Pays de commercialisation** : France
 - **Données sensibles collectées** : [x] Non — Photos de pièces vides uniquement, pas de données personnelles sensibles
-- **Utilisation d'IA générative** : [x] Oui — Génération d'images meublées à partir de photos de pièces vides (OpenAI gpt-4.1 image generation + Flux Depth Pro)
+- **Utilisation d'IA générative** : [x] Oui — Génération d'images meublées à partir de photos de pièces vides (OpenAI gpt-image-1.5 via Responses API — modèle unique, pas de fallback Flux/SDXL/DALL-E, décision fondateur 2026-04-04)
 
 ---
 
@@ -300,6 +300,7 @@
 | @ia + @qa | 2026-04-02 | lib/iteration-prompt.ts, route.ts, generation-pipeline.ts (v38) | SURGICAL EDIT framing (2 adjust builders), inventaire mental (4 builders), anti-régénération, Camera LOCKED (4 builders), anti-hallucination retrait, kitchen appliance preservation. PROMPT_VERSION v37→v38. Validé @ia (GO) + @qa (6/6 PASS après fix Camera LOCKED restyle). | "pixel-identical" évité (leçon Sprint 17) au profit de "95%+ identical pixels" — assez agressif sans être impossible. Directive remplissage zone vide ajoutée sur recommandation @ia (P1). |
 | @orchestrator | 2026-04-04 | CLAUDE.md, project-context.md (nettoyage contradictions) | Alignement modèle IA : gpt-image-1.5 partout (CLAUDE.md + project-context.md). Suppression bloc mémo session 30 résiduel (doublon avec session 31). | Session 31 = source de vérité. Le bloc session 30 contredisait session 31 sur le modèle (gpt-image-1 vs 1.5). CLAUDE.md disait "INTERDIT gpt-image-1.5" alors que le fondateur l'exige — corrigé. |
 | @legal | 2026-04-04 | docs/legal/cgu-draft.md, docs/legal/mentions-legales.md, docs/legal/privacy-policy.md | Mise à jour entité juridique : société Versi (versi.fr). Comptes utilisateurs = en production. Retrait Replicate/Flux des sous-traitants. Cohérence crédits Découverte (2, pas 3). | Versimo = nom commercial du service, Versi = entité juridique. Checkbox rétractation supprimée côté UI (préférence fondateur) — consentement via confirmation de commande Stripe. |
+| @product-manager | 2026-04-04 | docs/product/functional-specs.md (v1.1), docs/product/pricing-strategy.md, docs/product/roadmap.md | Mise à jour specs vs code production : (1) modèle IA corrigé gpt-4.1/Flux → gpt-image-1.5 uniquement, sans fallback. (2) crédits Découverte 3→2. (3) tier Business 79€ supprimé — grille itérations : Découverte=0, Starter=1, Pro=3. (4) itérations ne consomment PAS de crédit (confirmé route.ts). (5) types d'itération adjust+restyle documentés. (6) galerie accessible à tous les connectés. (7) F8 Mode Unifié, F9 Variantes mobilier, F10 Résilience mobile, F11 File d'attente documentés. (8) Auth.js (NextAuth v5) utilisé vs Clerk recommandé. (9) PROMPT_VERSION v45 documenté. | Mise à jour specs pour qu'elles reflètent le code réel — les specs avaient divergé après ~20 sprints sans mise à jour. Les specs servent de source de vérité pour les agents — des specs périmées produisent des agents désorientés. Aucune modification du code — uniquement les docs/product/. |
 
 ---
 
