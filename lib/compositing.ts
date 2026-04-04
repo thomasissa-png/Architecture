@@ -26,7 +26,9 @@ interface BoundingBox {
 // ─── Constants ──────────────────────────────────────────────────────
 
 const VISION_TIMEOUT_MS = 5_000;
-const FEATHER_RADIUS = 3; // pixels de blur sur les bords du masque
+// Feather radius proportional to image size (min 5px, ~8px on 1536w)
+// 3px was too tight and caused visible seams on perspective misalignment
+let FEATHER_RADIUS = 5;
 
 const VISION_PROMPT = `Look at this photo of a room. Identify the bounding boxes of these structural elements:
 - windows (including their frames)
@@ -201,6 +203,9 @@ export async function compositeStructuralElements(
     const generatedMeta = await sharp(generatedBuffer).metadata();
     const imgWidth = generatedMeta.width!;
     const imgHeight = generatedMeta.height!;
+
+    // Dynamic feather radius — proportional to image width, min 5px
+    FEATHER_RADIUS = Math.max(5, Math.round(imgWidth * 0.005));
 
     // Resize original to match generated dimensions (they may differ slightly)
     const originalResized = await sharp(originalBuffer)
