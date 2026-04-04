@@ -170,7 +170,7 @@ const CEILING_PRESERVATION = "Ceiling: if demolition damage visible, apply smoot
 const COLUMN_PRESERVATION = "Keep each column or pillar as a separate vertical element at its exact position.";
 const LIGHT_PRESERVATION = "Preserve existing light direction and shadow positions. Keep the input's color temperature — warm materials reflect existing light without shifting overall tone. Keep whites neutral.";
 const WALL_PRESERVATION = "Wall geometry stays identical: same angles, corners, depth. Only change color and texture. Keep raw stone or brick visible with limewash unless style explicitly requests opaque paint. Structural elements (IPN beams, concrete columns, mezzanine slab edges, metal lintels) keep their original surface material and texture — apply paint over the texture, not a smooth coat.";
-const CAMERA_PRESERVATION = "Same camera angle, height, tilt, and field of view as input. The frame edges must match the input exactly — walls that are cut off at the edge of the input photo must be cut off at the same position in the output. Do not widen or narrow the frame.";
+const CAMERA_PRESERVATION = "Same camera angle, height, tilt, and field of view as input. The frame edges must match the input exactly — walls that are cut off at the edge of the input photo must be cut off at the same position in the output. Do not widen or narrow the frame. Preserve the room proportions — do not stretch or compress the depth, width, or height of the space.";
 const ANTI_FENETRE = "Count the windows and doors visible in the input photo. The output must have the EXACT same count, at the same positions, same sizes. If a wall has no window in the input, it must remain a solid wall in the output — even if the wall extends beyond the visible frame. Do not add windows, doors, or openings to walls that are partially visible or out of frame.";
 const ANTI_INVENTION = "Only modify surfaces as described. No new architectural elements (arches, vaults, columns, niches, coffers, windows, doors) unless already in the input. Areas beyond the frame edges of the input are unknown — leave them as-is, do not invent what is there.";
 
@@ -522,7 +522,7 @@ export function buildOutdoorSurfacesResponsesPrompt(
     subtypeOverride ? subtypeOverride : "",
     "Preserve all fixed ground elements: metal access covers, drain grates, manholes, utility plates. Apply the new ground material AROUND these elements, not over them.",
     "Preserve all expansion joints, step nosings, level changes, and threshold transitions in the ground surface.",
-    "Preserve all existing guard rails, exterior walls, facades, gates and fences. Do not add or remove any vertical structure.",
+    "Preserve all existing guard rails, exterior walls, facades, gates, fences, and full-height glazing (glass doors, bay windows, sliding doors). Do not add or remove any vertical structure.",
     "Keep the existing wall color and texture — do not warm, smooth, or repaint walls unless the surface prompt explicitly names a wall finish.",
     "Glass blocks and skylights keep their translucency — light passes through them in the output.",
     "Preserve existing vegetation in the background. Only modify ground surface in the foreground zone.",
@@ -772,7 +772,7 @@ export async function generatePass(
   }
 
   // Determine if room is complex enough to warrant best-of-2
-  const isComplexRoom = roomInventory && /vault|beam|mezzanine|double.height|L.shaped|loft|cathedral|arch|3\s*window|4\s*window|5\s*window/i.test(roomInventory);
+  const isComplexRoom = roomInventory && /vault|beam|mezzanine|double.height|L.shaped|loft|cathedral|arch|column|pillar|alcove|bay.window|[3-9]\s*windows?/i.test(roomInventory);
 
   // Single generation with retry — used for pass 1, or pass 2 on simple rooms
   const generateSingle = async (): Promise<{ image: string; model: string }> => {
