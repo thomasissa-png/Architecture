@@ -253,8 +253,24 @@ const CONTACT_SHADOWS = "Every piece must have visible contact shadows on the fl
 const DEPTH_DISTRIBUTION_KITCHEN = "Distribute kitchen elements across the full depth of the room. Work zones along walls, island or table in the middle zone if space allows. Counter accessories spread across the full counter length — never cluster on one end.";
 const DEPTH_DISTRIBUTION_BEDROOM = "Distribute bedroom furniture across the full depth of the room. Bed as primary anchor, dresser or wardrobe as background anchor in the back third. Avoid clustering all furniture against one wall.";
 
+/**
+ * Pre-resolve "choose one:" alternatives in a prompt by randomly picking one option.
+ * This forces variety between generations — without this, the model tends to
+ * produce the same composition every time ("template figé").
+ * Example: "(choose one: oatmeal bouclé, grey linen, cream wool)" → "oatmeal bouclé"
+ */
+function resolveChooseOne(prompt: string): string {
+  return prompt.replace(/\(choose one:\s*([^)]+)\)/gi, (_, options: string) => {
+    const choices = options.split(",").map((s: string) => s.trim()).filter(Boolean);
+    if (choices.length === 0) return "";
+    return choices[Math.floor(Math.random() * choices.length)];
+  });
+}
+
 // v36: ACTION FIRST in all builders (v30 lesson), camera/structure at END
 export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeId?: string | null): string {
+  // Resolve "choose one:" alternatives randomly for variety between generations
+  const resolvedPrompt = resolveChooseOne(furniturePrompt);
   // Kitchen: v45 — preservation FIRST for gpt-image-1.5, then add elements
   if (roomTypeId === "kitchen") {
     return [
@@ -262,7 +278,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       COLUMN_PRESERVATION,
       EQUIPMENT_PRESERVATION,
-      `ADD the following kitchen elements: ${furniturePrompt}.`,
+      `ADD the following kitchen elements: ${resolvedPrompt}.`,
       "Built-in cabinetry and countertops against walls. Add island only if kitchen appears larger than 10m2. If compact, skip island. The ceiling light was already placed in pass 1 — keep it as-is.",
       "Scale kitchen to apparent width — fewer elements if compact, full set if spacious. Skip island under 10m2.",
       DEPTH_DISTRIBUTION_KITCHEN,
@@ -281,7 +297,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       COLUMN_PRESERVATION,
       EQUIPMENT_PRESERVATION,
-      `ADD the following bathroom fixtures and accessories: ${furniturePrompt}.`,
+      `ADD the following bathroom fixtures and accessories: ${resolvedPrompt}.`,
       "If a bathtub, shower, sink, or toilet is visible in the input, keep it at the same position, same size, same shape.",
       "This is a compact bathroom by default. ONE vanity, ONE basin — never a double vanity. Use 60cm vanity, skip stool and basket, no freestanding tub. Only use 80cm vanity or add freestanding tub if the room is clearly wider than 2.5m. Ignore shower and tub dimensions from the style if room is compact — use 80cm shower maximum.",
       "Do not duplicate any fixture already visible. If a shower exists, do not add another. If a tub exists, do not add a shower stall.",
@@ -301,7 +317,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       COLUMN_PRESERVATION,
       EQUIPMENT_PRESERVATION,
-      `ADD the following WC fixtures: ${furniturePrompt}.`,
+      `ADD the following WC fixtures: ${resolvedPrompt}.`,
       "Very small space — minimal items. Wall-hung or floor toilet, compact hand basin with mirror above.",
       CONTACT_SHADOWS,
       "Scale reference: door = 204cm.",
@@ -316,7 +332,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       COLUMN_PRESERVATION,
       EQUIPMENT_PRESERVATION,
-      `ADD the following bedroom furniture: ${furniturePrompt}.`,
+      `ADD the following bedroom furniture: ${resolvedPrompt}.`,
       "Freestanding only — bed, nightstands, rug, wardrobe/dresser as background anchor. All objects resting on the floor. Furniture must not touch walls.",
       "Calm atmosphere — respect furniture density implied by the style. If minimalist, leave large empty floor areas.",
       DEPTH_DISTRIBUTION_BEDROOM,
@@ -335,7 +351,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       COLUMN_PRESERVATION,
       EQUIPMENT_PRESERVATION,
-      `ADD the following entryway furniture: ${furniturePrompt}.`,
+      `ADD the following entryway furniture: ${resolvedPrompt}.`,
       "Small space — do not overcrowd. Console max 60% of wall width. Freestanding only: console, mirror propped on console, coat rack, bench, runner rug. All objects resting on the floor.",
       CONTACT_SHADOWS,
       "Door = 204cm reference.",
@@ -350,7 +366,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       COLUMN_PRESERVATION,
       EQUIPMENT_PRESERVATION,
-      `ADD the following laundry equipment: ${furniturePrompt}.`,
+      `ADD the following laundry equipment: ${resolvedPrompt}.`,
       "Functional layout — washing machine, cabinet, drying rack, basket. No decorative objects. If compact (<4m2), skip folding table and drying rack.",
       CONTACT_SHADOWS,
       "Door = 204cm reference.",
@@ -365,7 +381,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       COLUMN_PRESERVATION,
       EQUIPMENT_PRESERVATION,
-      `ADD the following cellar furnishing: ${furniturePrompt}.`,
+      `ADD the following cellar furnishing: ${resolvedPrompt}.`,
       "Functional storage — shelving unit, boxes, utility light. Wine rack if space allows. If compact, single shelf, no wine rack.",
       CONTACT_SHADOWS,
       "Door = 204cm reference.",
@@ -380,7 +396,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       COLUMN_PRESERVATION,
       EQUIPMENT_PRESERVATION,
-      `ADD the following furniture and decoration: ${furniturePrompt}.`,
+      `ADD the following furniture and decoration: ${resolvedPrompt}.`,
       "Center dining table with chairs. If deep room, add sideboard as background anchor. If compact, round table 120cm + 4 chairs instead of rectangular 180cm + 6.",
       "Freestanding only — no wall art, no shelving. Furniture must not touch walls.",
       CONTACT_SHADOWS,
@@ -398,7 +414,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
     CAMERA_PRESERVATION, LIGHT_PRESERVATION,
     COLUMN_PRESERVATION,
     EQUIPMENT_PRESERVATION,
-    `ADD the following furniture and decoration: ${furniturePrompt}.`,
+    `ADD the following furniture and decoration: ${resolvedPrompt}.`,
     "Freestanding objects only, resting on the floor. Furniture must not touch walls.",
     "Distribute furniture across full depth and width of the room. Primary seating group in the foreground third, at least one secondary anchor (side table, accent chair, floor lamp) in the back third. Avoid clustering everything in one zone.",
     "Adapt density to room size: if the visible floor area appears compact, keep 5-6 key pieces only. If the room is very large or deep, add a second furniture grouping in the back zone.",
@@ -441,9 +457,10 @@ export function buildOutdoorFurnitureResponsesPrompt(
   furniturePrompt: string,
   subtypeOverride: string
 ): string {
+  const resolvedPrompt = resolveChooseOne(furniturePrompt);
   return [
     "Edit this outdoor photo. Keep all ground surfaces, guard rails, walls, facades, and sky unchanged. Same camera angle. Open-air space — no ceiling.",
-    `Add outdoor furniture and decoration: ${furniturePrompt}.`,
+    `Add outdoor furniture and decoration: ${resolvedPrompt}.`,
     subtypeOverride ? subtypeOverride : "",
     "Distribute furniture across the full depth and width of the space. If large, create a primary group and a secondary accent further back or to the side.",
     "Outdoor plants only — no houseplants (no monstera, no fiddle leaf, no pothos). Scale plants to space: balcony max 120cm, garden max 200cm.",
