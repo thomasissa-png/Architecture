@@ -1,5 +1,6 @@
 # Politique de confidentialité — Versimo
 > Produit par @copywriter — 2026-03-25
+> Mise à jour 2026-04-04 : entité éditrice Versi, compte utilisateur en production, retrait de Replicate (fournisseur IA unique : OpenAI)
 > Conforme RGPD (Règlement UE 2016/679) et loi Informatique et Libertés n°78-17 modifiée
 
 ---
@@ -66,9 +67,15 @@ Versimo est conçu pour collecter le strict nécessaire au fonctionnement du ser
 
 ---
 
-### 2.5 Données de compte (à venir)
+### 2.5 Données de compte
 
-Lors de la mise en place du système de comptes utilisateurs (prévu prochainement), nous collecterons : adresse email, historique de commandes, solde de crédits. Cette politique de confidentialité sera mise à jour avant l'activation de cette fonctionnalité.
+**Ce que nous collectons** : lors de la création d'un compte, nous collectons votre adresse email et, si vous choisissez la connexion Google, votre identifiant Google (OAuth). Après achat, nous conservons votre historique de commandes et votre solde de crédits.
+
+**Pourquoi** : permettre l'authentification, gérer vos crédits et conserver l'historique de vos générations.
+
+**Base légale** : exécution du contrat (Art. 6.1.b RGPD).
+
+**Durée de conservation** : données de compte conservées pendant la durée de vie du compte + 3 ans après la dernière connexion ou la résiliation. Données de commandes conservées 10 ans (obligation comptable).
 
 ---
 
@@ -92,7 +99,7 @@ Aucune bannière de consentement cookies n'est requise dans la configuration act
 
 Versimo travaille avec les partenaires suivants. Chacun est lié contractuellement à nos obligations RGPD.
 
-### 4.1 OpenAI Inc. (génération d'images — modèle principal)
+### 4.1 OpenAI Inc. (génération d'images — fournisseur unique)
 
 **Données transmises** : vos photos uploadées sont envoyées aux serveurs d'OpenAI pour la génération des visuels.
 
@@ -152,7 +159,7 @@ Versimo met en œuvre les mesures techniques et organisationnelles appropriées 
 
 ## 7. Modifications de cette politique
 
-Cette politique de confidentialité peut être mise à jour, notamment lors de l'ajout de nouvelles fonctionnalités (comptes utilisateurs, analytics). Toute modification substantielle sera signalée aux utilisateurs disposant d'un compte.
+Cette politique de confidentialité peut être mise à jour, notamment lors de l'ajout de nouvelles fonctionnalités (analytics, nouveaux sous-traitants). Toute modification substantielle sera signalée aux utilisateurs disposant d'un compte, avec un préavis de 15 jours.
 
 ---
 
