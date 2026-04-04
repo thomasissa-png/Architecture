@@ -3,7 +3,7 @@
 > Version 2.1 — DRAFT — À valider par un avocat avant mise en ligne publique
 > Mise à jour 2026-03-31 : modèle économique v3 (3 tiers : Découverte gratuit, Starter one-shot, Pro abonnement mensuel + recharges)
 > Mise à jour 2026-04-04 : entité juridique (Versi), compte utilisateur en production, fournisseur IA unique (OpenAI), modalité de consentement rétractation
-> Applicable à compter de : [DATE DE MISE EN LIGNE A COMPLETER]
+> Applicable à compter du 4 avril 2026
 
 ---
 
@@ -24,11 +24,11 @@ L'utilisation du service implique l'acceptation pleine et entière des présente
 ## Article 1 — Identité du prestataire
 
 **Versi** (éditrice du service Versimo)
-[FORME JURIDIQUE A COMPLETER]
-SIRET : [SIRET A COMPLETER]
-Capital social : [A COMPLETER]
-RCS : [A COMPLETER]
-Adresse : [ADRESSE A COMPLETER]
+Société par actions simplifiée (SAS)
+SIRET : 912 862 612 00013
+Capital social : 1 500 €
+RCS : Nanterre 912 862 612
+Adresse : 54 rue Henri Barbusse, 92000 Nanterre
 Site institutionnel : https://versi.fr
 Email : contact@versimo.fr
 
@@ -180,7 +180,7 @@ La validation de cette confirmation est une condition impérative à la finalisa
 Si vous estimez que le droit de rétractation s'applique à votre situation, adressez le formulaire suivant par email à contact@versimo.fr :
 
 ---
-*À l'attention de Versimo — [ADRESSE A COMPLETER]*
+*À l'attention de Versi — 54 rue Henri Barbusse, 92000 Nanterre*
 
 *Je notifie par la présente la rétractation du contrat portant sur la fourniture du service/pack suivant : [désignation]*
 *Commandé le : [date]*
@@ -302,7 +302,7 @@ Pour les Utilisateurs consommateurs, le tribunal compétent est celui du lieu de
 Pour toute question relative aux présentes CGU/CGV ou au service :
 
 Email : contact@versimo.fr
-Adresse : [ADRESSE A COMPLETER]
+Adresse : 54 rue Henri Barbusse, 92000 Nanterre
 
 ---
 
@@ -318,8 +318,6 @@ Adresse : [ADRESSE A COMPLETER]
 - [A VERIFIER AVEC JURISTE] Articulation droit de rétractation / première utilisation sur l'abonnement Pro : la position retenue à l'Art. 5.3 (rétractation éteinte dès le premier crédit utilisé, même sous abonnement) est la plus défensive — à confirmer par un avocat
 - [A VERIFIER AVEC JURISTE] Qualification juridique de la recharge Pro : service numérique à exécution immédiate (rétractation éteinte dès utilisation) ou "bon d'achat" (rétractation de 14 jours) — impact sur la modalité de consentement
 - [A VERIFIER AVEC JURISTE] Conformité de la modalité de recueil du consentement de rétractation via page de confirmation Stripe (Art. 5.2) — s'assurer que la preuve de consentement est horodatée et conservée de manière probante
-- [A COMPLETER] SIRET, forme juridique, capital, RCS et adresse de la société Versi (Art. 1)
 - [A DESIGNER] Médiateur de la consommation agréé (Art. 10) — obligatoire avant la première vente B2C
-- [A COMPLETER] Date d'entrée en vigueur (préambule et bas de page)
 - [A VERIFIER AVEC JURISTE] Chaîne de titularité des images générées OpenAI → Versimo → Utilisateur
 - [A VERIFIER] Chartes spécifiques des portails immobiliers (SeLoger, LeBonCoin Immo, Bien'ici) sur les visuels IA avant commercialisation Mode Pro

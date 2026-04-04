@@ -11,20 +11,19 @@ Le site versimo.fr est édité par :
 
 **Versi** (société éditrice du service Versimo)
 Site institutionnel : https://versi.fr
-Forme juridique : [A COMPLETER — ex. SAS, SASU, Micro-entreprise]
-SIRET : [SIRET A COMPLETER]
-Adresse du siège social : [ADRESSE A COMPLETER]
-Capital social : [A COMPLETER]
-RCS : [A COMPLETER — ville d'immatriculation + numéro]
+Société par actions simplifiée (SAS)
+SIRET : 912 862 612 00013
+Adresse du siège social : 54 rue Henri Barbusse, 92000 Nanterre
+Capital social : 1 500 €
+RCS : Nanterre 912 862 612
 
 Email de contact : contact@versimo.fr
-Email données personnelles : privacy@versimo.fr [A CREER]
 
 ---
 
 ## 2. Directeur de la publication
 
-[NOM A COMPLETER], en qualité de [gérant / président / directeur général] de Versi.
+Le président de la société Versi.
 
 ---
 
@@ -94,10 +93,6 @@ Le présent site et son contenu sont soumis au droit français. En cas de litige
 Pour toute question relative au site ou à son contenu :
 
 Email : contact@versimo.fr
-Adresse postale : [ADRESSE A COMPLETER]
+Adresse postale : 54 rue Henri Barbusse, 92000 Nanterre
 
 *Dernière mise à jour : avril 2026*
-
----
-
-> **Note de mise en ligne** : Les champs [A COMPLETER] doivent être remplis avant la mise en ligne de cette page. Le SIRET est obligatoire dès l'immatriculation de la structure juridique. En l'absence de SIRET au moment du lancement (auto-entrepreneur en cours d'immatriculation), indiquer : "En cours d'immatriculation" — mais compléter dès réception du numéro SIRET, sous peine de contravention LCEN.

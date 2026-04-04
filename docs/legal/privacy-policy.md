@@ -7,9 +7,9 @@
 
 ## 1. Qui collecte vos données ?
 
-La société Versi ([SIRET A COMPLETER], [ADRESSE A COMPLETER]), éditrice du service Versimo, est responsable du traitement de vos données personnelles au sens de l'article 4 du RGPD.
+La société Versi (SAS, SIRET 912 862 612 00013, 54 rue Henri Barbusse, 92000 Nanterre), éditrice du service Versimo, est responsable du traitement de vos données personnelles au sens de l'article 4 du RGPD.
 
-Contact pour toute question relative à vos données : privacy@versimo.fr [A CREER]
+Contact pour toute question relative à vos données : contact@versimo.fr
 
 ---
 
@@ -145,7 +145,7 @@ Conformément aux articles 15 à 22 du RGPD, vous disposez des droits suivants s
 
 **Droit de limitation (Art. 18)** : demander la suspension temporaire d'un traitement en cas de contestation.
 
-**Comment exercer vos droits** : envoyez votre demande à privacy@versimo.fr [A CREER] en précisant votre demande et, si possible, un élément permettant de vous identifier (ex. : adresse email de votre compte). Nous vous répondrons dans un délai de 30 jours.
+**Comment exercer vos droits** : envoyez votre demande à contact@versimo.fr en précisant votre demande et, si possible, un élément permettant de vous identifier (ex. : adresse email de votre compte). Nous vous répondrons dans un délai de 30 jours.
 
 **Droit de réclamation** : si vous estimez que vos droits ne sont pas respectés, vous pouvez déposer une réclamation auprès de la **CNIL** (Commission Nationale de l'Informatique et des Libertés) — www.cnil.fr — 3 place de Fontenoy, TSA 80715, 75334 Paris Cedex 07.
 
@@ -168,6 +168,4 @@ Cette politique de confidentialité peut être mise à jour, notamment lors de l
 ---
 
 > **Hypothèses à valider avant mise en ligne**
-> - [A CREER] Adresse email privacy@versimo.fr — à créer avant la mise en ligne de cette page
-> - [A COMPLETER] SIRET et adresse juridique de la société Versi dans la section 1
 > - [A VERIFIER AVEC JURISTE] La chaîne de titularité OpenAI API → Versimo → utilisateur final sur les images générées, à confirmer au regard des CGU OpenAI API en vigueur
