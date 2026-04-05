@@ -933,7 +933,11 @@ export default function Home() {
           setUserCredits((prev) => prev !== null ? prev + failedCount : prev);
           window.dispatchEvent(new CustomEvent("credits-updated"));
         }
-        setError(`${allResults.length}/${jobs.length} génération${jobs.length > 1 ? "s" : ""} réussie${allResults.length > 1 ? "s" : ""}. ${failedCount} visuel${failedCount > 1 ? "s" : ""} remboursé${failedCount > 1 ? "s" : ""}.`);
+        // Show refund message as sticky toast (not in-flow error — would be hidden after scroll)
+        setQueueToast({
+          type: "info",
+          message: `${allResults.length}/${jobs.length} génération${jobs.length > 1 ? "s" : ""} réussie${allResults.length > 1 ? "s" : ""}. ${failedCount} visuel${failedCount > 1 ? "s" : ""} remboursé${failedCount > 1 ? "s" : ""}.`,
+        });
       }
       if (allResults.length > 0) {
         // Versions and activeVersions are already populated incrementally
@@ -2222,7 +2226,7 @@ export default function Home() {
                               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
                             </svg>
                             <p className="text-xs text-white font-medium">{photoErrors.get(i)}</p>
-                            <p className="text-[10px] text-white/70 font-light mt-1">Crédit remboursé</p>
+                            <p className="text-xs text-white/80 font-light mt-1">Crédit remboursé</p>
                           </div>
                         ) : showPass1 ? (
                           <div className="bg-background/90 backdrop-blur-sm rounded-xl px-5 py-3 shadow-sm text-center">
@@ -2399,7 +2403,16 @@ export default function Home() {
                 03 — Résultat
               </h3>
               <div className={`space-y-10 ${results.length === 1 ? "sm:max-w-xl lg:max-w-2xl mx-auto" : "sm:max-w-3xl lg:max-w-4xl mx-auto"}`}>
-                {results.map((result, index) => {
+                {/* Sort results by upload order (originalUrl → filePreviewUrls index) */}
+                {results
+                  .map((result, index) => ({ result, index }))
+                  .sort((a, b) => {
+                    const idxA = filePreviewUrls.indexOf(a.result.originalUrl);
+                    const idxB = filePreviewUrls.indexOf(b.result.originalUrl);
+                    if (idxA !== idxB) return idxA - idxB;
+                    return a.index - b.index; // same photo, preserve style order
+                  })
+                  .map(({ result, index }) => {
                   const resultVersions = versions[index] || [];
                   const activeIdx = activeVersions[index] || 0;
                   const displayUrl =
