@@ -71,18 +71,46 @@ export async function generateDossierPdf(
     // Small delay for any final rendering
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    // Generate PDF with print media
+    // Force screen media type — render the beautiful web page, not the @media print view
+    await page.emulateMediaType("screen");
+
+    // Hide interactive/navigation elements that shouldn't appear in the PDF
+    await page.evaluate(() => {
+      // Hide header
+      const header = document.querySelector("header");
+      if (header) (header as HTMLElement).style.display = "none";
+      // Hide sticky contact bar
+      const sticky = document.querySelector(".fixed.bottom-0");
+      if (sticky) (sticky as HTMLElement).style.display = "none";
+      // Hide PDF download button
+      const pdfBtn = document.querySelector("[data-testid='dossier-print-pdf']");
+      if (pdfBtn) (pdfBtn as HTMLElement).style.display = "none";
+      // Hide share buttons (no-print elements)
+      document.querySelectorAll(".no-print").forEach((el) => {
+        (el as HTMLElement).style.display = "none";
+      });
+      // Hide the "Modifier" link (owner-only)
+      const editLink = document.querySelector("a[href*='/mes-biens/']");
+      if (editLink) (editLink as HTMLElement).style.display = "none";
+      // Make main visible (it has no-print class)
+      const main = document.querySelector("main.no-print");
+      if (main) (main as HTMLElement).style.display = "block";
+      // Hide DossierPrintView (we use the web view now)
+      const printView = document.querySelector(".print-only");
+      if (printView) (printView as HTMLElement).style.display = "none";
+    });
+
+    // Generate PDF from the screen-rendered web page
     const pdfBuffer = await page.pdf({
       format: "A4",
       printBackground: true,
       displayHeaderFooter: false,
       margin: {
-        top: "12mm",
-        right: "10mm",
-        bottom: "15mm",
-        left: "10mm",
+        top: "10mm",
+        right: "8mm",
+        bottom: "12mm",
+        left: "8mm",
       },
-      preferCSSPageSize: true,
     });
 
     // Save to Object Storage
