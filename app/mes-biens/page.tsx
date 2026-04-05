@@ -7,7 +7,7 @@
  */
 
 import { useSession } from "next-auth/react";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import ProGate from "@/components/ProGate";
 import Header from "@/components/Header";
@@ -42,6 +42,14 @@ interface AddressSuggestion {
 
 
 export default function MesBiensPage() {
+  return (
+    <Suspense>
+      <MesBiensContent />
+    </Suspense>
+  );
+}
+
+function MesBiensContent() {
   const { data: session, status: authStatus } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
