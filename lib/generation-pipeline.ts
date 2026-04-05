@@ -89,7 +89,7 @@ export async function extractRoomInventory(imageBase64: string): Promise<string>
  * v43 (audit croise Yann+Lucas #111-117: P0 COLUMN_PRESERVATION active tous builders, P0 ANTI_FENETRE remonte position 2, P1 anti-warm shift renforce white balance, P1 Cosy marqueurs tactiles quantites, P1 PHOTO_GRAIN restaure ISO 200 + vignetting),
  * v45 (gpt-image-1.5 preservation-first: PASS1_PREAMBLE+PASS2_PREAMBLE en tete de TOUS les builders — les 8 passe 1 + 9 passe 2 + 2 outdoor. Preservation AVANT style pour forcer le mode edition. "CHANGE ONLY" en passe 1, "ADD" en passe 2. Suppression doublons CAMERA/LIGHT en fin de prompt — deja dans les constantes en tete.),
  * v52 (audit v51 Yann 7.2 Lucas 7.5: P0 ANTI_FENETRE couvre mezzanines/niveaux superieurs, P1 PASS2_PREAMBLE anti-elargissement pieces etroites + bathroom builder renforce, P1 EQUIPMENT_PRESERVATION couvre convecteurs au sol et seche-serviettes) */
-export const PROMPT_VERSION = "v52";
+export const PROMPT_VERSION = "v53";
 
 // ─── Image generation model ─────────────────────────────────────────
 // v36: configurable via env var. Default gpt-image-1 (v32 reverted gpt-image-1.5 for spatial regression).
@@ -167,7 +167,15 @@ export function getOutputSize(
 // - furniturePrompt: freestanding objects with precise silhouettes + scale
 
 // ── Shared prompt fragments (constants to avoid duplication) ─────────
-const DSLR_LINE = "DSLR full-frame, deep DOF, sharp focus. Same focal length as the input photo. Clean rendering, no HDR, no color grading, no text.";
+const DSLR_LINE = "DSLR wide-angle, sharp focus, deep DOF. Same focal length as input. No text.";
+
+// v53: PASS 1 — condensed from 663 words to ~180 words.
+// gpt-image-1.5 loses focus after ~200 words. Structure FIRST, action SECOND.
+const PASS1_PREAMBLE_V53 = "Edit this photo. This is a RENOVATION — keep the building's structure exactly as shown. STRUCTURE LOCK: every column, beam, slab edge, and ceiling shape keeps its exact width, depth, and position. Same number of windows and doors at the same positions — solid walls stay solid. Same camera angle, same framing, same room dimensions. CHANGE ONLY: wall color, floor material, ceiling finish, and one ceiling light fixture. Apply finishes OVER existing textures, not replacing the 3D shape underneath.";
+const PRESERVATION_V53 = "Ceiling: keep every bump, step, soffit, vault, and beam visible — paint over their surface, keep their shape. Columns and posts: keep full width (typically 25-40cm for concrete). Slab edges: keep full thickness (typically 20-25cm). Light direction and shadows unchanged. No warm color shift.";
+const CLEANUP_V53 = "Remove loose construction items: cables, junction boxes, exposed pipes, outlets. Keep all fixed equipment in place: radiators, heaters, vents, panels — same count, same positions. Room stays COMPLETELY EMPTY — no furniture, no fixtures, no bathroom elements.";
+
+// v52 constants kept for PASS 2 (not refactored here)
 const CEILING_PRESERVATION = "Ceiling: if demolition damage visible, apply smooth plaster coat then style finish. Preserve intentional elements (beams, rafters, arches, slab undersides) with original texture — keep raw concrete formwork marks, aged wood grain, and metal patina intact. Paint over the texture, not a smooth coat. Keep ceiling curvature exactly.";
 const COLUMN_PRESERVATION = "Preserve ALL vertical structural elements: columns, posts, pilasters, load-bearing frames, concrete pillars. Each must remain as a separate 3D volume at its exact position — do not flatten or absorb into the wall. Preserve slab edges, mezzanine floor thicknesses, and lintels as distinct horizontal volumes — do not smooth them into ceiling or wall. Apply the wall finish AROUND these elements, not OVER them.";
 const LIGHT_PRESERVATION = "Preserve existing light direction and shadow positions. Keep the input's color temperature — warm materials reflect existing light without shifting overall tone. Keep whites neutral.";
@@ -176,7 +184,7 @@ const CAMERA_PRESERVATION = "Same camera angle, height, tilt, and field of view 
 const ANTI_FENETRE = "Count the windows and doors visible in the input photo. The output must have the EXACT same count, at the same positions, same sizes. If a wall has no window in the input, it must remain a solid wall in the output — even if the wall extends beyond the visible frame. Do not add windows, doors, or openings to walls that are partially visible or out of frame. This includes upper levels, mezzanines, and loft areas — do not add windows or openings at any height level.";
 const ANTI_INVENTION = "Only modify surfaces as described. No new architectural elements (arches, vaults, columns, niches, coffers, windows, doors) unless already in the input. Areas beyond the frame edges of the input are unknown — leave them as-is, do not invent what is there.";
 
-// v51: extracted from 8 inline copies in pass 1 builders (P2-1 audit)
+// v51: extracted from inline copies
 const CONSTRUCTION_CLEANUP = "Remove construction leftovers: dangling cables, junction boxes, exposed wiring, electrical outlets, round black wall boxes, cable exits, exposed plumbing pipes, copper tubes, PVC pipes, water supply lines, drain pipes — cover with wall or floor finish. Count all fixed wall-mounted equipment in the input (radiators, convectors, heaters, water heater, boiler, vents, thermostats, switches, electrical panels). The output MUST have the SAME count at the SAME positions — if the input shows 1 radiator below a window, the output MUST show 1 radiator below that window.";
 
 // v51: outdoor-specific preservation constants (P0-1, P0-2, P1-6 audit)
@@ -193,132 +201,108 @@ const PASS2_PREAMBLE = "Edit this photo of a finished room. The wall colors, flo
 export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string | null, roomInventory?: string): string {
   // Inject room inventory right after PREAMBLE if available
   const inventoryLine = roomInventory ? `This room has: ${roomInventory}` : "";
-  // Kitchen: v44 — preservation FIRST, then style
+  // v53: All pass 1 builders condensed — structure FIRST, ~220 words total (was ~663)
+  // Kitchen
   if (roomTypeId === "kitchen") {
     const kitchenSurface = surfacePrompt.replace(/,?\s*(wide-plank|herringbone|wood|ash|oak|walnut|parquet)\s+flooring[^,.]*/gi, "");
     return [
-      PASS1_PREAMBLE,
+      PASS1_PREAMBLE_V53,
       inventoryLine,
-      ANTI_FENETRE,
-      CAMERA_PRESERVATION, LIGHT_PRESERVATION,
-      CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
-      `Change only the surface finishes: ${kitchenSurface}.`,
-      "Floor: ceramic or natural stone tiles (kitchen-appropriate). Subway tile or smooth splashback behind work area. Ceiling light per style description.",
-      CONSTRUCTION_CLEANUP,
-      "Room stays completely empty — no furniture, no appliances.",
+      PRESERVATION_V53,
+      `Surface style: ${kitchenSurface}.`,
+      "Floor: ceramic or stone tiles (kitchen). Splashback behind work area.",
+      CLEANUP_V53,
       DSLR_LINE,
     ].join(" ");
   }
 
-  // Bathroom: v44 — preservation FIRST, then style
+  // Bathroom
   if (roomTypeId === "bathroom") {
     return [
-      PASS1_PREAMBLE,
+      PASS1_PREAMBLE_V53,
       inventoryLine,
-      ANTI_FENETRE,
-      CAMERA_PRESERVATION, LIGHT_PRESERVATION,
-      CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
-      `Change only the surface finishes: ${surfacePrompt}.`,
-      "Floor-to-ceiling ceramic tiles in shower zone and vanity area. Water-resistant floor — ceramic or stone, matte non-slip. Recessed IP44 ceiling spotlights.",
-      CONSTRUCTION_CLEANUP,
-      "Room stays completely empty — no fixtures, no objects.",
+      PRESERVATION_V53,
+      `Surface style: ${surfacePrompt}.`,
+      "Ceramic tiles floor-to-ceiling in wet zones. Water-resistant matte floor. ONE ceiling light only — the pendant described in style, no recessed spots unless specified.",
+      CLEANUP_V53,
       DSLR_LINE,
     ].join(" ");
   }
 
-  // WC: v44 — preservation FIRST, then style
+  // WC
   if (roomTypeId === "wc") {
     return [
-      PASS1_PREAMBLE,
+      PASS1_PREAMBLE_V53,
       inventoryLine,
-      ANTI_FENETRE,
-      CAMERA_PRESERVATION, LIGHT_PRESERVATION,
-      CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
-      `Change only the surface finishes: ${surfacePrompt}.`,
-      "Waterproof floor — small ceramic tiles or vinyl. Washable matte paint or tiles on lower walls.",
-      CONSTRUCTION_CLEANUP,
-      "Room stays completely empty — no fixtures, no objects.",
+      PRESERVATION_V53,
+      `Surface style: ${surfacePrompt}.`,
+      "Waterproof floor — small ceramic tiles. Washable paint on lower walls.",
+      CLEANUP_V53,
       DSLR_LINE,
     ].join(" ");
   }
 
-  // Bedroom: v44 — preservation FIRST, then style
+  // Bedroom
   if (roomTypeId === "bedroom_adults" || roomTypeId === "bedroom_children") {
     return [
-      PASS1_PREAMBLE,
+      PASS1_PREAMBLE_V53,
       inventoryLine,
-      ANTI_FENETRE,
-      CAMERA_PRESERVATION, LIGHT_PRESERVATION,
-      CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
-      `Change only the surface finishes: ${surfacePrompt}.`,
-      "Flooring per style description above. Ceiling light per style description. If ONE accent wall exists, preserve it — apply style color to other walls only.",
-      CONSTRUCTION_CLEANUP,
-      "Room stays completely empty — no furniture, no objects.",
+      PRESERVATION_V53,
+      `Surface style: ${surfacePrompt}.`,
+      "If one accent wall exists, keep it — style color on other walls only.",
+      CLEANUP_V53,
       DSLR_LINE,
     ].join(" ");
   }
 
-  // Laundry: v45 — preservation FIRST for gpt-image-1.5
+  // Laundry
   if (roomTypeId === "laundry") {
     return [
-      PASS1_PREAMBLE,
+      PASS1_PREAMBLE_V53,
       inventoryLine,
-      ANTI_FENETRE,
-      CAMERA_PRESERVATION, LIGHT_PRESERVATION,
-      CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
-      `Change only the surface finishes: ${surfacePrompt}.`,
-      "Waterproof floor — white or light grey ceramic tiles matte. Walls in washable matte white paint.",
-      CONSTRUCTION_CLEANUP,
-      "Room stays completely empty — no appliances, no objects.",
+      PRESERVATION_V53,
+      `Surface style: ${surfacePrompt}.`,
+      "Waterproof ceramic floor. Washable white walls.",
+      CLEANUP_V53,
       DSLR_LINE,
     ].join(" ");
   }
 
-  // Cellar: v45 — preservation FIRST for gpt-image-1.5
+  // Cellar
   if (roomTypeId === "cellar") {
     return [
-      PASS1_PREAMBLE,
+      PASS1_PREAMBLE_V53,
       inventoryLine,
-      ANTI_FENETRE,
-      CAMERA_PRESERVATION, LIGHT_PRESERVATION,
-      CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
-      `Change only the surface finishes: ${surfacePrompt}.`,
-      "Concrete or stone floor as-is or with sealant. Clean matte white or light grey paint over masonry.",
-      CONSTRUCTION_CLEANUP,
-      "Room stays completely empty — bare floors, bare walls.",
+      PRESERVATION_V53,
+      `Surface style: ${surfacePrompt}.`,
+      "Concrete or sealed stone floor. Light grey paint over masonry.",
+      CLEANUP_V53,
       DSLR_LINE,
     ].join(" ");
   }
 
-  // Entryway: v45 — preservation FIRST for gpt-image-1.5
+  // Entryway
   if (roomTypeId === "entryway") {
     return [
-      PASS1_PREAMBLE,
+      PASS1_PREAMBLE_V53,
       inventoryLine,
-      ANTI_FENETRE,
-      CAMERA_PRESERVATION, LIGHT_PRESERVATION,
-      CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
-      `Change only the surface finishes: ${surfacePrompt}.`,
-      "Durable entrance floor — ceramic tiles, natural stone, or hard-wearing wood. Ceiling light per style description.",
-      CONSTRUCTION_CLEANUP,
-      "Room stays completely empty — no furniture, no objects.",
+      PRESERVATION_V53,
+      `Surface style: ${surfacePrompt}.`,
+      "Durable entrance floor — ceramic, stone, or hard wood.",
+      CLEANUP_V53,
       DSLR_LINE,
     ].join(" ");
   }
 
   // ── FALLBACK: generic builder for living_room, dining_room, office, null ──
-  // v45: preservation FIRST for gpt-image-1.5
+  // v53: condensed prompt — structure FIRST, ~220 words total (was ~663)
   return [
-    PASS1_PREAMBLE,
+    PASS1_PREAMBLE_V53,
     inventoryLine,
-    ANTI_FENETRE,
-    CAMERA_PRESERVATION, LIGHT_PRESERVATION,
-    CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
-    `Change only the surface finishes: ${surfacePrompt}.`,
-    "Apply the described finish to the existing floor and walls. Do not add structural elements that are absent from the input. For the ceiling light fixture, follow the style description above exactly.",
-    "If the input has ONE accent wall (different color or texture), preserve it as-is — apply the style's wall color to the other walls only.",
-    CONSTRUCTION_CLEANUP,
-    "Keep the room completely empty — no furniture, no rugs, no objects.",
+    PRESERVATION_V53,
+    `Surface style: ${surfacePrompt}.`,
+    "If one accent wall exists (different color/texture), keep it — style color on other walls only.",
+    CLEANUP_V53,
     DSLR_LINE,
   ].join(" ");
 }
