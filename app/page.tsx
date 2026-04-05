@@ -2232,11 +2232,7 @@ export default function Home() {
                             </div>
                             <span className="text-xs text-muted font-light">Génération…</span>
                           </div>
-                        ) : done ? null : (
-                          <div className="bg-background/80 backdrop-blur-sm rounded-xl px-4 py-2 shadow-sm">
-                            <span className="text-xs text-muted font-light">En attente</span>
-                          </div>
-                        )}
+                        ) : null}
                       </div>
                       {done && !showPass1 && (
                         <div className="absolute top-2 right-2 w-6 h-6 bg-sage rounded-full flex items-center justify-center">
