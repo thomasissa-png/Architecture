@@ -144,10 +144,11 @@ export function getOutputSize(
     return { openai: "1024x1024", w: 1024, h: 1024 };
   }
   const ratio = width / height;
-  // Use 1536x1024 only for clearly wide images (16:9, 16:10).
-  // 4:3 (ratio 1.33) goes to 1024x1024 to avoid forced widening.
-  if (ratio > 1.45) return { openai: "1536x1024", w: 1536, h: 1024 }; // wide landscape (16:9, 16:10)
-  if (ratio < 0.69) return { openai: "1024x1536", w: 1024, h: 1536 }; // tall portrait
+  // Match the input ratio as closely as possible.
+  // OpenAI only supports 3 sizes: 1024x1024, 1536x1024, 1024x1536.
+  // A landscape input (4:3, 3:2, 16:9) must output landscape, not square.
+  if (ratio > 1.2) return { openai: "1536x1024", w: 1536, h: 1024 }; // landscape
+  if (ratio < 0.83) return { openai: "1024x1536", w: 1024, h: 1536 }; // portrait
   return { openai: "1024x1024", w: 1024, h: 1024 }; // square-ish
 }
 
@@ -498,8 +499,8 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
     COLUMN_PRESERVATION,
     EQUIPMENT_PRESERVATION,
     `ADD the following furniture and decoration: ${resolvedPrompt}.`,
-    "Freestanding objects only, resting on the floor. Furniture must not touch walls.",
-    "Distribute furniture across full depth AND full width of the room — use both left and right sides. Primary seating group in the foreground third, at least one secondary anchor (side table, accent chair, floor lamp) in the back third. If the room has a recess or secondary zone behind a partition, place at least one piece there. Balance items laterally so neither side is empty.",
+    "Freestanding objects only. Fill 30-40% of the visible floor area with furniture — the room must look LIVED IN, not empty with a sofa in the middle.",
+    "Place at least ONE furniture piece in the BACK THIRD of the room (console table, bookshelf, floor lamp, plant on stand). Place at least ONE piece on EACH SIDE of the room. The foreground has the main seating group, the background has secondary anchors. No empty zones.",
     "Adapt density to room size: if the visible floor area appears compact, keep 5-6 key pieces only. If the room is very large or deep, add a second furniture grouping in the back zone.",
     CONTACT_SHADOWS,
     "Scale references: door = 204cm, handle = 100cm, sill = 90cm. Scale furniture to room volume — if compact (<4m wide), use smaller pieces. Scale up if ceiling >3m.",
