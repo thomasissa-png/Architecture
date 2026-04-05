@@ -539,6 +539,11 @@ export default function Home() {
           const data = await res.json();
           if (!data.isRoom) {
             setError(`La photo ${files.length > 1 ? (i + 1) + " " : ""}ne semble pas être une pièce ou un espace. Versimo fonctionne avec des photos de pièces vides (intérieur ou extérieur).`);
+            // Refund credits — validation failed before any API call
+            if (userCredits !== null) {
+              setUserCredits(userCredits);
+              window.dispatchEvent(new CustomEvent("credits-updated", { detail: { credits: userCredits } }));
+            }
             return;
           }
         }
@@ -2188,9 +2193,10 @@ export default function Home() {
               {/* Blur preview placeholders */}
               <div className={`grid gap-4 mx-auto ${files.length === 1 ? "grid-cols-1 sm:max-w-xl lg:max-w-2xl" : "grid-cols-1 sm:grid-cols-2 sm:max-w-3xl lg:max-w-4xl"}`}>
                 {files.map((file, i) => {
-                  // Check if this photo has a partial result (pass1 surfaces visible)
-                  const partialResult = results.find((r) => r.pass2Pending && r.originalUrl === filePreviewUrls[i]);
-                  const done = results.some((r) => !r.pass2Pending && r.originalUrl === filePreviewUrls[i]);
+                  // Check status of all results for this photo
+                  const photoResults = results.filter((r) => r.originalUrl === filePreviewUrls[i]);
+                  const partialResult = photoResults.find((r) => r.pass2Pending);
+                  const done = photoResults.length > 0 && photoResults.every((r) => !r.pass2Pending);
                   const showPass1 = !!partialResult;
                   const hasError = photoErrors.has(i);
                   const active = !done && !showPass1 && !hasError;
