@@ -12,6 +12,7 @@ import { useParams } from "next/navigation";
 import Header from "@/components/Header";
 import InlineGenerator from "@/components/InlineGenerator";
 import ArchiveConfirmModal from "@/components/ArchiveConfirmModal";
+import CropModal from "@/components/CropModal";
 import { STYLE_LABELS, TYPE_LABELS } from "@/lib/constants";
 
 interface Property {
@@ -113,6 +114,10 @@ export default function PropertyDetailPage() {
 
   // Inline generator
   const [showGenerator, setShowGenerator] = useState(false);
+
+  // Crop modal
+  const [cropPhotoId, setCropPhotoId] = useState<string | null>(null);
+  const [cropImageUrl, setCropImageUrl] = useState<string | null>(null);
 
   // Dossier creation
   const [showDossierModal, setShowDossierModal] = useState(false);
@@ -968,12 +973,29 @@ export default function PropertyDetailPage() {
                         {STYLE_LABELS[photo.style_id || ""] || photo.style_id || ""}
                       </span>
                     </div>
-                    <button
-                      onClick={() => handleDissociate(photo.id)}
-                      className="absolute top-2 right-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity bg-red-500/80 text-white text-xs px-2 py-1 rounded-lg font-medium hover:bg-red-500 focus-visible:outline-none"
-                    >
-                      Retirer
-                    </button>
+                    <div className="absolute top-2 right-2 flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                      {photo.input_image_key && (
+                        <button
+                          onClick={() => {
+                            setCropPhotoId(photo.id);
+                            setCropImageUrl(`/api/logs/image?path=${encodeURIComponent(photo.input_image_key!)}`);
+                          }}
+                          className="bg-foreground/70 text-white text-xs px-2 py-1 rounded-lg font-medium hover:bg-foreground/90 focus-visible:outline-none min-h-[32px] flex items-center gap-1"
+                          title="Recadrer la photo originale"
+                        >
+                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h10v10M3 21L7 17M21 3v4h-4" />
+                          </svg>
+                          Recadrer
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleDissociate(photo.id)}
+                        className="bg-red-500/80 text-white text-xs px-2 py-1 rounded-lg font-medium hover:bg-red-500 focus-visible:outline-none"
+                      >
+                        Retirer
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -1370,6 +1392,33 @@ export default function PropertyDetailPage() {
         propertyLabel={property.address_normalized || property.address_raw || "Ce bien"}
         isLoading={isArchiving}
       />
+
+      {/* Crop modal */}
+      {cropPhotoId && cropImageUrl && (
+        <CropModal
+          imageUrl={cropImageUrl}
+          onClose={() => { setCropPhotoId(null); setCropImageUrl(null); }}
+          onCrop={async (croppedBase64) => {
+            try {
+              const res = await fetch(`/api/user/photos/${cropPhotoId}/crop`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ croppedImage: croppedBase64 }),
+              });
+              if (res.ok) {
+                setCropPhotoId(null);
+                setCropImageUrl(null);
+                setToastMsg("Photo recadrée. Vous pouvez régénérer le visuel.");
+                fetchPhotos();
+              } else {
+                setToastMsg("Erreur lors du recadrage.");
+              }
+            } catch {
+              setToastMsg("Erreur réseau lors du recadrage.");
+            }
+          }}
+        />
+      )}
     </div>
   );
 }
