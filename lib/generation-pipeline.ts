@@ -171,9 +171,9 @@ const DSLR_LINE = "DSLR wide-angle, sharp focus, deep DOF. Same focal length as 
 
 // v53: PASS 1 — condensed from 663 words to ~180 words.
 // gpt-image-1.5 loses focus after ~200 words. Structure FIRST, action SECOND.
-const PASS1_PREAMBLE_V53 = "Edit this photo. This is a RENOVATION — keep the building's structure exactly as shown. STRUCTURE LOCK: every column, beam, slab edge, and ceiling shape keeps its exact width, depth, and position. Same number of windows and doors at the same positions — solid walls stay solid. Same camera angle, same framing, same room dimensions. CHANGE ONLY: wall color, floor material, ceiling finish, and one ceiling light fixture. Apply finishes OVER existing textures, not replacing the 3D shape underneath.";
-const PRESERVATION_V53 = "Ceiling: keep every bump, step, soffit, vault, and beam visible — paint over their surface, keep their shape. Columns and posts: keep full width (typically 25-40cm for concrete). Slab edges: keep full thickness (typically 20-25cm). Light direction and shadows unchanged. No warm color shift.";
-const CLEANUP_V53 = "Remove loose construction items: cables, junction boxes, exposed pipes, outlets. Keep all fixed equipment in place: radiators, heaters, vents, panels — same count, same positions. Room stays COMPLETELY EMPTY — no furniture, no fixtures, no bathroom elements.";
+const PASS1_PREAMBLE_V53 = "STRUCTURE LOCK: every column, beam, slab edge, and ceiling shape keeps its exact width, depth, and position. EXACT same count of windows and doors at same positions — solid walls stay solid. Same camera angle, same framing, same room dimensions — FIXED, no stretch. Edit surfaces only: wall color, floor material, ceiling finish, and one ceiling light fixture. Apply finishes OVER existing textures, not replacing the 3D shape underneath.";
+const PRESERVATION_V53 = "Ceiling: keep every bump, step, soffit, vault, and beam visible — paint over their surface, keep their shape. Columns and posts: keep full width. Slab edges: keep full thickness. Mouldings, cornices, and decorative trims: keep shape and position, paint over. Light direction and shadows unchanged. No warm color shift.";
+const CLEANUP_V53 = "Remove loose construction items: cables, junction boxes, exposed pipes, outlets. Keep all fixed equipment in place: radiators, heaters, vents, panels — same count, same positions. Existing built-in fixtures (bathtub, shower tray, toilet, sink) stay if present. Room stays COMPLETELY EMPTY — no furniture, no new fixtures.";
 
 // v52 constants kept for PASS 2 (not refactored here)
 const CEILING_PRESERVATION = "Ceiling: if demolition damage visible, apply smooth plaster coat then style finish. Preserve intentional elements (beams, rafters, arches, slab undersides) with original texture — keep raw concrete formwork marks, aged wood grain, and metal patina intact. Paint over the texture, not a smooth coat. Keep ceiling curvature exactly.";
@@ -210,7 +210,7 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
       inventoryLine,
       PRESERVATION_V53,
       `Surface style: ${kitchenSurface}.`,
-      "Floor: ceramic or stone tiles (kitchen). Splashback behind work area.",
+      "Floor: ceramic or stone tiles (kitchen). Splashback behind work area. If one accent wall exists, keep it.",
       CLEANUP_V53,
       DSLR_LINE,
     ].join(" ");
@@ -223,7 +223,7 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
       inventoryLine,
       PRESERVATION_V53,
       `Surface style: ${surfacePrompt}.`,
-      "Ceramic tiles floor-to-ceiling in wet zones. Water-resistant matte floor. ONE ceiling light only — the pendant described in style, no recessed spots unless specified.",
+      "Ceramic tiles floor-to-ceiling in wet zones. Water-resistant matte floor. ONE ceiling light only — the pendant described in style, no recessed spots unless specified. If one accent wall exists, keep it.",
       CLEANUP_V53,
       DSLR_LINE,
     ].join(" ");
