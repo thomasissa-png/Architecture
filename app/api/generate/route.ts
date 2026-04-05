@@ -430,6 +430,7 @@ export async function POST(request: NextRequest) {
         isOutdoor: cached.meta.isOutdoor || undefined,
         outdoorSubtype: cached.meta.outdoorSubtype ?? undefined,
         promptVersion: PROMPT_VERSION,
+        generationType: intent === "adjust" ? "iteration_adjust" : "iteration_restyle",
       }).catch((err) => console.error("DB log (iteration) failed:", err));
 
       // Save iteration as a NEW user_photos entry (Bug 4 fix)
@@ -545,7 +546,7 @@ export async function POST(request: NextRequest) {
       const p2t0 = Date.now();
       console.log(`[pass2Only] Starting pass 2 from cache key: ${pass1Key}`);
 
-      let pass2Result: { image: string; model: string } | null = null;
+      let pass2Result: { image: string; model: string; bestOf2?: { score1: number; score2: number; chosen: 1 | 2 } } | null = null;
       let pass2Err: string | null = null;
 
       try {
@@ -641,6 +642,10 @@ export async function POST(request: NextRequest) {
         isOutdoor: cached.meta.isOutdoor || undefined,
         outdoorSubtype: cached.meta.isOutdoor ? (cached.meta.outdoorSubtype ?? undefined) : undefined,
         promptVersion: PROMPT_VERSION,
+        generationType: "pass2_only",
+        bestOf2Score1: pass2Result.bestOf2?.score1,
+        bestOf2Score2: pass2Result.bestOf2?.score2,
+        bestOf2Chosen: pass2Result.bestOf2?.chosen,
       }).catch((err) => console.error("DB log (pass2Only) failed:", err));
 
       return NextResponse.json({
@@ -822,6 +827,7 @@ export async function POST(request: NextRequest) {
         outdoorSubtype: isOutdoor ? (outdoorSubtype ?? undefined) : undefined,
         promptVersion: PROMPT_VERSION,
         roomInventory: roomInventory || undefined,
+        generationType: "generation",
       }).catch((err) => console.error("DB log (splitMode pass1) failed:", err));
 
       // Always return pass1_key in split mode — if cache failed, pass2Only will fail
@@ -883,6 +889,7 @@ export async function POST(request: NextRequest) {
         outdoorSubtype: isOutdoor ? (outdoorSubtype ?? undefined) : undefined,
         promptVersion: PROMPT_VERSION,
         roomInventory: roomInventory || undefined,
+        generationType: "surfaces_only",
       }).catch((err) => console.error("DB log failed:", err));
 
       return NextResponse.json({
@@ -900,7 +907,7 @@ export async function POST(request: NextRequest) {
     const remainingBudget = ROUTE_DEADLINE_MS - elapsedAfterPass1;
 
     console.log(`Starting pass 2 (furniture)... Elapsed: ${Math.round(elapsedAfterPass1 / 1000)}s, remaining budget: ${Math.round(remainingBudget / 1000)}s`);
-    let pass2: { image: string; model: string } | null = null;
+    let pass2: { image: string; model: string; bestOf2?: { score1: number; score2: number; chosen: 1 | 2 } } | null = null;
     let pass2Failed = false;
     let pass2Attempts = 0;
 
@@ -1037,6 +1044,10 @@ export async function POST(request: NextRequest) {
       outdoorSubtype: isOutdoor ? (outdoorSubtype ?? undefined) : undefined,
       promptVersion: PROMPT_VERSION,
       roomInventory: roomInventory || undefined,
+      generationType: "generation",
+      bestOf2Score1: pass2?.bestOf2?.score1,
+      bestOf2Score2: pass2?.bestOf2?.score2,
+      bestOf2Chosen: pass2?.bestOf2?.chosen,
     }).catch((err) => console.error("DB log failed:", err));
 
     // Generation succeeded — credit was already decremented optimistically

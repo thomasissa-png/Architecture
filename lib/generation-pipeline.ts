@@ -773,7 +773,7 @@ export async function generatePass(
   outdoor?: { isOutdoor: boolean; subtypeSurfaceOverride?: string; subtypeFurnitureOverride?: string },
   roomInventory?: string,
   originalImageBase64?: string
-): Promise<{ image: string; model: string }> {
+): Promise<{ image: string; model: string; bestOf2?: { score1: number; score2: number; chosen: 1 | 2 } }> {
   if (!process.env.OPENAI_API_KEY) {
     throw new Error("Clé API OpenAI non configurée.");
   }
@@ -836,7 +836,10 @@ export async function generatePass(
   const chosen = score1 >= score2 ? 0 : 1;
   console.log(`[best-of-2] SSIM scores: candidate1=${score1}, candidate2=${score2} → chose candidate${chosen + 1}`);
 
-  return candidates[chosen];
+  return {
+    ...candidates[chosen],
+    bestOf2: { score1, score2, chosen: (chosen + 1) as 1 | 2 },
+  };
 }
 
 
@@ -945,7 +948,7 @@ export async function runGenerationPipeline(params: PipelineParams): Promise<Pip
   }
 
   // Pass 2: furniture with best-of-2 scoring (originalImageBase64 = input for spatial comparison)
-  let pass2: { image: string; model: string } | null = null;
+  let pass2: { image: string; model: string; bestOf2?: { score1: number; score2: number; chosen: 1 | 2 } } | null = null;
   let pass2Failed = false;
   try {
     pass2 = await generatePass(pass1Base64, trimmedSurface, trimmedFurniture, 2, outputSize, isOutdoor ? null : roomType, outdoorParam, roomInventory, inputBase64);
