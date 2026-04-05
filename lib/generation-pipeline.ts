@@ -88,7 +88,7 @@ export async function extractRoomInventory(imageBase64: string): Promise<string>
  * v42 (density conditionals: kitchen 3-tier width scaling, dining room compact/large, office compact skip bookshelf — fix gen #112 overcrowded compact kitchen),
  * v43 (audit croise Yann+Lucas #111-117: P0 COLUMN_PRESERVATION active tous builders, P0 ANTI_FENETRE remonte position 2, P1 anti-warm shift renforce white balance, P1 Cosy marqueurs tactiles quantites, P1 PHOTO_GRAIN restaure ISO 200 + vignetting),
  * v45 (gpt-image-1.5 preservation-first: PASS1_PREAMBLE+PASS2_PREAMBLE en tete de TOUS les builders — les 8 passe 1 + 9 passe 2 + 2 outdoor. Preservation AVANT style pour forcer le mode edition. "CHANGE ONLY" en passe 1, "ADD" en passe 2. Suppression doublons CAMERA/LIGHT en fin de prompt — deja dans les constantes en tete.) */
-export const PROMPT_VERSION = "v48";
+export const PROMPT_VERSION = "v49";
 
 // ─── Image generation model ─────────────────────────────────────────
 // v36: configurable via env var. Default gpt-image-1 (v32 reverted gpt-image-1.5 for spatial regression).
@@ -358,8 +358,9 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       DEPTH_DISTRIBUTION_KITCHEN,
       CONTACT_SHADOWS,
       "Scale references: door = 204cm, sill = 90cm. Freestanding objects only.",
+      "Include 2-3 lived-in details: a wooden cutting board, a fruit bowl, a folded linen tea towel on the counter.",
       "Place furniture INSIDE the room only — do not add any object on exterior terraces, balconies, or patios visible through windows or glazing.",
-      "Result should look like a luxury real estate listing photo.",
+      "Result should look like a luxury real estate listing photo — lived-in, not a sterile catalog.",
       DSLR_LINE,
     ].join(" ");
   }
@@ -432,8 +433,10 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       EQUIPMENT_PRESERVATION,
       `ADD the following entryway furniture: ${resolvedPrompt}.`,
       "Small space — do not overcrowd. Console max 60% of wall width. Freestanding only: console, mirror propped on console, coat rack, bench, runner rug. All objects resting on the floor.",
+      "If the entryway is deep enough, place a secondary element (bench, umbrella stand, plant) in the back third. If wide, balance left and right sides.",
       CONTACT_SHADOWS,
       "Door = 204cm reference.",
+      "Include 1-2 lived-in details: a set of keys on the console, a casually placed hat, a small stack of mail.",
       DSLR_LINE,
     ].join(" ");
   }
@@ -448,6 +451,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       EQUIPMENT_PRESERVATION,
       `ADD the following laundry equipment: ${resolvedPrompt}.`,
       "Functional layout — washing machine, cabinet, drying rack, basket. No decorative objects. If compact (<4m2), skip folding table and drying rack.",
+      "If deep enough, place storage shelving or a basket in the back third. If wide, balance equipment on both sides.",
       CONTACT_SHADOWS,
       "Door = 204cm reference.",
       DSLR_LINE,
@@ -464,6 +468,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       EQUIPMENT_PRESERVATION,
       `ADD the following cellar furnishing: ${resolvedPrompt}.`,
       "Functional storage — shelving unit, boxes, utility light. Wine rack if space allows. If compact, single shelf, no wine rack.",
+      "If the cellar is deep, place at least one storage element in the back third. If wide, use both sides of the space.",
       CONTACT_SHADOWS,
       "Door = 204cm reference.",
       DSLR_LINE,
@@ -549,6 +554,7 @@ export function buildOutdoorFurnitureResponsesPrompt(
     "Distribute furniture across the full depth and width of the space — use both left and right sides. If large, create a primary group and a secondary accent further back or to the side.",
     "Outdoor plants only — no houseplants (no monstera, no fiddle leaf, no pothos). Scale plants to space: balcony max 120cm, garden max 200cm.",
     "All lighting fixtures off in daylight. Textiles must be outdoor-rated. If space under 10m2, use bistro-scale furniture.",
+    "Include 2-3 lived-in details: an open book on a side table, a glass of water, a casually draped outdoor throw on a chair.",
     "Furniture must have contact shadows on the ground. Keep existing lighting direction.",
     "DSLR full-frame, deep DOF, sharp focus. Same focal length as the input photo. Photo-realistic outdoor. No text or watermarks.",
   ]
