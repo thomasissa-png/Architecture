@@ -456,6 +456,8 @@ export default function Home() {
   const secondaryAbortRef = useRef<AbortController | null>(null);
   // Flag: all batches submitted — pass2 handlers can clear isGenerating only after this
   const batchesCompleteRef = useRef(false);
+  // Track total jobs launched for credit refund on cancellation
+  const totalJobsRef = useRef(0);
 
   // Unified: all photos must have at least one style selected via per-photo cards
   const canGenerate =
@@ -504,6 +506,7 @@ export default function Home() {
     setActiveVersions([]);
     setPreprocessWarnings([]);
     setPhotoErrors(new Map());
+    totalJobsRef.current = totalJobs;
 
     // Immediate credit decrement — user sees it right away on click
     if (userCredits !== null) {
@@ -985,10 +988,21 @@ export default function Home() {
     setCurrentProcessing(0);
     setError(null);
     setPreprocessWarnings([]);
-    // Clear pass2Pending on any results that were waiting for pass 2
-    setResults((prev) =>
-      prev.map((r) => r.pass2Pending ? { ...r, pass2Pending: false } : r)
-    );
+    // Refund credits for jobs that haven't produced results yet
+    setResults((prev) => {
+      const completedCount = prev.filter((r) => !r.pass2Pending).length;
+      const refundCount = totalJobsRef.current - completedCount;
+      if (refundCount > 0) {
+        setUserCredits((c) => c !== null ? c + refundCount : c);
+        window.dispatchEvent(new CustomEvent("credits-updated"));
+        setQueueToast({
+          type: "info",
+          message: `Génération annulée. ${refundCount} visuel${refundCount > 1 ? "s" : ""} remboursé${refundCount > 1 ? "s" : ""}.`,
+        });
+      }
+      // Clear pass2Pending on any results that were waiting for pass 2
+      return prev.map((r) => r.pass2Pending ? { ...r, pass2Pending: false } : r);
+    });
   };
 
   const handleFullReset = () => {
