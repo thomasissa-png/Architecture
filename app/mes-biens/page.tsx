@@ -8,7 +8,7 @@
 
 import { useSession } from "next-auth/react";
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import ProGate from "@/components/ProGate";
 import Header from "@/components/Header";
 import ArchiveConfirmModal from "@/components/ArchiveConfirmModal";
@@ -44,9 +44,17 @@ interface AddressSuggestion {
 export default function MesBiensPage() {
   const { data: session, status: authStatus } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [properties, setProperties] = useState<Property[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
+
+  // Auto-open create form when ?create=true (from PhotoAssociator "Nouveau bien")
+  useEffect(() => {
+    if (searchParams.get("create") === "true") {
+      setShowCreateForm(true);
+    }
+  }, [searchParams]);
 
   // Create form state
   const [newAddress, setNewAddress] = useState("");
