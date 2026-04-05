@@ -306,53 +306,50 @@
 
 ## Mémo de reprise — dernière session
 
-- **Date et heure de clôture** : 2026-04-04 (session 32, mise à jour fin de session)
+- **Date et heure de clôture** : 2026-04-05 (session 32 — marathon)
 - **Branch** : `claude/extract-project-context-HN2CR`
-- **Ajouts fin de session** :
-  - **Fix tab-switch** : resilientFetch avec flag `wentHiddenDuringFetch` + suppression des 3 checks `request.signal.aborted` côté serveur. QA validé 20/24 PASS.
-  - **Specs synchronisées** : functional-specs, pricing-strategy, product-vision, roadmap mis à jour par @product-manager (11 écarts corrigés).
-  - **Audits en cours** : @design (audit visuel interface génération mobile+desktop) et @ux (parcours personas Claire/Thomas/Léa) — ont timeout, à relancer.
 - **Résumé de la session** :
-  - **FIX P0 CRITIQUE** : route.ts avait ~600 lignes de code mort (copies locales des builders) qui masquaient les vrais prompts v45 de generation-pipeline.ts. Les prompts v45 (PASS1_PREAMBLE + PASS2_PREAMBLE = préservation-first) n'ont JAMAIS tourné en production. En plus, `action: "edit"` était absent du tool image_generation — gpt-image-1.5 était en mode "auto" et régénérait les scènes au lieu de les éditer.
-  - **Fix appliqué** : suppression des copies locales dans route.ts, import depuis generation-pipeline.ts. `action: "edit"` + PREAMBLES v45 + `detectMimeType()` sont maintenant actifs. Audit @ia : PASS sur toute la ligne.
-  - **Variantes mobilier** : 12 styles intérieurs + 8 extérieurs enrichis avec alternatives "choose one:" (canapé, table, luminaire, plantes, positionnement). Évite les générations identiques.
-  - **Audit Yann styles** : 8.7/10 en moyenne sur les 12 styles. Tous au-dessus de 8.0. Cosy le plus faible (8.0, variété 7.5 — palette monochrome par design).
-  - **Audits Lucas + Camille** : lancés mais ont timeout avant de produire leurs rapports. À relancer.
-  - **Pages légales complètes** : société Versi SAS, SIRET 912862612, 54 rue Henri Barbusse Nanterre. contact@versimo.fr partout. CGV v2.1 à jour (comptes en prod, Replicate retiré, crédits Découverte corrigés 2→2).
-  - **Contradictions résolues** : CLAUDE.md + project-context.md alignés sur gpt-image-1.5. Bloc mémo session 30 résiduel supprimé.
+  - **FIX P0** : route.ts branchée sur generation-pipeline.ts (v45→v49 builders + action:"edit" actifs). ~600 lignes de code mort supprimées.
+  - **Pipeline amélioré v49** : pré-passe vision (extractRoomInventory detail:high), compositing sharp (fenêtres/portes/radiateurs re-superposés), best-of-2 conditionnel (SSIM local, pièces complexes), resolveChooseOne (variété mobilier), distribution profondeur impérative.
+  - **Prompts condensés** : ~800→~200 mots. Safety filter résolu. Anti-grand-angle (seuil ratio 1.2, "same focal length", proportions pièce). Convecteur nommé. Directives propagées aux 10 builders.
+  - **Scores audits** : Yann 8.2/10, Lucas 8.2/10, Camille 8.5/10 (pipeline final). Japandi 5.7-6.3 (distribution profondeur → corrigée v49).
+  - **Tab-switch iOS** : BackgroundDisconnectError → toast galerie (pas retry = pas double facturation). Server-side : 3 request.signal.aborted supprimés.
+  - **Affiner fixé** : saveIterationBase await (Replit autoscale tuait le fire-and-forget). Régénérer : stale closure fixée (pass1Key au lieu d'index).
+  - **UI** : max 3 styles/photo, overlay "ameublement en cours" sur l'image, PhotoAssociator Pro-only, labels "Pièce meublée"/"Surfaces uniquement", "Appliquer à toutes", récapitulatif CTA, touch targets 44px.
+  - **Pages légales** : Versi SAS complètes, SIRET 912862612, contact@versimo.fr.
+  - **Page /support** : formulaire + API + lien AuthButton. QA 17/17 PASS.
+  - **Logging enrichi** : generationType + bestOf2 scores dans generation_logs.
+  - **Coût optimisé** : -35% (best-of-2 conditionnel + SSIM local au lieu d'API scoring).
+  - **Specs synchronisées** : functional-specs, pricing-strategy, product-vision, roadmap alignés code prod.
 
-- **Travaux en cours** :
-  1. **TESTER EN PROD** — les vrais prompts v45 + action:"edit" sont enfin branchés. JAMAIS testés visuellement. PRIORITÉ ABSOLUE.
-  2. **Relancer audits Lucas + Camille** sur les styles/prompts (ont timeout en session 32).
-
-- **Travaux reportés (sessions précédentes, toujours valides)** :
+- **Travaux reportés** :
   1. Blog seed — `npx tsx scripts/seed-blog.ts` sur Replit
   2. Domaine versimo.fr — blocker SEO/GEO n°1, action fondateur
   3. Médiateur consommation — obligatoire avant première vente B2C
-  4. Clés API prod — Stripe, Google OAuth, Sentry (action fondateur)
-  5. Nettoyage : supprimer MerchantMode.tsx, DossierProgress.tsx, DossierResult.tsx (dead code)
+  4. Clés API prod — Stripe, Google OAuth, Sentry, Resend (action fondateur)
+  5. Nettoyage dead code : MerchantMode.tsx, DossierProgress.tsx, DossierResult.tsx
+  6. Script migration inputImageKey pour photos historiques (avant commit 082ff0a)
 
 - **Préférences fondateur documentées** :
   - font-light (300) sacré — NE JAMAIS changer vers font-normal
   - Ne jamais demander permission pour fixer un bug QA — fixer directement
-  - --muted à #58585B minimum pour lisibilité
-  - **PAS DE GRAIN PHOTOGRAPHIQUE** — rendu lisse et propre voulu. RÈGLE ABSOLUE.
-  - **UN SEUL MODÈLE : gpt-image-1.5** — on adapte les prompts au modèle, pas l'inverse. RÈGLE ABSOLUE.
-  - **Dossiers PDF uniquement depuis /mes-biens** — pas de bouton dossier sur la page de génération.
-  - **Ne jamais abandonner un outil par paresse** — si ça ne marche pas, on fixe les prompts.
+  - **PAS DE GRAIN PHOTOGRAPHIQUE** — rendu lisse et propre. RÈGLE ABSOLUE.
+  - **UN SEUL MODÈLE : gpt-image-1.5** — on adapte les prompts au modèle. RÈGLE ABSOLUE.
+  - Dossiers PDF uniquement depuis /mes-biens
+  - Ne jamais abandonner un outil par paresse
+  - Vélocité IA : "ça prend 5 minutes, pas des semaines"
+  - Les QA doivent tester du point de vue UTILISATEUR, pas juste le code
 
 - **Prochaines actions recommandées** :
-  1. **Déployer sur Replit et tester** — générer 3-5 photos (Scandinave facile + Méditerranéen difficile). Vérifier que la géométrie est préservée.
-  2. **Si OK (>7/10)** → lancer audit Yann+Lucas sur les nouvelles images. STOP, v45 suffit.
-  3. **Si KO (<6/10)** → passer à Phase 3 du plan @ia (docs/ia/fix-gpt-image-1.5-plan.md) : ancrage géométrique par comptage, prompts compacts ~120 mots, neutralisation stylistique passe 1.
-  4. **Relancer audits styles** : Lucas (technique prompts) + Camille (extérieurs) ont timeout.
+  1. **Déployer et tester** les nouvelles images v49 (ratio paysage restauré + distribution profondeur)
+  2. **Auditer visuellement** les résultats v49 avec Yann+Lucas (cible 8.5+)
+  3. **Implémenter la page support** côté email (configurer RESEND_API_KEY sur Replit)
+  4. **Tester l'affinage** avec le fix saveIterationBase await
+  5. **CGV** : ajouter médiateur consommation
 
 - **Commande de reprise suggérée** :
 ```
-@orchestrator Reprends Versimo. Session 32 : FIX P0 livré — route.ts branchée sur generation-pipeline.ts (v45 builders + action:"edit" actifs pour la 1ère fois). Variantes mobilier ajoutées. TESTER EN PROD : déployer, générer 3-5 images, vérifier préservation spatiale. Si OK, audit Yann+Lucas. Si KO, Phase 3 du plan docs/ia/fix-gpt-image-1.5-plan.md.
-```
-```
-@orchestrator Reprends Versimo. Session 31 : mode unifié livré (fusion MerchantMode), prompts v45 pour gpt-image-1.5 (restructuration préservation-first). À TESTER EN PROD : la géométrie est-elle préservée avec v45 ? Si oui, audit Yann+Lucas. Si non, investiguer input_fidelity et renforcer les instructions.
+@orchestrator Reprends Versimo. Session 32 marathon terminée. Pipeline v49 (pré-passe vision + compositing + best-of-2 + SSIM local). Yann/Lucas 8.2/10. Page /support livrée (17/17 QA). Tab-switch iOS fixé. Affiner fixé. Max 3 styles. Ratio paysage restauré. Distribution profondeur impérative. TESTER EN PROD : déployer, générer des images v49, vérifier préservation + ameublement.
 ```
 ---
 
