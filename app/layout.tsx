@@ -2,6 +2,10 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Providers from "@/components/Providers";
 
+// Force dynamic rendering for all pages — useSession() requires SessionProvider
+// which is not available during static prerendering at build time.
+export const dynamic = "force-dynamic";
+
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://versimo.fr"
 
 export const viewport: Viewport = {
