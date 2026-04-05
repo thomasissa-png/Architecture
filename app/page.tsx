@@ -450,6 +450,10 @@ export default function Home() {
 
   // Abort controller for cancelling in-flight requests
   const abortControllerRef = useRef<AbortController | null>(null);
+  // Separate abort controller for regenerate/refine — doesn't cancel pass2 of other photos
+  const secondaryAbortRef = useRef<AbortController | null>(null);
+  // Flag: all batches submitted — pass2 handlers can clear isGenerating only after this
+  const batchesCompleteRef = useRef(false);
 
   // Unified: all photos must have at least one style selected via per-photo cards
   const canGenerate =
@@ -654,6 +658,9 @@ export default function Home() {
       return;
     }
 
+    // Pass2 handlers should only clear isGenerating after all batches are submitted
+    batchesCompleteRef.current = false;
+
     // Step 4: Execute jobs in batches (max 2 concurrent)
     const MAX_CONCURRENT = 2;
     const allResults: GenerationResult[] = [];
@@ -760,7 +767,7 @@ export default function Home() {
                         ? { ...r, pass2Pending: false, model: `${r.model} (ameublement échoué)` }
                         : r
                     );
-                    if (!updated.some((r) => r.pass2Pending)) {
+                    if (batchesCompleteRef.current && !updated.some((r) => r.pass2Pending)) {
                       setTimeout(() => setIsGenerating(false), 0);
                     }
                     return updated;
@@ -783,7 +790,7 @@ export default function Home() {
                       ? { ...r, generatedUrl: p2Data.image, model: p2Data.model, pass2Pending: false, photoId: p2Data.photoId || r.photoId }
                       : r
                   );
-                  if (!updated.some((r) => r.pass2Pending)) {
+                  if (batchesCompleteRef.current && !updated.some((r) => r.pass2Pending)) {
                     setTimeout(() => setIsGenerating(false), 0);
                   }
                   return updated;
@@ -803,7 +810,7 @@ export default function Home() {
                       ? { ...r, pass2Pending: false, model: `${r.model} (ameublement échoué)` }
                       : r
                   );
-                  if (!updated.some((r) => r.pass2Pending)) {
+                  if (batchesCompleteRef.current && !updated.some((r) => r.pass2Pending)) {
                     setTimeout(() => setIsGenerating(false), 0);
                   }
                   return updated;
@@ -872,6 +879,9 @@ export default function Home() {
         }
       }
     }
+
+    // All batches submitted — pass2 handlers can now clear isGenerating
+    batchesCompleteRef.current = true;
 
     if (!controller.signal.aborted) {
       // Don't clear isGenerating if there are pending pass2 results — keep loading visible
@@ -949,6 +959,7 @@ export default function Home() {
 
   const handleFullReset = () => {
     abortControllerRef.current?.abort();
+    secondaryAbortRef.current?.abort();
     setFiles([]);
     setSelectedStyles([]);
     setCustomPrompt("");
@@ -1018,10 +1029,10 @@ export default function Home() {
         .filter((v) => v.comment)
         .map((v) => v.comment as string);
 
-      // Cancel previous in-flight
-      abortControllerRef.current?.abort();
+      // Cancel previous refine/regenerate only — NOT the main generation
+      secondaryAbortRef.current?.abort();
       const controller = new AbortController();
-      abortControllerRef.current = controller;
+      secondaryAbortRef.current = controller;
 
       try {
         // Send raw comment to server — server handles all pre-processing via
@@ -1152,10 +1163,10 @@ export default function Home() {
     window.dispatchEvent(new Event("credits-updated"));
     setError(null);
 
-    // Cancel any previous in-flight requests
-    abortControllerRef.current?.abort();
+    // Cancel previous regenerate/refine only — NOT the main generation (preserves pass2 of other photos)
+    secondaryAbortRef.current?.abort();
     const controller = new AbortController();
-    abortControllerRef.current = controller;
+    secondaryAbortRef.current = controller;
 
     // Resolve surfacePrompt and furniturePrompt from styleId
     let surfacePrompt = "";
@@ -2419,7 +2430,7 @@ export default function Home() {
                               </div>
                               <button
                                 onClick={() => {
-                                  abortControllerRef.current?.abort();
+                                  secondaryAbortRef.current?.abort();
                                   setIsRegenerating(false);
                                   setRegeneratingIndex(null);
                                 }}
