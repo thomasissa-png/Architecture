@@ -1771,6 +1771,7 @@ export default function Home() {
                     const hasCustom = photoStyleIds.includes("custom");
                     const isPhotoOutdoor = perPhotoOutdoor.get(index) || false;
 
+                    const MAX_STYLES_PER_PHOTO = 3;
                     const togglePhotoStyle = (styleId: string) => {
                       const m = new Map<number, string[]>(perPhotoStyles);
                       const current: string[] = m.get(index) || [];
@@ -1778,6 +1779,7 @@ export default function Home() {
                         if (current.length === 1) return; // At least 1 style
                         m.set(index, current.filter((id: string) => id !== styleId));
                       } else {
+                        if (current.length >= MAX_STYLES_PER_PHOTO) return; // Max 3 styles
                         m.set(index, [...current, styleId]);
                       }
                       setPerPhotoStyles(m);
@@ -1905,7 +1907,8 @@ export default function Home() {
                         {/* Styles (multi-select checkboxes) */}
                         <div>
                           <label className="text-[11px] text-muted font-light block mb-1">
-                            Styles {photoStyleIds.length > 1 && <span className="text-foreground/60">({photoStyleIds.length} sélectionnés)</span>}
+                            Styles {photoStyleIds.length > 1 && <span className="text-foreground/60">({photoStyleIds.length}/3)</span>}
+                            {photoStyleIds.length >= 3 && <span className="text-amber-600 ml-1">(max atteint)</span>}
                           </label>
                           <div className="flex flex-wrap gap-1.5">
                             {styleOptions.map((s) => {
@@ -1914,11 +1917,14 @@ export default function Home() {
                                 <button
                                   key={s.id}
                                   type="button"
+                                  disabled={!checked && photoStyleIds.length >= MAX_STYLES_PER_PHOTO}
                                   onClick={() => togglePhotoStyle(s.id)}
                                   className={`px-3 py-1.5 min-h-[36px] rounded-lg text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 ${
                                     checked
                                       ? "bg-foreground text-background"
-                                      : "bg-foreground/5 text-muted hover:bg-foreground/10"
+                                      : photoStyleIds.length >= MAX_STYLES_PER_PHOTO
+                                        ? "bg-foreground/5 text-muted/40 cursor-not-allowed"
+                                        : "bg-foreground/5 text-muted hover:bg-foreground/10"
                                   }`}
                                 >
                                   {s.name}
