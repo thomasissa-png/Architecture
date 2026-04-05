@@ -850,6 +850,7 @@ export default function Home() {
             isOutdoor: job.isOutdoor,
             outdoorSubtype: job.outdoorSubtype,
             customPromptUsed: job.customPrompt || undefined,
+            roomType: job.roomType || undefined,
           } as GenerationResult;
         })
       );
