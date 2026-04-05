@@ -64,7 +64,6 @@ export default function PhotoAssociator({ photoId, onDismiss }: PhotoAssociatorP
   };
 
   if (isLoading) return null;
-  if (properties.length === 0) return null;
 
   return (
     <div className="mt-3 bg-foreground/[0.03] border border-foreground/5 rounded-2xl p-3">
