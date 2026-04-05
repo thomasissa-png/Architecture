@@ -498,6 +498,12 @@ export default function GaleriePage() {
                         {p.address_normalized || p.address_raw || p.city || "Bien sans adresse"}
                       </button>
                     ))}
+                    <a
+                      href={`/mes-biens?create=true&photoId=${photo.id}`}
+                      className="w-full text-left text-xs font-medium text-sage px-2 py-1.5 min-h-[44px] flex items-center hover:bg-sage/10 rounded-lg transition-colors border-t border-foreground/5 mt-1"
+                    >
+                      + Nouveau bien
+                    </a>
                   </div>
                 )}
               </div>
@@ -586,7 +592,7 @@ export default function GaleriePage() {
                 <p className="mt-4 text-xs text-sage font-light">
                   Associée à : {getPropertyLabel(selectedPhoto.property_id)}
                 </p>
-              ) : properties.length > 0 ? (
+              ) : (
                 <div className="mt-4">
                   <p className="text-xs text-muted font-light mb-2">Associer à un bien :</p>
                   <div className="flex flex-wrap gap-2">
@@ -602,9 +608,15 @@ export default function GaleriePage() {
                         {p.address_normalized || p.address_raw || "Bien sans adresse"}
                       </button>
                     ))}
+                    <a
+                      href={`/mes-biens?create=true&photoId=${selectedPhoto.id}`}
+                      className="text-xs font-medium text-sage bg-sage/10 px-3 py-2 rounded-xl hover:bg-sage/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 min-h-[44px] inline-flex items-center"
+                    >
+                      + Nouveau bien
+                    </a>
                   </div>
                 </div>
-              ) : null}
+              )}
             </div>
           </div>
         )}

@@ -81,7 +81,7 @@ export default function PhotoAssociator({ photoId, onDismiss }: PhotoAssociatorP
           </button>
         ))}
         <a
-          href="/mes-biens?create=true"
+          href={`/mes-biens?create=true&photoId=${photoId}`}
           className="min-h-[44px] inline-flex items-center text-xs sm:text-[11px] font-light bg-sage/10 text-sage px-3 py-2 rounded-xl hover:bg-sage/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
         >
           + Nouveau bien

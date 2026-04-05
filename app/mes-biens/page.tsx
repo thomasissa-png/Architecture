@@ -203,6 +203,21 @@ export default function MesBiensPage() {
       }
 
       const data = await res.json();
+
+      // Auto-associate pending photo if coming from PhotoAssociator
+      const pendingPhotoId = searchParams.get("photoId");
+      if (pendingPhotoId) {
+        try {
+          await fetch(`/api/properties/${data.property.id}/photos`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ photoIds: [pendingPhotoId] }),
+          });
+        } catch (err) {
+          console.error("Erreur auto-association photo:", err);
+        }
+      }
+
       // Redirect to the new property page
       router.push(`/mes-biens/${data.property.id}`);
     } catch {
