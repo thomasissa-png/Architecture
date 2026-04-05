@@ -102,12 +102,12 @@ function CompareSlider({ beforeSrc, afterSrc }: { beforeSrc: string; afterSrc: s
   return (
     <div
       ref={containerRef}
-      className="relative w-full overflow-hidden select-none"
+      className="relative w-full overflow-hidden select-none max-h-[80vh]"
       style={{ touchAction: "pan-y" }}
     >
-      {/* After image (background, full width) */}
+      {/* After image (background, full width, capped height for portrait) */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={afterSrc} alt="Après — Visualisation IA" className="block w-full h-auto" draggable={false} />
+      <img src={afterSrc} alt="Après — Visualisation IA" className="block w-full h-auto max-h-[80vh] object-contain" draggable={false} />
 
       {/* Before image (clipped to position) */}
       <div

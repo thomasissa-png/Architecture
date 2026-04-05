@@ -1065,6 +1065,8 @@ export default function Home() {
         }
 
         // Success: add new version, decrement iterations
+        // Calculate new version index BEFORE state updates to avoid stale closure
+        const newVersionIndex = (versions[refineTargetIndex]?.length || 1);
         setVersions((prev) => {
           const updated = [...prev];
           const existing = updated[refineTargetIndex] || [];
@@ -1076,7 +1078,7 @@ export default function Home() {
         });
         setActiveVersions((prev) => {
           const updated = [...prev];
-          updated[refineTargetIndex] = (versions[refineTargetIndex]?.length || 1);
+          updated[refineTargetIndex] = newVersionIndex;
           return updated;
         });
         setIterationsRemaining((prev) => Math.max(0, prev - 1));
@@ -2332,7 +2334,7 @@ export default function Home() {
               <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-6">
                 03 — Résultat
               </h3>
-              <div className={`space-y-10 ${results.length === 1 ? "max-w-xl mx-auto" : ""}`}>
+              <div className={`space-y-10 ${results.length === 1 ? "max-w-xl mx-auto" : "max-w-4xl mx-auto"}`}>
                 {results.map((result, index) => {
                   const resultVersions = versions[index] || [];
                   const activeIdx = activeVersions[index] || 0;
