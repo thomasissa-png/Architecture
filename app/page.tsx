@@ -1122,6 +1122,12 @@ export default function Home() {
     const result = results[index];
     if (!result) return;
 
+    // Credit check — regeneration costs 1 credit
+    if (userCredits !== null && userCredits < 1) {
+      setError("Vous n'avez plus de visuels disponibles. Rechargez votre compte pour régénérer.");
+      return;
+    }
+
     setRegenerateConfirmIndex(null);
     setIsRegenerating(true);
     setRegeneratingIndex(index);
