@@ -57,11 +57,11 @@ async function ensureSupportTable(): Promise<void> {
 
 // ─── Validation ─────────────────────────────────────────────────────
 const VALID_CATEGORIES = [
-  "Bug génération",
+  "Problème de génération",
   "Facturation/crédits",
   "Suggestion",
   "Question",
-  "Autre",
+  "Autre question",
 ];
 
 // ─── POST handler ───────────────────────────────────────────────────
@@ -207,12 +207,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Always save to DB (fallback + audit trail)
+    let ticketId: number | null = null;
     try {
       await ensureSupportTable();
       const db = getPool();
-      await db.query(
+      const result = await db.query(
         `INSERT INTO support_requests (user_id, email, category, message, screenshot_key, email_sent)
-         VALUES ($1, $2, $3, $4, $5, $6)`,
+         VALUES ($1, $2, $3, $4, $5, $6)
+         RETURNING id`,
         [
           userId,
           userEmail,
@@ -222,6 +224,7 @@ export async function POST(request: NextRequest) {
           emailSent,
         ]
       );
+      ticketId = result.rows[0]?.id ?? null;
     } catch (dbErr) {
       console.error("[support] DB save failed:", dbErr);
       // If both email and DB fail, return error
@@ -233,7 +236,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, ticketId: ticketId || Date.now() });
   } catch (err) {
     console.error("[support] Unexpected error:", err);
     return NextResponse.json(

@@ -6,17 +6,17 @@
  * Protégée : redirect vers /login si non connecté.
  */
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 
 const CATEGORIES = [
-  "Bug génération",
+  "Problème de génération",
   "Facturation/crédits",
   "Suggestion",
   "Question",
-  "Autre",
+  "Autre question",
 ] as const;
 
 type Category = (typeof CATEGORIES)[number];
@@ -47,6 +47,15 @@ export default function SupportPage() {
   }>({});
 
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const dismissToast = useCallback(() => setToast(null), []);
+
+  // Auto-dismiss toast after 5 seconds
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(dismissToast, 5000);
+    return () => clearTimeout(timer);
+  }, [toast, dismissToast]);
 
   // Redirect if not authenticated
   if (status === "loading") {
@@ -159,9 +168,13 @@ export default function SupportPage() {
       });
 
       if (res.ok) {
+        const data = await res.json().catch(() => ({}));
+        const ticketId = data.ticketId
+          ? String(data.ticketId).padStart(5, "0")
+          : String(Date.now()).slice(-5);
         setToast({
           type: "success",
-          text: "Message envoyé, nous vous répondons sous 24h.",
+          text: `Demande #${ticketId} envoyée, nous vous répondons sous 24h.`,
         });
         // Reset form (keep email)
         setCategory("");
@@ -331,7 +344,7 @@ export default function SupportPage() {
                   <button
                     type="button"
                     onClick={removeScreenshot}
-                    className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-foreground/5 text-muted hover:text-foreground transition-colors flex-shrink-0"
+                    className="w-11 h-11 flex items-center justify-center rounded-full hover:bg-foreground/5 text-muted hover:text-foreground transition-colors flex-shrink-0"
                     aria-label="Supprimer la capture"
                   >
                     <svg
@@ -352,7 +365,7 @@ export default function SupportPage() {
               ) : (
                 <label
                   htmlFor="support-screenshot"
-                  className={`flex items-center gap-3 px-4 py-3 border border-dashed rounded-xl cursor-pointer transition-colors hover:border-sage/40 hover:bg-sage/[0.03] ${
+                  className={`flex items-center gap-3 px-4 py-3 min-h-[56px] border border-dashed rounded-xl cursor-pointer transition-colors hover:border-sage/40 hover:bg-sage/[0.03] ${
                     fieldErrors.screenshot
                       ? "border-red-400/60"
                       : "border-foreground/15"
@@ -429,7 +442,7 @@ export default function SupportPage() {
           {/* Toast */}
           {toast && (
             <div
-              className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-xl shadow-lg text-sm font-light animate-fade-in-up ${
+              className={`fixed bottom-20 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-xl shadow-lg text-sm font-light animate-fade-in-up ${
                 toast.type === "success"
                   ? "bg-sage/95 text-white"
                   : "bg-red-500/90 text-white"
