@@ -99,6 +99,11 @@ export async function ensureTable(): Promise<void> {
     { name: "replay_label", type: "VARCHAR(200)" },
     { name: "pixel_diff_pct", type: "FLOAT" },
     { name: "color_shift_score", type: "FLOAT" },
+    // Generation type + best-of-2 tracking
+    { name: "generation_type", type: "VARCHAR(30)" },
+    { name: "best_of_2_score_1", type: "FLOAT" },
+    { name: "best_of_2_score_2", type: "FLOAT" },
+    { name: "best_of_2_chosen", type: "INT" },
   ];
   const migrateSql = migrateColumns
     .map(
@@ -476,6 +481,12 @@ export interface GenerationLogParams {
   promptVersion?: string;
   // Pre-pass vision: room geometry inventory
   roomInventory?: string;
+  // Generation type tracking
+  generationType?: "generation" | "regeneration" | "iteration_adjust" | "iteration_restyle" | "surfaces_only" | "pass2_only";
+  // Best-of-2 scoring (SSIM local)
+  bestOf2Score1?: number;
+  bestOf2Score2?: number;
+  bestOf2Chosen?: 1 | 2;
 }
 
 export async function logGeneration(params: GenerationLogParams): Promise<void> {
@@ -523,8 +534,9 @@ export async function logGeneration(params: GenerationLogParams): Promise<void> 
       room_type, is_outdoor, outdoor_subtype,
       is_replay, replay_source_id, replay_label,
       pixel_diff_pct, color_shift_score, prompt_version,
-      room_inventory
-    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36)`,
+      room_inventory,
+      generation_type, best_of_2_score_1, best_of_2_score_2, best_of_2_chosen
+    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39,$40)`,
     [
       params.ip,
       params.styleId,
@@ -562,6 +574,10 @@ export async function logGeneration(params: GenerationLogParams): Promise<void> 
       params.colorShiftScore ?? null,
       params.promptVersion ?? null,
       params.roomInventory ?? null,
+      params.generationType ?? null,
+      params.bestOf2Score1 ?? null,
+      params.bestOf2Score2 ?? null,
+      params.bestOf2Chosen ?? null,
     ]
   );
 }
@@ -610,8 +626,9 @@ export async function logGenerationReturningId(params: GenerationLogParams): Pro
       room_type, is_outdoor, outdoor_subtype,
       is_replay, replay_source_id, replay_label,
       pixel_diff_pct, color_shift_score, prompt_version,
-      room_inventory
-    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36)
+      room_inventory,
+      generation_type, best_of_2_score_1, best_of_2_score_2, best_of_2_chosen
+    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39,$40)
     RETURNING id`,
     [
       params.ip,
@@ -650,6 +667,10 @@ export async function logGenerationReturningId(params: GenerationLogParams): Pro
       params.colorShiftScore ?? null,
       params.promptVersion ?? null,
       params.roomInventory ?? null,
+      params.generationType ?? null,
+      params.bestOf2Score1 ?? null,
+      params.bestOf2Score2 ?? null,
+      params.bestOf2Chosen ?? null,
     ]
   );
 
