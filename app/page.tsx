@@ -484,7 +484,11 @@ export default function Home() {
 
     // Check credits vs total jobs before launching
     const totalJobs = (Array.from(perPhotoStyles.values()) as string[][]).reduce((sum, v) => sum + v.length, 0);
-    if (userCredits !== null && totalJobs > userCredits) {
+    if (userCredits === null) {
+      setError("Chargement des crédits en cours. Réessayez dans quelques secondes.");
+      return;
+    }
+    if (totalJobs > userCredits) {
       setError(`Vous avez ${userCredits} visuel${userCredits > 1 ? "s" : ""} restant${userCredits > 1 ? "s" : ""}, mais cette génération en nécessite ${totalJobs}. Réduisez le nombre de styles ou rechargez votre compte.`);
       return;
     }
