@@ -2145,7 +2145,7 @@ export default function Home() {
           {isGenerating && (
             <div id="step-loading" className="space-y-6 py-8">
               {/* Blur preview placeholders */}
-              <div className={`grid gap-4 mx-auto ${files.length === 1 ? "grid-cols-1 max-w-xl" : "grid-cols-1 sm:grid-cols-2 max-w-4xl"}`}>
+              <div className={`grid gap-4 mx-auto ${files.length === 1 ? "grid-cols-1 sm:max-w-xl lg:max-w-2xl" : "grid-cols-1 sm:grid-cols-2 sm:max-w-3xl lg:max-w-4xl"}`}>
                 {files.map((file, i) => {
                   // Check if this photo has a partial result (pass1 surfaces visible)
                   const partialResult = results.find((r) => r.pass2Pending && r.originalUrl === filePreviewUrls[i]);
@@ -2341,7 +2341,7 @@ export default function Home() {
               <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-6">
                 03 — Résultat
               </h3>
-              <div className={`space-y-10 ${results.length === 1 ? "sm:max-w-lg mx-auto" : "sm:max-w-3xl mx-auto"}`}>
+              <div className={`space-y-10 ${results.length === 1 ? "sm:max-w-xl lg:max-w-2xl mx-auto" : "sm:max-w-3xl lg:max-w-4xl mx-auto"}`}>
                 {results.map((result, index) => {
                   const resultVersions = versions[index] || [];
                   const activeIdx = activeVersions[index] || 0;
