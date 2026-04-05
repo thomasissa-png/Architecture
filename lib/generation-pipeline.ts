@@ -89,7 +89,7 @@ export async function extractRoomInventory(imageBase64: string): Promise<string>
  * v43 (audit croise Yann+Lucas #111-117: P0 COLUMN_PRESERVATION active tous builders, P0 ANTI_FENETRE remonte position 2, P1 anti-warm shift renforce white balance, P1 Cosy marqueurs tactiles quantites, P1 PHOTO_GRAIN restaure ISO 200 + vignetting),
  * v45 (gpt-image-1.5 preservation-first: PASS1_PREAMBLE+PASS2_PREAMBLE en tete de TOUS les builders — les 8 passe 1 + 9 passe 2 + 2 outdoor. Preservation AVANT style pour forcer le mode edition. "CHANGE ONLY" en passe 1, "ADD" en passe 2. Suppression doublons CAMERA/LIGHT en fin de prompt — deja dans les constantes en tete.),
  * v52 (audit v51 Yann 7.2 Lucas 7.5: P0 ANTI_FENETRE couvre mezzanines/niveaux superieurs, P1 PASS2_PREAMBLE anti-elargissement pieces etroites + bathroom builder renforce, P1 EQUIPMENT_PRESERVATION couvre convecteurs au sol et seche-serviettes) */
-export const PROMPT_VERSION = "v53";
+export const PROMPT_VERSION = "v54";
 
 // ─── Image generation model ─────────────────────────────────────────
 // v36: configurable via env var. Default gpt-image-1 (v32 reverted gpt-image-1.5 for spatial regression).
@@ -175,26 +175,35 @@ const PASS1_PREAMBLE_V53 = "STRUCTURE LOCK: every column, beam, slab edge, and c
 const PRESERVATION_V53 = "Ceiling: keep every bump, step, soffit, vault, and beam visible — paint over their surface, keep their shape. Columns, posts, IPN beams, and metal lintels: keep full width and original material texture. Slab edges: keep full thickness. Mouldings, cornices, and decorative trims: keep shape and position, paint over. Keep the input's color temperature — do not warm or cool.";
 const CLEANUP_V53 = "Remove loose construction items: cables, junction boxes, exposed pipes, outlets. Keep all fixed equipment in place: radiators, heaters, vents, panels — same count, same positions. Existing built-in fixtures (bathtub, shower tray, toilet, sink) stay if present. Room stays COMPLETELY EMPTY — no furniture, no new fixtures.";
 
-// v52 constants kept for PASS 2 (not refactored here)
-const CEILING_PRESERVATION = "Ceiling: if demolition damage visible, apply smooth plaster coat then style finish. Preserve intentional elements (beams, rafters, arches, slab undersides) with original texture — keep raw concrete formwork marks, aged wood grain, and metal patina intact. Paint over the texture, not a smooth coat. Keep ceiling curvature exactly.";
-const COLUMN_PRESERVATION = "Preserve ALL vertical structural elements: columns, posts, pilasters, load-bearing frames, concrete pillars. Each must remain as a separate 3D volume at its exact position — do not flatten or absorb into the wall. Preserve slab edges, mezzanine floor thicknesses, and lintels as distinct horizontal volumes — do not smooth them into ceiling or wall. Apply the wall finish AROUND these elements, not OVER them.";
-const LIGHT_PRESERVATION = "Preserve existing light direction and shadow positions. Keep the input's color temperature — warm materials reflect existing light without shifting overall tone. Keep whites neutral.";
-const WALL_PRESERVATION = "Wall geometry stays identical: same angles, corners, depth. Only change color and texture. Keep raw stone or brick visible with limewash unless style explicitly requests opaque paint. Structural elements (IPN beams, concrete columns, mezzanine slab edges, metal lintels, load-bearing posts between windows) keep their original surface material and texture — apply paint over the texture, not a smooth coat. Glazing frames and mullions between windows/doors must keep their exact proportions and positions.";
-const CAMERA_PRESERVATION = "Same camera angle, height, tilt, and field of view as input. The frame edges must match the input exactly — walls that are cut off at the edge of the input photo must be cut off at the same position in the output. Do not widen or narrow the frame. Room dimensions are FIXED — the distance between opposite walls must be IDENTICAL to the input. Do not stretch, widen, compress, or reshape the space to accommodate furniture or finishes.";
-const ANTI_FENETRE = "Count the windows and doors visible in the input photo. The output must have the EXACT same count, at the same positions, same sizes. If a wall has no window in the input, it must remain a solid wall in the output — even if the wall extends beyond the visible frame. Do not add windows, doors, or openings to walls that are partially visible or out of frame. This includes upper levels, mezzanines, and loft areas — do not add windows or openings at any height level.";
+// v54: Legacy verbose constants — replaced by V53/V54 condensed versions. ANTI_INVENTION still used by outdoor pass 1.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _CEILING_PRESERVATION = "Ceiling: if demolition damage visible, apply smooth plaster coat then style finish. Preserve intentional elements (beams, rafters, arches, slab undersides) with original texture — keep raw concrete formwork marks, aged wood grain, and metal patina intact. Paint over the texture, not a smooth coat. Keep ceiling curvature exactly.";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _COLUMN_PRESERVATION = "Preserve ALL vertical structural elements: columns, posts, pilasters, load-bearing frames, concrete pillars. Each must remain as a separate 3D volume at its exact position — do not flatten or absorb into the wall. Preserve slab edges, mezzanine floor thicknesses, and lintels as distinct horizontal volumes — do not smooth them into ceiling or wall. Apply the wall finish AROUND these elements, not OVER them.";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _LIGHT_PRESERVATION = "Preserve existing light direction and shadow positions. Keep the input's color temperature — warm materials reflect existing light without shifting overall tone. Keep whites neutral.";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _WALL_PRESERVATION = "Wall geometry stays identical: same angles, corners, depth. Only change color and texture. Keep raw stone or brick visible with limewash unless style explicitly requests opaque paint. Structural elements (IPN beams, concrete columns, mezzanine slab edges, metal lintels, load-bearing posts between windows) keep their original surface material and texture — apply paint over the texture, not a smooth coat. Glazing frames and mullions between windows/doors must keep their exact proportions and positions.";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _CAMERA_PRESERVATION = "Same camera angle, height, tilt, and field of view as input. The frame edges must match the input exactly — walls that are cut off at the edge of the input photo must be cut off at the same position in the output. Do not widen or narrow the frame. Room dimensions are FIXED — the distance between opposite walls must be IDENTICAL to the input. Do not stretch, widen, compress, or reshape the space to accommodate furniture or finishes.";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _ANTI_FENETRE = "Count the windows and doors visible in the input photo. The output must have the EXACT same count, at the same positions, same sizes. If a wall has no window in the input, it must remain a solid wall in the output — even if the wall extends beyond the visible frame. Do not add windows, doors, or openings to walls that are partially visible or out of frame. This includes upper levels, mezzanines, and loft areas — do not add windows or openings at any height level.";
 const ANTI_INVENTION = "Only modify surfaces as described. No new architectural elements (arches, vaults, columns, niches, coffers, windows, doors) unless already in the input. Areas beyond the frame edges of the input are unknown — leave them as-is, do not invent what is there.";
 
-// v51: extracted from inline copies
-const CONSTRUCTION_CLEANUP = "Remove construction leftovers: dangling cables, junction boxes, exposed wiring, electrical outlets, round black wall boxes, cable exits, exposed plumbing pipes, copper tubes, PVC pipes, water supply lines, drain pipes — cover with wall or floor finish. Count all fixed wall-mounted equipment in the input (radiators, convectors, heaters, water heater, boiler, vents, thermostats, switches, electrical panels). The output MUST have the SAME count at the SAME positions — if the input shows 1 radiator below a window, the output MUST show 1 radiator below that window.";
+// v51: extracted from inline copies — v54: dead code, kept for reference
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _CONSTRUCTION_CLEANUP = "Remove construction leftovers: dangling cables, junction boxes, exposed wiring, electrical outlets, round black wall boxes, cable exits, exposed plumbing pipes, copper tubes, PVC pipes, water supply lines, drain pipes — cover with wall or floor finish. Count all fixed wall-mounted equipment in the input (radiators, convectors, heaters, water heater, boiler, vents, thermostats, switches, electrical panels). The output MUST have the SAME count at the SAME positions — if the input shows 1 radiator below a window, the output MUST show 1 radiator below that window.";
 
-// v51: outdoor-specific preservation constants (P0-1, P0-2, P1-6 audit)
-const OUTDOOR_ANTI_FENETRE = "Count all openings (doors, windows, gates, archways) visible in the input. The output must have the EXACT same count at the same positions. Do not add or remove any opening.";
-const OUTDOOR_PREAMBLE_P2 = "Edit this outdoor photo. The ground surface, walls, fences, facades, gates, and sky are final — keep them unchanged. Same camera angle, same space geometry, same openings. Space dimensions are FIXED — do not stretch, widen, or compress the area to accommodate furniture. No curtains, no drapes.";
+// v54: outdoor-specific preservation constants — condensed from v51
+const OUTDOOR_ANTI_FENETRE = "EXACT same count of openings (doors, windows, gates, archways) at same positions. Do not add or remove any opening.";
+const OUTDOOR_PREAMBLE_P1_V54 = "STRUCTURE LOCK: every wall, fence, facade, gate, low wall, raised border, stone edging, and level change keeps its exact position and shape. EXACT same openings count. Same camera angle, same framing, same space dimensions — FIXED, no stretch. Edit ground surface only. Sky preserved as-is, preserve blown-out highlights.";
+const OUTDOOR_PREAMBLE_P2_V54 = "Edit this outdoor photo. Ground surface, walls, fences, facades, gates, low walls, raised borders, stone edging, and sky are final — keep unchanged. Same camera angle, same space geometry. Space dimensions FIXED — do not stretch or compress. No curtains, no drapes.";
 
-// v44: gpt-image-1.5 preservation preambles — MUST be the FIRST tokens in every prompt.
-// gpt-image-1.5 is more creative than gpt-image-1 and regenerates scenes unless preservation is stated FIRST.
-const PASS1_PREAMBLE = "Edit this photo. Preserve the room geometry, camera angle, all windows and doors (same count, same positions), wall layout, ceiling shape, and room dimensions. Room dimensions are FIXED — do not stretch, widen, or compress the space. The distance between opposite walls must be IDENTICAL to the input. The output image must show the same framing as the input — same edges, same crop, same field of view.";
-const PASS2_PREAMBLE = "Edit this photo of a finished room. The wall colors, floor material, and ceiling finish are final — keep them unchanged. Same camera angle, same room geometry, same windows, same doors. Room dimensions are FIXED — do not stretch, widen, or compress the space to accommodate furniture. If the room appears narrow or compact, preserve that compactness — reduce furniture count and size rather than stretching walls apart. No curtains, no drapes.";
+// v54: Legacy preambles — replaced by PASS1_PREAMBLE_V53 and PASS2_PREAMBLE_V54. Kept for reference.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _LEGACY_PASS1_PREAMBLE = "Edit this photo. Preserve the room geometry, camera angle, all windows and doors (same count, same positions), wall layout, ceiling shape, and room dimensions. Room dimensions are FIXED — do not stretch, widen, or compress the space. The distance between opposite walls must be IDENTICAL to the input. The output image must show the same framing as the input — same edges, same crop, same field of view.";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _LEGACY_PASS2_PREAMBLE = "Edit this photo of a finished room. The wall colors, floor material, and ceiling finish are final — keep them unchanged. Same camera angle, same room geometry, same windows, same doors. Room dimensions are FIXED — do not stretch, widen, or compress the space to accommodate furniture. If the room appears narrow or compact, preserve that compactness — reduce furniture count and size rather than stretching walls apart. No curtains, no drapes.";
 
 // ── Pass 1: Surface finishing ────────────────────────────────────────
 // v36: ACTION FIRST in all builders (v30 lesson — GPT-image-1 weights early tokens more)
@@ -309,13 +318,28 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
 
 // ── Pass 2: Furniture placement ──────────────────────────────────────
 
-// Shared compact fragments for pass 2
-const EQUIPMENT_PRESERVATION = "Count all fixed equipment in the input (radiators, floor-standing convectors, electric convector heaters, wall-mounted heaters, water heaters, boiler, vents, thermostats, switches, electrical panels, towel dryers). The output MUST contain the SAME number at the SAME positions. If the input shows 1 radiator below a window, the output MUST show 1 radiator below that window. Do not place furniture in front of radiators or convectors.";
-// v51: P1-2 — prevent architectural hallucinations in pass 2 (Art Deco arches, Haussmannien niches, etc.)
-const PASS2_ANTI_INVENTION = "No new architectural elements (arches, niches, columns, coffers, windows, doors) unless already in the input.";
-const CONTACT_SHADOWS = "Every piece must have visible contact shadows on the floor.";
-const DEPTH_DISTRIBUTION_KITCHEN = "Distribute kitchen elements across the full depth of the room. Work zones along walls, island or table in the middle zone if space allows. Counter accessories spread across the full counter length — never cluster on one end.";
-const DEPTH_DISTRIBUTION_BEDROOM = "Distribute bedroom furniture across the full depth and width of the room. Bed as primary anchor, dresser or wardrobe as background anchor in the back third. Balance nightstands on both sides when space allows. If one side of the room appears empty, place a floor lamp or bench to balance the composition laterally.";
+// v54: condensed pass 2 constants — from ~478 to ~200 words total.
+// Rationale: gpt-image-1.5 loses focus after ~200 words. The furniturePrompt (hero pieces,
+// materials, silhouettes) was buried at word ~480. Now it starts at ~150-200, in the
+// zone of maximum attention. Pass 2 receives the FINISHED image from pass 1 — the model
+// sees a clean room and only needs to ADD objects. Heavy preservation constants
+// (CAMERA 83w, COLUMN 75w, LIGHT 27w) are unnecessary here and are condensed to 1 line each.
+
+const PASS2_PREAMBLE_V54 = "Edit this photo of a finished room. Walls, floor, ceiling are final — keep them unchanged. Same camera angle. Room dimensions FIXED — do not stretch or compress. Columns visible — do not hide with furniture. Keep the input's color temperature. No curtains, no drapes. If the room is narrow or compact, preserve that — reduce furniture count rather than widening walls.";
+const PASS2_EQUIPMENT_V54 = "Keep all fixed equipment (radiators, convectors, heaters, vents, panels, towel dryers) — same count, same positions. No furniture blocking them.";
+const PASS2_ANTI_INVENTION_V54 = "No new architectural elements (arches, niches, columns, coffers, windows, doors) unless already in the input.";
+const PASS2_DENSITY_V54 = "Respect furniture density implied by the style — if minimalist, leave large empty floor areas. If compact room, fewer pieces. Distribute furniture across FULL depth: primary group in foreground, secondary anchor (console, lamp, plant) in the back third. Balance left and right sides.";
+const PASS2_FINISH_V54 = "Contact shadows on every piece. DSLR wide-angle, sharp focus, deep DOF. Same focal length as input. No text. Freestanding objects only — place furniture INSIDE the room only, not on terraces or balconies visible through windows.";
+
+// v54: Legacy pass 2 constants — DEAD CODE, replaced by PASS2_*_V54 above. Kept for reference.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _LEGACY_EQUIPMENT_PRESERVATION = "Count all fixed equipment in the input (radiators, floor-standing convectors, electric convector heaters, wall-mounted heaters, water heaters, boiler, vents, thermostats, switches, electrical panels, towel dryers). The output MUST contain the SAME number at the SAME positions. If the input shows 1 radiator below a window, the output MUST show 1 radiator below that window. Do not place furniture in front of radiators or convectors.";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _LEGACY_PASS2_ANTI_INVENTION = "No new architectural elements (arches, niches, columns, coffers, windows, doors) unless already in the input.";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _LEGACY_CONTACT_SHADOWS = "Every piece must have visible contact shadows on the floor.";
+const DEPTH_DISTRIBUTION_KITCHEN = "Distribute kitchen elements across the full depth. Work zones along walls, island in middle if >10m2. Counter accessories spread across full counter length.";
+const DEPTH_DISTRIBUTION_BEDROOM = "Bed as primary anchor, dresser or wardrobe as background anchor in back third. Balance nightstands both sides. If one side empty, add floor lamp or bench.";
 
 /**
  * Pre-resolve "choose one:" alternatives in a prompt by randomly picking one option.
@@ -337,216 +361,152 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
   const resolvedPrompt = resolveChooseOne(furniturePrompt);
   // Inject room inventory right after PREAMBLE if available
   const inventoryLine = roomInventory ? `This room has: ${roomInventory}` : "";
-  // Kitchen: v45 — preservation FIRST for gpt-image-1.5, then add elements
+  // Kitchen: v54 — condensed pass 2 constants, furniturePrompt in attention zone
   if (roomTypeId === "kitchen") {
     return [
-      PASS2_PREAMBLE,
+      PASS2_PREAMBLE_V54,
       inventoryLine,
-      CAMERA_PRESERVATION, LIGHT_PRESERVATION,
-      COLUMN_PRESERVATION,
-      EQUIPMENT_PRESERVATION,
-      PASS2_ANTI_INVENTION,
-      `ADD the following kitchen elements: ${resolvedPrompt}.`,
-      "Built-in cabinetry and countertops against walls. Add island only if kitchen appears larger than 10m2. If compact, skip island. The ceiling light was already placed in pass 1 — keep it as-is.",
-      "Scale kitchen to apparent width — fewer elements if compact, full set if spacious. Skip island under 10m2.",
+      PASS2_EQUIPMENT_V54,
+      PASS2_ANTI_INVENTION_V54,
+      `ADD kitchen elements: ${resolvedPrompt}.`,
+      "Cabinetry against walls. Island only if >10m2. Ceiling light from pass 1 — keep as-is. Scale to apparent width.",
       DEPTH_DISTRIBUTION_KITCHEN,
-      CONTACT_SHADOWS,
-      "Scale references: door = 204cm, sill = 90cm. Freestanding objects only.",
-      "Include 2-3 lived-in details: a wooden cutting board, a fruit bowl, a folded linen tea towel on the counter.",
-      "Place furniture INSIDE the room only — do not add any object on exterior terraces, balconies, or patios visible through windows or glazing.",
-      "Result should look like a luxury real estate listing photo — lived-in, not a sterile catalog.",
-      DSLR_LINE,
+      "Include 2-3 lived-in details: cutting board, fruit bowl, folded tea towel. Luxury listing photo.",
+      PASS2_FINISH_V54,
     ].join(" ");
   }
 
-  // Bathroom: v45 — preservation FIRST for gpt-image-1.5
+  // Bathroom: v54 — condensed pass 2 constants
   if (roomTypeId === "bathroom") {
     return [
-      PASS2_PREAMBLE,
+      PASS2_PREAMBLE_V54,
       inventoryLine,
-      CAMERA_PRESERVATION, LIGHT_PRESERVATION,
-      COLUMN_PRESERVATION,
-      EQUIPMENT_PRESERVATION,
-      PASS2_ANTI_INVENTION,
-      `ADD the following bathroom fixtures and accessories: ${resolvedPrompt}.`,
-      "If a bathtub, shower, sink, or toilet is visible in the input, keep it at the same position, same size, same shape.",
-      "This is a compact bathroom by default. ONE vanity, ONE basin — never a double vanity. Use 60cm vanity, skip stool and basket, no freestanding tub. Only use 80cm vanity or add freestanding tub if the room is clearly wider than 2.5m. Ignore shower and tub dimensions from the style if room is compact — use 80cm shower maximum.",
-      "Do not duplicate any fixture already visible. If a shower exists, do not add another. If a tub exists, do not add a shower stall.",
-      "The bathroom width and depth must match the input exactly — do not widen or deepen the room to fit more fixtures. This bathroom is NARROW — if the walls are close together in the input, they must be equally close in the output. Reduce furniture size rather than stretching the room.",
-      "Scale references: ceiling ~250cm, tile size, plumbing proportions. 60cm min passage width.",
-      CONTACT_SHADOWS,
-      "Place furniture INSIDE the room only — do not add any object on exterior terraces, balconies, or patios visible through windows or glazing.",
-      "Result should look like a luxury real estate listing photo.",
-      DSLR_LINE,
+      PASS2_EQUIPMENT_V54,
+      PASS2_ANTI_INVENTION_V54,
+      `ADD bathroom fixtures: ${resolvedPrompt}.`,
+      "Keep existing bathtub/shower/sink/toilet at same position, size, shape. Do not duplicate any fixture already visible.",
+      "Compact by default: ONE vanity 60cm, ONE basin, no freestanding tub. Only 80cm vanity or freestanding tub if room clearly >2.5m wide. 80cm shower max if compact.",
+      "Do not widen or deepen the room. 60cm min passage width.",
+      PASS2_FINISH_V54,
     ].join(" ");
   }
 
-  // WC: v45 — preservation FIRST for gpt-image-1.5
+  // WC: v54 — condensed pass 2 constants
   if (roomTypeId === "wc") {
     return [
-      PASS2_PREAMBLE,
+      PASS2_PREAMBLE_V54,
       inventoryLine,
-      CAMERA_PRESERVATION, LIGHT_PRESERVATION,
-      COLUMN_PRESERVATION,
-      EQUIPMENT_PRESERVATION,
-      PASS2_ANTI_INVENTION,
-      `ADD the following WC fixtures: ${resolvedPrompt}.`,
-      "Very small space — minimal items. Wall-hung or floor toilet, compact hand basin with mirror above.",
-      CONTACT_SHADOWS,
-      "Scale reference: door = 204cm.",
-      "Place furniture INSIDE the room only — do not add any object on exterior terraces, balconies, or patios visible through windows or glazing.",
-      DSLR_LINE,
+      PASS2_EQUIPMENT_V54,
+      PASS2_ANTI_INVENTION_V54,
+      `ADD WC fixtures: ${resolvedPrompt}.`,
+      "Very small space — minimal items. Wall-hung or floor toilet, compact hand basin with mirror above. Door = 204cm reference.",
+      PASS2_FINISH_V54,
     ].join(" ");
   }
 
-  // Bedroom: v45 — preservation FIRST for gpt-image-1.5
+  // Bedroom: v54 — condensed pass 2 constants
   if (roomTypeId === "bedroom_adults" || roomTypeId === "bedroom_children") {
     return [
-      PASS2_PREAMBLE,
+      PASS2_PREAMBLE_V54,
       inventoryLine,
-      CAMERA_PRESERVATION, LIGHT_PRESERVATION,
-      COLUMN_PRESERVATION,
-      EQUIPMENT_PRESERVATION,
-      PASS2_ANTI_INVENTION,
-      `ADD the following bedroom furniture: ${resolvedPrompt}.`,
-      "Freestanding only — bed, nightstands, rug, wardrobe/dresser as background anchor. All objects resting on the floor. Furniture must not touch walls.",
-      "Calm atmosphere — respect furniture density implied by the style. If minimalist, leave large empty floor areas.",
+      PASS2_EQUIPMENT_V54,
+      PASS2_ANTI_INVENTION_V54,
+      `ADD bedroom furniture: ${resolvedPrompt}.`,
       DEPTH_DISTRIBUTION_BEDROOM,
-      CONTACT_SHADOWS,
-      "Scale bed to room: if compact, 140cm bed instead of 160cm, skip bench. Door = 204cm reference.",
-      "Include 2-3 lived-in details: an open book on the nightstand, a casually draped throw on the bed, a ceramic mug on a side table.",
-      "Place furniture INSIDE the room only — do not add any object on exterior terraces, balconies, or patios visible through windows or glazing.",
-      "Result should look like a luxury real estate listing photo — lived-in, not a sterile catalog.",
-      DSLR_LINE,
+      "Scale bed to room: 140cm if compact, skip bench. Door = 204cm reference.",
+      "Include 2-3 lived-in details: open book on nightstand, draped throw on bed, ceramic mug. Luxury listing photo.",
+      PASS2_FINISH_V54,
     ].join(" ");
   }
 
-  // Entryway: v45 — preservation FIRST for gpt-image-1.5
+  // Entryway: v54 — condensed pass 2 constants
   if (roomTypeId === "entryway") {
     return [
-      PASS2_PREAMBLE,
+      PASS2_PREAMBLE_V54,
       inventoryLine,
-      CAMERA_PRESERVATION, LIGHT_PRESERVATION,
-      COLUMN_PRESERVATION,
-      EQUIPMENT_PRESERVATION,
-      PASS2_ANTI_INVENTION,
-      `ADD the following entryway furniture: ${resolvedPrompt}.`,
-      "Small space — do not overcrowd. Console max 60% of wall width. Freestanding only: console, mirror propped on console, coat rack, bench, runner rug. All objects resting on the floor.",
-      "If the entryway is deep enough, place a secondary element (bench, umbrella stand, plant) in the back third. If wide, balance left and right sides.",
-      CONTACT_SHADOWS,
-      "Door = 204cm reference.",
-      "Include 1-2 lived-in details: a set of keys on the console, a casually placed hat, a small stack of mail.",
-      "Place furniture INSIDE the room only — do not add any object on exterior terraces, balconies, or patios visible through windows or glazing.",
-      DSLR_LINE,
+      PASS2_EQUIPMENT_V54,
+      PASS2_ANTI_INVENTION_V54,
+      `ADD entryway furniture: ${resolvedPrompt}.`,
+      "Small space — console max 60% wall width. Freestanding only. If deep, secondary element (bench, plant) in back third. Door = 204cm reference.",
+      "Include 1-2 lived-in details: keys on console, casually placed hat.",
+      PASS2_FINISH_V54,
     ].join(" ");
   }
 
-  // Laundry: v45 — preservation FIRST for gpt-image-1.5
+  // Laundry: v54 — condensed pass 2 constants
   if (roomTypeId === "laundry") {
     return [
-      PASS2_PREAMBLE,
+      PASS2_PREAMBLE_V54,
       inventoryLine,
-      CAMERA_PRESERVATION, LIGHT_PRESERVATION,
-      COLUMN_PRESERVATION,
-      EQUIPMENT_PRESERVATION,
-      PASS2_ANTI_INVENTION,
-      `ADD the following laundry equipment: ${resolvedPrompt}.`,
-      "Functional layout — washing machine, cabinet, drying rack, basket. No decorative objects. If compact (<4m2), skip folding table and drying rack.",
-      "If deep enough, place storage shelving or a basket in the back third. If wide, balance equipment on both sides.",
-      CONTACT_SHADOWS,
-      "Door = 204cm reference.",
-      "Place furniture INSIDE the room only — do not add any object on exterior terraces, balconies, or patios visible through windows or glazing.",
-      DSLR_LINE,
+      PASS2_EQUIPMENT_V54,
+      PASS2_ANTI_INVENTION_V54,
+      `ADD laundry equipment: ${resolvedPrompt}.`,
+      "Functional layout — washing machine, cabinet, drying rack, basket. No decorative objects. If compact (<4m2), skip folding table. If deep, storage in back third.",
+      PASS2_FINISH_V54,
     ].join(" ");
   }
 
-  // Cellar: v45 — preservation FIRST for gpt-image-1.5
+  // Cellar: v54 — condensed pass 2 constants
   if (roomTypeId === "cellar") {
     return [
-      PASS2_PREAMBLE,
+      PASS2_PREAMBLE_V54,
       inventoryLine,
-      CAMERA_PRESERVATION, LIGHT_PRESERVATION,
-      COLUMN_PRESERVATION,
-      EQUIPMENT_PRESERVATION,
-      PASS2_ANTI_INVENTION,
-      `ADD the following cellar furnishing: ${resolvedPrompt}.`,
-      "Functional storage — shelving unit, boxes, utility light. Wine rack if space allows. If compact, single shelf, no wine rack.",
-      "If the cellar is deep, place at least one storage element in the back third. If wide, use both sides of the space.",
-      CONTACT_SHADOWS,
-      "Door = 204cm reference.",
-      "Place furniture INSIDE the room only — do not add any object on exterior terraces, balconies, or patios visible through windows or glazing.",
-      DSLR_LINE,
+      PASS2_EQUIPMENT_V54,
+      PASS2_ANTI_INVENTION_V54,
+      `ADD cellar furnishing: ${resolvedPrompt}.`,
+      "Functional storage — shelving, boxes, utility light. Wine rack if space allows. If compact, single shelf only. If deep, storage in back third.",
+      PASS2_FINISH_V54,
     ].join(" ");
   }
 
-  // Dining room: v45 — preservation FIRST for gpt-image-1.5
+  // Dining room: v54 — condensed pass 2 constants
   if (roomTypeId === "dining_room") {
     return [
-      PASS2_PREAMBLE,
+      PASS2_PREAMBLE_V54,
       inventoryLine,
-      CAMERA_PRESERVATION, LIGHT_PRESERVATION,
-      COLUMN_PRESERVATION,
-      EQUIPMENT_PRESERVATION,
-      PASS2_ANTI_INVENTION,
-      `ADD the following furniture and decoration: ${resolvedPrompt}.`,
-      "Center dining table with chairs, balanced across the room width. If deep room, add sideboard as background anchor in the back third. If one side is empty, place a floor lamp or console to balance laterally. If compact, round table 120cm + 4 chairs instead of rectangular 180cm + 6.",
-      "Freestanding only — no wall art, no shelving. Furniture must not touch walls.",
-      CONTACT_SHADOWS,
-      "Door = 204cm, sill = 90cm references.",
-      "Include 2-3 lived-in details: a ceramic vase with a branch, a linen napkin casually folded, a carafe on the table.",
-      "Place furniture INSIDE the room only — do not add any object on exterior terraces, balconies, or patios visible through windows or glazing.",
-      "Result should look like a luxury real estate listing photo — lived-in, not a sterile catalog.",
-      DSLR_LINE,
+      PASS2_EQUIPMENT_V54,
+      PASS2_ANTI_INVENTION_V54,
+      `ADD furniture and decoration: ${resolvedPrompt}.`,
+      "Center table with chairs. If deep, sideboard as background anchor. If compact, round 120cm + 4 chairs. Freestanding only.",
+      "Include 2-3 lived-in details: ceramic vase with branch, folded linen napkin, carafe. Luxury listing photo.",
+      PASS2_FINISH_V54,
     ].join(" ");
   }
 
   // ── FALLBACK: generic for living_room, office, null ──
-  // v45: preservation FIRST for gpt-image-1.5
+  // v54: condensed pass 2 constants, furniturePrompt in attention zone
   return [
-    PASS2_PREAMBLE,
+    PASS2_PREAMBLE_V54,
     inventoryLine,
-    CAMERA_PRESERVATION, LIGHT_PRESERVATION,
-    COLUMN_PRESERVATION,
-    EQUIPMENT_PRESERVATION,
-    PASS2_ANTI_INVENTION,
-    `ADD the following furniture and decoration: ${resolvedPrompt}.`,
-    "Freestanding objects only. Fill 30-40% of the visible floor area with furniture — the room must look LIVED IN, not empty with a sofa in the middle.",
-    "Place at least ONE furniture piece in the BACK THIRD of the room (console table, bookshelf, floor lamp, plant on stand). Place at least ONE piece on EACH SIDE of the room. The foreground has the main seating group, the background has secondary anchors. No empty zones.",
-    "Adapt density to room size: if the visible floor area appears compact, keep 5-6 key pieces only. If the room is very large or deep, add a second furniture grouping in the back zone.",
-    CONTACT_SHADOWS,
-    "Scale references: door = 204cm, handle = 100cm, sill = 90cm. Scale furniture to room volume — if compact (<4m wide), use smaller pieces. Scale up if ceiling >3m.",
-    "No duplicate items unless style calls for a pair.",
-    "Include 2-3 lived-in details: an open book, a coffee cup on a side table, a casually draped throw. Result should look like a luxury real estate listing photo — lived-in, not a sterile catalog.",
-    "Place furniture INSIDE the room only — do not add any object on exterior terraces, balconies, or patios visible through windows or glazing.",
-    DSLR_LINE,
+    PASS2_EQUIPMENT_V54,
+    PASS2_ANTI_INVENTION_V54,
+    `ADD furniture and decoration: ${resolvedPrompt}.`,
+    PASS2_DENSITY_V54,
+    "Fill 30-40% of floor area. Door = 204cm, sill = 90cm scale references. No duplicates unless style calls for a pair.",
+    "Include 2-3 lived-in details: open book, coffee cup, draped throw. Luxury listing photo.",
+    PASS2_FINISH_V54,
   ].join(" ");
 }
 
 // ── Outdoor Pass 1: Ground surface finishing (no ceiling, no luminaire) ──
-// v51: P0-1 added OUTDOOR_ANTI_FENETRE, P0-3 added roomInventory
+// v54: condensed from ~350 to ~200 words. Added low walls, raised borders, stone edging (Camille P3).
 export function buildOutdoorSurfacesResponsesPrompt(
   surfacePrompt: string,
   subtypeOverride: string,
   roomInventory?: string
 ): string {
   const inventoryLine = roomInventory ? `This space has: ${roomInventory}` : "";
+  // v54: condensed outdoor pass 1 — structure FIRST, ~200 words (was ~350)
   return [
-    "Edit this exact outdoor photo. Preserve exactly: the space geometry, camera angle, every wall and fence position, every opening, ground level changes, sky. Space dimensions are FIXED — do not stretch, widen, or compress the area. The distance between walls and fences must be IDENTICAL to the input.",
+    OUTDOOR_PREAMBLE_P1_V54,
     inventoryLine,
-    OUTDOOR_ANTI_FENETRE,
-    CAMERA_PRESERVATION, LIGHT_PRESERVATION,
-    "Open-air space — no ceiling, sky preserved as-is. Preserve highlights — do not recover blown-out sky.",
     `CHANGE ONLY the ground surface finish: ${surfacePrompt}.`,
     subtypeOverride ? subtypeOverride : "",
-    "Preserve all fixed ground elements: metal access covers, drain grates, manholes, utility plates. Apply the new ground material AROUND these elements, not over them.",
-    "Preserve all expansion joints, step nosings, level changes, and threshold transitions in the ground surface.",
-    "Preserve all existing guard rails, exterior walls, facades, gates, fences, and full-height glazing (glass doors, bay windows, sliding doors). Do not add or remove any vertical structure.",
-    "Keep the existing wall color and texture — do not warm, smooth, or repaint walls unless the surface prompt explicitly names a wall finish.",
-    "Glass blocks and skylights keep their translucency — light passes through them in the output.",
-    "Preserve existing vegetation in the background. Only modify ground surface in the foreground zone.",
-    "Maintain the exact wall and facade color temperature from the input — do not warm or cool the surfaces.",
+    "Keep all fixed ground elements (access covers, drain grates, manholes, utility plates) — apply material AROUND them. Preserve expansion joints, step nosings, level changes, threshold transitions.",
+    "Keep all vertical structures: guard rails, walls, facades, gates, fences, full-height glazing. Keep wall color and temperature — do not warm or cool. Glass blocks and skylights keep translucency.",
+    "Preserve existing vegetation. Keep the input's color temperature and light direction.",
     ANTI_INVENTION,
-    "No furniture in this pass — EMPTY outdoor space with finished ground only.",
+    "No furniture — EMPTY outdoor space with finished ground only.",
     DSLR_LINE,
   ]
     .filter(Boolean)
@@ -554,7 +514,7 @@ export function buildOutdoorSurfacesResponsesPrompt(
 }
 
 // ── Outdoor Pass 2: Outdoor furniture placement ─────────────────────────
-// v51: P0-2 added OUTDOOR_PREAMBLE_P2, P0-1 added OUTDOOR_ANTI_FENETRE, P0-3 added roomInventory
+// v54: condensed from ~250 to ~150 words. Added low walls, raised borders, stone edging (Camille P3).
 export function buildOutdoorFurnitureResponsesPrompt(
   furniturePrompt: string,
   subtypeOverride: string,
@@ -562,19 +522,18 @@ export function buildOutdoorFurnitureResponsesPrompt(
 ): string {
   const resolvedPrompt = resolveChooseOne(furniturePrompt);
   const inventoryLine = roomInventory ? `This space has: ${roomInventory}` : "";
+  // v54: condensed outdoor pass 2 — ~150 words (was ~250)
   return [
-    OUTDOOR_PREAMBLE_P2,
+    OUTDOOR_PREAMBLE_P2_V54,
     inventoryLine,
     OUTDOOR_ANTI_FENETRE,
-    CAMERA_PRESERVATION, LIGHT_PRESERVATION,
-    PASS2_ANTI_INVENTION,
+    PASS2_ANTI_INVENTION_V54,
     `Add outdoor furniture and decoration: ${resolvedPrompt}.`,
     subtypeOverride ? subtypeOverride : "",
-    "Distribute furniture across the full depth and width of the space — use both left and right sides. If large, create a primary group and a secondary accent further back or to the side.",
-    "Outdoor plants only — no houseplants (no monstera, no fiddle leaf, no pothos). Scale plants to space: balcony max 120cm, garden max 200cm.",
-    "All lighting fixtures off in daylight. Textiles must be outdoor-rated. If space under 10m2, use bistro-scale furniture.",
-    "Include 2-3 lived-in details: an open book on a side table, a glass of water, a casually draped outdoor throw on a chair.",
-    CONTACT_SHADOWS,
+    "Distribute across full depth and width. If large, primary group + secondary accent further back. Outdoor plants only (no monstera, no fiddle leaf). Scale: balcony max 120cm plants, garden max 200cm.",
+    "Lights off in daylight. Outdoor-rated textiles. If <10m2, bistro-scale furniture.",
+    "Include 2-3 lived-in details: open book, glass of water, draped throw. Contact shadows on every piece.",
+    "Keep the input's color temperature and light direction.",
     DSLR_LINE,
   ]
     .filter(Boolean)
