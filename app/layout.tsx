@@ -26,6 +26,13 @@ export const metadata: Metadata = {
     "meuble par IA",
     "home staging France",
   ],
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "32x32", type: "image/x-icon" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+    apple: "/apple-icon.png",
+  },
   metadataBase: new URL(BASE_URL),
   openGraph: {
     title: "Versimo — Home staging virtuel IA | 12 styles, 90 secondes",
