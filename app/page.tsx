@@ -371,7 +371,7 @@ export default function Home() {
       if (queueStatus.creditRefunded) {
         msg += " Votre visuel a été remboursé automatiquement.";
         setUserCredits((prev) => prev !== null ? prev + 1 : prev);
-        window.dispatchEvent(new Event("credits-updated"));
+        window.dispatchEvent(new CustomEvent("credits-updated"));
       }
       setQueueToast({ type: "error", message: msg });
     }
@@ -497,6 +497,13 @@ export default function Home() {
     setVersions([]);
     setActiveVersions([]);
     setPreprocessWarnings([]);
+
+    // Immediate credit decrement — user sees it right away on click
+    if (userCredits !== null) {
+      const newCredits = Math.max(0, userCredits - totalJobs);
+      setUserCredits(newCredits);
+      window.dispatchEvent(new CustomEvent("credits-updated", { detail: { credits: newCredits } }));
+    }
 
     // Pre-check: validate that uploaded photos are rooms (blocking)
     // Send a small thumbnail (max 512px) to avoid body size limits
@@ -661,8 +668,8 @@ export default function Home() {
     // Pass2 handlers should only clear isGenerating after all batches are submitted
     batchesCompleteRef.current = false;
 
-    // Step 4: Execute jobs in batches (max 2 concurrent)
-    const MAX_CONCURRENT = 2;
+    // Step 4: Execute ALL jobs simultaneously — user expects all images to start at once
+    const MAX_CONCURRENT = 5;
     const allResults: GenerationResult[] = [];
     let hasPartialError = false;
     let hasQueued = false;
@@ -735,9 +742,7 @@ export default function Home() {
               roomType: job.roomType || undefined,
             };
 
-            // Optimistic credit decrement (server already debited)
-            setUserCredits((prev) => prev !== null ? Math.max(0, prev - 1) : prev);
-            window.dispatchEvent(new Event("credits-updated"));
+            // Credits already decremented upfront — no per-result decrement needed
 
             // Add partial result immediately so user sees surfaces
             setResults((prev) => [...prev, partialResult]);
@@ -820,9 +825,7 @@ export default function Home() {
             return partialResult;
           }
 
-          // Optimistic credit decrement (server already debited)
-          setUserCredits((prev) => prev !== null ? Math.max(0, prev - 1) : prev);
-          window.dispatchEvent(new Event("credits-updated"));
+          // Credits already decremented upfront — no per-result decrement needed
 
           return {
             originalUrl: filePreviewUrls[job.img.fileIndex],
@@ -850,8 +853,7 @@ export default function Home() {
             setVersions((prev) => [...prev, [{ imageUrl: val.generatedUrl, comment: undefined, model: val.model }]]);
             setActiveVersions((prev) => [...prev, 0]);
           }
-          // Dispatch credit update for each successful result (mobile needs frequent events)
-          window.dispatchEvent(new Event("credits-updated"));
+          // Credits already decremented upfront
         } else {
           if (result.reason?.name === "AbortError") continue;
           // Queued jobs are not errors — they're being processed in the background
@@ -867,9 +869,11 @@ export default function Home() {
             continue;
           }
           hasPartialError = true;
-          // For partial failures, show error but continue with other results
+          // For total failures: refund all credits and show error
           if (allResults.length === 0 && batch + MAX_CONCURRENT >= jobs.length) {
-            // Only set error if this is the last batch and no results yet
+            // Refund all credits — nothing succeeded
+            setUserCredits((prev) => prev !== null ? prev + totalJobs : prev);
+            window.dispatchEvent(new CustomEvent("credits-updated"));
             setError(
               result.reason instanceof Error
                 ? result.reason.message
@@ -903,7 +907,13 @@ export default function Home() {
         });
       }
       if (hasPartialError && allResults.length > 0) {
-        setError(`${allResults.length}/${jobs.length} génération${jobs.length > 1 ? "s" : ""} réussie${allResults.length > 1 ? "s" : ""}. Certains styles ont échoué.`);
+        // Refund credits for failed jobs
+        const failedCount = jobs.length - allResults.length;
+        if (failedCount > 0) {
+          setUserCredits((prev) => prev !== null ? prev + failedCount : prev);
+          window.dispatchEvent(new CustomEvent("credits-updated"));
+        }
+        setError(`${allResults.length}/${jobs.length} génération${jobs.length > 1 ? "s" : ""} réussie${allResults.length > 1 ? "s" : ""}. ${failedCount} visuel${failedCount > 1 ? "s" : ""} remboursé${failedCount > 1 ? "s" : ""}.`);
       }
       if (allResults.length > 0) {
         // Versions and activeVersions are already populated incrementally
@@ -1160,7 +1170,7 @@ export default function Home() {
     setIsRegenerating(true);
     setRegeneratingIndex(index);
     setUserCredits((prev) => prev !== null ? Math.max(0, prev - 1) : prev);
-    window.dispatchEvent(new Event("credits-updated"));
+    window.dispatchEvent(new CustomEvent("credits-updated"));
     setError(null);
 
     // Cancel previous regenerate/refine only — NOT the main generation (preserves pass2 of other photos)
@@ -2171,7 +2181,7 @@ export default function Home() {
                   const partialResult = results.find((r) => r.pass2Pending && r.originalUrl === filePreviewUrls[i]);
                   const done = results.some((r) => !r.pass2Pending && r.originalUrl === filePreviewUrls[i]);
                   const showPass1 = !!partialResult;
-                  const active = i >= currentProcessing && i < currentProcessing + 2 && !done && !showPass1;
+                  const active = !done && !showPass1;
                   return (
                     <div key={i} className="relative rounded-2xl overflow-hidden border border-foreground/10">
                       <div className="aspect-[4/3]">
@@ -2355,8 +2365,8 @@ export default function Home() {
             </div>
           ) : null}
 
-          {/* Step 3: Results — shown as soon as results exist (even during generation for split-mode) */}
-          {results.length > 0 && (
+          {/* Step 3: Results — shown only after generation is complete */}
+          {results.length > 0 && !isGenerating && (
             <div id="step-results" className="animate-fade-in-up scroll-mt-28">
               <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-6">
                 03 — Résultat

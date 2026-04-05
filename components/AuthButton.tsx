@@ -44,9 +44,16 @@ export default function AuthButton() {
     }
   }, []);
 
-  // Re-fetch credits when generation consumes a credit (dispatched by page.tsx)
+  // Sync credits instantly when generation updates them (no API roundtrip)
   useEffect(() => {
-    const handler = () => fetchCredits();
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.credits !== undefined) {
+        setCredits(detail.credits);
+      } else {
+        fetchCredits();
+      }
+    };
     window.addEventListener("credits-updated", handler);
     return () => window.removeEventListener("credits-updated", handler);
   }, []);
