@@ -66,10 +66,20 @@ export async function POST(
     const cropName = `${Date.now()}_cropped_${params.id}`;
     const newKey = await saveImage(base64, cropName);
 
-    // Update the input_image_key in user_photos
+    // Backup original input key before overwriting (reversible crop)
     const db = getPool();
+
+    // Add original_input_key column if missing (idempotent)
+    await db.query(`
+      ALTER TABLE user_photos ADD COLUMN IF NOT EXISTS original_input_key VARCHAR(255)
+    `).catch(() => { /* column may already exist */ });
+
+    // Save original key only on first crop (don't overwrite with a previous crop)
     await db.query(
-      `UPDATE user_photos SET input_image_key = $1 WHERE id = $2 AND user_id = $3`,
+      `UPDATE user_photos
+       SET input_image_key = $1,
+           original_input_key = COALESCE(original_input_key, input_image_key)
+       WHERE id = $2 AND user_id = $3`,
       [newKey, params.id, session.user.id]
     );
 

@@ -57,6 +57,7 @@ export default function CropModal({ imageUrl, onCrop, onClose }: CropModalProps)
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [cropError, setCropError] = useState<string | null>(null);
 
   const onCropComplete = useCallback((_croppedArea: Area, croppedPixels: Area) => {
     setCroppedAreaPixels(croppedPixels);
@@ -65,11 +66,12 @@ export default function CropModal({ imageUrl, onCrop, onClose }: CropModalProps)
   const handleSave = async () => {
     if (!croppedAreaPixels) return;
     setIsSaving(true);
+    setCropError(null);
     try {
       const croppedBase64 = await getCroppedImg(imageUrl, croppedAreaPixels);
       await onCrop(croppedBase64);
-    } catch (err) {
-      console.error("Erreur recadrage:", err);
+    } catch {
+      setCropError("Erreur lors du recadrage. Réessayez.");
     } finally {
       setIsSaving(false);
     }
@@ -99,7 +101,7 @@ export default function CropModal({ imageUrl, onCrop, onClose }: CropModalProps)
         </div>
 
         {/* Crop area */}
-        <div className="relative w-full" style={{ height: "60vh" }}>
+        <div className="relative w-full h-[50vh] sm:h-[60vh]">
           <Cropper
             image={imageUrl}
             crop={crop}
@@ -130,6 +132,11 @@ export default function CropModal({ imageUrl, onCrop, onClose }: CropModalProps)
           />
           <span className="text-xs text-muted font-light w-8 text-right">{Math.round(zoom * 100)}%</span>
         </div>
+
+        {/* Error feedback */}
+        {cropError && (
+          <p className="text-xs text-red-500 font-light px-5 py-1">{cropError}</p>
+        )}
 
         {/* Actions */}
         <div className="flex items-center justify-end gap-3 px-5 py-4 border-t border-foreground/5">

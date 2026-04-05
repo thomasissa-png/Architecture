@@ -54,6 +54,7 @@ interface UserPhoto {
   property_id: string | null;
   input_image_key: string | null;
   output_image_key: string | null;
+  original_input_key: string | null;
   style_id: string | null;
   room_type: string | null;
   room_label: string | null;
@@ -980,13 +981,34 @@ export default function PropertyDetailPage() {
                             setCropPhotoId(photo.id);
                             setCropImageUrl(`/api/logs/image?path=${encodeURIComponent(photo.input_image_key!)}`);
                           }}
-                          className="bg-foreground/70 text-white text-xs px-2 py-1 rounded-lg font-medium hover:bg-foreground/90 focus-visible:outline-none min-h-[32px] flex items-center gap-1"
+                          className="bg-foreground/70 text-white text-xs px-2 py-1.5 rounded-lg font-medium hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 min-h-[44px] flex items-center gap-1"
                           title="Recadrer la photo originale"
                         >
                           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h10v10M3 21L7 17M21 3v4h-4" />
                           </svg>
                           Recadrer
+                        </button>
+                      )}
+                      {photo.original_input_key && (
+                        <button
+                          onClick={async () => {
+                            try {
+                              const res = await fetch(`/api/user/photos/${photo.id}/uncrop`, { method: "POST" });
+                              if (res.ok) {
+                                setToastMsg("Photo originale restaurée.");
+                                fetchPhotos();
+                              } else {
+                                setToastMsg("Erreur lors de la restauration.");
+                              }
+                            } catch {
+                              setToastMsg("Erreur réseau.");
+                            }
+                          }}
+                          className="bg-foreground/70 text-white text-xs px-2 py-1.5 rounded-lg font-medium hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 min-h-[44px] flex items-center gap-1"
+                          title="Revenir à la photo originale"
+                        >
+                          Original
                         </button>
                       )}
                       <button
