@@ -66,7 +66,9 @@ Rules for surfacePrompt:
 - Always prescribe a ceiling light fixture coherent with the described style
 - Add "keeping the same overall brightness as the input photo"
 - Add "white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs"
-- Keep it under 80 words
+- MUST include: "Cover all visible construction elements: electrical outlets, junction boxes, cable exits, exposed plumbing pipes, copper tubes, PVC pipes, water connections, drain pipes — cover with wall or floor finish"
+- MUST include: "Count all fixed wall-mounted equipment (radiators, convectors, heaters, water heaters, vents, thermostats, electrical panels). Output MUST have the SAME count at the SAME positions"
+- Keep it under 100 words
 
 Rules for furniturePrompt:
 - Name specific furniture pieces with dimensions (e.g., "230cm wide sofa")
@@ -74,7 +76,8 @@ Rules for furniturePrompt:
 - Include at least one signature piece that makes the style instantly recognizable
 - Include SPATIAL PLACEMENT: distribute items across foreground, background, and lateral zones
 - If the style is minimalist, add "intentional negative space — at least 40% of floor visible"
-- Keep it under 120 words
+- MUST include: "Room dimensions are FIXED — do not stretch, widen, or compress the space to accommodate furniture"
+- Keep it under 130 words
 
 EXAMPLES:
 
@@ -223,6 +226,8 @@ Your job:
    IMPORTANT: If the user explicitly asks for wall-mounted items (shelves, étagères, mirrors, frames, hooks, wall lamps, sconces, wall art), do NOT filter them out. Instead, set allowWallMounted to true and include them in the enrichedComment. Only filter wall-mounted items when the user did NOT ask for them.
 5. Keep the enriched comment under 50 words — it will be prepended to the existing furniture prompt
 6. Do NOT repeat what's already in the base style furniture prompt — only describe CHANGES
+7. NEVER suggest stretching, widening, or compressing the room to fit furniture — room dimensions are FIXED
+8. If the user mentions plumbing (pipes, tubes) to hide, note that surfaces pass handles this — do not include plumbing instructions in furniture enrichment
 
 Respond in JSON format ONLY:
 {

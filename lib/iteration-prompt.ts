@@ -22,7 +22,7 @@ export function buildIterationFurnitureResponsesPrompt(
     .join("\n");
 
   return [
-    "Edit this photo. Keep all surfaces (walls, floor, ceiling) unchanged. Same camera angle, same windows and doors.",
+    "Edit this photo. Keep all surfaces (walls, floor, ceiling) unchanged. Same camera angle, same windows and doors. Room dimensions are FIXED — do not stretch, widen, or compress the space.",
     "Before editing, note every visible object in this photo. All of them stay at their current position, size, and color — except changes explicitly requested below.",
     "This is a refinement. Room surfaces are final. Existing furniture keeps its exact color and texture. Focus only on the changes below.",
     `Apply these changes:\n${modBlock}`,
@@ -42,7 +42,7 @@ export function buildIterationFurnitureResponsesPrompt(
       : meta.allowWallMounted
       ? "Wall-mounted items allowed for the items requested."
       : "Freestanding objects only.",
-    "Keep wall-mounted equipment visible (radiators, heaters, vents).",
+    "Count all fixed wall-mounted equipment in the input (radiators, convectors, heaters, water heaters, vents, thermostats, switches, electrical panels). The output MUST have the SAME count at the SAME positions — if the input shows 1 radiator below a window, the output MUST show 1 radiator below that window. Do not place furniture in front of radiators or convectors.",
     "DSLR wide-angle, deep DOF, sharp focus. Photo-realistic interior. No text or watermarks.",
   ].join(" ");
 }
@@ -65,7 +65,7 @@ export function buildIterationOutdoorFurnitureResponsesPrompt(
     .join("\n");
 
   return [
-    "Edit this outdoor photo. Keep all ground surfaces, structures, fences, sky unchanged. Same camera angle.",
+    "Edit this outdoor photo. Keep all ground surfaces, structures, fences, sky unchanged. Same camera angle. Space dimensions are FIXED — do not stretch, widen, or compress the area.",
     "Before editing, note every visible object in this photo. All of them stay at their current position, size, and color — except changes explicitly requested below.",
     `Apply these changes:\n${modBlock}`,
     "Add only the described items. Everything else stays untouched.",
@@ -86,13 +86,14 @@ export function buildAdjustResponsesPrompt(
     "Edit this photo. Make a small, precise change. Keep everything else unchanged.",
     "Before editing, mentally list every visible object. All must stay at same position, same size, same color — except the one change described below.",
     `The only change to make: ${enrichedComment}`,
-    "Keep all existing furniture, appliances, and decorations at their current positions, sizes, and colors. Keep walls, floor, ceiling, windows, and doors as they are. Same camera angle. After editing, verify each object is still at its original position except the one modified.",
+    "Keep all existing furniture, appliances, and decorations at their current positions, sizes, and colors. Keep walls, floor, ceiling, windows, and doors as they are. Room dimensions are FIXED — do not stretch, widen, or compress the space. Same camera angle. After editing, verify each object is still at its original position except the one modified.",
     meta.roomType === "kitchen" || meta.roomType === "bathroom"
       ? "Keep all built-in cabinetry, appliances, countertops, and sink as they appear."
       : meta.roomType === "wc"
       ? "Small space — keep it simple."
       : "",
     "If removing an object, fill the area with the surrounding floor or wall texture.",
+    "Count all fixed wall-mounted equipment in the input (radiators, convectors, heaters, water heaters, vents, thermostats, switches, electrical panels). The output MUST have the SAME count at the SAME positions.",
     "Keep existing lighting direction and color temperature. Furniture must have contact shadows on the floor.",
     "DSLR wide-angle, deep DOF, sharp focus. Photo-realistic interior. No text or watermarks.",
   ].filter(Boolean).join(" ");
@@ -106,7 +107,7 @@ export function buildAdjustOutdoorResponsesPrompt(
     "Edit this outdoor photo. Make a small, precise change. Keep everything else unchanged.",
     "Before editing, mentally list every visible object. All must stay at same position, same size, same color — except the one change described below.",
     `The only change to make: ${enrichedComment}`,
-    "Keep all existing furniture, planters, lamps, and decorations at their current positions, sizes, and colors. Keep ground surface, walls, fences, and structures as they are. Same camera angle. After editing, verify each object is still at its original position except the one modified.",
+    "Keep all existing furniture, planters, lamps, and decorations at their current positions, sizes, and colors. Keep ground surface, walls, fences, and structures as they are. Space dimensions are FIXED — do not stretch, widen, or compress the area. Same camera angle. After editing, verify each object is still at its original position except the one modified.",
     "If removing an object, fill the area with the surrounding ground texture.",
     "Keep existing vegetation and background plants. Open-air space — sky stays as-is.",
     "Keep existing lighting direction and shadows. Furniture must have contact shadows on the ground.",
