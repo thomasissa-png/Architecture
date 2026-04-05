@@ -197,7 +197,7 @@ export default async function DossierPage({ params }: PageProps) {
       </header>
 
       {/* Content */}
-      <main className="max-w-6xl mx-auto px-5 sm:px-8 py-8 sm:py-12">
+      <main className="max-w-6xl mx-auto px-5 sm:px-8 py-8 sm:py-12 no-print">
         {/* Hero photo — first completed photo above title (Marc P0-2) */}
         {completedPhotos[0]?.output_image_key && (
           <div className="mb-6 rounded-2xl overflow-hidden">
