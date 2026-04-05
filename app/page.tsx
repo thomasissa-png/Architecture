@@ -149,6 +149,8 @@ export default function Home() {
   // handleRefine uses withFurniture: true directly
   const [selectedRoomType, setSelectedRoomType] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  // Per-photo error messages (key = fileIndex, shown as overlay on the photo)
+  const [photoErrors, setPhotoErrors] = useState<Map<number, string>>(new Map());
   const [results, setResults] = useState<GenerationResult[]>([]);
   const [currentProcessing, setCurrentProcessing] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -497,6 +499,7 @@ export default function Home() {
     setVersions([]);
     setActiveVersions([]);
     setPreprocessWarnings([]);
+    setPhotoErrors(new Map());
 
     // Immediate credit decrement — user sees it right away on click
     if (userCredits !== null) {
@@ -680,7 +683,7 @@ export default function Home() {
       setCurrentProcessing(batch);
 
       const batchResults = await Promise.allSettled(
-        chunk.map(async (job) => {
+        chunk.map(async (job, jobIdx) => {
           const response = await resilientFetch("/api/generate", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -842,7 +845,9 @@ export default function Home() {
         })
       );
 
-      for (const result of batchResults) {
+      for (let ri = 0; ri < batchResults.length; ri++) {
+        const result = batchResults[ri];
+        const failedJob = chunk[ri]; // the job that failed (for error overlay)
         if (result.status === "fulfilled") {
           const val = result.value;
           allResults.push(val);
@@ -862,13 +867,18 @@ export default function Home() {
             continue;
           }
           // iOS killed the connection while app was in background.
-          // The server is still processing — result will appear in gallery.
-          // Show a friendly message, not an error.
           if (result.reason?.name === "BackgroundDisconnectError") {
-            hasQueued = true; // reuse queue toast for "check gallery" message
+            hasQueued = true;
             continue;
           }
           hasPartialError = true;
+          // Show error overlay on the specific photo that failed
+          const errorMsg = result.reason instanceof Error ? result.reason.message : "Échec de la génération";
+          setPhotoErrors((prev) => {
+            const updated = new Map(prev);
+            updated.set(failedJob.img.fileIndex, errorMsg);
+            return updated;
+          });
           // For total failures: refund all credits and show error
           if (allResults.length === 0 && batch + MAX_CONCURRENT >= jobs.length) {
             // Refund all credits — nothing succeeded
@@ -982,6 +992,7 @@ export default function Home() {
     setSelectedRoomType(null);
     setResults([]);
     setError(null);
+    setPhotoErrors(new Map());
     setIsGenerating(false);
     setPreprocessWarnings([]);
     setPhotoWarnings({});
@@ -2181,7 +2192,8 @@ export default function Home() {
                   const partialResult = results.find((r) => r.pass2Pending && r.originalUrl === filePreviewUrls[i]);
                   const done = results.some((r) => !r.pass2Pending && r.originalUrl === filePreviewUrls[i]);
                   const showPass1 = !!partialResult;
-                  const active = !done && !showPass1;
+                  const hasError = photoErrors.has(i);
+                  const active = !done && !showPass1 && !hasError;
                   return (
                     <div key={i} className="relative rounded-2xl overflow-hidden border border-foreground/10">
                       <div className="aspect-[4/3]">
@@ -2193,7 +2205,15 @@ export default function Home() {
                         />
                       </div>
                       <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-500 ${done ? "opacity-0" : "opacity-100"}`}>
-                        {showPass1 ? (
+                        {hasError ? (
+                          <div className="bg-red-500/90 backdrop-blur-sm rounded-xl px-5 py-3 shadow-sm text-center max-w-[80%]">
+                            <svg className="w-5 h-5 text-white mx-auto mb-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                            </svg>
+                            <p className="text-xs text-white font-medium">{photoErrors.get(i)}</p>
+                            <p className="text-[10px] text-white/70 font-light mt-1">Crédit remboursé</p>
+                          </div>
+                        ) : showPass1 ? (
                           <div className="bg-background/90 backdrop-blur-sm rounded-xl px-5 py-3 shadow-sm text-center">
                             <div className="flex justify-center gap-1 mb-2">
                               <div className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
