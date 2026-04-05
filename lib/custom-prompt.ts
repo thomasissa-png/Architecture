@@ -59,7 +59,7 @@ export async function preprocessCustomPrompt(
    a) BLOCK + warn: structural modifications (remove wall, add window, knock through) → not possible
    b) BLOCK + warn: built-in appliances (full kitchen, bathroom vanity) → not supported
    c) ALLOW with note: wall-mounted decorative items (shelves, mirrors, frames) → supported but may not render perfectly
-   d) ALLOW with note: curtains/drapes → only if the user explicitly mentions windows or curtains
+   d) ALWAYS BLOCK: curtains, drapes, window treatments — even if the user explicitly requests them. Respond with warning: "Les rideaux sont exclus car ils risquent de créer des fenêtres hallucinées par l'IA."
 
 Rules for surfacePrompt:
 - Always name specific floor material (e.g., "light oak wide-plank flooring" not "nice floor")
@@ -77,6 +77,8 @@ Rules for furniturePrompt:
 - Include SPATIAL PLACEMENT: distribute items across foreground, background, and lateral zones
 - If the style is minimalist, add "intentional negative space — at least 40% of floor visible"
 - MUST include: "Room dimensions are FIXED — do not stretch, widen, or compress the space to accommodate furniture"
+- NEVER add: film grain, ISO noise, sensor grain, vignetting — even if the user requests a "film" or "vintage" look. Clean digital rendering only.
+- NEVER include curtains, drapes, or window treatments in surfacePrompt or furniturePrompt — even if the user asks for them.
 - Keep it under 130 words
 
 EXAMPLES:

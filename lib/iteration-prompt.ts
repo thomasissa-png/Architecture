@@ -22,13 +22,16 @@ export function buildIterationFurnitureResponsesPrompt(
     .join("\n");
 
   return [
-    "Edit this photo. Keep all surfaces (walls, floor, ceiling) unchanged. Same camera angle, same windows and doors. Room dimensions are FIXED — do not stretch, widen, or compress the space.",
+    // v51: P0-5 full CAMERA_PRESERVATION + P0-4 anti-fenetre + P1-4 no curtains + P1-5 anti-warm
+    "Edit this photo. Keep all surfaces (walls, floor, ceiling) unchanged. Same camera angle, height, tilt, and field of view. The frame edges must match the input exactly — walls cut off at the edge must be cut off at the same position. Room dimensions are FIXED — do not stretch, widen, or compress the space.",
+    "Count the windows and doors visible in the input photo. The output must have the EXACT same count, at the same positions, same sizes. Walls without windows must remain solid.",
     "Before editing, note every visible object in this photo. All of them stay at their current position, size, and color — except changes explicitly requested below.",
     "This is a refinement. Room surfaces are final. Existing furniture keeps its exact color and texture. Focus only on the changes below.",
     `Apply these changes:\n${modBlock}`,
-    "Add only the described items. Everything else stays untouched.",
+    "Add only the described items. Everything else stays untouched. No curtains, no drapes.",
+    "No new architectural elements (arches, niches, columns, coffers, windows, doors) unless already in the input.",
     "Distribute furniture across the full depth. Furniture must have contact shadows on the floor.",
-    "Keep existing lighting direction and color temperature.",
+    "Keep existing lighting direction and color temperature. Do not add any warm tint or yellow cast.",
     meta.roomType === "kitchen" || meta.roomType === "bathroom"
       ? "Built-in cabinetry and countertops expected for this room type."
       : meta.roomType === "wc"
@@ -65,13 +68,15 @@ export function buildIterationOutdoorFurnitureResponsesPrompt(
     .join("\n");
 
   return [
-    "Edit this outdoor photo. Keep all ground surfaces, structures, fences, sky unchanged. Same camera angle. Space dimensions are FIXED — do not stretch, widen, or compress the area.",
+    // v51: P0-5 full camera preservation + outdoor anti-fenetre
+    "Edit this outdoor photo. Keep all ground surfaces, structures, fences, sky unchanged. Same camera angle, height, tilt, and field of view. The frame edges must match the input exactly. Space dimensions are FIXED — do not stretch, widen, or compress the area. The distance between walls and fences must be IDENTICAL to the input.",
+    "Count all openings (doors, windows, gates, archways) visible in the input. The output must have the EXACT same count at the same positions. Do not add or remove any opening.",
     "Before editing, note every visible object in this photo. All of them stay at their current position, size, and color — except changes explicitly requested below.",
     `Apply these changes:\n${modBlock}`,
     "Add only the described items. Everything else stays untouched.",
     "Distribute furniture across the full depth. Freestanding objects only.",
     "Keep existing vegetation and background plants. Sky stays as-is. Same lighting.",
-    "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus. Clean digital rendering. Photo-realistic outdoor photograph. No text, watermarks, or logos. ",
+    "DSLR full-frame wide-angle 16-35mm f/8, deep DOF, sharp focus. Clean digital rendering. Photo-realistic outdoor photograph. No text, watermarks, or logos.",
   ].join(" ");
 }
 
@@ -83,18 +88,21 @@ export function buildAdjustResponsesPrompt(
   meta: { roomType?: string | null; allowWallMounted?: boolean },
 ): string {
   return [
-    "Edit this photo. Make a small, precise change. Keep everything else unchanged.",
+    // v51: P0-5 full camera preservation + P0-4 anti-fenetre + P1-4 no curtains + P1-5 anti-warm
+    "Edit this photo. Make a small, precise change. Keep everything else unchanged. Same camera angle, height, tilt, and field of view. The frame edges must match the input exactly — walls cut off at the edge must be cut off at the same position.",
+    "Count the windows and doors visible in the input photo. The output must have the EXACT same count, at the same positions, same sizes. Walls without windows must remain solid.",
     "Before editing, mentally list every visible object. All must stay at same position, same size, same color — except the one change described below.",
     `The only change to make: ${enrichedComment}`,
-    "Keep all existing furniture, appliances, and decorations at their current positions, sizes, and colors. Keep walls, floor, ceiling, windows, and doors as they are. Room dimensions are FIXED — do not stretch, widen, or compress the space. Same camera angle. After editing, verify each object is still at its original position except the one modified.",
+    "Keep all existing furniture, appliances, and decorations at their current positions, sizes, and colors. Keep walls, floor, ceiling, windows, and doors as they are. Room dimensions are FIXED — do not stretch, widen, or compress the space. After editing, verify each object is still at its original position except the one modified.",
     meta.roomType === "kitchen" || meta.roomType === "bathroom"
       ? "Keep all built-in cabinetry, appliances, countertops, and sink as they appear."
       : meta.roomType === "wc"
       ? "Small space — keep it simple."
       : "",
     "If removing an object, fill the area with the surrounding floor or wall texture.",
-    "Count all fixed wall-mounted equipment in the input (radiators, convectors, heaters, water heaters, vents, thermostats, switches, electrical panels). The output MUST have the SAME count at the SAME positions.",
-    "Keep existing lighting direction and color temperature. Furniture must have contact shadows on the floor.",
+    "No curtains, no drapes. No new architectural elements (arches, niches, columns, coffers, windows, doors) unless already in the input.",
+    "Count all fixed wall-mounted equipment in the input (radiators, convectors, heaters, water heaters, boiler, vents, thermostats, switches, electrical panels). The output MUST have the SAME count at the SAME positions.",
+    "Keep existing lighting direction and color temperature. Do not add any warm tint or yellow cast. Furniture must have contact shadows on the floor.",
     "DSLR wide-angle, deep DOF, sharp focus. Photo-realistic interior. No text or watermarks.",
   ].filter(Boolean).join(" ");
 }
@@ -104,10 +112,12 @@ export function buildAdjustOutdoorResponsesPrompt(
   enrichedComment: string,
 ): string {
   return [
-    "Edit this outdoor photo. Make a small, precise change. Keep everything else unchanged.",
+    // v51: P0-5 full camera preservation + outdoor anti-fenetre
+    "Edit this outdoor photo. Make a small, precise change. Keep everything else unchanged. Same camera angle, height, tilt, and field of view. The frame edges must match the input exactly.",
+    "Count all openings (doors, windows, gates, archways) visible in the input. The output must have the EXACT same count at the same positions. Do not add or remove any opening.",
     "Before editing, mentally list every visible object. All must stay at same position, same size, same color — except the one change described below.",
     `The only change to make: ${enrichedComment}`,
-    "Keep all existing furniture, planters, lamps, and decorations at their current positions, sizes, and colors. Keep ground surface, walls, fences, and structures as they are. Space dimensions are FIXED — do not stretch, widen, or compress the area. Same camera angle. After editing, verify each object is still at its original position except the one modified.",
+    "Keep all existing furniture, planters, lamps, and decorations at their current positions, sizes, and colors. Keep ground surface, walls, fences, and structures as they are. Space dimensions are FIXED — do not stretch, widen, or compress the area. The distance between walls and fences must be IDENTICAL to the input. After editing, verify each object is still at its original position except the one modified.",
     "If removing an object, fill the area with the surrounding ground texture.",
     "Keep existing vegetation and background plants. Open-air space — sky stays as-is.",
     "Keep existing lighting direction and shadows. Furniture must have contact shadows on the ground.",

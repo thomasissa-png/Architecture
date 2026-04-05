@@ -88,7 +88,7 @@ export async function extractRoomInventory(imageBase64: string): Promise<string>
  * v42 (density conditionals: kitchen 3-tier width scaling, dining room compact/large, office compact skip bookshelf — fix gen #112 overcrowded compact kitchen),
  * v43 (audit croise Yann+Lucas #111-117: P0 COLUMN_PRESERVATION active tous builders, P0 ANTI_FENETRE remonte position 2, P1 anti-warm shift renforce white balance, P1 Cosy marqueurs tactiles quantites, P1 PHOTO_GRAIN restaure ISO 200 + vignetting),
  * v45 (gpt-image-1.5 preservation-first: PASS1_PREAMBLE+PASS2_PREAMBLE en tete de TOUS les builders — les 8 passe 1 + 9 passe 2 + 2 outdoor. Preservation AVANT style pour forcer le mode edition. "CHANGE ONLY" en passe 1, "ADD" en passe 2. Suppression doublons CAMERA/LIGHT en fin de prompt — deja dans les constantes en tete.) */
-export const PROMPT_VERSION = "v50";
+export const PROMPT_VERSION = "v51";
 
 // ─── Image generation model ─────────────────────────────────────────
 // v36: configurable via env var. Default gpt-image-1 (v32 reverted gpt-image-1.5 for spatial regression).
@@ -175,6 +175,13 @@ const CAMERA_PRESERVATION = "Same camera angle, height, tilt, and field of view 
 const ANTI_FENETRE = "Count the windows and doors visible in the input photo. The output must have the EXACT same count, at the same positions, same sizes. If a wall has no window in the input, it must remain a solid wall in the output — even if the wall extends beyond the visible frame. Do not add windows, doors, or openings to walls that are partially visible or out of frame.";
 const ANTI_INVENTION = "Only modify surfaces as described. No new architectural elements (arches, vaults, columns, niches, coffers, windows, doors) unless already in the input. Areas beyond the frame edges of the input are unknown — leave them as-is, do not invent what is there.";
 
+// v51: extracted from 8 inline copies in pass 1 builders (P2-1 audit)
+const CONSTRUCTION_CLEANUP = "Remove construction leftovers: dangling cables, junction boxes, exposed wiring, electrical outlets, round black wall boxes, cable exits, exposed plumbing pipes, copper tubes, PVC pipes, water supply lines, drain pipes — cover with wall or floor finish. Count all fixed wall-mounted equipment in the input (radiators, convectors, heaters, water heater, boiler, vents, thermostats, switches, electrical panels). The output MUST have the SAME count at the SAME positions — if the input shows 1 radiator below a window, the output MUST show 1 radiator below that window.";
+
+// v51: outdoor-specific preservation constants (P0-1, P0-2, P1-6 audit)
+const OUTDOOR_ANTI_FENETRE = "Count all openings (doors, windows, gates, archways) visible in the input. The output must have the EXACT same count at the same positions. Do not add or remove any opening.";
+const OUTDOOR_PREAMBLE_P2 = "Edit this outdoor photo. The ground surface, walls, fences, facades, gates, and sky are final — keep them unchanged. Same camera angle, same space geometry, same openings. Space dimensions are FIXED — do not stretch, widen, or compress the area to accommodate furniture. No curtains, no drapes.";
+
 // v44: gpt-image-1.5 preservation preambles — MUST be the FIRST tokens in every prompt.
 // gpt-image-1.5 is more creative than gpt-image-1 and regenerates scenes unless preservation is stated FIRST.
 const PASS1_PREAMBLE = "Edit this photo. Preserve the room geometry, camera angle, all windows and doors (same count, same positions), wall layout, ceiling shape, and room dimensions. Room dimensions are FIXED — do not stretch, widen, or compress the space. The distance between opposite walls must be IDENTICAL to the input. The output image must show the same framing as the input — same edges, same crop, same field of view.";
@@ -196,7 +203,7 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
       CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
       `Change only the surface finishes: ${kitchenSurface}.`,
       "Floor: ceramic or natural stone tiles (kitchen-appropriate). Subway tile or smooth splashback behind work area. Ceiling light per style description.",
-      "Remove construction leftovers: dangling cables, junction boxes, exposed wiring, electrical outlets, round black wall boxes, cable exits, exposed plumbing pipes, copper tubes, PVC pipes, water supply lines, drain pipes — cover with wall or floor finish. Count all fixed wall-mounted equipment in the input (radiators, convectors, heaters, water heater, vents, thermostats, switches, electrical panels). The output MUST have the SAME count at the SAME positions — if the input shows 1 radiator below a window, the output MUST show 1 radiator below that window.",
+      CONSTRUCTION_CLEANUP,
       "Room stays completely empty — no furniture, no appliances.",
       DSLR_LINE,
     ].join(" ");
@@ -212,7 +219,7 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
       CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
       `Change only the surface finishes: ${surfacePrompt}.`,
       "Floor-to-ceiling ceramic tiles in shower zone and vanity area. Water-resistant floor — ceramic or stone, matte non-slip. Recessed IP44 ceiling spotlights.",
-      "Remove construction leftovers: dangling cables, junction boxes, exposed wiring, electrical outlets, cable exits, exposed plumbing pipes, copper tubes, PVC pipes, water supply lines, drain pipes — cover with wall or floor finish. Count all fixed wall-mounted equipment in the input (radiators, convectors, heaters, water heater, vents, thermostats, switches, electrical panels). The output MUST have the SAME count at the SAME positions — if the input shows 1 radiator below a window, the output MUST show 1 radiator below that window.",
+      CONSTRUCTION_CLEANUP,
       "Room stays completely empty — no fixtures, no objects.",
       DSLR_LINE,
     ].join(" ");
@@ -228,7 +235,7 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
       CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
       `Change only the surface finishes: ${surfacePrompt}.`,
       "Waterproof floor — small ceramic tiles or vinyl. Washable matte paint or tiles on lower walls.",
-      "Remove construction leftovers: outlets, cables, junction boxes, exposed plumbing pipes, copper tubes, PVC pipes, water supply lines, drain pipes — cover with wall or floor finish. Count all fixed wall-mounted equipment in the input (radiators, convectors, heaters, water heater, vents, thermostats, switches, electrical panels). The output MUST have the SAME count at the SAME positions — if the input shows 1 radiator below a window, the output MUST show 1 radiator below that window.",
+      CONSTRUCTION_CLEANUP,
       "Room stays completely empty — no fixtures, no objects.",
       DSLR_LINE,
     ].join(" ");
@@ -244,7 +251,7 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
       CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
       `Change only the surface finishes: ${surfacePrompt}.`,
       "Flooring per style description above. Ceiling light per style description. If ONE accent wall exists, preserve it — apply style color to other walls only.",
-      "Remove construction leftovers: dangling cables, junction boxes, exposed wiring, electrical outlets, cable exits, exposed plumbing pipes, copper tubes, PVC pipes, water supply lines, drain pipes — cover with wall or floor finish. Count all fixed wall-mounted equipment in the input (radiators, convectors, heaters, water heater, vents, thermostats, switches, electrical panels). The output MUST have the SAME count at the SAME positions — if the input shows 1 radiator below a window, the output MUST show 1 radiator below that window.",
+      CONSTRUCTION_CLEANUP,
       "Room stays completely empty — no furniture, no objects.",
       DSLR_LINE,
     ].join(" ");
@@ -260,7 +267,7 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
       CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
       `Change only the surface finishes: ${surfacePrompt}.`,
       "Waterproof floor — white or light grey ceramic tiles matte. Walls in washable matte white paint.",
-      "Remove construction leftovers: outlets, cables, junction boxes, exposed plumbing pipes, copper tubes, PVC pipes, water supply lines, drain pipes — cover with wall or floor finish. Count all fixed wall-mounted equipment in the input (radiators, convectors, heaters, water heater, vents, thermostats, switches, electrical panels). The output MUST have the SAME count at the SAME positions — if the input shows 1 radiator below a window, the output MUST show 1 radiator below that window.",
+      CONSTRUCTION_CLEANUP,
       "Room stays completely empty — no appliances, no objects.",
       DSLR_LINE,
     ].join(" ");
@@ -276,7 +283,7 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
       CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
       `Change only the surface finishes: ${surfacePrompt}.`,
       "Concrete or stone floor as-is or with sealant. Clean matte white or light grey paint over masonry.",
-      "Remove construction leftovers: outlets, cables, junction boxes, exposed plumbing pipes, copper tubes, PVC pipes, water supply lines, drain pipes — cover with wall or floor finish. Count all fixed wall-mounted equipment in the input (radiators, convectors, heaters, water heater, vents, thermostats, switches, electrical panels). The output MUST have the SAME count at the SAME positions — if the input shows 1 radiator below a window, the output MUST show 1 radiator below that window.",
+      CONSTRUCTION_CLEANUP,
       "Room stays completely empty — bare floors, bare walls.",
       DSLR_LINE,
     ].join(" ");
@@ -292,7 +299,7 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
       CEILING_PRESERVATION, COLUMN_PRESERVATION, WALL_PRESERVATION, ANTI_INVENTION,
       `Change only the surface finishes: ${surfacePrompt}.`,
       "Durable entrance floor — ceramic tiles, natural stone, or hard-wearing wood. Ceiling light per style description.",
-      "Remove construction leftovers: outlets, cables, junction boxes, exposed plumbing pipes, copper tubes, PVC pipes, water supply lines, drain pipes — cover with wall or floor finish. Count all fixed wall-mounted equipment in the input (radiators, convectors, heaters, water heater, vents, thermostats, switches, electrical panels). The output MUST have the SAME count at the SAME positions — if the input shows 1 radiator below a window, the output MUST show 1 radiator below that window.",
+      CONSTRUCTION_CLEANUP,
       "Room stays completely empty — no furniture, no objects.",
       DSLR_LINE,
     ].join(" ");
@@ -309,8 +316,7 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
     `Change only the surface finishes: ${surfacePrompt}.`,
     "Apply the described finish to the existing floor and walls. Do not add structural elements that are absent from the input. For the ceiling light fixture, follow the style description above exactly.",
     "If the input has ONE accent wall (different color or texture), preserve it as-is — apply the style's wall color to the other walls only.",
-    "Remove all visible construction elements: dangling cables, junction boxes, exposed wiring, electrical outlets, round black wall boxes, cable exits, exposed plumbing pipes, copper tubes, PVC pipes, water supply lines, drain pipes — cover with wall or floor finish.",
-    "Count all fixed wall-mounted equipment in the input (radiators, convectors, heaters, water heater, vents, thermostats, switches, boiler, electrical panels). The output MUST have the SAME count at the SAME positions — if the input shows 1 radiator below a window, the output MUST show 1 radiator below that window.",
+    CONSTRUCTION_CLEANUP,
     "Keep the room completely empty — no furniture, no rugs, no objects.",
     DSLR_LINE,
   ].join(" ");
@@ -319,7 +325,9 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
 // ── Pass 2: Furniture placement ──────────────────────────────────────
 
 // Shared compact fragments for pass 2
-const EQUIPMENT_PRESERVATION = "Count all fixed wall-mounted equipment in the input (radiators, electric convector heaters, water heaters, vents, thermostats, switches, electrical panels). The output MUST contain the SAME number at the SAME positions. If the input shows 1 radiator below a window, the output MUST show 1 radiator below that window. Do not place furniture in front of radiators or convectors.";
+const EQUIPMENT_PRESERVATION = "Count all fixed wall-mounted equipment in the input (radiators, electric convector heaters, water heaters, boiler, vents, thermostats, switches, electrical panels). The output MUST contain the SAME number at the SAME positions. If the input shows 1 radiator below a window, the output MUST show 1 radiator below that window. Do not place furniture in front of radiators or convectors.";
+// v51: P1-2 — prevent architectural hallucinations in pass 2 (Art Deco arches, Haussmannien niches, etc.)
+const PASS2_ANTI_INVENTION = "No new architectural elements (arches, niches, columns, coffers, windows, doors) unless already in the input.";
 const CONTACT_SHADOWS = "Every piece must have visible contact shadows on the floor.";
 const DEPTH_DISTRIBUTION_KITCHEN = "Distribute kitchen elements across the full depth of the room. Work zones along walls, island or table in the middle zone if space allows. Counter accessories spread across the full counter length — never cluster on one end.";
 const DEPTH_DISTRIBUTION_BEDROOM = "Distribute bedroom furniture across the full depth and width of the room. Bed as primary anchor, dresser or wardrobe as background anchor in the back third. Balance nightstands on both sides when space allows. If one side of the room appears empty, place a floor lamp or bench to balance the composition laterally.";
@@ -352,6 +360,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       COLUMN_PRESERVATION,
       EQUIPMENT_PRESERVATION,
+      PASS2_ANTI_INVENTION,
       `ADD the following kitchen elements: ${resolvedPrompt}.`,
       "Built-in cabinetry and countertops against walls. Add island only if kitchen appears larger than 10m2. If compact, skip island. The ceiling light was already placed in pass 1 — keep it as-is.",
       "Scale kitchen to apparent width — fewer elements if compact, full set if spacious. Skip island under 10m2.",
@@ -373,6 +382,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       COLUMN_PRESERVATION,
       EQUIPMENT_PRESERVATION,
+      PASS2_ANTI_INVENTION,
       `ADD the following bathroom fixtures and accessories: ${resolvedPrompt}.`,
       "If a bathtub, shower, sink, or toilet is visible in the input, keep it at the same position, same size, same shape.",
       "This is a compact bathroom by default. ONE vanity, ONE basin — never a double vanity. Use 60cm vanity, skip stool and basket, no freestanding tub. Only use 80cm vanity or add freestanding tub if the room is clearly wider than 2.5m. Ignore shower and tub dimensions from the style if room is compact — use 80cm shower maximum.",
@@ -394,10 +404,12 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       COLUMN_PRESERVATION,
       EQUIPMENT_PRESERVATION,
+      PASS2_ANTI_INVENTION,
       `ADD the following WC fixtures: ${resolvedPrompt}.`,
       "Very small space — minimal items. Wall-hung or floor toilet, compact hand basin with mirror above.",
       CONTACT_SHADOWS,
       "Scale reference: door = 204cm.",
+      "Place furniture INSIDE the room only — do not add any object on exterior terraces, balconies, or patios visible through windows or glazing.",
       DSLR_LINE,
     ].join(" ");
   }
@@ -410,6 +422,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       COLUMN_PRESERVATION,
       EQUIPMENT_PRESERVATION,
+      PASS2_ANTI_INVENTION,
       `ADD the following bedroom furniture: ${resolvedPrompt}.`,
       "Freestanding only — bed, nightstands, rug, wardrobe/dresser as background anchor. All objects resting on the floor. Furniture must not touch walls.",
       "Calm atmosphere — respect furniture density implied by the style. If minimalist, leave large empty floor areas.",
@@ -431,12 +444,14 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       COLUMN_PRESERVATION,
       EQUIPMENT_PRESERVATION,
+      PASS2_ANTI_INVENTION,
       `ADD the following entryway furniture: ${resolvedPrompt}.`,
       "Small space — do not overcrowd. Console max 60% of wall width. Freestanding only: console, mirror propped on console, coat rack, bench, runner rug. All objects resting on the floor.",
       "If the entryway is deep enough, place a secondary element (bench, umbrella stand, plant) in the back third. If wide, balance left and right sides.",
       CONTACT_SHADOWS,
       "Door = 204cm reference.",
       "Include 1-2 lived-in details: a set of keys on the console, a casually placed hat, a small stack of mail.",
+      "Place furniture INSIDE the room only — do not add any object on exterior terraces, balconies, or patios visible through windows or glazing.",
       DSLR_LINE,
     ].join(" ");
   }
@@ -449,11 +464,13 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       COLUMN_PRESERVATION,
       EQUIPMENT_PRESERVATION,
+      PASS2_ANTI_INVENTION,
       `ADD the following laundry equipment: ${resolvedPrompt}.`,
       "Functional layout — washing machine, cabinet, drying rack, basket. No decorative objects. If compact (<4m2), skip folding table and drying rack.",
       "If deep enough, place storage shelving or a basket in the back third. If wide, balance equipment on both sides.",
       CONTACT_SHADOWS,
       "Door = 204cm reference.",
+      "Place furniture INSIDE the room only — do not add any object on exterior terraces, balconies, or patios visible through windows or glazing.",
       DSLR_LINE,
     ].join(" ");
   }
@@ -466,11 +483,13 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       COLUMN_PRESERVATION,
       EQUIPMENT_PRESERVATION,
+      PASS2_ANTI_INVENTION,
       `ADD the following cellar furnishing: ${resolvedPrompt}.`,
       "Functional storage — shelving unit, boxes, utility light. Wine rack if space allows. If compact, single shelf, no wine rack.",
       "If the cellar is deep, place at least one storage element in the back third. If wide, use both sides of the space.",
       CONTACT_SHADOWS,
       "Door = 204cm reference.",
+      "Place furniture INSIDE the room only — do not add any object on exterior terraces, balconies, or patios visible through windows or glazing.",
       DSLR_LINE,
     ].join(" ");
   }
@@ -483,6 +502,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
       CAMERA_PRESERVATION, LIGHT_PRESERVATION,
       COLUMN_PRESERVATION,
       EQUIPMENT_PRESERVATION,
+      PASS2_ANTI_INVENTION,
       `ADD the following furniture and decoration: ${resolvedPrompt}.`,
       "Center dining table with chairs, balanced across the room width. If deep room, add sideboard as background anchor in the back third. If one side is empty, place a floor lamp or console to balance laterally. If compact, round table 120cm + 4 chairs instead of rectangular 180cm + 6.",
       "Freestanding only — no wall art, no shelving. Furniture must not touch walls.",
@@ -503,6 +523,7 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
     CAMERA_PRESERVATION, LIGHT_PRESERVATION,
     COLUMN_PRESERVATION,
     EQUIPMENT_PRESERVATION,
+    PASS2_ANTI_INVENTION,
     `ADD the following furniture and decoration: ${resolvedPrompt}.`,
     "Freestanding objects only. Fill 30-40% of the visible floor area with furniture — the room must look LIVED IN, not empty with a sofa in the middle.",
     "Place at least ONE furniture piece in the BACK THIRD of the room (console table, bookshelf, floor lamp, plant on stand). Place at least ONE piece on EACH SIDE of the room. The foreground has the main seating group, the background has secondary anchors. No empty zones.",
@@ -517,12 +538,18 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
 }
 
 // ── Outdoor Pass 1: Ground surface finishing (no ceiling, no luminaire) ──
+// v51: P0-1 added OUTDOOR_ANTI_FENETRE, P0-3 added roomInventory
 export function buildOutdoorSurfacesResponsesPrompt(
   surfacePrompt: string,
-  subtypeOverride: string
+  subtypeOverride: string,
+  roomInventory?: string
 ): string {
+  const inventoryLine = roomInventory ? `This space has: ${roomInventory}` : "";
   return [
     "Edit this exact outdoor photo. Preserve exactly: the space geometry, camera angle, every wall and fence position, every opening, ground level changes, sky. Space dimensions are FIXED — do not stretch, widen, or compress the area. The distance between walls and fences must be IDENTICAL to the input.",
+    inventoryLine,
+    OUTDOOR_ANTI_FENETRE,
+    CAMERA_PRESERVATION, LIGHT_PRESERVATION,
     "Open-air space — no ceiling, sky preserved as-is. Preserve highlights — do not recover blown-out sky.",
     `CHANGE ONLY the ground surface finish: ${surfacePrompt}.`,
     subtypeOverride ? subtypeOverride : "",
@@ -533,30 +560,37 @@ export function buildOutdoorSurfacesResponsesPrompt(
     "Glass blocks and skylights keep their translucency — light passes through them in the output.",
     "Preserve existing vegetation in the background. Only modify ground surface in the foreground zone.",
     "Maintain the exact wall and facade color temperature from the input — do not warm or cool the surfaces.",
-    "Preserve the exact lighting conditions from the input — same shadow hardness, same direction, same color temperature.",
+    ANTI_INVENTION,
     "No furniture in this pass — EMPTY outdoor space with finished ground only.",
-    "DSLR full-frame, deep DOF, sharp focus. Same focal length as the input photo. Clean rendering.",
+    DSLR_LINE,
   ]
     .filter(Boolean)
     .join(" ");
 }
 
 // ── Outdoor Pass 2: Outdoor furniture placement ─────────────────────────
+// v51: P0-2 added OUTDOOR_PREAMBLE_P2, P0-1 added OUTDOOR_ANTI_FENETRE, P0-3 added roomInventory
 export function buildOutdoorFurnitureResponsesPrompt(
   furniturePrompt: string,
-  subtypeOverride: string
+  subtypeOverride: string,
+  roomInventory?: string
 ): string {
   const resolvedPrompt = resolveChooseOne(furniturePrompt);
+  const inventoryLine = roomInventory ? `This space has: ${roomInventory}` : "";
   return [
-    "Edit this outdoor photo. Keep all ground surfaces, guard rails, walls, facades, and sky unchanged. Same camera angle. Open-air space — no ceiling. Space dimensions are FIXED — do not stretch, widen, or compress the area to accommodate furniture.",
+    OUTDOOR_PREAMBLE_P2,
+    inventoryLine,
+    OUTDOOR_ANTI_FENETRE,
+    CAMERA_PRESERVATION, LIGHT_PRESERVATION,
+    PASS2_ANTI_INVENTION,
     `Add outdoor furniture and decoration: ${resolvedPrompt}.`,
     subtypeOverride ? subtypeOverride : "",
     "Distribute furniture across the full depth and width of the space — use both left and right sides. If large, create a primary group and a secondary accent further back or to the side.",
     "Outdoor plants only — no houseplants (no monstera, no fiddle leaf, no pothos). Scale plants to space: balcony max 120cm, garden max 200cm.",
     "All lighting fixtures off in daylight. Textiles must be outdoor-rated. If space under 10m2, use bistro-scale furniture.",
     "Include 2-3 lived-in details: an open book on a side table, a glass of water, a casually draped outdoor throw on a chair.",
-    "Furniture must have contact shadows on the ground. Keep existing lighting direction.",
-    "DSLR full-frame, deep DOF, sharp focus. Same focal length as the input photo. Photo-realistic outdoor. No text or watermarks.",
+    CONTACT_SHADOWS,
+    DSLR_LINE,
   ]
     .filter(Boolean)
     .join(" ");
@@ -587,8 +621,8 @@ export async function tryOpenAIResponses(
   if (outdoor?.isOutdoor) {
     prompt =
       pass === 1
-        ? buildOutdoorSurfacesResponsesPrompt(surfacePrompt, outdoor.subtypeSurfaceOverride ?? "")
-        : buildOutdoorFurnitureResponsesPrompt(furniturePrompt, outdoor.subtypeFurnitureOverride ?? "");
+        ? buildOutdoorSurfacesResponsesPrompt(surfacePrompt, outdoor.subtypeSurfaceOverride ?? "", roomInventory)
+        : buildOutdoorFurnitureResponsesPrompt(furniturePrompt, outdoor.subtypeFurnitureOverride ?? "", roomInventory);
   } else {
     prompt =
       pass === 1
@@ -930,10 +964,10 @@ export async function runGenerationPipeline(params: PipelineParams): Promise<Pip
 
   // Build prompts for logging
   const builtPromptPass1 = isOutdoor
-    ? buildOutdoorSurfacesResponsesPrompt(trimmedSurface, outdoorParam?.subtypeSurfaceOverride ?? "")
+    ? buildOutdoorSurfacesResponsesPrompt(trimmedSurface, outdoorParam?.subtypeSurfaceOverride ?? "", roomInventory)
     : buildSurfacesResponsesPrompt(trimmedSurface, roomType, roomInventory);
   const builtPromptPass2 = isOutdoor
-    ? buildOutdoorFurnitureResponsesPrompt(trimmedFurniture, outdoorParam?.subtypeFurnitureOverride ?? "")
+    ? buildOutdoorFurnitureResponsesPrompt(trimmedFurniture, outdoorParam?.subtypeFurnitureOverride ?? "", roomInventory)
     : buildFurnitureResponsesPrompt(trimmedFurniture, roomType, roomInventory);
 
   // Surfaces-only mode
