@@ -169,7 +169,7 @@ export async function POST(request: NextRequest) {
             <p><strong>De :</strong> ${userEmail}</p>
             <p><strong>Catégorie :</strong> ${category}</p>
             <p><strong>Message :</strong></p>
-            <p>${message.replace(/\n/g, "<br>")}</p>
+            <p>${message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/\n/g, "<br>")}</p>
             ${screenshot ? "<p><em>Capture d'écran en pièce jointe</em></p>" : ""}
           `,
         };
@@ -206,6 +206,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Save screenshot to Object Storage if provided
+    let screenshotKey: string | null = null;
+    if (screenshot) {
+      try {
+        const { saveImage } = await import("@/lib/db");
+        const ssBase64 = screenshot.replace(/^data:image\/[\w+]+;base64,/, "");
+        screenshotKey = await saveImage(ssBase64, `support_${Date.now()}_screenshot`);
+      } catch (err) {
+        console.error("[support] screenshot save failed:", err);
+      }
+    }
+
     // Always save to DB (fallback + audit trail)
     let ticketId: number | null = null;
     try {
@@ -220,7 +232,7 @@ export async function POST(request: NextRequest) {
           userEmail,
           category,
           message.trim(),
-          screenshot ? "attached" : null,
+          screenshotKey,
           emailSent,
         ]
       );
