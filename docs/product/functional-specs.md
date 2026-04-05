@@ -1188,6 +1188,238 @@ Quand la génération échoue avec un timeout (504 Replit proxy) ou une erreur r
 
 ---
 
+## F12 — Génération multi-photo
+
+> **Décision fondateur (2026-04-05) :** Spécifications non négociables du comportement de génération quand l'utilisateur a uploadé 1 à 5 photos et clique sur "Générer". Ces règles s'appliquent sans exception à tous les tiers (Découverte, Starter, Pro), tous les modes (intérieur, extérieur), et que `withFurniture` soit actif ou non.
+
+### F12.1 User Stories
+
+**US-F12-01 — Voir le compteur se décrémenter instantanément au clic sur Générer (Claire, Thomas, Léa)**
+- Job-to-be-done : Quand je lance une génération avec 3 photos, je veux savoir immédiatement que mes crédits sont engagés — pas après que le résultat arrive.
+- Given : L'utilisateur a 10 crédits restants et 3 photos uploadées avec leur style. Il clique sur "Générer".
+- When : Le clic est enregistré.
+- Then : Le compteur de visuels en haut de page passe de 10 à 7 IMMÉDIATEMENT, visuellement, sans aucun délai. Sur mobile ET desktop. Le décrément = nombre total de jobs lancés (ici 3).
+- Critère d'acceptance : Le compteur est mis à jour dans le même cycle de rendu que le démarrage des jobs. GIVEN 3 photos → WHEN clic Générer → THEN compteur -= 3 avant la première requête API.
+
+**US-F12-02 — Voir toutes les images partir en génération simultanément (Thomas)**
+- Job-to-be-done : Quand j'uploade 5 photos de mon bien, je veux que toutes partent en parallèle — pas attendre que la photo 1 soit finie pour que la photo 2 commence.
+- Given : L'utilisateur a 5 photos et clique sur "Générer".
+- When : Le traitement démarre.
+- Then : Chaque image affiche l'état "Génération..." immédiatement. Toutes les requêtes API partent simultanément (Promise.all ou équivalent). Aucune image n'est en état "En attente".
+- Critère d'acceptance : GIVEN 5 photos → WHEN clic Générer → THEN les 5 images affichent "Génération..." en même temps. Zéro état "En attente" visible.
+
+**US-F12-03 — Voir le résultat de la passe 1 s'afficher avec l'overlay adapté au mode (Claire)**
+- Job-to-be-done : Quand je génère en mode "surfaces + meubles", je veux voir les surfaces finies s'afficher dès qu'elles sont prêtes, avec un signal clair que la passe meubles est encore en cours — sans aller chercher ce message en dessous de l'image.
+- Given : L'utilisateur est en mode "surfaces + meubles" (withFurniture = true). La passe 1 d'une image se termine.
+- When : La réponse passe 1 arrive.
+- Then : Le visuel passe 1 s'affiche dans la card de cette image. Un overlay est superposé DIRECTEMENT SUR le visuel : "Surfaces terminées — Ameublement en cours". Cet overlay est positionné au-dessus de l'image (pas sous, pas à côté). Les autres images (passe 1 pas encore terminée) continuent d'afficher "Génération...".
+- Critère d'acceptance : GIVEN passe 1 terminée + withFurniture = true → THEN visuel passe 1 affiché + overlay "Surfaces terminées — Ameublement en cours" positionné en superposition sur le visuel. Si withFurniture = false (mode surfaces uniquement) → le résultat final est affiché directement, sans overlay intermédiaire.
+
+**US-F12-04 — Voir le résultat final dans le comparateur sans mélange de photos (Thomas)**
+- Job-to-be-done : Quand j'uploade 3 photos de 3 pièces différentes, je veux que chaque résultat soit associé à sa propre photo d'origine — jamais la passe 2 du salon associée à l'input de la chambre.
+- Given : L'utilisateur a 3 photos et une génération 2 passes est en cours.
+- When : La passe 2 d'une image se termine.
+- Then : Le résultat final s'affiche dans le comparateur avant/après. L'image "avant" = l'input de CETTE photo. L'image "après" = le résultat de la passe 2 de CETTE photo. Les associations sont correctes quelle que soit l'ordre de réception des réponses API.
+- Critère d'acceptance : GIVEN 3 photos générées en parallèle → THEN chaque comparateur affiche l'input et l'output correspondants à la même photo. Jamais de mélange inter-photos. L'invariant `results[i].input === uploads[i]` est garanti.
+
+**US-F12-05 — Récupérer les crédits en cas d'échec partiel (Thomas)**
+- Job-to-be-done : Quand je lance 3 photos et que la 2e échoue, je veux récupérer le crédit de la photo ratée sans avoir à contacter le support.
+- Given : L'utilisateur lance 3 photos. La photo 2 échoue (erreur API ou timeout). Les photos 1 et 3 réussissent.
+- When : L'erreur est détectée.
+- Then : Le compteur de crédits est remboursé de 1 (crédit de la photo échouée) automatiquement. Un message s'affiche : "2 visuels générés. 1 visuel a échoué — votre crédit a été remboursé." Un bouton "Réessayer cette photo" est proposé pour la photo en erreur.
+- Critère d'acceptance : Le remboursement est automatique, sans action de l'utilisateur. Le message indique explicitement le nombre de succès et le nombre de remboursements. GIVEN N photos lancées + K échouées → THEN compteur += K après les erreurs.
+
+**US-F12-06 — Expérience identique quelle que soit la quantité de photos (Léa)**
+- Job-to-be-done : Quand j'uploade 1 photo ou 5 photos, je veux la même clarté et le même confort — pas un comportement dégradé parce que j'en ai uploadé plusieurs.
+- Given : L'utilisateur uploade 1, 2, 3, 4 ou 5 photos et lance la génération.
+- When : Le traitement démarre et progresse.
+- Then : L'expérience est strictement identique : décrément immédiat du compteur, lancement simultané de toutes les images, overlay passe 1 si applicable, comparateur final par image, remboursement automatique en cas d'erreur. Le mode (gratuit/Starter/Pro), le type d'espace (intérieur/extérieur) et le withFurniture n'affectent pas ces garanties.
+- Critère d'acceptance : Un test avec 1 photo et un test avec 5 photos produisent des comportements structurellement identiques (états, messages, association input/output). Aucun code-path ne produit un état "En attente" visible.
+
+---
+
+### F12.2 Wireframes ASCII
+
+**État : Clic sur Générer (N=3 photos) — décrément immédiat**
+```
+┌──────────────────────────────────────────────────────────┐
+│  [Logo Versimo]        Crédits restants : 7  ← mis à jour │
+│                        IMMÉDIATEMENT au clic              │
+├──────────────────────────────────────────────────────────┤
+│                                                           │
+│  ┌──────────────────┐  ┌──────────────────┐  ┌──────────┐ │
+│  │  Génération...   │  │  Génération...   │  │ Généra.. │ │
+│  │  [photo floue]   │  │  [photo floue]   │  │ [floue]  │ │
+│  └──────────────────┘  └──────────────────┘  └──────────┘ │
+│   Photo 1 · Scandinave  Photo 2 · Japandi   Photo 3 · Cosy │
+│                                                           │
+│              ⏳ 3 générations en cours...                  │
+└──────────────────────────────────────────────────────────┘
+```
+
+**État : Passe 1 terminée pour la photo 1 (withFurniture = true)**
+```
+┌──────────────────────────────────────────────────────────┐
+│  ┌──────────────────────────────────────────────────┐     │
+│  │  [Visuel surfaces finies — rendu réel]           │     │
+│  │  ┌─────────────────────────────────────────────┐ │     │
+│  │  │  Surfaces terminées — Ameublement en cours  │ │     │
+│  │  └─────────────────────────────────────────────┘ │     │
+│  │  overlay positionné SUR le visuel               │     │
+│  └──────────────────────────────────────────────────┘     │
+│   Photo 1 · Surfaces OK                                   │
+│                                                           │
+│  ┌──────────────┐   ┌──────────────┐                      │
+│  │  Génération  │   │  Génération  │                      │
+│  │  [floue]     │   │  [floue]     │                      │
+│  └──────────────┘   └──────────────┘                      │
+│   Photo 2 · Japandi   Photo 3 · Cosy                      │
+└──────────────────────────────────────────────────────────┘
+```
+
+**État : Résultat final (passe 2 terminée pour photo 1)**
+```
+┌──────────────────────────────────────────────────────────┐
+│  ┌──────────────────────────────────────────────────┐     │
+│  │  [◄──── Slider avant/après ─────────────────────►] │     │
+│  │  ⬇ Télécharger HD   ✏ Affiner   ✕               │     │
+│  └──────────────────────────────────────────────────┘     │
+│   Photo 1 — Scandinave · Terminé                          │
+│                                                           │
+│  ┌──────────────────────────────────────┐                 │
+│  │  Surfaces terminées — Ameublement    │                 │
+│  │  en cours  [visuel passe 1 dessous]  │                 │
+│  └──────────────────────────────────────┘                 │
+│   Photo 2 — Japandi · Passe 2 en cours                    │
+│                                                           │
+│  ┌──────────────┐                                         │
+│  │  Génération  │                                         │
+│  └──────────────┘                                         │
+│   Photo 3 — Cosy · Passe 1 en cours                       │
+└──────────────────────────────────────────────────────────┘
+```
+
+**État : Erreur partielle (photo 2 a échoué)**
+```
+┌──────────────────────────────────────────────────────────┐
+│  Crédits restants : 8  (remboursement auto : +1)          │
+│                                                           │
+│  ✓ Photo 1 — Scandinave · Résultat disponible            │
+│  ✗ Photo 2 — Japandi · Échec de génération               │
+│    [Réessayer cette photo]   (votre crédit a été remboursé)│
+│  ✓ Photo 3 — Cosy · Résultat disponible                  │
+│                                                           │
+│  ℹ 2 visuels générés. 1 visuel a échoué —                │
+│    votre crédit a été remboursé automatiquement.          │
+└──────────────────────────────────────────────────────────┘
+```
+
+---
+
+### F12.3 Règles métier (invariants fondateur — non négociables)
+
+**R1 — Décrément immédiat du compteur**
+- Au clic sur "Générer", le compteur de crédits est décrémenté de N (nombre de photos lancées) dans le même cycle de rendu React, avant tout appel API.
+- Ce comportement est identique sur mobile et desktop.
+- Ce comportement est identique en mode gratuit, Starter et Pro.
+- Justification : l'utilisateur doit savoir immédiatement ce qu'il engage. Un compteur qui change après le résultat crée de la confusion sur le solde réel.
+
+**R2 — Lancement simultané de tous les jobs**
+- Toutes les requêtes API partent en parallèle (Promise.all ou équivalent). Aucune file d'attente visible.
+- L'état de chaque image démarre à "Génération..." immédiatement après le clic.
+- Aucune image ne doit afficher "En attente" ou un état d'attente explicite.
+- Justification : une file d'attente visible donne l'impression que Versimo est lent. La génération parallèle est déjà en place (`Promise.allSettled` dans `route.ts`) — l'UI doit refléter cette réalité.
+
+**R3 — Overlay passe 1 positionné SUR le visuel**
+- En mode "surfaces + meubles" (withFurniture = true), quand la passe 1 se termine, le message d'état est affiché en overlay CSS au-dessus du visuel passe 1.
+- Position : centré sur l'image, fond semi-transparent (noir 60% ou sage #7D9B76 selon le design system).
+- En mode "surfaces uniquement" (withFurniture = false) : aucun overlay. Le résultat final s'affiche directement.
+- Justification : un message en dessous du visuel n'est pas vu sur mobile. L'overlay garantit la visibilité sans action de l'utilisateur.
+
+**R4 — Association stricte input/output (invariant d'intégrité)**
+- À tout moment, pour chaque photo i : `results[i].inputImage === uploads[i]` ET `results[i].outputImage === generation_output[i]`.
+- Cet invariant est garanti quelle que soit l'ordre de réception des réponses API (les jobs parallèles peuvent finir dans n'importe quel ordre).
+- Le nombre de résultats = le nombre de versions = le nombre d'activeVersions. Ces trois compteurs sont toujours égaux.
+- Implémentation : chaque job est indexé par `photoIndex` à l'émission. La réponse est associée au même index à la réception. Jamais d'association positionnelle basée sur l'ordre d'arrivée.
+
+**R5 — Remboursement automatique en cas d'échec**
+- Si un job échoue (erreur API, timeout, erreur safety non récupérée), le crédit de ce job est remboursé automatiquement côté client (incrément du compteur de +1 par job échoué).
+- Le remboursement est reflété dans le compteur visuel immédiatement à la détection de l'erreur.
+- Un message récapitulatif indique : "X visuels générés. Y visuel(s) a/ont échoué — votre/vos crédit(s) a/ont été remboursé(s)."
+- Un bouton "Réessayer cette photo" est affiché pour chaque photo en erreur.
+- Note : le remboursement côté client est immédiat. La cohérence avec le backend (compteur DB) est gérée par le système de crédits existant (`lib/credits.ts`).
+
+**R6 — Universalité de l'expérience**
+- Ces cinq règles (R1 à R5) s'appliquent sans exception pour :
+  - N = 1, 2, 3, 4 ou 5 photos.
+  - Tiers : Découverte, Starter, Pro.
+  - Mode espace : Intérieur ou Extérieur.
+  - Mode génération : withFurniture = true (2 passes) ou false (1 passe).
+- Aucun code-path ne doit produire un comportement différent selon ces paramètres.
+
+---
+
+### F12.4 États UI par photo (5 états obligatoires — Gate G21)
+
+| État | Comportement | Message/Affichage |
+|---|---|---|
+| Défaut (avant clic) | Photo uploadée, pas encore lancée. Card affiche la miniature. | Miniature + sélecteurs style/pièce/mode |
+| Loading — passe 1 | Génération en cours. Photo originale floue (blur CSS). | "Génération..." centré sur la card |
+| Loading — passe 1 finie, passe 2 en cours (withFurniture = true uniquement) | Visuel passe 1 affiché. Overlay sur le visuel. | Visuel passe 1 + overlay "Surfaces terminées — Ameublement en cours" |
+| Erreur | Job échoué. Crédit remboursé. | Message d'erreur + bouton "Réessayer cette photo" |
+| Succès | Passe 2 terminée (ou passe 1 si withFurniture = false). | Comparateur avant/après + boutons HD, Affiner, Supprimer |
+
+---
+
+### F12.5 Edge cases
+
+1. **Une passe 2 échoue mais la passe 1 a réussi** : Livrer le résultat passe 1 (surfaces finies) avec message "L'ameublement a échoué. Voici les surfaces finies." + bouton "Réessayer l'ameublement" (retry passe 2 uniquement, sans re-consommer de crédit).
+2. **Double-clic sur "Générer"** : Le bouton est désactivé (disabled + état isGenerating = true) dès le premier clic. Le deuxième clic est ignoré. Aucun job dupliqué.
+3. **L'utilisateur annule pendant la génération** : Les requêtes en cours sont annulées via AbortController. Les crédits des jobs annulés sont remboursés (même règle que l'erreur — R5). Les jobs déjà terminés conservent leur résultat et leur crédit consommé.
+4. **Réponses API arrivent dans l'ordre inverse** (photo 3 avant photo 1) : L'association par `photoIndex` garantit que photo 3 s'affiche dans la card 3, photo 1 dans la card 1. L'ordre d'affichage dans l'UI ne change pas.
+5. **Session expirée pendant la génération** : Si le token/session expire pendant le traitement, afficher "Session expirée. Vos crédits engagés ont été conservés — reconnectez-vous pour voir vos résultats." Les résultats déjà générés sont accessibles depuis `/ma-galerie` après reconnexion.
+6. **Perte de connexion (réseau coupé)** : `resilientFetch()` (F10) prend en charge le retry. Si la reconnexion échoue après le retry, appliquer R5 (remboursement automatique) pour les jobs sans résultat.
+7. **Overlay passe 1 sur mobile (petite card)** : L'overlay doit rester lisible sur une card de 160px de large minimum. Utiliser une taille de police 11px minimum, fond semi-transparent couvrant 100% de la card.
+8. **5 photos, 2 crédits restants** : Le bouton "Générer" est désactivé si le nombre de crédits disponibles est inférieur au nombre de photos sélectionnées. Message : "Crédits insuffisants — vous avez 2 crédits pour 5 photos." L'utilisateur peut déselectionner des photos ou recharger.
+
+---
+
+### F12.6 Events tracking
+
+| Event name | Properties | Trigger |
+|---|---|---|
+| `generation_batch_started` | `{ photo_count, style_ids: string[], with_furniture: bool, is_outdoor: bool, tier }` | Clic sur "Générer" |
+| `generation_credit_decremented` | `{ amount, new_balance, photo_count }` | Décrément immédiat du compteur au clic |
+| `generation_pass1_completed` | `{ photo_index, style_id, duration_ms }` | Fin passe 1 d'une photo |
+| `generation_pass2_completed` | `{ photo_index, style_id, duration_ms }` | Fin passe 2 d'une photo |
+| `generation_photo_failed` | `{ photo_index, style_id, reason: 'timeout'|'api_error'|'safety_rejected', pass: 1 | 2 }` | Échec d'un job |
+| `generation_credit_refunded` | `{ amount, new_balance, reason: string }` | Remboursement automatique après échec |
+| `generation_batch_completed` | `{ photo_count, success_count, fail_count, total_duration_ms }` | Fin de tous les jobs du batch |
+| `generation_photo_retried` | `{ photo_index, style_id }` | Clic "Réessayer cette photo" |
+
+---
+
+### F12.7 Dépendances
+
+- **Technique** : `app/page.tsx` — le décrément du compteur de crédits doit être dans le gestionnaire d'événement `onClick`, avant le `setState(isGenerating: true)` et avant les appels API. Pas après la réponse.
+- **Technique** : `app/page.tsx` — le lancement des jobs utilise `Promise.all` (ou `Promise.allSettled` si gestion d'erreur partielle) sur les N photos simultanément. Aucune séquentialisation.
+- **Technique** : Chaque job embarque son `photoIndex` dans la requête et dans la réponse (ou via closure). L'association input/output est faite par index, pas par ordre d'arrivée.
+- **Technique** : L'état par photo inclut un champ `pass1Result` (visuel intermédiaire) distinct de `finalResult` (visuel passe 2). L'overlay est conditionnel : `pass1Result && !finalResult && withFurniture`.
+- **Technique** : En cas d'erreur, `handlePhotoError(photoIndex)` incrémente le compteur de crédits de +1 et met à jour le message récapitulatif.
+- **Produit** : F12 est une spécification de comportement du core flow existant (page.tsx + api/generate). Elle ne dépend pas de F1-F11 mais les inclut (F10 résilience mobile gère le cas de reconnexion, F11 file d'attente gère les timeouts graves).
+
+---
+
+### F12.8 Performance
+
+- Décrément compteur au clic : < 16ms (synchrone dans le handler React, pas d'appel réseau).
+- Affichage état "Génération..." sur toutes les cards : < 50ms après le clic (batch setState).
+- Overlay passe 1 visible : < 100ms après réception de la réponse passe 1.
+- Comparateur final affiché : < 200ms après réception de la réponse passe 2 (chargement image depuis data URI ou Object Storage).
+- Message de remboursement affiché : < 100ms après détection de l'erreur.
+
+---
+
 ## Changelog des corrections 2026-04-04
 
 | Section | Avant | Après | Source |
