@@ -2341,7 +2341,7 @@ export default function Home() {
               <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-6">
                 03 — Résultat
               </h3>
-              <div className={`space-y-10 ${results.length === 1 ? "max-w-xl mx-auto" : "max-w-4xl mx-auto"}`}>
+              <div className={`space-y-10 ${results.length === 1 ? "sm:max-w-lg mx-auto" : "sm:max-w-3xl mx-auto"}`}>
                 {results.map((result, index) => {
                   const resultVersions = versions[index] || [];
                   const activeIdx = activeVersions[index] || 0;

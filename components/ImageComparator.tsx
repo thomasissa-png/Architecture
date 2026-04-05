@@ -103,7 +103,7 @@ function CompareSlider({ beforeSrc, afterSrc }: { beforeSrc: string; afterSrc: s
     <div
       ref={containerRef}
       className="relative w-full overflow-hidden select-none"
-      style={{ touchAction: "pan-y", maxHeight: "80vh" }}
+      style={{ touchAction: "pan-y" }}
     >
       {/* After image (background, full width, capped height for portrait) */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
