@@ -490,6 +490,8 @@ export default function Home() {
 
     setError(null);
     setResults([]);
+    setVersions([]);
+    setActiveVersions([]);
     setPreprocessWarnings([]);
 
     // Pre-check: validate that uploaded photos are rooms (blocking)
@@ -907,6 +909,8 @@ export default function Home() {
 
   const handleRetry = useCallback(() => {
     setResults([]);
+    setVersions([]);
+    setActiveVersions([]);
     setError(null);
     setTimeout(() => {
       handleGenerate();
