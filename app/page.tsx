@@ -732,6 +732,9 @@ export default function Home() {
 
             // Add partial result immediately so user sees surfaces
             setResults((prev) => [...prev, partialResult]);
+            // Create matching versions entry for this result (keeps versions in sync with results)
+            setVersions((prev) => [...prev, [{ imageUrl: data.image, comment: undefined, model: data.model }]]);
+            setActiveVersions((prev) => [...prev, 0]);
 
             // Launch pass 2 in background (fire-and-forget from batch perspective)
             const p2Pass1Key = data.pass1_key;
@@ -829,11 +832,17 @@ export default function Home() {
 
       for (const result of batchResults) {
         if (result.status === "fulfilled") {
-          allResults.push(result.value);
+          const val = result.value;
+          allResults.push(val);
           // Split-mode results are already added to results via setResults in the split handler
-          if (!result.value.pass2Pending && !result.value.pass1Url) {
-            setResults((prev) => [...prev, result.value]);
+          // Non-split results need to be added here
+          if (!val.pass2Pending && !val.pass1Url) {
+            setResults((prev) => [...prev, val]);
+            setVersions((prev) => [...prev, [{ imageUrl: val.generatedUrl, comment: undefined, model: val.model }]]);
+            setActiveVersions((prev) => [...prev, 0]);
           }
+          // Dispatch credit update for each successful result (mobile needs frequent events)
+          window.dispatchEvent(new Event("credits-updated"));
         } else {
           if (result.reason?.name === "AbortError") continue;
           // Queued jobs are not errors — they're being processed in the background
@@ -885,12 +894,8 @@ export default function Home() {
         setError(`${allResults.length}/${jobs.length} génération${jobs.length > 1 ? "s" : ""} réussie${allResults.length > 1 ? "s" : ""}. Certains styles ont échoué.`);
       }
       if (allResults.length > 0) {
-        setVersions(
-          allResults.map((r) => [
-            { imageUrl: r.generatedUrl, comment: undefined, model: r.model },
-          ])
-        );
-        setActiveVersions(allResults.map(() => 0));
+        // Versions and activeVersions are already populated incrementally
+        // as each result was added (split or non-split). No need to overwrite.
         setIterationsRemaining(maxIterations);
         scrollToElement("step-results");
       }
@@ -2335,8 +2340,8 @@ export default function Home() {
             </div>
           ) : null}
 
-          {/* Step 3: Results — hidden during generation (split mode shows pass1 in loading block) */}
-          {results.length > 0 && !isGenerating && (
+          {/* Step 3: Results — shown as soon as results exist (even during generation for split-mode) */}
+          {results.length > 0 && (
             <div id="step-results" className="animate-fade-in-up scroll-mt-28">
               <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-6">
                 03 — Résultat
