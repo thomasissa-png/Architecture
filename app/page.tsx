@@ -5,12 +5,36 @@ import StepIndicator from "@/components/StepIndicator";
 import UploadZone from "@/components/UploadZone";
 import StylePicker, { StyleOption } from "@/components/StylePicker";
 import ImageComparator from "@/components/ImageComparator";
+import RefineModal from "@/components/RefineModal";
+import VersionSelector from "@/components/VersionSelector";
+import RoomTypePicker from "@/components/RoomTypePicker";
+import OutdoorSubtypePicker from "@/components/OutdoorSubtypePicker";
 import { processImage, isLikelyInterior } from "@/lib/image-utils";
+import { OUTDOOR_STYLES } from "@/lib/outdoor-styles";
 
 interface GenerationResult {
   originalUrl: string;
   generatedUrl: string;
   model: string;
+  pass1Key?: string;
+}
+
+interface VersionEntry {
+  imageUrl: string;
+  comment?: string;
+  model: string;
+}
+
+const MAX_ITERATIONS = 3;
+
+function getSessionId(): string {
+  if (typeof window === "undefined") return "";
+  let sessionId = localStorage.getItem("visirenov_session_id");
+  if (!sessionId) {
+    sessionId = crypto.randomUUID();
+    localStorage.setItem("visirenov_session_id", sessionId);
+  }
+  return sessionId;
 }
 
 function useReveal() {
@@ -41,6 +65,51 @@ function scrollToElement(id: string) {
   }, 150);
 }
 
+/** Fetch with 180s timeout + 1 automatic retry on network/timeout errors. */
+async function resilientFetch(
+  url: string,
+  init: RequestInit,
+  parentSignal?: AbortSignal
+): Promise<Response> {
+  const TIMEOUT_MS = 180_000; // 3 min — pipeline 2 passes can take 60-90s
+  const MAX_RETRIES = 1;
+
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    const timeoutController = new AbortController();
+    const timer = setTimeout(() => timeoutController.abort(), TIMEOUT_MS);
+
+    // Combine parent signal (user cancel) with timeout signal
+    const onParentAbort = () => timeoutController.abort();
+    parentSignal?.addEventListener("abort", onParentAbort);
+
+    try {
+      const response = await fetch(url, {
+        ...init,
+        signal: timeoutController.signal,
+      });
+      return response;
+    } catch (err) {
+      // If the user explicitly cancelled, don't retry
+      if (parentSignal?.aborted) throw err;
+      // If timeout or network error, retry once
+      if (attempt < MAX_RETRIES) {
+        console.warn(`Fetch attempt ${attempt + 1} failed, retrying...`, err instanceof Error ? err.message : err);
+        continue;
+      }
+      // Final failure — throw user-friendly error
+      if (err instanceof Error && err.name === "AbortError") {
+        throw new Error("La génération a pris trop de temps. Vérifiez votre connexion et réessayez.");
+      }
+      throw new Error("Connexion perdue pendant la génération. Vérifiez votre réseau et réessayez.");
+    } finally {
+      clearTimeout(timer);
+      parentSignal?.removeEventListener("abort", onParentAbort);
+    }
+  }
+  // Unreachable but TypeScript needs it
+  throw new Error("La génération a échoué après plusieurs tentatives.");
+}
+
 const USE_CASES = [
   { label: "Architectes", desc: "Partagez des pistes d\u2019inspiration" },
   { label: "Marchands de biens", desc: "Pr\u00e9commercialisez vos op\u00e9rations" },
@@ -51,15 +120,52 @@ export default function Home() {
   const [files, setFiles] = useState<File[]>([]);
   const [selectedStyle, setSelectedStyle] = useState<StyleOption | null>(null);
   const [customPrompt, setCustomPrompt] = useState("");
+  const [withFurniture, setWithFurniture] = useState(true);
+  const [selectedRoomType, setSelectedRoomType] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [results, setResults] = useState<GenerationResult[]>([]);
   const [currentProcessing, setCurrentProcessing] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [generationElapsed, setGenerationElapsed] = useState(0);
+  const [preprocessWarnings, setPreprocessWarnings] = useState<string[]>([]);
+
+  // F3 — Outdoor state
+  const [isOutdoor, setIsOutdoor] = useState(false);
+  const [outdoorSubtype, setOutdoorSubtype] = useState<string | null>("terrasse");
+  const [selectedOutdoorStyle, setSelectedOutdoorStyle] = useState<string | null>(null);
+
+  // F1 — Iteration state
+  const [iterationsRemaining, setIterationsRemaining] = useState(MAX_ITERATIONS);
+  const [versions, setVersions] = useState<VersionEntry[][]>([]); // per-result versions
+  const [activeVersions, setActiveVersions] = useState<number[]>([]); // active version index per result
+  const [isRefineModalOpen, setIsRefineModalOpen] = useState(false);
+  const [refineTargetIndex, setRefineTargetIndex] = useState<number>(0);
+  const [isRefining, setIsRefining] = useState(false);
+  const [refineError, setRefineError] = useState<string | null>(null);
+  const [lastRefineComment, setLastRefineComment] = useState<string>("");
+  const [refineWarnings, setRefineWarnings] = useState<string[]>([]);
+  const [refineElapsed, setRefineElapsed] = useState(0);
 
   const heroRef = useReveal();
   const toolRef = useReveal();
   const pricingRef = useReveal();
+
+  // F3 — Toggle handler: reset cross-states when switching modes
+  const handleToggleOutdoor = useCallback((outdoor: boolean) => {
+    setIsOutdoor(outdoor);
+    if (outdoor) {
+      // Switching to outdoor: reset indoor selections
+      setSelectedStyle(null);
+      setCustomPrompt("");
+      setSelectedRoomType(null);
+      // Default subtype if none set
+      if (!outdoorSubtype) setOutdoorSubtype("terrasse");
+    } else {
+      // Switching to indoor: reset outdoor selections
+      setSelectedOutdoorStyle(null);
+      setOutdoorSubtype("terrasse");
+    }
+  }, [outdoorSubtype]);
 
   // Timer for generation elapsed time
   useEffect(() => {
@@ -72,6 +178,18 @@ export default function Home() {
     }, 1000);
     return () => clearInterval(interval);
   }, [isGenerating]);
+
+  // Timer for refine elapsed time
+  useEffect(() => {
+    if (!isRefining) {
+      setRefineElapsed(0);
+      return;
+    }
+    const interval = setInterval(() => {
+      setRefineElapsed((prev) => prev + 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [isRefining]);
 
   // Stable object URLs for file previews (no leak on re-render)
   const filePreviewUrls = useMemo(() => {
@@ -89,17 +207,33 @@ export default function Home() {
 
   const currentStep =
     results.length > 0
+      ? 4
+      : (selectedStyle || customPrompt || selectedOutdoorStyle) && files.length > 0
       ? 3
-      : selectedStyle || customPrompt
-      ? 2
-      : files.length > 0
+      : files.length > 0 || selectedStyle || customPrompt || selectedOutdoorStyle || selectedRoomType || isOutdoor
       ? 2
       : 1;
 
   const handleGenerate = useCallback(async () => {
     if (files.length === 0) return;
-    const stylePrompt = selectedStyle?.prompt || customPrompt.trim();
-    if (!stylePrompt) return;
+
+    // Resolve prompts based on mode (indoor vs outdoor)
+    let surfacePrompt: string;
+    let furniturePrompt: string;
+    let effectiveStyleId: string;
+
+    if (isOutdoor && selectedOutdoorStyle) {
+      const oStyle = OUTDOOR_STYLES[selectedOutdoorStyle];
+      surfacePrompt = oStyle?.surfacePrompt || "";
+      furniturePrompt = oStyle?.furniturePrompt || "";
+      effectiveStyleId = selectedOutdoorStyle;
+    } else {
+      surfacePrompt = selectedStyle?.surfacePrompt || customPrompt.trim();
+      furniturePrompt = selectedStyle?.furniturePrompt || customPrompt.trim();
+      effectiveStyleId = selectedStyle?.id ?? "custom";
+    }
+
+    if (!surfacePrompt && !furniturePrompt) return;
 
     // Cancel any previous in-flight requests
     abortControllerRef.current?.abort();
@@ -109,6 +243,32 @@ export default function Home() {
     setIsGenerating(true);
     setError(null);
     setResults([]);
+    setPreprocessWarnings([]);
+
+    // Pre-process custom prompts via GPT-4.1-mini (translate, split, enrich)
+    if (!selectedStyle && customPrompt.trim()) {
+      try {
+        const ppResponse = await fetch("/api/preprocess-prompt", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: customPrompt.trim() }),
+          signal: controller.signal,
+        });
+        if (ppResponse.ok) {
+          const ppData = await ppResponse.json();
+          if (ppData.surfacePrompt) surfacePrompt = ppData.surfacePrompt;
+          if (ppData.furniturePrompt) furniturePrompt = ppData.furniturePrompt;
+          if (Array.isArray(ppData.warnings) && ppData.warnings.length > 0) {
+            setPreprocessWarnings(ppData.warnings);
+          }
+        }
+      } catch (e: unknown) {
+        // On abort, stop entirely
+        if (e instanceof Error && e.name === "AbortError") return;
+        // On any other error, proceed with the raw custom prompt (backward compatible)
+      }
+      if (controller.signal.aborted) return;
+    }
 
     // Step 1: Validate all images (fast, parallel)
     try {
@@ -152,21 +312,33 @@ export default function Home() {
 
       const batchResults = await Promise.allSettled(
         chunk.map(async (img) => {
-          const response = await fetch("/api/generate", {
+          const response = await resilientFetch("/api/generate", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               image: img.base64,
-              stylePrompt,
+              surfacePrompt,
+              furniturePrompt,
+              styleId: effectiveStyleId,
+              withFurniture,
               width: img.width,
               height: img.height,
+              sessionId: getSessionId(),
+              roomType: selectedRoomType,
+              isOutdoor,
+              outdoorSubtype: isOutdoor ? outdoorSubtype : undefined,
             }),
-            signal: controller.signal,
-          });
+          }, controller.signal);
 
           if (!response.ok) {
-            const data = await response.json();
-            throw new Error(data.error || "Erreur lors de la g\u00e9n\u00e9ration");
+            let errorMsg = "Erreur lors de la génération";
+            try {
+              const data = await response.json();
+              errorMsg = data.error || errorMsg;
+            } catch {
+              errorMsg = `Erreur serveur (${response.status}). Réessayez dans quelques instants.`;
+            }
+            throw new Error(errorMsg);
           }
 
           const data = await response.json();
@@ -174,6 +346,7 @@ export default function Home() {
             originalUrl: filePreviewUrls[img.fileIndex],
             generatedUrl: data.image,
             model: data.model,
+            pass1Key: data.pass1_key,
           } as GenerationResult;
         })
       );
@@ -198,10 +371,18 @@ export default function Home() {
     if (!controller.signal.aborted) {
       setIsGenerating(false);
       if (allResults.length > 0) {
+        // Initialize versions array: one entry per result (v1 = original generation)
+        setVersions(
+          allResults.map((r) => [
+            { imageUrl: r.generatedUrl, comment: undefined, model: r.model },
+          ])
+        );
+        setActiveVersions(allResults.map(() => 0));
+        setIterationsRemaining(MAX_ITERATIONS);
         scrollToElement("step-results");
       }
     }
-  }, [files, selectedStyle, customPrompt, filePreviewUrls]);
+  }, [files, selectedStyle, customPrompt, withFurniture, filePreviewUrls, isOutdoor, selectedOutdoorStyle, outdoorSubtype, selectedRoomType]);
 
   const handleRetry = useCallback(() => {
     setResults([]);
@@ -214,6 +395,14 @@ export default function Home() {
   const handleReset = () => {
     setResults([]);
     setError(null);
+    setPreprocessWarnings([]);
+    // Reset F1 state
+    setVersions([]);
+    setActiveVersions([]);
+    setIterationsRemaining(MAX_ITERATIONS);
+    setRefineError(null);
+    setRefineWarnings([]);
+    setLastRefineComment("");
   };
 
   const handleFullReset = () => {
@@ -221,10 +410,159 @@ export default function Home() {
     setFiles([]);
     setSelectedStyle(null);
     setCustomPrompt("");
+    setSelectedRoomType(null);
     setResults([]);
     setError(null);
     setIsGenerating(false);
+    setPreprocessWarnings([]);
+    // Reset F1 state
+    setVersions([]);
+    setActiveVersions([]);
+    setIterationsRemaining(MAX_ITERATIONS);
+    setIsRefineModalOpen(false);
+    setRefineTargetIndex(0);
+    setIsRefining(false);
+    setRefineError(null);
+    setLastRefineComment("");
+    setRefineWarnings([]);
+    // Reset F3 state
+    setIsOutdoor(false);
+    setOutdoorSubtype("terrasse");
+    setSelectedOutdoorStyle(null);
   };
+
+  const handleOpenRefineModal = useCallback((resultIndex: number) => {
+    setRefineTargetIndex(resultIndex);
+    setRefineError(null);
+    setRefineWarnings([]);
+    setIsRefineModalOpen(true);
+  }, []);
+
+  const handleRefine = useCallback(
+    async (comment: string) => {
+      const targetResult = results[refineTargetIndex];
+      if (!targetResult?.pass1Key) {
+        setRefineError("Les surfaces de cette generation ont expire. Regenerez depuis l'image originale.");
+        return;
+      }
+
+      setIsRefineModalOpen(false);
+      setIsRefining(true);
+      setRefineError(null);
+      setRefineWarnings([]);
+      setLastRefineComment(comment);
+
+      // Build previousModifications from existing versions
+      const targetVersions = versions[refineTargetIndex] || [];
+      const previousModifications = targetVersions
+        .filter((v) => v.comment)
+        .map((v) => v.comment as string);
+
+      // Cancel previous in-flight
+      abortControllerRef.current?.abort();
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
+      try {
+        // Send raw comment to server — server handles all pre-processing via
+        // preprocessIterationComment (dedicated iteration pre-processing, not
+        // the generic preprocessCustomPrompt). See review H-01.
+        const enrichedComment = comment;
+
+        if (controller.signal.aborted) return;
+
+        const response = await resilientFetch("/api/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            pass1_key: targetResult.pass1Key,
+            iterationComment: enrichedComment,
+            previousModifications,
+            sessionId: getSessionId(),
+            surfacePrompt: isOutdoor && selectedOutdoorStyle
+              ? (OUTDOOR_STYLES[selectedOutdoorStyle]?.surfacePrompt || "")
+              : (selectedStyle?.surfacePrompt || customPrompt.trim()),
+            furniturePrompt: isOutdoor && selectedOutdoorStyle
+              ? (OUTDOOR_STYLES[selectedOutdoorStyle]?.furniturePrompt || "")
+              : (selectedStyle?.furniturePrompt || customPrompt.trim()),
+            styleId: isOutdoor && selectedOutdoorStyle
+              ? selectedOutdoorStyle
+              : (selectedStyle?.id ?? "custom"),
+            withFurniture: true,
+            width: 0, // Server uses pass1 dimensions
+            height: 0,
+            isOutdoor,
+            outdoorSubtype: isOutdoor ? outdoorSubtype : undefined,
+          }),
+        }, controller.signal);
+
+        if (!response.ok) {
+          let errorMsg = "Erreur lors de l'ajustement";
+          try {
+            const data = await response.json();
+            errorMsg = data.error || errorMsg;
+          } catch {
+            // Réponse non-JSON (timeout proxy, crash serveur)
+            errorMsg = `Erreur serveur (${response.status}). Réessayez dans quelques instants.`;
+          }
+          throw new Error(errorMsg);
+        }
+
+        const data = await response.json();
+
+        // Success: add new version, decrement iterations
+        setVersions((prev) => {
+          const updated = [...prev];
+          const existing = updated[refineTargetIndex] || [];
+          updated[refineTargetIndex] = [
+            ...existing,
+            { imageUrl: data.image, comment, model: data.model },
+          ];
+          return updated;
+        });
+        setActiveVersions((prev) => {
+          const updated = [...prev];
+          updated[refineTargetIndex] = (versions[refineTargetIndex]?.length || 1);
+          return updated;
+        });
+        setIterationsRemaining((prev) => Math.max(0, prev - 1));
+        setRefineError(null);
+
+        // Update the result's generatedUrl for the comparator
+        setResults((prev) => {
+          const updated = [...prev];
+          updated[refineTargetIndex] = {
+            ...updated[refineTargetIndex],
+            generatedUrl: data.image,
+            model: data.model,
+          };
+          return updated;
+        });
+      } catch (e: unknown) {
+        if (e instanceof Error && e.name === "AbortError") return;
+        // Do NOT decrement iterations on error
+        setRefineError(
+          e instanceof Error ? e.message : "Erreur lors de l'ajustement. Votre iteration a ete conservee."
+        );
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsRefining(false);
+        }
+      }
+    },
+    [results, refineTargetIndex, versions, selectedStyle, customPrompt, isOutdoor, selectedOutdoorStyle, outdoorSubtype]
+  );
+
+  const handleRefineRetry = useCallback(() => {
+    if (lastRefineComment) {
+      handleRefine(lastRefineComment);
+    }
+  }, [lastRefineComment, handleRefine]);
+
+  const handleRefineModify = useCallback(() => {
+    setRefineError(null);
+    setIsRefineModalOpen(true);
+  }, []);
 
   const handleDownloadAll = () => {
     results.forEach((result, index) => {
@@ -251,13 +589,16 @@ export default function Home() {
   const prevFilesLength = useRef(0);
   useEffect(() => {
     if (files.length > 0 && prevFilesLength.current === 0) {
-      scrollToElement("step-style");
+      scrollToElement("step-space-type");
     }
     prevFilesLength.current = files.length;
   }, [files.length]);
 
   const canGenerate =
-    files.length > 0 && (selectedStyle !== null || customPrompt.trim().length > 0);
+    files.length > 0 &&
+    (isOutdoor
+      ? selectedOutdoorStyle !== null
+      : selectedStyle !== null || customPrompt.trim().length > 0);
 
   return (
     <div className="min-h-screen bg-background">
@@ -302,7 +643,7 @@ export default function Home() {
             <span className="font-light text-muted">meubl&eacute;s par l&apos;IA</span>
           </h2>
           <p className="text-base sm:text-lg text-muted font-light leading-relaxed max-w-2xl mx-auto mb-6 sm:mb-8">
-            Uploadez une photo de pi&egrave;ce vide, choisissez un style parmi 12 ambiances, et recevez un visuel meubl&eacute; en quelques secondes. Pour les pros comme pour les particuliers.
+            Uploadez une photo de pi&egrave;ce vide, choisissez un style parmi 11 ambiances, et recevez un visuel meubl&eacute; en quelques minutes. Pour les pros comme pour les particuliers.
           </p>
 
           {/* Hero before/after — richly illustrated mock */}
@@ -367,7 +708,7 @@ export default function Home() {
 
           {/* Social proof line */}
           <p className="text-xs text-muted/70 font-light mb-6">
-            12 styles disponibles &middot; R&eacute;sultat en 10-30 secondes &middot; T&eacute;l&eacute;chargement HD gratuit
+            11 styles disponibles &middot; R&eacute;sultat en ~2 minutes &middot; T&eacute;l&eacute;chargement HD gratuit
           </p>
 
           <a
@@ -414,23 +755,127 @@ export default function Home() {
           {/* Step 1: Upload */}
           <div className="mb-16">
             <h4 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
-              01 — Upload
+              Upload
             </h4>
             <UploadZone files={files} onFilesChange={setFiles} />
           </div>
 
-          {/* Step 2: Style */}
-          {files.length > 0 && (
-            <div id="step-style" className="mb-16 animate-fade-in-up scroll-mt-20">
+          {/* Step 2a: Type d'espace (intérieur/extérieur + sous-type) — always visible */}
+          <div id="step-space-type" className="mb-16 scroll-mt-20">
+            <h4 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
+              01 — Type d&apos;espace
+            </h4>
+
+            {/* Indoor / Outdoor toggle */}
+            <div className="mb-6">
+              <div
+                role="radiogroup"
+                aria-label="Choix entre interieur et exterieur"
+                className="inline-flex rounded-full bg-gray-100 p-0.5"
+              >
+                <button
+                  role="radio"
+                  aria-checked={!isOutdoor}
+                  onClick={() => handleToggleOutdoor(false)}
+                  className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
+                    !isOutdoor
+                      ? "bg-foreground text-background shadow-sm"
+                      : "text-muted hover:text-foreground"
+                  }`}
+                >
+                  Int&eacute;rieur
+                </button>
+                <button
+                  role="radio"
+                  aria-checked={isOutdoor}
+                  onClick={() => handleToggleOutdoor(true)}
+                  className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 ${
+                    isOutdoor
+                      ? "bg-foreground text-background shadow-sm"
+                      : "text-muted hover:text-foreground"
+                  }`}
+                >
+                  Ext&eacute;rieur
+                </button>
+              </div>
+            </div>
+
+            {/* Indoor: room type picker */}
+            {!isOutdoor && (
+              <div className="animate-fade-in-up">
+                <RoomTypePicker
+                  selectedRoomType={selectedRoomType}
+                  onSelect={setSelectedRoomType}
+                />
+                {!selectedRoomType && selectedStyle && (
+                  <p className="text-xs text-sage font-light text-center mt-2">
+                    S&eacute;lectionnez un type de pi&egrave;ce pour continuer
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Outdoor: subtype picker */}
+            {isOutdoor && (
+              <div className="animate-fade-in-up">
+                <OutdoorSubtypePicker
+                  selectedSubtype={outdoorSubtype}
+                  onSelect={setOutdoorSubtype}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Step 2b: Style — always visible */}
+          <div id="step-style" className="mb-16 scroll-mt-20">
+            <h4 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
+              02 — Style
+            </h4>
+
+            <StylePicker
+              selectedStyle={selectedStyle}
+              customPrompt={customPrompt}
+              onStyleSelect={setSelectedStyle}
+              onCustomPromptChange={setCustomPrompt}
+              isOutdoor={isOutdoor}
+              selectedOutdoorStyle={selectedOutdoorStyle}
+              onSelectOutdoorStyle={setSelectedOutdoorStyle}
+            />
+          </div>
+
+          {/* Step 2c: Options (furniture toggle) */}
+          {canGenerate && results.length === 0 && !isGenerating && (
+            <div className="mb-8 animate-fade-in-up">
               <h4 className="text-sm font-medium text-muted uppercase tracking-widest mb-5">
-                02 — Style
+                03 — Options
               </h4>
-              <StylePicker
-                selectedStyle={selectedStyle}
-                customPrompt={customPrompt}
-                onStyleSelect={setSelectedStyle}
-                onCustomPromptChange={setCustomPrompt}
-              />
+              <div className="flex items-center justify-center gap-3">
+                <button
+                  onClick={() => setWithFurniture(false)}
+                  className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all ${
+                    !withFurniture
+                      ? "bg-foreground text-background shadow-sm"
+                      : "bg-gray-100 text-muted hover:bg-gray-200"
+                  }`}
+                >
+                  Surfaces uniquement
+                </button>
+                <button
+                  onClick={() => setWithFurniture(true)}
+                  className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all ${
+                    withFurniture
+                      ? "bg-foreground text-background shadow-sm"
+                      : "bg-gray-100 text-muted hover:bg-gray-200"
+                  }`}
+                >
+                  Surfaces + Mobilier
+                </button>
+              </div>
+              <p className="text-center text-xs text-muted font-light mt-2">
+                {withFurniture
+                  ? "Finitions et mobilier complet"
+                  : "Pi\u00e8ce finie sans meuble \u2014 id\u00e9al pour voir les surfaces"}
+              </p>
             </div>
           )}
 
@@ -439,7 +884,7 @@ export default function Home() {
             <div id="step-generate" className="text-center mb-16 animate-fade-in-up sticky bottom-6 z-40">
               <button
                 onClick={handleGenerate}
-                disabled={isGenerating}
+                disabled={isGenerating || (!isOutdoor && selectedStyle !== null && !selectedRoomType)}
                 className="inline-flex items-center gap-3 bg-foreground text-background px-10 py-4 rounded-full font-medium text-base hover:bg-foreground/85 transition-all disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 shadow-lg"
               >
                 {isGenerating ? (
@@ -511,13 +956,30 @@ export default function Home() {
               {/* Timer */}
               <div className="text-center">
                 <p className="text-xs text-muted/70 font-light">
-                  {generationElapsed < 10
-                    ? `${generationElapsed}s — Estimation : 10-30 secondes par image`
-                    : generationElapsed < 30
+                  {generationElapsed < 30
+                    ? `${generationElapsed}s — Estimation : jusqu\u2019\u00e0 2 minutes par image`
+                    : generationElapsed < 90
                     ? `${generationElapsed}s — G\u00e9n\u00e9ration en cours\u2026`
                     : `${generationElapsed}s — Presque termin\u00e9\u2026`}
                 </p>
               </div>
+            </div>
+          )}
+
+          {/* Preprocess warnings */}
+          {preprocessWarnings.length > 0 && (
+            <div className="mb-8 bg-amber-50/50 border border-amber-200/60 rounded-2xl p-5 text-left max-w-2xl mx-auto">
+              <p className="text-amber-700/90 text-xs font-medium mb-2">
+                Certains éléments ont été ajustés :
+              </p>
+              <ul className="space-y-1">
+                {preprocessWarnings.map((w, i) => (
+                  <li key={i} className="text-amber-600/80 text-xs font-light flex items-start gap-2">
+                    <span className="mt-0.5 shrink-0">⚠</span>
+                    <span>{w}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
 
@@ -541,14 +1003,173 @@ export default function Home() {
                 03 — R&eacute;sultat
               </h4>
               <div className="space-y-10">
-                {results.map((result, index) => (
-                  <ImageComparator
-                    key={index}
-                    originalUrl={result.originalUrl}
-                    generatedUrl={result.generatedUrl}
-                    model={result.model}
-                  />
-                ))}
+                {results.map((result, index) => {
+                  const resultVersions = versions[index] || [];
+                  const activeIdx = activeVersions[index] || 0;
+                  const displayUrl =
+                    resultVersions[activeIdx]?.imageUrl || result.generatedUrl;
+                  const isRefineTarget = refineTargetIndex === index;
+
+                  return (
+                    <div key={index} className="space-y-5">
+                      {/* Refine loading state */}
+                      {isRefining && isRefineTarget && (
+                        <div className="relative rounded-2xl overflow-hidden border border-gray-200/60">
+                          <div className="aspect-[4/3] sm:aspect-[16/10] relative">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={displayUrl}
+                              alt=""
+                              className="w-full h-full object-cover blur-sm brightness-95 transition-all duration-700"
+                            />
+                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                              <div className="bg-white/90 backdrop-blur-sm rounded-xl px-5 py-4 shadow-sm text-center max-w-xs">
+                                <div className="flex justify-center gap-1 mb-3">
+                                  <div className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                                  <div className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                                  <div className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                                </div>
+                                <p className="text-sm text-foreground font-medium mb-1">
+                                  Ajustement en cours&hellip; jusqu&apos;&agrave; 2 minutes
+                                </p>
+                                <p className="text-xs text-muted/70 font-light">
+                                  {refineElapsed}s
+                                </p>
+                                <p className="text-xs text-muted font-light mt-2 italic">
+                                  &laquo; {lastRefineComment} &raquo;
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Comparator (hidden during refine loading for this target) */}
+                      {!(isRefining && isRefineTarget) && (
+                        <ImageComparator
+                          originalUrl={result.originalUrl}
+                          generatedUrl={displayUrl}
+                          model={resultVersions[activeIdx]?.model || result.model}
+                        />
+                      )}
+
+                      {/* Version selector */}
+                      {!isRefining && (
+                        <VersionSelector
+                          versions={resultVersions}
+                          activeVersion={activeIdx}
+                          onSelect={(vIdx) => {
+                            setActiveVersions((prev) => {
+                              const updated = [...prev];
+                              updated[index] = vIdx;
+                              return updated;
+                            });
+                            // Update the comparator display
+                            const selectedVersion = resultVersions[vIdx];
+                            if (selectedVersion) {
+                              setResults((prev) => {
+                                const updated = [...prev];
+                                updated[index] = {
+                                  ...updated[index],
+                                  generatedUrl: selectedVersion.imageUrl,
+                                  model: selectedVersion.model,
+                                };
+                                return updated;
+                              });
+                            }
+                          }}
+                        />
+                      )}
+
+                      {/* Refine error */}
+                      {refineError && isRefineTarget && !isRefining && (
+                        <div className="bg-red-50/50 border border-red-200/60 rounded-2xl p-5 text-center">
+                          <p className="text-red-600/80 text-sm mb-1">{refineError}</p>
+                          <p className="text-red-400/70 text-xs font-light mb-3">
+                            Votre iteration n&apos;a pas ete consommee.
+                          </p>
+                          <div className="flex items-center justify-center gap-3">
+                            <button
+                              onClick={handleRefineRetry}
+                              className="text-xs text-red-500 underline underline-offset-4 hover:text-red-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded"
+                            >
+                              Reessayer
+                            </button>
+                            <button
+                              onClick={handleRefineModify}
+                              className="text-xs text-muted underline underline-offset-4 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded"
+                            >
+                              Modifier le commentaire
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Refine warnings (shown after successful refine) */}
+                      {refineWarnings.length > 0 && isRefineTarget && !isRefining && !refineError && (
+                        <div className="bg-amber-50/50 border border-amber-200/60 rounded-xl p-4 text-left max-w-lg mx-auto">
+                          <ul className="space-y-1">
+                            {refineWarnings.map((w, wi) => (
+                              <li key={wi} className="text-amber-600/80 text-xs font-light flex items-start gap-1.5">
+                                <span className="mt-0.5 shrink-0">!</span>
+                                <span>{w}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Refine button */}
+                      {!isRefining && (
+                        <div className="text-center space-y-1.5">
+                          {iterationsRemaining > 0 ? (
+                            <>
+                              <button
+                                onClick={() => handleOpenRefineModal(index)}
+                                className="inline-flex items-center gap-2 border border-sage/40 text-sage px-5 min-h-[44px] py-2.5 rounded-full text-sm font-medium hover:bg-sage/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
+                              >
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                                </svg>
+                                Affiner ce resultat
+                              </button>
+                              <p className="text-[11px] text-muted/60 font-light">
+                                {iterationsRemaining} iteration{iterationsRemaining > 1 ? "s" : ""} restante{iterationsRemaining > 1 ? "s" : ""} sur cette photo
+                              </p>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                disabled
+                                title="Iterations epuisees — rechargez un pack"
+                                className="inline-flex items-center gap-2 border border-gray-200 text-muted/50 px-5 min-h-[44px] py-2.5 rounded-full text-sm font-medium cursor-not-allowed"
+                              >
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                                </svg>
+                                Affiner ce resultat
+                              </button>
+                              <p className="text-[11px] text-muted/60 font-light">
+                                0 iteration restante
+                              </p>
+                              <div className="mt-2 bg-gray-50/80 border border-gray-200/60 rounded-xl p-4 max-w-sm mx-auto">
+                                <p className="text-xs text-muted font-light mb-2">
+                                  Pour continuer a affiner, rechargez un pack de credits.
+                                </p>
+                                <a
+                                  href="#pricing"
+                                  className="text-xs text-sage font-medium hover:text-sage/80 transition-colors underline underline-offset-4"
+                                >
+                                  Voir les offres
+                                </a>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
 
               {/* Batch download */}
@@ -582,6 +1203,16 @@ export default function Home() {
               </div>
             </div>
           )}
+
+          {/* Refine Modal */}
+          <RefineModal
+            isOpen={isRefineModalOpen}
+            onClose={() => setIsRefineModalOpen(false)}
+            onSubmit={handleRefine}
+            iterationsRemaining={iterationsRemaining}
+            isLoading={isRefining}
+            warnings={refineWarnings}
+          />
         </div>
       </section>
 
@@ -610,7 +1241,7 @@ export default function Home() {
                 </li>
                 <li className="flex items-start gap-2">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  12 styles disponibles
+                  11 styles disponibles
                 </li>
                 <li className="flex items-start gap-2">
                   <svg className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>

@@ -6,8 +6,9 @@ interface StepIndicatorProps {
 
 const steps = [
   { number: 1, label: "Upload" },
-  { number: 2, label: "Style" },
-  { number: 3, label: "Résultat" },
+  { number: 2, label: "Espace" },
+  { number: 3, label: "Style" },
+  { number: 4, label: "Résultat" },
 ];
 
 export default function StepIndicator({ currentStep }: StepIndicatorProps) {
