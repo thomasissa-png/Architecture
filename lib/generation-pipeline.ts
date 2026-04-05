@@ -175,35 +175,14 @@ const PASS1_PREAMBLE_V53 = "STRUCTURE LOCK: every column, beam, slab edge, and c
 const PRESERVATION_V53 = "Ceiling: keep every bump, step, soffit, vault, and beam visible — paint over their surface, keep their shape. Columns, posts, IPN beams, and metal lintels: keep full width and original material texture. Slab edges: keep full thickness. Mouldings, cornices, and decorative trims: keep shape and position, paint over. Keep the input's color temperature — do not warm or cool.";
 const CLEANUP_V53 = "Remove loose construction items: cables, junction boxes, exposed pipes, outlets. Keep all fixed equipment in place: radiators, heaters, vents, panels — same count, same positions. Existing built-in fixtures (bathtub, shower tray, toilet, sink) stay if present. Room stays COMPLETELY EMPTY — no furniture, no new fixtures.";
 
-// v54: Legacy verbose constants — replaced by V53/V54 condensed versions. ANTI_INVENTION still used by outdoor pass 1.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _CEILING_PRESERVATION = "Ceiling: if demolition damage visible, apply smooth plaster coat then style finish. Preserve intentional elements (beams, rafters, arches, slab undersides) with original texture — keep raw concrete formwork marks, aged wood grain, and metal patina intact. Paint over the texture, not a smooth coat. Keep ceiling curvature exactly.";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _COLUMN_PRESERVATION = "Preserve ALL vertical structural elements: columns, posts, pilasters, load-bearing frames, concrete pillars. Each must remain as a separate 3D volume at its exact position — do not flatten or absorb into the wall. Preserve slab edges, mezzanine floor thicknesses, and lintels as distinct horizontal volumes — do not smooth them into ceiling or wall. Apply the wall finish AROUND these elements, not OVER them.";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _LIGHT_PRESERVATION = "Preserve existing light direction and shadow positions. Keep the input's color temperature — warm materials reflect existing light without shifting overall tone. Keep whites neutral.";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _WALL_PRESERVATION = "Wall geometry stays identical: same angles, corners, depth. Only change color and texture. Keep raw stone or brick visible with limewash unless style explicitly requests opaque paint. Structural elements (IPN beams, concrete columns, mezzanine slab edges, metal lintels, load-bearing posts between windows) keep their original surface material and texture — apply paint over the texture, not a smooth coat. Glazing frames and mullions between windows/doors must keep their exact proportions and positions.";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _CAMERA_PRESERVATION = "Same camera angle, height, tilt, and field of view as input. The frame edges must match the input exactly — walls that are cut off at the edge of the input photo must be cut off at the same position in the output. Do not widen or narrow the frame. Room dimensions are FIXED — the distance between opposite walls must be IDENTICAL to the input. Do not stretch, widen, compress, or reshape the space to accommodate furniture or finishes.";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _ANTI_FENETRE = "Count the windows and doors visible in the input photo. The output must have the EXACT same count, at the same positions, same sizes. If a wall has no window in the input, it must remain a solid wall in the output — even if the wall extends beyond the visible frame. Do not add windows, doors, or openings to walls that are partially visible or out of frame. This includes upper levels, mezzanines, and loft areas — do not add windows or openings at any height level.";
+// v54: ANTI_INVENTION still used by outdoor pass 1.
 const ANTI_INVENTION = "Only modify surfaces as described. No new architectural elements (arches, vaults, columns, niches, coffers, windows, doors) unless already in the input. Areas beyond the frame edges of the input are unknown — leave them as-is, do not invent what is there.";
-
-// v51: extracted from inline copies — v54: dead code, kept for reference
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _CONSTRUCTION_CLEANUP = "Remove construction leftovers: dangling cables, junction boxes, exposed wiring, electrical outlets, round black wall boxes, cable exits, exposed plumbing pipes, copper tubes, PVC pipes, water supply lines, drain pipes — cover with wall or floor finish. Count all fixed wall-mounted equipment in the input (radiators, convectors, heaters, water heater, boiler, vents, thermostats, switches, electrical panels). The output MUST have the SAME count at the SAME positions — if the input shows 1 radiator below a window, the output MUST show 1 radiator below that window.";
 
 // v54: outdoor-specific preservation constants — condensed from v51
 const OUTDOOR_ANTI_FENETRE = "EXACT same count of openings (doors, windows, gates, archways) at same positions. Do not add or remove any opening.";
 const OUTDOOR_PREAMBLE_P1_V54 = "STRUCTURE LOCK: every wall, fence, facade, gate, low wall, raised border, stone edging, and level change keeps its exact position and shape. EXACT same openings count. Same camera angle, same framing, same space dimensions — FIXED, no stretch. Edit ground surface only. Sky preserved as-is, preserve blown-out highlights.";
 const OUTDOOR_PREAMBLE_P2_V54 = "Edit this outdoor photo. Ground surface, walls, fences, facades, gates, low walls, raised borders, stone edging, and sky are final — keep unchanged. Same camera angle, same space geometry. Space dimensions FIXED — do not stretch or compress. No curtains, no drapes.";
 
-// v54: Legacy preambles — replaced by PASS1_PREAMBLE_V53 and PASS2_PREAMBLE_V54. Kept for reference.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _LEGACY_PASS1_PREAMBLE = "Edit this photo. Preserve the room geometry, camera angle, all windows and doors (same count, same positions), wall layout, ceiling shape, and room dimensions. Room dimensions are FIXED — do not stretch, widen, or compress the space. The distance between opposite walls must be IDENTICAL to the input. The output image must show the same framing as the input — same edges, same crop, same field of view.";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _LEGACY_PASS2_PREAMBLE = "Edit this photo of a finished room. The wall colors, floor material, and ceiling finish are final — keep them unchanged. Same camera angle, same room geometry, same windows, same doors. Room dimensions are FIXED — do not stretch, widen, or compress the space to accommodate furniture. If the room appears narrow or compact, preserve that compactness — reduce furniture count and size rather than stretching walls apart. No curtains, no drapes.";
 
 // ── Pass 1: Surface finishing ────────────────────────────────────────
 // v36: ACTION FIRST in all builders (v30 lesson — GPT-image-1 weights early tokens more)
@@ -332,12 +311,6 @@ const PASS2_DENSITY_V54 = "Respect furniture density implied by the style — if
 const PASS2_FINISH_V54 = "Contact shadows on every piece. DSLR wide-angle, sharp focus, deep DOF. Same focal length as input. No text. Freestanding objects only — place furniture INSIDE the room only, not on terraces or balconies visible through windows.";
 
 // v54: Legacy pass 2 constants — DEAD CODE, replaced by PASS2_*_V54 above. Kept for reference.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _LEGACY_EQUIPMENT_PRESERVATION = "Count all fixed equipment in the input (radiators, floor-standing convectors, electric convector heaters, wall-mounted heaters, water heaters, boiler, vents, thermostats, switches, electrical panels, towel dryers). The output MUST contain the SAME number at the SAME positions. If the input shows 1 radiator below a window, the output MUST show 1 radiator below that window. Do not place furniture in front of radiators or convectors.";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _LEGACY_PASS2_ANTI_INVENTION = "No new architectural elements (arches, niches, columns, coffers, windows, doors) unless already in the input.";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _LEGACY_CONTACT_SHADOWS = "Every piece must have visible contact shadows on the floor.";
 const DEPTH_DISTRIBUTION_KITCHEN = "Distribute kitchen elements across the full depth. Work zones along walls, island in middle if >10m2. Counter accessories spread across full counter length.";
 const DEPTH_DISTRIBUTION_BEDROOM = "Bed as primary anchor, dresser or wardrobe as background anchor in back third. Balance nightstands both sides. If one side empty, add floor lamp or bench.";
 
