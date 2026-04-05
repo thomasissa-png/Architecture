@@ -11,7 +11,7 @@
 
 | Gen | ID | Style | Piece | Format | Note /10 |
 |-----|-----|-------|-------|--------|----------|
-| A | #169/#170 | Scandinavian | Cuisine | 1280x968 | **7.4** |
+| A | #169/#170 | Scandinavian | Cuisine | 1280x968 | **6.8** (corrigé, élargissement pièce) |
 | B | #171/#173 | Japandi | Salle de bain | 964x1280 | **7.8** |
 | C | #172/#174 | Scandinavian | Salon | 1152x1536 | **8.25** |
 | D | #175 | Japandi (iteration) | Salle de bain | 964x1280 | **N/A** |
@@ -72,7 +72,11 @@ Cuisine en chantier brut : plaques de platre vertes (hydrofuges) et roses (plafo
 
 **Note ponderee** = (8x3 + 7.5x2 + 7 + 7 + 8 + 7x2 + 7 + 7.5 + 8 + 6) / 14 = (24 + 15 + 7 + 7 + 8 + 14 + 7 + 7.5 + 8 + 6) / 14 = 103.5 / 14 = **7.4/10**
 
-**Verdict** : Generation correcte avec un vrai probleme technique (artefact fenetre) qui plombe la credibilite. Le style scandinave est bien capture mais les accessoires manquent pour sortir de l'aspect "catalogue CGI".
+**CORRECTION POST-AUDIT (observation fondateur)** :
+- **P0 — Elargissement de la piece** : les murs sont plus ecartes dans l'output que dans l'input. La cuisine est petite, on ne devrait pas pouvoir y mettre autant de meubles. C'est un FAIL de preservation spatiale — la note de preservation spatiale devrait etre **6/10** (au lieu de 8), ce qui ramene la note globale a **~6.8/10** (au lieu de 7.4).
+- **P0 — Tuyaux visibles** : les gros tuyaux/arrivees d'eau contre le mur du fond sont toujours visibles dans l'output final — pas seulement la tache verte autour de la fenetre.
+
+**Verdict** : Generation avec deux problemes critiques de preservation spatiale (elargissement + tuyaux residuels) et un artefact technique (halo vert fenetre). Le style scandinave est bien capture mais l'espace n'est pas fidele a l'original.
 
 ---
 
@@ -214,7 +218,7 @@ Salon en chantier actif : plafond beton avec trouees (cables, tuyaux exposes), m
 | C | Scandinavian | Salon | **8.25** |
 | D | Japandi (iteration) | Salle de bain | **N/A** (image incorrecte) |
 
-**Moyenne** : 7.82/10 (sur 3 generations evaluables)
+**Moyenne** : 7.62/10 (sur 3 generations evaluables, Gen A corrigee a 6.8)
 
 ### Progression v49
 
