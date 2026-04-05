@@ -44,6 +44,13 @@ export default function AuthButton() {
     }
   }, []);
 
+  // Re-fetch credits when generation consumes a credit (dispatched by page.tsx)
+  useEffect(() => {
+    const handler = () => fetchCredits();
+    window.addEventListener("credits-updated", handler);
+    return () => window.removeEventListener("credits-updated", handler);
+  }, []);
+
   // Close menu on outside click or Escape
   useEffect(() => {
     if (!menuOpen) return;

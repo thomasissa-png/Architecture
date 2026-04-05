@@ -368,7 +368,11 @@ export default function Home() {
       if (reason === "timeout") msg = "La génération a expiré après 45 minutes.";
       else if (reason === "max_retries") msg = "La génération a échoué après plusieurs tentatives.";
       else if (reason === "non_transient") msg = "La génération a rencontré une erreur définitive.";
-      if (queueStatus.creditRefunded) msg += " Votre visuel a été remboursé automatiquement.";
+      if (queueStatus.creditRefunded) {
+        msg += " Votre visuel a été remboursé automatiquement.";
+        setUserCredits((prev) => prev !== null ? prev + 1 : prev);
+        window.dispatchEvent(new Event("credits-updated"));
+      }
       setQueueToast({ type: "error", message: msg });
     }
   }, [queueStatus]);
@@ -724,6 +728,7 @@ export default function Home() {
 
             // Optimistic credit decrement (server already debited)
             setUserCredits((prev) => prev !== null ? Math.max(0, prev - 1) : prev);
+            window.dispatchEvent(new Event("credits-updated"));
 
             // Add partial result immediately so user sees surfaces
             setResults((prev) => [...prev, partialResult]);
@@ -805,6 +810,7 @@ export default function Home() {
 
           // Optimistic credit decrement (server already debited)
           setUserCredits((prev) => prev !== null ? Math.max(0, prev - 1) : prev);
+          window.dispatchEvent(new Event("credits-updated"));
 
           return {
             originalUrl: filePreviewUrls[job.img.fileIndex],
@@ -1134,6 +1140,7 @@ export default function Home() {
     setIsRegenerating(true);
     setRegeneratingIndex(index);
     setUserCredits((prev) => prev !== null ? Math.max(0, prev - 1) : prev);
+    window.dispatchEvent(new Event("credits-updated"));
     setError(null);
 
     // Cancel any previous in-flight requests
