@@ -1907,8 +1907,7 @@ export default function Home() {
                         {/* Styles (multi-select checkboxes) */}
                         <div>
                           <label className="text-[11px] text-muted font-light block mb-1">
-                            Styles {photoStyleIds.length > 1 && <span className="text-foreground/60">({photoStyleIds.length}/3)</span>}
-                            {photoStyleIds.length >= 3 && <span className="text-amber-600 ml-1">(max atteint)</span>}
+                            Styles {photoStyleIds.length > 0 && <span className="text-foreground/60">({photoStyleIds.length}/3)</span>}
                           </label>
                           <div className="flex flex-wrap gap-1.5">
                             {styleOptions.map((s) => {
