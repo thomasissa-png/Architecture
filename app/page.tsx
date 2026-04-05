@@ -1271,17 +1271,22 @@ export default function Home() {
               return;
             }
             const p2Data = await p2Response.json();
-            setResults((prev) => prev.map((r) =>
-              r.pass1Key === p2Pass1Key
-                ? { ...r, generatedUrl: p2Data.image, model: p2Data.model, pass2Pending: false, photoId: p2Data.photoId || r.photoId }
-                : r
-            ));
-            setVersions((prev) => prev.map((entries, i) => {
-              if (i === index) {
-                return [{ imageUrl: p2Data.image, comment: undefined, model: p2Data.model }];
+            // Use setResults callback to get fresh index (avoids stale closure)
+            setResults((currentResults) => {
+              const idx = currentResults.findIndex((r) => r.pass1Key === p2Pass1Key);
+              if (idx !== -1) {
+                setVersions((prevV) => {
+                  const updatedV = [...prevV];
+                  updatedV[idx] = [{ imageUrl: p2Data.image, comment: undefined, model: p2Data.model }];
+                  return updatedV;
+                });
               }
-              return entries;
-            }));
+              return currentResults.map((r) =>
+                r.pass1Key === p2Pass1Key
+                  ? { ...r, generatedUrl: p2Data.image, model: p2Data.model, pass2Pending: false, photoId: p2Data.photoId || r.photoId }
+                  : r
+              );
+            });
           })
           .catch((err) => {
             if (err instanceof Error && err.name === "AbortError") return;
@@ -2407,15 +2412,9 @@ export default function Home() {
                               Nouveau résultat
                             </div>
                           )}
-                          <ImageComparator
-                            originalUrl={result.originalUrl}
-                            generatedUrl={displayUrl}
-                            styleLabel={results.length > 1 ? result.styleName : undefined}
-                            model={resultVersions[activeIdx]?.model || result.model}
-                          />
                           {/* Pass 2 pending overlay — surfaces shown while furniture generates */}
                           {result.pass2Pending && (
-                            <div className="absolute inset-0 flex items-end justify-center pb-6 pointer-events-none z-10">
+                            <div className="absolute inset-0 flex items-end justify-center pb-6 pointer-events-none z-10 rounded-2xl">
                               <div className="pointer-events-auto bg-background/90 backdrop-blur-sm rounded-xl px-5 py-3 shadow-sm border border-foreground/10 text-center max-w-xs">
                                 <div className="flex justify-center gap-1 mb-2">
                                   <div className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
@@ -2431,6 +2430,12 @@ export default function Home() {
                               </div>
                             </div>
                           )}
+                          <ImageComparator
+                            originalUrl={result.originalUrl}
+                            generatedUrl={displayUrl}
+                            styleLabel={results.length > 1 ? result.styleName : undefined}
+                            model={resultVersions[activeIdx]?.model || result.model}
+                          />
                         </div>
                       )}
 
