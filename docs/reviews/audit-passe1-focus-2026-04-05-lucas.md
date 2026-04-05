@@ -210,6 +210,163 @@ La passe 2 preserve PARFAITEMENT la pass1 : murs, sol, plafond identiques. Le mo
 
 ---
 
-## Grille de notation et plan d'amelioration
+## Grille de notation — v52 (les seules notables car inputs disponibles)
 
-*Section a completer en fin d'audit.*
+### Gen G — Voute + baies vitrees
+
+| # | Critere | Poids | Note | Commentaire |
+|---|---------|-------|------|-------------|
+| 1 | Preservation spatiale | x3 | 3/10 | Fusion incomplete : moitie gauche non traitee. Inutilisable. |
+| 2 | Contraintes lumiere | x1 | 4/10 | Ecart de luminosite entre les 2 moities |
+| 3 | Vocabulaire photo | x1 | 5/10 | Resolution correcte mais artefact de jointure |
+| 4 | Structure prompt | x1 | 2/10 | Le prompt n'a pas ete execute sur toute l'image |
+| 5 | Negative prompting | x1 | 6/10 | Pas d'element interdit hallucine |
+| 6 | Compatibilite multi-modeles | x1 | N/A | GPT-image-1.5 uniquement |
+| 7 | Coherence I/O | x1 | 4/10 | Ratio preserve mais contenu incoherent |
+| 8 | Richesse descriptive | x1 | 5/10 | Cote traite : finitions correctes |
+| 9 | Adaptabilite conditions | x1 | 2/10 | Echoue sur cet espace complexe (voute + baies) |
+| 10 | Rendu final credible | x2 | 1/10 | Image composite visible a l'oeil nu |
+
+**Note ponderee** : (3x3 + 4 + 5 + 2 + 6 + 4 + 5 + 2 + 1x2) / 14 = (9+4+5+2+6+4+5+2+2) / 14 = **2.8/10**
+
+---
+
+### Gen H — Loft double hauteur mezzanine
+
+| # | Critere | Poids | Note | Commentaire |
+|---|---------|-------|------|-------------|
+| 1 | Preservation spatiale | x3 | 5/10 | Poteaux amincis, poutres simplifiees. Espace reconnaissable mais deforme. |
+| 2 | Contraintes lumiere | x1 | 7/10 | Direction soleil preservee. Lens flare nettoye (acceptable). |
+| 3 | Vocabulaire photo | x1 | 7/10 | Resolution OK, rendu propre, pas de grain (conforme decision fondateur) |
+| 4 | Structure prompt | x1 | 7/10 | Surfaces traitees, piece vide, luminaire ajoute |
+| 5 | Negative prompting | x1 | 8/10 | Pas de fenetre hallucinee, pas de meuble |
+| 6 | Compatibilite multi-modeles | x1 | N/A | GPT-image-1.5 uniquement |
+| 7 | Coherence I/O | x1 | 7/10 | Ratio et format preserves |
+| 8 | Richesse descriptive | x1 | 6/10 | Murs et sol corrects mais poutres appauvries |
+| 9 | Adaptabilite conditions | x1 | 5/10 | Double hauteur = espace complexe, poteaux mal geres |
+| 10 | Rendu final credible | x2 | 6/10 | Credible si on ne compare pas a l'input, mais poteaux trahissent l'IA |
+
+**Note ponderee** : (5x3 + 7 + 7 + 7 + 8 + 7 + 6 + 5 + 6x2) / 14 = (15+7+7+7+8+7+6+5+12) / 14 = **5.3/10** (plafonnee par preservation spatiale)
+
+---
+
+### Gen I — Piece rectangulaire chantier placo, Art Deco
+
+| # | Critere | Poids | Note | Commentaire |
+|---|---------|-------|------|-------------|
+| 1 | Preservation spatiale | x3 | 6/10 | Plafond decrochement efface, moulures ajoutees. Murs/proportions OK. |
+| 2 | Contraintes lumiere | x1 | 5/10 | Warm shift notable (blanc neutre -> blanc chaud) |
+| 3 | Vocabulaire photo | x1 | 7/10 | Rendu propre, herringbone bien defini |
+| 4 | Structure prompt | x1 | 8/10 | Art Deco bien execute : chevron, laiton, corniche |
+| 5 | Negative prompting | x1 | 7/10 | Cables nettoyes, pas de meuble. Moulures = borderline. |
+| 6 | Compatibilite multi-modeles | x1 | N/A | GPT-image-1.5 uniquement |
+| 7 | Coherence I/O | x1 | 7/10 | Ratio et format preserves |
+| 8 | Richesse descriptive | x1 | 7/10 | Luminaire, sol, murs bien detailles |
+| 9 | Adaptabilite conditions | x1 | 7/10 | Piece simple sans fenetre bien geree |
+| 10 | Rendu final credible | x2 | 7/10 | Credible comme photo immobiliere post-travaux |
+
+**Note ponderee** : (6x3 + 5 + 7 + 8 + 7 + 7 + 7 + 7 + 7x2) / 14 = (18+5+7+8+7+7+7+7+14) / 14 = **5.7/10** (plafonnee par preservation spatiale < 7)
+
+Correction : la regle dit "note plafonnee a 5/10 si preservation spatiale < 7". Gen I a preservation 6/10 donc note finale plafonnee a 5.0/10.
+
+Re-calcul avec plafonnement :
+- **Gen G** : 2.8/10 (deja sous le plafond)
+- **Gen H** : 5.0/10 (plafonnee, preservation 5/10)
+- **Gen I** : 5.0/10 (plafonnee, preservation 6/10)
+
+---
+
+## Synthese des problemes recurrents (v51 + v52)
+
+| Probleme | Frequence | Severite | Generations affectees |
+|----------|-----------|----------|----------------------|
+| Fusion incomplete (moitie image non traitee) | 1/3 v52 | BLOQUANT | G |
+| Poteaux porteurs amincis/effaces | 1/3 v52 | CRITIQUE | H |
+| Plafond reinvente (decrochements effaces) | 2/3 v52 + 1/4? v51 | CRITIQUE | I, possiblement B |
+| Moulures/corniches ajoutees non prescrites | 1/3 v52 | HAUTE | I |
+| Warm color shift | 1/3 v52 | HAUTE | I |
+| Baignoire/sanitaire hallucine | 1/4 v51 | BLOQUANT | D |
+| Elements de chantier non nettoyes | 1/4 v51 | HAUTE | E |
+| Miroir avec reflexion incoherente | 1/4 v51 | MOYENNE | F |
+
+---
+
+## Plan d'amelioration
+
+### P0 — BLOQUANT (a corriger avant prochain deploy)
+
+**P0-1 : Artefact de fusion incomplete (Gen G)**
+- Diagnostic : le modele traite l'image partiellement sur les espaces complexes (grand angle + voute)
+- Action : ajouter une verification post-generation dans le pipeline — comparer l'histogramme couleur gauche/droite de l'output. Si ecart > seuil, relancer la generation.
+- Alternative : reduire la resolution d'input pour ces espaces tres larges (le tiling interne serait moins necessaire)
+- Responsable : @fullstack
+
+**P0-2 : Poteaux porteurs effaces/amincis (Gen H)**
+- Diagnostic : le modele traite les poteaux beton comme des "defauts" a lisser, pas comme de la structure
+- Action dans le builder passe 1 : ajouter "Preserve ALL structural columns, pillars, and load-bearing posts at their EXACT width, height, and position. Concrete columns must keep their original cross-section — do NOT slim them down."
+- Completer avec : "If a column appears rough or unfinished, apply a smooth plaster finish OVER it at the same dimensions — do NOT reduce its footprint."
+- Responsable : @fullstack + @ai-image-expert (review prompt)
+
+**P0-3 : Baignoire/sanitaire hallucine (v51-D)**
+- Diagnostic : le modele "complete" la scene en ajoutant des sanitaires si la forme de la piece l'evoque
+- Action dans le builder passe 1 : ajouter "Do NOT add any sanitary equipment (bathtub, shower, toilet, sink, basin). The room must remain EMPTY with only surface finishes."
+- Ce probleme est la variante "built-in" de l'hallucination de fenetres — meme cause racine (le modele infere ce qui manque)
+- Responsable : @fullstack
+
+### P1 — CRITIQUE (a corriger dans le sprint en cours)
+
+**P1-1 : Plafond reinvente / decrochements effaces (Gen I, potentiellement B)**
+- Diagnostic : "smooth white ceiling" ou equivalent efface les decrochements techniques (coffrages, faux-plafonds)
+- Action : renforcer la directive plafond dans le builder : "Preserve ALL ceiling geometry including drop ceilings, soffits, bulkheads, and level changes. Apply the ceiling finish OVER the existing geometry — if the ceiling has a lower section on one side, that lower section must remain at the same height."
+- Le builder dit deja "preserving any vault beams or structural ribs" mais ne mentionne pas les DECROCHEMENTS — il faut ajouter explicitement "soffits, bulkheads, drop ceilings, level changes"
+- Responsable : @fullstack
+
+**P1-2 : Moulures ajoutees non prescrites (Gen I)**
+- Diagnostic : le surfacePrompt Art Deco prescrit "cornice trim" — mais le builder devrait limiter les ajouts structurels
+- Action : dans le builder passe 1, ajouter "Moldings, cornices, and trim are ONLY allowed if explicitly prescribed by the style description. Never add architectural ornaments by default."
+- Le probleme est que certains surfacePrompts prescrivent des moulures et d'autres non — il faut que le builder ne les ajoute pas de sa propre initiative
+- Responsable : @fullstack + @interior-architect (review surfacePrompts)
+
+### P2 — HAUTE (a planifier)
+
+**P2-1 : Elements de chantier non nettoyes (v51-E)**
+- Diagnostic : escabeaux, baches, outils restent dans l'image
+- Action : ajouter au builder passe 1 "Remove all construction debris, scaffolding, ladders, tools, tarps, and temporary equipment. The room should look like a finished empty space ready for move-in."
+- Ce nettoyage devrait etre systematique en passe 1
+- Responsable : @fullstack
+
+**P2-2 : Warm color shift persistant (Gen I)**
+- Diagnostic : malgre la directive "do not add warm tint or yellow cast", le modele continue a rechauffer l'image
+- Action : renforcer en ajoutant "Maintain the exact color temperature of the input walls — if they are cool white (5500K+), the output must also be cool white. Do not shift toward warm/yellow."
+- Envisager un post-processing colorimetrique automatise (match histogram de l'input)
+- Responsable : @fullstack + @ai-image-expert
+
+### P3 — MOYENNE (backlog)
+
+**P3-1 : Miroir avec reflexion incoherente (v51-F)**
+- Le style Maximaliste pourrait prescrire un miroir mais la reflexion doit etre coherente avec le sol reel
+- Action : ajouter dans le builder "Any reflective surfaces (mirrors, glass) must show reflections consistent with the actual room — not a different floor or wall material."
+- Responsable : @ai-image-expert (review prompts)
+
+---
+
+## Resume pour le fondateur
+
+Les 3 problemes signales sont CONFIRMES :
+
+1. **Poteaux porteurs effaces/amincis** : confirme sur Gen H. Le modele reduit la section des colonnes beton. Il faut une directive explicite de preservation des colonnes avec leur section originale.
+
+2. **Fenetres hallucinées** : NON confirmees sur v52 (aucune hallucination de fenetre sur G, H, I). En revanche, une BAIGNOIRE hallucinee en v51-D est le meme type de probleme (inference de ce qui "devrait etre la").
+
+3. **Plafond reinvente** : confirme sur Gen I (decrochement efface). Le builder mentionne voutes et poutres mais PAS les decrochements/faux-plafonds — lacune a combler.
+
+4. **Dalles perdant leur volume** : partiellement confirme sur Gen H (dalle mezzanine texture lissee mais epaisseur preservee).
+
+5. **Probleme NON signale mais GRAVE** : fusion incomplete sur Gen G (moitie de l'image non traitee). Bug potentiel du modele sur les espaces grand-angle.
+
+**Priorite absolue** : P0-1 (fusion), P0-2 (poteaux), P0-3 (sanitaires hallucines), puis P1-1 (plafond).
+
+---
+
+*Audit realise par Lucas Moreau — Expert IA Image, prompt engineering multi-modeles*
+*Prochain audit recommande : apres application des corrections P0, sur les memes inputs pour mesurer la regression.*
