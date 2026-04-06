@@ -152,7 +152,7 @@ export default function Home() {
   // Per-photo error messages (key = fileIndex, shown as overlay on the photo)
   const [photoErrors, setPhotoErrors] = useState<Map<number, string>>(new Map());
   const [results, setResults] = useState<GenerationResult[]>([]);
-  const [currentProcessing, setCurrentProcessing] = useState(0);
+  const [, setCurrentProcessing] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [generationElapsed, setGenerationElapsed] = useState(0);
   const [preprocessWarnings, setPreprocessWarnings] = useState<string[]>([]);
@@ -695,7 +695,7 @@ export default function Home() {
       setCurrentProcessing(batch);
 
       const batchResults = await Promise.allSettled(
-        chunk.map(async (job, jobIdx) => {
+        chunk.map(async (job) => {
           const response = await resilientFetch("/api/generate", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -1428,7 +1428,7 @@ export default function Home() {
       setIsRegenerating(false);
       setRegeneratingIndex(null);
     }
-  }, [results]);
+  }, [results, userCredits]);
 
   const handleDownloadAll = async () => {
     for (let index = 0; index < results.length; index++) {
