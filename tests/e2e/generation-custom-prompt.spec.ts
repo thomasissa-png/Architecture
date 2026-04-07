@@ -43,17 +43,9 @@ test.describe("E-G04 — Custom prompt mode", () => {
     await uploadPhotos(page, 1);
     await expect(page.locator("#step-style")).toBeVisible({ timeout: 5000 });
 
-    // Find and activate the custom prompt mode (usually a tab/button "Personnalisé")
-    const customToggle = page
-      .getByRole("button", { name: /personnalis|custom/i })
-      .first();
-    if (!(await customToggle.isVisible().catch(() => false))) {
-      test.skip(
-        true,
-        "Custom prompt toggle not found — waiting on data-testid=\"custom-prompt-toggle\""
-      );
-      return;
-    }
+    // Activate custom prompt mode via stable testid
+    const customToggle = page.getByTestId("custom-prompt-toggle");
+    await expect(customToggle).toBeVisible();
     await customToggle.click();
 
     // Type the custom prompt

@@ -53,22 +53,41 @@ test.describe("E-G01 — Discovery happy path (1 photo / 1 style)", () => {
     expect(mockState.count).toBeGreaterThanOrEqual(1);
   });
 
-  test.skip("credits badge decrements by 1 after successful generation", async ({
+  test("credits badge decrements by 1 after successful generation", async ({
     page,
   }) => {
-    // Waiting on data-testid="credits-badge" from @fullstack
-    // See tests/e2e/NEEDED-TESTIDS.md
     mockGenerationHappyPath(page);
     await uploadPhotos(page, 1);
+    await expect(page.locator("#step-style")).toBeVisible({ timeout: 5000 });
     await selectFirstStyle(page);
 
+    // Select first room type if shown
+    const stepSpaceType = page.locator("#step-space-type");
+    if (await stepSpaceType.isVisible().catch(() => false)) {
+      const first = stepSpaceType
+        .locator("button")
+        .filter({ hasNotText: /Int.rieur|Ext.rieur/ })
+        .first();
+      if (await first.isVisible().catch(() => false)) await first.click();
+    }
+
+    // Badge may not be visible for guest users — skip gracefully if so
     const badge = page.getByTestId("credits-badge");
-    const before = Number(await badge.textContent());
+    if (!(await badge.isVisible().catch(() => false))) {
+      test.skip(
+        true,
+        "credits-badge not visible (guest mode) — needs authenticated session"
+      );
+      return;
+    }
+    const beforeText = (await badge.textContent()) ?? "0";
+    const before = Number(beforeText.replace(/[^0-9]/g, ""));
 
     await page.locator("#step-generate").locator("button").click();
     await expect(page.locator("#step-results")).toBeVisible({ timeout: 15_000 });
 
-    const after = Number(await badge.textContent());
+    const afterText = (await badge.textContent()) ?? "0";
+    const after = Number(afterText.replace(/[^0-9]/g, ""));
     expect(after).toBe(before - 1);
   });
 });
