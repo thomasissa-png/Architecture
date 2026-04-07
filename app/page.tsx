@@ -14,6 +14,7 @@ import { OUTDOOR_SUBTYPE_LIST } from "@/lib/outdoor-subtypes";
 import { processImage, isLikelyInterior } from "@/lib/image-utils";
 import { OUTDOOR_STYLES, OUTDOOR_STYLE_LIST } from "@/lib/outdoor-styles";
 import { useQueueStatus } from "@/lib/hooks/useQueueStatus";
+import { calculateRefund } from "@/lib/refund-calculator";
 import { useSession } from "next-auth/react";
 import AuthModal from "@/components/AuthModal";
 import PhotoAssociator from "@/components/PhotoAssociator";
@@ -954,17 +955,22 @@ export default function Home() {
         });
       }
       if (hasPartialError && allResults.length > 0) {
-        // Refund credits for failed jobs
-        const failedCount = jobs.length - allResults.length;
-        if (failedCount > 0) {
-          setUserCredits((prev) => prev !== null ? prev + failedCount : prev);
+        // Refund credits for failed jobs — delegated to lib/refund-calculator (R2)
+        const refund = calculateRefund({
+          totalJobs: jobs.length,
+          successfulJobs: allResults.length,
+        });
+        if (refund.refundedCredits > 0) {
+          setUserCredits((prev) => prev !== null ? prev + refund.refundedCredits : prev);
           window.dispatchEvent(new CustomEvent("credits-updated"));
         }
         // Show refund message as sticky toast (not in-flow error — would be hidden after scroll)
-        setQueueToast({
-          type: "info",
-          message: `${allResults.length}/${jobs.length} génération${jobs.length > 1 ? "s" : ""} réussie${allResults.length > 1 ? "s" : ""}. ${failedCount} visuel${failedCount > 1 ? "s" : ""} remboursé${failedCount > 1 ? "s" : ""}.`,
-        });
+        if (refund.userMessage) {
+          setQueueToast({
+            type: "info",
+            message: refund.userMessage,
+          });
+        }
       }
       if (allResults.length > 0) {
         // Versions and activeVersions are already populated incrementally
