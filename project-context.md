@@ -427,34 +427,62 @@
 
 ## Memo de reprise — derniere session
 
-**Date de cloture :** 2026-03-25
-**Branch :** claude/merchant-mode-e2e-tests-7X5bl
+**Date de cloture :** 2026-04-05 (Session 33)
+**Branch :** claude/extract-project-context-61BiD (session 34 en cours)
+**Branche session 33 :** main (commit 75204f9 "docs: session 33 closure — memo + 12 learnings + founder prefs")
 
-### Resume de la session
-Session majeure F4 Mode Marchand : implementation complete + 5 iterations d'audit jusqu'a 9/10 (Thomas 9.0, Design 9.1, Copy 9.0). Architecture refondee en 3 entites (Photo/Bien/Dossier) pour que Thomas puisse generer des photos, les associer a un bien, selectionner les meilleures, et generer un dossier PDF brande. Profil marchand (SIRET Pappers, logo, couleurs), enrichissement adresse (API Adresse gouv, DVF, carte OSM, description GPT-4.1-mini), PDF brande professionnel. 28 tests E2E Playwright. Fix responsive mobile (nav dans dropdown AuthButton, touch targets 44px). 65 fichiers modifies, ~20 commits.
+### Resume de la session 33
+Marathon prompts + multi-photo. Refonte complete des prompts gpt-image-1.5 (v53/v54 : 663→220 mots passe 1, 478→200 mots passe 2 — sweet spot confirme 150-220 mots, au-dela le modele perd attention sur les tokens tardifs). STRUCTURE LOCK en premier mot. 8 bugs multi-photo cumules corriges (compteur credits synchrone optimiste via CustomEvent detail.credits, MAX_CONCURRENT 2→5, tri fileIndex, batchesCompleteRef, secondaryAbortRef, refund auto sur toute erreur ou abort, expérience identique 1-5 photos). Specs F12 produites en reaction (6 regles R1-R6). Build cassé 3 fois (ESLint : currentProcessing, jobIdx, userCredits dep) — corriges apres `npx next lint`. Insistance fondateur 3x pour chercher fix prompt au lieu d'invoquer "limitation du modele". Audits Yann/Lucas : 8.2/10 — sous le seuil fondateur 9.5.
 
-### Travaux en cours
-- **Build lint errors** : `next build` echoue sur des erreurs lint pre-existantes (unused vars dans pdf/route.ts, properties/route.ts, compte/page.tsx) — non introduites par cette session, a corriger
-- **Tests E2E nouvelles pages** : les 28 tests existants couvrent le mode standard mais pas les nouvelles pages F4 (mes-biens, ma-galerie, properties API, dossier depuis bien)
-- **Prix EUR au CTA** : le prix unitaire du credit n'est pas affiche au moment du CTA "Generer le dossier" — bloque sur le systeme de packages (Stripe non configure)
-- **Cles API** : toutes les variables dans .env.local.example mais aucune configuree (Google OAuth, Stripe, Sentry, Pappers)
-- **Domaine versimo.fr** : non enregistre. Action fondateur.
-- **SIRET / mediateur** : champs [A COMPLETER] dans les pages legales. Action fondateur.
-- **style-resolver.ts** duplique StylePicker.tsx — sync manuelle necessaire si les prompts changent
+### Sessions precedentes recentes
+- **Session 32 (2026-04-05)** : Pipeline v49 (pré-passe vision, compositing, best-of-2, SSIM local), page /support, tab-switch iOS fixe (BackgroundDisconnectError, plus de signal sur fetch), Affiner fixe (saveIterationBase await avant response), suppression ~600 lignes de code mort dans route.ts (builders locaux masquaient generation-pipeline.ts), action:"edit" confirme, ratio paysage restaure, distribution profondeur imperative.
+- **Session 31 (2026-04-04)** : Fusion Standard + MerchantMode en 1 seul flow (cause racine de 6+ bugs), migration gpt-image-1.5 avec prompts v45 "Edit first", getSessionRobust avec fallback getToken (fix getServerSession null sporadique sur Replit), hasStarterAccess base sur historique d'achat (pas solde credits), adoucissement prompts (plus de "LOCKED"/CAPS/termes militaires rejetes par safety filter OpenAI).
+- **Session 28 (2026-03-28)** : Sync pricing v3 (lib/stripe.ts), 4 packs de recharge, Stripe mode subscription pour Pro, vocabulaire "visuel" (remplace "credit"/"generation") sauf CGV, spacing py-10 sm:py-14 (35% reduction), parcours d'achat teste end-to-end pour chaque persona.
 
-### Prochaines actions recommandees
-1. **@fullstack — Fix lint errors** : corriger les erreurs lint pre-existantes pour que `next build` passe. Prioritaire car bloque le deploy.
-2. **@qa — Tests E2E F4** : ajouter des tests pour les nouvelles pages (mes-biens CRUD, ma-galerie filtres, dossier depuis bien, profil marchand). Specs dans docs/qa/qa-strategy.md.
-3. **@fullstack — Configuration lancement** : configurer toutes les cles (Google OAuth, Stripe, Sentry, Pappers) dans Replit Secrets + domaine versimo.fr. Le fondateur veut que ca soit fait APRES le dev termine.
-4. **@fullstack — F5 Mode Decorateur** : feature suivante dans la roadmap (LATER). Specs dans docs/product/functional-specs.md §F5.
+### Travaux en cours / etat prod
+- **Pipeline v54 deploye** : a valider visuellement post-deploy (cible 9.5+/10)
+- **Score audits 8.2/10** : en dessous du seuil fondateur — necessite nouvelle passe d'optimisation prompts OU nouveau pattern (compositing pousse plus loin ?)
+- **Erreurs a l'usage signalees (2026-04-07)** : le fondateur constate encore beaucoup d'erreurs sur l'outil de generation malgre la session 33 dediee au debug → @qa lance pour proposer une serie de tests adaptee (docs/qa/test-suite-generation-pipeline.md)
+- **Secrets prod** : tous configures sur Replit (confirmation fondateur 2026-04-07) — Stripe live, Google OAuth, Resend, Sentry, Pappers
+- **Domaine versimo.fr** : actif en prod
+- **Page /support** : livree (17/17 QA) — RESEND_API_KEY actif
+- **Mediateur consommation** : encore a ajouter dans CGV (action fondateur)
+- **Blog seed** : script `npx tsx scripts/seed-blog.ts` pret, a executer sur Replit
+- **style-resolver.ts** : duplique StylePicker.tsx — sync manuelle necessaire si prompts changent
+- **Nettoyage dead code restant** : MerchantMode.tsx, DossierProgress.tsx, DossierResult.tsx (deja orphelins apres fusion session 31)
+- **Script migration inputImageKey** : photos historiques avant commit 082ff0a
+
+### Preferences fondateur actives (absolues)
+- **9.5+/10 minimum** — refus categorique de se satisfaire de 7-8/10. Si < 9, proposer immediatement 3 fixes pour atteindre 9.5.
+- **Un seul modele gpt-image-1.5** — adapter les prompts au modele, jamais l'inverse. Pas de fallback.
+- **Pas de grain photographique** — rendu lisse et propre. Regle absolue.
+- **font-light (300) sacre** — ne jamais changer vers font-normal.
+- **Refund automatique** sur tout echec de credit (annulation, erreur partielle/totale, validation).
+- **Decrement credits SYNCHRONE** au clic (pas apres reponse API) — CustomEvent detail.credits.
+- **Experience identique** 1 ou 5 photos — pas d'UX degradee sur cas multiples.
+- **Velocite IA** — estimer en minutes, pas en jours/semaines. "ça prend 5 minutes."
+- **QA point de vue UTILISATEUR** — decrire ce que l'utilisateur VOIT, pas la logique du code.
+- **Jamais paresseux** — ne jamais abandonner un outil/modele par paresse, investiguer la cause racine.
+- **Jamais "limitation du modele"** sans avoir audite et optimise le prompt en profondeur.
+- **`npx next lint` avant chaque commit** — le fondateur ne doit jamais voir une erreur de build.
+- **Dossiers PDF uniquement depuis /mes-biens** — pas de bouton dossier sur la page de generation.
+- **Checkout direct Stripe** — pas de checkbox retractation intermediaire.
+
+### Prochaines actions recommandees (session 34)
+1. **@qa — Test suite generation pipeline** (EN COURS — lance 2026-04-07) : proposer une serie de tests adaptee pour couvrir les erreurs signalees a l'usage. Livrable : docs/qa/test-suite-generation-pipeline.md. Couvre multi-photo F12, iteration F1, type piece F2, outdoor F3, modes plan, robustesse infra (tab-switch, Replit autoscale, session sporadique), Stripe + refund, pre-processing custom.
+2. **@fullstack — Implementer les data-testid + infra Vitest** (apres @qa) : ajouter les hooks de test identifies par @qa, installer Vitest si absent, creer la structure tests/.
+3. **@qa — Executer la test suite** : lancer les tests unitaires + E2E, documenter la couverture reelle, identifier les regressions.
+4. **Audit visuel Yann + Lucas v54** : 6 generations prod post-v54 via WebFetch → pre-fetch → agents. Objectif 9.5/10. Si < 9, refonte prompts round 2.
+5. **Mediateur consommation** : ajouter dans CGV (action fondateur).
 
 ### Blockers
-- **Lint errors** : le build echoue — a corriger avant tout deploy.
-- Tous les autres blockers sont des actions fondateur (SIRET, domaine, cles API, mediateur).
+- **Score audits < 9.5** : blocker preference fondateur absolue.
+- **Erreurs usage signalees** : blocker qualite perçue — diagnostic via @qa en cours.
+- Tous les autres blockers techniques resolus (secrets, domaine, build, auth).
 
 ### Commande de reprise suggeree
 ```
-@orchestrator Reprends le projet Versimo. La session precedente a implemente F4 Mode Marchand complet avec architecture Bien/Dossier/Photos, profil marchand, enrichissement adresse, PDF brande. Scores finaux : Thomas 9.0, Design 9.1, Copy 9.0. Le build a des erreurs lint pre-existantes a corriger. Priorites : (1) Fix lint errors pour que next build passe, (2) Tests E2E pour les nouvelles pages F4, (3) Configuration lancement (cles API). Le fondateur veut les cles configurees APRES le dev.
+@orchestrator Reprends Versimo session 34. Session 33 cloturee : pipeline v54, multi-photo F12, audits Yann/Lucas 8.2/10 (sous seuil 9.5), secrets prod OK, erreurs d'usage signalees par le fondateur. @qa a ete lance pour proposer une test suite adaptee a l'outil de generation. Etapes suivantes : (1) lire livrable @qa, (2) @fullstack implementation des tests, (3) audit visuel v54 cible 9.5, (4) iterer les prompts si necessaire.
 ```
 
 ---
