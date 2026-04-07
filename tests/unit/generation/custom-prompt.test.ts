@@ -13,7 +13,11 @@
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const chatCreateMock = vi.fn();
+// vi.mock factories are hoisted — we cannot reference outer variables.
+// Instead, we use vi.hoisted to share state.
+const { chatCreateMock } = vi.hoisted(() => ({
+  chatCreateMock: vi.fn(),
+}));
 
 vi.mock("openai", () => {
   const OpenAI = vi.fn().mockImplementation(() => ({

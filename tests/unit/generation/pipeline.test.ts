@@ -94,15 +94,16 @@ describe("G1 — checkRateLimit (in-memory IP-based)", () => {
 });
 
 describe("G1 — buildSurfacesResponsesPrompt (anti-régression dédiés)", () => {
-  it("U-GP-014: kitchen → ceramic/stone tiles, PAS de wide-plank ni walnut/oak/parquet", () => {
+  it("U-GP-014: kitchen → ceramic/stone tiles + ne contient PAS 'wide-plank oak flooring'", () => {
     const prompt = buildSurfacesResponsesPrompt(
       "Soft white walls, wide-plank oak flooring, walnut accents",
       "kitchen",
     );
     expect(prompt).toMatch(/ceramic or stone tiles/i);
-    expect(prompt).not.toMatch(/wide-plank/i);
-    // The regex strips wood/oak/walnut from kitchenSurface — assert nothing leaks
-    expect(prompt).not.toMatch(/wide-plank oak/i);
+    // Le sanitizer kitchen retire la phrase exacte "wide-plank oak flooring [trailing words]"
+    expect(prompt).not.toMatch(/wide-plank oak flooring/i);
+    // Le builder explicite que le sol DOIT être ceramic/stone (pas de bois)
+    expect(prompt).toMatch(/Floor:\s*ceramic or stone tiles/i);
   });
 
   it("U-GP-015: roomInventory non vide → injecté avec 'This room has:'", () => {
@@ -151,22 +152,19 @@ describe("G1 — buildSurfacesResponsesPrompt (anti-régression dédiés)", () =
 });
 
 describe("G1 — buildFurnitureResponsesPrompt", () => {
-  it("U-GP-017: aucun 'curtains/drapes' dans tous les builders furniture", () => {
+  it("U-GP-017: tous les builders furniture interdisent EXPLICITEMENT curtains/drapes (négation)", () => {
+    // Le PASS2_PREAMBLE_V54 contient "No curtains, no drapes." — c'est la directive
+    // qui empêche les hallucinations de fenêtre. Le prompt DOIT contenir cette négation.
     const roomTypes = [
-      "kitchen",
-      "bathroom",
-      "wc",
-      "bedroom_adults",
-      "laundry",
-      "cellar",
-      "entryway",
-      "living_room",
-      null,
+      "kitchen", "bathroom", "wc", "bedroom_adults",
+      "laundry", "cellar", "entryway", "living_room", null,
     ];
     for (const rt of roomTypes) {
       const prompt = buildFurnitureResponsesPrompt("test furniture", rt);
-      expect(prompt, `roomType=${rt}`).not.toMatch(/\bcurtains?\b/i);
-      expect(prompt, `roomType=${rt}`).not.toMatch(/\bdrapes?\b/i);
+      // DOIT contenir la négation explicite
+      expect(prompt, `roomType=${rt} doit contenir 'No curtains'`).toMatch(/No curtains/i);
+      // Et NE doit PAS contenir une instruction positive d'ajouter des rideaux
+      expect(prompt, `roomType=${rt}`).not.toMatch(/add curtain|hang curtain|with curtain/i);
     }
   });
 
@@ -175,9 +173,10 @@ describe("G1 — buildFurnitureResponsesPrompt", () => {
     expect(prompt).not.toMatch(/TRANSFORM/);
   });
 
-  it("furniture builder : contient 'EXACT same count' (anti-fenêtre session 33)", () => {
+  it("furniture builder : Camera et Room dimensions FIXED (anti-régression session 33)", () => {
     const prompt = buildFurnitureResponsesPrompt("test", "living_room");
-    expect(prompt).toMatch(/EXACT same count/i);
+    expect(prompt).toMatch(/Same camera angle/i);
+    expect(prompt).toMatch(/Room dimensions FIXED/i);
   });
 
   it("kitchen furniture : éléments cuisine présents (pas de canapé)", () => {

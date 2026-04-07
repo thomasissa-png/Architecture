@@ -50,14 +50,16 @@ describe("G5 — buildIterationFurnitureResponsesPrompt (restyle indoor)", () =>
     expect(prompt).toMatch(/Freestanding objects only/);
   });
 
-  it("U-IT-004: aucun mot 'curtains' / 'drapes' (règle absolue)", () => {
+  it("U-IT-004: directive 'No curtains, no drapes' présente (négation explicite)", () => {
     const prompt = buildIterationFurnitureResponsesPrompt(
       "test",
       ["change something"],
       { roomType: null },
     );
-    expect(prompt).not.toMatch(/\bcurtains?\b/i);
-    expect(prompt).not.toMatch(/\bdrapes?\b/i);
+    // Doit contenir la négation explicite
+    expect(prompt).toMatch(/No curtains/i);
+    // Et aucune instruction positive d'AJOUTER
+    expect(prompt).not.toMatch(/add curtain|hang curtain|with curtain/i);
   });
 
   it("U-IT-005: 'EXACT same count' (anti-hallucination fenêtre session 33)", () => {
@@ -125,9 +127,10 @@ describe("G5 — buildAdjustResponsesPrompt (SURGICAL EDIT indoor)", () => {
     expect(prompt).toMatch(/Same camera angle.*tilt.*field of view/);
   });
 
-  it("aucun 'curtains' ni 'drapes'", () => {
+  it("directive 'No curtains' présente dans adjust", () => {
     const prompt = buildAdjustResponsesPrompt("c", "ec", { roomType: null });
-    expect(prompt).not.toMatch(/\bcurtains?\b/i);
+    expect(prompt).toMatch(/No curtains/i);
+    expect(prompt).not.toMatch(/add curtain|hang curtain/i);
   });
 
   it("kitchen → 'Keep all built-in cabinetry'", () => {
