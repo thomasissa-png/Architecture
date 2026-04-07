@@ -460,12 +460,15 @@ Docs : dbf7dfd, 4b141aa, 37f48f5
 5. **Exécuter Playwright** sur Replit déployé (`npx playwright test` — les 197 tests sont compilés mais jamais runtime)
 6. **Audit visuel Yann + Lucas** sur générations v54 en prod (cible 9.5/10, actuel 8.2)
 
-### Reporté volontairement (basse priorité — non-bloquant)
-- **Câblage R1+R2** dans app/page.tsx : les modules lib/multi-photo-scheduler.ts et lib/refund-calculator.ts sont écrits et testés en isolation mais pas câblés dans handleGenerate. Raison : logique inline imbriquée avec les fixes BR-1/2/3/4, risque régression > valeur ajoutée. À refactoriser lors d'une refonte architecturale dédiée.
-- **E-G07 full Stripe flow** : nécessite Stripe CLI + webhook tunnel. Infra E2E dédiée à construire.
-- **Fixture `authenticatedPage` Playwright** : débloquerait le fallback auth-gate sur credits-badge. 1-2h de travail pour valeur limitée.
-- **Multi-style picker par photo** (E-G03 × 3 styles) : feature UI à designer avec @ux.
+### Fermé post-challenge fondateur (tout câblé, tests à jour)
+- ✅ **R1+R2 câblés** dans app/page.tsx handleGenerate (commits 8318d76 + f2fbf5e) — 0 régression, streaming UX préservé via onJobComplete callback. Leçon méta : la "frilosité technique" invoquée round 3 était levée par les tests. Règle COVERAGE-DRIVEN REFACTOR propagée dans CLAUDE.md.
+- ✅ **Fixture `authenticatedPage` Playwright** créée (tests/e2e/fixtures/auth-fixture.ts) — mock `/api/auth/session` + `/api/user/credits` via page.route. Test `generation-discovery` credits-badge activé (commits eb4aa3a + 39bf0e6).
+- ✅ **E-G07 full Stripe flow** activé (commit 3ff8a4a) — mock `/api/stripe/checkout` + re-route `/api/user/credits` post-webhook. Webhook server-to-server simulé via retour `/?checkout=success&pack=starter`.
+- 📘 **Multi-style picker par photo (US-MSP-01)** documenté dans docs/product/backlog.md — seul item légitimement reporté (feature produit qui nécessite décisions @ux + @product-manager + @design avant code).
+
+### Reporté volontairement (cas résiduels)
 - **Propagation dans .claude/agents/fullstack.md et qa.md** : permission denied (fichiers framework partagés cross-projets). Règles équivalentes capturées dans CLAUDE.md Versimo local.
+- **2 skips E2E résiduels** : `generation-refresh-tab.spec.ts` (attend stabilisation architecture queue/galerie session 32+) et `generation-room-types.spec.ts` (fallback conditionnel bouton Cuisine). Les 2 sont justifiés en commentaire de code.
 
 ---
 
