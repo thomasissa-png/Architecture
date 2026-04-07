@@ -686,6 +686,13 @@ agents/
     - A surveiller : si le modele devient trop conservateur (output = input), reformuler en "visually identical EXCEPT the requested change"
     - Les builders restyle avaient Camera LOCKED dans les adjust mais pas chez eux — inconsistance detectee par @qa
 
+### Sprint 25 — Rollback v57 (Option 2 decision 087e38b, audit v56 NO-GO)
+182. CRITIQUE : Audit croise Yann (5.4) + Lucas (4.8) v56 prod = NO-GO consensuel. Trajectoire v54→v55→v56 : 7.22 → 5.65 → 5.10 (-2.12 pts). L'artefact de compositing est API-level, pas fidelity-level. @ia decision Option 2 : rollback total v55/v56.
+183. CRITIQUE : `input_fidelity` rollback `"low"` → `"high"` universellement (defaut signature `tryOpenAIResponses` + appel `generateSingle`). Suppression branche conditionnelle `pass === 1 ? "low" : "high"`.
+184. CRITIQUE : Suppression clause `ARCHITECTURAL_HONESTY_V55` (constante + 9 injections dans builders pass 1 indoor). N'a pas empeche les hallucinations en v56.
+185. PRESERVE : Fix P0-A room_type (`getStyleMaterialHint` + `applyRoomTypeOverrides`), suppression "vault beams" sur 10/12 styles, `lib/image-analysis.ts` conserve comme dead code.
+186. PROMPT_VERSION v56 → v57. Tests gates v55/v56-specifiques `describe.skip` avec commentaire decision 087e38b. Snapshots regeneres (132 updated).
+
 ## Workflow d'audit visuel des generations (REGLE CRITIQUE)
 
 Les agents d'audit visuel (Yann @interior-architect, Lucas @ai-image-expert, Camille @paysagiste) n'ont **PAS acces a WebFetch**. Les outils disponibles sont definis par le subagent_type cote systeme — modifier le frontmatter .md ne change rien. Ces agents ne peuvent PAS fetcher des URLs HTTP.

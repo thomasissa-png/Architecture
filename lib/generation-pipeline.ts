@@ -120,7 +120,7 @@ export async function extractRoomInventory(imageBase64: string): Promise<string>
  *   P0-C ARCHITECTURAL HONESTY clause ajoutee en tete de tous les builders passe 1 (8 branches indoor) — interdit l'invention de structures non visibles dans l'input.
  *   P0-D color shift Contemporary — surfacePrompt reformule pour preserver la temperature warm/cool des murs au lieu de les neutraliser globalement.
  *   Fixes appliques en synchro StylePicker.tsx + style-resolver.ts (24 modifications synchronisees + 2 surfacePrompts Contemporary).) */
-export const PROMPT_VERSION = "v56";
+export const PROMPT_VERSION = "v57";
 
 // ─── Image generation model ─────────────────────────────────────────
 // v36: configurable via env var. Default gpt-image-1 (v32 reverted gpt-image-1.5 for spatial regression).
@@ -203,11 +203,9 @@ const DSLR_LINE = "DSLR wide-angle, sharp focus, deep DOF. Same focal length as 
 // v53: PASS 1 — condensed from 663 words to ~180 words.
 // gpt-image-1.5 loses focus after ~200 words. Structure FIRST, action SECOND.
 const PASS1_PREAMBLE_V53 = "STRUCTURE LOCK: every column, beam, slab edge, and ceiling shape keeps its exact width, depth, and position. EXACT same count of windows and doors at same positions — solid walls stay solid. Same camera angle, same framing, same room dimensions — FIXED, no stretch. Edit surfaces only: wall color, floor material, ceiling finish, and one ceiling light fixture. Apply finishes OVER existing textures, not replacing the 3D shape underneath.";
-// v55: ARCHITECTURAL HONESTY clause (audit Yann/Lucas Pipeline A — plafond a caissons hallucines).
-// Placed RIGHT after PASS1_PREAMBLE in every branch so the model reads it before any style finish.
-// Goal: prevent the model from inventing structural elements (beams, coffers, vaults, moldings,
-// passages) when the input does not visibly show them. Formulated positively to avoid priming.
-const ARCHITECTURAL_HONESTY_V55 = "ARCHITECTURAL HONESTY: Do NOT invent structural elements that are not visibly present in the input photo. If the input ceiling is flat, keep it flat — do not add beams, coffers, vaults, or ribs. If the input has no moldings, do not add moldings. If the input has solid walls, do not open passages or doorways. Apply finishes over the EXISTING geometry only.";
+// v57: ARCHITECTURAL_HONESTY_V55 clause removed by Option 2 rollback (decision 087e38b).
+// The clause was injected in 8 pass-1 builders but did not prevent the leakage problems
+// observed in v56 audits. Removed to reduce prompt length and revert to v54 baseline.
 const PRESERVATION_V53 = "Ceiling: keep every bump, step, soffit, vault, and beam visible — paint over their surface, keep their shape. Columns, posts, IPN beams, and metal lintels: keep full width and original material texture. Slab edges: keep full thickness. Mouldings, cornices, and decorative trims: keep shape and position, paint over. Keep the input's color temperature — do not warm or cool.";
 const CLEANUP_V53 = "Remove loose construction items: cables, junction boxes, exposed pipes, outlets. Keep all fixed equipment in place: radiators, heaters, vents, panels — same count, same positions. Existing built-in fixtures (bathtub, shower tray, toilet, sink) stay if present. Room stays COMPLETELY EMPTY — no furniture, no new fixtures.";
 
@@ -231,7 +229,6 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
     const kitchenSurface = surfacePrompt.replace(/,?\s*(wide-plank|herringbone|wood|ash|oak|walnut|parquet)\s+flooring[^,.]*/gi, "");
     return [
       PASS1_PREAMBLE_V53,
-      ARCHITECTURAL_HONESTY_V55,
       inventoryLine,
       PRESERVATION_V53,
       `Surface style: ${kitchenSurface}.`,
@@ -245,7 +242,6 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
   if (roomTypeId === "bathroom") {
     return [
       PASS1_PREAMBLE_V53,
-      ARCHITECTURAL_HONESTY_V55,
       inventoryLine,
       PRESERVATION_V53,
       `Surface style: ${surfacePrompt}.`,
@@ -259,7 +255,6 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
   if (roomTypeId === "wc") {
     return [
       PASS1_PREAMBLE_V53,
-      ARCHITECTURAL_HONESTY_V55,
       inventoryLine,
       PRESERVATION_V53,
       `Surface style: ${surfacePrompt}.`,
@@ -273,7 +268,6 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
   if (roomTypeId === "bedroom_adults" || roomTypeId === "bedroom_children") {
     return [
       PASS1_PREAMBLE_V53,
-      ARCHITECTURAL_HONESTY_V55,
       inventoryLine,
       PRESERVATION_V53,
       `Surface style: ${surfacePrompt}.`,
@@ -287,7 +281,6 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
   if (roomTypeId === "laundry") {
     return [
       PASS1_PREAMBLE_V53,
-      ARCHITECTURAL_HONESTY_V55,
       inventoryLine,
       PRESERVATION_V53,
       `Surface style: ${surfacePrompt}.`,
@@ -301,7 +294,6 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
   if (roomTypeId === "cellar") {
     return [
       PASS1_PREAMBLE_V53,
-      ARCHITECTURAL_HONESTY_V55,
       inventoryLine,
       PRESERVATION_V53,
       `Surface style: ${surfacePrompt}.`,
@@ -315,7 +307,6 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
   if (roomTypeId === "entryway") {
     return [
       PASS1_PREAMBLE_V53,
-      ARCHITECTURAL_HONESTY_V55,
       inventoryLine,
       PRESERVATION_V53,
       `Surface style: ${surfacePrompt}.`,
@@ -329,7 +320,6 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
   // v53: condensed prompt — structure FIRST, ~220 words total (was ~663)
   return [
     PASS1_PREAMBLE_V53,
-    ARCHITECTURAL_HONESTY_V55,
     inventoryLine,
     PRESERVATION_V53,
     `Surface style: ${surfacePrompt}.`,
@@ -575,7 +565,7 @@ export async function tryOpenAIResponses(
   roomTypeId?: string | null,
   outdoor?: { isOutdoor: boolean; subtypeSurfaceOverride?: string; subtypeFurnitureOverride?: string },
   roomInventory?: string,
-  inputFidelity: InputFidelity = "low" // v56: was "high" (see docs/ia/v56-input-fidelity-default-low.md)
+  inputFidelity: InputFidelity = "high" // v57: rollback to "high" universally (decision 087e38b — Option 2)
 ): Promise<{ image: string; model: string }> {
   const openai = getOpenAI();
 
@@ -777,17 +767,15 @@ export async function generatePass(
   // Determine if room is complex enough to warrant best-of-2
   const complex = isComplexRoom(roomInventory);
 
-  // v56 — input_fidelity defaults to "low" universally (see docs/ia/v56-input-fidelity-default-low.md).
-  // The v55 adaptive heuristic (detectBlownHighlights → switch to "low") was abandoned:
-  // prod audit (Yann 5.9, Lucas 5.4) showed leakage happens without blown highlights too.
-  // Pass 1 receives the raw site photo → "low" prevents the deterministic compositing artifact.
-  // Pass 2 receives the clean pass1 output (no leakage risk) → "high" preserves finished surfaces.
+  // v57 — input_fidelity defaults to "high" universally (decision 087e38b — Option 2 rollback).
+  // Audit v56 trajectory: 7.22 → 5.65 → 5.10 (-2.12 pts). Both Yann and Lucas converged on rollback.
+  // The compositing artifact is API-level, not fidelity-level — "low" did not solve it and degraded preservation.
   // Single generation with retry — used for pass 1, or pass 2 on simple rooms
   const generateSingle = async (): Promise<{ image: string; model: string }> => {
     let lastError: Error | null = null;
     for (let attempt = 0; attempt < MAX_PASS_RETRIES; attempt++) {
       try {
-        return await tryOpenAIResponses(base64Image, surfacePrompt, furniturePrompt, pass, outputSize.openai, roomTypeId, outdoor, roomInventory, pass === 1 ? "low" : "high");
+        return await tryOpenAIResponses(base64Image, surfacePrompt, furniturePrompt, pass, outputSize.openai, roomTypeId, outdoor, roomInventory, "high");
       } catch (err) {
         lastError = err instanceof Error ? err : new Error(String(err));
         console.error(`OpenAI pass ${pass} attempt ${attempt + 1}/${MAX_PASS_RETRIES} failed:`, lastError.message);

@@ -79,7 +79,8 @@ describe("G-PROMPT-B02 — PASS1_PREAMBLE injecté dans toutes les branches pass
   });
 });
 
-describe("G-PROMPT-B03 — ARCHITECTURAL HONESTY injecté dans toutes les branches passe 1 (v55 P0-C)", () => {
+// v57: clause ARCHITECTURAL_HONESTY_V55 supprimée par rollback Option 2 décision 087e38b
+describe.skip("G-PROMPT-B03 — ARCHITECTURAL HONESTY injecté dans toutes les branches passe 1 (v55 P0-C)", () => {
   PASS1_ROOM_BRANCHES.forEach((roomType) => {
     it(`pass1 builder for roomType=${roomType ?? "fallback"} contains ARCHITECTURAL HONESTY clause`, () => {
       const prompt = buildSurfacesResponsesPrompt(SAMPLE_SURFACE, roomType, "");
@@ -170,13 +171,15 @@ describe("G-PROMPT-B10 — Outdoor pass 1 contient ANTI_INVENTION (Sprint 19)", 
 // CATÉGORIE D — input_fidelity
 // ═══════════════════════════════════════════════════════════════════════
 
-describe("G-PROMPT-D01 — tryOpenAIResponses default inputFidelity is 'low' (Session 36 v56)", () => {
-  it("tryOpenAIResponses signature has default inputFidelity='low'", () => {
-    expect(PIPELINE_SRC).toMatch(/inputFidelity:\s*InputFidelity\s*=\s*"low"/);
+// v57: rollback Option 2 (décision 087e38b) — defaults to "high" universally
+describe("G-PROMPT-D01 — tryOpenAIResponses default inputFidelity is 'high' (Session 36 v57)", () => {
+  it("tryOpenAIResponses signature has default inputFidelity='high'", () => {
+    expect(PIPELINE_SRC).toMatch(/inputFidelity:\s*InputFidelity\s*=\s*"high"/);
   });
 });
 
-describe("G-PROMPT-D02 — generatePass passes 'low' for pass 1 and 'high' for pass 2 (Session 36 v56)", () => {
+// v57: clause supprimée par rollback Option 2 décision 087e38b — generatePass passe "high" uniformément
+describe.skip("G-PROMPT-D02 — generatePass passes 'low' for pass 1 and 'high' for pass 2 (Session 36 v56)", () => {
   it("generatePass calls tryOpenAIResponses with pass-conditional fidelity", () => {
     expect(PIPELINE_SRC).toMatch(/pass\s*===\s*1\s*\?\s*"low"\s*:\s*"high"/);
   });
