@@ -15,6 +15,7 @@ import { processImage, isLikelyInterior } from "@/lib/image-utils";
 import { OUTDOOR_STYLES, OUTDOOR_STYLE_LIST } from "@/lib/outdoor-styles";
 import { useQueueStatus } from "@/lib/hooks/useQueueStatus";
 import { calculateRefund } from "@/lib/refund-calculator";
+import { runParallelPhotoJobs } from "@/lib/multi-photo-scheduler";
 import { useSession } from "next-auth/react";
 import AuthModal from "@/components/AuthModal";
 import PhotoAssociator from "@/components/PhotoAssociator";
@@ -709,18 +710,17 @@ export default function Home() {
     batchesCompleteRef.current = false;
 
     // Step 4: Execute ALL jobs simultaneously — user expects all images to start at once
+    // Scheduling delegated to lib/multi-photo-scheduler (R1) — preserves MAX_CONCURRENT=5,
+    // fileIndex order, AbortController propagation, and Promise.allSettled semantics.
     const MAX_CONCURRENT = 5;
     const allResults: GenerationResult[] = [];
     let hasPartialError = false;
     let hasQueued = false;
 
-    for (let batch = 0; batch < jobs.length; batch += MAX_CONCURRENT) {
-      if (controller.signal.aborted) break;
-      const chunk = jobs.slice(batch, batch + MAX_CONCURRENT);
-      setCurrentProcessing(batch);
-
-      const batchResults = await Promise.allSettled(
-        chunk.map(async (job) => {
+    const executor = async (
+      schedJob: { fileIndex: number; styleId: string; payload: GenerationJob },
+    ): Promise<GenerationResult> => {
+      const job = schedJob.payload;
           const response = await resilientFetch("/api/generate", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -880,57 +880,70 @@ export default function Home() {
             customPromptUsed: job.customPrompt || undefined,
             roomType: job.roomType || undefined,
           } as GenerationResult;
-        })
-      );
+    };
 
-      for (let ri = 0; ri < batchResults.length; ri++) {
-        const result = batchResults[ri];
-        const failedJob = chunk[ri]; // the job that failed (for error overlay)
-        if (result.status === "fulfilled") {
-          const val = result.value;
-          allResults.push(val);
-          // Split-mode results are already added to results via setResults in the split handler
-          // Non-split results need to be added here
-          if (!val.pass2Pending && !val.pass1Url) {
-            setResults((prev) => [...prev, val]);
-            setVersions((prev) => [...prev, [{ imageUrl: val.generatedUrl, comment: undefined, model: val.model }]]);
-            setActiveVersions((prev) => [...prev, 0]);
+    // Build scheduler jobs (preserving fileIndex for stable ordering)
+    const schedulerJobs = jobs.map((job, idx) => ({
+      fileIndex: job.img.fileIndex * 100 + idx, // unique stable index per (photo, style)
+      styleId: job.styleId,
+      payload: job,
+    }));
+
+    // Use onJobComplete to stream side effects (allResults, photoErrors, hasQueued)
+    // as each job finishes — preserves the previous "per-result" UX semantics.
+    let lastFailureMessage: string | null = null;
+    const schedulerResult = await runParallelPhotoJobs<GenerationJob, GenerationResult>(
+      schedulerJobs,
+      async (sj) => executor({ fileIndex: sj.fileIndex, styleId: sj.styleId, payload: sj.payload as GenerationJob }),
+      {
+        maxConcurrent: MAX_CONCURRENT,
+        abortSignal: controller.signal,
+        onJobComplete: (outcome) => {
+          if (outcome.status === "fulfilled") {
+            const val = outcome.value as GenerationResult;
+            allResults.push(val);
+            // Split-mode results are already added to results via setResults in the split handler
+            // Non-split results need to be added here
+            if (!val.pass2Pending && !val.pass1Url) {
+              setResults((prev) => [...prev, val]);
+              setVersions((prev) => [...prev, [{ imageUrl: val.generatedUrl, comment: undefined, model: val.model }]]);
+              setActiveVersions((prev) => [...prev, 0]);
+            }
+          } else {
+            const failedJob = (outcome.job.payload as GenerationJob);
+            if (outcome.aborted || outcome.reason?.name === "AbortError") return;
+            // Queued jobs are not errors — they're being processed in the background
+            if (outcome.reason?.name === "QueuedError") {
+              hasQueued = true;
+              return;
+            }
+            // iOS killed the connection while app was in background.
+            if (outcome.reason?.name === "BackgroundDisconnectError") {
+              hasQueued = true;
+              return;
+            }
+            hasPartialError = true;
+            // Show error overlay on the specific photo that failed
+            const errorMsg = outcome.reason instanceof Error ? outcome.reason.message : "Échec de la génération";
+            lastFailureMessage = errorMsg;
+            setPhotoErrors((prev) => {
+              const updated = new Map(prev);
+              updated.set(failedJob.img.fileIndex, errorMsg);
+              return updated;
+            });
           }
-          // Credits already decremented upfront
-        } else {
-          if (result.reason?.name === "AbortError") continue;
-          // Queued jobs are not errors — they're being processed in the background
-          if (result.reason?.name === "QueuedError") {
-            hasQueued = true;
-            continue;
-          }
-          // iOS killed the connection while app was in background.
-          if (result.reason?.name === "BackgroundDisconnectError") {
-            hasQueued = true;
-            continue;
-          }
-          hasPartialError = true;
-          // Show error overlay on the specific photo that failed
-          const errorMsg = result.reason instanceof Error ? result.reason.message : "Échec de la génération";
-          setPhotoErrors((prev) => {
-            const updated = new Map(prev);
-            updated.set(failedJob.img.fileIndex, errorMsg);
-            return updated;
-          });
-          // For total failures: refund all credits and show error
-          if (allResults.length === 0 && batch + MAX_CONCURRENT >= jobs.length) {
-            // Refund all credits — nothing succeeded
-            setUserCredits((prev) => prev !== null ? prev + totalJobs : prev);
-            window.dispatchEvent(new CustomEvent("credits-updated"));
-            setError(
-              result.reason instanceof Error
-                ? result.reason.message
-                : "Erreur lors de la génération"
-            );
-          }
-        }
-      }
+        },
+      },
+    );
+
+    // Total failure path: nothing succeeded AND at least one hard error (not queued/aborted) → refund all + error toast
+    if (allResults.length === 0 && hasPartialError && !controller.signal.aborted) {
+      setUserCredits((prev) => prev !== null ? prev + totalJobs : prev);
+      window.dispatchEvent(new CustomEvent("credits-updated"));
+      setError(lastFailureMessage || "Erreur lors de la génération");
     }
+    // Reference scheduler outcome to silence unused-var lint while keeping it available for future telemetry
+    void schedulerResult;
 
     // All batches submitted — pass2 handlers can now clear isGenerating
     batchesCompleteRef.current = true;
