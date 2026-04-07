@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { test as authTest } from "./fixtures/auth-fixture";
 import {
   mockGenerationHappyPath,
   uploadPhotos,
@@ -53,10 +54,36 @@ test.describe("E-G01 — Discovery happy path (1 photo / 1 style)", () => {
     expect(mockState.count).toBeGreaterThanOrEqual(1);
   });
 
-  test("credits badge decrements by 1 after successful generation", async ({
-    page,
+});
+
+/**
+ * Authenticated variant — runs the credits-badge regression with a mocked
+ * NextAuth session so the badge is rendered. The session mock is installed
+ * by the `authenticatedPage` fixture before navigation.
+ */
+authTest.describe("E-G01 — Discovery happy path (authenticated)", () => {
+  authTest.setTimeout(30_000);
+
+  authTest("credits badge decrements by 1 after successful generation", async ({
+    authenticatedPage: page,
   }) => {
+    // The credits endpoint is mocked by the fixture but we need to update the
+    // mocked credits between the two reads. Re-route after the first fetch.
+    let creditsCallCount = 0;
+    await page.unroute("**/api/user/credits");
+    await page.route("**/api/user/credits", async (route) => {
+      creditsCallCount += 1;
+      const credits = creditsCallCount === 1 ? 5 : 4;
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ credits, hasPro: false, hasStarter: false }),
+      });
+    });
+
     mockGenerationHappyPath(page);
+    await page.goto("/");
+
     await uploadPhotos(page, 1);
     await expect(page.locator("#step-style")).toBeVisible({ timeout: 5000 });
     await selectFirstStyle(page);
@@ -71,21 +98,26 @@ test.describe("E-G01 — Discovery happy path (1 photo / 1 style)", () => {
       if (await first.isVisible().catch(() => false)) await first.click();
     }
 
-    // Badge may not be visible for guest users — skip gracefully if so
+    // With the auth fixture, the badge MUST be visible. If it isn't, the
+    // session mock regressed — fail loudly instead of skipping.
     const badge = page.getByTestId("credits-badge");
-    if (!(await badge.isVisible().catch(() => false))) {
-      test.skip(
-        true,
-        "credits-badge not visible (guest mode) — needs authenticated session"
-      );
-      return;
-    }
+    await expect(badge).toBeVisible({ timeout: 5000 });
+
     const beforeText = (await badge.textContent()) ?? "0";
     const before = Number(beforeText.replace(/[^0-9]/g, ""));
+    expect(before).toBe(5);
 
     await page.locator("#step-generate").locator("button").click();
     await expect(page.locator("#step-results")).toBeVisible({ timeout: 15_000 });
 
+    // Trigger a credits re-fetch via the credits-updated event to surface
+    // the post-generation count. Some clients also re-fetch automatically
+    // after a successful generation.
+    await page.evaluate(() => {
+      window.dispatchEvent(new CustomEvent("credits-updated"));
+    });
+
+    await expect(badge).toHaveText(/4 visuels?/, { timeout: 5000 });
     const afterText = (await badge.textContent()) ?? "0";
     const after = Number(afterText.replace(/[^0-9]/g, ""));
     expect(after).toBe(before - 1);
