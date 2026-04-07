@@ -20,9 +20,13 @@ const { chatCreateMock } = vi.hoisted(() => ({
 }));
 
 vi.mock("openai", () => {
-  const OpenAI = vi.fn().mockImplementation(() => ({
-    chat: { completions: { create: chatCreateMock } },
-  }));
+  // NOTE: must be a real class (not arrow fn) so `new OpenAI()` works.
+  // vitest warning "did not use 'function' or 'class'" flags this otherwise.
+  class OpenAI {
+    chat = { completions: { create: chatCreateMock } };
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    constructor(_opts?: unknown) {}
+  }
   return { default: OpenAI };
 });
 

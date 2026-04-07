@@ -16,45 +16,48 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 // Shared state via vi.hoisted (factories run before top-level statements).
 const state = vi.hoisted(() => ({
   nextClientFails: false,
-  state.storedBlobs: new Map<string, Buffer>(),
+  storedBlobs: new Map<string, Buffer>(),
   clientCallCount: 0,
-  internalState: "ready",
+  internalState: "ready" as string,
 }));
 
 vi.mock("@replit/object-storage", () => {
-  const Client = vi.fn().mockImplementation(() => {
-    state.clientCallCount++;
-    return {
-      state: { status: state.internalState },
-      uploadFromBytes: vi.fn(async (key: string, buffer: Buffer) => {
-        if (state.nextClientFails) {
-          state.nextClientFails = false;
-          throw new Error("fetch failed");
-        }
-        state.state.storedBlobs.set(key, buffer);
-        return { ok: true };
-      }),
-      downloadAsBytes: vi.fn(async (key: string) => {
-        const blob = state.state.storedBlobs.get(key);
-        if (!blob) return { ok: false, error: "not found" };
-        return { ok: true, value: [blob] };
-      }),
-    };
-  });
+  // Real class required — `new Client()` must work.
+  class Client {
+    state: { status: string };
+    constructor() {
+      state.clientCallCount++;
+      this.state = { status: state.internalState };
+    }
+    async uploadFromBytes(key: string, buffer: Buffer) {
+      if (state.nextClientFails) {
+        state.nextClientFails = false;
+        throw new Error("fetch failed");
+      }
+      state.storedBlobs.set(key, buffer);
+      return { ok: true };
+    }
+    async downloadAsBytes(key: string) {
+      const blob = state.storedBlobs.get(key);
+      if (!blob) return { ok: false, error: "not found" };
+      return { ok: true, value: [blob] };
+    }
+  }
   return { Client };
 });
 
 // pg is not actually used by saveImage/getImage/withStorageRetry but lib/db.ts
 // imports it. Mock to avoid DATABASE_URL requirement.
-vi.mock("pg", () => ({
-  Pool: vi.fn().mockImplementation(() => ({
-    query: vi.fn(async () => ({ rows: [], rowCount: 0 })),
-    connect: vi.fn(),
-  })),
-}));
+vi.mock("pg", () => {
+  class Pool {
+    async query() { return { rows: [], rowCount: 0 }; }
+    async connect() { return {}; }
+  }
+  return { Pool };
+});
 
 beforeEach(() => {
-  state.state.storedBlobs.clear();
+  state.storedBlobs.clear();
   state.clientCallCount = 0;
   state.nextClientFails = false;
   state.internalState = "ready";
