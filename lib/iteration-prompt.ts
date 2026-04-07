@@ -101,7 +101,13 @@ export function buildAdjustResponsesPrompt(
       : "",
     "If removing an object, fill the area with the surrounding floor or wall texture.",
     "No curtains, no drapes. No new architectural elements (arches, niches, columns, coffers, windows, doors) unless already in the input.",
-    "Count all fixed wall-mounted equipment in the input (radiators, convectors, heaters, water heaters, boiler, vents, thermostats, switches, electrical panels). The output MUST have the SAME count at the SAME positions.",
+    // v58 (Sprint audit v57 P0-2) — clause conditionnelle pour resoudre la contradiction
+    // entre SURGICAL EDIT et EQUIPMENT_PRESERVATION quand l'utilisateur demande
+    // explicitement le retrait d'un equipement liste (ex: "enleve le ballon d'eau chaude").
+    // Avant : la directive disait "MUST preserve" sans exception, le modele etait
+    // pris entre 2 instructions contradictoires. Apres : la preservation s'applique
+    // SAUF si l'enrichedComment ci-dessus demande explicitement le retrait.
+    "Count all fixed wall-mounted equipment in the input (radiators, convectors, heaters, water heaters, boiler, vents, thermostats, switches, electrical panels). The output MUST have the SAME count at the SAME positions — UNLESS the requested change above explicitly asks to remove or relocate one of these items, in which case apply the requested removal and keep all the others at their original positions.",
     "Keep existing lighting direction and color temperature. Do not add any warm tint or yellow cast. Furniture must have contact shadows on the floor.",
     "DSLR wide-angle, deep DOF, sharp focus. Photo-realistic interior. No text or watermarks.",
   ].filter(Boolean).join(" ");
