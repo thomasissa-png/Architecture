@@ -1115,10 +1115,15 @@ export default function Home() {
   }, []);
 
   const handleRefine = useCallback(
-    async (comment: string) => {
-      // BR-3 : capture l'index AU MOMENT de la soumission. Plusieurs refines
-      // parallèles peuvent coexister — chacun garde son propre index via closure.
-      const targetIndex = refineTargetIndex;
+    async (targetIndex: number, comment: string) => {
+      // BR-4 (session 37) : `targetIndex` est désormais un paramètre EXPLICITE
+      // capturé au site d'appel (ex. `(c) => handleRefine(refineTargetIndex, c)`
+      // dans le RefineModal). Avant ce fix, `targetIndex` était lu depuis le
+      // single state `refineTargetIndex`, ce qui causait des écrasements croisés
+      // quand l'utilisateur ouvrait le modal pour une 2e photo pendant qu'un
+      // refine #0 était en vol : la résolution du fetch #0 lisait la valeur
+      // actuelle (1 ou 2) et écrivait sur le mauvais slot. Migration BR-3
+      // (session 34) avait migré les Set/Map d'état, mais oublié `refineTargetIndex`.
       const targetResult = results[targetIndex];
       if (!targetResult?.pass1Key) {
         setRefineErrors((prev) => {
@@ -1298,16 +1303,20 @@ export default function Home() {
         }
       }
     },
-    [results, refineTargetIndex, versions, activeVersions, session?.user?.id]
+    // BR-4 (session 37) : `refineTargetIndex` n'est PLUS dans les deps — il est
+    // passé en paramètre explicite. Garder l'ancienne dep réintroduirait la
+    // recréation de closure à chaque ouverture de modal, sans bénéfice.
+    [results, versions, activeVersions, session?.user?.id]
   );
 
   const handleRefineRetry = useCallback((index: number) => {
     const comment = lastRefineComments.get(index);
     if (comment) {
-      // Make sure handleRefine reads the right targetIndex
-      setRefineTargetIndex(index);
-      // Defer to next tick so refineTargetIndex is updated before handleRefine reads it
-      setTimeout(() => handleRefine(comment), 0);
+      // BR-4 (session 37) : appel direct avec index explicite — plus besoin
+      // de setRefineTargetIndex + setTimeout pour synchroniser le closure.
+      // L'index est passé en paramètre, donc aucune dépendance au state global.
+      setRefineTargetIndex(index); // garde l'UI cohérente (modal title, isLoading)
+      handleRefine(index, comment);
     }
   }, [lastRefineComments, handleRefine]);
 
@@ -3123,7 +3132,12 @@ export default function Home() {
       <RefineModal
         isOpen={isRefineModalOpen}
         onClose={() => setIsRefineModalOpen(false)}
-        onSubmit={handleRefine}
+        // BR-4 (session 37) : capture `refineTargetIndex` au moment du render
+        // courant. Le RefineModal n'a aucune connaissance de l'index — il
+        // appelle juste onSubmit(comment), et l'index est figé dans cette
+        // closure de render. Empêche définitivement les écrasements croisés
+        // entre photos quand plusieurs refines tournent en parallèle.
+        onSubmit={(comment) => handleRefine(refineTargetIndex, comment)}
         iterationsRemaining={iterationsRemaining}
         maxIterations={maxIterations}
         isLoading={refiningIndices.has(refineTargetIndex)}
