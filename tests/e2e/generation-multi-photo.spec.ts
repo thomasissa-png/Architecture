@@ -48,9 +48,7 @@ test.describe("E-G02 / E-G03 — Multi-photo generation", () => {
     expect(mockState.count).toBeGreaterThanOrEqual(3);
   });
 
-  test.skip("E-G02: partial failure refunds credits for failed jobs only", async ({
-    page,
-  }) => {
+  test.skip("E-G02: partial failure refunds credits for failed jobs only", async () => {
     // Waiting on data-testid="credits-badge" and deterministic per-tile error state
     // See tests/e2e/NEEDED-TESTIDS.md
   });
