@@ -706,15 +706,19 @@ export async function POST(request: NextRequest) {
       // Otherwise: use the concatenated effectiveSurfacePrompt (room override appended)
       trimmedSurface = hasDedicatedBuilder ? surfacePrompt.trim() : effectiveSurfacePrompt;
 
-      // CRITICAL FIX: For dedicated builders, do NOT inject the full style furniturePrompt
-      // (which contains living room items like sofa, coffee table, rug).
-      // Instead use the room-specific furniture override + a brief style hint.
-      // The full MERGE is only needed for rooms without dedicated builders (living_room, office, etc.)
-      if (hasDedicatedBuilder && roomType) {
-        const rt = ROOM_TYPES[roomType];
-        trimmedFurniture = rt?.roomFurnitureOverride
-          ? `${rt.roomFurnitureOverride} ${getStyleMaterialHint(styleId)}`
-          : resolvedFurniturePrompt.trim();
+      // CRITICAL FIX (v55, session 35 audit Yann/Lucas Pipeline B — propagation route.ts):
+      // Any roomType with a non-empty roomFurnitureOverride (dining_room, office, AND all
+      // dedicated builders) MUST use the override + style materials hint INSTEAD of the
+      // concatenated living-room style variant. The previous code only covered
+      // hasDedicatedBuilder, leaving dining_room/office to receive the merged prompt and
+      // livering a living room instead of a dining room (Pipeline B audit #196).
+      //
+      // living_room is the ONLY indoor room type with an empty roomFurnitureOverride and
+      // therefore the ONLY one that should receive the full style variant verbatim.
+      // This fix mirrors lib/generation-pipeline.ts:944-949 (REGLE PROPAGATION CROSS-HANDLER).
+      const rt = roomType ? ROOM_TYPES[roomType] : null;
+      if (rt?.roomFurnitureOverride) {
+        trimmedFurniture = `${rt.roomFurnitureOverride} ${getStyleMaterialHint(styleId)}`;
       } else {
         trimmedFurniture = effectiveFurniturePrompt;
       }
