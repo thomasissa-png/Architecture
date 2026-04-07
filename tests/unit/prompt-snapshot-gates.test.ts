@@ -13,9 +13,13 @@
  * Périmètre :
  *   - E01 : 12 styles × 11 room types pass 1 (132 snapshots)
  *   - E02 : 12 styles × 11 room types pass 2 (132 snapshots)
- *   - E03 : 8 outdoor styles pass 1 (8 snapshots)
- *   - E04 : 8 outdoor styles pass 2 (8 snapshots)
- *   - E05 : 4 iteration builders (indoor furniture, outdoor furniture, adjust indoor, adjust outdoor)
+ *   - E03 : 8 outdoor styles pass 1 (8 snapshots) — BLOQUANT (round 3 P2-G3 promotion)
+ *   - E04 : 8 outdoor styles pass 2 (8 snapshots) — BLOQUANT (round 3 P2-G3 promotion)
+ *   - E05 : 4 iteration builders (indoor furniture, outdoor furniture, adjust indoor, adjust outdoor) — BLOQUANT (round 3 P2-G3 promotion)
+ *
+ * Promotion BLOQUANT round 3 : un drift silencieux sur outdoor ou iteration
+ * casse la prod aussi sûrement qu'un drift indoor. Aligné avec E01/E02.
+ * Toute mise à jour de snapshot nécessite review humain (`npx vitest -u ...`).
  *
  * Total : 284 snapshots.
  *

@@ -135,8 +135,10 @@ describe("G-PROMPT-C04 — getStyleMaterialHint used when roomFurnitureOverride 
     it(`dining_room × ${style.id}: output contains getStyleMaterialHint output`, () => {
       const effective = computeEffectiveFurniturePrompt(style.id, "dining_room");
       const hint = getStyleMaterialHint(style.id);
-      // Le hint contient le phrase "Design style: XXX. Materials and palette:"
-      // ou simplement "Match the XXX design style" en fallback
+      // P2-G2 round 3 garde : empêche le faux positif si getStyleMaterialHint
+      // retourne "" en cas dégradé (toute string contient ""). Le hint doit être
+      // non-vide ET de longueur significative pour valider la propagation.
+      expect(hint.length).toBeGreaterThan(10);
       expect(effective).toContain(hint);
     });
   });
@@ -144,7 +146,10 @@ describe("G-PROMPT-C04 — getStyleMaterialHint used when roomFurnitureOverride 
   it("office × every style: output contains getStyleMaterialHint output", () => {
     INDOOR_STYLES.forEach((style) => {
       const effective = computeEffectiveFurniturePrompt(style.id, "office");
-      expect(effective).toContain(getStyleMaterialHint(style.id));
+      const hint = getStyleMaterialHint(style.id);
+      // P2-G2 round 3 garde (cf. dining_room ci-dessus)
+      expect(hint.length).toBeGreaterThan(10);
+      expect(effective).toContain(hint);
     });
   });
 });
