@@ -74,16 +74,16 @@ beforeEach(() => {
 
   // Mock Image constructor for getCroppedImg
   const originalImage = globalThis.Image;
-  vi.spyOn(globalThis, "Image" as never).mockImplementation(
-    () => {
-      const img = new originalImage();
-      // Force onload to fire immediately
-      setTimeout(() => {
-        if (img.onload) (img.onload as () => void)();
-      }, 0);
-      return img;
-    }
-  );
+  (vi.spyOn(globalThis, "Image" as never) as unknown as {
+    mockImplementation: (fn: () => HTMLImageElement) => void;
+  }).mockImplementation(() => {
+    const img = new originalImage();
+    // Force onload to fire immediately
+    setTimeout(() => {
+      if (img.onload) (img.onload as () => void)();
+    }, 0);
+    return img;
+  });
 });
 
 import CropModal from "@/components/CropModal";
