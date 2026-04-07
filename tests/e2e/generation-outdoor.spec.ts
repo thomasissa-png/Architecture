@@ -21,17 +21,9 @@ test.describe("E-G09 — Outdoor mode", () => {
     await page.goto("/");
     await uploadPhotos(page, 1);
 
-    // Switch to outdoor tab
-    const outdoorTab = page
-      .getByRole("button", { name: /ext.rieur|outdoor|terrasse|jardin/i })
-      .first();
-    if (!(await outdoorTab.isVisible().catch(() => false))) {
-      test.skip(
-        true,
-        "Outdoor mode toggle not found — waiting on data-testid=\"outdoor-tab\""
-      );
-      return;
-    }
+    // Switch to outdoor tab via stable testid
+    const outdoorTab = page.getByTestId("outdoor-tab");
+    await expect(outdoorTab).toBeVisible();
     await outdoorTab.click();
 
     // Pick Terrasse subtype

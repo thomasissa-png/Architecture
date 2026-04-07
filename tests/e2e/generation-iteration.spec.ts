@@ -22,14 +22,17 @@ test.describe("E-G10 / E-BR4-001 — Iteration (refine)", () => {
     await page.goto("/");
   });
 
-  test.skip("E-G10: iteration source image is the output (furnished), not pass1", async ({
+  test("E-G10: iteration source image is the output (furnished), not pass1", async ({
     page,
   }) => {
-    // Waiting on: exposed refine button (stable locator) + request shape that
-    // includes the source image field. See tests/e2e/NEEDED-TESTIDS.md
     const iterationPayloads: Array<Record<string, unknown>> = [];
     await page.route("**/api/generate", async (route) => {
-      const body = route.request().postDataJSON() as Record<string, unknown>;
+      let body: Record<string, unknown> = {};
+      try {
+        body = route.request().postDataJSON() as Record<string, unknown>;
+      } catch {
+        /* ignore */
+      }
       iterationPayloads.push(body);
       await route.fulfill({
         status: 200,
@@ -41,25 +44,49 @@ test.describe("E-G10 / E-BR4-001 — Iteration (refine)", () => {
         }),
       });
     });
+    await page.route("**/api/preprocess-prompt", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          surfacePrompt: "mock",
+          furniturePrompt: "mock",
+          warnings: [],
+        }),
+      });
+    });
 
     await uploadPhotos(page, 1);
+    await expect(page.locator("#step-style")).toBeVisible({ timeout: 5000 });
     await selectFirstStyle(page);
+
+    const stepSpaceType = page.locator("#step-space-type");
+    if (await stepSpaceType.isVisible().catch(() => false)) {
+      const first = stepSpaceType
+        .locator("button")
+        .filter({ hasNotText: /Int.rieur|Ext.rieur/ })
+        .first();
+      if (await first.isVisible().catch(() => false)) await first.click();
+    }
+
     await page.locator("#step-generate").locator("button").click();
     await expect(page.locator("#step-results")).toBeVisible({ timeout: 15_000 });
 
-    // Open refine panel and submit a comment
-    const refineButton = page.getByRole("button", { name: /affiner/i }).first();
+    // Open refine modal via stable testid
+    const refineButton = page.getByTestId("refine-button-0");
+    await expect(refineButton).toBeVisible({ timeout: 10_000 });
     await refineButton.click();
-    const commentInput = page.locator("textarea").last();
+
+    const commentInput = page.getByTestId("refine-comment-input");
+    await expect(commentInput).toBeVisible({ timeout: 5000 });
     await commentInput.fill("ajoute une plante verte");
-    await page.getByRole("button", { name: /envoyer|g.n.rer|valider/i }).click();
+
+    await page.getByTestId("refine-submit").click();
 
     // Wait for second generate call
-    await expect.poll(() => iterationPayloads.length).toBeGreaterThanOrEqual(2);
+    await expect.poll(() => iterationPayloads.length, { timeout: 10_000 }).toBeGreaterThanOrEqual(2);
 
-    const refinePayload = iterationPayloads[1];
-    // The refine payload must contain the OUTPUT image (base64 starting with our MOCK_OUTPUT),
-    // NOT a reference to pass1 cache only.
+    const refinePayload = iterationPayloads[iterationPayloads.length - 1];
     const payloadStr = JSON.stringify(refinePayload);
     expect(payloadStr).toMatch(/image|sourceImage|inputImage/i);
     // Must not send ONLY a pass1 key without the full image reference
@@ -70,37 +97,50 @@ test.describe("E-G10 / E-BR4-001 — Iteration (refine)", () => {
     expect(hasOnlyPass1).toBe(false);
   });
 
-  test.skip("E-BR4-001: BackgroundDisconnectError shows blue toast, keeps refine enabled", async ({
+  test("E-BR4-001: BackgroundDisconnectError shows blue toast, keeps refine enabled", async ({
     page,
   }) => {
-    // Waiting on: stable refine button testid + stable toast testid
     mockGenerationHappyPath(page);
     await uploadPhotos(page, 1);
+    await expect(page.locator("#step-style")).toBeVisible({ timeout: 5000 });
     await selectFirstStyle(page);
+
+    const stepSpaceType = page.locator("#step-space-type");
+    if (await stepSpaceType.isVisible().catch(() => false)) {
+      const first = stepSpaceType
+        .locator("button")
+        .filter({ hasNotText: /Int.rieur|Ext.rieur/ })
+        .first();
+      if (await first.isVisible().catch(() => false)) await first.click();
+    }
+
     await page.locator("#step-generate").locator("button").click();
     await expect(page.locator("#step-results")).toBeVisible({ timeout: 15_000 });
 
-    // Replace the mock with a TypeError-producing route for the next call
+    // Replace the mock with a TypeError-producing route for the refine call.
+    // page.route is LIFO — adding a new handler overrides the previous one.
     let refineCallSeen = false;
     await page.route("**/api/generate", async (route) => {
       refineCallSeen = true;
       await route.abort("failed"); // simulates BackgroundDisconnectError / fetch failed
     });
 
-    const refineButton = page.getByRole("button", { name: /affiner/i }).first();
+    const refineButton = page.getByTestId("refine-button-0");
+    await expect(refineButton).toBeVisible({ timeout: 10_000 });
     await refineButton.click();
-    const commentInput = page.locator("textarea").last();
-    await commentInput.fill("ajoute une plante verte");
-    await page.getByRole("button", { name: /envoyer|g.n.rer|valider/i }).click();
 
-    // Blue toast (info, not error) mentioning galerie
-    await expect(page.getByText(/galerie/i)).toBeVisible({ timeout: 10_000 });
-    // No red error banner
-    await expect(page.getByRole("alert").filter({ hasText: /erreur/i })).toHaveCount(
-      0
-    );
+    const commentInput = page.getByTestId("refine-comment-input");
+    await expect(commentInput).toBeVisible({ timeout: 5000 });
+    await commentInput.fill("ajoute une plante verte");
+
+    await page.getByTestId("refine-submit").click();
+
+    // Blue info toast must surface
+    const toast = page.getByTestId("toast-info-gallery");
+    await expect(toast).toBeVisible({ timeout: 10_000 });
+
     // Refine button back to enabled
-    await expect(refineButton).toBeEnabled();
+    await expect(refineButton).toBeEnabled({ timeout: 5000 });
     expect(refineCallSeen).toBe(true);
   });
 });

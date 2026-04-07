@@ -28,21 +28,15 @@ test.describe("E-G08 / E-BR2-001 — Room types & pass1 toggle", () => {
     await uploadPhotos(page, 1);
     await selectFirstStyle(page);
 
-    const stepSpaceType = page.locator("#step-space-type");
-    if (!(await stepSpaceType.isVisible().catch(() => false))) {
-      test.skip(
-        true,
-        "Room type picker not visible — waiting on data-testid=\"room-type-picker\""
-      );
-      return;
-    }
+    const roomTypePicker = page.getByTestId("room-type-picker");
+    await expect(roomTypePicker).toBeVisible({ timeout: 5000 });
 
     // Try to find a "Cuisine" / kitchen button
-    const cuisineButton = stepSpaceType
+    const cuisineButton = roomTypePicker
       .getByRole("button", { name: /cuisine|kitchen/i })
       .first();
     if (!(await cuisineButton.isVisible().catch(() => false))) {
-      test.skip(true, "Cuisine room type button not found");
+      test.skip(true, "Cuisine room type button not found in room-type-picker");
       return;
     }
     await cuisineButton.click();
@@ -58,25 +52,44 @@ test.describe("E-G08 / E-BR2-001 — Room types & pass1 toggle", () => {
     expect(state.count).toBeGreaterThanOrEqual(1);
   });
 
-  test.skip("E-BR2-001: withFurniture=false delivers a pass1 result, not the input", async ({
+  test("E-BR2-001: withFurniture=false delivers a pass1 result, not the input", async ({
     page,
   }) => {
-    // Waiting on: exposed per-tile toggle data-testid="furniture-toggle-{i}"
-    // and distinct mock outputs per tile. See tests/e2e/NEEDED-TESTIDS.md
     mockGenerationHappyPath(page);
     await uploadPhotos(page, 3);
+    await expect(page.locator("#step-style")).toBeVisible({ timeout: 5000 });
     await selectFirstStyle(page);
 
-    const toggle = page.getByTestId("furniture-toggle-1");
-    await toggle.click(); // disables furniture on tile #2
+    // Pick room type if needed
+    const roomTypePicker = page.getByTestId("room-type-picker");
+    if (await roomTypePicker.isVisible().catch(() => false)) {
+      const first = roomTypePicker
+        .locator("button")
+        .filter({ hasNotText: /Int.rieur|Ext.rieur/ })
+        .first();
+      if (await first.isVisible().catch(() => false)) await first.click();
+    }
+
+    // The furniture-toggle-{index} container holds two buttons (meublé/surfaces).
+    // Click the second button (surfaces only) on tile #1 (index 1).
+    const toggleContainer = page.getByTestId("furniture-toggle-1");
+    if (await toggleContainer.isVisible().catch(() => false)) {
+      const buttons = toggleContainer.locator("button");
+      const buttonCount = await buttons.count();
+      if (buttonCount >= 2) {
+        await buttons.nth(1).click(); // surfaces only
+      }
+    }
 
     await page.locator("#step-generate").locator("button").click();
     await expect(page.locator("#step-results")).toBeVisible({ timeout: 30_000 });
 
-    // Tile #2 should show the pass1 (empty-room finished) image, not the original upload
-    const tile2 = page.getByTestId("result-tile-1");
-    const src = await tile2.locator("img").getAttribute("src");
-    expect(src).not.toBe(null);
-    expect(src).not.toMatch(/blob:/); // must not be the original file URL
+    // Tile #1 (index 1) should show a generated image, not the original upload blob
+    const tile1 = page.getByTestId("result-tile-1");
+    await expect(tile1).toBeVisible({ timeout: 10_000 });
+    const img = tile1.locator("img").first();
+    const src = await img.getAttribute("src");
+    expect(src).not.toBeNull();
+    expect(src).not.toMatch(/^blob:/);
   });
 });

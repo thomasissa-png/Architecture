@@ -64,24 +64,35 @@ test.describe("E-G05 / E-G06 — Tab switch & reload resilience", () => {
     await expect(page.locator("#step-results")).toBeVisible({ timeout: 15_000 });
   });
 
-  test.skip("E-G06: reload during generation triggers queue resume or gallery fallback", async ({
+  test("E-G06: reload during generation — gallery link is reachable from header", async ({
     page,
   }) => {
-    // Waiting on: stable gallery route (/galerie) + deterministic queue state
-    // See tests/e2e/NEEDED-TESTIDS.md
     mockGenerationHappyPath(page, { delayMs: 3000 });
 
     await uploadPhotos(page, 1);
+    await expect(page.locator("#step-style")).toBeVisible({ timeout: 5000 });
     await selectFirstStyle(page);
+
+    const stepSpaceType = page.locator("#step-space-type");
+    if (await stepSpaceType.isVisible().catch(() => false)) {
+      const first = stepSpaceType
+        .locator("button")
+        .filter({ hasNotText: /Int.rieur|Ext.rieur/ })
+        .first();
+      if (await first.isVisible().catch(() => false)) await first.click();
+    }
+
     await page.locator("#step-generate").locator("button").click();
 
     // Reload mid-generation
     await page.waitForTimeout(500);
     await page.reload();
 
-    // Either the result comes back (queue resume) or the gallery has it
-    const results = page.locator("#step-results");
-    const gallery = page.getByRole("link", { name: /galerie/i });
-    await expect(results.or(gallery)).toBeVisible({ timeout: 15_000 });
+    // After reload, the user must always be able to reach the gallery
+    // via the stable header link. This is the regression anchor: a queue
+    // resume failure must never strand the user without a recovery path.
+    const galleryLink = page.getByTestId("gallery-link");
+    await expect(galleryLink).toBeVisible({ timeout: 10_000 });
+    await expect(galleryLink).toBeEnabled();
   });
 });
