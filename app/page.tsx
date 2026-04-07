@@ -2304,7 +2304,26 @@ export default function Home() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                     </svg>
-                    Génération en cours… ({results.length + 1}/{(Array.from(perPhotoStyles.values()) as string[][]).reduce((sum, v) => sum + v.length, 0) || files.length})
+                    {(() => {
+                      // REGRESSION: BR-1 session 34 (2026-04-07)
+                      // Avant : compteur séquentiel "(results.length + 1)/total" qui affichait "1/3"
+                      // alors que les 3 jobs tournaient en parallèle (MAX_CONCURRENT=5 depuis session 33).
+                      // Après : compteur réel basé sur le nombre de jobs encore en cours.
+                      // Conformité F12 R6 (session 33) : expérience identique 1 ou N photos.
+                      const total = (Array.from(perPhotoStyles.values()) as string[][]).reduce((sum, v) => sum + v.length, 0) || files.length;
+                      const doneCount = results.filter((r) => !r.pass2Pending).length;
+                      const inProgress = Math.max(0, total - doneCount);
+                      if (inProgress === 0) {
+                        return "Finalisation…";
+                      }
+                      if (total === 1) {
+                        return "Génération en cours…";
+                      }
+                      if (doneCount === 0) {
+                        return `Génération en cours… (${inProgress} visuel${inProgress > 1 ? "s" : ""} en parallèle)`;
+                      }
+                      return `Génération en cours… (${doneCount}/${total} terminé${doneCount > 1 ? "s" : ""})`;
+                    })()}
                   </>
                 ) : (
                   <>
