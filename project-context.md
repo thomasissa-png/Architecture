@@ -436,11 +436,11 @@
 
 ## Memo de reprise — derniere session
 
-**Date de cloture :** 2026-04-07 (Session 34)
-**Branch :** claude/extract-project-context-61BiD (21 commits, prête à merge)
+**Date de cloture :** 2026-04-07 (Session 34) — clôturée à 08:44
+**Branch :** claude/extract-project-context-61BiD (28 commits, prête à merge)
 
 ### Resume de la session 34
-Marathon debug + tests. 4 bugs concrets fondateur (BR-1 à BR-4) tous fixés. Infrastructure de tests Vitest + Playwright créée from scratch (179 unit tests + 197 E2E). 4 refactors P0 (R1 multi-photo-scheduler, R2 refund-calculator, R3 Zod validation câblée dans route.ts, R4 isComplexRoom exporté). 13 data-testid ajoutés dans app/page.tsx et composants externes. 7 learnings session 34 propagés dans CLAUDE.md + founder-preferences.md (les agents framework .claude/agents/*.md restent bloqués par permission — règles équivalentes capturées dans CLAUDE.md Versimo local). 0 erreur lint, 0 erreur TS, 175/179 vitest PASS (4 skipped intentionnels), 196/197 playwright E2E actifs (1 skip Stripe full flow documenté).
+Marathon debug + tests + challenge fondateur. 4 bugs concrets fondateur (BR-1 à BR-4) tous fixés. Infrastructure de tests Vitest + Playwright créée from scratch (179 unit tests + 197 E2E). 4 refactors R1-R4 (scheduler + refund + Zod + isComplexRoom) — **R1/R2 câblés en round 5 après challenge fondateur** sur l'excuse "risque régression". 13 data-testid + fixture authenticatedPage + E-G07 Stripe full flow mocké. 9 learnings propagés dans CLAUDE.md + founder-preferences.md (règle COVERAGE-DRIVEN REFACTOR ajoutée). **Fix deploy** : tsconfig.json exclut tests/ pour débloquer `next build` (vitest import bloquait le build worker). 0 erreur lint/TS, 175/179 vitest PASS, 196/197 E2E actifs, `next build` ✓ Compiled successfully.
 
 ### Bugs BR-1 à BR-4 fixés (session 34)
 - **BR-1** : label "Génération en cours (1/3)" remplacé par label dérivé de l'état réel (commit ac936e1)
@@ -448,13 +448,16 @@ Marathon debug + tests. 4 bugs concrets fondateur (BR-1 à BR-4) tous fixés. In
 - **BR-3** : per-photo state avec Set/Map indexés par resultIndex (commit 46a2ff5)
 - **BR-4** : catch BackgroundDisconnectError propagé à handleRefine + handleRegenerate (commit 46a2ff5)
 
-### 21 commits poussés sur claude/extract-project-context-61BiD
-Fixes : 46a2ff5 (BR-3/4), ac936e1 (BR-1), d1e06d2 (BR-2), 089bf99 (TS CropModal)
+### 28 commits poussés sur claude/extract-project-context-61BiD
+Fixes BR : 46a2ff5 (BR-3/4), ac936e1 (BR-1), d1e06d2 (BR-2), 089bf99 (TS CropModal)
 Tests infra : 1d24756, 6c5a20f, 2473dad, 3224c5b, 512513b, 93f0ad0
 Refactors : 277173f (R2), 9bdca5e (R1), e4a5636 (R3), f8d4188 (R4), b692618 (R3 wiring)
 A11y : e74fc89 (13 data-testid)
-E2E activation : 15557c5, f759538
-Docs : dbf7dfd, 4b141aa, 37f48f5
+E2E activation round 3 : 15557c5, f759538
+QA round 4 auth + Stripe : eb4aa3a, 39bf0e6, 3ff8a4a
+Câblage R1+R2 round 5 : 8318d76, f2fbf5e
+Docs + propagation : dbf7dfd, 4b141aa, 37f48f5, 66ded5f, ab35b50, 83eba4f
+Build fix : 8ffac6e (tsconfig exclut tests/)
 
 ### A tester par le fondateur (requires implication)
 1. **Déployer** sur Replit la branche claude/extract-project-context-61BiD
@@ -473,6 +476,26 @@ Docs : dbf7dfd, 4b141aa, 37f48f5
 ### Reporté volontairement (cas résiduels)
 - **Propagation dans .claude/agents/fullstack.md et qa.md** : permission denied (fichiers framework partagés cross-projets). Règles équivalentes capturées dans CLAUDE.md Versimo local.
 - **2 skips E2E résiduels** : `generation-refresh-tab.spec.ts` (attend stabilisation architecture queue/galerie session 32+) et `generation-room-types.spec.ts` (fallback conditionnel bouton Cuisine). Les 2 sont justifiés en commentaire de code.
+
+### Prochaines actions session 35 (prioritaires)
+1. **Déployer sur Replit** la branche `claude/extract-project-context-61BiD` — build validé `next build ✓`, aucune action fondateur requise (secrets prod déjà OK)
+2. **Tests manuels fondateur** (desktop + iPhone réel) pour valider BR-1 à BR-4 en conditions réelles :
+   - 3 photos → Générer → vérifier label "X visuels en parallèle" + Affiner #1 laisse #2/#3 cliquables
+   - iPhone : Affiner → switch app 10s → toast bleu galerie (pas bandeau rouge)
+   - 3 photos dont 1 surface-only → tile affiche pass1 résultat (pas input)
+3. **Audit visuel Yann + Lucas** sur v54 en prod (cible 9.5/10, actuel 8.2) via workflow pre-fetch documenté dans CLAUDE.md
+4. **Exécuter `npx playwright test`** sur Replit déployé pour validation runtime des 197 tests
+5. **Merger** vers `main` une fois validé
+
+### Blockers
+- **Aucun blocker technique** — tous les items autonomes sont traités
+- **Actions fondateur requises** : déployer + tester manuel + audit visuel (listed above)
+- **Décisions produit en attente** : US-MSP-01 multi-style picker par photo (decisions @ux + @product-manager + @design documentées dans docs/product/backlog.md)
+
+### Commande de reprise suggérée
+```
+@orchestrator Reprends Versimo session 35. Session 34 clôturée à 08:44 le 2026-04-07. 28 commits poussés sur claude/extract-project-context-61BiD. État : next build ✓, vitest 175/179 PASS, playwright 196/197 actifs, 0 lint/TS error. Tous les bugs fondateur BR-1 à BR-4 fixés + R1/R2 câblés + auth fixture + E-G07 Stripe mocké + 9 learnings propagés + fix deploy tsconfig. À faire : (1) déployer sur Replit la branche de session, (2) tests manuels BR-1/2/3/4 desktop + iPhone réel, (3) audit visuel Yann+Lucas sur v54 en prod cible 9.5/10, (4) merger vers main. Aucun blocker technique.
+```
 
 ---
 
