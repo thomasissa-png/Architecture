@@ -163,6 +163,7 @@ export default function RefineModal({
 
           {/* Textarea */}
           <textarea
+            data-testid="refine-comment-input"
             ref={textareaRef}
             id="refine-comment"
             value={comment}
@@ -243,6 +244,7 @@ export default function RefineModal({
               Annuler
             </button>
             <button
+              data-testid="refine-submit"
               onClick={handleSubmit}
               disabled={!canSubmit}
               className="inline-flex items-center gap-2 px-5 min-h-[44px] py-2.5 rounded-full text-sm font-medium bg-foreground text-background hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 disabled:opacity-40 disabled:cursor-not-allowed"

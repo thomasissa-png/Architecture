@@ -175,7 +175,7 @@ export default function AuthButton() {
           )}
         </span>
         {credits !== null && (
-          <span className="text-xs text-muted font-light">
+          <span data-testid="credits-badge" className="text-xs text-muted font-light">
             {credits} visuel{credits !== 1 ? "s" : ""}
           </span>
         )}

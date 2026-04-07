@@ -1843,7 +1843,7 @@ export default function Home() {
         <div ref={toolRef} className="reveal max-w-5xl mx-auto">
           {/* Checkout success feedback */}
           {checkoutSuccess && (
-            <div className="mb-8 max-w-3xl mx-auto bg-sage/10 border border-sage/20 rounded-2xl px-5 py-4 text-center">
+            <div data-testid="post-purchase-banner" className="mb-8 max-w-3xl mx-auto bg-sage/10 border border-sage/20 rounded-2xl px-5 py-4 text-center">
               <p className="text-sm font-medium text-foreground">
                 Paiement confirmé — vos visuels sont disponibles.
               </p>
@@ -1908,6 +1908,7 @@ export default function Home() {
                   Intérieur
                 </button>
                 <button
+                  data-testid="outdoor-tab"
                   role="radio"
                   aria-checked={isOutdoor}
                   onClick={() => handleToggleOutdoor(true)}
@@ -2173,7 +2174,7 @@ export default function Home() {
                         )}
 
                         {/* Pièce meublée / Surfaces uniquement */}
-                        <div className="flex gap-1 p-0.5 bg-foreground/5 rounded-lg">
+                        <div data-testid={`furniture-toggle-${index}`} className="flex gap-1 p-0.5 bg-foreground/5 rounded-lg">
                           <button
                             type="button"
                             onClick={() => {
@@ -2608,7 +2609,7 @@ export default function Home() {
                   const thisRegenerateElapsed = regenerateElapsedByIndex.get(index) || 0;
 
                   return (
-                    <div key={index} className="space-y-5">
+                    <div key={index} data-testid={`result-tile-${index}`} className="space-y-5">
 
                       {/* Refine loading state */}
                       {isThisRefining && (
@@ -2731,6 +2732,7 @@ export default function Home() {
                           {iterationsRemaining > 0 ? (
                             <>
                               <button
+                                data-testid={`refine-button-${index}`}
                                 onClick={() => handleOpenRefineModal(index)}
                                 className="inline-flex items-center gap-2 border border-sage/40 text-sage px-5 min-h-[44px] py-2.5 rounded-full text-sm font-medium hover:bg-sage/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
                               >
@@ -3115,6 +3117,7 @@ export default function Home() {
       {/* Queue toast notification */}
       {queueToast && (
         <div
+          data-testid="toast-info-gallery"
           className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 text-white text-xs font-medium px-5 py-3 rounded-full shadow-lg animate-fade-in-up flex items-center gap-2 ${
             queueToast.type === "success"
               ? "bg-green-600/90"

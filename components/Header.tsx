@@ -42,6 +42,7 @@ export default function Header({ variant = "internal", activePage }: HeaderProps
               <a
                 key={link.key}
                 href={link.href}
+                data-testid={link.key === "ma-galerie" ? "gallery-link" : undefined}
                 className={`relative ${
                   activePage === link.key
                     ? "text-xs text-sage font-medium"

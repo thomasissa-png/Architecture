@@ -268,6 +268,7 @@ export default function StylePicker({
         })}
 
         <button
+          data-testid="custom-prompt-toggle"
           onClick={handleCustomClick}
           role="checkbox"
           aria-checked={isCustomSelected}

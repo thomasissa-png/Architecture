@@ -21,7 +21,7 @@ export default function RoomTypePicker({
   };
 
   return (
-    <div className="space-y-2.5">
+    <div data-testid="room-type-picker" className="space-y-2.5">
       <div className="flex items-center gap-2">
         <p className="text-sm font-medium text-foreground tracking-tight">
           Type de pièce

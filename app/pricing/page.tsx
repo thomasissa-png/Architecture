@@ -299,6 +299,7 @@ function PricingContent() {
                   </a>
                 ) : (
                   <button
+                    data-testid={pack.id === "starter" ? "buy-starter-button" : undefined}
                     onClick={() => handleBuy(pack.id)}
                     disabled={loadingPack !== null}
                     className={`mt-auto w-full px-4 py-3 min-h-[44px] rounded-full text-sm font-medium transition-all duration-200 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 disabled:opacity-40 disabled:cursor-not-allowed ${
