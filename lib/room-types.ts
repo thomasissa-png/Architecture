@@ -69,8 +69,16 @@ export const ROOM_TYPES: Record<string, RoomType> = {
     // This override is used only if the dedicated builder is removed or bypassed.
     roomSurfaceOverride:
       "Additionally for this bathroom: floor-to-ceiling ceramic wall tiles in the shower zone and behind the vanity area — waterproof and seamless. Water-resistant floor — ceramic or stone floor tiles with matte non-slip finish. No wood flooring in wet areas. Recessed IP44-rated ceiling spotlights for even bathroom illumination.",
+    // v58 (Sprint audit v57 P0-1) — PRESERVATION-FIRST. Le builder bathroom dans
+    // generation-pipeline.ts dit deja "Keep existing bathtub/shower/sink/toilet at same
+    // position, size, shape" mais l'ancienne formulation ici injectait litteralement
+    // "frameless glass walk-in shower 80-90cm" + "freestanding soaking tub" — le modele
+    // gpt-image-1.5 obeit aux instructions explicites avant input_fidelity, et sacrifiait
+    // la baignoire/douche existante. La nouvelle formulation ne prescrit AUCUN equipement
+    // sanitaire et liste UNIQUEMENT des accessoires freestanding/wall-mounted decoratifs.
+    // La hierarchie reelle dans gpt-image-1.5 est : instruction explicite > input_fidelity > preservation implicite.
     roomFurnitureOverride:
-      "Bathroom fixtures and accessories: frameless glass walk-in shower enclosure 80-90cm wide with chrome rain showerhead 25cm diameter and handheld fixture mounted on the wall, wall-mounted vanity unit 80cm wide 45cm deep with integrated basin and chrome mixer tap, rectangular backlit mirror 70cm wide 90cm tall centered above the basin, wall-mounted towel ladder 45cm wide 150cm tall in chrome or matte black with folded towels in neutral tones, small teak stool 30cm diameter 45cm tall with soap dispenser and candle, one potted fern 25cm pot diameter on the floor near the shower, woven basket 30cm diameter on the floor for storage. If room appears large (deep or double-width), add a freestanding soaking tub 170x75cm as well. Clean and spa-like atmosphere. No armchairs, no floor lamps, no decorative furniture.",
+      "Bathroom accessories ONLY — preserve all existing sanitary fixtures (bathtub, shower, shower enclosure, sink, basin, toilet, bidet) exactly as they appear in the input photo: same position, same size, same shape, same finish. Do NOT replace them, do NOT relocate them, do NOT add a new shower or new bathtub. ADD only freestanding and wall-mounted accessories: a wall-mounted vanity unit 60-80cm wide with integrated basin and mixer tap ONLY if no vanity already exists in the input — otherwise keep the existing vanity, a rectangular mirror centered above the existing basin ONLY if no mirror already exists, a wall-mounted towel ladder 45cm wide 150cm tall in chrome or matte black with folded towels in neutral tones, a small teak or stoneware stool 30cm diameter 45cm tall with a soap dispenser and a candle, one potted fern or trailing plant in a 25cm ceramic pot on the floor in a corner, a woven basket 30cm diameter on the floor for storage. Clean and spa-like atmosphere. No armchairs, no floor lamps, no decorative furniture, no freestanding bathtub additions, no shower enclosure additions.",
     roomNegativeOverride:
       "sofa, coffee table, TV unit, dining table, bed, wardrobe, office desk, floor lamp, armchair, lounge chair, bouclé chair, tripod lamp, arc lamp",
   },
