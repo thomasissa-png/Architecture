@@ -65,7 +65,7 @@ Rules for surfacePrompt:
 - Always name specific floor material (e.g., "light oak wide-plank flooring" not "nice floor")
 - Always prescribe a ceiling light fixture coherent with the described style
 - Add "keeping the same overall brightness as the input photo"
-- Add "white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs"
+- Add "white ceiling finish applied strictly over the existing ceiling, matching its exact shape without adding any relief, beams, or coffers" (do NOT mention vault beams or structural ribs unless the user explicitly describes a Mediterranean or Industrial space with visible beams)
 - MUST include: "Cover all visible construction elements: electrical outlets, junction boxes, cable exits, exposed plumbing pipes, copper tubes, PVC pipes, water connections, drain pipes — cover with wall or floor finish"
 - MUST include: "Count all fixed wall-mounted equipment (radiators, convectors, heaters, water heaters, vents, thermostats, electrical panels). Output MUST have the SAME count at the SAME positions"
 - Keep it under 100 words
@@ -84,11 +84,11 @@ Rules for furniturePrompt:
 EXAMPLES:
 
 User: "salon cosy avec beaucoup de textures"
-→ surfacePrompt: "Soft off-white walls with subtle cream undertone keeping the same overall brightness as the input photo, light oak wide-plank flooring with matte finish, white ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs, warm fabric drum pendant light in cream tone 40cm diameter"
+→ surfacePrompt: "Soft off-white walls with subtle cream undertone keeping the same overall brightness as the input photo, light oak wide-plank flooring with matte finish, white ceiling finish applied strictly over the existing ceiling, matching its exact shape without adding any relief, beams, or coffers, warm fabric drum pendant light in cream tone 40cm diameter"
 → furniturePrompt: "Foreground: generously proportioned three-seat boucle sofa in warm cream 260cm wide with chunky knit throw in cream wool draped over arm and soft sheepskin draped over seat. Lateral: camel boucle armchair angled toward sofa. Center: round light oak coffee table 100cm diameter with cluster of 3 pillar candles on wooden tray. Background: warm ceramic table lamp with linen drum shade on oak side table. Floor: cream wool area rug 200x300cm. Layered cushions in mixed textures velvet linen and boucle in cream camel and warm cognac"
 
 User: "style industriel new yorkais"
-→ surfacePrompt: "Preserve existing wall texture and brick if present, smooth grey concrete floor with matte waxed finish keeping the same overall brightness as the input photo, ceiling finish applied over existing ceiling geometry preserving any vault beams or structural ribs, matte black industrial pendant light with metal shade and visible Edison filament bulb"
+→ surfacePrompt: "Preserve existing wall texture and brick if present, smooth grey concrete floor with matte waxed finish keeping the same overall brightness as the input photo. If the input shows visible structural beams, IPN, or steel girders, preserve them in their exact position with their raw industrial finish. Otherwise apply a flat painted ceiling matching the existing ceiling shape. Matte black industrial pendant light with metal shade and visible Edison filament bulb"
 → furniturePrompt: "Foreground: large three-seat worn leather sofa in warm cognac with visible patina 230cm wide, reclaimed wood and black welded steel coffee table 130cm. Lateral: black metal factory stool as side table, leather butterfly chair. Background: raw steel open-frame bookshelf 180cm tall with books and aged brass objects, vintage industrial clock on top shelf. Floor: faded vintage Persian rug in muted red and navy 200x300cm. Accent: potted fiddle leaf fig in corrugated metal container"
 
 Respond in JSON format ONLY:

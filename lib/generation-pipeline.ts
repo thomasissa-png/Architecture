@@ -7,6 +7,10 @@ import OpenAI from "openai";
 import sharp from "sharp";
 import { applyRoomTypeOverrides, ROOM_TYPES, getStyleMaterialHint } from "@/lib/room-types";
 import { applyOutdoorSubtypeOverrides, OUTDOOR_SUBTYPES } from "@/lib/outdoor-subtypes";
+import { detectBlownHighlightsFromBase64 } from "@/lib/image-analysis";
+
+// v55 — type sécurisé pour input_fidelity (l'API n'expose pas encore les types).
+export type InputFidelity = "high" | "low";
 
 // Singleton OpenAI client — reuses HTTP connections across passes
 let _openaiClient: OpenAI | null = null;
@@ -110,8 +114,14 @@ export async function extractRoomInventory(imageBase64: string): Promise<string>
  * v42 (density conditionals: kitchen 3-tier width scaling, dining room compact/large, office compact skip bookshelf — fix gen #112 overcrowded compact kitchen),
  * v43 (audit croise Yann+Lucas #111-117: P0 COLUMN_PRESERVATION active tous builders, P0 ANTI_FENETRE remonte position 2, P1 anti-warm shift renforce white balance, P1 Cosy marqueurs tactiles quantites, P1 PHOTO_GRAIN restaure ISO 200 + vignetting),
  * v45 (gpt-image-1.5 preservation-first: PASS1_PREAMBLE+PASS2_PREAMBLE en tete de TOUS les builders — les 8 passe 1 + 9 passe 2 + 2 outdoor. Preservation AVANT style pour forcer le mode edition. "CHANGE ONLY" en passe 1, "ADD" en passe 2. Suppression doublons CAMERA/LIGHT en fin de prompt — deja dans les constantes en tete.),
- * v52 (audit v51 Yann 7.2 Lucas 7.5: P0 ANTI_FENETRE couvre mezzanines/niveaux superieurs, P1 PASS2_PREAMBLE anti-elargissement pieces etroites + bathroom builder renforce, P1 EQUIPMENT_PRESERVATION couvre convecteurs au sol et seche-serviettes) */
-export const PROMPT_VERSION = "v54";
+ * v52 (audit v51 Yann 7.2 Lucas 7.5: P0 ANTI_FENETRE couvre mezzanines/niveaux superieurs, P1 PASS2_PREAMBLE anti-elargissement pieces etroites + bathroom builder renforce, P1 EQUIPMENT_PRESERVATION couvre convecteurs au sol et seche-serviettes),
+ * v55 (audit v54 Yann 7.35 Lucas 7.10 NO-GO — 4 fixes P0:
+ *   P0-A bug propagation room_type Pipeline B — dining_room/office utilisaient le variant living-room concatene, le modele tranchait pour le bloc le plus long et livrait un salon. Fix: extension de la regle override-replace a TOUS les room types non-living_room (et plus seulement les dedicated builders).
+ *   P0-B suppression "vault beams" amorcantes sur 10/12 styles — la formulation poussait gpt-image-1.5 a halluciner des poutres meme sur plafonds plats. Conservee uniquement pour Mediterranean/Industrial avec formulation conditionnelle stricte.
+ *   P0-C ARCHITECTURAL HONESTY clause ajoutee en tete de tous les builders passe 1 (8 branches indoor) — interdit l'invention de structures non visibles dans l'input.
+ *   P0-D color shift Contemporary — surfacePrompt reformule pour preserver la temperature warm/cool des murs au lieu de les neutraliser globalement.
+ *   Fixes appliques en synchro StylePicker.tsx + style-resolver.ts (24 modifications synchronisees + 2 surfacePrompts Contemporary).) */
+export const PROMPT_VERSION = "v55";
 
 // ─── Image generation model ─────────────────────────────────────────
 // v36: configurable via env var. Default gpt-image-1 (v32 reverted gpt-image-1.5 for spatial regression).
@@ -194,6 +204,11 @@ const DSLR_LINE = "DSLR wide-angle, sharp focus, deep DOF. Same focal length as 
 // v53: PASS 1 — condensed from 663 words to ~180 words.
 // gpt-image-1.5 loses focus after ~200 words. Structure FIRST, action SECOND.
 const PASS1_PREAMBLE_V53 = "STRUCTURE LOCK: every column, beam, slab edge, and ceiling shape keeps its exact width, depth, and position. EXACT same count of windows and doors at same positions — solid walls stay solid. Same camera angle, same framing, same room dimensions — FIXED, no stretch. Edit surfaces only: wall color, floor material, ceiling finish, and one ceiling light fixture. Apply finishes OVER existing textures, not replacing the 3D shape underneath.";
+// v55: ARCHITECTURAL HONESTY clause (audit Yann/Lucas Pipeline A — plafond a caissons hallucines).
+// Placed RIGHT after PASS1_PREAMBLE in every branch so the model reads it before any style finish.
+// Goal: prevent the model from inventing structural elements (beams, coffers, vaults, moldings,
+// passages) when the input does not visibly show them. Formulated positively to avoid priming.
+const ARCHITECTURAL_HONESTY_V55 = "ARCHITECTURAL HONESTY: Do NOT invent structural elements that are not visibly present in the input photo. If the input ceiling is flat, keep it flat — do not add beams, coffers, vaults, or ribs. If the input has no moldings, do not add moldings. If the input has solid walls, do not open passages or doorways. Apply finishes over the EXISTING geometry only.";
 const PRESERVATION_V53 = "Ceiling: keep every bump, step, soffit, vault, and beam visible — paint over their surface, keep their shape. Columns, posts, IPN beams, and metal lintels: keep full width and original material texture. Slab edges: keep full thickness. Mouldings, cornices, and decorative trims: keep shape and position, paint over. Keep the input's color temperature — do not warm or cool.";
 const CLEANUP_V53 = "Remove loose construction items: cables, junction boxes, exposed pipes, outlets. Keep all fixed equipment in place: radiators, heaters, vents, panels — same count, same positions. Existing built-in fixtures (bathtub, shower tray, toilet, sink) stay if present. Room stays COMPLETELY EMPTY — no furniture, no new fixtures.";
 
@@ -217,6 +232,7 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
     const kitchenSurface = surfacePrompt.replace(/,?\s*(wide-plank|herringbone|wood|ash|oak|walnut|parquet)\s+flooring[^,.]*/gi, "");
     return [
       PASS1_PREAMBLE_V53,
+      ARCHITECTURAL_HONESTY_V55,
       inventoryLine,
       PRESERVATION_V53,
       `Surface style: ${kitchenSurface}.`,
@@ -230,6 +246,7 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
   if (roomTypeId === "bathroom") {
     return [
       PASS1_PREAMBLE_V53,
+      ARCHITECTURAL_HONESTY_V55,
       inventoryLine,
       PRESERVATION_V53,
       `Surface style: ${surfacePrompt}.`,
@@ -243,6 +260,7 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
   if (roomTypeId === "wc") {
     return [
       PASS1_PREAMBLE_V53,
+      ARCHITECTURAL_HONESTY_V55,
       inventoryLine,
       PRESERVATION_V53,
       `Surface style: ${surfacePrompt}.`,
@@ -256,6 +274,7 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
   if (roomTypeId === "bedroom_adults" || roomTypeId === "bedroom_children") {
     return [
       PASS1_PREAMBLE_V53,
+      ARCHITECTURAL_HONESTY_V55,
       inventoryLine,
       PRESERVATION_V53,
       `Surface style: ${surfacePrompt}.`,
@@ -269,6 +288,7 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
   if (roomTypeId === "laundry") {
     return [
       PASS1_PREAMBLE_V53,
+      ARCHITECTURAL_HONESTY_V55,
       inventoryLine,
       PRESERVATION_V53,
       `Surface style: ${surfacePrompt}.`,
@@ -282,6 +302,7 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
   if (roomTypeId === "cellar") {
     return [
       PASS1_PREAMBLE_V53,
+      ARCHITECTURAL_HONESTY_V55,
       inventoryLine,
       PRESERVATION_V53,
       `Surface style: ${surfacePrompt}.`,
@@ -295,6 +316,7 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
   if (roomTypeId === "entryway") {
     return [
       PASS1_PREAMBLE_V53,
+      ARCHITECTURAL_HONESTY_V55,
       inventoryLine,
       PRESERVATION_V53,
       `Surface style: ${surfacePrompt}.`,
@@ -308,6 +330,7 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
   // v53: condensed prompt — structure FIRST, ~220 words total (was ~663)
   return [
     PASS1_PREAMBLE_V53,
+    ARCHITECTURAL_HONESTY_V55,
     inventoryLine,
     PRESERVATION_V53,
     `Surface style: ${surfacePrompt}.`,
@@ -552,7 +575,8 @@ export async function tryOpenAIResponses(
   size: string,
   roomTypeId?: string | null,
   outdoor?: { isOutdoor: boolean; subtypeSurfaceOverride?: string; subtypeFurnitureOverride?: string },
-  roomInventory?: string
+  roomInventory?: string,
+  inputFidelity: InputFidelity = "high"
 ): Promise<{ image: string; model: string }> {
   const openai = getOpenAI();
 
@@ -595,7 +619,7 @@ export async function tryOpenAIResponses(
           model: IMAGE_MODEL,
           action: "edit",
           quality: "high",
-          input_fidelity: "high",
+          input_fidelity: inputFidelity,
           size: size as "1024x1024" | "1536x1024" | "1024x1536",
         },
       ],
@@ -621,7 +645,7 @@ export async function tryOpenAIResponses(
 
   return {
     image: `data:image/png;base64,${resultB64}`,
-    model: `OpenAI ${IMAGE_MODEL} (pass ${pass})`,
+    model: `OpenAI ${IMAGE_MODEL} (pass ${pass}, fidelity=${inputFidelity})`,
   };
 }
 
@@ -754,12 +778,38 @@ export async function generatePass(
   // Determine if room is complex enough to warrant best-of-2
   const complex = isComplexRoom(roomInventory);
 
+  // v55 — Adaptive input_fidelity for pass 1 only.
+  // When the input contains a significant proportion of blown highlights
+  // (typically over-exposed windows), `input_fidelity:"high"` triggers a
+  // catastrophic fusion artifact (semi-transparent overlay of the input).
+  // Switch to `"low"` on those inputs only — pass 2 always uses "high"
+  // because the pass 1 output is clean (no blown highlights anymore).
+  let pass1Fidelity: InputFidelity = "high";
+  if (pass === 1) {
+    try {
+      const highlights = await detectBlownHighlightsFromBase64(base64Image);
+      if (highlights.hasBlownHighlights) {
+        pass1Fidelity = "low";
+        console.log(
+          `[v55] blown highlights detected (${(highlights.ratio * 100).toFixed(1)}%), switching to input_fidelity=low for pass 1`
+        );
+      } else {
+        console.log(
+          `[v55] no blown highlights (${(highlights.ratio * 100).toFixed(1)}%), keeping input_fidelity=high for pass 1`
+        );
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn(`[v55] blown highlights detection failed (fail-open, keeping high): ${msg}`);
+    }
+  }
+
   // Single generation with retry — used for pass 1, or pass 2 on simple rooms
   const generateSingle = async (): Promise<{ image: string; model: string }> => {
     let lastError: Error | null = null;
     for (let attempt = 0; attempt < MAX_PASS_RETRIES; attempt++) {
       try {
-        return await tryOpenAIResponses(base64Image, surfacePrompt, furniturePrompt, pass, outputSize.openai, roomTypeId, outdoor, roomInventory);
+        return await tryOpenAIResponses(base64Image, surfacePrompt, furniturePrompt, pass, outputSize.openai, roomTypeId, outdoor, roomInventory, pass === 1 ? pass1Fidelity : "high");
       } catch (err) {
         lastError = err instanceof Error ? err : new Error(String(err));
         console.error(`OpenAI pass ${pass} attempt ${attempt + 1}/${MAX_PASS_RETRIES} failed:`, lastError.message);
@@ -878,14 +928,22 @@ export async function runGenerationPipeline(params: PipelineParams): Promise<Pip
       applyRoomTypeOverrides(surfacePrompt.trim(), furniturePrompt.trim(), roomType ?? null);
     trimmedSurface = hasDedicatedBuilder ? surfacePrompt.trim() : effectiveSurfacePrompt;
 
-    // CRITICAL FIX: For dedicated builders, do NOT inject the full style furniturePrompt
-    // (which contains living room items like sofa, coffee table, rug).
-    // Instead use the room-specific furniture override + a brief style hint.
-    if (hasDedicatedBuilder && roomType) {
-      const rt = ROOM_TYPES[roomType];
-      trimmedFurniture = rt?.roomFurnitureOverride
-        ? `${rt.roomFurnitureOverride} ${getStyleMaterialHint(styleId)}`
-        : furniturePrompt.trim();
+    // CRITICAL FIX (v55, session 35 audit Yann/Lucas Pipeline B):
+    // When a roomType has a non-empty roomFurnitureOverride (dining_room, office, AND all
+    // dedicated builders), we MUST use the override + a brief style hint INSTEAD of the
+    // merged living-room style variant. The previous behavior only applied this rule to
+    // the dedicated-builder set, leaving dining_room and office to receive the concatenated
+    // "Dining room furniture: table 180cm + 6 chairs ... An architect's living room ...
+    // curved four-seat sofa ..." prompt — the model tranchait pour le bloc le plus long
+    // et livrait un salon au lieu d'une salle a manger (Pipeline B audit #196).
+    //
+    // Rule: living_room is the ONLY indoor room type with an empty roomFurnitureOverride,
+    // and therefore the ONLY room type that should receive the full style variant verbatim.
+    // hasDedicatedBuilder is still used above to bypass the room-type SURFACE override for
+    // dedicated builders (they apply their own surface directives in buildSurfacesResponsesPrompt).
+    const rt = roomType ? ROOM_TYPES[roomType] : null;
+    if (rt?.roomFurnitureOverride) {
+      trimmedFurniture = `${rt.roomFurnitureOverride} ${getStyleMaterialHint(styleId)}`;
     } else {
       trimmedFurniture = effectiveFurniturePrompt;
     }
