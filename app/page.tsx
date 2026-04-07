@@ -2603,7 +2603,7 @@ export default function Home() {
               <h3 className="text-sm font-medium text-muted uppercase tracking-widest mb-6">
                 03 — Résultat
               </h3>
-              <div className={`space-y-10 ${results.length === 1 ? "sm:max-w-xl lg:max-w-2xl mx-auto" : "sm:max-w-3xl lg:max-w-4xl mx-auto"}`}>
+              <div className={`grid gap-10 mx-auto ${results.length === 1 ? "grid-cols-1 sm:max-w-xl lg:max-w-2xl" : "grid-cols-1 sm:grid-cols-2 sm:max-w-3xl lg:max-w-4xl"}`}>
                 {/* Sort results by upload order (originalUrl → filePreviewUrls index) */}
                 {results
                   .map((result, index) => ({ result, index }))
