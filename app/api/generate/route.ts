@@ -32,6 +32,7 @@ import {
 } from "@/lib/iteration-prompt";
 import { enqueueGeneration, shouldQueue } from "@/lib/generation-queue";
 import { compositeStructuralElements } from "@/lib/compositing";
+import { parseGenerateBody } from "@/lib/generation-schema";
 
 // Global deadline for the entire route — prevents Replit proxy 504.
 const ROUTE_DEADLINE_MS = 150_000;
@@ -164,50 +165,35 @@ export async function POST(request: NextRequest) {
   let _pass1Key: string | undefined;
 
   try {
-    const body = await request.json();
+    const rawBody = await request.json();
+    const parsed = parseGenerateBody(rawBody);
+    if (!parsed.ok) {
+      console.warn("[generate] Invalid body:", parsed.errors);
+      return NextResponse.json(
+        { error: "Requête invalide.", details: parsed.errors },
+        { status: 400 }
+      );
+    }
     const {
       image,
       surfacePrompt,
       furniturePrompt,
-      styleId: bodyStyleId = "custom",
-      withFurniture = true,
+      styleId: bodyStyleId,
+      withFurniture,
       width,
       height,
-      // F1 iteration params
       pass1_key: pass1Key,
       iterationComment,
-      previousModifications = [],
+      previousModifications,
       sessionId,
-      // F2 room type
-      roomType = null,
-      // F3 outdoor
-      isOutdoor = false,
-      outdoorSubtype = null,
-      // Split-mode: progressive display (pass1 shown while pass2 runs)
-      splitMode = false,
-      pass2Only = false,
+      roomType,
+      isOutdoor,
+      outdoorSubtype,
+      splitMode,
+      pass2Only,
       userId: bodyUserId,
       outputFormat,
-    } = body as {
-      image?: string;
-      surfacePrompt?: string;
-      furniturePrompt?: string;
-      styleId?: string;
-      withFurniture?: boolean;
-      width?: number;
-      height?: number;
-      pass1_key?: string;
-      iterationComment?: string;
-      previousModifications?: string[];
-      sessionId?: string;
-      roomType?: string | null;
-      isOutdoor?: boolean;
-      outdoorSubtype?: string | null;
-      splitMode?: boolean;
-      pass2Only?: boolean;
-      userId?: string;
-      outputFormat?: "original" | "landscape" | "portrait";
-    };
+    } = parsed.data;
 
     styleId = bodyStyleId;
 
@@ -232,8 +218,8 @@ export async function POST(request: NextRequest) {
 
     // Assign to hoisted vars for queue fallback in catch
     _image = image; _surfacePrompt = surfacePrompt; _furniturePrompt = resolvedFurniturePrompt;
-    _width = width; _height = height; _roomType = roomType; _isOutdoor = isOutdoor;
-    _outdoorSubtype = outdoorSubtype; _withFurniture = withFurniture; _pass1Key = pass1Key;
+    _width = width; _height = height; _roomType = roomType ?? null; _isOutdoor = isOutdoor;
+    _outdoorSubtype = outdoorSubtype ?? null; _withFurniture = withFurniture; _pass1Key = pass1Key;
 
     // Credit check — AFTER body parsing so we know if it's an iteration or pass2Only
     // Iterations do NOT consume a credit (spec F1). Only new generations do.
