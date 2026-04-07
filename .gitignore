@@ -40,3 +40,4 @@ public/logs/
 playwright-report/
 test-results/
 audit-data/
+audit-data-*/
