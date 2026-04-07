@@ -2377,12 +2377,25 @@ export default function Home() {
                   const showPass1 = !!partialResult;
                   const hasError = photoErrors.has(i);
                   const active = !done && !showPass1 && !hasError;
+                  // REGRESSION: BR-2 session 34 (2026-04-07)
+                  // Quand une photo en surface-only (withFurniture=false) terminait
+                  // pendant que les autres photos meublées étaient encore en passe 2,
+                  // le tile de loading affichait l'input photo + checkmark vert.
+                  // L'utilisateur croyait que le résultat était la photo "avant".
+                  // Fix : quand done=true, afficher le generatedUrl du résultat (pass1
+                  // pour surface-only, pass2 final pour with-furniture).
+                  const doneResult = done ? photoResults[0] : null;
+                  const tileSrc = showPass1
+                    ? partialResult.generatedUrl
+                    : doneResult
+                    ? doneResult.generatedUrl
+                    : filePreviewUrls[i];
                   return (
                     <div key={i} className="relative rounded-2xl overflow-hidden border border-foreground/10">
                       <div className="aspect-[4/3]">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src={showPass1 ? partialResult.generatedUrl : filePreviewUrls[i]}
+                          src={tileSrc}
                           alt=""
                           className={`w-full h-full object-cover transition-all duration-700 ${done || showPass1 ? "" : "blur-sm brightness-95"}`}
                         />
