@@ -299,24 +299,31 @@ export default function Home() {
   const maxPhotos = Math.min(userCredits ?? 2, 10);
 
   // F1 — Iteration state (maxIterations fetched from API based on user pack)
+  // BR-3 fix (session 34) : tous les flags refining/regenerating sont désormais
+  // PER-PHOTO (indexés par resultIndex). Une opération sur la photo #1 ne doit
+  // jamais bloquer les boutons des photos #2, #3, etc.
   const [maxIterations, setMaxIterations] = useState(0);
   const [iterationsRemaining, setIterationsRemaining] = useState(0);
   const [versions, setVersions] = useState<VersionEntry[][]>([]); // per-result versions
   const [activeVersions, setActiveVersions] = useState<number[]>([]); // active version index per result
   const [isRefineModalOpen, setIsRefineModalOpen] = useState(false);
   const [refineTargetIndex, setRefineTargetIndex] = useState<number>(0);
-  const [isRefining, setIsRefining] = useState(false);
-  const [refineError, setRefineError] = useState<string | null>(null);
-  const [lastRefineComment, setLastRefineComment] = useState<string>("");
-  const [refineWarnings, setRefineWarnings] = useState<string[]>([]);
+  // Per-index sets : un index présent = opération en cours sur cette photo
+  const [refiningIndices, setRefiningIndices] = useState<Set<number>>(new Set());
+  const [refineErrors, setRefineErrors] = useState<Map<number, string>>(new Map());
+  const [lastRefineComments, setLastRefineComments] = useState<Map<number, string>>(new Map());
+  const [refineWarningsByIndex, setRefineWarningsByIndex] = useState<Map<number, string[]>>(new Map());
 
-  // Regenerate state
+  // Regenerate state — per-index
   const [regenerateConfirmIndex, setRegenerateConfirmIndex] = useState<number | null>(null);
-  const [isRegenerating, setIsRegenerating] = useState(false);
-  const [regeneratingIndex, setRegeneratingIndex] = useState<number | null>(null);
+  const [regeneratingIndices, setRegeneratingIndices] = useState<Set<number>>(new Set());
   const [regeneratedIndex, setRegeneratedIndex] = useState<number | null>(null);
-  const [regenerateElapsed, setRegenerateElapsed] = useState(0);
-  const [refineElapsed, setRefineElapsed] = useState(0);
+  // Per-index elapsed timers (Maps mises à jour par un seul interval)
+  const [refineElapsedByIndex, setRefineElapsedByIndex] = useState<Map<number, number>>(new Map());
+  const [regenerateElapsedByIndex, setRegenerateElapsedByIndex] = useState<Map<number, number>>(new Map());
+  // Start timestamps for elapsed calculation
+  const refineStartTimesRef = useRef<Map<number, number>>(new Map());
+  const regenerateStartTimesRef = useRef<Map<number, number>>(new Map());
 
   const heroRef = useReveal();
   const toolRef = useReveal();
@@ -399,29 +406,45 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [isGenerating]);
 
-  // Timer for refine elapsed time
+  // BR-3 : timers per-index. Un seul interval recalcule l'elapsed pour toutes
+  // les photos en cours d'affinage/régénération en lisant les start timestamps.
   useEffect(() => {
-    if (!isRefining) {
-      setRefineElapsed(0);
+    if (refiningIndices.size === 0) {
+      if (refineElapsedByIndex.size > 0) setRefineElapsedByIndex(new Map());
       return;
     }
-    const interval = setInterval(() => {
-      setRefineElapsed((prev) => prev + 1);
-    }, 1000);
+    const tick = () => {
+      const now = Date.now();
+      const next = new Map<number, number>();
+      refiningIndices.forEach((idx) => {
+        const start = refineStartTimesRef.current.get(idx);
+        if (start !== undefined) next.set(idx, Math.floor((now - start) / 1000));
+      });
+      setRefineElapsedByIndex(next);
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
-  }, [isRefining]);
+  }, [refiningIndices, refineElapsedByIndex.size]);
 
-  // Timer for regenerate elapsed time
   useEffect(() => {
-    if (!isRegenerating) {
-      setRegenerateElapsed(0);
+    if (regeneratingIndices.size === 0) {
+      if (regenerateElapsedByIndex.size > 0) setRegenerateElapsedByIndex(new Map());
       return;
     }
-    const interval = setInterval(() => {
-      setRegenerateElapsed((prev) => prev + 1);
-    }, 1000);
+    const tick = () => {
+      const now = Date.now();
+      const next = new Map<number, number>();
+      regeneratingIndices.forEach((idx) => {
+        const start = regenerateStartTimesRef.current.get(idx);
+        if (start !== undefined) next.set(idx, Math.floor((now - start) / 1000));
+      });
+      setRegenerateElapsedByIndex(next);
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
-  }, [isRegenerating]);
+  }, [regeneratingIndices, regenerateElapsedByIndex.size]);
 
   // Stable object URLs for file previews (no leak on re-render)
   const filePreviewUrls = useMemo(() => {
@@ -452,8 +475,9 @@ export default function Home() {
 
   // Abort controller for cancelling in-flight requests
   const abortControllerRef = useRef<AbortController | null>(null);
-  // Separate abort controller for regenerate/refine — doesn't cancel pass2 of other photos
-  const secondaryAbortRef = useRef<AbortController | null>(null);
+  // BR-3 : per-index AbortControllers pour refine/regenerate. Un abort sur la
+  // photo #1 ne doit JAMAIS toucher les requêtes en cours sur les autres photos.
+  const secondaryAbortByIndexRef = useRef<Map<number, AbortController>>(new Map());
   // Flag: all batches submitted — pass2 handlers can clear isGenerating only after this
   const batchesCompleteRef = useRef(false);
   // Track total jobs launched for credit refund on cancellation
@@ -972,18 +996,23 @@ export default function Home() {
     setVersions([]);
     setActiveVersions([]);
     setIterationsRemaining(maxIterations);
-    setRefineError(null);
-    setRefineWarnings([]);
-    setLastRefineComment("");
+    setRefineErrors(new Map());
+    setRefineWarningsByIndex(new Map());
+    setLastRefineComments(new Map());
+    setRefiningIndices(new Set());
+    refineStartTimesRef.current.clear();
     // Reset regenerate state
     setRegenerateConfirmIndex(null);
-    setIsRegenerating(false);
-    setRegeneratingIndex(null);
+    setRegeneratingIndices(new Set());
+    regenerateStartTimesRef.current.clear();
     setDismissedAssociators(new Set());
   };
 
   const handleCancelGeneration = () => {
     abortControllerRef.current?.abort();
+    // BR-3 : abort aussi tous les refine/regenerate en cours
+    secondaryAbortByIndexRef.current.forEach((c) => c.abort());
+    secondaryAbortByIndexRef.current.clear();
     setIsGenerating(false);
     setCurrentProcessing(0);
     setError(null);
@@ -1007,7 +1036,8 @@ export default function Home() {
 
   const handleFullReset = () => {
     abortControllerRef.current?.abort();
-    secondaryAbortRef.current?.abort();
+    secondaryAbortByIndexRef.current.forEach((c) => c.abort());
+    secondaryAbortByIndexRef.current.clear();
     setFiles([]);
     setSelectedStyles([]);
     setCustomPrompt("");
@@ -1030,18 +1060,19 @@ export default function Home() {
     setIterationsRemaining(maxIterations);
     setIsRefineModalOpen(false);
     setRefineTargetIndex(0);
-    setIsRefining(false);
-    setRefineError(null);
-    setLastRefineComment("");
-    setRefineWarnings([]);
+    setRefiningIndices(new Set());
+    refineStartTimesRef.current.clear();
+    setRefineErrors(new Map());
+    setLastRefineComments(new Map());
+    setRefineWarningsByIndex(new Map());
     // Reset F3 state
     setIsOutdoor(false);
     setOutdoorSubtype("terrasse");
     setSelectedOutdoorStyle(null);
     // Reset regenerate state
     setRegenerateConfirmIndex(null);
-    setIsRegenerating(false);
-    setRegeneratingIndex(null);
+    setRegeneratingIndices(new Set());
+    regenerateStartTimesRef.current.clear();
     // Reset Changement 2 state
     setPendingGeneration(false);
     setDismissedAssociators(new Set());
@@ -1049,39 +1080,76 @@ export default function Home() {
 
   const handleOpenRefineModal = useCallback((resultIndex: number) => {
     setRefineTargetIndex(resultIndex);
-    setRefineError(null);
-    setRefineWarnings([]);
+    setRefineErrors((prev) => {
+      if (!prev.has(resultIndex)) return prev;
+      const next = new Map(prev);
+      next.delete(resultIndex);
+      return next;
+    });
+    setRefineWarningsByIndex((prev) => {
+      if (!prev.has(resultIndex)) return prev;
+      const next = new Map(prev);
+      next.delete(resultIndex);
+      return next;
+    });
     setIsRefineModalOpen(true);
   }, []);
 
   const handleRefine = useCallback(
     async (comment: string) => {
-      const targetResult = results[refineTargetIndex];
+      // BR-3 : capture l'index AU MOMENT de la soumission. Plusieurs refines
+      // parallèles peuvent coexister — chacun garde son propre index via closure.
+      const targetIndex = refineTargetIndex;
+      const targetResult = results[targetIndex];
       if (!targetResult?.pass1Key) {
-        setRefineError("Les surfaces de cette génération ont expiré. Regénérez depuis l'image originale.");
+        setRefineErrors((prev) => {
+          const next = new Map(prev);
+          next.set(targetIndex, "Les surfaces de cette génération ont expiré. Regénérez depuis l'image originale.");
+          return next;
+        });
         return;
       }
 
       setIsRefineModalOpen(false);
-      setIsRefining(true);
-      setRefineError(null);
-      setRefineWarnings([]);
-      setLastRefineComment(comment);
+      refineStartTimesRef.current.set(targetIndex, Date.now());
+      setRefiningIndices((prev) => {
+        const next = new Set(prev);
+        next.add(targetIndex);
+        return next;
+      });
+      setRefineErrors((prev) => {
+        if (!prev.has(targetIndex)) return prev;
+        const next = new Map(prev);
+        next.delete(targetIndex);
+        return next;
+      });
+      setRefineWarningsByIndex((prev) => {
+        if (!prev.has(targetIndex)) return prev;
+        const next = new Map(prev);
+        next.delete(targetIndex);
+        return next;
+      });
+      setLastRefineComments((prev) => {
+        const next = new Map(prev);
+        next.set(targetIndex, comment);
+        return next;
+      });
 
       // Build previousModifications from versions UP TO the active version only.
       // This allows the user to select v1, click "Affiner", and iterate from v1
       // (ignoring v2/v3 comments) instead of always iterating from the latest.
-      const targetVersions = versions[refineTargetIndex] || [];
-      const activeIdx = activeVersions[refineTargetIndex] || 0;
+      const targetVersions = versions[targetIndex] || [];
+      const activeIdx = activeVersions[targetIndex] || 0;
       const previousModifications = targetVersions
         .slice(0, activeIdx + 1)
         .filter((v) => v.comment)
         .map((v) => v.comment as string);
 
-      // Cancel previous refine/regenerate only — NOT the main generation
-      secondaryAbortRef.current?.abort();
+      // BR-3 : abort UNIQUEMENT le refine/regenerate précédent SUR CETTE PHOTO.
+      // Les autres photos continuent leurs opérations sans interruption.
+      secondaryAbortByIndexRef.current.get(targetIndex)?.abort();
       const controller = new AbortController();
-      secondaryAbortRef.current = controller;
+      secondaryAbortByIndexRef.current.set(targetIndex, controller);
 
       try {
         // Send raw comment to server — server handles all pre-processing via
@@ -1141,11 +1209,11 @@ export default function Home() {
 
         // Success: add new version, decrement iterations
         // Calculate new version index BEFORE state updates to avoid stale closure
-        const newVersionIndex = (versions[refineTargetIndex]?.length || 1);
+        const newVersionIndex = (versions[targetIndex]?.length || 1);
         setVersions((prev) => {
           const updated = [...prev];
-          const existing = updated[refineTargetIndex] || [];
-          updated[refineTargetIndex] = [
+          const existing = updated[targetIndex] || [];
+          updated[targetIndex] = [
             ...existing,
             { imageUrl: data.image, comment, model: data.model },
           ];
@@ -1153,17 +1221,22 @@ export default function Home() {
         });
         setActiveVersions((prev) => {
           const updated = [...prev];
-          updated[refineTargetIndex] = newVersionIndex;
+          updated[targetIndex] = newVersionIndex;
           return updated;
         });
         setIterationsRemaining((prev) => Math.max(0, prev - 1));
-        setRefineError(null);
+        setRefineErrors((prev) => {
+          if (!prev.has(targetIndex)) return prev;
+          const next = new Map(prev);
+          next.delete(targetIndex);
+          return next;
+        });
 
         // Update the result's generatedUrl for the comparator
         setResults((prev) => {
           const updated = [...prev];
-          updated[refineTargetIndex] = {
-            ...updated[refineTargetIndex],
+          updated[targetIndex] = {
+            ...updated[targetIndex],
             generatedUrl: data.image,
             model: data.model,
           };
@@ -1171,27 +1244,60 @@ export default function Home() {
         });
       } catch (e: unknown) {
         if (e instanceof Error && e.name === "AbortError") return;
+        // BR-4 : iOS a tué la connexion pendant un tab-switch. Le serveur continue
+        // l'itération en background — on prévient l'utilisateur via le toast galerie
+        // au lieu d'afficher "Erreur" + "Votre itération n'a pas été consommée".
+        // Ne PAS décrémenter iterationsRemaining (le webhook /api/queue gérera).
+        if (e instanceof BackgroundDisconnectError) {
+          setQueueToast({
+            type: "info",
+            message: "Affinage en cours en arrière-plan. Retrouvez votre visuel dans votre galerie sous peu.",
+          });
+          return;
+        }
         // Do NOT decrement iterations on error
-        setRefineError(
-          e instanceof Error ? e.message : "Erreur lors de l'ajustement. Votre itération a été conservée."
-        );
+        setRefineErrors((prev) => {
+          const next = new Map(prev);
+          next.set(
+            targetIndex,
+            e instanceof Error ? e.message : "Erreur lors de l'ajustement. Votre itération a été conservée."
+          );
+          return next;
+        });
       } finally {
+        // BR-3 : retire UNIQUEMENT cette photo du Set, ne touche pas aux autres
         if (!controller.signal.aborted) {
-          setIsRefining(false);
+          setRefiningIndices((prev) => {
+            if (!prev.has(targetIndex)) return prev;
+            const next = new Set(prev);
+            next.delete(targetIndex);
+            return next;
+          });
+          refineStartTimesRef.current.delete(targetIndex);
         }
       }
     },
     [results, refineTargetIndex, versions, activeVersions, session?.user?.id]
   );
 
-  const handleRefineRetry = useCallback(() => {
-    if (lastRefineComment) {
-      handleRefine(lastRefineComment);
+  const handleRefineRetry = useCallback((index: number) => {
+    const comment = lastRefineComments.get(index);
+    if (comment) {
+      // Make sure handleRefine reads the right targetIndex
+      setRefineTargetIndex(index);
+      // Defer to next tick so refineTargetIndex is updated before handleRefine reads it
+      setTimeout(() => handleRefine(comment), 0);
     }
-  }, [lastRefineComment, handleRefine]);
+  }, [lastRefineComments, handleRefine]);
 
-  const handleRefineModify = useCallback(() => {
-    setRefineError(null);
+  const handleRefineModify = useCallback((index: number) => {
+    setRefineErrors((prev) => {
+      if (!prev.has(index)) return prev;
+      const next = new Map(prev);
+      next.delete(index);
+      return next;
+    });
+    setRefineTargetIndex(index);
     setIsRefineModalOpen(true);
   }, []);
 
@@ -1206,16 +1312,31 @@ export default function Home() {
     }
 
     setRegenerateConfirmIndex(null);
-    setIsRegenerating(true);
-    setRegeneratingIndex(index);
+    regenerateStartTimesRef.current.set(index, Date.now());
+    setRegeneratingIndices((prev) => {
+      const next = new Set(prev);
+      next.add(index);
+      return next;
+    });
     setUserCredits((prev) => prev !== null ? Math.max(0, prev - 1) : prev);
     window.dispatchEvent(new CustomEvent("credits-updated"));
     setError(null);
 
-    // Cancel previous regenerate/refine only — NOT the main generation (preserves pass2 of other photos)
-    secondaryAbortRef.current?.abort();
+    // BR-3 : abort UNIQUEMENT le refine/regenerate précédent SUR CETTE PHOTO
+    secondaryAbortByIndexRef.current.get(index)?.abort();
     const controller = new AbortController();
-    secondaryAbortRef.current = controller;
+    secondaryAbortByIndexRef.current.set(index, controller);
+
+    // Helper local pour retirer cette photo du Set "en cours"
+    const clearRegenerating = () => {
+      setRegeneratingIndices((prev) => {
+        if (!prev.has(index)) return prev;
+        const next = new Set(prev);
+        next.delete(index);
+        return next;
+      });
+      regenerateStartTimesRef.current.delete(index);
+    };
 
     // Resolve surfacePrompt and furniturePrompt from styleId
     let surfacePrompt = "";
@@ -1249,9 +1370,11 @@ export default function Home() {
         });
       } catch {
         setError("Impossible de lire l'image originale. Rechargez la page et réessayez.");
-        setIsRegenerating(false);
-        setRegeneratingIndex(null);
+        clearRegenerating();
         setRegenerateConfirmIndex(null);
+        // Refund the credit we just consumed
+        setUserCredits((prev) => prev !== null ? prev + 1 : prev);
+        window.dispatchEvent(new CustomEvent("credits-updated"));
         return;
       }
     }
@@ -1387,8 +1510,7 @@ export default function Home() {
             ));
           })
           .finally(() => {
-            setIsRegenerating(false);
-            setRegeneratingIndex(null);
+            clearRegenerating();
             setRegeneratedIndex(index);
             setTimeout(() => setRegeneratedIndex(null), 3000);
           });
@@ -1416,17 +1538,27 @@ export default function Home() {
           updated[index] = 0;
           return updated;
         });
-        setIsRegenerating(false);
-        setRegeneratingIndex(null);
+        clearRegenerating();
         // Show "Nouveau résultat" badge briefly
         setRegeneratedIndex(index);
         setTimeout(() => setRegeneratedIndex(null), 3000);
       }
     } catch (e: unknown) {
       if (e instanceof Error && e.name === "AbortError") return;
+      // BR-4 : iOS background disconnect — le serveur continue, pas un échec
+      if (e instanceof BackgroundDisconnectError) {
+        setQueueToast({
+          type: "info",
+          message: "Régénération en cours en arrière-plan. Retrouvez votre visuel dans votre galerie sous peu.",
+        });
+        clearRegenerating();
+        return;
+      }
       setError(e instanceof Error ? e.message : "La régénération a échoué. Vérifiez votre connexion et réessayez.");
-      setIsRegenerating(false);
-      setRegeneratingIndex(null);
+      clearRegenerating();
+      // Refund the credit consumed at start
+      setUserCredits((prev) => prev !== null ? prev + 1 : prev);
+      window.dispatchEvent(new CustomEvent("credits-updated"));
     }
   }, [results, userCredits]);
 
@@ -1898,7 +2030,10 @@ export default function Home() {
                             // Si plus aucune photo, reset complet du state de génération
                             if (files.length <= 1) {
                               setIsGenerating(false);
-                              setIsRefining(false);
+                              setRefiningIndices(new Set());
+                              refineStartTimesRef.current.clear();
+                              setRegeneratingIndices(new Set());
+                              regenerateStartTimesRef.current.clear();
                               setError(null);
                               setIterationsRemaining(maxIterations);
                             }
@@ -2431,13 +2566,20 @@ export default function Home() {
                   const activeIdx = activeVersions[index] || 0;
                   const displayUrl =
                     resultVersions[activeIdx]?.imageUrl || result.generatedUrl;
-                  const isRefineTarget = refineTargetIndex === index;
+                  // BR-3 : tous les flags sont désormais per-index
+                  const isThisRefining = refiningIndices.has(index);
+                  const isThisRegenerating = regeneratingIndices.has(index);
+                  const thisRefineError = refineErrors.get(index) || null;
+                  const thisRefineWarnings = refineWarningsByIndex.get(index) || [];
+                  const thisLastComment = lastRefineComments.get(index) || "";
+                  const thisRefineElapsed = refineElapsedByIndex.get(index) || 0;
+                  const thisRegenerateElapsed = regenerateElapsedByIndex.get(index) || 0;
 
                   return (
                     <div key={index} className="space-y-5">
 
                       {/* Refine loading state */}
-                      {isRefining && isRefineTarget && (
+                      {isThisRefining && (
                         <div className="relative rounded-2xl overflow-hidden border border-foreground/10 bg-foreground/5">
                           <div className="relative">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -2457,10 +2599,10 @@ export default function Home() {
                                   Ajustement en cours… jusqu&apos;à 2 minutes
                                 </p>
                                 <p className="text-xs text-muted font-light">
-                                  {refineElapsed}s
+                                  {thisRefineElapsed}s
                                 </p>
                                 <p className="text-xs text-muted font-light mt-2 italic">
-                                  &laquo; {lastRefineComment} &raquo;
+                                  &laquo; {thisLastComment} &raquo;
                                 </p>
                               </div>
                             </div>
@@ -2469,7 +2611,7 @@ export default function Home() {
                       )}
 
                       {/* Regenerate loading state */}
-                      {isRegenerating && regeneratingIndex === index && (
+                      {isThisRegenerating && (
                         <div className="relative rounded-2xl overflow-hidden border border-foreground/10 bg-foreground/5">
                           <div className="relative">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -2489,14 +2631,22 @@ export default function Home() {
                                   Régénération en cours… jusqu&apos;à 2 minutes
                                 </p>
                                 <p className="text-xs text-muted font-light">
-                                  {regenerateElapsed}s
+                                  {thisRegenerateElapsed}s
                                 </p>
                               </div>
                               <button
                                 onClick={() => {
-                                  secondaryAbortRef.current?.abort();
-                                  setIsRegenerating(false);
-                                  setRegeneratingIndex(null);
+                                  secondaryAbortByIndexRef.current.get(index)?.abort();
+                                  setRegeneratingIndices((prev) => {
+                                    if (!prev.has(index)) return prev;
+                                    const next = new Set(prev);
+                                    next.delete(index);
+                                    return next;
+                                  });
+                                  regenerateStartTimesRef.current.delete(index);
+                                  // Refund credit on cancel
+                                  setUserCredits((prev) => prev !== null ? prev + 1 : prev);
+                                  window.dispatchEvent(new CustomEvent("credits-updated"));
                                 }}
                                 className="mt-3 inline-flex items-center gap-1.5 bg-background/90 backdrop-blur-sm border border-foreground/10 text-muted px-4 min-h-[36px] py-1.5 rounded-full text-xs font-medium hover:text-foreground hover:border-foreground/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
                               >
@@ -2507,8 +2657,8 @@ export default function Home() {
                         </div>
                       )}
 
-                      {/* Comparator (hidden during refine loading or regenerate loading for this target) */}
-                      {!(isRefining && isRefineTarget) && !(isRegenerating && regeneratingIndex === index) && (
+                      {/* Comparator (hidden during refine loading or regenerate loading for this photo) */}
+                      {!isThisRefining && !isThisRegenerating && (
                         <div className="relative">
                           {/* "Nouveau résultat" badge after regeneration */}
                           {regeneratedIndex === index && (
@@ -2544,7 +2694,7 @@ export default function Home() {
                       )}
 
                       {/* Refine button — right after comparator, before share/associate */}
-                      {!isRefining && !result.pass2Pending && maxIterations > 0 && (
+                      {!isThisRefining && !result.pass2Pending && maxIterations > 0 && (
                         <div className="text-center space-y-1.5">
                           {iterationsRemaining > 0 ? (
                             <>
@@ -2593,7 +2743,7 @@ export default function Home() {
                       )}
 
                       {/* Regenerate button — visible for Starter+ plans, hidden during regeneration loading */}
-                      {!isRefining && !result.pass2Pending && !(isRegenerating && regeneratingIndex === index) && (hasStarter || hasPro) && (
+                      {!isThisRefining && !result.pass2Pending && !isThisRegenerating && (hasStarter || hasPro) && (
                         <div className="text-center">
                           {regenerateConfirmIndex === index ? (
                             <div className="bg-foreground/5 border border-foreground/10 rounded-xl p-4 max-w-sm mx-auto space-y-3">
@@ -2603,10 +2753,10 @@ export default function Home() {
                               <div className="flex items-center justify-center gap-3">
                                 <button
                                   onClick={() => handleRegenerate(index)}
-                                  disabled={isRegenerating}
+                                  disabled={isThisRegenerating}
                                   className="inline-flex items-center gap-1.5 bg-sage text-white px-4 min-h-[36px] py-1.5 rounded-full text-xs font-medium hover:bg-sage/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
                                 >
-                                  {isRegenerating && (
+                                  {isThisRegenerating && (
                                     <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
                                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
@@ -2616,7 +2766,7 @@ export default function Home() {
                                 </button>
                                 <button
                                   onClick={() => setRegenerateConfirmIndex(null)}
-                                  disabled={isRegenerating}
+                                  disabled={isThisRegenerating}
                                   className="text-xs text-muted underline underline-offset-4 hover:text-foreground transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded"
                                 >
                                   Annuler
@@ -2626,10 +2776,10 @@ export default function Home() {
                           ) : (
                             <button
                               onClick={() => setRegenerateConfirmIndex(index)}
-                              disabled={isRegenerating}
+                              disabled={isThisRegenerating}
                               className="text-xs text-muted font-light underline underline-offset-4 hover:text-foreground transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded"
                             >
-                              {isRegenerating ? "Régénération en cours\u2026" : "Régénérer"}
+                              {isThisRegenerating ? "Régénération en cours\u2026" : "Régénérer"}
                             </button>
                           )}
                         </div>
@@ -2638,8 +2788,8 @@ export default function Home() {
                       {/* Photo associator — visible UNIQUEMENT sur une image finie (pas pendant affinage, régénération, ou passe 2) */}
                       {session && hasPro && result.photoId && !dismissedAssociators.has(index)
                         && !result.pass2Pending
-                        && !(isRefining && isRefineTarget)
-                        && !(isRegenerating && regeneratingIndex === index)
+                        && !isThisRefining
+                        && !isThisRegenerating
                         && (
                         <PhotoAssociator
                           photoId={result.photoId}
@@ -2652,7 +2802,7 @@ export default function Home() {
                         versions={resultVersions}
                         activeVersion={activeIdx}
                         onSelect={(vIdx) => {
-                          if (isRefining && isRefineTarget) return; // Disable switching while this result is refining
+                          if (isThisRefining) return; // Disable switching while this result is refining
                           setActiveVersions((prev) => {
                             const updated = [...prev];
                             updated[index] = vIdx;
@@ -2674,22 +2824,22 @@ export default function Home() {
                         }}
                       />
 
-                      {/* Refine error */}
-                      {refineError && isRefineTarget && !isRefining && (
+                      {/* Refine error — per-photo */}
+                      {thisRefineError && !isThisRefining && (
                         <div className="bg-red-50/50 border border-red-200/60 rounded-2xl p-5 text-center">
-                          <p className="text-red-600/80 text-sm mb-1">{refineError}</p>
+                          <p className="text-red-600/80 text-sm mb-1">{thisRefineError}</p>
                           <p className="text-red-400/70 text-xs font-light mb-3">
                             Votre itération n&apos;a pas été consommée.
                           </p>
                           <div className="flex items-center justify-center gap-3">
                             <button
-                              onClick={handleRefineRetry}
+                              onClick={() => handleRefineRetry(index)}
                               className="text-xs text-red-500 underline underline-offset-4 hover:text-red-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded"
                             >
                               Réessayer
                             </button>
                             <button
-                              onClick={handleRefineModify}
+                              onClick={() => handleRefineModify(index)}
                               className="text-xs text-muted underline underline-offset-4 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded"
                             >
                               Modifier le commentaire
@@ -2699,10 +2849,10 @@ export default function Home() {
                       )}
 
                       {/* Refine warnings (shown after successful refine) */}
-                      {refineWarnings.length > 0 && isRefineTarget && !isRefining && !refineError && (
+                      {thisRefineWarnings.length > 0 && !isThisRefining && !thisRefineError && (
                         <div className="bg-amber-50/50 border border-amber-200/60 rounded-xl p-4 text-left max-w-lg mx-auto">
                           <ul className="space-y-1">
-                            {refineWarnings.map((w, wi) => (
+                            {thisRefineWarnings.map((w, wi) => (
                               <li key={wi} className="text-amber-600/80 text-xs font-light flex items-start gap-1.5">
                                 <span className="mt-0.5 shrink-0">!</span>
                                 <span>{w}</span>
@@ -2914,8 +3064,8 @@ export default function Home() {
         onSubmit={handleRefine}
         iterationsRemaining={iterationsRemaining}
         maxIterations={maxIterations}
-        isLoading={isRefining}
-        warnings={refineWarnings}
+        isLoading={refiningIndices.has(refineTargetIndex)}
+        warnings={refineWarningsByIndex.get(refineTargetIndex) || []}
       />
 
       {/* Auth modal — auto-opened when redirected from protected route ou avant génération */}
