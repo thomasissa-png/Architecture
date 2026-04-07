@@ -308,10 +308,57 @@
 | @fullstack | 2026-04-05 | Page /support (app/support/page.tsx + API + AuthButton), fixes UI, pipeline features | Page support complète (formulaire 5 catégories, screenshot, DB + email). Fix tab-switch, stale closure, overlay position, crédits régénérer, max 3 styles, touch targets. | QA support 17/17 PASS. QA parcours utilisateur 12/12 PASS. |
 | @product-manager | 2026-04-05 | docs/product/support-page-specs.md | Specs page /support : formulaire contact, 5 catégories, screenshot optionnel, email contact@versimo.fr, rate limit 5/h. | Formulaire simple, pas de ticketing complexe. Mobile-first. |
 | @ia | 2026-04-05 | docs/ia/passe1-rewrite-v53.md | Refonte complète prompts passe 1 : 10 constantes fusionnées en 4 (PASS1_CORE, PASS1_ACTION, PASS1_CLEANUP, PASS1_PHOTO). 623→222 mots (-64%). Ordre restructuré structure-first. 5 problèmes audits analysés avec fix. Anti-sanitaire explicite. Anti-moulure. | Instructions tardives (>200 mots) ignorées par gpt-image-1.5 — CEILING/COLUMN en position 231-345. 85 mots dupliqués (14%). "Preserve geometry" trop abstrait → "same bumps, steps, beams, ribs". Alt écartée : prompts >800 mots (pire résultat). |
+| @orchestrator + @ia + @qa + @ux + @moi + @product-manager + Yann + Lucas + Camille | 2026-04-05 | Session 33 marathon — 60+ commits | **Pipeline génération** : 8 bugs multi-photo corrigés (compteur crédits, MAX_CONCURRENT 5, overlay par photo, tri par fileIndex, refund auto, race conditions). 2 RC corrigées (refresh abort + flicker). userCredits null guard + roomType non-split + crop sur photos bien (CropModal + uncrop). PDF dossier en mode screen au lieu print. Layout résultats responsive sm:max-w-xl→lg:max-w-2xl. Specs F12 6 règles R1-R6. **Prompts** : v49→v52 (anti-élargissement, plomberie, comptage radiateurs, anti-fenêtre mezzanine, IPN, color shift bidirectionnel). v53 = refonte passe 1 (663→220 mots). v54 = condensation passe 2 (478→200) + outdoor (350→200). Validés Yann 8.4/Lucas 8.9/Camille 7.9. **Tests** : 12 E2E Playwright + matrice 135 combinaisons + audit cross-fichier 44 checks. **Build fix** : 3 ESLint errors (currentProcessing, jobIdx, userCredits dep). | Décisions clés : (1) Décrément crédits SYNCHRONE au clic (CustomEvent detail.credits, pas fetch API) — Thomas teste l'annulation en 5 min, doit voir le compteur bouger. (2) MAX_CONCURRENT 2→5 — toutes les images partent en parallèle, plus de "En attente". (3) Refund automatique sur jobs échoués + annulation — F12.5 spec. (4) Refonte prompts en mode "structure FIRST, action SECOND" — gpt-image-1.5 perd focus après ~200 mots. (5) PDF dossier rend la version SCREEN (web parfaite) au lieu de PRINT (DossierPrintView cassé). Alternatives écartées : compositing post-génération (plus complexe que refonte prompts), filtrage des pièces complexes (perte de cas d'usage). |
 
 ---
 
 ## Mémo de reprise — dernière session
+
+- **Date et heure de clôture** : 2026-04-05 (session 33 — marathon prompts + multi-photo + v54)
+- **Branch** : `claude/extract-project-context-BDGJy`
+- **Résumé de la session** :
+  - **Multi-photo** : 8 bugs critiques fixés (compteur crédits sync immédiat via CustomEvent, MAX_CONCURRENT 2→5, overlay erreur par photo, tri résultats par fileIndex, refund auto sur échec ET annulation, race conditions abort + flicker, userCredits null guard, roomType non-split). Section résultats gated par !isGenerating, code mort "En attente" supprimé.
+  - **Specs F12** (PM) : 6 règles non-négociables R1-R6 enregistrées dans functional-specs.md, 5 états UI, 8 edge cases, 8 events tracking.
+  - **Tests** : 12 E2E Playwright (multi-photo), matrice 135 combinaisons, audit cross-fichier 44 checks (3 parts QA), audit Thomas crop + UX visuel.
+  - **Crop photos bien** : feature complète (CropModal react-easy-crop, API /crop + /uncrop avec backup original_input_key, bouton "Original" pour restaurer, Escape close, anti-IDOR).
+  - **Favicon** : config explicite root layout, Apple icon 180x180 généré.
+  - **PDF dossier** : fix screen mode (au lieu de print) — Puppeteer rend la version web parfaite, masque les éléments interactifs.
+  - **Layout résultats** : responsive sm:max-w-xl (576px) lg:max-w-2xl (672px) — Claire +31% surface visible, Léa "Instagram-worthy".
+  - **Prompts IA** : v49→v52 (anti-élargissement, plomberie, comptage radiateurs, anti-fenêtre mezzanine, IPN/lintels, color shift bidirectionnel, baignoire préservée). v53 = REFONTE PASSE 1 (663→220 mots, structure FIRST). v54 = condensation passe 2 (478→200) + outdoor (350→200). PROMPT_VERSION = v54.
+  - **Validations agents** : Yann 8.4/10, Lucas 8.9/10, Camille 7.9/10 (outdoor non impacté). Tous GO.
+  - **Build fix** : 3 ESLint errors résolus (currentProcessing destructured, jobIdx removed, userCredits dep added).
+  - **Audits visuels** : Yann+Lucas v49 (7.5), v51 (7.35), v52 (8.4 simple/4 complexe), v53 (validé code only). Identifié problème modèle gpt-image-1.5 sur géométries complexes (mezzanine, voûtes).
+
+- **Travaux reportés** :
+  1. **DÉPLOYER v54 sur Replit et tester** — pipeline non testé en prod après refonte
+  2. **Audit visuel v54** avec Yann+Lucas+Camille sur 6 nouvelles générations (vérifier que la condensation n'a pas dégradé la qualité)
+  3. **Domaine versimo.fr** — blocker SEO/GEO n°1, action fondateur
+  4. **Médiateur consommation** — obligatoire avant première vente B2C
+  5. **Clés API prod** — Stripe, Google OAuth, Sentry, Resend (action fondateur)
+  6. **Blog seed** — `npx tsx scripts/seed-blog.ts` sur Replit
+  7. **Vitest install** — pour exécuter tests/unit/CropModal.test.tsx (npm install -D vitest @testing-library/react jsdom)
+
+- **Préférences fondateur (renforcées cette session)** :
+  - **JAMAIS dire "c'est la limitation du modèle"** quand on n'a pas optimisé le prompt — Thomas exige qu'on cherche le fix prompt avant d'invoquer une limitation
+  - **Notes ≥ 9.5/10 obligatoires** — refus catégorique de se satisfaire de 7-8/10
+  - **Tests visuels par persona OBLIGATOIRES** — pas seulement audit de code, l'expérience UTILISATEUR compte
+  - **Refund automatique** sur tout échec de crédit (jobs échoués + annulation) — pattern non-négociable
+  - **Vérifier le build avant de prétendre que c'est fixé** — `npx next lint` AVANT de confirmer
+  - Préférences précédentes maintenues : font-light, no grain, gpt-image-1.5, fix QA direct, vélocité IA
+
+- **Prochaines actions recommandées** :
+  1. **Déployer v54 sur Replit** (action fondateur — push automatique main)
+  2. **Test multi-photo réel** : 3 photos × 1 style sur iPhone, vérifier compteur, simultané, overlay, ordre résultats, annulation
+  3. **Audit visuel v54** avec Yann+Lucas+Camille sur les premières générations prod (cible 9/10)
+  4. **Si v54 dégrade la qualité** : revenir à v53 sur la passe 2 (la passe 1 est validée)
+
+- **Commande de reprise suggérée** :
+```
+@orchestrator Reprends Versimo. Session 33 marathon terminée. Pipeline v54 déployé (passe 1 220 mots + passe 2 200 mots + outdoor condensé). Multi-photo robuste (8 bugs fixés, 12 E2E, matrice 135 combinaisons). Specs F12 6 règles. Crop photos bien livré. PDF dossier en mode screen. PRIORITÉ : déployer v54, tester multi-photo en prod sur iPhone, audit visuel Yann+Lucas+Camille sur 6 générations.
+```
+---
+
+## Mémo session 32 (archive)
 
 - **Date et heure de clôture** : 2026-04-05 (session 32 — marathon)
 - **Branch** : `claude/extract-project-context-HN2CR`

@@ -29,3 +29,17 @@
 | 2026-03-28 | "Je ne veux plus de trous dans la raquette" — couverture exhaustive des types de pièce | A demandé un audit @ia pour vérifier que TOUS les types ont les corrections d'échelle | Quand une correction de prompt est faite, la propager à TOUS les builders (Responses + Flux × tous types). |
 | 2026-04-02 | "Gros problème sur l'itération" = priorité absolue | A signalé la régression d'itération comme urgence, avant les autres sujets | L'itération est le coeur de l'UX Versimo. Toute régression = P0 immédiat, audits formels + corrections dans la même session. |
 | 2026-04-02 | "Fais vérifier" = audits agents formels avec rapport | A demandé des audits Yann+Lucas structurés, pas des checks rapides | Les vérifications = toujours des rapports écrits dans docs/reviews/, pas des réponses verbales. |
+
+## Session 33 — 2026-04-05
+
+| Date | Préférence | Contexte | Règle pour les agents |
+|---|---|---|---|
+| 2026-04-05 | **Refus catégorique de 7-8/10** | Quand un audit rend 7.5/10, recadre immédiatement et exige itération vers 9.5+ | Tout score < 9 doit être accompagné de 3 fixes immédiats pour atteindre 9.5. Ne JAMAIS livrer un audit avec une note < 9 sans itération corrective. |
+| 2026-04-05 | **JAMAIS "limitation du modèle" sans audit prompt** | "J'en ai marre de lire que c'est la faute de l'IA alors qu'on sait que c'est notre prompt le fautif" | Avant d'invoquer une limitation modèle, faire un audit profond du prompt (longueur, ordre tokens, ambiguïté). Le 90% des "limitations" sont des prompts mal construits. |
+| 2026-04-05 | **Refund automatique sur TOUT échec** | Annulation, erreur partielle, erreur totale, validation échouée → TOUJOURS rembourser | Tout flow consommant un crédit doit avoir un refund automatique sur chaque chemin d'erreur. Tester l'annulation dans les 5 premières minutes. |
+| 2026-04-05 | **Décrément crédits SYNCHRONE au clic** | Le compteur doit bouger AVANT le premier appel API | CustomEvent avec detail.credits, pas fetch API (trop lent mobile). Mise à jour optimiste obligatoire. |
+| 2026-04-05 | **`npx next lint` AVANT de confirmer un fix** | "Fais une vraie vérification" = lance le linter | Pour tout fix code : exécuter le linter AVANT de répondre "fixé". Documenter l'output dans le commit. |
+| 2026-04-05 | **Expérience IDENTIQUE peu importe le nombre d'éléments** | "Que j'upload 1 ou 5 photos, l'expérience est exactement la même" | Toute feature 1→N éléments doit avoir une UX strictement identique. Pas de "en attente", pas de batches visibles, pas de dégradation. |
+| 2026-04-05 | **@qa code + @ux visuel + persona = obligatoire** | "Tu es sûr ? Visuellement c'est ok du point de vue user comme j'ai demandé ?" | Pour tout fix UI : @qa (code) PUIS @ux (visuel) PUIS persona (test). Pas de raccourci. Quand le fondateur dit "tu es sûr ?", il manque l'audit visuel. |
+| 2026-04-05 | **Tests de matrice exhaustive obligatoires** | "Vérifie que ça marche pour tous les cas croisés : 3 comptes × 5 quantités × 3 espaces × 3 modes" | Pour les features critiques, produire une matrice de combinaisons et la valider via lecture de code (PASS/FAIL par cellule). |
+| 2026-04-05 | **Découpage anti-timeout des agents** | "Qu'il ait une stratégie anti timeout" | Pour audits/refactors > 500 lignes : découper en N agents parallèles avec scope précis et limite de lignes. Stratégie permanente. |
