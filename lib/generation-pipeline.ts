@@ -119,8 +119,24 @@ export async function extractRoomInventory(imageBase64: string): Promise<string>
  *   P0-B suppression "vault beams" amorcantes sur 10/12 styles — la formulation poussait gpt-image-1.5 a halluciner des poutres meme sur plafonds plats. Conservee uniquement pour Mediterranean/Industrial avec formulation conditionnelle stricte.
  *   P0-C ARCHITECTURAL HONESTY clause ajoutee en tete de tous les builders passe 1 (8 branches indoor) — interdit l'invention de structures non visibles dans l'input.
  *   P0-D color shift Contemporary — surfacePrompt reformule pour preserver la temperature warm/cool des murs au lieu de les neutraliser globalement.
- *   Fixes appliques en synchro StylePicker.tsx + style-resolver.ts (24 modifications synchronisees + 2 surfacePrompts Contemporary).) */
-export const PROMPT_VERSION = "v57";
+ *   Fixes appliques en synchro StylePicker.tsx + style-resolver.ts (24 modifications synchronisees + 2 surfacePrompts Contemporary).
+ * v58 (Sprint audit v57 Yann+Lucas — 3 P0 prompt-engineering, decision @ia autonomous):
+ *   P0-1 bathroom biais douche — roomFurnitureOverride dans lib/room-types.ts reformule en mode
+ *     PRESERVATION-FIRST. Avant : "frameless glass walk-in shower 80-90cm + If room large add freestanding tub"
+ *     ecrasait litteralement la baignoire/douche existante (le modele obeit a l'instruction explicite
+ *     avant input_fidelity). Apres : "preserve all existing sanitary fixtures exactly", uniquement
+ *     accessoires freestanding/wall-mounted, pas de prescription d'equipement. Affecte les 12 styles bathroom.
+ *   P0-2 iteration adjust over-conservative — buildAdjustResponsesPrompt clause equipment-preservation
+ *     etendue avec exception conditionnelle "UNLESS the requested change above explicitly asks to remove
+ *     or relocate one of these items". Resout la contradiction SURGICAL EDIT vs EQUIPMENT_PRESERVATION
+ *     quand l'utilisateur demande "enleve le ballon d'eau chaude".
+ *   P0-3 TEMPORARY_OBJECTS_TO_REMOVE manquant — CLEANUP_V53 etendu avec debris, ladders, scaffolding,
+ *     buckets, paint pots, tarps, drop cloths, hand tools, power tools, brooms, et people visibles
+ *     (workers, painters, occupants, photographers, hands). Pieces brutes Thomas marchand de biens
+ *     desormais nettoyees en pass 1. Affecte les 8 builders pass 1 indoor (Kitchen, Bathroom, WC,
+ *     Bedroom, Laundry, Cellar, Entryway, fallback living/dining/office).
+ *   Reportes en v59 : Option 3 sharp pre-processing (P2 Lucas), EQUIPMENT_PRESERVE/HIDE split par room_type. */
+export const PROMPT_VERSION = "v58";
 
 // ─── Image generation model ─────────────────────────────────────────
 // v36: configurable via env var. Default gpt-image-1 (v32 reverted gpt-image-1.5 for spatial regression).
@@ -207,7 +223,10 @@ const PASS1_PREAMBLE_V53 = "STRUCTURE LOCK: every column, beam, slab edge, and c
 // The clause was injected in 8 pass-1 builders but did not prevent the leakage problems
 // observed in v56 audits. Removed to reduce prompt length and revert to v54 baseline.
 const PRESERVATION_V53 = "Ceiling: keep every bump, step, soffit, vault, and beam visible — paint over their surface, keep their shape. Columns, posts, IPN beams, and metal lintels: keep full width and original material texture. Slab edges: keep full thickness. Mouldings, cornices, and decorative trims: keep shape and position, paint over. Keep the input's color temperature — do not warm or cool.";
-const CLEANUP_V53 = "Remove loose construction items: cables, junction boxes, exposed pipes, outlets. Keep all fixed equipment in place: radiators, heaters, vents, panels — same count, same positions. Existing built-in fixtures (bathtub, shower tray, toilet, sink) stay if present. Room stays COMPLETELY EMPTY — no furniture, no new fixtures.";
+// v58: TEMPORARY_OBJECTS_TO_REMOVE — inclut debris de chantier, outils, personnes (Sprint audit v57 Yann+Lucas).
+// Les chantiers bruts livres par Thomas (marchand de biens) contiennent regulierement echelles, seaux, debris,
+// peintres, occupants, photographes. Sans cette clause, ces elements restent visibles a 100% en pass 1.
+const CLEANUP_V53 = "Remove all loose construction items and temporary objects: cables, junction boxes, exposed pipes, outlets, construction debris, rubble, cardboard boxes, paint pots, buckets, tarps, drop cloths, ladders, step-stools, scaffolding, hand tools, power tools, brooms, and any people visible (workers, painters, occupants, photographers, hands) — replace each removed zone with the surrounding wall, floor, or ceiling finish. Keep all fixed equipment in place: radiators, heaters, vents, panels — same count, same positions. Existing built-in fixtures (bathtub, shower tray, toilet, sink) stay if present. Room stays COMPLETELY EMPTY of people, tools, and debris — no furniture, no new fixtures.";
 
 // v54: ANTI_INVENTION still used by outdoor pass 1.
 const ANTI_INVENTION = "Only modify surfaces as described. No new architectural elements (arches, vaults, columns, niches, coffers, windows, doors) unless already in the input. Areas beyond the frame edges of the input are unknown — leave them as-is, do not invent what is there.";
