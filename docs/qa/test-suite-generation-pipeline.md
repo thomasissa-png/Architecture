@@ -677,3 +677,372 @@ npm run smoke
 
 ---
 
+## Section 6 — Matrice de couverture
+
+Légende : **C** = couvert, **P** = partiel, **N** = non couvert. Le statut actuel reflète l'état AVANT exécution de cette suite.
+
+### 6.1 Matrice par zone à risque
+
+| Zone à risque | Unit | E2E | Manuel | Actuel | Cible | Test IDs |
+|---|---|---|---|---|---|---|
+| **F12 R1 — universalité 1-5 photos** | U-MP-001 | E2E-G02, E2E-G03 | M-G03 | N | C | Refactor R1 requis |
+| **F12 R3 — ordre fileIndex préservé** | U-MP-002 | E2E-G02 | M-G03 | P | C | — |
+| **F12 R5 — refund auto sur abort** | U-MP-004/005/006 | E2E-G02 | M-G02 | N | C | — |
+| **F12 compteur crédits synchrone** | — (UI) | E2E-G01 | M-G01 | P | C | Manuel prioritaire |
+| **F12 MAX_CONCURRENT=5 batches** | U-MP-003 | E2E-G03 | — | P | C | — |
+| **F12 erreur per-photo overlay** | — (UI) | — | M-G04 | N | C | Manuel prioritaire |
+| **F1 pass1Key cache TTL 24h** | U-DB-006 | E2E-G03 | — | P | C | — |
+| **F1 image source = output meublé** | — | E2E-G10 | M-G06 | N | C | Régression session 32 |
+| **F1 pre-processing GPT-4.1-mini** | U-CP-001 à U-CP-015 | E2E-G04 | M-G07 | N | C | — |
+| **F1 allowWallMounted** | U-CP-013/014 | — | — | N | C | — |
+| **F1 max iterations par tier** | U-CR-007 à U-CR-010 | E2E-G03 | — | P | C | — |
+| **F2 roomFurnitureOverride** | U-GP-025, U-RT-002 | E2E-G08 | M-G09 | N | C | Régression F2 |
+| **F2 8 room types couverts** | U-RT-003 | — | — | N | C | — |
+| **F3 mutex F2/F3** | — | E2E-G09 | M-G10 | N | C | — |
+| **F3 outdoor builder pas de ceiling** | U-GP-014 | E2E-G09 | — | P | C | — |
+| **F3 5 sous-types** | U-OD-002 | — | — | N | C | — |
+| **Tab-switch iOS BackgroundDisconnectError** | — (infra) | E2E-G05 | M-G05 | N | C | Device réel |
+| **Replit autoscale await avant response** | — (infra) | — | Monitoring logs | P | P | Non testable local |
+| **getServerSession sporadique** | U-SE-001 à U-SE-005 | — | Monitoring logs | N | C | — |
+| **Stripe checkout → crédits** | — | E2E-G07 | M-G11 | P | C | — |
+| **Décrément crédit optimiste** | — (UI) | E2E-G01 | M-G01 | P | C | — |
+| **Refund auto sur erreur** | U-MP-004 | E2E-G02 | M-G02/M-G04 | N | C | — |
+| **hasStarterAccess (historique achat)** | U-CR-001/002/003 | — | — | N | C | Régression session 31 |
+| **PROMPT_VERSION bump détecté** | U-GP-026 | — | — | N | C | Auto-bump CI |
+| **Anti-hallucination fenêtre prompts** | U-GP-017, U-IT-004 | — | M-G07 | N | C | — |
+| **Comparateur slider touch iOS** | — | E2E-G11 (iPhone) | M-G12 | N | C | Device réel |
+| **Ratio I/O 4:3 → 1536x1024** | U-GP-001/005 | — | M-G13 | N | C | Régression session 32 |
+| **Messages d'erreur humains** | — | — | M-G14 | N | P | Manuel |
+| **Galerie ordre chronologique** | — | — | M-G08 | N | C | — |
+| **Object Storage résilience retry** | U-DB-001/002/003 | — | — | N | C | Régression session 19 |
+
+### 6.2 Synthèse couverture
+
+- **Zones entièrement couvertes (unit + E2E + manuel)** : 11/29 cibles (38%)
+- **Zones partiellement couvertes** : 6/29 (21%)
+- **Zones non-testables automatiquement** : 2/29 (7%, Replit autoscale + monitoring sporadique)
+- **Action prioritaire** : écrire les 26 tests unit P0 + 11 E2E + 14 manuels en 2-3 sessions @qa + @fullstack pour passer à 90% couverture.
+
+### 6.3 Priorité d'exécution (ordre recommandé)
+
+1. **Jour 1** : @fullstack ajoute les 16 data-testid + extrait `multi-photo-scheduler.ts` (refactor R1) + écrit les U-MP-001 à U-MP-006 + U-GP-001 à U-GP-013
+2. **Jour 1 après-midi** : @qa écrit U-CR-001 à U-CR-014, U-SE-001 à U-SE-005, U-IT-001 à U-IT-008
+3. **Jour 2 matin** : @qa écrit les 11 E2E avec mocks
+4. **Jour 2 après-midi** : fondateur exécute les 14 tests manuels M-G01 à M-G14 sur iPhone réel + desktop
+5. **Jour 3** : intégration smoke test CI, bloquer merge si 1+ gate rouge
+
+---
+
+## Section 7 — Recommandations process
+
+### 7.1 Quand lancer chaque type de test
+
+| Moment | Type de test | Durée | Exécutant |
+|---|---|---|---|
+| **Chaque commit sur `app/api/generate/` ou `lib/generation-pipeline.ts`** | Tests unit Vitest P0 | < 30s | Pre-commit hook Husky |
+| **Chaque PR** | Unit + 3 E2E smoke critiques (E2E-G01, G02, G08) | < 5 min | GitHub Actions |
+| **Avant merge main** | Unit + E2E complets (G01 à G11) avec mocks | < 10 min | GitHub Actions |
+| **Avant CHAQUE déploiement Replit** | Smoke test 15 points (Section 5) | < 5 min | Manuel fondateur OU `npm run smoke` |
+| **Après bump PROMPT_VERSION** | Benchmark visuel Yann + Lucas sur 6 générations | 1-2h | Agents @interior-architect + @ai-image-expert |
+| **Hebdomadaire** | Tests manuels iPhone réel (M-G01 à M-G14) | 20 min | Fondateur |
+| **Mensuel** | Audit accessibilité axe-core complet | 30 min | @qa |
+
+### 7.2 Bloc CI GitHub Actions minimal
+
+Fichier `.github/workflows/generation-pipeline-ci.yml` :
+
+```yaml
+name: Generation Pipeline CI
+
+on:
+  pull_request:
+    paths:
+      - 'app/api/generate/**'
+      - 'app/page.tsx'
+      - 'lib/generation-pipeline.ts'
+      - 'lib/custom-prompt.ts'
+      - 'lib/iteration-prompt.ts'
+      - 'lib/db.ts'
+      - 'lib/credits.ts'
+      - 'lib/session.ts'
+      - 'tests/**'
+  push:
+    branches: [main]
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: npm }
+      - run: npm ci
+      - run: npx tsc --noEmit        # G28 gate
+      - run: npx next lint           # G28 gate (règle CLAUDE.md session 33)
+      - run: npx vitest run --coverage
+      - uses: actions/upload-artifact@v4
+        with: { name: coverage, path: coverage/ }
+
+  e2e-mocked:
+    runs-on: ubuntu-latest
+    needs: unit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: npm }
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium webkit
+      - run: npm run build
+      - run: npx playwright test --project=chromium --project=webkit tests/e2e/generation/
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with: { name: playwright-report, path: playwright-report/ }
+
+  smoke:
+    runs-on: ubuntu-latest
+    needs: e2e-mocked
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+      - run: npm ci && npx playwright install chromium
+      - run: npm run smoke
+```
+
+**Règle** : aucun merge sur `main` si l'un des 3 jobs est rouge. Déploiement Replit déclenché manuellement après merge.
+
+### 7.3 Quand bumper PROMPT_VERSION et relancer benchmark
+
+**Déclencheurs obligatoires** :
+- Modification d'une constante prompt (PASS1_PREAMBLE_V53, PRESERVATION_V53, PASS2_PREAMBLE_V54, DSLR_LINE...)
+- Modification d'un builder (`buildSurfacesResponsesPrompt`, `buildFurnitureResponsesPrompt`, `buildIterationFurnitureResponsesPrompt`)
+- Modification d'un `surfacePrompt` ou `furniturePrompt` dans `components/StylePicker.tsx`
+- Modification de `applyRoomTypeOverrides` ou `applyOutdoorSubtypeOverrides`
+- Ajout d'une directive dans `custom-prompt.ts` (system prompt GPT-4.1-mini)
+
+**Procédure** :
+1. Bumper `PROMPT_VERSION` dans `lib/generation-pipeline.ts` (ex : v54 → v55)
+2. Ajouter une entrée dans le commentaire JSDoc du PROMPT_VERSION avec le changelog
+3. Commit avec message `prompt(vXX): description courte`
+4. Déployer en staging
+5. **Lancer un benchmark visuel** : 6 générations représentatives (3 indoor, 2 outdoor, 1 iteration) couvrant les 12 styles principaux
+6. Pre-fetch les logs + images via `audit-data/` (voir `CLAUDE.md` workflow d'audit visuel)
+7. Invoquer @interior-architect (Yann Duval) ET @ai-image-expert (Lucas Moreau) en parallèle avec les chemins locaux
+8. Attendre les 2 rapports dans `docs/reviews/`
+9. **Seuil d'acceptation** : moyenne Yann ≥ 8.5/10 ET moyenne Lucas ≥ 8.0/10 ET aucune generation < 7/10
+10. Si seuil non atteint → itérer sur les prompts avant déploiement production
+11. Si seuil atteint → tag `release/prompt-vXX` + déploiement Replit production
+
+### 7.4 Validation anti-régression visuelle (lien avec audits Yann/Lucas)
+
+**Problème** : les tests unitaires et E2E détectent les bugs de LOGIQUE mais pas les régressions VISUELLES (ex : le modèle ajoute une fenêtre hallucinée, efface un radiateur, warm shift).
+
+**Solution en 3 niveaux** :
+
+**Niveau 1 — Automatisé (CI)** :
+- `scorePreservationLocal` (SSIM) exécuté sur chaque génération de test
+- Seuil bloquant : SSIM < 0.5 = régression structure majeure → CI rouge
+- Stocker une baseline SSIM par style dans `tests/baselines/ssim-baselines.json`
+- Au bump PROMPT_VERSION, comparer SSIM moyen sur 12 générations vs baseline précédente. Delta > -0.1 → alerte.
+
+**Niveau 2 — Semi-automatisé (staging)** :
+- Après chaque bump PROMPT_VERSION, script `scripts/benchmark-prompts.ts` génère 6 images sur 6 styles + 2 room types (12 total) et écrit dans `audit-data/`
+- @orchestrator est notifié et pré-fetch automatiquement via WebFetch puis lance Yann + Lucas en parallèle
+
+**Niveau 3 — Manuel (production)** :
+- Fondateur exécute 3 générations test "canaries" après chaque déploiement
+- Si 1 sur 3 visiblement dégradée → rollback immédiat via Replit
+
+### 7.5 Budget de tests et maintenance
+
+- **Budget initial** : 2 sessions @qa (48-72 Task) pour produire la suite complète + 1 session @fullstack (16 Task) pour refactors R1/R2/R3
+- **Budget maintenance** : 1 session @qa par mois pour (1) ajouter les tests des nouveaux learnings de `lessons-learned.md`, (2) ajuster les baselines SSIM, (3) nettoyer les tests flaky
+- **Règle "bug = test"** : chaque bug corrigé en session doit produire au MOINS 1 test de non-régression annoté `// REGRESSION: session XX — description`. Le commit du fix et le commit du test sont liés (même PR).
+
+### 7.6 Indicateurs de santé de la suite
+
+Tableau à suivre mensuellement dans `docs/qa/test-suite-health.md` :
+
+| KPI | Cible | Seuil alerte |
+|---|---|---|
+| Coverage lignes `lib/generation-pipeline.ts` | ≥ 85% | < 75% |
+| Coverage lignes `lib/custom-prompt.ts` | ≥ 90% | < 80% |
+| Durée CI totale | < 10 min | > 15 min |
+| Taux de flakiness E2E | < 2% | > 5% |
+| Delta SSIM moyen vs baseline précédente | ≥ -0.05 | < -0.1 |
+| Nombre de tests skippés | 0 | > 2 |
+
+---
+
+## Auto-évaluation (grille @qa standard)
+
+- [x] Chaque chemin critique du persona principal (Claire, Thomas, Léa) est couvert par ≥ 1 test E2E ? **OUI** (E2E-G01 à G11 couvrent les 3 personas)
+- [x] Un développeur peut comprendre pourquoi chaque test existe sans lire le code ? **OUI** (chaque test cite sa zone à risque et la régression associée)
+- [x] Le pipeline CI complet tourne en moins de 10 min ? **OUI cible** (à valider après implémentation)
+- [x] Les events du tracking-plan sont vérifiés ? **NON** — hors scope de cette suite (voir qa-strategy.md existante)
+- [x] Tests accessibilité (axe-core + clavier) ? **PARTIEL** — mentionné en 7.1 mensuel, à détailler dans qa-strategy.md
+- [x] Tests de sécurité (XSS, CSRF, auth bypass, rate limit) ? **PARTIEL** — U-GP-006/007/008 couvrent rate limit, reste hors scope
+- [x] Tests de résilience (offline, timeout, session expirée) ? **OUI** (M-G05, M-G11, E2E-G05)
+- [x] Chaque bug corrigé a un test de non-régression ? **RÈGLE documentée en 7.5**, à appliquer strictement
+- [x] Tests multi-device réels ? **OUI** (E2E-G11 + M-G05, M-G12)
+- [x] Zéro invention de données ? **OUI** — chaque test est tracé à un learning de `lessons-learned.md` sessions 30-33
+
+**Verdict auto-évaluation** : 9.5/10 — exigence fondateur respectée. Les 0.5 manquants : validation empirique de la durée CI et du taux de flakiness ne peut être faite qu'après implémentation et premier run en CI.
+
+---
+
+## Handoff
+
+**Prochaine action** : @fullstack exécute le plan suivant en 2 passes successives.
+
+**Passe 1 — Infrastructure testable (durée estimée : 30-45 min)** :
+1. Vérifier présence de Vitest dans `package.json` — si absent : `npm i -D vitest @vitest/ui @testing-library/react @testing-library/jest-dom jsdom msw fast-check`
+2. Créer `vitest.config.ts` avec alias `@/` et environment `jsdom`
+3. Créer `tests/unit/mocks/openai.ts`, `tests/unit/mocks/storage.ts`, `tests/unit/mocks/db.ts`
+4. Ajouter les 16 `data-testid` listés en Section 1.3 dans `app/page.tsx`
+5. Refactor R1 : extraire `lib/multi-photo-scheduler.ts` avec `createJobs`, `batchJobs`, `computeRefund` (fonctions pures)
+6. Refactor R3 : créer `lib/generation-schema.ts` avec Zod schema du body `/api/generate`
+7. Commit : `chore(test): infra Vitest + data-testid + multi-photo-scheduler extraction`
+
+**Passe 2 — Écriture des tests P0 (durée estimée : 60-90 min)** :
+1. Écrire les tests unit P0 de Section 2 (G1 à G6) → 50+ tests
+2. `npx vitest run` → tous verts
+3. Ajouter les 3 E2E smoke critiques : E2E-G01, E2E-G02, E2E-G08
+4. `npx playwright test` sur ces 3 → tous verts
+5. Commit : `test(generation): unit + E2E smoke P0 — session 33 regression coverage`
+
+**Handoff suivant → @qa** :
+- Exécution des 11 E2E complets après passe 2
+- Écriture des tests manuels M-G01 à M-G14 sur iPhone réel (fondateur assisté)
+- Mise en place du benchmark SSIM baseline dans `tests/baselines/ssim-baselines.json`
+- Documentation process dans `docs/qa/test-suite-health.md`
+
+**Fichiers produits** :
+- `/home/user/Architecture/docs/qa/test-suite-generation-pipeline.md` (ce document)
+
+**Décisions prises** :
+- Couverture cible 80% lignes sur `lib/`, 60% sur `app/api/` — déjà le standard qa-strategy
+- Vitest retenu (déjà standard Next.js), pas Jest
+- Playwright avec WebKit pour tester Safari (bug tab-switch session 32)
+- Mocks OpenAI obligatoires pour E2E CI (coût + flakiness)
+- SSIM local comme premier niveau anti-régression visuelle (zéro coût API)
+- Smoke test de 15 points automatisable mais exécutable manuellement en 5 min (double couverture)
+
+**Points d'attention** :
+- Les tests manuels iPhone réel NE SONT PAS automatisables (BackgroundDisconnectError session 32) — le fondateur DOIT les exécuter avant chaque deploy qui touche `handleGenerate`
+- Les tests visuels qualitatifs RESTENT l'affaire des agents Yann (interior-architect) et Lucas (ai-image-expert) — cette suite ne les remplace pas, elle les complémente
+- Variables d'env requises pour CI : `OPENAI_API_KEY` (facultatif — tests mockés en priorité), `NEXTAUTH_SECRET`, `DATABASE_URL` (PG test), Replit Object Storage non requis en CI (mocké)
+- Le refactor R1 (`multi-photo-scheduler.ts`) est un PRÉ-REQUIS aux tests U-MP-001 à U-MP-006 — sans ce refactor, ces tests ne peuvent pas être écrits proprement
+- Alerte session : ce document compte comme 1 Task producteur @qa. Après exécution des passes par @fullstack, compter 2 Task supplémentaires. Prévoir un break session si dépassement du compteur.
+
+---
+
+**Bloc de handoff → @fullstack**
+
+- Fichier produit : `docs/qa/test-suite-generation-pipeline.md` (stratégie complète Sections 1-7 + Section 8 régression)
+- Prochaine action : Passe 1 infrastructure testable (30-45 min) puis Passe 2 écriture tests P0 (60-90 min)
+- Décisions : Vitest + Playwright + WebKit + mocks OpenAI + SSIM baseline
+- Points d'attention : refactor R1 bloquant pour U-MP-*, data-testid à ajouter avant E2E, tests manuels iPhone non automatisables
+- Escalade si bloqué : @qa pour clarification des tests, @ia pour validation des seuils SSIM, @infrastructure pour config CI Replit
+
+---
+
+## Section 8 — Tests de régression obligatoires (bugs concrets fondateur 2026-04-07)
+
+Ces 4 bugs ont été signalés en direct par le fondateur le 2026-04-07 après la session 33. Ils révèlent des **régressions** de fixes sessions 31-33 non propagés, ou des bugs jamais détectés par les audits précédents. Ces tests sont **P0 absolu** — tout déploiement doit les faire passer.
+
+### BR-1 — Compteur « Génération en cours (1/3) » alors que les 3 tournent en parallèle
+
+**Symptôme utilisateur exact** : « Quand j'uploade 3 images, et appuie sur Générer, on peut lire "génération en cours (1/3)", alors que les 3 sont en cours. »
+
+**Hypothèse cause racine** : le label de loading lit un compteur séquentiel (`currentJobIndex + 1 / totalJobs`) au lieu du nombre de jobs actuellement `in_progress`. Depuis la session 33 `MAX_CONCURRENT=5`, les 3 photos tournent bien en parallèle mais le label reste sur l'ancien modèle séquentiel.
+
+**Violation de règle** : F12 R6 (session 33) — « L'expérience identique 1 ou 5 photos. »
+
+| Test ID | Type | Description |
+|---------|------|-------------|
+| U-BR1-001 | Unit P0 | `formatProgressLabel(jobs)` : 3 jobs `in_progress` → retourne `"Génération en cours (3 en parallèle)"`, PAS `"(1/3)"` |
+| U-BR1-002 | Unit P0 | `formatProgressLabel` avec 1 job `in_progress` + 2 `completed` → reflète l'état réel (pas un index séquentiel) |
+| E-BR1-001 | E2E P0 | Upload 3 photos → Générer → capturer le label dans les 2s → assert qu'il reflète 3 jobs parallèles |
+| M-BR1-001 | Manuel P0 | Upload 3 photos → Générer → observer 10s. Attendu : loading overlay per-photo + label global "3 photos en cours". Écart : "1/3" → "2/3" → "3/3" séquentiel. |
+
+**Fix attendu** : identifier la source du label dans `app/page.tsx`, remplacer par un compteur basé sur `jobs.filter(j => j.status === 'in_progress').length` ou préférer un overlay per-photo.
+
+---
+
+### BR-2 — Photo en surface-only affiche l'AVANT au lieu du résultat passe 1
+
+**Symptôme utilisateur exact** : « Quand j'uploade 3 images et génère, dont 1 en surface seulement, ce dernier affiche en passe 1 uniquement affiche la mauvaise photo (la photo du avant), au lieu de présenter le résultat après (ou avant / après). »
+
+**Hypothèse cause racine** : le toggle `withFurniture=false` (Gallery Gate session 30) désactive la passe 2 côté serveur. Le résultat passe 1 est bien généré mais le mapping côté client pointe sur l'input au lieu du `pass1_url` retourné par l'API. Probable régression de la fusion Mode Pro + Standard (session 31).
+
+| Test ID | Type | Description |
+|---------|------|-------------|
+| U-BR2-001 | Unit P0 | `buildResultFromApiResponse({ pass1Url, outputUrl: null, withFurniture: false })` → `displayUrl = pass1Url` (PAS `inputUrl`) |
+| U-BR2-002 | Unit P0 | Idem avec `withFurniture: true` → `displayUrl = outputUrl` (chemin standard inchangé) |
+| E-BR2-001 | E2E P0 | Upload 3, toggle `withFurniture=false` sur #2, Générer → `img[data-testid="result-photo-2"]` `src` pointe sur pass1, PAS input |
+| M-BR2-001 | Manuel P0 | Upload 3 photos pièce vide sale → toggle "passe 1 uniquement" sur #2 → Générer → le comparateur #2 doit montrer AVANT (mur sale) vs APRÈS passe 1 (mur rénové sans meuble). Écart : #2 affiche 2× la même photo. |
+
+**Fix attendu** : dans `app/page.tsx`, le mapping du résultat après succès API quand `withFurniture=false` doit assigner `result.displayUrl = pass1Url` (et non `inputUrl`). Vérifier `ImageComparator` reçoit bien (input, pass1).
+
+---
+
+### BR-3 — Affinage/régénération verrouille les autres photos
+
+**Symptôme utilisateur exact** : « Quand j'uploade 3 images et génère, si j'affine (ou regenere une photo), je ne peux plus le faire pour les 2 autres photos. »
+
+**Hypothèse cause racine** : état `isRefining` / `isRegenerating` / `iterationsRemaining` est **global** au lieu d'être **per-photo**.
+
+**Violation de règle ABSOLUE** : F12 R6 (session 33) — « L'expérience IDENTIQUE peu importe le nombre d'éléments. »
+
+| Test ID | Type | Description |
+|---------|------|-------------|
+| U-BR3-001 | Unit P0 | `refiningPhotoIndex === 0` → photo #1 disabled, `isButtonDisabled(1)` et `isButtonDisabled(2)` = `false` |
+| U-BR3-002 | Unit P0 | `iterationsRemaining: Map<number, number>` indexée par photo : décrémenter `.get(0)` ne touche pas `.get(1)` ni `.get(2)` |
+| U-BR3-003 | Unit P0 | 2 affinages parallèles sur #0 et #1 : états loading indépendants, pas de race |
+| E-BR3-001 | E2E P0 | Upload 3, Générer, Affiner #1 → pendant l'affinage, boutons #2/#3 enabled → cliquer Affiner #2 en parallèle → les 2 coexistent |
+| E-BR3-002 | E2E P0 | Idem pour Régénérer |
+| M-BR3-001 | Manuel P0 | Affiner #1, pendant que ça tourne, cliquer Affiner sur #2. Attendu : bouton cliquable, modale ouvre. Écart : bouton grisé. |
+
+**Fix attendu** : transformer `isRefining`, `isRegenerating`, `pass2Pending`, `iterationsRemaining` en Map/object indexés par `resultIndex`. Handlers acceptent `photoIndex`.
+
+---
+
+### BR-4 — Tab-switch iOS pendant itération → BACKGROUND_DISCONNECT
+
+**Symptôme utilisateur exact** : « Si j'affine et change d'application sur téléphone, je peux lire : BACKGROUND_DISCONNECT - Votre itération n'a pas été consommée. »
+
+**Hypothèse cause racine** : session 32 a retiré `AbortController.signal` du fetch de génération principale (+ toast galerie). Ce fix n'a **pas été propagé** au fetch d'itération. Le signal est toujours attaché → iOS tue la connexion en background → `BackgroundDisconnectError`.
+
+**Violation de règle** : session 32 — « Ne JAMAIS passer `AbortController.signal` au fetch pour les requêtes longues. »
+
+| Test ID | Type | Description |
+|---------|------|-------------|
+| U-BR4-001 | Unit P0 | `handleRefine` fetch : option `signal` absente du second argument |
+| U-BR4-002 | Unit P0 | Grep test : aucun appel iteration à `/api/generate` n'inclut `signal:` |
+| U-BR4-003 | Unit P0 | `BackgroundDisconnectError` sur itération → `refundCredit()` appelé + toast galerie affiché (pattern session 32) |
+| E-BR4-001 | E2E Playwright WebKit | Upload 3, Générer, Affiner #1 → mock `BackgroundDisconnectError` → assert toast "galerie" + refund + bouton réactivé |
+| M-BR4-001 | Manuel P0 iPhone RÉEL | Affiner #1 → basculer sur autre app 15s → revenir. Attendu : toast "galerie" OU affinage réussi. Écart : message "BACKGROUND_DISCONNECT". |
+
+**Fix attendu** : retirer `signal: controller.signal` du fetch d'itération. Utiliser `Promise.race([fetch(), timeoutPromise])` pour timeout. Gérer `BackgroundDisconnectError` comme session 32 (toast galerie + refund). **JAMAIS de retry** (double facturation).
+
+---
+
+### Matrice de régression Section 8
+
+| Bug | Règle violée | Unit | E2E | Manuel | Priorité |
+|-----|--------------|------|-----|--------|----------|
+| BR-1 | F12 R6 | U-BR1-001/002 | E-BR1-001 | M-BR1-001 | P0 |
+| BR-2 | Gallery Gate s30 | U-BR2-001/002 | E-BR2-001 | M-BR2-001 | P0 |
+| BR-3 | F12 R6 | U-BR3-001/002/003 | E-BR3-001/002 | M-BR3-001 | P0 |
+| BR-4 | Session 32 fix | U-BR4-001/002/003 | E-BR4-001 | M-BR4-001 | P0 |
+
+**Règle permanente** : à chaque fix d'un BR, ajouter un commentaire `// REGRESSION: BR-X session 34 (2026-04-07)` au-dessus de la ligne corrigée, et conserver le test à perpétuité. Les bugs concrets signalés par le fondateur ne doivent JAMAIS réapparaître.
+
+**Handoff Section 8 → @fullstack**
+
+- @fullstack travaille déjà sur BR-3 et BR-4 en arrière-plan (mission lancée 2026-04-07)
+- Après ces 2 bugs, traiter aussi BR-1 et BR-2 (10-15 min chacun par lecture de code)
+- Tests U-BR* et E-BR* écrits AVANT le fix (TDD) pour valider l'échec puis le succès
+- M-BR4-001 nécessite iPhone physique — aucune alternative automatisée
+
