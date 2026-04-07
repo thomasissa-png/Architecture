@@ -432,8 +432,46 @@
 
 ## Memo de reprise — derniere session
 
+**Date de cloture :** 2026-04-07 (Session 34)
+**Branch :** claude/extract-project-context-61BiD (21 commits, prête à merge)
+
+### Resume de la session 34
+Marathon debug + tests. 4 bugs concrets fondateur (BR-1 à BR-4) tous fixés. Infrastructure de tests Vitest + Playwright créée from scratch (179 unit tests + 197 E2E). 4 refactors P0 (R1 multi-photo-scheduler, R2 refund-calculator, R3 Zod validation câblée dans route.ts, R4 isComplexRoom exporté). 13 data-testid ajoutés dans app/page.tsx et composants externes. 7 learnings session 34 propagés dans CLAUDE.md + founder-preferences.md (les agents framework .claude/agents/*.md restent bloqués par permission — règles équivalentes capturées dans CLAUDE.md Versimo local). 0 erreur lint, 0 erreur TS, 175/179 vitest PASS (4 skipped intentionnels), 196/197 playwright E2E actifs (1 skip Stripe full flow documenté).
+
+### Bugs BR-1 à BR-4 fixés (session 34)
+- **BR-1** : label "Génération en cours (1/3)" remplacé par label dérivé de l'état réel (commit ac936e1)
+- **BR-2** : loading tile cascade `done > partial > input` (commit d1e06d2)
+- **BR-3** : per-photo state avec Set/Map indexés par resultIndex (commit 46a2ff5)
+- **BR-4** : catch BackgroundDisconnectError propagé à handleRefine + handleRegenerate (commit 46a2ff5)
+
+### 21 commits poussés sur claude/extract-project-context-61BiD
+Fixes : 46a2ff5 (BR-3/4), ac936e1 (BR-1), d1e06d2 (BR-2), 089bf99 (TS CropModal)
+Tests infra : 1d24756, 6c5a20f, 2473dad, 3224c5b, 512513b, 93f0ad0
+Refactors : 277173f (R2), 9bdca5e (R1), e4a5636 (R3), f8d4188 (R4), b692618 (R3 wiring)
+A11y : e74fc89 (13 data-testid)
+E2E activation : 15557c5, f759538
+Docs : dbf7dfd, 4b141aa, 37f48f5
+
+### A tester par le fondateur (requires implication)
+1. **Déployer** sur Replit la branche claude/extract-project-context-61BiD
+2. **Tests manuels desktop** : 3 photos → générer → Affiner #1 → vérifier #2/#3 cliquables + label "X visuels en parallèle" (pas "1/3")
+3. **Tests manuels iPhone réel** : affiner → switch app 10s → retour → toast bleu galerie (pas bandeau rouge)
+4. **Test pièces mixtes** : 3 photos dont 1 surface-only → vérifier tile affiche pass1 résultat (pas input)
+5. **Exécuter Playwright** sur Replit déployé (`npx playwright test` — les 197 tests sont compilés mais jamais runtime)
+6. **Audit visuel Yann + Lucas** sur générations v54 en prod (cible 9.5/10, actuel 8.2)
+
+### Reporté volontairement (basse priorité — non-bloquant)
+- **Câblage R1+R2** dans app/page.tsx : les modules lib/multi-photo-scheduler.ts et lib/refund-calculator.ts sont écrits et testés en isolation mais pas câblés dans handleGenerate. Raison : logique inline imbriquée avec les fixes BR-1/2/3/4, risque régression > valeur ajoutée. À refactoriser lors d'une refonte architecturale dédiée.
+- **E-G07 full Stripe flow** : nécessite Stripe CLI + webhook tunnel. Infra E2E dédiée à construire.
+- **Fixture `authenticatedPage` Playwright** : débloquerait le fallback auth-gate sur credits-badge. 1-2h de travail pour valeur limitée.
+- **Multi-style picker par photo** (E-G03 × 3 styles) : feature UI à designer avec @ux.
+- **Propagation dans .claude/agents/fullstack.md et qa.md** : permission denied (fichiers framework partagés cross-projets). Règles équivalentes capturées dans CLAUDE.md Versimo local.
+
+---
+
+## Memo de reprise — session 33 (archivée)
+
 **Date de cloture :** 2026-04-05 (Session 33)
-**Branch :** claude/extract-project-context-61BiD (session 34 en cours)
 **Branche session 33 :** main (commit 75204f9 "docs: session 33 closure — memo + 12 learnings + founder prefs")
 
 ### Resume de la session 33
