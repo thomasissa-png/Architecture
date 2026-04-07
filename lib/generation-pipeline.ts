@@ -17,6 +17,28 @@ function getOpenAI(): OpenAI {
   return _openaiClient;
 }
 
+// ─── Complex room detection (best-of-2 gate) ────────────────────────
+/**
+ * Returns true if the room inventory mentions at least one feature that
+ * historically degrades single-pass generations (vaults, mezzanines,
+ * double-height, L-shaped, >=3 windows, etc.).
+ *
+ * Used by `generatePass` to decide whether to spend the extra API call
+ * for best-of-2 scoring. Simple rooms take the single-generation path.
+ *
+ * Exported for direct testing — the regex is the de-facto spec for what
+ * "complex" means in the pipeline.
+ *
+ * Exact regex kept identical to the inline version shipped in session 32
+ * (pipeline v49) to avoid behavioural drift.
+ */
+export function isComplexRoom(roomInventory: string | undefined | null): boolean {
+  if (!roomInventory) return false;
+  return /vault|beam|mezzanine|double.height|L.shaped|loft|cathedral|arch|column|pillar|alcove|bay.window|[3-9]\s*windows?/i.test(
+    roomInventory,
+  );
+}
+
 // ─── Pre-pass vision: extract room geometry inventory ───────────────
 // Uses GPT-4.1-mini in vision mode to describe the room's geometry
 // before generation. The inventory is injected into pass 1 and pass 2
@@ -730,7 +752,7 @@ export async function generatePass(
   }
 
   // Determine if room is complex enough to warrant best-of-2
-  const isComplexRoom = roomInventory && /vault|beam|mezzanine|double.height|L.shaped|loft|cathedral|arch|column|pillar|alcove|bay.window|[3-9]\s*windows?/i.test(roomInventory);
+  const complex = isComplexRoom(roomInventory);
 
   // Single generation with retry — used for pass 1, or pass 2 on simple rooms
   const generateSingle = async (): Promise<{ image: string; model: string }> => {
@@ -750,9 +772,9 @@ export async function generatePass(
   };
 
   // Pass 1, no original image, or simple room pass 2: single generation
-  if (pass === 1 || !originalImageBase64 || !isComplexRoom) {
+  if (pass === 1 || !originalImageBase64 || !complex) {
     if (pass === 2) {
-      console.log(`[best-of-2] SKIPPED — room is ${isComplexRoom ? "complex" : "simple"}, single candidate`);
+      console.log(`[best-of-2] SKIPPED — room is ${complex ? "complex" : "simple"}, single candidate`);
     }
     return await generateSingle();
   }

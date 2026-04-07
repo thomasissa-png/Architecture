@@ -21,6 +21,7 @@ import {
   buildOutdoorSurfacesResponsesPrompt,
   buildOutdoorFurnitureResponsesPrompt,
   scorePreservationLocal,
+  isComplexRoom,
   PROMPT_VERSION,
 } from "@/lib/generation-pipeline";
 
@@ -230,5 +231,53 @@ describe("G1 — PROMPT_VERSION", () => {
   it("PROMPT_VERSION ≥ v54 (session 33+)", () => {
     const num = parseInt(PROMPT_VERSION.replace("v", ""), 10);
     expect(num).toBeGreaterThanOrEqual(54);
+  });
+});
+
+describe("R4 — isComplexRoom (best-of-2 gate)", () => {
+  it("U-GP-022: roomInventory undefined → false", () => {
+    expect(isComplexRoom(undefined)).toBe(false);
+    expect(isComplexRoom(null)).toBe(false);
+    expect(isComplexRoom("")).toBe(false);
+  });
+
+  it("U-GP-023: pièce simple (rectangulaire, 2 fenêtres) → false", () => {
+    expect(isComplexRoom("rectangular living room, 2 windows, flat ceiling")).toBe(false);
+    expect(isComplexRoom("bedroom with one window and smooth ceiling")).toBe(false);
+  });
+
+  it("U-GP-024: pièce avec vault → true", () => {
+    expect(isComplexRoom("vaulted ceiling with exposed beams")).toBe(true);
+  });
+
+  it("U-GP-025: mezzanine, double-height, L-shaped → true", () => {
+    expect(isComplexRoom("mezzanine overlooking lounge")).toBe(true);
+    expect(isComplexRoom("double-height loft space")).toBe(true);
+    expect(isComplexRoom("L-shaped dining area")).toBe(true);
+  });
+
+  it("U-GP-027: beams, cathedral ceiling, arches → true", () => {
+    expect(isComplexRoom("exposed beams across ceiling")).toBe(true);
+    expect(isComplexRoom("cathedral ceiling")).toBe(true);
+    expect(isComplexRoom("stone arches between rooms")).toBe(true);
+  });
+
+  it("U-GP-028: 3+ fenêtres → true, 2 fenêtres → false", () => {
+    expect(isComplexRoom("living room with 3 windows")).toBe(true);
+    expect(isComplexRoom("bedroom with 5 windows along the wall")).toBe(true);
+    expect(isComplexRoom("room with 2 windows")).toBe(false);
+  });
+
+  it("U-GP-029: case insensitive", () => {
+    expect(isComplexRoom("VAULTED ceiling")).toBe(true);
+    expect(isComplexRoom("Mezzanine Level")).toBe(true);
+  });
+
+  it("U-GP-030: alcoves, columns, pillars, bay windows, loft → true", () => {
+    expect(isComplexRoom("stone alcove in corner")).toBe(true);
+    expect(isComplexRoom("marble columns")).toBe(true);
+    expect(isComplexRoom("structural pillars visible")).toBe(true);
+    expect(isComplexRoom("bay window overlooking garden")).toBe(true);
+    expect(isComplexRoom("industrial loft with concrete floor")).toBe(true);
   });
 });
