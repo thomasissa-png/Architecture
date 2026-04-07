@@ -263,6 +263,32 @@
 | US-F5-01 | F5 | P1 | Léa | Diff. marché |
 | US-F5-02 | F5 | P2 | Léa | Affiliés V2 |
 | US-F5-03 | F5 | P2 | Léa | Engagement |
+| US-MSP-01 | Multi-style per photo | P2 | Thomas | Comparaison ambiances |
+
+---
+
+## US-MSP-01 — Multi-style picker par photo (identifié session 34, reporté)
+
+**Origine** : session 34 — test E2E E-G03 (`tests/e2e/generation-multi-photo.spec.ts`) initialement prévu pour valider « Pro 5 photos × 3 styles = 15 jobs avec cache pass1 réutilisé ». Actuellement activé en 5 photos × 1 style par photo car l'UI ne supporte pas encore le multi-style.
+
+**Situation actuelle** : l'UI permet un style global ou un style différent par photo, mais PAS plusieurs styles pour une même photo.
+
+**Pourquoi c'est reporté (légitimement)** : ce n'est pas un bug fixable par un agent, c'est une feature produit qui demande des décisions humaines :
+1. **UX** : comment afficher N résultats pour 1 photo ? Grille 2D N photos × M styles ? Galerie verticale ? Carrousel ?
+2. **Product** : limite Pro only ? Nombre max de styles par photo ? Consomme N crédits par photo ?
+3. **Design** : picker multi-select (checkbox) vs single-select (radio) — feedback visuel quand 3 styles cochés ?
+4. **Backend** : optimisation cache pass1 partagé entre styles (gain ~50% coût OpenAI sur passe 1) — étendre `lib/multi-photo-scheduler.ts` pour N jobs par photo avec deduplication pass1.
+
+**Prochaines étapes avant implémentation** :
+- [ ] @ux : wireframe grille résultats multi-style (2D)
+- [ ] @product-manager : pricing model (crédits, limite max styles, Pro-only ?)
+- [ ] @design : component multi-select picker avec preview grid
+- [ ] @fullstack : étendre `runParallelPhotoJobs` pour N jobs par photo avec cache pass1 partagé
+- [ ] @qa : activer E-G03 multi-style et vérifier le gain de cache (max `pass1_count + 3 * pass2_count` appels mockés)
+
+**Valeur estimée** : moyenne. Thomas (marchand) peut comparer 3 ambiances sur 5 photos = 15 visuels en 1 clic au lieu de refaire 3× manuellement. Pas critique pour le MVP, mais vendable en argument Pro.
+
+**Statut** : **P2 reporté** — à planifier après stabilisation v54 et audit visuel Yann/Lucas ≥ 9.5/10. Bloquant : décision @ux + @product-manager avant code.
 
 ---
 
