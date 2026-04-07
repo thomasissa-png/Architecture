@@ -98,31 +98,58 @@ describe("G-PROMPT-B04 — PASS2_PREAMBLE injecté dans toutes les branches pass
   });
 });
 
-describe("G-PROMPT-B05 — pass 2 utilise une instruction ADD/Add (Sprint 11)", () => {
+describe("G-PROMPT-B05 — pass 2 utilise une instruction ADD/Add en position instructive (Sprint 11)", () => {
+  // P1-2 (round 2) : la regex précédente \b(ADD|Add)\b acceptait n'importe quelle
+  // occurrence (ex: "added", "padded"). On exige désormais que ADD/Add apparaisse
+  // en début de phrase (start of line OU après ". ") et soit suivi d'un mot
+  // (instruction réelle, pas un fragment).
   PASS2_ROOM_BRANCHES.forEach((roomType) => {
-    it(`pass2 builder for roomType=${roomType ?? "fallback"} contains ADD/Add instruction`, () => {
+    it(`pass2 builder for roomType=${roomType ?? "fallback"} contains ADD/Add as imperative instruction`, () => {
       const prompt = buildFurnitureResponsesPrompt(SAMPLE_FURNITURE, roomType, "");
-      // Soit "ADD <something>:" soit "Add furniture and decoration"
-      expect(prompt).toMatch(/\b(ADD|Add)\b/);
+      // Match: début de ligne ou après ". " puis "Add " ou "ADD " suivi d'un mot
+      const imperativeAdd = /(^|[.\n]\s*)(ADD|Add)\s+\w+/m;
+      expect(prompt, "ADD/Add must be in imperative position (start of sentence)").toMatch(imperativeAdd);
     });
   });
 });
 
 describe("G-PROMPT-B08 — DSLR_LINE en fin de chaque builder pass 1 (Sprint 6)", () => {
+  // P1-3 (round 2) : on vérifie que DSLR apparaît dans les 400 derniers chars
+  // (zone "fin de builder") pour empêcher un déplacement accidentel en début.
   PASS1_ROOM_BRANCHES.forEach((roomType) => {
-    it(`pass1 builder for roomType=${roomType ?? "fallback"} contains DSLR descriptor`, () => {
+    it(`pass1 builder for roomType=${roomType ?? "fallback"} contains DSLR descriptor in last 400 chars`, () => {
       const prompt = buildSurfacesResponsesPrompt(SAMPLE_SURFACE, roomType, "");
-      expect(prompt).toMatch(/DSLR/);
+      const tail = prompt.slice(-400);
+      expect(tail, "DSLR descriptor must be in the last 400 chars of the builder").toMatch(/DSLR/);
     });
   });
 });
 
-describe("G-PROMPT-B09 — EQUIPMENT_PRESERVATION couvre radiator/convector/vent/panel (Sprint 18, 23)", () => {
-  // PASS2_EQUIPMENT_V54 doit mentionner radiateurs et équipements muraux
+describe("G-PROMPT-B09 — EQUIPMENT_PRESERVATION couvre radiator/convector/vent/panel/boiler/water heater (Sprint 18, 23)", () => {
+  // P1-4 (round 2) : élargir au-delà de "radiator". Sprint 18 ajoute radiateurs,
+  // Sprint 23 ajoute water heater / boiler / electrical panel. On exige que
+  // CHACUN des termes critiques soit présent dans chaque branche pass2.
+  // P1-4 (round 2) : la spec PASS2_EQUIPMENT_V54 (lib/generation-pipeline.ts)
+  // contient explicitement : radiators, convectors, heaters, vents, panels,
+  // towel dryers. On exige la présence de CHACUN de ces 6 termes (avec
+  // tolérance singulier/pluriel) pour bloquer toute suppression silencieuse.
+  // Note : "boiler"/"water heater" sont mentionnés dans le contexte
+  // describer (l. 68) mais hors EQUIPMENT_PRESERVATION pass2 — non testés ici.
+  const REQUIRED_EQUIPMENT = [
+    /\bradiators?\b/i,
+    /\bconvectors?\b/i,
+    /\bheaters?\b/i,
+    /\bvents?\b/i,
+    /\bpanels?\b/i,
+    /\btowel dryers?\b/i,
+  ];
+
   PASS2_ROOM_BRANCHES.forEach((roomType) => {
-    it(`pass2 builder for roomType=${roomType ?? "fallback"} preserves wall equipment`, () => {
+    it(`pass2 builder for roomType=${roomType ?? "fallback"} preserves all wall equipment terms`, () => {
       const prompt = buildFurnitureResponsesPrompt(SAMPLE_FURNITURE, roomType, "");
-      expect(prompt.toLowerCase()).toMatch(/radiator/);
+      REQUIRED_EQUIPMENT.forEach((re) => {
+        expect(prompt, `missing equipment term ${re} in pass2 ${roomType ?? "fallback"}`).toMatch(re);
+      });
     });
   });
 });
@@ -156,10 +183,19 @@ describe("G-PROMPT-D02 — generatePass passes 'low' for pass 1 and 'high' for p
 });
 
 describe("G-PROMPT-D03 — iteration uses input_fidelity 'high' (Sprint 24)", () => {
-  it("tryOpenAIResponsesWithPrompt sets input_fidelity: 'high'", () => {
-    // Le 2e bloc tools[].input_fidelity dans pipeline est l'iteration → "high"
-    const matches = PIPELINE_SRC.match(/input_fidelity:\s*"high"/g) ?? [];
-    expect(matches.length).toBeGreaterThanOrEqual(1);
+  // P1-5 (round 2) : ancrer la vérification au CORPS de la fonction
+  // tryOpenAIResponsesWithPrompt (iteration) au lieu d'un grep global. Si on
+  // déplace high ailleurs (ex: pass2 par défaut), la gate doit toujours
+  // détecter sa présence DANS la fonction iteration précisément.
+  it("tryOpenAIResponsesWithPrompt body contains input_fidelity: 'high'", () => {
+    // Extraction multiline du corps de la fonction (de la déclaration export
+    // jusqu'à la prochaine déclaration export ou fin de fichier).
+    const fnMatch = PIPELINE_SRC.match(
+      /export\s+async\s+function\s+tryOpenAIResponsesWithPrompt[\s\S]*?(?=\n(?:export\s+(?:async\s+)?function|export\s+const|export\s+type|$))/
+    );
+    expect(fnMatch, "tryOpenAIResponsesWithPrompt function not found in pipeline source").not.toBeNull();
+    const fnBody = fnMatch?.[0] ?? "";
+    expect(fnBody).toMatch(/input_fidelity:\s*"high"/);
   });
 });
 

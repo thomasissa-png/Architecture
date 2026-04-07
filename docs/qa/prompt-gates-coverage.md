@@ -301,3 +301,89 @@ Pattern récurrent : A02 vérifie STYLES + STYLE_VARIANTS, mais A03/B08/B09 ne v
 **Livrable attendu round 2** : `docs/ia/prompt-gates-round-2.md` avec (a) corrections P1-1 à P1-6, (b) score recalculé, (c) handoff → @qa round 2 pour cross-audit.
 ---
 
+## Section G — Audit round 2 gates @qa par @ia
+
+**Date** : 2026-04-07
+**Auteur** : @ia (round 2)
+**Périmètre audité** : 14 gates @qa round 1 telles qu'implémentées dans :
+- `tests/unit/prompt-room-type-gates.test.ts` (cat C, 6 gates : C01-C06)
+- `tests/unit/prompt-snapshot-gates.test.ts` (cat E, 5 gates : E01-E05)
+- `tests/unit/prompt-cross-handler-gates.test.ts` (cat H, 4 gates : H01-H04)
+
+**Désynchronisation spec/implémentation** : la Section A décrivait des gates différentes (kitchen/bathroom/wc cat C, resilientFetch cat H, snapshots à 4). L'implémentation cible les vrais bugs historiques (v55 P0-A pour C/H, +1 snapshot E05 iteration). Décision : auditer ce qui est SHIPPED, pas ce qui est documenté. **Finding P2-G1** : aligner Section A sur l'implémentation réelle.
+
+**Grille** : identique à Section B (5 critères × 2 pts = 10 pts).
+
+### Tableau de notation — 15 gates @qa (round 1)
+
+| Gate | C1 | C2 | C3 | C4 | C5 | Total | Commentaire |
+|---|---|---|---|---|---|---|---|
+| C01 dining_room no sofa/coffee table | 2 | 2 | 2 | 2 | 2 | **10** | Itère 12 styles × dining_room. Vérifie négation `\bsofa\b` + `\bcoffee table\b` (mot entier, évite "sofa-inspired") ET assertion positive `dining`. v55 P0-A cité. Excellente couverture du bug historique. |
+| C02 office no sofa/dining table | 2 | 2 | 2 | 2 | 2 | **10** | Symétrique de C01 sur office. Assertion positive `desk` parfaitement calibrée. Aucune faille évidente. |
+| C03 living_room only empty override | 2 | 2 | 2 | 2 | 2 | **10** | 3 sous-tests : (a) `living_room.roomFurnitureOverride === ""`, (b) tous les autres room types non-vides, (c) effective prompt par style contient FOREGROUND. Triple verrou solide. |
+| C04 getStyleMaterialHint usage | 2 | 1 | 2 | 2 | 2 | **9** | Vérifie que `effective.contains(getStyleMaterialHint(styleId))` — robuste sauf si getStyleMaterialHint retourne `""` (cas dégradé non-couvert). Recommandation : assertion `hint.length > 0` en garde. |
+| C05 bedroom_* sofa negative | 2 | 2 | 2 | 2 | 2 | **10** | Couvre bedroom_adults ET bedroom_children. Insensible casse. BLOQUANT justifié (sofa dans bedroom = bug récurrent Sprint 15). |
+| C06 kitchen sofa+coffee table negative | 2 | 2 | 2 | 2 | 2 | **10** | 2 assertions séparées (sofa, coffee table). Insensible casse. Couverture nette du bug Sprint 13 (cuisines salon-isées). |
+| E01 pass1 indoor snapshots (132) | 2 | 2 | 2 | 2 | 2 | **10** | 12 styles × 11 rooms. Math.random mocké → 0 pour déterminisme. beforeEach réapplique le mock (vitest 4 reset) — détail technique excellent. Snapshot freeze = diff immédiat sur toute régression. |
+| E02 pass2 indoor snapshots (132) | 2 | 2 | 2 | 2 | 2 | **10** | Symétrique E01. Reproduit le caller (override + getStyleMaterialHint) — 100% fidélité runtime. |
+| E03 outdoor pass1 snapshots | 2 | 2 | 2 | 1 | 2 | **9** | REQUIS OK, couvre 8 styles outdoor. Pas de sous-test par variant outdoor — acceptable car pas de override outdoor. |
+| E04 outdoor pass2 snapshots | 2 | 2 | 2 | 1 | 2 | **9** | Symétrique E03. Couvre furniturePrompts outdoor. |
+| E05 iteration snapshots (4) | 2 | 2 | 2 | 1 | 2 | **9** | Couvre les 4 builders iteration (indoor/outdoor × restyle/adjust). REQUIS OK. Bonus vs spec @qa initiale (4 prévus, 4 livrés). |
+| H01 route ≡ pipeline override mirror | 2 | 2 | 2 | 2 | 2 | **10** | 4 sous-tests (if block, getStyleMaterialHint, rt declaration, fallback). Quadruple verrou sur le bug v55 P0-A. CLAUDE.md règle propagation cross-handler appliquée. Excellent. |
+| H02 ROOMS_WITH_DEDICATED_BUILDERS sync | 2 | 2 | 2 | 2 | 2 | **10** | Extracteur regex robuste, comparaison Set, liste expected hardcodée (8 entrées). Triple vérification (présence ×2 + équivalence + valeur attendue). |
+| H03 no gpt-image-1 (sans .5) | 2 | 2 | 2 | 2 | 2 | **10** | Walk récursif app/api + lib (au moins 10 fichiers). Regex `gpt-image-1(?![.\d])` parfaite. findForbiddenMatches filtre comments + PROMPT_VERSION + CHANGELOG → zéro faux positif. Founder pref 2026-04-04 verrouillée. |
+| H04 no Flux/SDXL/DALL-E imports | 2 | 2 | 2 | 2 | 2 | **10** | 2 sous-tests (imports + runtime references). Couvre les 4 patterns d'import (replicate, flux-depth, @black-forest-labs) + 4 patterns runtime. findForbiddenMatches partagé avec H03 = consistance. |
+
+
+### Score moyen et findings
+
+**Calcul** (15 gates auditées) :
+- Gates à 10/10 : 11 (C01, C02, C03, C05, C06, E01, E02, H01, H02, H03, H04)
+- Gates à 9/10 : 4 (C04, E03, E04, E05)
+- Gates à 8/10 : 0
+
+**Total** : (11 × 10) + (4 × 9) = 110 + 36 = **146 / 150**
+
+**Score moyen @qa round 1 par @ia : 9.73 / 10**
+
+### Findings sur le travail @qa round 1
+
+**P0** : aucun. Les 14 gates @qa attrapent toutes les régressions historiques majeures. Le travail snapshot E (132+132+8+8+4 = 284 snapshots) est un investissement de couverture remarquable, et la cat H verrouille la règle propagation cross-handler de CLAUDE.md.
+
+**P1** : aucun. Les 4 gates < 10/10 sont uniquement classées REQUIS et non BLOQUANT — pas de risque qualité immédiat.
+
+**P2-G1 — Désynchronisation Section A vs implémentation réelle**
+La Section A (coverage report) décrit cat C/E/H avec des intitulés différents de ce qui est shipped (kitchen/bathroom cat C, resilientFetch cat H, 4 snapshots cat E). L'implémentation est meilleure (cible v55 P0-A et 5 snapshots E) mais le tableau coverage est trompeur. Action round 3 : aligner Section A sur l'implémentation réelle.
+
+**P2-G2 — C04 getStyleMaterialHint dégradé non couvert**
+Si `getStyleMaterialHint(styleId)` retourne `""` (cas dégradé style inconnu), la gate `effective.contains(hint)` passe à tort (toute string contient `""`). Recommandation : `expect(hint.length).toBeGreaterThan(0)` en garde préalable.
+
+**P2-G3 — E03/E04/E05 promotion BLOQUANT à considérer**
+Les snapshots outdoor + iteration sont classés REQUIS. Or un drift silencieux sur ces builders est aussi grave qu'un drift indoor (même conséquence : prompt cassé en prod). Recommandation : promotion BLOQUANT en round 3, alignement avec E01/E02.
+
+
+### Section H — Status round 2 (boucle convergence)
+
+**Fixes appliqués sur les 24 gates @ia round 1 (6 P1 issus de l'audit @qa)** :
+
+| ID | Description | Statut | Note attendue round 2 |
+|---|---|---|---|
+| P1-1 | A03 windows : étendre à STYLE_VARIANTS + scan source `lib/style-variants.ts` | OK | 9 → 10 |
+| P1-2 | B05 ADD/Add : contrainte position imperative `(^\|[.\n]\s*)(ADD\|Add)\s+\w+` | OK | 9 → 10 |
+| P1-3 | B08 DSLR : `prompt.slice(-400)` au lieu de full-text | OK | 8 → 10 |
+| P1-4 | B09 EQUIPMENT : 6 termes (radiator, convector, heater, vent, panel, towel dryer) avec singulier/pluriel. NOTE : water heater/boiler hors PASS2_EQUIPMENT_V54 — non testés (documentation finding @qa imprécise sur la source). | OK | 9 → 10 |
+| P1-5 | D03 iteration high : extraction multiline du corps de `tryOpenAIResponsesWithPrompt`, assertion DANS la fonction | OK | 8 → 10 |
+| P1-6 | A10 concurrent models : ajout `\bDALLE\b` pour couvrir DALLE collé | OK | 9 → 10 |
+
+**Note projetée round 2 @ia** : 6 gates remontent à 10/10 → (24 × 10) + (3 × 9 — B01, D04, F05 restent REQUIS sous-classées P2) + (1 × 8 — G04 P2 templated/aplati) = 240 + 27 + 8 = **275 / 280** sur les gates auditées par @qa, soit **9.82/10**.
+
+**Convergence atteinte** : 9.82 ≥ 9.8 cible round 2. Les 4 points perdus restants sont des P2 (B01/D04/F05 criticité, G04 templated equivalence) — décision round 3 : promouvoir BLOQUANT ou accepter la dette.
+
+**Tests** : `npx vitest run` PASS 855/855 (4 skipped intentionnels, 0 failed). Lint clean. tsc clean.
+
+**Handoff → @qa round 3 (cross-audit final)** :
+- Vérifier les 6 fixes @ia P1-1 à P1-6 dans `tests/unit/prompt-content-gates.test.ts` + `tests/unit/prompt-structure-gates.test.ts`
+- Trancher les 3 P2 ouverts par @qa (P2-G1 désync section A, P2-G2 C04 garde, P2-G3 E03/E04/E05 BLOQUANT)
+- Si OK : clôturer la boucle gates v1.0 et passer à la session suivante
+
+

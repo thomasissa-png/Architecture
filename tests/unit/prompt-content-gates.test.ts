@@ -89,6 +89,31 @@ describe("G-PROMPT-A03 — no explicit 'window'/'doorway' positive mention in st
       expect(both).not.toMatch(/\bdoorway/i);
     });
   });
+
+  // P1-1 (round 2) : étendre la garde à STYLE_VARIANTS.furnitureVariants pour
+  // éviter qu'un variant fuite "window" et contourne la gate (parité avec A02).
+  it("STYLE_VARIANTS furnitureVariants do not mention windows/doorway", () => {
+    Object.entries(STYLE_VARIANTS).forEach(([id, variants]) => {
+      variants.furnitureVariants.forEach((variant, idx) => {
+        expect(variant, `${id} variant ${idx} mentions window`).not.toMatch(/\bwindows?\b/i);
+        expect(variant, `${id} variant ${idx} mentions doorway`).not.toMatch(/\bdoorway/i);
+      });
+    });
+  });
+
+  // Garde additionnelle : scanner le source brut de lib/style-variants.ts
+  // hors commentaires pour détecter toute mention introduite hors du runtime.
+  it("lib/style-variants.ts source (code only) does not mention windows/doorway", () => {
+    const codeOnly = STYLE_VARIANTS_SRC
+      .split("\n")
+      .filter((line) => {
+        const t = line.trim();
+        return !t.startsWith("//") && !t.startsWith("*") && !t.startsWith("/*");
+      })
+      .join("\n");
+    expect(codeOnly).not.toMatch(/\bwindows?\b/i);
+    expect(codeOnly).not.toMatch(/\bdoorway/i);
+  });
 });
 
 describe("G-PROMPT-A04 — no uppercase 'TRANSFORM' verb in builders (Sprint 11)", () => {
@@ -172,7 +197,16 @@ describe("G-PROMPT-A09 — no 'preserve existing ceiling light' in surfacePrompt
 });
 
 describe("G-PROMPT-A10 — no competitor model names in style prompts (founder pref)", () => {
-  const COMPETITORS = [/\bMidjourney\b/i, /\bReplicate\b/i, /\bDALL[-\s]?E\b/i, /\bSDXL\b/i, /\bFlux Depth\b/i, /\bStable Diffusion\b/i];
+  // P1-6 (round 2) : DALL[-\s]?E ratait "DALLE" collé. On accepte aussi DALLE sans tiret/espace.
+  const COMPETITORS = [
+    /\bMidjourney\b/i,
+    /\bReplicate\b/i,
+    /\bDALL[-\s]?E\b/i,
+    /\bDALLE\b/i,
+    /\bSDXL\b/i,
+    /\bFlux Depth\b/i,
+    /\bStable Diffusion\b/i,
+  ];
   STYLES.forEach((style) => {
     it(`${style.id}: prompts do not mention competitor models`, () => {
       const both = `${style.surfacePrompt} ${style.furniturePrompt}`;
