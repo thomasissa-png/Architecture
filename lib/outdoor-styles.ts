@@ -67,7 +67,7 @@ export const OUTDOOR_STYLES: Record<string, OutdoorStyle> = {
     emoji: "\uD83C\uDFE1",
     description: "Pierre calcaire, fer forgé, lavande, cyprès",
     surfacePrompt:
-      "Provençal outdoor: warm aged limestone walls with natural patina and subtle weathering, terracotta floor tiles with irregular edges and warm tones laid in traditional staggered bond, open sky preserved as-is.",
+      "Provençal outdoor: terracotta floor tiles with irregular edges and warm tones laid in traditional staggered bond, preserve all existing walls facades and guard rails unchanged, open sky preserved as-is.",
     furniturePrompt:
       "A timeless Provençal terrace — vary furniture and plantings each generation. Provençal outdoor furniture: table 120cm (choose one: wrought iron with glass top, weathered stone round, reclaimed oak trestle), 4 chairs (choose one: wrought iron with cream cushions, painted wood bistro, rush-seat ladder-back). Feature tree (choose one: Italian cypress 180cm in terracotta pot 90cm, standard olive tree 150cm in stone urn, bay laurel 160cm in aged terracotta). Aromatic plants (choose one: lavender rows in stone troughs 60cm, rosemary and santolina in clay pots, thyme and iris in weathered planters). Table accent (choose one: Provençal blue ceramic vase 30cm with olive branches, ceramic pitcher with dried lavender, glazed bowl with figs). Polypropylene rug 200x300cm in warm ochre. Optional: stone fountain basin 50cm (dry in daylight) OR sundial on low plinth.",
   },
@@ -78,7 +78,7 @@ export const OUTDOOR_STYLES: Record<string, OutdoorStyle> = {
     emoji: "\uD83C\uDFD7\uFE0F",
     description: "Béton brut, acier galvanisé, plantes graphiques",
     surfacePrompt:
-      "Industrial urban outdoor: raw concrete walls keeping existing texture and color unchanged, smooth grey concrete floor, open sky preserved as-is.",
+      "Industrial urban outdoor: smooth grey concrete floor, preserve all existing walls facades and guard rails unchanged keeping their raw texture and color, open sky preserved as-is.",
     furniturePrompt:
       "A reclaimed urban courtyard — vary materials and plantings each generation. Industrial urban outdoor furniture: planter boxes 80x40cm (choose one: galvanized steel with Stipa tenuissima + Sedum acre, corten steel with Festuca glauca + Sempervivum, raw concrete with Carex buchananii + Sedum spectabile). Bench (choose one: concrete 180cm with black steel frame, reclaimed railway sleeper with steel legs, welded steel with perforated seat). Feature planter (choose one: corten steel 40cm with succulent arrangement, concrete cylinder with Equisetum horsetail, galvanized trough with Phormium tenax). Privacy screen (choose one: black steel and wood slatted 180cm, woven wire mesh on steel frame, reclaimed corrugated metal panel). Side table 50cm in industrial steel, pendant on steel arm (unlit daytime), polypropylene rug 160x230cm in charcoal grey.",
   },
