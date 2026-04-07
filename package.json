@@ -4,10 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "bash scripts/prompt-gates-pre-commit.sh",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:prompts": "vitest run tests/unit/prompt-content-gates.test.ts tests/unit/prompt-structure-gates.test.ts tests/unit/prompt-room-type-gates.test.ts tests/unit/prompt-snapshot-gates.test.ts tests/unit/prompt-cross-handler-gates.test.ts"
   },
   "dependencies": {
     "@replit/object-storage": "1.0.0",
