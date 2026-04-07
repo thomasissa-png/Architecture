@@ -7,7 +7,6 @@ import OpenAI from "openai";
 import sharp from "sharp";
 import { applyRoomTypeOverrides, ROOM_TYPES, getStyleMaterialHint } from "@/lib/room-types";
 import { applyOutdoorSubtypeOverrides, OUTDOOR_SUBTYPES } from "@/lib/outdoor-subtypes";
-import { detectBlownHighlightsFromBase64 } from "@/lib/image-analysis";
 
 // v55 — type sécurisé pour input_fidelity (l'API n'expose pas encore les types).
 export type InputFidelity = "high" | "low";
@@ -121,7 +120,7 @@ export async function extractRoomInventory(imageBase64: string): Promise<string>
  *   P0-C ARCHITECTURAL HONESTY clause ajoutee en tete de tous les builders passe 1 (8 branches indoor) — interdit l'invention de structures non visibles dans l'input.
  *   P0-D color shift Contemporary — surfacePrompt reformule pour preserver la temperature warm/cool des murs au lieu de les neutraliser globalement.
  *   Fixes appliques en synchro StylePicker.tsx + style-resolver.ts (24 modifications synchronisees + 2 surfacePrompts Contemporary).) */
-export const PROMPT_VERSION = "v55";
+export const PROMPT_VERSION = "v56";
 
 // ─── Image generation model ─────────────────────────────────────────
 // v36: configurable via env var. Default gpt-image-1 (v32 reverted gpt-image-1.5 for spatial regression).
@@ -576,7 +575,7 @@ export async function tryOpenAIResponses(
   roomTypeId?: string | null,
   outdoor?: { isOutdoor: boolean; subtypeSurfaceOverride?: string; subtypeFurnitureOverride?: string },
   roomInventory?: string,
-  inputFidelity: InputFidelity = "high"
+  inputFidelity: InputFidelity = "low" // v56: was "high" (see docs/ia/v56-input-fidelity-default-low.md)
 ): Promise<{ image: string; model: string }> {
   const openai = getOpenAI();
 
@@ -778,38 +777,17 @@ export async function generatePass(
   // Determine if room is complex enough to warrant best-of-2
   const complex = isComplexRoom(roomInventory);
 
-  // v55 — Adaptive input_fidelity for pass 1 only.
-  // When the input contains a significant proportion of blown highlights
-  // (typically over-exposed windows), `input_fidelity:"high"` triggers a
-  // catastrophic fusion artifact (semi-transparent overlay of the input).
-  // Switch to `"low"` on those inputs only — pass 2 always uses "high"
-  // because the pass 1 output is clean (no blown highlights anymore).
-  let pass1Fidelity: InputFidelity = "high";
-  if (pass === 1) {
-    try {
-      const highlights = await detectBlownHighlightsFromBase64(base64Image);
-      if (highlights.hasBlownHighlights) {
-        pass1Fidelity = "low";
-        console.log(
-          `[v55] blown highlights detected (${(highlights.ratio * 100).toFixed(1)}%), switching to input_fidelity=low for pass 1`
-        );
-      } else {
-        console.log(
-          `[v55] no blown highlights (${(highlights.ratio * 100).toFixed(1)}%), keeping input_fidelity=high for pass 1`
-        );
-      }
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      console.warn(`[v55] blown highlights detection failed (fail-open, keeping high): ${msg}`);
-    }
-  }
-
+  // v56 — input_fidelity defaults to "low" universally (see docs/ia/v56-input-fidelity-default-low.md).
+  // The v55 adaptive heuristic (detectBlownHighlights → switch to "low") was abandoned:
+  // prod audit (Yann 5.9, Lucas 5.4) showed leakage happens without blown highlights too.
+  // Pass 1 receives the raw site photo → "low" prevents the deterministic compositing artifact.
+  // Pass 2 receives the clean pass1 output (no leakage risk) → "high" preserves finished surfaces.
   // Single generation with retry — used for pass 1, or pass 2 on simple rooms
   const generateSingle = async (): Promise<{ image: string; model: string }> => {
     let lastError: Error | null = null;
     for (let attempt = 0; attempt < MAX_PASS_RETRIES; attempt++) {
       try {
-        return await tryOpenAIResponses(base64Image, surfacePrompt, furniturePrompt, pass, outputSize.openai, roomTypeId, outdoor, roomInventory, pass === 1 ? pass1Fidelity : "high");
+        return await tryOpenAIResponses(base64Image, surfacePrompt, furniturePrompt, pass, outputSize.openai, roomTypeId, outdoor, roomInventory, pass === 1 ? "low" : "high");
       } catch (err) {
         lastError = err instanceof Error ? err : new Error(String(err));
         console.error(`OpenAI pass ${pass} attempt ${attempt + 1}/${MAX_PASS_RETRIES} failed:`, lastError.message);

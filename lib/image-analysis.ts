@@ -12,6 +12,14 @@
  *
  * Cette fonction permet de détecter ces inputs en amont du pipeline et de
  * basculer dynamiquement sur `input_fidelity:"low"` en passe 1.
+ *
+ * v56 UPDATE (2026-04-07) : heuristique abandonnée.
+ * Audit prod v55 (Yann 5.9, Lucas 5.4) a invalidé le trigger : le leakage
+ * survient sans highlights cramés aussi (déterministe sur input_fidelity:"high"
+ * en général). v56 défaut "low" universel en pass 1, pas de heuristique.
+ * Fichier conservé pour réutilisation future (monitoring dashboard, heuristique
+ * inverse remontant à "high" sur inputs très détaillés, pré-processing pipeline).
+ * Voir docs/ia/v56-input-fidelity-default-low.md.
  */
 
 import sharp from "sharp";
