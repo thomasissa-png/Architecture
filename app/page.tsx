@@ -1200,8 +1200,10 @@ export default function Home() {
                 : (targetResult.customPromptUsed || "")),
             styleId: targetResult.styleId ?? "custom",
             withFurniture: true,
-            width: 0,
-            height: 0,
+            // BR (session 36) : ne PAS envoyer width/height: 0. Le schéma Zod
+            // (lib/generation-schema.ts) requiert .positive() — `0` était rejeté
+            // avec "Requête invalide". Pour une iteration sur pass1_key, les
+            // dimensions sont déjà connues serveur-side via le pass1 cache.
             isOutdoor: targetResult.isOutdoor || false,
             outdoorSubtype: targetResult.isOutdoor ? targetResult.outdoorSubtype : undefined,
           }),
@@ -1424,8 +1426,9 @@ export default function Home() {
           styleId,
           withFurniture: true,
           outputFormat: "original",
-          width,
-          height,
+          // BR (session 36) : Zod schema rejette width/height: 0 (.positive()).
+          // Si la lecture d'image a échoué, on omet ces champs (optionnels).
+          ...(width > 0 && height > 0 ? { width, height } : {}),
           sessionId: getSessionId(),
           isOutdoor: result.isOutdoor || false,
           outdoorSubtype: result.isOutdoor ? result.outdoorSubtype : undefined,
@@ -2736,6 +2739,32 @@ export default function Home() {
                               </div>
                             </div>
                           )}
+                          {/* Refine error overlay — session 36 : affiché EN OVERLAY sur l'image
+                              (au lieu de sous l'image), même pattern que le loader d'affinage. */}
+                          {thisRefineError && (
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20 rounded-2xl bg-foreground/5 backdrop-blur-[2px]">
+                              <div className="pointer-events-auto bg-background/95 backdrop-blur-sm rounded-xl px-5 py-4 shadow-md border border-red-200/60 text-center max-w-xs mx-4">
+                                <p className="text-red-600/90 text-sm font-medium mb-1">{thisRefineError}</p>
+                                <p className="text-red-400/70 text-xs font-light mb-3">
+                                  Votre itération n&apos;a pas été consommée.
+                                </p>
+                                <div className="flex items-center justify-center gap-3">
+                                  <button
+                                    onClick={() => handleRefineRetry(index)}
+                                    className="text-xs text-red-500 underline underline-offset-4 hover:text-red-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded"
+                                  >
+                                    Réessayer
+                                  </button>
+                                  <button
+                                    onClick={() => handleRefineModify(index)}
+                                    className="text-xs text-muted underline underline-offset-4 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded"
+                                  >
+                                    Modifier le commentaire
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
                           <ImageComparator
                             originalUrl={result.originalUrl}
                             generatedUrl={displayUrl}
@@ -2877,29 +2906,9 @@ export default function Home() {
                         }}
                       />
 
-                      {/* Refine error — per-photo */}
-                      {thisRefineError && !isThisRefining && (
-                        <div className="bg-red-50/50 border border-red-200/60 rounded-2xl p-5 text-center">
-                          <p className="text-red-600/80 text-sm mb-1">{thisRefineError}</p>
-                          <p className="text-red-400/70 text-xs font-light mb-3">
-                            Votre itération n&apos;a pas été consommée.
-                          </p>
-                          <div className="flex items-center justify-center gap-3">
-                            <button
-                              onClick={() => handleRefineRetry(index)}
-                              className="text-xs text-red-500 underline underline-offset-4 hover:text-red-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded"
-                            >
-                              Réessayer
-                            </button>
-                            <button
-                              onClick={() => handleRefineModify(index)}
-                              className="text-xs text-muted underline underline-offset-4 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded"
-                            >
-                              Modifier le commentaire
-                            </button>
-                          </div>
-                        </div>
-                      )}
+                      {/* Refine error — session 36 : déplacé EN OVERLAY sur le comparator
+                          (voir bloc above). Le bloc ci-dessous est supprimé pour ne pas
+                          dupliquer le message. */}
 
                       {/* Refine warnings (shown after successful refine) */}
                       {thisRefineWarnings.length > 0 && !isThisRefining && !thisRefineError && (
