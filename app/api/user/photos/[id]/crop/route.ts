@@ -1,6 +1,12 @@
 /**
  * POST /api/user/photos/[id]/crop
- * Replaces the input image of a user photo with a cropped version.
+ *
+ * Session 38 (BR-6) : crop du résultat GÉNÉRÉ (output_image_key), pas de l'input.
+ * Avant ce fix, le crop remplaçait l'image BEFORE (`input_image_key`). Le fondateur
+ * veut cropper l'image APRÈS (résultat IA) pour ajuster le cadrage final avant
+ * partage/dossier. La backup est stockée dans `original_output_key` (réversible
+ * via /uncrop).
+ *
  * Auth required — only the owner can crop.
  * Body: { croppedImage: "data:image/jpeg;base64,..." }
  */
@@ -31,6 +37,13 @@ export async function POST(
     return NextResponse.json(
       { error: "Photo introuvable." },
       { status: 404 }
+    );
+  }
+
+  if (!photo.output_image_key) {
+    return NextResponse.json(
+      { error: "Cette photo n'a pas de résultat généré à recadrer." },
+      { status: 400 }
     );
   }
 
@@ -66,24 +79,24 @@ export async function POST(
     const cropName = `${Date.now()}_cropped_${params.id}`;
     const newKey = await saveImage(base64, cropName);
 
-    // Backup original input key before overwriting (reversible crop)
+    // Backup original output key before overwriting (reversible crop)
     const db = getPool();
 
-    // Add original_input_key column if missing (idempotent)
+    // Add original_output_key column if missing (idempotent)
     await db.query(`
-      ALTER TABLE user_photos ADD COLUMN IF NOT EXISTS original_input_key VARCHAR(255)
+      ALTER TABLE user_photos ADD COLUMN IF NOT EXISTS original_output_key VARCHAR(255)
     `).catch(() => { /* column may already exist */ });
 
     // Save original key only on first crop (don't overwrite with a previous crop)
     await db.query(
       `UPDATE user_photos
-       SET input_image_key = $1,
-           original_input_key = COALESCE(original_input_key, input_image_key)
+       SET output_image_key = $1,
+           original_output_key = COALESCE(original_output_key, output_image_key)
        WHERE id = $2 AND user_id = $3`,
       [newKey, params.id, session.user.id]
     );
 
-    return NextResponse.json({ success: true, newInputKey: newKey });
+    return NextResponse.json({ success: true, newOutputKey: newKey });
   } catch (err) {
     console.error("[crop] Error:", err instanceof Error ? err.message : err);
     return NextResponse.json(

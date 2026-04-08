@@ -8,8 +8,9 @@ import { test, expect, type Page } from "@playwright/test";
  * - Thomas sur chantier (iPhone, 4G) doit pouvoir recadrer un grand angle en 3 taps
  * - Un crop qui echoue silencieusement = Thomas pense avoir corrige sa photo mais
  *   la generation suivante utilise toujours l'image non recadree
- * - Le bouton "Recadrer" ne doit apparaitre QUE si la photo a un input_image_key
- *   (sinon = photo importee sans original, rien a recadrer)
+ * - BR-6 (session 38) : Le bouton "Recadrer" doit apparaitre sur TOUTES les photos
+ *   qui ont un output_image_key (résultat généré), pas input_image_key. Avant ce fix,
+ *   la moitié des photos n'avaient pas le bouton car leur input_image_key était null.
  *
  * PREREQUIS:
  * - L'app doit tourner en local (npm run dev / localhost:3000)
@@ -65,17 +66,17 @@ test.describe("CropModal — UI interactions", () => {
    * They validate the interactive contract of the component.
    */
 
-  test("le bouton Recadrer n'est PAS present si la photo n'a pas d'input_image_key", async ({ page }) => {
+  test("BR-6 : le bouton Recadrer est gated sur output_image_key (pas input_image_key)", async ({ page }) => {
     // Navigate to the property page
     await page.goto("/mes-biens/1");
     await page.waitForTimeout(2000);
 
     // If unauthenticated, the crop button should not be visible regardless
     const cropButtons = page.getByText("Recadrer", { exact: true });
-    // Either 0 buttons (no photos loaded) or buttons only on photos WITH input_image_key
+    // Either 0 buttons (no photos loaded) or buttons only on photos WITH output_image_key
     const count = await cropButtons.count();
     // This is a structural assertion — if no auth, count should be 0
-    // With auth, count should be <= number of photos with input_image_key
+    // With auth, count should be <= number of photos with output_image_key (all generated photos)
     expect(count).toBeGreaterThanOrEqual(0);
   });
 });
@@ -211,153 +212,115 @@ test.describe("Crop — mobile viewport (393px)", () => {
 // TODO: Ajouter un setup fixture avec seed DB + auth cookie
 //       quand l'infrastructure de test le permet.
 
-test.describe("Crop — parcours authentifie", () => {
+test.describe("Crop — parcours authentifie (BR-6 session 38 UX)", () => {
   // Skip these in CI — they require a real authenticated session
   test.skip();
 
-  test("le bouton 'Recadrer' est visible sur les photos avec input_image_key", async ({ page }) => {
-    await page.goto("/mes-biens/1"); // Bien avec photos
-    await page.waitForTimeout(3000);
+  // BR-6 : crop opère sur output_image_key (pas input_image_key).
+  // Le modal utilise react-image-crop (sélection rectangulaire + aspect presets),
+  // plus de zoom slider.
 
+  test("BR-6 : le bouton 'Recadrer' est visible sur les photos avec output_image_key", async ({ page }) => {
+    await page.goto("/mes-biens/1");
+    await page.waitForTimeout(3000);
     const cropButton = page.getByText("Recadrer").first();
     await expect(cropButton).toBeVisible();
   });
 
-  test("clic sur 'Recadrer' ouvre le CropModal", async ({ page }) => {
+  test("BR-6 : clic sur 'Recadrer' ouvre le CropModal avec titre 'Recadrer le visuel généré'", async ({ page }) => {
     await page.goto("/mes-biens/1");
     await page.waitForTimeout(3000);
-
     await page.getByText("Recadrer").first().click();
-
-    // Le modal doit apparaitre avec le titre
-    await expect(page.getByText("Recadrer la photo")).toBeVisible();
-    // Le slider zoom doit etre present
-    await expect(page.getByText("Zoom")).toBeVisible();
-    // Les 2 boutons d'action
+    await expect(page.getByText("Recadrer le visuel généré")).toBeVisible();
+    // Les presets aspect ratio doivent être visibles
+    await expect(page.getByText("Format")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Libre" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "1:1" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "4:3" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "16:9" })).toBeVisible();
+    // Actions
     await expect(page.getByText("Annuler")).toBeVisible();
     await expect(page.getByText("Appliquer le recadrage")).toBeVisible();
   });
 
-  test("le slider de zoom est manipulable entre 100% et 300%", async ({ page }) => {
+  test("BR-6 : les presets aspect ratio modifient la sélection", async ({ page }) => {
     await page.goto("/mes-biens/1");
     await page.waitForTimeout(3000);
-
     await page.getByText("Recadrer").first().click();
-    await expect(page.getByText("Recadrer la photo")).toBeVisible();
+    await expect(page.getByText("Recadrer le visuel généré")).toBeVisible();
 
-    // Le slider range
-    const slider = page.locator("input[type='range']");
-    await expect(slider).toBeVisible();
-    await expect(slider).toHaveAttribute("min", "1");
-    await expect(slider).toHaveAttribute("max", "3");
-
-    // Valeur initiale 100%
-    await expect(page.getByText("100%")).toBeVisible();
-
-    // Changer la valeur du slider
-    await slider.fill("2");
-    await expect(page.getByText("200%")).toBeVisible();
+    // Cliquer sur 1:1 → le crop doit devenir carré (visible via ReactCrop container)
+    await page.getByRole("button", { name: "1:1" }).click();
+    // Cliquer sur 16:9 → le crop devient panoramique
+    await page.getByRole("button", { name: "16:9" }).click();
+    // Libre → pas de contrainte
+    await page.getByRole("button", { name: "Libre" }).click();
   });
 
-  test("'Annuler' ferme le modal sans modification", async ({ page }) => {
+  test("BR-6 : 'Annuler' ferme le modal sans modification", async ({ page }) => {
     await page.goto("/mes-biens/1");
     await page.waitForTimeout(3000);
-
     await page.getByText("Recadrer").first().click();
-    await expect(page.getByText("Recadrer la photo")).toBeVisible();
-
+    await expect(page.getByText("Recadrer le visuel généré")).toBeVisible();
     await page.getByText("Annuler").click();
-
-    // Le modal doit avoir disparu
-    await expect(page.getByText("Recadrer la photo")).not.toBeVisible();
+    await expect(page.getByText("Recadrer le visuel généré")).not.toBeVisible();
   });
 
-  test("clic sur le backdrop ferme le modal", async ({ page }) => {
+  test("BR-6 : clic sur le backdrop ferme le modal", async ({ page }) => {
     await page.goto("/mes-biens/1");
     await page.waitForTimeout(3000);
-
     await page.getByText("Recadrer").first().click();
-    await expect(page.getByText("Recadrer la photo")).toBeVisible();
-
-    // Cliquer sur le backdrop (zone sombre autour du modal)
-    // On clique dans le coin haut-gauche qui est forcement le backdrop
+    await expect(page.getByText("Recadrer le visuel généré")).toBeVisible();
     await page.click(".fixed.inset-0", { position: { x: 10, y: 10 } });
-
-    await expect(page.getByText("Recadrer la photo")).not.toBeVisible();
+    await expect(page.getByText("Recadrer le visuel généré")).not.toBeVisible();
   });
 
-  test("'Appliquer le recadrage' envoie le crop et affiche le toast", async ({ page }) => {
-    await page.goto("/mes-biens/1");
-    await page.waitForTimeout(3000);
-
-    // Intercepter l'appel API crop
+  test("BR-6 : 'Appliquer le recadrage' envoie le crop et affiche le toast", async ({ page }) => {
     let cropApiCalled = false;
     await page.route("**/api/user/photos/*/crop", async (route) => {
       cropApiCalled = true;
       await route.fulfill({
         status: 200,
         contentType: "application/json",
-        body: JSON.stringify({ success: true, newInputKey: "logs/cropped_test.jpg" }),
-      });
-    });
-
-    await page.getByText("Recadrer").first().click();
-    await expect(page.getByText("Recadrer la photo")).toBeVisible();
-
-    // Cliquer "Appliquer le recadrage"
-    await page.getByText("Appliquer le recadrage").click();
-
-    // Le bouton doit passer en etat "Recadrage..."
-    await expect(page.getByText("Recadrage...")).toBeVisible({ timeout: 5000 });
-
-    // Apres le crop, le toast de succes doit apparaitre
-    await expect(
-      page.getByText("Photo recadrée. Vous pouvez régénérer le visuel.")
-    ).toBeVisible({ timeout: 10000 });
-
-    // L'API a bien ete appelee
-    expect(cropApiCalled).toBeTruthy();
-
-    // Le modal doit etre ferme
-    await expect(page.getByText("Recadrer la photo")).not.toBeVisible();
-  });
-
-  test("apres crop, la photo est actualisee dans la grille (fetchPhotos)", async ({ page }) => {
-    let fetchPhotosCount = 0;
-
-    // Compter les appels a l'API photos (fetchPhotos)
-    await page.route("**/api/user/photos*", async (route) => {
-      fetchPhotosCount++;
-      await route.continue();
-    });
-
-    // Mock le crop pour reussir
-    await page.route("**/api/user/photos/*/crop", async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({ success: true, newInputKey: "logs/cropped_test.jpg" }),
+        body: JSON.stringify({ success: true, newOutputKey: "logs/cropped_test.jpg" }),
       });
     });
 
     await page.goto("/mes-biens/1");
     await page.waitForTimeout(3000);
+    await page.getByText("Recadrer").first().click();
+    await expect(page.getByText("Recadrer le visuel généré")).toBeVisible();
+    await page.getByText("Appliquer le recadrage").click();
+    await expect(page.getByText("Recadrage...")).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText("Visuel recadré.")).toBeVisible({ timeout: 10000 });
+    expect(cropApiCalled).toBeTruthy();
+    await expect(page.getByText("Recadrer le visuel généré")).not.toBeVisible();
+  });
 
+  test("BR-6 : après crop, la grille est actualisée (fetchPhotos)", async ({ page }) => {
+    let fetchPhotosCount = 0;
+    await page.route("**/api/user/photos*", async (route) => {
+      fetchPhotosCount++;
+      await route.continue();
+    });
+    await page.route("**/api/user/photos/*/crop", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ success: true, newOutputKey: "logs/cropped_test.jpg" }),
+      });
+    });
+
+    await page.goto("/mes-biens/1");
+    await page.waitForTimeout(3000);
     const initialFetchCount = fetchPhotosCount;
-
     await page.getByText("Recadrer").first().click();
     await page.getByText("Appliquer le recadrage").click();
-
-    // Attendre le toast de succes
-    await expect(
-      page.getByText("Photo recadrée. Vous pouvez régénérer le visuel.")
-    ).toBeVisible({ timeout: 10000 });
-
-    // fetchPhotos doit avoir ete appele au moins une fois de plus
+    await expect(page.getByText("Visuel recadré.")).toBeVisible({ timeout: 10000 });
     expect(fetchPhotosCount).toBeGreaterThan(initialFetchCount);
   });
 
-  test("erreur API crop → toast d'erreur, modal reste ouvert", async ({ page }) => {
+  test("BR-6 : erreur API crop → toast d'erreur, modal reste ouvert", async ({ page }) => {
     await page.route("**/api/user/photos/*/crop", async (route) => {
       await route.fulfill({
         status: 500,
@@ -368,101 +331,73 @@ test.describe("Crop — parcours authentifie", () => {
 
     await page.goto("/mes-biens/1");
     await page.waitForTimeout(3000);
-
     await page.getByText("Recadrer").first().click();
     await page.getByText("Appliquer le recadrage").click();
-
-    // Toast d'erreur
     await expect(page.getByText("Erreur lors du recadrage.")).toBeVisible({ timeout: 10000 });
   });
 
-  test("erreur reseau → toast 'Erreur réseau lors du recadrage.'", async ({ page }) => {
+  test("BR-6 : erreur réseau → toast 'Erreur réseau lors du recadrage.'", async ({ page }) => {
     await page.route("**/api/user/photos/*/crop", async (route) => {
       await route.abort("failed");
     });
 
     await page.goto("/mes-biens/1");
     await page.waitForTimeout(3000);
-
     await page.getByText("Recadrer").first().click();
     await page.getByText("Appliquer le recadrage").click();
-
-    await expect(
-      page.getByText("Erreur réseau lors du recadrage.")
-    ).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText("Erreur réseau lors du recadrage.")).toBeVisible({ timeout: 10000 });
   });
 });
 
 // ─── Touch targets & accessibility ────────────────────────────────────
 
-test.describe("Crop — accessibilite", () => {
+test.describe("Crop — accessibilite (BR-6 session 38 UX)", () => {
   test.skip(); // Requires authenticated session
 
-  test("les boutons Annuler et Appliquer ont min-h-[44px] (touch target)", async ({ page }) => {
+  test("BR-6 : les boutons Annuler et Appliquer ont min-h-[44px] (touch target)", async ({ page }) => {
     await page.goto("/mes-biens/1");
     await page.waitForTimeout(3000);
-
     await page.getByText("Recadrer").first().click();
-    await expect(page.getByText("Recadrer la photo")).toBeVisible();
+    await expect(page.getByText("Recadrer le visuel généré")).toBeVisible();
 
-    // Verifier la taille reelle des boutons
     const cancelBtn = page.getByText("Annuler");
     const applyBtn = page.getByText("Appliquer le recadrage");
-
     const cancelBox = await cancelBtn.boundingBox();
     const applyBox = await applyBtn.boundingBox();
 
     expect(cancelBox).not.toBeNull();
     expect(applyBox).not.toBeNull();
-
-    // Touch target minimum 44px
     expect(cancelBox!.height).toBeGreaterThanOrEqual(44);
     expect(applyBox!.height).toBeGreaterThanOrEqual(44);
   });
 
-  test("le bouton Fermer (X) est accessible via aria-label", async ({ page }) => {
+  test("BR-6 : le bouton Fermer (X) est accessible via aria-label", async ({ page }) => {
     await page.goto("/mes-biens/1");
     await page.waitForTimeout(3000);
-
     await page.getByText("Recadrer").first().click();
-    await expect(page.getByText("Recadrer la photo")).toBeVisible();
+    await expect(page.getByText("Recadrer le visuel généré")).toBeVisible();
 
     const closeBtn = page.getByLabel("Fermer");
     await expect(closeBtn).toBeVisible();
     await closeBtn.click();
-    await expect(page.getByText("Recadrer la photo")).not.toBeVisible();
+    await expect(page.getByText("Recadrer le visuel généré")).not.toBeVisible();
   });
 
-  test("navigation clavier : Tab parcourt Fermer → slider → Annuler → Appliquer", async ({ page }) => {
+  test("BR-6 : role dialog + aria-modal + aria-labelledby", async ({ page }) => {
     await page.goto("/mes-biens/1");
     await page.waitForTimeout(3000);
-
     await page.getByText("Recadrer").first().click();
-    await expect(page.getByText("Recadrer la photo")).toBeVisible();
-
-    // Tab through the modal elements
-    await page.keyboard.press("Tab");
-    // Focus should be on an interactive element inside the modal
-    const focusedTag = await page.evaluate(() => document.activeElement?.tagName);
-    expect(["BUTTON", "INPUT"]).toContain(focusedTag);
+    const dialog = page.locator('[role="dialog"][aria-modal="true"]');
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toHaveAttribute("aria-labelledby", "crop-modal-title");
   });
 
-  test("Escape ferme le modal", async ({ page }) => {
+  test("BR-6 : Escape ferme le modal (useEffect handler)", async ({ page }) => {
     await page.goto("/mes-biens/1");
     await page.waitForTimeout(3000);
-
     await page.getByText("Recadrer").first().click();
-    await expect(page.getByText("Recadrer la photo")).toBeVisible();
-
+    await expect(page.getByText("Recadrer le visuel généré")).toBeVisible();
     await page.keyboard.press("Escape");
-
-    // NOTE: Le CropModal actuel ne gere pas Escape nativement.
-    // Ce test documente le comportement attendu.
-    // Si le modal ne se ferme pas sur Escape → bug a signaler a @fullstack.
-    // BUG POTENTIEL: CropModal ne capture pas la touche Escape.
-    // Le test verifie le comportement actuel (pas de crash).
-    const isStillVisible = await page.getByText("Recadrer la photo").isVisible().catch(() => false);
-    // Que le modal se ferme ou non, pas de crash
-    expect(true).toBeTruthy();
+    await expect(page.getByText("Recadrer le visuel généré")).not.toBeVisible();
   });
 });

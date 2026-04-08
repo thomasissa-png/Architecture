@@ -54,7 +54,10 @@ interface UserPhoto {
   property_id: string | null;
   input_image_key: string | null;
   output_image_key: string | null;
+  /** Legacy: backup de l'input avant crop (feature pre-BR-6, session 38). */
   original_input_key: string | null;
+  /** BR-6 (session 38) : backup de l'output avant crop (crop opère sur le résultat généré). */
+  original_output_key: string | null;
   style_id: string | null;
   room_type: string | null;
   room_label: string | null;
@@ -975,14 +978,18 @@ export default function PropertyDetailPage() {
                       </span>
                     </div>
                     <div className="absolute top-2 right-2 flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                      {photo.input_image_key && (
+                      {/* BR-6 (session 38) : crop opère sur l'image GÉNÉRÉE (output), pas l'input.
+                          Le bouton est gated sur output_image_key (présent sur toutes les photos générées)
+                          — avant ce fix, il était gated sur input_image_key qui manque sur la moitié
+                          des photos (photos importées, photos queue, etc.) → bouton invisible. */}
+                      {photo.output_image_key && (
                         <button
                           onClick={() => {
                             setCropPhotoId(photo.id);
-                            setCropImageUrl(`/api/logs/image?path=${encodeURIComponent(photo.input_image_key!)}`);
+                            setCropImageUrl(`/api/logs/image?path=${encodeURIComponent(photo.output_image_key!)}`);
                           }}
                           className="bg-foreground/70 text-white text-xs px-2 py-1.5 rounded-lg font-medium hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 min-h-[44px] flex items-center gap-1"
-                          title="Recadrer la photo originale"
+                          title="Recadrer le visuel généré"
                         >
                           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h10v10M3 21L7 17M21 3v4h-4" />
@@ -990,13 +997,14 @@ export default function PropertyDetailPage() {
                           Recadrer
                         </button>
                       )}
-                      {photo.original_input_key && (
+                      {/* Uncrop disponible si un backup output (BR-6) OU input (legacy) existe */}
+                      {(photo.original_output_key || photo.original_input_key) && (
                         <button
                           onClick={async () => {
                             try {
                               const res = await fetch(`/api/user/photos/${photo.id}/uncrop`, { method: "POST" });
                               if (res.ok) {
-                                setToastMsg("Photo originale restaurée.");
+                                setToastMsg("Visuel original restauré.");
                                 fetchPhotos();
                               } else {
                                 setToastMsg("Erreur lors de la restauration.");
@@ -1006,7 +1014,7 @@ export default function PropertyDetailPage() {
                             }
                           }}
                           className="bg-foreground/70 text-white text-xs px-2 py-1.5 rounded-lg font-medium hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 min-h-[44px] flex items-center gap-1"
-                          title="Revenir à la photo originale"
+                          title="Revenir au visuel original"
                         >
                           Original
                         </button>
@@ -1415,10 +1423,11 @@ export default function PropertyDetailPage() {
         isLoading={isArchiving}
       />
 
-      {/* Crop modal */}
+      {/* Crop modal — BR-6 (session 38) : recadre le visuel GÉNÉRÉ (output), pas l'input. */}
       {cropPhotoId && cropImageUrl && (
         <CropModal
           imageUrl={cropImageUrl}
+          title="Recadrer le visuel généré"
           onClose={() => { setCropPhotoId(null); setCropImageUrl(null); }}
           onCrop={async (croppedBase64) => {
             try {
@@ -1430,10 +1439,11 @@ export default function PropertyDetailPage() {
               if (res.ok) {
                 setCropPhotoId(null);
                 setCropImageUrl(null);
-                setToastMsg("Photo recadrée. Vous pouvez régénérer le visuel.");
+                setToastMsg("Visuel recadré.");
                 fetchPhotos();
               } else {
-                setToastMsg("Erreur lors du recadrage.");
+                const errData = await res.json().catch(() => ({}));
+                setToastMsg(errData.error || "Erreur lors du recadrage.");
               }
             } catch {
               setToastMsg("Erreur réseau lors du recadrage.");

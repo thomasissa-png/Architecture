@@ -20,8 +20,8 @@ export default defineConfig({
     exclude: [
       "tests/e2e/**",
       "tests/unit/portal-formatter.test.ts", // legacy node:assert runner
-      "tests/unit/crop-api.test.ts",
-      "tests/unit/CropModal.test.tsx",
+      // BR-6 (session 38) : crop-api.test.ts + CropModal.test.tsx supprimés,
+      // remplacés par tests/unit/regression/br6-crop-output-image.test.ts
       "node_modules/**",
     ],
     coverage: {
