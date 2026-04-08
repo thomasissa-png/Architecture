@@ -330,11 +330,136 @@
 | @ia | 2026-04-07 | Session 36 — Decision architecturale tranchee v57 (mandat fondateur) | **Mandat fondateur explicite** : "Je veux que @ia decide sur base de tous nos resultats. Le systeme doit fonctionner sur 4 modes user (surfaces-only, pipeline complet, affiner, regenerer), la plus performante possible." **Decision : Option 2 — rollback v54 partiel.** Trajectoire v54 (7.22) → v55 (5.65) → v56 (5.10) = regression monotone -2.12 pts. Le dernier point stable est v54. 6 modifications prescrites : (1) `inputFidelity` defaut "low" → "high" sur surfaces+furniture pass, (2) ligne 682 `tryOpenAIResponsesWithPrompt` reste "high" (deja coherent — explique pourquoi mode Affiner avait comportement different), (3) suppression import+appel `detectBlownHighlightsFromBase64`, (4) suppression clause `ARCHITECTURAL_HONESTY_V55` des 8 builders pass1, (5) suppression branches mortes `if (fidelity === "low")`, (6) PROMPT_VERSION v56 → v57. **PRESERVE** : fix P0-A room_type, propagation cross-handler route.ts, suppression vault beams 10/12 styles. Brief `@fullstack` complet inclus. Critere de rollback explicite : audit moyen Yann+Lucas < 7.0 sur 5 generations v57 → escalade Option 3 (pre-processing sharp). Commit `087e38b` (relance courte 80s apres timeout 58 min de l'instance precedente trop chargee — confirmation regle anti-timeout). | Decision tranchee demandee par fondateur "decide sur base de tous nos resultats". Brief impose 5 etapes obligatoires (tableau historique scores, matrice 4 modes × versions, identification bug racine 4 hypotheses, options 1-10 architecturales, decision tranchee + plan d'action). 6 alternatives ecartees explicitement (rollback pur v54 = perdrait fix P0-A, pre-processing sharp = incertain non evalue, mask-based images.edit = contredit sprint 10 fondateur, split API = x3 cout, etc.). Decouverte critique en cours d'analyse : `tryOpenAIResponsesWithPrompt` (mode iteration) hardcodait deja `input_fidelity="high"` ligne 682 → confirme l'incoherence multi-mode v55/v56. |
 | @ia + @qa | 2026-04-07 | Session 36 — Boucle convergence gates non-regression prompts (4 rounds, 9.91/10) | **Boucle iterative @ia↔@qa** demandee par fondateur : "definir un maximum de gates coherentes pour eviter les regressions de prompt". Round 1 @ia : spec 38 gates + impl 24 gates content/structure/input_fidelity/STYLE_VARIANTS schema/sync, 513 PASS (commit `079b9cf`). Round 1 @qa : impl 14 gates room_type/snapshots/cross-handler/CI + audit @ia note **9.59/10** avec 0 P0/6 P1/3 P2 (commits `aa5cb71` + `ede5dd5` chunked apres premier stall max_tokens). Round 2 @ia : fix 6 P1 + audit @qa note **9.73/10** avec 0 P0/0 P1/3 P2 (commit `3de9365`). Round 3 @qa : fix 3 P2 + verdict CONVERGENCE **9.91/10** combinee (@qa 10.00 + @ia 9.82), 4 P2 @ia restants acceptes en dette geree (commit `13fd500`). **Total : 38 gates spec, 38 implementees, 853 + 671 = 1524 tests prompt-gates PASS, 14 skipped (gates v55-obsoletes post rollback v57)**. Categorie A vocab interdit (vault beams, curtains, windows, grain, TRANSFORM, pixel-identical, smooth white ceiling), B structure (ARCHITECTURAL_HONESTY suppression, longueurs, ordre, PROMPT_VERSION), C room_type (override, cross-handler, getStyleMaterialHint), D input_fidelity coherence, E snapshots prompts construits (132 snapshots regeneres post v57), F STYLE_VARIANTS schema (3+3 variants/palettes), G sync StylePicker≡style-resolver, H propagation cross-handler route.ts ≡ generation-pipeline.ts, I CI (pre-commit hook + prebuild Replit + reporting). Documentation : `docs/ia/prompt-regression-gates-spec.md` + `docs/qa/prompt-gates-coverage.md` (avec sections G+H audit croise). | Boucle convergence iterative validee : pattern @ia (domain expert prompts) ↔ @qa (test engineering) avec audits croises mutuels et notes /10 produit du code de tres haute qualite des le round 1. Le `max_tokens` Write trap a frappe 2 fois (instance @ia decision puis @qa coverage doc) confirmant la regle anti-timeout : **methode chunked obligatoire** (Write skeleton puis Edit par section, jamais Write monolithique > 4000 tokens). Releve par orchestrateur : sauvegarder le travail technique deja produit avant relance ciblee. |
 | @fullstack | 2026-04-07 | Session 36 — v57 rollback partiel + fix bug Affiner | **v57 rollback (commit `cde8372`)** : 6 edits ciblees `lib/generation-pipeline.ts` selon brief `087e38b`. (1) `inputFidelity` defaut "low" → "high" sur surfaces+furniture, (2) ligne 682 `tryOpenAIResponsesWithPrompt` inchange "high" (deja coherent), (3) suppression import + appel `detectBlownHighlightsFromBase64`, (4) suppression constante `ARCHITECTURAL_HONESTY_V55` + 9 injections dans builders, (5) suppression branches mortes `if (fidelity === "low")`, (6) `PROMPT_VERSION` v56 → v57. 2 gates v55-obsoletes skipped avec commentaire (G-PROMPT-B03 ARCHITECTURAL HONESTY, G-PROMPT-D02 pass-conditional fidelity), G-PROMPT-D01 mise a jour `"high"`, 132 snapshots regeneres. Tests 845 PASS / 14 skipped. **Bug Affiner (commit `fbe6575`)** : diagnostic = `handleRefine` envoyait `width: 0, height: 0` rejete par Zod `.positive()` (regression session 34 round 5 quand R3 a ete cablee). Fix = suppression `width/height` du payload `handleRefine` (champs optionnels, dimensions resolues server-side via cache pass1). Fix defensif identique dans `handleRegenerate` (omit si 0) — propagation cross-handler. UI placement : erreur deplacee du bloc standalone (sous l'image) vers overlay absolute centre sur ImageComparator (wrapper `bg-background/95 backdrop-blur-sm rounded-xl shadow-md` z-20). Pattern session 34 BR-3. Tests 845/14/0 maintenu. | Brief court anti-timeout (50 lignes) avec methode chunked imposee (1 Edit par operation, jamais Write monolithique). Budget 12 min v57 + 15 min Affiner = 27 min total pour les 2 missions, vs ~3h theorique. **Lecon meta** : briefs courts + fichiers cibles + interdiction de relire le fichier complet (4000+ lignes) reduit drastiquement le risque max_tokens. Bug Affiner etait LATENT depuis session 34 — la regression n'avait pas ete attrapee parce que les tests E2E mockaient l'API. Ajout candidat aux gates v2 : test integration sur le payload `handleRefine` vs schema Zod. |
+| @fullstack + @qa | 2026-04-07 | Session 37 — Bug P0 Affiner BR-4 (manifestation #2) + matrice 30 tests | **Symptôme reproduit fondateur** : 3 photos générées, click Affiner sur 2 d'entre elles → écrasement croisé (refine #0 écrit dans #1 ou #2). **Cause racine** : `handleRefine` lisait `targetIndex` depuis `refineTargetIndex` state global (single state) au moment de la résolution du fetch, pas au moment de l'appel. Quand l'utilisateur ouvrait le modal pour une autre photo entre temps, `setRefineTargetIndex(newIndex)` mettait à jour le state, et la résolution de la promise #0 lisait la valeur ACTUELLE → écrasement. Migration session 34 (BR-3) avait migré `isRefining`/`refiningIndices` mais oublié `refineTargetIndex` — fix incomplet. **Fix** : `handleRefine(targetIndex: number, comment: string)` accepte index en paramètre EXPLICITE. `RefineModal.onSubmit={(c) => handleRefine(refineTargetIndex, c)}` capture la valeur au render courant. `refineTargetIndex` retiré des deps useCallback. `handleRefineRetry` appelle direct `handleRefine(index, comment)` sans setTimeout. Commits `f349e13` (fix) + `17bd841` (10 static gates) + `77df573` (matrice exhaustive 30 tests sur 1-5 photos × sélections × ordres). Tests 885 vitest PASS. | Le bug avait DÉJÀ été manifesté en session 34 (BR-3) — fix migré sur les Set/Map mais incomplet. **Règle ajoutée à CLAUDE.md** : "REGLE STATE INDEXE PAR ELEMENT DE LISTE" — tout state lié à une opération sur un élément de liste DOIT être indexé par l'identifiant, JAMAIS un single state global. À auditer dans tout composant qui gère des collections (galerie, dossiers, mes-biens). |
+| @ia + @fullstack + @qa + Yann + Lucas | 2026-04-08 | Session 38 marathon — v58 livré → audit NO-GO → v59 livré (5 fixes Lucas) → v59 audit → v60 livré (5 fixes Lucas + 62 nouvelles gates) | **Session 38 = 25+ commits sur `claude/versimo-session-38-9EIha`. v58 livré (8 fixes prompt P0-1 à P1-E)** mais audit Lucas batch fondateur #231-235 a révélé 3 régressions P0 (#234 bathroom CATASTROPHIQUE 3.4/10 — vanity hallucinée + pièce élargie 4x ; #235 dining wall art léopard + tableau électrique effacé ; #233 personnes pas retirées). **Cause racine #234** : conditionnels "ADD vanity ONLY if no vanity already exists" ignorés par gpt-image-1.5 + ligne "Compact by default: ONE vanity 60cm" qui contredisait la preservation-first. **v59 livré (commit `370e8b7` par @ia)** : (1) bathroom roomFurnitureOverride réécrit en hiérarchie STEP 1/2/3 conditionnelle à la largeur, (2) suppression "Compact by default", (3) anti wall art positif "freestanding or leans against floor baseboard", (4) split CLEANUP TEMPORARY vs PERMANENT + electrical panels, (5) "stays empty" → "MUST be rendered empty", (6) extractRoomInventory "TO REMOVE" signal, (7) bump v58→v59. **v59 gates** (commits `f37aa31` + `4da84f7` par @ia) : 184 nouveaux tests prompt-regression-v59-gates.test.ts (catégories I-P : Override/Builder Coherence, Action Verbs, Room_type Coverage, TEMPORARY/PERMANENT Split, Wall Art Positive, Narrow-Room Geometry, Inventory Alignment, PROMPT_VERSION sentinel). **BR-5 (commit `6bf31b0` orchestrateur)** : iteration base storage collision cross-photos — `saveIterationBase(sessionId, ...)` keyait par sessionId unique → toutes les N photos d'une batch écrasaient la même clé → tous les refines récupéraient la dernière (Maximaliste). Fix : clé dérivée de pass1Key (sibling `_iter.jpg`). 12 tests + 14 edge cases QA `cc4a3a1`. **BR-6 (commit `1300f4a` orchestrateur)** : crop "Mes biens" — 3 bugs (bouton invisible 1/2 photos car gated sur input_image_key, modal affiche image AVANT au lieu d'APRÈS, pas de rectangle sélectionnable). Fix : gate sur output_image_key, API crop opère sur output + backup original_output_key + uncrop backward compat, migration react-easy-crop → react-image-crop. **Replit ESM resolver bug bypass** (commits `125e699` + `8731430` + `bbda6a3` orchestrateur) : Replit Deployments ne trouvait pas `react-image-crop` malgré install — bypass via vendoring complet dans `components/vendor/react-image-crop/` (runtime + types + CSS). **Audit Yann + Lucas v59 #238-241** (commits `dc0b803` + `65faf65`) : moyenne 5.8/10 → NO-GO. v59 P0-1 bathroom STEP 1/2/3 VALIDÉ empiriquement sur #239 (Yann 8.1, Lucas 7.1) — hypothèse R2 @ia confiance 75% → 85%. Mais 3 bugs structurels v59 identifiés : water_heaters en PRESERVE (#240 ballon non nettoyé), buildAdjustResponsesPrompt sans anti-humain (#241 personnes réintroduites), PASS2_EQUIPMENT_V54 interdit le masquage par mobilier. **v60 livré (commits `8465abc` à `8ffa657` par @ia)** : 8 commits atomiques + 5 fixes Lucas (P0-A anti-humain durci, P0-B water heaters HIDE_IF_UGLY, P0-C anti-humain adjust, P0-D lock frame strict, P1-C bathroom Step 1 preservation) + bump v59→v60 + 62 nouvelles gates Q-V (Anti-human canalisation, HIDE_IF_UGLY, Adjust anti-human + frame lock, Bathroom Step 1 preservation, PROMPT_VERSION ≥ v60) + intégration au hook pre-commit. Tests finaux **1182 passed / 14 skipped / 0 failed**, tsc clean, lint clean. Aucune régression v59 sur les acquis. | **Stratégie anti-timeout validée** sur les 4 agents lancés cette session : 1er @ia stuck en boucle Write 50 min puis "Prompt is too long" → 2ème @ia a fini en 14 min avec brief plus court ; Yann timeout 23 min sur audit #231-235 (lecture excessive d'anciens rapports) → audit #238-241 rendu en 3 min 20 grâce au brief "no Glob, no past audits" ; Lucas rendu en 6 min sur #238-241 ; @ia v60 rendu en 14 min avec validation gates après chaque commit. **Pattern de remontée 75% → 85% confiance R2** : test empirique (#239 STEP 1/2/3 obéi) plus fort que théorie. Pattern à propager aux autres room types étroits. **Replit vendoring** est désormais le pattern par défaut pour les packages ESM-strict qui posent problème. **Lucas explicite** : "le verbe d'état 'stays' est faible vs verbe d'action 'MUST be rendered'" — règle prompt-engineering à intégrer dans CLAUDE.md. |
 | @orchestrator + @ia + @qa + @ux + @moi + @product-manager + Yann + Lucas + Camille | 2026-04-05 | Session 33 marathon — 60+ commits | **Pipeline génération** : 8 bugs multi-photo corrigés (compteur crédits, MAX_CONCURRENT 5, overlay par photo, tri par fileIndex, refund auto, race conditions). 2 RC corrigées (refresh abort + flicker). userCredits null guard + roomType non-split + crop sur photos bien (CropModal + uncrop). PDF dossier en mode screen au lieu print. Layout résultats responsive sm:max-w-xl→lg:max-w-2xl. Specs F12 6 règles R1-R6. **Prompts** : v49→v52 (anti-élargissement, plomberie, comptage radiateurs, anti-fenêtre mezzanine, IPN, color shift bidirectionnel). v53 = refonte passe 1 (663→220 mots). v54 = condensation passe 2 (478→200) + outdoor (350→200). Validés Yann 8.4/Lucas 8.9/Camille 7.9. **Tests** : 12 E2E Playwright + matrice 135 combinaisons + audit cross-fichier 44 checks. **Build fix** : 3 ESLint errors (currentProcessing, jobIdx, userCredits dep). | Décisions clés : (1) Décrément crédits SYNCHRONE au clic (CustomEvent detail.credits, pas fetch API) — Thomas teste l'annulation en 5 min, doit voir le compteur bouger. (2) MAX_CONCURRENT 2→5 — toutes les images partent en parallèle, plus de "En attente". (3) Refund automatique sur jobs échoués + annulation — F12.5 spec. (4) Refonte prompts en mode "structure FIRST, action SECOND" — gpt-image-1.5 perd focus après ~200 mots. (5) PDF dossier rend la version SCREEN (web parfaite) au lieu de PRINT (DossierPrintView cassé). Alternatives écartées : compositing post-génération (plus complexe que refonte prompts), filtrage des pièces complexes (perte de cas d'usage). |
 
 ---
 
-## Mémo de reprise — dernière session (Session 36 FINALE)
+## Mémo de reprise — dernière session (Session 38 FINALE)
+
+- **Date et heure de clôture** : 2026-04-08 (session 38 marathon : v58 audit NO-GO → v59 livré → v59 audit NO-GO → v60 livré + nouvelles gates anti-régression Q-V)
+- **Branche** : `claude/versimo-session-38-9EIha`
+- **HEAD** : `8ffa657` (chore(gates): integrate v60 gates into pre-commit hook)
+- **PROMPT_VERSION** : v57 → v58 → v59 → **v60** (8 commits atomiques v60 livrés par @ia)
+- **Score actuel attendu en prod v60** : ≥7.5/10 cible (validation par audit visuel post-deploy obligatoire)
+
+### Résumé chronologique session 38
+
+1. **v58 livré** au début de session (8 fixes prompts P0-1 à P1-E hérités du brief session 37 — bathroom preservation-first, kitchen, outdoor walls, indoor source-of-truth, maximalist accent wall conditional, TEMPORARY_OBJECTS, adjust UNLESS, bump v57→v58)
+2. **Audit Lucas batch fondateur #231-235** : 3 régressions P0 confirmées. #234 bathroom CATASTROPHIQUE 3.4/10 (vanity hallucinée + pièce élargie 4x). Cause racine : conditionnels "ONLY if no X" ignorés par gpt-image-1.5 + ligne contradictoire "Compact by default: ONE vanity 60cm" dans le builder.
+3. **v59 livré** (commit `370e8b7` par 1er @ia) : 7 fixes structurels — bathroom STEP 1/2/3 hiérarchique conditionnel à la largeur, anti wall art positif, split CLEANUP TEMPORARY/PERMANENT, "stays" → "MUST be rendered", extractRoomInventory TO REMOVE, bump v58→v59. Snapshots régénérés (264).
+4. **184 nouvelles gates v59** (commits `f37aa31` + `4da84f7`) : catégories I-P (Override/Builder Coherence, Action Verbs, Room_type Coverage, TEMPORARY/PERMANENT Split, Wall Art Positive, Narrow-Room Geometry, Inventory Alignment, PROMPT_VERSION sentinel). Toutes validées FAIL sur v58 / PASS sur v59.
+5. **BR-5 fix** (commit `6bf31b0`) : iteration base storage collision cross-photos — `saveIterationBase` keyait par sessionId → toutes les N photos d'une batch écrasaient la même clé → tous les refines récupéraient la dernière. Manifestation #3 du même bug Affiner (sessions 34/37 BR-3/BR-4 avaient fix le state client, BR-5 fix le storage server). Clé maintenant dérivée de pass1Key (sibling `_iter.jpg`). 12 tests + 14 edge cases QA.
+6. **BR-6 fix** (commit `1300f4a`) : crop "Mes biens" — 3 bugs (gate sur input_image_key au lieu d'output, modal affiche input, pas de rectangle sélectionnable). Migration `react-easy-crop` → `react-image-crop` + API crop opère sur `output_image_key` + backup `original_output_key` + uncrop backward compat.
+7. **Replit ESM resolver bypass** (commits `125e699` + `8731430` + `bbda6a3`) : Replit Deployments ne trouvait pas `react-image-crop` malgré le package.json correct (build fail répété). 3 stratégies tentées : (a) `transpilePackages` dans next.config.mjs — échec, (b) vendoring runtime dans `components/vendor/react-image-crop/` + types depuis npm — échec au stade tsc, (c) vendoring runtime + types ensemble — **succès**. Reproduction stricte locale (`rm -rf node_modules/react-image-crop && npx next build`) valide le fix.
+8. **Audit Yann + Lucas v59 #238-241** (commits `dc0b803` + `65faf65`) : moyenne 5.8/10 → NO-GO sans patches v60. **#239 bathroom v59 P0-1 = SUCCESS empirique** (Yann 8.1, Lucas 7.1) — hypothèse R2 @ia confiance 75% → 85%. **Pattern STEP 1/2/3 conditional VALIDÉ pour propagation aux autres room types étroits**. 3 plaintes fondateur confirmées : (a) #239 PH5 luminaire fidèle, (b) #240 ballon eau chaude + échelle + compteur côté gauche pas nettoyés, (c) #241 personnes réintroduites en mode adjust + cadrage élargi. 3 bugs structurels v59 identifiés : water_heaters en PRESERVE (CLEANUP_V53), buildAdjustResponsesPrompt sans anti-humain (iteration-prompt.ts), PASS2_EQUIPMENT_V54 interdit le masquage.
+9. **v60 livré** (commits `8465abc` à `8ffa657` par 2ème @ia) : 8 commits atomiques avec validation gates après chaque commit. (P0-A) Anti-humain durci en 1ère position REMOVE + assertion finale dupliquée. (P0-B) Water heaters/boilers retirés de PRESERVE → HIDE_IF_UGLY. (P0-C) Anti-humain explicite dans buildAdjustResponsesPrompt. (P0-D) Lock frame strict (aspect ratio + crop edges + "match the input EXACTLY"). (P1-C) Bathroom Step 1 preservation (sèche-serviettes/convecteur). Bump v59→v60 + 145 snapshots régénérés (intentionnels, confinés aux builders modifiés). 62 nouvelles gates Q-V dans `tests/unit/prompt-regression-v60-gates.test.ts`. Hook pre-commit mis à jour (907 gates / 3.5s).
+
+### État final session 38 — 25+ commits cumulés sur la branche
+
+```
+8ffa657 chore(gates): integrate v60 gates into pre-commit hook
+acd06b5 test(gates): v60 anti-regression gates Q-V
+df0c14a chore(prompts): bump v59 → v60 + regenerate snapshots
+4c120ca fix(prompts): v60 P1-C bathroom Step 1 preserves existing equipment
+24b85fd fix(prompts): v60 P0-D strict frame lock in adjust mode
+e620db6 fix(prompts): v60 P0-C anti-human in adjust mode
+dc5241a fix(prompts): v60 P0-B water heaters HIDE_IF_UGLY in CLEANUP_V53
+8465abc fix(prompts): v60 P0-A anti-human reinforced in CLEANUP_V53
+65faf65 docs(reviews): audit visuel Lucas gen #238-241 v59
+dc0b803 docs(reviews): audit visuel Yann gen #238-241 v59
+bbda6a3 fix(build): vendor types + runtime (Replit tsc resolver bug)
+8731430 fix(build): vendor react-image-crop
+125e699 fix(build): transpilePackages react-image-crop
+4da84f7 test(prompts): v59 anti-regression gates intégrées au hook
+cea3043 docs(ia): v59 @ia summary
+9aca740 docs(ia): v59 prompt regression protocol
+f37aa31 test(gates): v59 anti-regression gates — 184 tests
+370e8b7 fix(prompts): v59 P0-1 + Fix 2/3/4 + bump v58→v59
+1300f4a fix(crop): BR-6 crop visuel généré + rectangle sélectionnable
+cc4a3a1 test(br5): edge cases coverage + audit P0
+6bf31b0 fix(iteration): BR-5 iteration base collision cross-photos
+... (commits v58 antérieurs : P0-A, P0-B, P0-C/D, P1-E, P0-3, P0-2, P0-1)
+```
+
+### Validation technique complète
+
+- **Tests** : `npx vitest run` → **1182 passed / 14 skipped / 0 failed**
+- **Tsc** : `npx tsc --noEmit` → clean
+- **Lint** : `npx next lint` → ✔ No ESLint warnings or errors
+- **Pre-commit hook** : `bash scripts/prompt-gates-pre-commit.sh` → **907 gates / 3.5s / exit 0**
+- **Build strict mode** (mimics Replit) : `rm -rf node_modules/react-image-crop && npx next build` → ✓ Compiled successfully + ✓ pages 34/34
+
+### Pipeline v60 actuel (état final déployable)
+
+- **Bathroom override Step 1/2/3 conditionnel à la largeur** + Step 1 ne supprime rien d'existant (sèche-serviettes/convecteur préservés)
+- **CLEANUP_V53 anti-humain durci** : people en 1ère position REMOVE + assertion finale dupliquée "output MUST show zero humans"
+- **Water heaters HIDE_IF_UGLY** (sortis de PRESERVE) : peuvent être retirés ou masqués
+- **buildAdjustResponsesPrompt anti-humain** + lock frame strict (aspect ratio + crop edges)
+- **PASS2_FINISH_V54 anti wall art positif** ("freestanding or leans against floor baseboard")
+- **PASS2_EQUIPMENT_V54** : electrical panels / fuse boxes / circuit breakers / thermostats préservés
+- **extractRoomInventory** : "TO REMOVE" signal aligné avec CLEANUP
+- **BR-5 fix** : iteration base keyée par pass1Key (sibling `_iter.jpg`)
+- **BR-6 fix** : crop opère sur output_image_key + react-image-crop vendoré (Replit ESM bypass)
+- **PROMPT_VERSION** : "v60"
+
+### Système de gates non-régression installé (907 prompt gates total)
+
+| Catégorie | Tests | Détecte |
+|---|---|---|
+| A vocabulaire interdit | 132 | vault beams, curtains, windows, grain, TRANSFORM, pixel-identical |
+| B structure | 199 | longueurs, ordre, ARCHITECTURAL_HONESTY suppression |
+| C room_type | 44 | override, cross-handler, getStyleMaterialHint |
+| E snapshots | 284 | prompts construits par room×style |
+| H cross-handler | 12 | route.ts ≡ generation-pipeline.ts |
+| I-P (v59) | 184 | Override/Builder Coherence + Action Verbs + Room Coverage + TEMPORARY/PERMANENT + Wall Art Positive + Narrow-Room + Inventory + PROMPT_VERSION |
+| Q-V (v60) | 62 | Anti-human canalisation + HIDE_IF_UGLY + Adjust anti-human + Frame lock + Bathroom Step 1 preservation + PROMPT_VERSION ≥ v60 |
+| **Total** | **907** | Run en 3.5s via `prompt-gates-pre-commit.sh` |
+
+### Conditions de déploiement v60 (audit visuel post-deploy obligatoire)
+
+1. **Pull + déploie v60** (HEAD `8ffa657`) sur Replit. Tous les bugs build Replit sont déjà fixés (vendoring `react-image-crop`).
+2. **Régénère 4 inputs canoniques** (mêmes inputs que session 38 #238-241) :
+   - #238 chantier brut living room → test anti-humain (P0-A)
+   - #240 dining maximalist → test HIDE_IF_UGLY (P0-B) sur ballon
+   - #241 iteration "enlève le ballon" → test anti-humain adjust (P0-C) + frame lock (P0-D)
+   - #239 bathroom couloir étroit → test bathroom Step 1 preservation (P1-C)
+3. **Audit Yann + Lucas v60** sur ces 4 régénérations — cible **moyenne ≥ 7.5/10** (seuil GO)
+4. Si moyenne ≥ 7.5 → merger `claude/versimo-session-38-9EIha` → `main`
+5. Si une seule ≤ 6.0 → analyser la cause (effet de bord d'une recommandation Lucas, ou pattern insuffisant) avant prochaine session
+
+### Lessons orchestrateur session 38
+
+- **Stratégie anti-timeout validée** sur 4 agents : briefs courts + lecture limitée (max 7 fichiers) + interdiction de Glob exhaustif + Write minimal stub puis Edit incrémental + sauvegarde après chaque commit. Yann timeout 23 min → 3 min 20 sur audit suivant. 1er @ia stuck en boucle Write 50 min ("Prompt is too long" = context exhaustion) → 2ème @ia a fini en 14 min avec brief plus court (validation que la solution = relancer avec contexte vide, pas insister sur le même agent stuck).
+- **Pattern STEP 1/2/3 conditional VALIDÉ empiriquement** sur #239 bathroom — gpt-image-1.5 obéit aux hiérarchies conditionnelles "IF narrow THEN X ELSE Y" quand (a) séquence numérotée, (b) Step 1 le plus court, (c) items hyper-spécifiques avec quantités. Confiance R2 @ia montée 75% → 85%. **À propager aux autres room types étroits** (kitchen, wc, laundry, cellar) en v61.
+- **Verbes d'action > verbes d'état** sur gpt-image-1.5 : "stays empty" est faible, "MUST be rendered empty" est fort. Lucas a documenté le pattern : règle prompt-engineering désormais explicite dans CLAUDE.md.
+- **Conditionnels "ONLY if no X" sont ignorés** par gpt-image-1.5. Utiliser des hiérarchies STEP 1/2/3 explicites à la place. Règle ajoutée à CLAUDE.md.
+- **Négations directes ("no wall art") amorcent le modèle**. Utiliser des positives ("freestanding or leans against floor baseboard"). Règle déjà documentée session 36, confirmée à nouveau session 38.
+- **Builder + Override doivent être audités ENSEMBLE** pour cohérence. Le bug v58 #234 venait d'un override "preservation-first" + un builder "Compact by default ONE vanity 60cm" qui se contredisaient. **Aucune gate v55-v58 ne détectait cette contradiction** — corrigé par les nouvelles catégories I (Override/Builder Coherence) et V (PROMPT_VERSION sentinel).
+- **Replit Deployments est imprévisible sur les packages ESM-strict** : `react-image-crop` v11 a `"type": "module"` et le resolver Replit (différent de webpack local) ne le trouvait pas. Solution = vendoring complet (runtime + types + CSS) dans `components/vendor/`. Pattern à réutiliser pour tout package ESM-strict qui pose problème.
+- **Pattern "iteration base collision cross-photos"** (BR-5) : tout state SERVER STORAGE qui partage une clé entre opérations parallèles est un bug latent. Audité spécifiquement en session 38 — aucun autre cas trouvé. Mais pattern à scanner périodiquement (regex sur `${sessionId}` + `${userId}` dans les fonctions de save).
+- **Vendoring est désormais le pattern de fallback Replit** : si npm install échoue mystérieusement et que les fichiers existent dans `node_modules/` localement, copier les fichiers dist dans `components/vendor/<pkg>/` est plus rapide qu'investiguer Replit.
+
+### Travaux reportés à session 39
+
+- **Audit visuel post-deploy v60** — condition de levée du GO CONDITIONNEL @ia (75% → 90%+ après audit empirique)
+- **Propagation pattern STEP 1/2/3** aux autres room types étroits (kitchen, wc, laundry, cellar) si l'audit v60 confirme la solidité du pattern
+- **P1-D (Lucas)** : `extractRoomInventory` `TO HIDE` field + propagation aux builders pour masquage ciblé des eyesores. Plus lourd (~1-2h), reporté pour valider d'abord les fixes plus simples
+- **P2-A (Lucas)** : préciser PH5-style silhouette dans surfacePrompt scandinavian (fidélité luminaire #239)
+- **Médiateur consommation CGV** (action fondateur)
+- **Merger branche → main** une fois v60 validé visuellement
+- **Blog seed**
+
+### Commande de reprise suggérée session 39
+
+```
+@orchestrator Reprends Versimo session 39. Session 38 close : v60 livré (5 fixes Lucas P0-A/B/C/D + P1-C + 62 nouvelles gates Q-V), 25+ commits cumulés sur claude/versimo-session-38-9EIha (HEAD 8ffa657). 1182 tests pass, 0 failed. Fondateur a-t-il déployé + régénéré les 4 inputs canoniques (#238/239/240/241) ? Si oui, lance audit Yann + Lucas v60 cible moyenne ≥ 7.5/10. Si validé → merger main. Si <6.0 → investiguer effet de bord avant tout fix. Si ≥7.5 → propager pattern STEP 1/2/3 aux autres room types étroits + chantier P1-D extractRoomInventory TO HIDE.
+```
+
+---
+
+## Mémo de reprise — session 36 (archive)
 
 - **Date et heure de clôture** : 2026-04-07 (session 36 — marathon : v55 audit prod NO-GO → v56 deploy → v56 audit prod NO-GO AGGRAVÉ → décision @ia rollback v57 → v57 livré + bug Affiner fixé + boucle gates non-régression convergence 9.91/10)
 - **Branch** : `claude/extract-project-context-vFT9J` (continuité session 35)
