@@ -31,17 +31,6 @@ function loadImage(file: File): Promise<HTMLImageElement> {
 }
 
 /**
- * Calculates the best API size string based on aspect ratio.
- * Returns a size compatible with OpenAI's image API.
- */
-export function getApiSize(width: number, height: number): string {
-  const ratio = width / height;
-  if (ratio > 1.3) return "1536x1024"; // landscape
-  if (ratio < 0.77) return "1024x1536"; // portrait
-  return "1024x1024"; // square-ish
-}
-
-/**
  * Resizes and compresses an image file.
  * - Max dimension: 1536px (preserves aspect ratio)
  * - Output: JPEG at 85% quality as base64 data URI

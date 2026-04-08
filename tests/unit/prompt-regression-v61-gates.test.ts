@@ -202,4 +202,17 @@ describe("v61 gates — RED phase (must fail on v60, green after fixes)", () => 
       expect(result.effectiveSurfacePrompt.toLowerCase()).toContain("concrete pavers");
     });
   });
+
+  describe("#3 — getApiSize code mort supprimé (Finding #3, Fix 10)", () => {
+    it("getApiSize is no longer exported from image-utils", () => {
+      // Lecture directe du fichier (évite les imports DOM-dependent d'image-utils côté Node)
+      const fs = require("fs") as typeof import("fs");
+      const path = require("path") as typeof import("path");
+      const content = fs.readFileSync(
+        path.resolve(__dirname, "../../lib/image-utils.ts"),
+        "utf-8"
+      );
+      expect(content).not.toContain("export function getApiSize");
+    });
+  });
 });

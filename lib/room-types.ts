@@ -65,7 +65,8 @@ export const ROOM_TYPES: Record<string, RoomType> = {
     label: "Salle de bain",
     emoji: "🚿",
     description: "Mobilier adapté : vasque, miroir, rangements",
-    // FALLBACK ONLY — surface directives are handled by the dedicated builder in route.ts.
+    // FALLBACK ONLY — surface directives are handled by the dedicated builder in
+    // lib/generation-pipeline.ts (buildSurfacesResponsesPrompt, branche bathroom).
     // This override is used only if the dedicated builder is removed or bypassed.
     roomSurfaceOverride:
       "Additionally for this bathroom: floor-to-ceiling ceramic wall tiles in the shower zone and behind the vanity area — waterproof and seamless. Water-resistant floor — ceramic or stone floor tiles with matte non-slip finish. No wood flooring in wet areas. Recessed IP44-rated ceiling spotlights for even bathroom illumination.",
@@ -90,7 +91,8 @@ export const ROOM_TYPES: Record<string, RoomType> = {
     label: "Cuisine",
     emoji: "🍳",
     description: "Mobilier adapté : plan de travail, caissons, tabourets",
-    // FALLBACK ONLY — surface directives are handled by the dedicated builder in route.ts.
+    // FALLBACK ONLY — surface directives are handled by the dedicated builder in
+    // lib/generation-pipeline.ts (buildSurfacesResponsesPrompt, branche kitchen).
     // This override is used only if the dedicated builder is removed or bypassed.
     roomSurfaceOverride:
       "Additionally for this kitchen: ceramic or natural stone floor tiles suited for a kitchen. IMPORTANT OVERRIDE: the floor MUST be ceramic tiles or natural stone — NOT wood, NOT parquet, NOT herringbone wood. Subway tile or smooth splashback on the wall behind the work area.",
