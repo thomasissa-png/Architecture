@@ -150,15 +150,31 @@ describe("BR-6 bug 3 — CropModal rectangle selection réelle", () => {
   });
 
   it("U-BR6-302: CropModal importe ReactCrop depuis react-image-crop (npm OU vendor path)", () => {
-    // BR-6 mise à jour : depuis le commit vendoring (Replit ESM resolver bug),
-    // l'import runtime vient de @/components/vendor/react-image-crop/index.js,
-    // mais les types restent depuis "react-image-crop" (npm package).
-    // Au moins UN des deux doit être présent.
+    // BR-6 (session 38) : Replit ESM resolver bug a nécessité le vendoring
+    // complet. Les imports actifs viennent du vendor path. Le package npm
+    // est gardé en dependencies pour fournir une resolution de fallback,
+    // mais aucun import runtime ne le référence directement.
+    // Au moins UN des deux paths doit être présent (vendor en priorité depuis
+    // le commit 8731430+).
     const npmRuntimeImport = /import\s+ReactCrop[\s\S]{0,200}from\s+["']react-image-crop["']/.test(cropModalExec);
-    const vendorRuntimeImport = /import\s+ReactCrop[\s\S]{0,200}from\s+["']@\/components\/vendor\/react-image-crop\/index\.js["']/.test(cropModalExec);
+    const vendorRuntimeImport = /import\s+ReactCrop[\s\S]{0,300}from\s+["']@\/components\/vendor\/react-image-crop\/index\.js["']/.test(cropModalExec);
     expect(npmRuntimeImport || vendorRuntimeImport, "CropModal doit importer ReactCrop depuis le package npm OU le vendor path").toBe(true);
-    // Les types Crop / PixelCrop doivent toujours venir du package npm pour TypeScript
-    expect(cropModalExec).toMatch(/import\s+type\s+\{[^}]*Crop[^}]*\}\s+from\s+["']react-image-crop["']/);
+    // Les types Crop / PixelCrop doivent venir DE LA MÊME source que le runtime
+    // (anti-régression : si le runtime est vendoré, les types le sont aussi —
+    // sinon on retombe dans le bug Replit qui ne trouve pas le package npm).
+    if (vendorRuntimeImport) {
+      // Vendor mode : les types doivent être combinés dans le même import
+      // que le runtime, OU dans un import séparé qui pointe aussi sur le vendor
+      const typesInRuntimeImport = /import\s+ReactCrop[\s\S]{0,500}type\s+(?:Crop|PixelCrop)[\s\S]{0,300}from\s+["']@\/components\/vendor\/react-image-crop\/index\.js["']/.test(cropModalExec);
+      const typesInSeparateVendorImport = /import\s+type\s+\{[^}]*Crop[^}]*\}\s+from\s+["']@\/components\/vendor\/react-image-crop\/index\.js["']/.test(cropModalExec);
+      expect(typesInRuntimeImport || typesInSeparateVendorImport, "En mode vendor, les types doivent venir du vendor path (pas du package npm)").toBe(true);
+      // Anti-régression : NE PAS importer les types depuis "react-image-crop"
+      // (Replit ne trouve pas le package npm et tsc casse en --noEmit)
+      expect(cropModalExec, "En mode vendor, NE PAS importer de types depuis 'react-image-crop' (cause du bug tsc Replit)").not.toMatch(/import\s+type\s+\{[^}]*\}\s+from\s+["']react-image-crop["']/);
+    } else {
+      // Npm mode (mode legacy) : les types peuvent venir du package npm
+      expect(cropModalExec).toMatch(/import\s+type\s+\{[^}]*Crop[^}]*\}\s+from\s+["']react-image-crop["']/);
+    }
   });
 
   it("U-BR6-303: CropModal importe le CSS de react-image-crop (npm OU vendor path)", () => {

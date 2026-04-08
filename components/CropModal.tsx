@@ -16,13 +16,19 @@
  */
 
 import { useState, useCallback, useEffect, useRef } from "react";
-// BR-6 (session 38) — react-image-crop est vendoré dans components/vendor/
-// pour contourner un échec de résolution Replit irrécupérable. Voir
+// BR-6 (session 38) — react-image-crop est ENTIÈREMENT vendoré dans
+// components/vendor/ pour contourner un échec de résolution Replit
+// irrécupérable (à la fois runtime ET types). Voir
 // components/vendor/react-image-crop/README.md pour le contexte complet.
-// Les types viennent toujours de node_modules via le package npm (gardé
-// en dependencies), le runtime vient du vendor.
-import type { Crop, PixelCrop } from "react-image-crop";
-import ReactCrop, { centerCrop, makeAspectCrop } from "@/components/vendor/react-image-crop/index.js";
+// Le package npm reste en dependencies pour fournir les types via une
+// resolution alternative en cas de revert du vendoring, mais TOUS les
+// imports actifs (runtime + types + CSS) viennent du vendor path.
+import ReactCrop, {
+  centerCrop,
+  makeAspectCrop,
+  type Crop,
+  type PixelCrop,
+} from "@/components/vendor/react-image-crop/index.js";
 import "@/components/vendor/react-image-crop/ReactCrop.css";
 
 interface CropModalProps {
