@@ -106,6 +106,21 @@ export function applyOutdoorSubtypeOverrides(
 
   const sub = OUTDOOR_SUBTYPES[subtypeId];
 
+  // Fix 9 (session 39, Finding A1) — jardin mode : the natural ground from the
+  // jardin subtype REPLACES the style's hard floor (concrete, tiles, deck). The
+  // style still contributes via its furniture prompt and material palette.
+  // Without this replace, all 8 outdoor styles produced contradictory prompts
+  // on jardin subtype (e.g. "concrete pavers 60x60cm" + "natural ground").
+  if (subtypeId === "jardin") {
+    return {
+      effectiveSurfacePrompt: sub.subtypeSurfaceOverride,
+      effectiveFurniturePrompt: sub.subtypeFurnitureOverride
+        ? `${furniturePrompt}. ${sub.subtypeFurnitureOverride}`
+        : furniturePrompt,
+      subtypeNegativeOverride: sub.subtypeNegativeOverride || "",
+    };
+  }
+
   return {
     effectiveSurfacePrompt: sub.subtypeSurfaceOverride
       ? `${surfacePrompt}. ${sub.subtypeSurfaceOverride}`

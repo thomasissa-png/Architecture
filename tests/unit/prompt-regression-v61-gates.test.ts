@@ -178,4 +178,28 @@ describe("v61 gates — RED phase (must fail on v60, green after fixes)", () => 
       expect(hasRawShell, "kitchen override missing raw shell fallback clause").toBe(true);
     });
   });
+
+  describe("A1 — Outdoor jardin sol cleanup (Finding A1, Fix 9)", () => {
+    it("jardin subtype replaces hard floor (natural ground only, no concrete pavers)", async () => {
+      const { applyOutdoorSubtypeOverrides, OUTDOOR_SUBTYPES } = await import("@/lib/outdoor-subtypes");
+      const result = applyOutdoorSubtypeOverrides(
+        "Contemporary outdoor: large-format grey concrete pavers 60x60cm laid in linear bond.",
+        "dummy furniture",
+        "jardin"
+      );
+      const lower = result.effectiveSurfacePrompt.toLowerCase();
+      expect(lower).not.toContain("concrete pavers");
+      expect(lower).toContain("natural ground");
+    });
+
+    it("terrasse subtype keeps hard floor (terrace needs paved surface)", async () => {
+      const { applyOutdoorSubtypeOverrides } = await import("@/lib/outdoor-subtypes");
+      const result = applyOutdoorSubtypeOverrides(
+        "Contemporary outdoor: large-format grey concrete pavers 60x60cm.",
+        "dummy",
+        "terrasse"
+      );
+      expect(result.effectiveSurfacePrompt.toLowerCase()).toContain("concrete pavers");
+    });
+  });
 });
