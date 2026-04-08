@@ -125,6 +125,35 @@ describe("v61 gates — RED phase (must fail on v60, green after fixes)", () => 
       // Au moins un axe doit avoir du padding (sinon le ratio match déjà le canvas)
       expect(result.padX + result.padY).toBeGreaterThan(0);
     });
+
+    it("padImageToCanvas + cropImageFromCanvas round-trip preserves input dimensions", async () => {
+      const mod = await import("@/lib/generation-pipeline");
+      const padImageToCanvas = (mod as any).padImageToCanvas;
+      const cropImageFromCanvas = (mod as any).cropImageFromCanvas;
+      expect(typeof padImageToCanvas).toBe("function");
+      expect(typeof cropImageFromCanvas).toBe("function");
+
+      // Crée une image synthétique 1280x968 (ratio 4:3 ~1.322, cas #244/#245)
+      const sharp = (await import("sharp")).default;
+      const inputBuffer = await sharp({
+        create: { width: 1280, height: 968, channels: 3, background: { r: 128, g: 180, b: 200 } },
+      })
+        .jpeg()
+        .toBuffer();
+      const inputBase64 = inputBuffer.toString("base64");
+
+      // Pad → canvas OpenAI 1536x1024
+      const { paddedBase64, meta } = await padImageToCanvas(inputBase64, 1280, 968);
+      const paddedMeta = await sharp(Buffer.from(paddedBase64, "base64")).metadata();
+      expect(paddedMeta.width).toBe(1536);
+      expect(paddedMeta.height).toBe(1024);
+
+      // Crop → retour aux dimensions input
+      const croppedBase64 = await cropImageFromCanvas(paddedBase64, meta);
+      const croppedMeta = await sharp(Buffer.from(croppedBase64, "base64")).metadata();
+      expect(croppedMeta.width).toBe(1280);
+      expect(croppedMeta.height).toBe(968);
+    }, 15000);
   });
 
   describe("#5 — Bathroom chantier brut fallback (Finding #5)", () => {

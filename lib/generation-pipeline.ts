@@ -283,6 +283,99 @@ export function padToOpenAISize(
   return { openai, targetW, targetH, effectiveW, effectiveH, padX, padY };
 }
 
+/**
+ * Fix #8 (session 39) — Intégration réelle du padding letterbox.
+ *
+ * Applique le padding calculé par padToOpenAISize sur l'image base64
+ * via sharp : resize l'image à effectiveW×effectiveH (préservant le
+ * ratio original), puis la centre sur un canvas blanc targetW×targetH.
+ *
+ * Retourne le base64 paddé (sans le préfixe data:...;base64,) + les
+ * metadonnées nécessaires au crop inverse.
+ */
+export async function padImageToCanvas(
+  inputBase64: string,
+  inputWidth: number,
+  inputHeight: number
+): Promise<{
+  paddedBase64: string;
+  meta: {
+    openai: string;
+    targetW: number;
+    targetH: number;
+    effectiveW: number;
+    effectiveH: number;
+    padX: number;
+    padY: number;
+    inputWidth: number;
+    inputHeight: number;
+  };
+}> {
+  const { openai, targetW, targetH, effectiveW, effectiveH, padX, padY } = padToOpenAISize(
+    inputWidth,
+    inputHeight
+  );
+  const buffer = Buffer.from(inputBase64, "base64");
+  const resized = await sharp(buffer).resize(effectiveW, effectiveH, { fit: "fill" }).toBuffer();
+  const paddedBuffer = await sharp({
+    create: {
+      width: targetW,
+      height: targetH,
+      channels: 3,
+      background: { r: 255, g: 255, b: 255 },
+    },
+  })
+    .composite([{ input: resized, left: padX, top: padY }])
+    .jpeg({ quality: 92 })
+    .toBuffer();
+  const paddedBase64 = paddedBuffer.toString("base64");
+  return {
+    paddedBase64,
+    meta: {
+      openai,
+      targetW,
+      targetH,
+      effectiveW,
+      effectiveH,
+      padX,
+      padY,
+      inputWidth,
+      inputHeight,
+    },
+  };
+}
+
+/**
+ * Fix #8 (session 39) — Crop inverse après génération OpenAI.
+ *
+ * Retire les bandes blanches de padding ajoutées par padImageToCanvas
+ * et redimensionne le résultat aux dimensions input d'origine.
+ */
+export async function cropImageFromCanvas(
+  outputBase64: string,
+  meta: {
+    effectiveW: number;
+    effectiveH: number;
+    padX: number;
+    padY: number;
+    inputWidth: number;
+    inputHeight: number;
+  }
+): Promise<string> {
+  const buffer = Buffer.from(outputBase64, "base64");
+  const cropped = await sharp(buffer)
+    .extract({
+      left: meta.padX,
+      top: meta.padY,
+      width: meta.effectiveW,
+      height: meta.effectiveH,
+    })
+    .resize(meta.inputWidth, meta.inputHeight, { fit: "fill" })
+    .jpeg({ quality: 92 })
+    .toBuffer();
+  return cropped.toString("base64");
+}
+
 // ─── Prompt Engineering ──────────────────────────────────────────────
 //
 // PIPELINE 2 PASSES with SPLIT PROMPTS:
@@ -1064,10 +1157,20 @@ export async function runGenerationPipeline(params: PipelineParams): Promise<Pip
   // Pre-pass vision: extract room geometry inventory (fail-open, 5s timeout)
   const roomInventory = await extractRoomInventory(inputBase64);
 
+  // Fix #8 (session 39) — pad input ONCE before pass 1. Pipeline works in
+  // OpenAI canvas format (1536x1024 / 1024x1536 / 1024x1024). The final
+  // outputBase64 is cropped back to input dimensions. pass1Base64 is kept
+  // in canvas format for audit logs.
+  const { paddedBase64: paddedInputBase64, meta: canvasMeta } = await padImageToCanvas(
+    inputBase64,
+    width ?? 1024,
+    height ?? 1024
+  );
+
   const t0 = Date.now();
 
   // Pass 1: surfaces
-  const pass1 = await generatePass(inputBase64, trimmedSurface, trimmedFurniture, 1, outputSize, isOutdoor ? null : roomType, outdoorParam, roomInventory);
+  const pass1 = await generatePass(paddedInputBase64, trimmedSurface, trimmedFurniture, 1, outputSize, isOutdoor ? null : roomType, outdoorParam, roomInventory);
   const t1 = Date.now();
   const pass1Base64 = pass1.image.replace(/^data:image\/[\w+]+;base64,/, "");
 
@@ -1081,8 +1184,9 @@ export async function runGenerationPipeline(params: PipelineParams): Promise<Pip
 
   // Surfaces-only mode
   if (!withFurniture) {
+    const croppedSurfacesOutput = await cropImageFromCanvas(pass1Base64, canvasMeta);
     return {
-      outputBase64: pass1Base64, pass1Base64,
+      outputBase64: croppedSurfacesOutput, pass1Base64,
       pass1Model: pass1.model, pass2Model: null, pass2Failed: false,
       durationMs: t1 - t0, pass1DurationMs: t1 - t0, pass2DurationMs: 0,
       builtPromptPass1, builtPromptPass2, trimmedSurface, trimmedFurniture,
@@ -1094,7 +1198,7 @@ export async function runGenerationPipeline(params: PipelineParams): Promise<Pip
   let pass2: { image: string; model: string; bestOf2?: { score1: number; score2: number; chosen: 1 | 2 } } | null = null;
   let pass2Failed = false;
   try {
-    pass2 = await generatePass(pass1Base64, trimmedSurface, trimmedFurniture, 2, outputSize, isOutdoor ? null : roomType, outdoorParam, roomInventory, inputBase64);
+    pass2 = await generatePass(pass1Base64, trimmedSurface, trimmedFurniture, 2, outputSize, isOutdoor ? null : roomType, outdoorParam, roomInventory, paddedInputBase64);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error(`Pipeline pass 2 failed: ${msg}`);
@@ -1106,8 +1210,11 @@ export async function runGenerationPipeline(params: PipelineParams): Promise<Pip
     ? pass2.image.replace(/^data:image\/[\w+]+;base64,/, "")
     : pass1Base64;
 
+  // Fix #8 — crop output back to input dimensions (pass1Base64 left in canvas format for audit logs)
+  const croppedOutputBase64 = await cropImageFromCanvas(finalBase64, canvasMeta);
+
   return {
-    outputBase64: finalBase64, pass1Base64,
+    outputBase64: croppedOutputBase64, pass1Base64,
     pass1Model: pass1.model, pass2Model: pass2?.model ?? null, pass2Failed,
     durationMs: t2 - t0, pass1DurationMs: t1 - t0, pass2DurationMs: t2 - t1,
     builtPromptPass1, builtPromptPass2, trimmedSurface, trimmedFurniture,
