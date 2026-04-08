@@ -293,7 +293,7 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
   // v53: All pass 1 builders condensed — structure FIRST, ~220 words total (was ~663)
   // Kitchen
   if (roomTypeId === "kitchen") {
-    const kitchenSurface = surfacePrompt.replace(/,?\s*(wide-plank|herringbone|wood|ash|oak|walnut|parquet)\s+flooring[^,.]*/gi, "");
+    const kitchenSurface = surfacePrompt.replace(/,?\s*[^,.]*\b(?:wide-plank|herringbone|wood|ash|oak|walnut|parquet|stone|concrete)\b[^,.]*flooring[^,.]*/gi, "");
     return [
       PASS1_PREAMBLE_V53,
       inventoryLine,
