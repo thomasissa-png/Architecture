@@ -92,6 +92,10 @@ export function buildAdjustResponsesPrompt(
     "Edit this photo. Make a small, precise change. Keep everything else unchanged. Same camera angle, height, tilt, and field of view. The frame edges must match the input exactly — walls cut off at the edge must be cut off at the same position.",
     "Count the windows and doors visible in the input photo. The output must have the EXACT same count, at the same positions, same sizes. Walls without windows must remain solid.",
     "Before editing, mentally list every visible object. All must stay at same position, same size, same color — except the one change described below.",
+    // v60 P0-C (Lucas #241) — anti-humain explicite en mode adjust. buildAdjust n'avait
+    // aucun anti-personne et si l'image source contenait des humains, ils restaient
+    // (voire etaient regeneres en des poses differentes comme #238 → #241).
+    "No humans, no workers, no hands, no arms, no people should appear in the output, regardless of whether they were in the input. If the input contains any person, remove them and fill the vacated area with the surrounding surface texture.",
     `The only change to make: ${enrichedComment}`,
     "Keep all existing furniture, appliances, and decorations at their current positions, sizes, and colors. Keep walls, floor, ceiling, windows, and doors as they are. Room dimensions are FIXED — do not stretch, widen, or compress the space. After editing, verify each object is still at its original position except the one modified.",
     meta.roomType === "kitchen" || meta.roomType === "bathroom"
