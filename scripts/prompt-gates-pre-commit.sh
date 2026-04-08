@@ -15,6 +15,14 @@
 #   - Catégorie F (schéma STYLE_VARIANTS) — BLOQUANT
 #   - Catégorie G (sync StylePicker ≡ resolver) — BLOQUANT
 #   - Catégorie H (cross-handler propagation) — BLOQUANT
+#   - Catégorie I (override vs builder coherence, v59 #234) — BLOQUANT
+#   - Catégorie J (action verbs strength, v59 #233) — BLOQUANT
+#   - Catégorie K (full room_type coverage, v59) — BLOQUANT
+#   - Catégorie L (TEMPORARY vs PERMANENT split, v59 #235) — BLOQUANT
+#   - Catégorie M (wall art positive coverage, v59 #235) — BLOQUANT
+#   - Catégorie N (narrow-room geometry gate, v59 #234) — BLOQUANT
+#   - Catégorie O (inventory/CLEANUP alignment, v59 #233) — BLOQUANT
+#   - Catégorie P (PROMPT_VERSION bump) — REQUIS
 #
 # Si une gate échoue, le script exit ≠ 0 → le hook refuse le commit / le build
 # Replit échoue et le déploiement est bloqué.
@@ -45,13 +53,14 @@ echo ""
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
-# Les 4 fichiers de gates à lancer
+# Les 6 fichiers de gates à lancer (v59 : ajout prompt-regression-v59-gates)
 GATES_FILES=(
   "tests/unit/prompt-content-gates.test.ts"
   "tests/unit/prompt-structure-gates.test.ts"
   "tests/unit/prompt-room-type-gates.test.ts"
   "tests/unit/prompt-snapshot-gates.test.ts"
   "tests/unit/prompt-cross-handler-gates.test.ts"
+  "tests/unit/prompt-regression-v59-gates.test.ts"
 )
 
 # Vérifie que chaque fichier existe avant de lancer
