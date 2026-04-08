@@ -174,7 +174,7 @@ export async function extractRoomInventory(imageBase64: string): Promise<string>
  *   Nouvelles gates anti-regression : categories I (override vs builder coherence), J (action
  *     verbs strength), K (full room_type coverage), L (temporary/permanent split), M (wall art
  *     positive coverage) — voir tests/unit/prompt-regression-v59-gates.test.ts. */
-export const PROMPT_VERSION = "v60";
+export const PROMPT_VERSION = "v61";
 
 // ─── Image generation model ─────────────────────────────────────────
 // v36: configurable via env var. Default gpt-image-1 (v32 reverted gpt-image-1.5 for spatial regression).
