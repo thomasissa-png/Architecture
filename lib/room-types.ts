@@ -69,16 +69,18 @@ export const ROOM_TYPES: Record<string, RoomType> = {
     // This override is used only if the dedicated builder is removed or bypassed.
     roomSurfaceOverride:
       "Additionally for this bathroom: floor-to-ceiling ceramic wall tiles in the shower zone and behind the vanity area — waterproof and seamless. Water-resistant floor — ceramic or stone floor tiles with matte non-slip finish. No wood flooring in wet areas. Recessed IP44-rated ceiling spotlights for even bathroom illumination.",
-    // v58 (Sprint audit v57 P0-1) — PRESERVATION-FIRST. Le builder bathroom dans
-    // generation-pipeline.ts dit deja "Keep existing bathtub/shower/sink/toilet at same
-    // position, size, shape" mais l'ancienne formulation ici injectait litteralement
-    // "frameless glass walk-in shower 80-90cm" + "freestanding soaking tub" — le modele
-    // gpt-image-1.5 obeit aux instructions explicites avant input_fidelity, et sacrifiait
-    // la baignoire/douche existante. La nouvelle formulation ne prescrit AUCUN equipement
-    // sanitaire et liste UNIQUEMENT des accessoires freestanding/wall-mounted decoratifs.
-    // La hierarchie reelle dans gpt-image-1.5 est : instruction explicite > input_fidelity > preservation implicite.
+    // v59 (Sprint audit v58 P0-1 patch Lucas #234) — PRESERVATION-FIRST + GEOMETRY-GATED.
+    // v58 laissait les "ADD vanity ONLY if no vanity already" conditionnels qui etaient
+    // ignores par gpt-image-1.5 (le modele lit "ADD vanity" et l'ajoute meme dans un couloir
+    // de 60cm de large — cas #234 : bathroom hallway elargi a ~2m, vanity hallucinee sur mur
+    // sans plomberie, convecteur supprime). v59 fix : hierarchie STEP 1/2/3 conditionnelle
+    // a la largeur REELLE du couloir. STEP 1 (couloir etroit <1.5m) : accessoires floor-only,
+    // ZERO wall-mounted. STEP 2 (bathroom standard >=1.5m) : possibilite d'AJOUTER vanity/
+    // mirror SI ET SEULEMENT SI aucun n'est visible dans l'input. STEP 3 : preservation
+    // obligatoire de TOUS les fixtures existants. Les negations d'interdiction (no vanity,
+    // no mirror) sont remplacees par des listes d'AUTORISATION explicites ("ADD only").
     roomFurnitureOverride:
-      "Bathroom accessories ONLY — preserve all existing sanitary fixtures (bathtub, shower, shower enclosure, sink, basin, toilet, bidet) exactly as they appear in the input photo: same position, same size, same shape, same finish. Do NOT replace them, do NOT relocate them, do NOT add a new shower or new bathtub. ADD only freestanding and wall-mounted accessories: a wall-mounted vanity unit 60-80cm wide with integrated basin and mixer tap ONLY if no vanity already exists in the input — otherwise keep the existing vanity, a rectangular mirror centered above the existing basin ONLY if no mirror already exists, a wall-mounted towel ladder 45cm wide 150cm tall in chrome or matte black with folded towels in neutral tones, a small teak or stoneware stool 30cm diameter 45cm tall with a soap dispenser and a candle, one potted fern or trailing plant in a 25cm ceramic pot on the floor in a corner, a woven basket 30cm diameter on the floor for storage. Clean and spa-like atmosphere. No armchairs, no floor lamps, no decorative furniture, no freestanding bathtub additions, no shower enclosure additions.",
+      "PRESERVATION-FIRST BATHROOM EDIT. Step 1 — check room width: if the usable floor area is a narrow corridor (walls closer than about 1.5m apart, passage 80cm or less), ADD ONLY 1-2 small freestanding floor accessories (a small teak or stoneware stool 30cm diameter with a candle and a rolled towel on top, a woven basket 25-30cm in a corner, one potted fern 25cm in a ceramic pot). In a narrow corridor ADD nothing on the walls — no vanity, no mirror, no towel ladder, no shelving, no wall cabinet. Step 2 — standard bathroom (more than 1.5m wide): ADD the floor accessories above PLUS one wall-mounted vanity unit 60cm wide with integrated basin and mixer tap on the longest empty wall ONLY if no vanity or sink basin exists in the input, a rectangular mirror above that vanity ONLY if no mirror exists in the input, a wall-mounted towel ladder 45cm wide 150cm tall in chrome or matte black with folded towels ONLY if the widest empty wall is longer than 1m. Step 3 — preserve all existing sanitary fixtures (bathtub, shower, shower enclosure, sink, basin, toilet, bidet) exactly as they appear: same position, same size, same shape, same finish. Never replace, never relocate, never duplicate. Never add a second bathtub, second shower, or freestanding tub. Clean and spa-like atmosphere. No armchairs, no floor lamps, no decorative furniture beyond the listed accessories.",
     roomNegativeOverride:
       "sofa, coffee table, TV unit, dining table, bed, wardrobe, office desk, floor lamp, armchair, lounge chair, bouclé chair, tripod lamp, arc lamp",
   },

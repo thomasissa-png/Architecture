@@ -60,12 +60,17 @@ export async function extractRoomInventory(imageBase64: string): Promise<string>
     const response = await openai.chat.completions.create(
       {
         model: "gpt-4.1-mini",
-        max_tokens: 150,
+        max_tokens: 200,
         messages: [
           {
             role: "system",
             content:
-              "Describe this room's geometry in one concise paragraph. Count: windows (number, positions), doors (number, positions), ceiling type (flat/vaulted/beamed), visible equipment (radiators, heaters, water heater, electrical panel), floor material, approximate room shape. Also describe the framing: which walls or elements are cropped at the edges of the photo, and whether the lens appears wide-angle or standard. Be factual, no opinions.",
+              // v59: alignement avec CLEANUP_V53 — au lieu de decrire les elements temporaires
+              // en detail (ce qui contredit les directives de suppression en pass 1), on demande
+              // a l'inventaire de SIGNALER les temporaires avec un marqueur "TO REMOVE: [liste]"
+              // sans les decrire dans le corps de la description. L'inventaire couvre ainsi
+              // uniquement la geometrie PERMANENTE — alignee avec les directives CLEANUP.
+              "Describe this room's PERMANENT geometry in one concise paragraph. Count: windows (number, positions), doors (number, positions), ceiling type (flat/vaulted/beamed/sloped), permanent wall-mounted equipment (radiators, convectors, heaters, water heater, electrical panel, fuse box, thermostat), existing built-in fixtures if any (bathtub, shower, sink, toilet, kitchen cabinetry), floor material, approximate room shape (narrow corridor, square, rectangular, L-shaped), and whether the room is obviously wide or narrow. Also describe the framing: which walls or elements are cropped at the edges of the photo, and whether the lens appears wide-angle or standard. If temporary elements are visible (people, workers, ladders, step-stools, buckets, paint pots, cardboard boxes, tools, debris, rubble, furniture moved for the photo), append at the END a marker line: 'TO REMOVE: [brief comma-separated list]'. Do NOT describe those temporary elements in the main description — only signal them in the TO REMOVE line. Be factual, no opinions.",
           },
           {
             role: "user",
@@ -135,8 +140,41 @@ export async function extractRoomInventory(imageBase64: string): Promise<string>
  *     (workers, painters, occupants, photographers, hands). Pieces brutes Thomas marchand de biens
  *     desormais nettoyees en pass 1. Affecte les 8 builders pass 1 indoor (Kitchen, Bathroom, WC,
  *     Bedroom, Laundry, Cellar, Entryway, fallback living/dining/office).
- *   Reportes en v59 : Option 3 sharp pre-processing (P2 Lucas), EQUIPMENT_PRESERVE/HIDE split par room_type. */
-export const PROMPT_VERSION = "v58";
+ *   Reportes en v59 : Option 3 sharp pre-processing (P2 Lucas), EQUIPMENT_PRESERVE/HIDE split par room_type.
+ * v59 (Sprint audit v58 Lucas — 5 fixes P0, decision @ia autonomous, Yann timeout):
+ *   Audit batch fondateur prod 8 avril 2026 sur 5 generations (logs #231-235). 3 regressions :
+ *   #234 bathroom 3.4/10 CAP5 (CATASTROPHE), #235 dining 6.6/10 (wall art hallucine + panneau
+ *   electrique efface), #233 living 5.9/10 (personnes/echelle pas retirees). Pass 1 #231 et
+ *   #232 etaient impeccables (9/10 et 7/10) — le probleme est localise en pass 2 + CLEANUP.
+ *   P0-1 bathroom geometry-gated — roomFurnitureOverride dans lib/room-types.ts reecrit en
+ *     hierarchie STEP 1/2/3 conditionnelle a la largeur reelle du couloir. STEP 1 : couloir
+ *     etroit (<1.5m) = floor accessories only, ZERO wall-mounted. STEP 2 : bathroom standard
+ *     = vanity/mirror/towel ladder AUTORISES ONLY si absents de l'input. STEP 3 : preservation
+ *     obligatoire des fixtures existants. Cause racine v58 : les conditionnels "ONLY if no X
+ *     already" etaient ignores par gpt-image-1.5, le modele lisait "ADD vanity" et l'ajoutait
+ *     meme dans un couloir 60cm.
+ *   P0-2 bathroom builder — suppression de la ligne "Compact by default: ONE vanity 60cm"
+ *     dans buildFurnitureResponsesPrompt. Contredisait frontalement la preservation-first de
+ *     room-types.ts. "Passage width stays identical to input" ajoute.
+ *   P0-3 CLEANUP split TEMPORARY vs PERMANENT — CLEANUP_V53 reecrit. v58 melangeait junction
+ *     boxes (temporaires chantier) et panneaux electriques (permanents muraux) dans une seule
+ *     liste REMOVE — le modele effacait les tableaux electriques #235. v59 split explicite :
+ *     REMOVE cables/pipes/debris/outils/personnes, PRESERVE panels/thermostats/switches/
+ *     outlets/radiators. Verbe d'action "MUST be rendered empty" remplace "stays empty".
+ *   P0-4 wall art anti-hallucination — PASS2_FINISH_V54 ajoute clause positive "all decorative
+ *     art stays freestanding or leans against the floor baseboard. Walls remain solid".
+ *     Formulation positive (pas "no wall art" qui amorcerait le modele).
+ *   P0-5 extractRoomInventory TO REMOVE marker — l'inventaire decrivait les personnes/outils
+ *     en detail, creant une contradiction avec CLEANUP. v59 : inventaire ne decrit que la
+ *     geometrie PERMANENTE + signale les temporaires sur une ligne "TO REMOVE: [liste]"
+ *     alignee avec CLEANUP.
+ *   P0-6 PASS2_EQUIPMENT_V54 etendu — ajout explicite de electrical panels, fuse boxes,
+ *     circuit breakers, thermostats, light switches, wall outlets (v58 disait seulement
+ *     "panels" sans preciser electrical panels).
+ *   Nouvelles gates anti-regression : categories I (override vs builder coherence), J (action
+ *     verbs strength), K (full room_type coverage), L (temporary/permanent split), M (wall art
+ *     positive coverage) — voir tests/unit/prompt-regression-v59-gates.test.ts. */
+export const PROMPT_VERSION = "v59";
 
 // ─── Image generation model ─────────────────────────────────────────
 // v36: configurable via env var. Default gpt-image-1 (v32 reverted gpt-image-1.5 for spatial regression).
@@ -223,10 +261,15 @@ const PASS1_PREAMBLE_V53 = "STRUCTURE LOCK: every column, beam, slab edge, and c
 // The clause was injected in 8 pass-1 builders but did not prevent the leakage problems
 // observed in v56 audits. Removed to reduce prompt length and revert to v54 baseline.
 const PRESERVATION_V53 = "Ceiling: keep every bump, step, soffit, vault, and beam visible — paint over their surface, keep their shape. Columns, posts, IPN beams, and metal lintels: keep full width and original material texture. Slab edges: keep full thickness. Mouldings, cornices, and decorative trims: keep shape and position, paint over. Keep the input's color temperature — do not warm or cool.";
-// v58: TEMPORARY_OBJECTS_TO_REMOVE — inclut debris de chantier, outils, personnes (Sprint audit v57 Yann+Lucas).
-// Les chantiers bruts livres par Thomas (marchand de biens) contiennent regulierement echelles, seaux, debris,
-// peintres, occupants, photographes. Sans cette clause, ces elements restent visibles a 100% en pass 1.
-const CLEANUP_V53 = "Remove all loose construction items and temporary objects: cables, junction boxes, exposed pipes, outlets, construction debris, rubble, cardboard boxes, paint pots, buckets, tarps, drop cloths, ladders, step-stools, scaffolding, hand tools, power tools, brooms, and any people visible (workers, painters, occupants, photographers, hands) — replace each removed zone with the surrounding wall, floor, or ceiling finish. Keep all fixed equipment in place: radiators, heaters, vents, panels — same count, same positions. Existing built-in fixtures (bathtub, shower tray, toilet, sink) stay if present. Room stays COMPLETELY EMPTY of people, tools, and debris — no furniture, no new fixtures.";
+// v59: TEMPORARY vs PERMANENT split — Sprint audit v58 Lucas #235 (electrical panel efface),
+// #233 (personnes/echelle pas retirees). v58 melangeait junction boxes (temporaires chantier)
+// et electrical panels (permanents muraux) dans une seule liste "remove" — le modele effacait
+// les tableaux electriques a tort. v58 disait aussi "Room stays COMPLETELY EMPTY" avec le verbe
+// d'etat "stays" interprete comme "reste vide" plutot qu'instruction d'action — les personnes
+// persistaient. v59 fix : (a) split explicite TEMPORARY (listes d'objets meubles de chantier,
+// jamais permanents) vs PERMANENT (equipements muraux a preserver), (b) verbes d'action forts
+// "MUST be rendered empty" au lieu de "stays empty".
+const CLEANUP_V53 = "REMOVE only these TEMPORARY construction items: loose cables, exposed pipes lying on floor, open wiring, construction debris, rubble, plaster dust, cardboard boxes, paint pots, buckets, tarps, drop cloths, ladders, step-stools, scaffolding, loose hand tools, loose power tools, brooms, work gloves, and any people visible (workers, painters, occupants, photographers, hands). For each removed item, fill the vacated zone with the surrounding wall, floor, or ceiling finish. PRESERVE all PERMANENT wall-mounted or built-in equipment: electrical panels, fuse boxes, circuit breakers, thermostats, light switches, wall outlets in their recessed housing, radiators, convectors, heaters, vents, towel dryers, water heaters, boilers. Preserve all existing built-in sanitary fixtures if present (bathtub, shower tray, toilet, sink). The output MUST be rendered empty of all people, tools, and debris — no furniture, no new fixtures, no decorative items.";
 
 // v54: ANTI_INVENTION still used by outdoor pass 1.
 const ANTI_INVENTION = "Only modify surfaces as described. No new architectural elements (arches, vaults, columns, niches, coffers, windows, doors) unless already in the input. Areas beyond the frame edges of the input are unknown — leave them as-is, do not invent what is there.";
@@ -358,10 +401,20 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
 // (CAMERA 83w, COLUMN 75w, LIGHT 27w) are unnecessary here and are condensed to 1 line each.
 
 const PASS2_PREAMBLE_V54 = "Edit this photo of a finished room. Walls, floor, ceiling are final — keep them unchanged. Same camera angle. Room dimensions FIXED — do not stretch or compress. Columns visible — do not hide with furniture. Keep the input's color temperature. No curtains, no drapes. If the room is narrow or compact, preserve that — reduce furniture count rather than widening walls.";
-const PASS2_EQUIPMENT_V54 = "Keep all fixed equipment (radiators, convectors, heaters, vents, panels, towel dryers) — same count, same positions. No furniture blocking them.";
+// v59: PASS2_EQUIPMENT_V54 etendu avec electrical panels / fuse boxes / circuit breakers /
+// thermostats (Sprint audit v58 Lucas #235 — tableau electrique efface en pass 2 car absent
+// de la liste de preservation). Le terme "panels" etait trop ambigu (pouvait designer wall
+// panels decoratifs). "Electrical panels" explicite + "fuse boxes" + "circuit breakers" pour
+// couvrir toutes les variantes. "Thermostats" pour les boitiers de chauffage muraux.
+const PASS2_EQUIPMENT_V54 = "Keep all fixed equipment exactly at the same position, same count: radiators, convectors, heaters, vents, towel dryers, electrical panels, fuse boxes, circuit breakers, thermostats, light switches, wall outlets. If the input shows wiring or a panel on a wall, the output must keep that wiring or panel in place. Do not place furniture blocking or covering any of these elements.";
 const PASS2_ANTI_INVENTION_V54 = "No new architectural elements (arches, niches, columns, coffers, windows, doors) unless already in the input.";
 const PASS2_DENSITY_V54 = "Respect furniture density implied by the style — if minimalist, leave large empty floor areas. If compact room, fewer pieces. Distribute furniture across FULL depth: primary group in foreground, secondary anchor (console, lamp, plant) in the back third. Balance left and right sides.";
-const PASS2_FINISH_V54 = "Contact shadows on every piece. DSLR wide-angle, sharp focus, deep DOF. Same focal length as input. No text. Freestanding objects only — place furniture INSIDE the room only, not on terraces or balconies visible through windows.";
+// v59: PASS2_FINISH_V54 etendu avec clause positive anti wall art (Sprint audit v58 Lucas
+// #235 — leopard wall art hallucine au fond a droite). v58 disait "Freestanding objects only"
+// mais ne couvrait pas explicitement wall art / framed prints / paintings. Regle anti-amorcage :
+// on NE mentionne PAS "no wall art" (amorcage negatif) — on dit positivement "all decorative
+// art stays freestanding or leans against the floor baseboard". Walls explicitement "solid".
+const PASS2_FINISH_V54 = "Contact shadows on every piece. DSLR wide-angle, sharp focus, deep DOF. Same focal length as input. No text. Freestanding objects only — place furniture INSIDE the room only, not on terraces or balconies visible through windows. All decorative art stays freestanding or leans against the floor baseboard. Walls remain solid, without attached frames, canvas, or prints.";
 
 // v54: Legacy pass 2 constants — DEAD CODE, replaced by PASS2_*_V54 above. Kept for reference.
 const DEPTH_DISTRIBUTION_KITCHEN = "Distribute kitchen elements across the full depth. Work zones along walls, island in middle if >10m2. Counter accessories spread across full counter length.";
@@ -402,17 +455,23 @@ export function buildFurnitureResponsesPrompt(furniturePrompt: string, roomTypeI
     ].join(" ");
   }
 
-  // Bathroom: v54 — condensed pass 2 constants
+  // Bathroom: v59 — anti-regression #234 (Sprint audit v58 Lucas).
+  // v58 contenait "Compact by default: ONE vanity 60cm" qui contredisait frontalement
+  // la preservation-first du roomFurnitureOverride — le modele lisait "ONE vanity 60cm = default"
+  // et l'inserait meme dans un couloir de 60cm de large. v59 fix : suppression de toute
+  // prescription de mobilier wall-mounted par defaut dans le builder. Le mobilier est
+  // decrit UNIQUEMENT dans le roomFurnitureOverride de room-types.ts (injecte via
+  // resolvedPrompt) qui porte desormais la logique STEP 1/2/3 conditionnelle a la
+  // geometrie. Le builder se contente de rappeler les contraintes de conservation.
   if (roomTypeId === "bathroom") {
     return [
       PASS2_PREAMBLE_V54,
       inventoryLine,
       PASS2_EQUIPMENT_V54,
       PASS2_ANTI_INVENTION_V54,
-      `ADD bathroom fixtures: ${resolvedPrompt}.`,
-      "Keep existing bathtub/shower/sink/toilet at same position, size, shape. Do not duplicate any fixture already visible.",
-      "Compact by default: ONE vanity 60cm, ONE basin, no freestanding tub. Only 80cm vanity or freestanding tub if room clearly >2.5m wide. 80cm shower max if compact.",
-      "Do not widen or deepen the room. 60cm min passage width.",
+      `ADD bathroom accessories: ${resolvedPrompt}.`,
+      "Keep existing bathtub, shower, shower enclosure, sink, basin, toilet, and bidet at the same position, size, and shape. Do not duplicate any fixture already visible. Do not add a freestanding tub or a new shower enclosure.",
+      "Do not widen, deepen, or stretch the room. Passage width stays identical to the input — if the input shows a narrow corridor, the output must show the same narrow corridor. The distance between opposing walls is IDENTICAL to the input.",
       PASS2_FINISH_V54,
     ].join(" ");
   }
