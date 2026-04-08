@@ -90,6 +90,9 @@ export function buildAdjustResponsesPrompt(
   return [
     // v51: P0-5 full camera preservation + P0-4 anti-fenetre + P1-4 no curtains + P1-5 anti-warm
     "Edit this photo. Make a small, precise change. Keep everything else unchanged. Same camera angle, height, tilt, and field of view. The frame edges must match the input exactly — walls cut off at the edge must be cut off at the same position.",
+    // v60 P0-D (Lucas #241) — lock frame strict. buildAdjust perdait parfois le ratio
+    // original en mode iteration (visible dans #238 → #241 : portrait elargi en paysage).
+    "Output aspect ratio, crop edges, and frame composition must match the input EXACTLY. Do not re-frame, do not widen, do not add visible areas beyond the input frame.",
     "Count the windows and doors visible in the input photo. The output must have the EXACT same count, at the same positions, same sizes. Walls without windows must remain solid.",
     "Before editing, mentally list every visible object. All must stay at same position, same size, same color — except the one change described below.",
     // v60 P0-C (Lucas #241) — anti-humain explicite en mode adjust. buildAdjust n'avait
