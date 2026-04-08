@@ -149,12 +149,24 @@ describe("BR-6 bug 3 — CropModal rectangle selection réelle", () => {
     expect(dep).toBeUndefined();
   });
 
-  it("U-BR6-302: CropModal importe ReactCrop depuis react-image-crop", () => {
-    expect(cropModalExec).toMatch(/import\s+ReactCrop[\s\S]{0,200}from\s+["']react-image-crop["']/);
+  it("U-BR6-302: CropModal importe ReactCrop depuis react-image-crop (npm OU vendor path)", () => {
+    // BR-6 mise à jour : depuis le commit vendoring (Replit ESM resolver bug),
+    // l'import runtime vient de @/components/vendor/react-image-crop/index.js,
+    // mais les types restent depuis "react-image-crop" (npm package).
+    // Au moins UN des deux doit être présent.
+    const npmRuntimeImport = /import\s+ReactCrop[\s\S]{0,200}from\s+["']react-image-crop["']/.test(cropModalExec);
+    const vendorRuntimeImport = /import\s+ReactCrop[\s\S]{0,200}from\s+["']@\/components\/vendor\/react-image-crop\/index\.js["']/.test(cropModalExec);
+    expect(npmRuntimeImport || vendorRuntimeImport, "CropModal doit importer ReactCrop depuis le package npm OU le vendor path").toBe(true);
+    // Les types Crop / PixelCrop doivent toujours venir du package npm pour TypeScript
+    expect(cropModalExec).toMatch(/import\s+type\s+\{[^}]*Crop[^}]*\}\s+from\s+["']react-image-crop["']/);
   });
 
-  it("U-BR6-303: CropModal importe le CSS de react-image-crop", () => {
-    expect(cropModalExec).toMatch(/import\s+["']react-image-crop\/dist\/ReactCrop\.css["']/);
+  it("U-BR6-303: CropModal importe le CSS de react-image-crop (npm OU vendor path)", () => {
+    // BR-6 mise à jour : le CSS peut venir du package npm OU du vendor (selon
+    // le commit vendoring pour fix Replit ESM resolver).
+    const npmCssImport = /import\s+["']react-image-crop\/dist\/ReactCrop\.css["']/.test(cropModalExec);
+    const vendorCssImport = /import\s+["']@\/components\/vendor\/react-image-crop\/ReactCrop\.css["']/.test(cropModalExec);
+    expect(npmCssImport || vendorCssImport, "CropModal doit importer le CSS depuis le package npm OU le vendor path").toBe(true);
   });
 
   it("U-BR6-304: CropModal n'importe PLUS react-easy-crop", () => {
