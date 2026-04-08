@@ -238,6 +238,51 @@ export function getOutputSize(
   return { openai: "1024x1024", w: 1024, h: 1024 }; // square-ish
 }
 
+/**
+ * Fix #2 (session 39 audit) — calcule les dimensions cibles OpenAI + les paddings
+ * nécessaires pour préserver le ratio d'un input sans distorsion.
+ *
+ * OpenAI n'accepte que 3 tailles discrètes (1536x1024, 1024x1536, 1024x1024).
+ * Un input de ratio intermédiaire (ex: 4:3 à 1.322) forcé en 1.5 subit une
+ * distorsion verticale mécanique — c'est la cause du bug hauteur fenêtre #245.
+ *
+ * Cette fonction calcule comment centrer l'image input dans le canvas OpenAI
+ * cible en ajoutant du padding blanc symétrique (letterbox/pillarbox), afin que
+ * le modèle reçoive l'image à son ratio natif. Le post-traitement (crop retour)
+ * sera fait dans Fix 7 avec sharp/canvas.
+ *
+ * Retourne :
+ *   - openai : taille canvas OpenAI ("1536x1024" / "1024x1536" / "1024x1024")
+ *   - targetW, targetH : dimensions du canvas cible
+ *   - effectiveW, effectiveH : dimensions de l'image redimensionnée (dans le canvas)
+ *   - padX, padY : paddings à ajouter de chaque côté (symétriques)
+ *
+ * Math :
+ *   1. getOutputSize détermine le canvas cible selon le ratio input
+ *   2. L'image est redimensionnée à la plus grande taille qui tient dans le canvas
+ *   3. Le reste est du padding blanc symétrique
+ */
+export function padToOpenAISize(
+  width: number,
+  height: number
+): {
+  openai: string;
+  targetW: number;
+  targetH: number;
+  effectiveW: number;
+  effectiveH: number;
+  padX: number;
+  padY: number;
+} {
+  const { openai, w: targetW, h: targetH } = getOutputSize(width, height);
+  const scale = Math.min(targetW / width, targetH / height);
+  const effectiveW = Math.round(width * scale);
+  const effectiveH = Math.round(height * scale);
+  const padX = Math.round((targetW - effectiveW) / 2);
+  const padY = Math.round((targetH - effectiveH) / 2);
+  return { openai, targetW, targetH, effectiveW, effectiveH, padX, padY };
+}
+
 // ─── Prompt Engineering ──────────────────────────────────────────────
 //
 // PIPELINE 2 PASSES with SPLIT PROMPTS:

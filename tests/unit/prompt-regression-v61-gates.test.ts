@@ -98,9 +98,33 @@ describe("v61 gates — RED phase (must fail on v60, green after fixes)", () => 
       );
     });
 
-    it.todo(
-      "padToOpenAISize preserves 4:3 ratio via white padding and crop-back"
-    );
+    it("padToOpenAISize preserves 4:3 input ratio via symmetric padding", async () => {
+      const mod = await import("@/lib/generation-pipeline");
+      const pad = (mod as any).padToOpenAISize as (w: number, h: number) => {
+        openai: string;
+        targetW: number;
+        targetH: number;
+        effectiveW: number;
+        effectiveH: number;
+        padX: number;
+        padY: number;
+      };
+
+      // Input 1280x968 (ratio 1.322, 4:3 quasi) — cas #244/#245
+      const result = pad(1280, 968);
+      expect(result.openai).toBe("1536x1024");
+      expect(result.targetW).toBe(1536);
+      expect(result.targetH).toBe(1024);
+      // L'image doit rentrer ENTIÈREMENT dans le canvas sans distorsion
+      expect(result.effectiveW).toBeLessThanOrEqual(result.targetW);
+      expect(result.effectiveH).toBeLessThanOrEqual(result.targetH);
+      // Le ratio de l'image effective doit être identique au ratio input (± 1 px)
+      const inputRatio = 1280 / 968;
+      const effectiveRatio = result.effectiveW / result.effectiveH;
+      expect(Math.abs(effectiveRatio - inputRatio)).toBeLessThan(0.005);
+      // Au moins un axe doit avoir du padding (sinon le ratio match déjà le canvas)
+      expect(result.padX + result.padY).toBeGreaterThan(0);
+    });
   });
 
   describe("#5 — Bathroom chantier brut fallback (Finding #5)", () => {
