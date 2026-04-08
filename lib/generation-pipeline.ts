@@ -287,13 +287,31 @@ const OUTDOOR_PREAMBLE_P2_V54 = "Edit this outdoor photo. Ground surface, walls,
 
 // ── Pass 1: Surface finishing ────────────────────────────────────────
 // v36: ACTION FIRST in all builders (v30 lesson — GPT-image-1 weights early tokens more)
+
+/**
+ * Strips any flooring segment that would conflict with a hard tile/ceramic floor
+ * (kitchen, bathroom, wc, laundry). Captures compounds like "honey-toned wood plank
+ * flooring with matte finish" bounded by commas/periods. Keeps the style palette
+ * intact (materials, textures, colors elsewhere in the prompt).
+ *
+ * Finding #7 (session 39 audit) — systemic bug where bathroom/wc/laundry builders
+ * injected surfacePrompt raw without cleanup, producing wood + ceramic tile
+ * contradictions on all wood-floor styles (bohemian, mid-century, scandinavian, ...).
+ */
+function stripHardFloorSegments(surfacePrompt: string): string {
+  return surfacePrompt.replace(
+    /,?\s*[^,.]*\b(?:wide-plank|herringbone|wood|ash|oak|walnut|parquet|stone|concrete)\b[^,.]*flooring[^,.]*/gi,
+    ""
+  );
+}
+
 export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?: string | null, roomInventory?: string): string {
   // Inject room inventory right after PREAMBLE if available
   const inventoryLine = roomInventory ? `This room has: ${roomInventory}` : "";
   // v53: All pass 1 builders condensed — structure FIRST, ~220 words total (was ~663)
   // Kitchen
   if (roomTypeId === "kitchen") {
-    const kitchenSurface = surfacePrompt.replace(/,?\s*[^,.]*\b(?:wide-plank|herringbone|wood|ash|oak|walnut|parquet|stone|concrete)\b[^,.]*flooring[^,.]*/gi, "");
+    const kitchenSurface = stripHardFloorSegments(surfacePrompt);
     return [
       PASS1_PREAMBLE_V53,
       inventoryLine,
@@ -311,7 +329,7 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
       PASS1_PREAMBLE_V53,
       inventoryLine,
       PRESERVATION_V53,
-      `Surface style: ${surfacePrompt}.`,
+      `Surface style: ${stripHardFloorSegments(surfacePrompt)}.`,
       "Ceramic tiles floor-to-ceiling in wet zones. Water-resistant matte floor. ONE ceiling light only — the pendant described in style, no recessed spots unless specified. If one accent wall exists, keep it.",
       CLEANUP_V53,
       DSLR_LINE,
@@ -324,7 +342,7 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
       PASS1_PREAMBLE_V53,
       inventoryLine,
       PRESERVATION_V53,
-      `Surface style: ${surfacePrompt}.`,
+      `Surface style: ${stripHardFloorSegments(surfacePrompt)}.`,
       "Waterproof floor — small ceramic tiles. Washable paint on lower walls.",
       CLEANUP_V53,
       DSLR_LINE,
@@ -350,7 +368,7 @@ export function buildSurfacesResponsesPrompt(surfacePrompt: string, roomTypeId?:
       PASS1_PREAMBLE_V53,
       inventoryLine,
       PRESERVATION_V53,
-      `Surface style: ${surfacePrompt}.`,
+      `Surface style: ${stripHardFloorSegments(surfacePrompt)}.`,
       "Waterproof ceramic floor. Washable white walls.",
       CLEANUP_V53,
       DSLR_LINE,
