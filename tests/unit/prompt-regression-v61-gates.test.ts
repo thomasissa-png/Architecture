@@ -141,4 +141,12 @@ describe("v61 gates — RED phase (must fail on v60, green after fixes)", () => 
       ).toBe(true);
     });
   });
+
+  describe("#5b — Kitchen chantier brut fallback (Fix 7)", () => {
+    it("kitchen roomFurnitureOverride must contain raw shell install fallback", () => {
+      const override = ROOM_TYPES.kitchen.roomFurnitureOverride.toLowerCase();
+      const hasRawShell = override.includes("raw shell") || override.includes("install a complete");
+      expect(hasRawShell, "kitchen override missing raw shell fallback clause").toBe(true);
+    });
+  });
 });
