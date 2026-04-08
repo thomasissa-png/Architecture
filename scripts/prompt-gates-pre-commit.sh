@@ -23,6 +23,12 @@
 #   - Catégorie N (narrow-room geometry gate, v59 #234) — BLOQUANT
 #   - Catégorie O (inventory/CLEANUP alignment, v59 #233) — BLOQUANT
 #   - Catégorie P (PROMPT_VERSION bump) — REQUIS
+#   - Catégorie Q (anti-human canalisation, v60 Lucas #238/#241) — BLOQUANT
+#   - Catégorie R (water heaters HIDE_IF_UGLY, v60 Lucas #240) — BLOQUANT
+#   - Catégorie S (adjust mode anti-human, v60 Lucas #241) — BLOQUANT
+#   - Catégorie T (adjust mode frame lock, v60 Lucas #241) — BLOQUANT
+#   - Catégorie U (bathroom Step 1 preserves existing, v60 Lucas #239) — BLOQUANT
+#   - Catégorie V (PROMPT_VERSION bump v60) — REQUIS
 #
 # Si une gate échoue, le script exit ≠ 0 → le hook refuse le commit / le build
 # Replit échoue et le déploiement est bloqué.
@@ -53,7 +59,7 @@ echo ""
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
-# Les 6 fichiers de gates à lancer (v59 : ajout prompt-regression-v59-gates)
+# Les 7 fichiers de gates à lancer (v60 : ajout prompt-regression-v60-gates)
 GATES_FILES=(
   "tests/unit/prompt-content-gates.test.ts"
   "tests/unit/prompt-structure-gates.test.ts"
@@ -61,6 +67,7 @@ GATES_FILES=(
   "tests/unit/prompt-snapshot-gates.test.ts"
   "tests/unit/prompt-cross-handler-gates.test.ts"
   "tests/unit/prompt-regression-v59-gates.test.ts"
+  "tests/unit/prompt-regression-v60-gates.test.ts"
 )
 
 # Vérifie que chaque fichier existe avant de lancer
