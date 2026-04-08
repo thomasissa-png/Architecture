@@ -402,12 +402,31 @@ export async function getPass1Meta(key: string): Promise<Pass1Meta | null> {
 // ─── Iteration base image cache (furnished result for adjust mode) ───
 // Stores the last furnished result so "adjust" iterations can edit it
 // instead of starting from the empty pass-1 image.
+//
+// BR-5 (session 38) — FIX CRITIQUE : la clé était `iteration-base/${sessionId}.jpg`
+// → UNE SEULE entrée par session, donc collision quand N photos sont générées
+// dans la même batch. Le dernier save écrasait les autres, et tous les refines
+// suivants récupéraient la dernière image (souvent la Maximaliste = photo #3),
+// quelle que soit la photo à affiner.
+//
+// Fix : clé dérivée de `pass1Key` (unique par génération). Format sibling du
+// pass1 cache — `sessions/{sid}/pass1_{ts}.jpg` → `sessions/{sid}/pass1_{ts}_iter.jpg`.
+// Chaque photo a sa propre base d'itération, pas de collision possible.
+
+/** Dérive la clé storage de l'iteration base à partir du pass1Key. */
+function iterationBaseKey(pass1Key: string): string {
+  // Sibling du pass1 : remplace `.jpg` par `_iter.jpg` (même dossier session)
+  if (pass1Key.endsWith(".jpg")) {
+    return pass1Key.replace(/\.jpg$/, "_iter.jpg");
+  }
+  return `${pass1Key}_iter.jpg`;
+}
 
 export async function saveIterationBase(
-  sessionId: string,
+  pass1Key: string,
   imageBase64: string
 ): Promise<void> {
-  const key = `iteration-base/${sessionId}.jpg`;
+  const key = iterationBaseKey(pass1Key);
   const buffer = Buffer.from(imageBase64, "base64");
   const { ok, error } = await withStorageRetry(
     (client) => client.uploadFromBytes(key, buffer),
@@ -420,9 +439,9 @@ export async function saveIterationBase(
 }
 
 export async function getIterationBase(
-  sessionId: string
+  pass1Key: string
 ): Promise<string | null> {
-  const key = `iteration-base/${sessionId}.jpg`;
+  const key = iterationBaseKey(pass1Key);
   try {
     const result = await withStorageRetry(
       (client) => client.downloadAsBytes(key),
@@ -433,7 +452,7 @@ export async function getIterationBase(
     if (!buf) return null;
     return Buffer.from(buf.buffer, buf.byteOffset, buf.byteLength).toString("base64");
   } catch (err) {
-    console.error(`getIterationBase failed for session "${sessionId}":`, err instanceof Error ? err.message : err);
+    console.error(`getIterationBase failed for pass1Key "${pass1Key}":`, err instanceof Error ? err.message : err);
     return null;
   }
 }

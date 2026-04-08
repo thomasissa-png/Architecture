@@ -311,8 +311,9 @@ export async function POST(request: NextRequest) {
       if (intent === "adjust") {
         // ADJUST mode: edit the furnished result, keep existing furniture
         // Try to load the last furnished result from Object Storage
-        const effectiveSessionId = sessionId ?? pass1Key;
-        const furnishedBase64 = await getIterationBase(effectiveSessionId);
+        // BR-5 (session 38) : clé dérivée de pass1Key (unique par photo), pas de sessionId
+        // (sinon collision multi-photos, voir lib/db.ts::iterationBaseKey)
+        const furnishedBase64 = await getIterationBase(pass1Key);
 
         if (furnishedBase64) {
           sourceImageBase64 = furnishedBase64;
@@ -375,8 +376,8 @@ export async function POST(request: NextRequest) {
       const iterationNumber = previousModifications.length + 1;
 
       // CRITICAL: await before response — Replit autoscale kills worker after response
-      const effectiveSessionId = sessionId ?? pass1Key;
-      await saveIterationBase(effectiveSessionId, outputBase64).catch((err) =>
+      // BR-5 (session 38) : clé dérivée de pass1Key (unique par photo)
+      await saveIterationBase(pass1Key, outputBase64).catch((err) =>
         console.error("saveIterationBase (iteration) failed:", err)
       );
 
@@ -571,11 +572,11 @@ export async function POST(request: NextRequest) {
       const p2OutputBase64 = pass2Result.image.replace(/^data:image\/[\w+]+;base64,/, "");
 
       // CRITICAL: await before response — Replit autoscale kills worker after response
-      if (sessionId) {
-        await saveIterationBase(sessionId, p2OutputBase64).catch((err) =>
-          console.error("saveIterationBase (pass2Only) failed:", err)
-        );
-      }
+      // BR-5 (session 38) : clé dérivée de pass1Key (unique par photo), pas de sessionId.
+      // pass1Key est garanti présent dans le bloc pass2Only (gate ligne 478).
+      await saveIterationBase(pass1Key, p2OutputBase64).catch((err) =>
+        console.error("saveIterationBase (pass2Only) failed:", err)
+      );
 
       // Save to user gallery BEFORE response (Replit autoscale kills worker after response)
       let photoId: string | null = null;
@@ -948,11 +949,14 @@ export async function POST(request: NextRequest) {
     // CRITICAL: save furnished result as iteration base BEFORE response.
     // Replit autoscale kills the worker after response — fire-and-forget is lost.
     // Without this, "Affiner" gets an empty pass1 image instead of the furnished result.
-    if (sessionId) {
-      await saveIterationBase(sessionId, outputBase64).catch((err) =>
-        console.error("saveIterationBase (initial gen) failed:", err)
-      );
-    }
+    //
+    // BR-5 (session 38) : clé dérivée de pass1CacheKey (unique par photo), pas de sessionId.
+    // Avant ce fix, N photos de la même session partageaient la même clé et s'écrasaient.
+    // Le gate `if (sessionId)` est supprimé — pass1CacheKey est toujours défini à ce point
+    // (calculé ligne ~770 avec fallback anon). La fonction catch toute erreur en interne.
+    await saveIterationBase(pass1CacheKey, outputBase64).catch((err) =>
+      console.error("saveIterationBase (initial gen) failed:", err)
+    );
 
     // Save to user gallery BEFORE sending response (critical for Replit autoscale).
     // On autoscale, the worker is killed after the response is sent.
