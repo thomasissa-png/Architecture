@@ -130,7 +130,7 @@ export default function ExtractionPage() {
             Extraction du plan
           </h1>
           <p className="text-sm text-[#9B9A94] mt-1">
-            L'IA analyse votre plan pour détecter les pièces et leurs dimensions.
+            L&apos;IA analyse votre plan pour détecter les pièces et leurs dimensions.
           </p>
         </div>
 
@@ -227,7 +227,7 @@ export default function ExtractionPage() {
                            transition-colors focus-visible:outline-none
                            focus-visible:ring-2 focus-visible:ring-[#7D9B76]"
               >
-                Réessayer l'extraction
+                Réessayer l&apos;extraction
               </button>
               <button
                 onClick={handleSkipToManual}
@@ -282,7 +282,7 @@ export default function ExtractionPage() {
             {rooms.length === 0 && (
               <div className="text-center py-8">
                 <p className="text-sm text-[#9B9A94]">
-                  Aucune pièce extraite. Passez à l'étape suivante pour les ajouter manuellement.
+                  Aucune pièce extraite. Passez à l&apos;étape suivante pour les ajouter manuellement.
                 </p>
               </div>
             )}
