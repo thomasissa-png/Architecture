@@ -56,10 +56,14 @@ Projet existant — Pivot majeur sur MVP en production. Branche : `claude/extrac
 - @fullstack : Fix 8 P0 + 5 P1 identifiés par l'audit — 8 fichiers modifiés — COMPLETE
 - Build PASS, lint 0 errors, 1383 tests pass post-fix
 
-### Phase 5 — Revue finale & lancement (EN COURS — session 41)
-- @reviewer : audit croisé — EN COURS
+### Phase 5 — Revue finale & lancement (COMPLETE — session 41)
+- @reviewer : audit croisé — GO CONDITIONNEL — `docs/reviews/cross-review-marchand-session41.md`
 - Build check complet (npx next build) — PASS
-- Checklist GO/NO-GO — À FAIRE
+- Checklist GO/NO-GO : **GO CONDITIONNEL pour beta privée**
+- 5 gates docs auditées : 4 GO, 1 GO CONDITIONNEL (user-flows G7)
+- Backend + API + Frontend + Tests : tous GO
+- 8/8 P0 persona corrigés
+- 5 gaps identifies pour session 42 (PATCH rooms, Stripe, upload photos, PDF réel, lot-splitter)
 
 ## Métriques live
 | Phase | Agents | Parallèles | Statut |
@@ -71,6 +75,6 @@ Projet existant — Pivot majeur sur MVP en production. Branche : `claude/extrac
 | 2c | 3 (fullstack C + D + copywriter) | 2 | COMPLETE |
 | 3 | 2 fullstack (A fix + B create) | 2 | COMPLETE |
 | 4 | 4 (qa + marchand + 2 fullstack fix) | 4 | COMPLETE |
-| 5 | 1 reviewer | — | EN COURS |
+| 5 | 1 reviewer | — | COMPLETE |
 
 <!-- SESSION: phases=7 tasks_prod=15 tasks_consult=0 -->
