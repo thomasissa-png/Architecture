@@ -51,9 +51,9 @@ Thomas arrive sur /pro (landing marchand)
   → Statut "delivered"
 ```
 
-**Paiement** : déclenché avant l'Étape 6 (génération visuels). Thomas paie 99€/bien ou le projet est débité de ses crédits Pro. Aucune génération sans paiement validé.
+**Paiement** : déclenché à l'Étape 1 (création du projet). Thomas paie 99€/bien AVANT d'accéder au parcours. Décision fondateur : "On paie avant. Pas après." Le paiement est la porte d'entrée — aucune étape du parcours n'est accessible sans paiement validé (sauf pour abonnés Pro dont le crédit est débité automatiquement).
 
-**Accès** : parcours réservé aux utilisateurs authentifiés (NextAuth.js). Les étapes 1-5 sont accessibles en session gratuite (aucune génération IA coûteuse). Le paiement est requis uniquement pour déclencher les étapes 6-7.
+**Accès** : parcours réservé aux utilisateurs authentifiés (NextAuth.js) ET ayant payé pour le bien. Le paiement intervient à la création du projet, pas à la génération.
 
 ---
 

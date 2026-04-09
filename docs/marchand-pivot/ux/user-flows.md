@@ -230,7 +230,7 @@ Contexte de déclenchement : Thomas vient d'acquérir un immeuble à rénover (o
 
 ### Point de paiement — 99€/bien
 
-**Positionnement** : entre l'étape 3 (données validées) et l'étape 4 (qualification). Thomas a confirmé son plan et ses photos — il sait exactement ce qu'il va générer. Le paiement intervient AVANT la génération IA (protection contre l'abus) mais APRÈS la validation des données (Thomas comprend la valeur).
+**Positionnement** : à l'Étape 1, AVANT tout le parcours. Décision fondateur : "On paie avant. Pas après." Thomas paie 99€/bien dès la création du projet. Le paiement est la porte d'entrée — les étapes 2-7 ne sont accessibles qu'après paiement validé. Abonnés Pro : crédit débité automatiquement, pas d'écran Stripe.
 
 **Écran**
 ```
@@ -496,15 +496,15 @@ Contexte de déclenchement : Thomas vient d'acquérir un immeuble à rénover (o
 
 ### Quand le paiement intervient-il ?
 
-**Décision : paiement APRÈS étape 3 (validation plan/photos), AVANT étape 4 (qualification).**
+**Décision fondateur : paiement à l'Étape 1, AVANT tout le parcours. "On paie avant. Pas après."**
 
 Justification :
-- Thomas a vu exactement combien de pièces seront générées → valeur concrète perçue avant paiement
-- Le paiement est ancré sur une action de validation (pas une action d'entrée)
-- Évite les abandons au paiement : Thomas a déjà investi 5-10 minutes = commitment psychologique fort
-- Si abonné Pro : le crédit est déduit silencieusement, sans écran de paiement
+- Le marchand sait ce qu'il achète (dossier de pré-commercialisation complet pour son bien)
+- Pas de risque d'abus (extraction IA, recommandations architecte = coûts API)
+- Le paiement filtre les curieux — seuls les marchands sérieux entrent dans le parcours
+- Si abonné Pro : crédit débité automatiquement, pas d'écran Stripe
 
-**Alternative écartée** : paiement à l'entrée du parcours → taux d'abandon élevé (Thomas ne sait pas encore ce qu'il génère)
+**Alternative écartée** : paiement après étape 3 (après validation plan) → risque d'abus de l'extraction IA gratuite, et le fondateur veut un engagement dès le départ
 
 ---
 
