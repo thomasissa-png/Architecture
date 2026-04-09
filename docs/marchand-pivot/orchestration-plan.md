@@ -50,14 +50,16 @@ Projet existant — Pivot majeur sur MVP en production. Branche : `claude/extrac
 - @fullstack : 5 API routes manquantes créées (GET lots, PATCH qualify, PATCH rec/[recId], POST+PUT description, POST dossier/pdf)
 - Build + lint : PASS
 
-### Phase 4 — Tests & validation (EN COURS — session 41)
+### Phase 4 — Tests & validation (COMPLETE — session 41)
 - @qa : 161 tests unitaires Vitest pour 6 modules `lib/marchand/*` — 100% PASS, 0 fail — COMPLETE
-- @marchand-de-biens : audit persona Thomas sur le parcours — EN COURS
+- @marchand-de-biens : audit persona Thomas — 7.4/10, 8 P0, 15 P1, 9 P2 — COMPLETE
+- @fullstack : Fix 8 P0 + 5 P1 identifiés par l'audit — 8 fichiers modifiés — COMPLETE
+- Build PASS, lint 0 errors, 1383 tests pass post-fix
 
-### Phase 5 — Revue finale & lancement (À FAIRE — session 41+)
-- @reviewer : audit croisé
-- Build check complet (npx next build)
-- Checklist GO/NO-GO
+### Phase 5 — Revue finale & lancement (EN COURS — session 41)
+- @reviewer : audit croisé — EN COURS
+- Build check complet (npx next build) — PASS
+- Checklist GO/NO-GO — À FAIRE
 
 ## Métriques live
 | Phase | Agents | Parallèles | Statut |
@@ -68,7 +70,7 @@ Projet existant — Pivot majeur sur MVP en production. Branche : `claude/extrac
 | 2b | 2 (fullstack A + B) | 2 | COMPLETE |
 | 2c | 3 (fullstack C + D + copywriter) | 2 | COMPLETE |
 | 3 | 2 fullstack (A fix + B create) | 2 | COMPLETE |
-| 4 | 2 (qa + marchand) | 2 | EN COURS |
-| 5 | 1 reviewer | — | À FAIRE |
+| 4 | 4 (qa + marchand + 2 fullstack fix) | 4 | COMPLETE |
+| 5 | 1 reviewer | — | EN COURS |
 
 <!-- SESSION: phases=7 tasks_prod=15 tasks_consult=0 -->
