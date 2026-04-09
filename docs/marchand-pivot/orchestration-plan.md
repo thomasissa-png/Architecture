@@ -1,4 +1,4 @@
-# Plan d'orchestration — Versimo Pivot Marchand (Session 40)
+# Plan d'orchestration — Versimo Pivot Marchand (Sessions 40-41)
 
 ## Demande fondateur
 Pivot Versimo vers plateforme de pré-commercialisation immobilière pour marchands de biens. Parcours complet : upload plan → extraction IA → validation → qualification → recommandations architecte → génération visuels → dossier PDF par lot.
@@ -43,14 +43,16 @@ Projet existant — Pivot majeur sur MVP en production. Branche : `claude/extrac
 - @fullstack D : 3 pages (étapes 4, 5, 7)
 - @copywriter : textes FR 7 étapes — `docs/marchand-pivot/copy/parcours-copy.md`
 
-### Phase 3 — Routes manquantes + câblage (À FAIRE — session 41)
-- @fullstack : 6 API routes manquantes (GET lots, PUT qualify, PATCH rec/[id], POST/PUT description, POST dossier/pdf)
-- @fullstack : câblage stubs plan-extractor + architect-agent dans les routes extract/recommend
-- @fullstack : intégration plan-enriched-prompt dans le pipeline génération existant
+### Phase 3 — Routes manquantes + câblage (COMPLETE — session 41)
+- @fullstack : Fix table names `pro_*` dans 7 fichiers existants + `ensureProTables()` dans tous les handlers
+- @fullstack : Câblage real `extractPlanData()` dans extract route (suppression stub)
+- @fullstack : Câblage real `generateRecommendations()` dans recommend route (suppression stub)
+- @fullstack : 5 API routes manquantes créées (GET lots, PATCH qualify, PATCH rec/[recId], POST+PUT description, POST dossier/pdf)
+- Build + lint : PASS
 
-### Phase 4 — Tests & validation (À FAIRE — session 41)
-- @qa : tests unitaires modules marchand + E2E parcours complet
-- @marchand-de-biens : audit persona Thomas sur le parcours
+### Phase 4 — Tests & validation (EN COURS — session 41)
+- @qa : 161 tests unitaires Vitest pour 6 modules `lib/marchand/*` — 100% PASS, 0 fail — COMPLETE
+- @marchand-de-biens : audit persona Thomas sur le parcours — EN COURS
 
 ### Phase 5 — Revue finale & lancement (À FAIRE — session 41+)
 - @reviewer : audit croisé
@@ -65,8 +67,8 @@ Projet existant — Pivot majeur sur MVP en production. Branche : `claude/extrac
 | 2a | 2 (ia + design) | 2 | COMPLETE |
 | 2b | 2 (fullstack A + B) | 2 | COMPLETE |
 | 2c | 3 (fullstack C + D + copywriter) | 2 | COMPLETE |
-| 3 | 1-2 fullstack | — | À FAIRE |
-| 4 | 2 (qa + marchand) | — | À FAIRE |
+| 3 | 2 fullstack (A fix + B create) | 2 | COMPLETE |
+| 4 | 2 (qa + marchand) | 2 | EN COURS |
 | 5 | 1 reviewer | — | À FAIRE |
 
-<!-- SESSION: phases=5 tasks_prod=12 tasks_consult=0 -->
+<!-- SESSION: phases=7 tasks_prod=15 tasks_consult=0 -->
