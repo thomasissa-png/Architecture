@@ -26,32 +26,47 @@ Projet existant — Pivot majeur sur MVP en production. Branche : `claude/extrac
 - Exploration codebase : audit complet existant (MerchantMode, DB, PDF, properties)
 - Checkpoint fondateur : VALIDÉ
 
-### Phase 1 — Specs & parcours (EN COURS)
-- @product-manager : specs fonctionnelles complètes du parcours marchand
-- @ux : parcours utilisateur + wireframes du flow 7 étapes
-- Statut : lancement
+### Phase 1 — Specs & parcours (COMPLETE)
+- @product-manager : specs fonctionnelles 26 US — `docs/marchand-pivot/product/functional-specs.md`
+- @ux : parcours 7 étapes + wireframes — `docs/marchand-pivot/ux/user-flows.md`
 
-### Phase 2 — Design & architecture technique
-- @design : design system pour le parcours marchand
-- @ia : architecture technique pipeline (plan-extractor, architect-agent, lot-splitter)
-- @fullstack : implémentation
+### Phase 2a — Design & architecture technique (COMPLETE)
+- @design : design system + compositions — `docs/marchand-pivot/design/page-compositions.md`
+- @ia : architecture technique pipeline — `docs/marchand-pivot/ia/technical-architecture.md`
 
-### Phase 3 — Contenu & copy
-- @copywriter : textes du parcours, onboarding, descriptions commerciales IA
-- @seo : stratégie référencement pivot
+### Phase 2b — Implémentation backend (COMPLETE)
+- @fullstack A : 5 modules `lib/marchand/*` (schemas, db, plan-extractor, architect-agent, description-generator)
+- @fullstack B : 6 API routes `app/api/pro/projects/*` (create, extract, validate, recommend, generate, status)
 
-### Phase 4 — Tests & validation
-- @qa : tests du parcours complet
-- Audit persona Thomas
+### Phase 2c — Implémentation frontend + copy (COMPLETE)
+- @fullstack C : 3 composants + 4 pages (étapes 1, 2, 3, 6)
+- @fullstack D : 3 pages (étapes 4, 5, 7)
+- @copywriter : textes FR 7 étapes — `docs/marchand-pivot/copy/parcours-copy.md`
 
-### Phase 5 — Revue finale & lancement
+### Phase 3 — Routes manquantes + câblage (À FAIRE — session 41)
+- @fullstack : 6 API routes manquantes (GET lots, PUT qualify, PATCH rec/[id], POST/PUT description, POST dossier/pdf)
+- @fullstack : câblage stubs plan-extractor + architect-agent dans les routes extract/recommend
+- @fullstack : intégration plan-enriched-prompt dans le pipeline génération existant
+
+### Phase 4 — Tests & validation (À FAIRE — session 41)
+- @qa : tests unitaires modules marchand + E2E parcours complet
+- @marchand-de-biens : audit persona Thomas sur le parcours
+
+### Phase 5 — Revue finale & lancement (À FAIRE — session 41+)
 - @reviewer : audit croisé
+- Build check complet (npx next build)
 - Checklist GO/NO-GO
 
 ## Métriques live
-| Phase | Agents | Statut |
-|---|---|---|
-| 0 | 3 (explore + ia + creative-strategy) | COMPLETE |
-| 1 | 2 (product-manager + ux) | EN COURS |
+| Phase | Agents | Parallèles | Statut |
+|---|---|---|---|
+| 0 | 3 (explore + ia + creative-strategy) | 3 | COMPLETE |
+| 1 | 2 (product-manager + ux) | 2 | COMPLETE |
+| 2a | 2 (ia + design) | 2 | COMPLETE |
+| 2b | 2 (fullstack A + B) | 2 | COMPLETE |
+| 2c | 3 (fullstack C + D + copywriter) | 2 | COMPLETE |
+| 3 | 1-2 fullstack | — | À FAIRE |
+| 4 | 2 (qa + marchand) | — | À FAIRE |
+| 5 | 1 reviewer | — | À FAIRE |
 
-<!-- SESSION: phases=1 tasks_prod=3 tasks_consult=0 -->
+<!-- SESSION: phases=5 tasks_prod=12 tasks_consult=0 -->

@@ -338,7 +338,68 @@
 
 ---
 
-## Mémo de reprise — dernière session (Session 38 FINALE)
+## Mémo de reprise — dernière session (Session 40 — Pivot Marchand)
+
+- **Date de clôture** : 2026-04-09
+- **Branche** : `claude/extract-project-context-UBjf0`
+- **HEAD** : voir `git log --oneline -1`
+- **Objet** : Pivot Versimo vers plateforme de pré-commercialisation immobilière pour marchands de biens
+
+### Ce qui a été fait (Phases 0→2c)
+
+1. **Phase 0 — Recherche** : workflow marchand FR (benchmark 7 concurrents, ROI 7 600€/an Thomas), recherche IA plans (GPT-4.1 vision recommandé, coût ~9.76$/bien, marge 73%), audit codebase existant
+2. **Phase 1 — Specs + UX** : 26 user stories (US-PM-01 à US-PM-26), parcours 7 étapes (wireframes, edge cases, mobile-first), paiement à l'entrée (décision fondateur)
+3. **Phase 2a — Architecture** : 5 modules IA, 9 API routes, 3 prompts système, modèle de données 5 tables SQL, design system 9 écrans
+4. **Phase 2b — Backend** : `lib/marchand/` (schemas.ts, db.ts, plan-extractor.ts, architect-agent.ts, description-generator.ts, auth-helpers.ts) + 6 routes API (`/api/pro/projects/*`)
+5. **Phase 2c — Frontend + copy** : 7 pages Next.js (toutes les étapes 1-7), 3 composants (ProStepper, RoomCard, RecommendationCard), textes FR intégrables
+
+### Livrables dans docs/marchand-pivot/
+```
+docs/marchand-pivot/
+├── strategy/marchand-workflow-research.md   ← @creative-strategy
+├── ia/plan-analysis-research.md             ← @ia (recherche)
+├── ia/technical-architecture.md             ← @ia (architecture)
+├── product/functional-specs.md              ← @product-manager
+├── ux/user-flows.md                         ← @ux
+├── design/page-compositions.md              ← @design
+├── copy/parcours-copy.md                    ← @copywriter
+├── legal/audit-cr-reunion.md                ← @legal (hors scope, erreur)
+└── orchestration-plan.md                    ← @orchestrator
+```
+
+### Décisions fondateur session 40
+- **Paiement à l'entrée** (99€/bien, étape 1, pas après) — "On paie avant. Pas après."
+- **Jamais de MVP** — vision complète d'un coup, scope V1 = les 7 étapes
+- **Architecture code déléguée aux agents** — le fondateur valide le produit, pas l'implémentation
+- **L'existant (Mode Pro, Mes biens, dossiers) absorbé** dans le nouveau parcours
+- **Mode photo simple gardé** — landing page dédiée possible plus tard
+
+### Ce qui reste (session 41)
+1. **6 API routes manquantes** : GET lots, PUT qualify, PATCH recommendations/[id], POST/PUT lots/[lotId]/description, POST dossier/pdf
+2. **Câblage stubs** : plan-extractor et architect-agent sont implémentés mais les routes extract/recommend ont des TODO pour l'import
+3. **Intégration pipeline** : plan-enriched-prompt.ts doit enrichir le pipeline génération existant (~15 lignes de modification dans generation-pipeline.ts)
+4. **Tests** : unitaires modules marchand + E2E parcours complet
+5. **Build check** : `npx next build` sur le parcours complet
+6. **Audit persona Thomas** (@marchand-de-biens)
+7. **Revue finale** (@reviewer)
+
+### Commande de reprise session 41
+```
+@orchestrator Reprends Versimo session 41. Session 40 close : pivot marchand Phases 0→2c complètes sur claude/extract-project-context-UBjf0.
+Backend : 5 modules lib/marchand/ + 6 API routes. Frontend : 7 pages + 3 composants. Copy : textes FR 7 étapes.
+Reste : (1) 6 API routes manquantes (GET lots, PUT qualify, PATCH rec/[id], POST/PUT description, POST dossier/pdf), (2) câblage stubs plan-extractor + architect-agent, (3) intégration pipeline, (4) tests, (5) build check, (6) audit Thomas, (7) revue finale.
+Docs dans docs/marchand-pivot/. Lis orchestration-plan.md pour le plan détaillé.
+```
+
+### Learnings session 40
+- Briefs courts = anti-timeout validé à grande échelle (12 agents, 2 timeouts, 100% récupérés en relance)
+- Décomposition en batches parallèles = vélocité maximale (~30 commits en 1 session)
+- Coût API réel 4x > estimation initiale (vérifier tarifs officiels AVANT business model)
+- 6 routes manquantes découvertes post-implémentation frontend (toujours lister les routes appelées dans le brief)
+
+---
+
+## Mémo de reprise — session 38 (archivé)
 
 - **Date et heure de clôture** : 2026-04-08 (session 38 marathon : v58 audit NO-GO → v59 livré → v59 audit NO-GO → v60 livré + nouvelles gates anti-régression Q-V)
 - **Branche** : `claude/versimo-session-38-9EIha`
