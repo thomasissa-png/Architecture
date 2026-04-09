@@ -10,15 +10,15 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { getPool } from "@/lib/db";
-import { withStorageRetry } from "@/lib/db";
+import { getPool, withStorageRetry } from "@/lib/db";
+import { ensureProTables } from "@/lib/marchand/db";
 import {
   requireProjectOwnership,
   isErrorResponse,
   checkRateLimit,
 } from "@/lib/marchand/auth-helpers";
-import type { ExtractedRoom } from "@/lib/marchand/schemas";
-// TODO: import { extractPlanData } from "@/lib/marchand/plan-extractor";
+import { extractPlanData } from "@/lib/marchand/plan-extractor";
+import type { TypeBien } from "@/lib/marchand/schemas";
 // TODO: import { suggestLots } from "@/lib/marchand/plan-extractor";
 
 export const dynamic = "force-dynamic";
@@ -36,6 +36,8 @@ export async function POST(
   if (isErrorResponse(authResult)) return authResult;
 
   const { project } = authResult;
+
+  await ensureProTables();
 
   // ─── Status check ──────────────────────────────────────────────
   if (project.status !== "plan_uploaded" && project.status !== "extraction_failed") {
@@ -91,31 +93,17 @@ export async function POST(
     // For now, pass the raw base64 — plan-extractor will handle format
 
     // ─── Call extraction IA ───────────────────────────────────────
-    // TODO: Replace with real extractPlanData() when lib/marchand/plan-extractor.ts is ready
-    // const extractionResult = await extractPlanData({
-    //   planBase64,
-    //   mimeType,
-    //   typeBien: project.type_bien,
-    // });
-
-    // TEMPORARY STUB — remove when plan-extractor is available
-    console.warn(
-      `[POST /api/pro/projects/${projectId}/extract] plan-extractor not yet available. Using stub.`
+    const extractionResult = await extractPlanData(
+      planBase64,
+      mimeType,
+      project.type_bien as TypeBien
     );
-    const extractionResult = {
-      rooms: [] as ExtractedRoom[],
-      total_surface_m2: project.surface_totale,
-      floors_count: 1,
-      extraction_warnings: ["no_dimensions_found" as const],
-      scale_reference: "none" as const,
-    };
-    // END STUB
 
     if (extractionResult.rooms.length === 0) {
       // Mark project as extraction_failed
       const db = getPool();
       await db.query(
-        `UPDATE projects SET status = 'extraction_failed', updated_at = NOW() WHERE id = $1`,
+        `UPDATE pro_projects SET status = 'extraction_failed', updated_at = NOW() WHERE id = $1`,
         [projectId]
       );
       return NextResponse.json(
@@ -133,7 +121,7 @@ export async function POST(
 
     // Archive raw extraction in project
     await db.query(
-      `UPDATE projects
+      `UPDATE pro_projects
        SET extraction_data = $1, status = 'extraction_done', updated_at = NOW()
        WHERE id = $2`,
       [JSON.stringify(extractionResult), projectId]
@@ -144,7 +132,7 @@ export async function POST(
 
     for (const room of extractionResult.rooms) {
       const insertResult = await db.query(
-        `INSERT INTO rooms (
+        `INSERT INTO pro_rooms (
           project_id, name, room_type, surface_m2,
           length_m, width_m, ceiling_height_m,
           windows_count, doors_count, floor, shape,
@@ -172,7 +160,7 @@ export async function POST(
     }
 
     // ─── Lot suggestions for immeuble with multiple floors ────────
-    let lotSuggestions = undefined;
+    const lotSuggestions = undefined;
 
     if (
       project.type_bien === "immeuble" &&
@@ -205,7 +193,7 @@ export async function POST(
     try {
       const db = getPool();
       await db.query(
-        `UPDATE projects SET status = 'extraction_failed', updated_at = NOW() WHERE id = $1`,
+        `UPDATE pro_projects SET status = 'extraction_failed', updated_at = NOW() WHERE id = $1`,
         [projectId]
       );
     } catch {

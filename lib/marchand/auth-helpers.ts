@@ -8,6 +8,7 @@
 import { NextResponse } from "next/server";
 import { getSessionRobust } from "@/lib/session";
 import { getPool } from "@/lib/db";
+import { ensureProTables } from "@/lib/marchand/db";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -76,10 +77,12 @@ export async function requireProjectOwnership(
   const authResult = await requireAuth(request);
   if (isErrorResponse(authResult)) return authResult;
 
+  await ensureProTables();
+
   const db = getPool();
   const result = await db.query(
     `SELECT id, status, type_bien, plan_file_path, plan_mime_type, adresse, surface_totale
-     FROM projects WHERE id = $1`,
+     FROM pro_projects WHERE id = $1`,
     [projectId]
   );
 
@@ -94,7 +97,7 @@ export async function requireProjectOwnership(
 
   // Ownership check: the project must have a user_id column
   const ownerCheck = await db.query(
-    `SELECT 1 FROM projects WHERE id = $1 AND user_id = $2`,
+    `SELECT 1 FROM pro_projects WHERE id = $1 AND user_id = $2`,
     [projectId, authResult.id]
   );
 

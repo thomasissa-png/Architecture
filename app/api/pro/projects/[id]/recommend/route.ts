@@ -15,13 +15,15 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getPool } from "@/lib/db";
+import { ensureProTables } from "@/lib/marchand/db";
 import { z } from "zod";
 import {
   requireProjectOwnership,
   isErrorResponse,
   checkRateLimit,
 } from "@/lib/marchand/auth-helpers";
-// TODO: import { generateRecommendations } from "@/lib/marchand/architect-agent";
+import { generateRecommendations } from "@/lib/marchand/architect-agent";
+import type { ValidatedRoom, LotQualification } from "@/lib/marchand/schemas";
 
 export const dynamic = "force-dynamic";
 
@@ -44,6 +46,8 @@ export async function POST(
   if (isErrorResponse(authResult)) return authResult;
 
   const { project } = authResult;
+
+  await ensureProTables();
 
   // ─── Status check ──────────────────────────────────────────────
   const validStatuses = ["validated", "qualified", "plan_final"];
@@ -91,7 +95,7 @@ export async function POST(
     // ─── Verify lot belongs to this project ──────────────────────
     const lotResult = await db.query(
       `SELECT id, name, target_buyer, style_id, budget_travaux, contraintes, notes_commerciales
-       FROM lots WHERE id = $1 AND project_id = $2`,
+       FROM pro_lots WHERE id = $1 AND project_id = $2`,
       [lot_id, projectId]
     );
 
@@ -108,7 +112,7 @@ export async function POST(
     const roomsResult = await db.query(
       `SELECT id, name, room_type, surface_m2, length_m, width_m,
               ceiling_height_m, windows_count, doors_count, floor, shape
-       FROM rooms WHERE lot_id = $1 AND project_id = $2
+       FROM pro_rooms WHERE lot_id = $1 AND project_id = $2
        ORDER BY floor, name`,
       [lot_id, projectId]
     );
@@ -126,48 +130,60 @@ export async function POST(
     const rooms = roomsResult.rows;
 
     // ─── Call architect agent IA ──────────────────────────────────
-    // TODO: Replace with real generateRecommendations() when lib/marchand/architect-agent.ts is ready
-    // const recommendationSet = await generateRecommendations({
-    //   lot: {
-    //     ...lot,
-    //     rooms,
-    //   },
-    //   projectInfo: {
-    //     adresse: project.adresse,
-    //     type_bien: project.type_bien,
-    //     surface_totale: project.surface_totale,
-    //   },
-    // });
+    const validatedRooms: ValidatedRoom[] = rooms.map((r: Record<string, unknown>) => ({
+      temp_id: String(r.id),
+      id: String(r.id),
+      name_raw: String(r.name),
+      room_type: String(r.room_type) as ValidatedRoom["room_type"],
+      surface_m2: r.surface_m2 as number | null,
+      dimensions: r.length_m && r.width_m
+        ? { length_m: Number(r.length_m), width_m: Number(r.width_m) }
+        : null,
+      ceiling_height_m: r.ceiling_height_m as number | null,
+      windows_count: Number(r.windows_count ?? 0),
+      doors_count: Number(r.doors_count ?? 0),
+      floor: r.floor as number | null,
+      confidence: 1,
+      shape: r.shape as ValidatedRoom["shape"] ?? null,
+      notes: null,
+      lot_id: String(r.lot_id ?? lot_id),
+      is_estimated: false,
+      photo_path: r.photo_path as string | null ?? null,
+    }));
 
-    // TEMPORARY STUB — remove when architect-agent is available
-    console.warn(
-      `[POST /api/pro/projects/${projectId}/recommend] architect-agent not yet available. Using stub.`
-    );
-    const recommendationSet = {
-      recommendations: [] as Array<{
-        id: string;
-        title: string;
-        description: string;
-        action_type: string;
-        estimated_cost_eur: number | null;
-        impact_level: string;
-        affected_rooms: string[];
-        rationale_buyer: string;
-      }>,
-      summary: "Agent architecte non encore disponible.",
+    const lotQualification: LotQualification = {
+      id: String(lot.id),
+      name: String(lot.name),
+      target_buyer: String(lot.target_buyer) as LotQualification["target_buyer"],
+      style_id: String(lot.style_id ?? "contemporain"),
+      budget_travaux: lot.budget_travaux as number | null,
+      contraintes: lot.contraintes as string | null,
+      notes_commerciales: lot.notes_commerciales as string | null,
+      rooms: validatedRooms,
     };
-    // END STUB
+
+    const recommendationSet = await generateRecommendations(validatedRooms, lotQualification);
+
+    if (!recommendationSet) {
+      return NextResponse.json(
+        {
+          error: "AGENT_FAILED",
+          message: "L'agent architecte n'a pas pu générer de recommandations. Réessayez.",
+        },
+        { status: 502 }
+      );
+    }
 
     // ─── Archive old recommendations ─────────────────────────────
     await db.query(
-      `UPDATE recommendations SET is_active = false WHERE lot_id = $1 AND is_active = true`,
+      `UPDATE pro_recommendations SET is_active = false WHERE lot_id = $1 AND is_active = true`,
       [lot_id]
     );
 
     // ─── Get current max version for this lot ────────────────────
     const versionResult = await db.query(
       `SELECT COALESCE(MAX(version), 0)::int AS max_version
-       FROM recommendations WHERE lot_id = $1`,
+       FROM pro_recommendations WHERE lot_id = $1`,
       [lot_id]
     );
     const nextVersion = (versionResult.rows[0]?.max_version ?? 0) + 1;
@@ -175,7 +191,7 @@ export async function POST(
     // ─── Insert new recommendations ──────────────────────────────
     for (const rec of recommendationSet.recommendations) {
       await db.query(
-        `INSERT INTO recommendations (
+        `INSERT INTO pro_recommendations (
           lot_id, title, description, action_type,
           estimated_cost_eur, impact_level, affected_rooms,
           rationale_buyer, is_active, version

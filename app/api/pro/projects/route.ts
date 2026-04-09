@@ -12,8 +12,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { getPool } from "@/lib/db";
-import { withStorageRetry } from "@/lib/db";
+import { getPool, withStorageRetry } from "@/lib/db";
+import { ensureProTables } from "@/lib/marchand/db";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
@@ -143,10 +143,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // ─── Ensure pro tables exist ─────────────────────────────────
+    await ensureProTables();
+
     // ─── Deduplication check (same user, same address, < 5s) ──────
     const db = getPool();
     const dedup = await db.query(
-      `SELECT id FROM projects
+      `SELECT id FROM pro_projects
        WHERE user_id = $1 AND adresse = $2 AND created_at > NOW() - INTERVAL '5 seconds'
        LIMIT 1`,
       [userId, adresse]
@@ -165,7 +168,7 @@ export async function POST(request: NextRequest) {
 
     // ─── Insert project in DB ─────────────────────────────────────
     const insertResult = await db.query(
-      `INSERT INTO projects (user_id, adresse, type_bien, surface_totale, status)
+      `INSERT INTO pro_projects (user_id, adresse, type_bien, surface_totale, status)
        VALUES ($1, $2, $3, $4, 'plan_uploaded')
        RETURNING id, status, created_at`,
       [userId, adresse, type_bien, surface_totale ?? null]
@@ -190,14 +193,14 @@ export async function POST(request: NextRequest) {
 
     // Update project with file path
     await db.query(
-      `UPDATE projects SET plan_file_path = $1, plan_mime_type = $2 WHERE id = $3`,
+      `UPDATE pro_projects SET plan_file_path = $1, plan_mime_type = $2 WHERE id = $3`,
       [storageKey, planFile.type, projectId]
     );
 
     // ─── Auto-create lot for non-immeuble ─────────────────────────
     if (type_bien !== "immeuble") {
       await db.query(
-        `INSERT INTO lots (project_id, name, floor, status)
+        `INSERT INTO pro_lots (project_id, name, floor, status)
          VALUES ($1, $2, 0, 'pending')`,
         [projectId, `${type_bien === "appartement" ? "Appartement" : type_bien === "maison" ? "Maison" : "Lot"} principal`]
       );

@@ -11,6 +11,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getPool } from "@/lib/db";
+import { ensureProTables } from "@/lib/marchand/db";
 import {
   requireProjectOwnership,
   isErrorResponse,
@@ -32,6 +33,8 @@ export async function PUT(
 
   const { project } = authResult;
 
+  await ensureProTables();
+
   // ─── Status check ──────────────────────────────────────────────
   if (project.status !== "extraction_done") {
     return NextResponse.json(
@@ -48,7 +51,7 @@ export async function PUT(
 
     // ─── Fetch all rooms for this project ─────────────────────────
     const roomsResult = await db.query(
-      `SELECT id, name, room_type, lot_id FROM rooms WHERE project_id = $1`,
+      `SELECT id, name, room_type, lot_id FROM pro_rooms WHERE project_id = $1`,
       [projectId]
     );
 
@@ -114,14 +117,14 @@ export async function PUT(
 
     // ─── Count lots ──────────────────────────────────────────────
     const lotsResult = await db.query(
-      `SELECT COUNT(*)::int AS count FROM lots WHERE project_id = $1`,
+      `SELECT COUNT(*)::int AS count FROM pro_lots WHERE project_id = $1`,
       [projectId]
     );
     const lotsCount = lotsResult.rows[0]?.count ?? 0;
 
     // ─── Update project status ───────────────────────────────────
     await db.query(
-      `UPDATE projects SET status = 'validated', updated_at = NOW() WHERE id = $1`,
+      `UPDATE pro_projects SET status = 'validated', updated_at = NOW() WHERE id = $1`,
       [projectId]
     );
 

@@ -10,6 +10,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getPool } from "@/lib/db";
+import { ensureProTables } from "@/lib/marchand/db";
 import {
   requireProjectOwnership,
   isErrorResponse,
@@ -31,6 +32,8 @@ export async function GET(
 
   const { project } = authResult;
 
+  await ensureProTables();
+
   try {
     const db = getPool();
 
@@ -40,8 +43,8 @@ export async function GET(
               r.generation_status, r.visual_output_path,
               r.visual_pass1_path, r.generation_error,
               l.name AS lot_name
-       FROM rooms r
-       LEFT JOIN lots l ON r.lot_id = l.id
+       FROM pro_rooms r
+       LEFT JOIN pro_lots l ON r.lot_id = l.id
        WHERE r.project_id = $1
        ORDER BY l.name NULLS LAST, r.name`,
       [projectId]

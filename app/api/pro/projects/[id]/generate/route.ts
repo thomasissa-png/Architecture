@@ -14,8 +14,8 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { getPool } from "@/lib/db";
-import { withStorageRetry } from "@/lib/db";
+import { getPool, withStorageRetry } from "@/lib/db";
+import { ensureProTables } from "@/lib/marchand/db";
 import { z } from "zod";
 import {
   requireProjectOwnership,
@@ -25,8 +25,6 @@ import {
 import {
   generatePass,
   getOutputSize,
-  buildSurfacesResponsesPrompt,
-  buildFurnitureResponsesPrompt,
 } from "@/lib/generation-pipeline";
 
 export const dynamic = "force-dynamic";
@@ -84,7 +82,9 @@ export async function POST(
   const authResult = await requireProjectOwnership(request, projectId);
   if (isErrorResponse(authResult)) return authResult;
 
-  const { user, project } = authResult;
+  const { project } = authResult;
+
+  await ensureProTables();
 
   // ─── Status check ──────────────────────────────────────────────
   const allowedStatuses = ["validated", "qualified", "plan_final"];
@@ -147,8 +147,8 @@ export async function POST(
                r.ceiling_height_m, r.windows_count, r.photo_path,
                r.generation_status, r.lot_id,
                l.style_id, l.custom_style_text, l.target_buyer
-        FROM rooms r
-        JOIN lots l ON r.lot_id = l.id
+        FROM pro_rooms r
+        JOIN pro_lots l ON r.lot_id = l.id
         WHERE r.project_id = $1 AND r.lot_id = ANY($2)
         ORDER BY r.lot_id, r.name`;
       roomsParams = [projectId, lot_ids];
@@ -159,8 +159,8 @@ export async function POST(
                r.ceiling_height_m, r.windows_count, r.photo_path,
                r.generation_status, r.lot_id,
                l.style_id, l.custom_style_text, l.target_buyer
-        FROM rooms r
-        JOIN lots l ON r.lot_id = l.id
+        FROM pro_rooms r
+        JOIN pro_lots l ON r.lot_id = l.id
         WHERE r.project_id = $1
         ORDER BY r.lot_id, r.name`;
       roomsParams = [projectId];
@@ -196,14 +196,14 @@ export async function POST(
 
     // ─── Mark project as generating ──────────────────────────────
     await db.query(
-      `UPDATE projects SET status = 'generating', updated_at = NOW() WHERE id = $1`,
+      `UPDATE pro_projects SET status = 'generating', updated_at = NOW() WHERE id = $1`,
       [projectId]
     );
 
     // Mark all target rooms as generating
     const roomIds = roomsWithPhotos.map((r: { id: string }) => r.id);
     await db.query(
-      `UPDATE rooms SET generation_status = 'generating_pass1' WHERE id = ANY($1)`,
+      `UPDATE pro_rooms SET generation_status = 'generating_pass1' WHERE id = ANY($1)`,
       [roomIds]
     );
 
@@ -257,7 +257,7 @@ export async function POST(
 
           // ─── Pass 1: surfaces ──────────────────────────────────
           await db.query(
-            `UPDATE rooms SET generation_status = 'generating_pass1' WHERE id = $1`,
+            `UPDATE pro_rooms SET generation_status = 'generating_pass1' WHERE id = $1`,
             [room.id]
           );
 
@@ -279,7 +279,7 @@ export async function POST(
           );
 
           await db.query(
-            `UPDATE rooms SET visual_pass1_path = $1, generation_status = 'generating_pass2' WHERE id = $2`,
+            `UPDATE pro_rooms SET visual_pass1_path = $1, generation_status = 'generating_pass2' WHERE id = $2`,
             [pass1Key, room.id]
           );
 
@@ -306,7 +306,7 @@ export async function POST(
 
           // Mark room as done
           await db.query(
-            `UPDATE rooms SET visual_output_path = $1, generation_status = 'done' WHERE id = $2`,
+            `UPDATE pro_rooms SET visual_output_path = $1, generation_status = 'done' WHERE id = $2`,
             [outputKey, room.id]
           );
 
@@ -331,7 +331,7 @@ export async function POST(
             ? result.reason.message
             : String(result.reason);
         await db.query(
-          `UPDATE rooms SET generation_status = 'failed', generation_error = $1 WHERE id = $2`,
+          `UPDATE pro_rooms SET generation_status = 'failed', generation_error = $1 WHERE id = $2`,
           [errorMsg, roomId]
         );
       } else {
@@ -342,7 +342,7 @@ export async function POST(
     // ─── Update project status ───────────────────────────────────
     const finalStatus = failedCount === rooms.length ? "plan_final" : "visuals_done";
     await db.query(
-      `UPDATE projects SET status = $1, updated_at = NOW() WHERE id = $2`,
+      `UPDATE pro_projects SET status = $1, updated_at = NOW() WHERE id = $2`,
       [finalStatus, projectId]
     );
 
@@ -367,7 +367,7 @@ export async function POST(
     try {
       const db = getPool();
       await db.query(
-        `UPDATE projects SET status = 'plan_final', updated_at = NOW()
+        `UPDATE pro_projects SET status = 'plan_final', updated_at = NOW()
          WHERE id = $1 AND status = 'generating'`,
         [projectId]
       );
