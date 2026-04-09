@@ -47,8 +47,8 @@ const GENERATION_STATUS_CONFIG: Record<
   { label: string; color: string; pulse?: boolean }
 > = {
   pending: { label: "En attente", color: "text-[#9B9A94]" },
-  generating_pass1: { label: "Passe 1 — surfaces", color: "text-[#1D4ED8]", pulse: true },
-  generating_pass2: { label: "Passe 2 — mobilier", color: "text-[#1D4ED8]", pulse: true },
+  generating_pass1: { label: "Préparation de la pièce", color: "text-[#1D4ED8]", pulse: true },
+  generating_pass2: { label: "Ajout du mobilier", color: "text-[#1D4ED8]", pulse: true },
   done: { label: "Terminée", color: "text-[#4A7A42]" },
   failed: { label: "Erreur", color: "text-[#B91C1C]" },
 };

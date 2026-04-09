@@ -3,12 +3,12 @@
 /**
  * Page validation et association photos/pièces (Étape 3).
  *
- * Rendu : Client Component — tableau éditable, upload photos, auto-save.
+ * Rendu : Client Component — tableau éditable, upload photos.
  *
  * Charge les pièces du projet. Thomas peut renommer, changer le type,
  * modifier la surface, associer une photo à chaque pièce, et ajouter
- * des pièces manuellement. Auto-save toutes les 10 secondes.
- * Bouton "Valider" appelle PUT /api/pro/projects/[id]/validate.
+ * des pièces manuellement. Les modifications sont sauvegardées à la
+ * validation (PUT /api/pro/projects/[id]/validate).
  */
 
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -50,10 +50,8 @@ export default function ValidationPage() {
 
   const [rooms, setRooms] = useState<RoomEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   const fileInputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
@@ -93,36 +91,7 @@ export default function ValidationPage() {
     loadRooms();
   }, [projectId]);
 
-  // ─── Auto-save every 10 seconds ──────────────────────────────────
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (isDirty.current && !isSaving) {
-        handleAutoSave();
-      }
-    }, 10000);
-    return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rooms, isSaving]);
-
-  const handleAutoSave = useCallback(async () => {
-    if (rooms.length === 0) return;
-
-    setIsSaving(true);
-    setSaveStatus("saving");
-
-    try {
-      // Save room metadata updates
-      // Note: In a full implementation, this would PATCH each room's metadata.
-      // For now, we'll use the validate endpoint which checks the state.
-      setSaveStatus("saved");
-      isDirty.current = false;
-    } catch {
-      setSaveStatus("error");
-    } finally {
-      setIsSaving(false);
-    }
-  }, [rooms]);
+  // ─── Dirty tracking (no auto-save — API batch PATCH not available) ─
 
   // ─── Room editing ────────────────────────────────────────────────
 
@@ -188,8 +157,7 @@ export default function ValidationPage() {
       }
 
       // Success — navigate to qualification (step 4)
-      // For now, redirect to generation as qualification/recommendations are future steps
-      router.push(`/projet/${projectId}/generation`);
+      router.push(`/projet/${projectId}/qualification`);
     } catch {
       setError("Erreur de connexion. Vérifiez votre réseau.");
     } finally {
@@ -291,11 +259,10 @@ export default function ValidationPage() {
               <p className="text-xs text-[#9B9A94]">
                 {roomsWithPhoto}/{totalRooms} pièce{totalRooms > 1 ? "s" : ""} avec photo
               </p>
-              {saveStatus === "saved" && (
-                <span className="text-xs text-[#4A7A42]">Sauvegardé</span>
-              )}
-              {saveStatus === "saving" && (
-                <span className="text-xs text-[#9B9A94]">Sauvegarde…</span>
+              {isDirty.current && (
+                <span className="text-xs text-[#D97706]">
+                  Modifications non sauvegardées
+                </span>
               )}
             </div>
 
@@ -329,7 +296,7 @@ export default function ValidationPage() {
                               )
                             );
                           }}
-                          className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/50
+                          className="absolute top-1 right-1 w-8 h-8 min-w-[44px] min-h-[44px] rounded-full bg-black/50
                                      flex items-center justify-center text-white
                                      hover:bg-black/70 transition-colors"
                           aria-label="Supprimer la photo"
@@ -496,6 +463,26 @@ export default function ValidationPage() {
                       <line x1="12" y1="17" x2="12.01" y2="17" />
                     </svg>
                     Pas de photo — cette pièce ne sera pas générée
+                  </p>
+                )}
+
+                {/* Warning: local photo not yet persisted */}
+                {room.photoFile && (
+                  <p className="mt-2 text-xs text-[#9B9A94] flex items-center gap-1">
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                    </svg>
+                    Photo enregistrée lors de la validation
                   </p>
                 )}
               </div>

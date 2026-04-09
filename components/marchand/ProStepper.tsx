@@ -20,7 +20,7 @@
 
 const STEPS = [
   { label: "Projet", sublabel: "Upload" },
-  { label: "Extraction", sublabel: "IA" },
+  { label: "Analyse", sublabel: "Détection des pièces" },
   { label: "Validation", sublabel: "Pièces" },
   { label: "Qualification", sublabel: "Cible" },
   { label: "Recommandations", sublabel: "Architecte" },
@@ -149,7 +149,7 @@ export default function ProStepper({
       </ol>
 
       {/* Mobile : vertical compact */}
-      <ol className="flex sm:hidden flex-col gap-3 px-1">
+      <ol className="flex sm:hidden flex-col gap-1.5 px-1">
         {STEPS.map((step, i) => {
           const state = getStepState(i, currentStep, completedSteps, errorSteps);
           const isLast = i === STEPS.length - 1;
@@ -157,13 +157,13 @@ export default function ProStepper({
           return (
             <li
               key={step.label}
-              className="flex items-start gap-3"
+              className="flex items-start gap-2.5"
               aria-current={state === "active" ? "step" : undefined}
             >
               <div className="flex flex-col items-center">
-                {/* Dot */}
+                {/* Dot — w-6 h-6 au lieu de w-8 h-8 sur mobile */}
                 <div
-                  className={`flex items-center justify-center w-8 h-8 rounded-full text-xs transition-all duration-300 ${DOT_STYLES[state]}`}
+                  className={`flex items-center justify-center w-6 h-6 rounded-full text-[10px] transition-all duration-300 ${DOT_STYLES[state]}`}
                 >
                   {state === "completed" ? (
                     <CheckIcon />
@@ -173,10 +173,10 @@ export default function ProStepper({
                     <span>{i + 1}</span>
                   )}
                 </div>
-                {/* Vertical connector */}
+                {/* Vertical connector — réduit */}
                 {!isLast && (
                   <div
-                    className={`w-0.5 h-6 mt-1 transition-colors duration-300 ${
+                    className={`w-0.5 h-3 mt-0.5 transition-colors duration-300 ${
                       completedSteps.includes(i + 1)
                         ? "bg-[#7D9B76]"
                         : "bg-[#D1D0CB]"
@@ -185,15 +185,12 @@ export default function ProStepper({
                   />
                 )}
               </div>
-              {/* Label */}
-              <div className="pt-1">
+              {/* Label uniquement — sublabels masqués sur mobile */}
+              <div className="pt-0.5">
                 <span
                   className={`text-xs tracking-[0.02em] leading-4 ${LABEL_STYLES[state]}`}
                 >
                   {step.label}
-                </span>
-                <span className="block text-[11px] text-[#9B9A94] leading-[14px]">
-                  {step.sublabel}
                 </span>
               </div>
             </li>

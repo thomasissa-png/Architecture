@@ -33,11 +33,24 @@ const MAX_FILE_SIZE_MB = 20;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 const PRICE_PER_BIEN = "99€";
 
+// ─── Helpers ───────────────────────────────────────────────────────
+
+/** Vérifie si l'utilisateur connecté est abonné Pro avec crédits restants. */
+function useProStatus(session: ReturnType<typeof useSession>["data"]) {
+  const user = session?.user as
+    | (Record<string, unknown> & { role?: string; credits_remaining?: number })
+    | undefined;
+  const isPro = user?.role === "pro";
+  const creditsRemaining = typeof user?.credits_remaining === "number" ? user.credits_remaining : 0;
+  return { isPro, creditsRemaining, hasCredits: isPro && creditsRemaining > 0 };
+}
+
 // ─── Component ──────────────────────────────────────────────────────
 
 export default function NouveauProjetPage() {
   const router = useRouter();
   const { data: session, status: sessionStatus } = useSession();
+  const { isPro, hasCredits } = useProStatus(session);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form state
@@ -435,11 +448,20 @@ export default function NouveauProjetPage() {
           <div className="border-t border-[#D1D0CB]/40 pt-6">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-sm text-[#9B9A94]">Tarif par bien</p>
-                <p className="text-3xl font-bold text-[#1C1C1E] tracking-tight">
-                  {PRICE_PER_BIEN}
-                  <span className="text-sm font-normal text-[#9B9A94] ml-1">TTC</span>
+                <p className="text-sm text-[#9B9A94]">
+                  {hasCredits ? "Crédit Pro" : "Tarif par bien"}
                 </p>
+                {hasCredits ? (
+                  <p className="text-3xl font-bold text-[#7D9B76] tracking-tight">
+                    1 crédit
+                    <span className="text-sm font-normal text-[#9B9A94] ml-1">inclus dans votre abonnement</span>
+                  </p>
+                ) : (
+                  <p className="text-3xl font-bold text-[#1C1C1E] tracking-tight">
+                    {PRICE_PER_BIEN}
+                    <span className="text-sm font-normal text-[#9B9A94] ml-1">TTC</span>
+                  </p>
+                )}
               </div>
               <span className="px-3 py-1 rounded-full text-xs font-medium bg-[#1C1C1E] text-[#FAFAF8]">
                 Dossier PDF inclus
@@ -479,16 +501,34 @@ export default function NouveauProjetPage() {
                   </svg>
                   Création en cours…
                 </span>
-              ) : sessionStatus === "authenticated" ? (
-                `Payer ${PRICE_PER_BIEN} et commencer`
-              ) : (
+              ) : sessionStatus !== "authenticated" ? (
                 "Se connecter pour continuer"
+              ) : hasCredits ? (
+                "Utiliser 1 crédit Pro et commencer"
+              ) : (
+                `Payer ${PRICE_PER_BIEN} et commencer`
               )}
             </button>
 
-            <p className="text-xs text-[#9B9A94] text-center mt-3">
-              Paiement sécurisé — Remboursé si résultats non conformes
-            </p>
+            {/* Lien pricing pour les non-abonnés Pro */}
+            {sessionStatus === "authenticated" && !isPro && (
+              <p className="text-xs text-[#9B9A94] text-center mt-3">
+                {PRICE_PER_BIEN} TTC — ou{" "}
+                <a
+                  href="/pricing?buy=pro"
+                  className="text-[#7D9B76] hover:text-[#4A7A42] underline underline-offset-2
+                             transition-colors focus-visible:outline-none focus-visible:ring-2
+                             focus-visible:ring-[#7D9B76] rounded"
+                >
+                  abonnez-vous au Pro pour 29 €/mois
+                </a>
+              </p>
+            )}
+            {(sessionStatus !== "authenticated" || isPro) && (
+              <p className="text-xs text-[#9B9A94] text-center mt-3">
+                Paiement sécurisé — Remboursé si résultats non conformes
+              </p>
+            )}
           </div>
         </form>
       </main>

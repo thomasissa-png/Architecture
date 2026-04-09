@@ -273,7 +273,7 @@ export default function ExtractionPage() {
                     id: room.id,
                     name: room.name,
                     room_type: room.room_type,
-                    status: "pending",
+                    status: "validated",
                   }}
                 />
               ))}

@@ -129,7 +129,7 @@ export default function MarchandPage() {
               Tarifs
             </a>
             <a
-              href="/#outil"
+              href="/projet/nouveau"
               className="text-xs font-medium text-background bg-foreground px-4 min-h-[44px] flex items-center rounded-full hover:bg-foreground/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
             >
               Essayer
@@ -154,7 +154,7 @@ export default function MarchandPage() {
             Lien partageable acquéreurs · Sans limite de durée.
           </p>
           <a
-            href="/#outil"
+            href="/projet/nouveau"
             className="inline-flex items-center gap-2 bg-sage text-white px-8 py-3.5 rounded-full text-sm font-semibold hover:bg-sage/85 transition-all duration-200 active:scale-[0.98] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
           >
             Créer mon dossier Pro
@@ -291,7 +291,7 @@ export default function MarchandPage() {
                 <li>Téléchargement HD</li>
                 <li>Partage et comparateur</li>
               </ul>
-              <a href="/#outil" className="mt-5 text-xs font-medium text-foreground border border-foreground/15 px-4 min-h-[44px] flex items-center justify-center rounded-full hover:bg-foreground/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2">
+              <a href="/projet/nouveau" className="mt-5 text-xs font-medium text-foreground border border-foreground/15 px-4 min-h-[44px] flex items-center justify-center rounded-full hover:bg-foreground/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2">
                 Essayer
               </a>
             </div>
@@ -496,7 +496,7 @@ export default function MarchandPage() {
               S&apos;abonner au Mode Pro
             </a>
             <a
-              href="/#outil"
+              href="/projet/nouveau"
               className="inline-flex items-center justify-center gap-2 border border-foreground/15 text-foreground px-6 py-3.5 rounded-full text-sm font-medium hover:bg-foreground/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2"
             >
               Essayer gratuitement

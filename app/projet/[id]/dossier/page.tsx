@@ -84,6 +84,7 @@ export default function DossierPage() {
   const [projectAddress, setProjectAddress] = useState("");
 
   const textareaRefs = useRef<Map<string, HTMLTextAreaElement>>(new Map());
+  const pdfAutoTriggered = useRef(false);
 
   // ─── Load data ────────────────────────────────────────────────────
 
@@ -180,6 +181,20 @@ export default function DossierPage() {
     loadData();
   }, [loadData]);
 
+  // ─── Auto-generate PDF when lots are ready ────────────────────────
+
+  useEffect(() => {
+    if (pdfAutoTriggered.current) return;
+    if (pageState !== "ready") return;
+    const hasVisuals = lotDossiers.some((lot) =>
+      lot.rooms.some((r) => r.visual_output_path)
+    );
+    if (!hasVisuals) return;
+
+    pdfAutoTriggered.current = true;
+    handleGeneratePdf();
+  }, [pageState, lotDossiers]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // ─── Generate description via IA ──────────────────────────────────
 
   async function handleGenerateDescription(lotId: string) {
@@ -262,10 +277,18 @@ export default function DossierPage() {
     }
   }
 
+  // ─── Share helpers ─────────────────────────────────────────────────
+
+  /** Construit l'URL publique du dossier.
+   *  TODO: utiliser un share token (pro_share_links) au lieu du projectId brut. */
+  function getShareUrl(): string {
+    return `${window.location.origin}/dossier/${projectId}`;
+  }
+
   // ─── Share handlers ───────────────────────────────────────────────
 
   async function handleCopyLink() {
-    const url = `${window.location.origin}/dossier/${projectId}`;
+    const url = getShareUrl();
     try {
       await navigator.clipboard.writeText(url);
       setShareSuccess("Lien copié dans le presse-papier");
@@ -283,18 +306,36 @@ export default function DossierPage() {
     }
   }
 
-  function handleShareWhatsApp() {
-    const url = `${window.location.origin}/dossier/${projectId}`;
-    const text = `Dossier de pré-commercialisation — ${projectAddress || "Nouveau bien"}`;
+  async function handleShareWhatsApp() {
+    const url = getShareUrl();
+    const label = projectAddress || "Nouveau bien";
+    const text = `🏠 Dossier de pré-commercialisation — ${label}\n${url}`;
+
+    // Sur mobile, navigator.share permet la preview OG (lien enrichi)
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({
+          title: `Dossier — ${label}`,
+          text: `🏠 Dossier de pré-commercialisation — ${label}`,
+          url,
+        });
+        return;
+      } catch {
+        // L'utilisateur a annulé ou share non supporté — fallback wa.me
+      }
+    }
+
+    // Fallback desktop ou mobile sans navigator.share
     window.open(
-      `https://wa.me/?text=${encodeURIComponent(`${text}\n${url}`)}`,
+      `https://wa.me/?text=${encodeURIComponent(text)}`,
       "_blank"
     );
   }
 
   function handleShareEmail() {
-    const url = `${window.location.origin}/dossier/${projectId}`;
-    const subject = `Dossier — ${projectAddress || "Nouveau bien"}`;
+    const url = getShareUrl();
+    const label = projectAddress || "Nouveau bien";
+    const subject = `Dossier — ${label}`;
     const body = `Bonjour,\n\nVoici le dossier de pré-commercialisation :\n${url}\n\nCordialement`;
     window.open(
       `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
@@ -443,7 +484,7 @@ export default function DossierPage() {
                     <polyline points="10 9 9 9 8 9" />
                   </svg>
                 )}
-                {isGeneratingPdf ? "Génération..." : "Générer le PDF"}
+                {isGeneratingPdf ? "Génération du PDF…" : pdfUrl ? "Regénérer le PDF" : "Générer le PDF"}
               </button>
 
               {/* Download PDF (visible only if pdf exists) */}

@@ -148,7 +148,7 @@ export default function QualificationPage() {
       if (mergedLots.length === 0 && (data.rooms || []).length > 0) {
         mergedLots.push({
           id: "default",
-          name: "Lot principal",
+          name: "Votre bien",
           floor: null,
           target_buyer: null,
           style_id: null,
@@ -287,7 +287,7 @@ export default function QualificationPage() {
             Qualification des besoins
           </h1>
           <p className="text-sm text-[#9B9A94] mt-1">
-            Définissez la cible acheteur et le style pour chaque lot.
+            Définissez la cible acheteur et le style pour {lots.length <= 1 ? "votre bien" : "chaque lot"}.
             Ces informations guideront les recommandations de l&apos;architecte IA.
           </p>
         </div>
@@ -471,7 +471,7 @@ export default function QualificationPage() {
                     {lot.rooms.length > 0 && (
                       <div>
                         <h3 className="text-sm font-medium text-[#1C1C1E] mb-2">
-                          Pièces du lot
+                          {lots.length === 1 ? "Pièces du bien" : "Pièces du lot"}
                         </h3>
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                           {lot.rooms.map((room) => (
