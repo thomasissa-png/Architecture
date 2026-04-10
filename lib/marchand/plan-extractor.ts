@@ -444,7 +444,6 @@ async function callPdfExtraction(
 
   return extractTextFromResponse(response as unknown as { output: Array<{ type: string; content?: Array<{ type: string; text?: string }> }> }, "GPT-4o PDF");
 }
-}
 
 /**
  * Self-correction: send Zod validation errors back to the model for a fixed output.
