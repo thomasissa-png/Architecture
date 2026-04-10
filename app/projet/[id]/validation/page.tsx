@@ -98,7 +98,17 @@ export default function ValidationPage() {
     loadRooms();
   }, [projectId]);
 
-  // ─── Dirty tracking (no auto-save — API batch PATCH not available) ─
+  // ─── Dirty tracking + beforeunload guard ─────────────────────────
+
+  useEffect(() => {
+    function handleBeforeUnload(e: BeforeUnloadEvent) {
+      if (isDirty) {
+        e.preventDefault();
+      }
+    }
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isDirty]);
 
   // ─── Room editing ────────────────────────────────────────────────
 

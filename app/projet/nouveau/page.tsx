@@ -526,6 +526,16 @@ export default function NouveauProjetPage() {
             <p className="text-xs text-[#9B9A94] text-center mt-3">
               Gratuit pendant la bêta — Dossier PDF et visuels IA inclus
             </p>
+
+            <button
+              type="button"
+              onClick={() => router.push("/")}
+              className="w-full mt-2 py-2.5 text-sm text-[#9B9A94] hover:text-[#1C1C1E]
+                         transition-colors focus-visible:outline-none
+                         focus-visible:ring-2 focus-visible:ring-[#7D9B76] rounded-lg"
+            >
+              Annuler
+            </button>
           </div>
         </form>
       </main>

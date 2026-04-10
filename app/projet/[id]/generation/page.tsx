@@ -83,14 +83,39 @@ export default function GenerationPage() {
     return () => clearInterval(interval);
   }, [pageState]);
 
-  // ─── Trigger generation ───────────────────────────────────────────
+  // ─── Trigger generation (check status first to avoid re-triggering) ─
 
   useEffect(() => {
     if (isGenerationTriggered.current) return;
     isGenerationTriggered.current = true;
 
-    async function triggerGeneration() {
+    async function checkAndTrigger() {
       try {
+        // Check status first — if already done, show results directly
+        const statusRes = await fetch(`/api/pro/projects/${projectId}/status`);
+        if (statusRes.ok) {
+          const statusData = await statusRes.json();
+          const status = statusData.project_status || statusData.project?.status;
+          if (status) setProjectStatus(status);
+
+          if (status === "visuals_done" || status === "delivered") {
+            // Already generated — show results without re-triggering
+            setRooms(statusData.rooms || []);
+            setSummary(statusData.summary || { total: 0, done: 0, failed: 0, generating: 0, pending: 0 });
+            setPageState("complete");
+            return;
+          }
+
+          if (status === "generating") {
+            // Already in progress — just start polling
+            setRooms(statusData.rooms || []);
+            setSummary(statusData.summary || { total: 0, done: 0, failed: 0, generating: 0, pending: 0 });
+            setPageState("generating");
+            return;
+          }
+        }
+
+        // Trigger new generation
         const response = await fetch(`/api/pro/projects/${projectId}/generate`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -116,7 +141,7 @@ export default function GenerationPage() {
       }
     }
 
-    triggerGeneration();
+    checkAndTrigger();
   }, [projectId]);
 
   // ─── Poll status every 3 seconds ─────────────────────────────────

@@ -76,6 +76,7 @@ export default function RecommandationsPage() {
 
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [projectStatus, setProjectStatus] = useState<string>("qualified");
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   // ─── Map API recommendations to UI format ──────────────────────────
 
@@ -286,27 +287,39 @@ export default function RecommandationsPage() {
   // ─── Accept / Reject handlers ─────────────────────────────────────
 
   async function handleAccept(recId: string) {
+    const previousDecision = decisions.get(recId);
     setDecisions((prev) => new Map(prev).set(recId, "accepted"));
-    // Fire-and-forget: persist to DB
-    fetch(`/api/pro/projects/${projectId}/recommendations/${recId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ is_accepted: true }),
-    }).catch(() => {
-      // Non-critical — decision is in UI state
-    });
+    setSaveError(null);
+    try {
+      const res = await fetch(`/api/pro/projects/${projectId}/recommendations/${recId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_accepted: true }),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      // Revert on failure
+      setDecisions((prev) => new Map(prev).set(recId, previousDecision || "pending"));
+      setSaveError("Erreur de sauvegarde. Vérifiez votre connexion et réessayez.");
+    }
   }
 
   async function handleReject(recId: string) {
+    const previousDecision = decisions.get(recId);
     setDecisions((prev) => new Map(prev).set(recId, "rejected"));
-    // Fire-and-forget: persist to DB
-    fetch(`/api/pro/projects/${projectId}/recommendations/${recId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ is_accepted: false }),
-    }).catch(() => {
-      // Non-critical
-    });
+    setSaveError(null);
+    try {
+      const res = await fetch(`/api/pro/projects/${projectId}/recommendations/${recId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_accepted: false }),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      // Revert on failure
+      setDecisions((prev) => new Map(prev).set(recId, previousDecision || "pending"));
+      setSaveError("Erreur de sauvegarde. Vérifiez votre connexion et réessayez.");
+    }
   }
 
   // ─── Stats ────────────────────────────────────────────────────────
@@ -458,6 +471,16 @@ export default function RecommandationsPage() {
                 Retour à la qualification
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Save error toast */}
+        {saveError && (
+          <div
+            className="p-3 rounded-lg bg-[#FEF2F2] border border-[#EF4444]/20 mb-4"
+            role="alert"
+          >
+            <p className="text-sm text-[#B91C1C]">{saveError}</p>
           </div>
         )}
 
