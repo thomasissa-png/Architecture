@@ -160,7 +160,11 @@ export default function NouveauProjetPage() {
       }
     }
     if (newPreviews.size > 0) {
-      setPlanPreviewUrls((prev) => new Map([...prev, ...newPreviews]));
+      setPlanPreviewUrls((prev) => {
+        const merged = new Map(prev);
+        newPreviews.forEach((v, k) => merged.set(k, v));
+        return merged;
+      });
     }
 
     setError(null);
