@@ -96,6 +96,8 @@ export async function PUT(
     }
 
     // ─── Apply room modifications if body provided ────────────────
+    const roomIdMapping: Record<string, string> = {};
+
     if (bodyRooms) {
       // 1. Fetch existing room IDs in DB for this project
       const existingResult = await db.query<{ id: string }>(
@@ -123,11 +125,12 @@ export async function PUT(
       for (const room of bodyRooms) {
         if (room.isNew || room.id.startsWith("new-")) {
           // INSERT — new room added manually by user
-          await db.query(
+          const insertResult = await db.query(
             `INSERT INTO pro_rooms (project_id, name, room_type, surface_m2, source)
-             VALUES ($1, $2, $3, $4, 'manual')`,
+             VALUES ($1, $2, $3, $4, 'manual') RETURNING id`,
             [projectId, room.name, room.room_type, room.surface_m2]
           );
+          roomIdMapping[room.id] = insertResult.rows[0].id;
         } else {
           // UPDATE — existing room modified by user
           await db.query(
@@ -227,6 +230,7 @@ export async function PUT(
       status: "validated",
       rooms_count: rooms.length,
       lots_count: lotsCount,
+      room_id_mapping: roomIdMapping,
     });
   } catch (err) {
     console.error(`[PUT /api/pro/projects/${projectId}/validate] Error:`, err);
