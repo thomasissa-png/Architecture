@@ -66,8 +66,8 @@ export default function NouveauProjetPage() {
   const [adresse, setAdresse] = useState("");
   const [typeBien, setTypeBien] = useState("appartement");
   const [surface, setSurface] = useState("");
-  const [planFile, setPlanFile] = useState<File | null>(null);
-  const [planPreviewUrl, setPlanPreviewUrl] = useState<string | null>(null);
+  const [planFiles, setPlanFiles] = useState<File[]>([]);
+  const [planPreviewUrls, setPlanPreviewUrls] = useState<Map<string, string>>(new Map());
 
   // Address autocomplete
   const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
@@ -116,44 +116,72 @@ export default function NouveauProjetPage() {
 
   // ─── Plan file handling ───────────────────────────────────────────
 
-  const handlePlanSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  /** Generate a stable key for a File (name + size + lastModified). */
+  const fileKey = useCallback((f: File) => `${f.name}_${f.size}_${f.lastModified}`, []);
 
-    // Validate MIME type
+  const addPlanFiles = useCallback((newFiles: File[]) => {
     const allowedTypes = ACCEPTED_PLAN_TYPES.split(",");
-    if (!allowedTypes.includes(file.type)) {
-      setError("Format accepté : PDF, JPG, PNG, WEBP, HEIC.");
-      return;
+    const validFiles: File[] = [];
+
+    for (const file of newFiles) {
+      if (!allowedTypes.includes(file.type)) {
+        setError(`Format non accepté pour "${file.name}". Formats : PDF, JPG, PNG, WEBP, HEIC.`);
+        return;
+      }
+      if (file.size > MAX_FILE_SIZE_BYTES) {
+        setError(`"${file.name}" dépasse ${MAX_FILE_SIZE_MB} Mo.`);
+        return;
+      }
+      validFiles.push(file);
     }
 
-    if (file.size > MAX_FILE_SIZE_BYTES) {
-      setError(`Le fichier ne doit pas dépasser ${MAX_FILE_SIZE_MB} Mo.`);
-      return;
+    setPlanFiles((prev) => {
+      const combined = [...prev, ...validFiles];
+      if (combined.length > 10) {
+        setError("Maximum 10 fichiers de plan.");
+        return prev;
+      }
+      return combined;
+    });
+
+    // Create preview URLs for images
+    const newPreviews = new Map<string, string>();
+    for (const file of validFiles) {
+      if (file.type.startsWith("image/")) {
+        newPreviews.set(fileKey(file), URL.createObjectURL(file));
+      }
+    }
+    if (newPreviews.size > 0) {
+      setPlanPreviewUrls((prev) => new Map([...prev, ...newPreviews]));
     }
 
     setError(null);
-    setPlanFile(file);
+  }, [fileKey]);
 
-    // Preview for images (not PDF)
-    if (file.type.startsWith("image/")) {
-      const url = URL.createObjectURL(file);
-      setPlanPreviewUrl(url);
-    } else {
-      setPlanPreviewUrl(null);
-    }
-  }, []);
+  const handlePlanSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    addPlanFiles(Array.from(files));
+    // Reset input so the same file can be re-selected
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }, [addPlanFiles]);
 
-  const handleRemovePlan = useCallback(() => {
-    setPlanFile(null);
-    if (planPreviewUrl) {
-      URL.revokeObjectURL(planPreviewUrl);
-      setPlanPreviewUrl(null);
-    }
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  }, [planPreviewUrl]);
+  const handleRemovePlan = useCallback((index: number) => {
+    setPlanFiles((prev) => {
+      const file = prev[index];
+      if (file) {
+        const key = fileKey(file);
+        setPlanPreviewUrls((prevUrls) => {
+          const url = prevUrls.get(key);
+          if (url) URL.revokeObjectURL(url);
+          const next = new Map(prevUrls);
+          next.delete(key);
+          return next;
+        });
+      }
+      return prev.filter((_, i) => i !== index);
+    });
+  }, [fileKey]);
 
   // ─── Drag & drop ─────────────────────────────────────────────────
 
@@ -172,31 +200,10 @@ export default function NouveauProjetPage() {
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
-    const file = e.dataTransfer.files[0];
-    if (!file) return;
-
-    // Validate MIME type (drag & drop bypasses input accept attribute)
-    const allowedTypes = ACCEPTED_PLAN_TYPES.split(",");
-    if (!allowedTypes.includes(file.type)) {
-      setError("Format accepté : PDF, JPG, PNG, WEBP, HEIC.");
-      return;
-    }
-
-    if (file.size > MAX_FILE_SIZE_BYTES) {
-      setError(`Le fichier ne doit pas dépasser ${MAX_FILE_SIZE_MB} Mo.`);
-      return;
-    }
-
-    setError(null);
-    setPlanFile(file);
-
-    if (file.type.startsWith("image/")) {
-      const url = URL.createObjectURL(file);
-      setPlanPreviewUrl(url);
-    } else {
-      setPlanPreviewUrl(null);
-    }
-  }, []);
+    const files = e.dataTransfer.files;
+    if (!files || files.length === 0) return;
+    addPlanFiles(Array.from(files));
+  }, [addPlanFiles]);
 
   // ─── Form submission ─────────────────────────────────────────────
 
@@ -208,7 +215,7 @@ export default function NouveauProjetPage() {
       return;
     }
 
-    if (!planFile) {
+    if (planFiles.length === 0) {
       setError("Le plan du bien est obligatoire.");
       return;
     }
@@ -224,7 +231,9 @@ export default function NouveauProjetPage() {
       if (surface) {
         formData.append("surface_totale", surface);
       }
-      formData.append("plan_file", planFile);
+      for (const file of planFiles) {
+        formData.append("plan_file", file);
+      }
 
       const response = await fetch("/api/pro/projects", {
         method: "POST",
@@ -250,7 +259,7 @@ export default function NouveauProjetPage() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [session, planFile, adresse, typeBien, surface, router]);
+  }, [session, planFiles, adresse, typeBien, surface, router]);
 
   // ─── Render ──────────────────────────────────────────────────────
 
@@ -386,116 +395,139 @@ export default function NouveauProjetPage() {
             />
           </div>
 
-          {/* Plan upload */}
+          {/* Plan upload — multi-file */}
           <div>
             <label className="block text-sm font-medium text-[#1C1C1E] mb-1.5">
-              Plan du bien
+              Plans du bien
+              <span className="text-[#9B9A94] font-normal ml-1">— 1 fichier par étage</span>
             </label>
 
-            {!planFile ? (
-              <div
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-                onClick={() => fileInputRef.current?.click()}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    fileInputRef.current?.click();
-                  }
-                }}
-                className={`flex flex-col items-center justify-center gap-2 p-8 rounded-lg border-2 border-dashed
-                           cursor-pointer transition-all duration-200
-                           ${isDragOver
-                             ? "border-[#7D9B76] bg-[#7D9B76]/5"
-                             : "border-[#D1D0CB] bg-white hover:border-[#9B9A94] hover:bg-[#F5F5F0]"
-                           }
-                           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76]`}
-                aria-label="Déposer le plan du bien"
+            {/* Drop zone — always visible to allow adding more files */}
+            <div
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  fileInputRef.current?.click();
+                }
+              }}
+              className={`flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed
+                         cursor-pointer transition-all duration-200
+                         ${planFiles.length > 0 ? "p-4" : "p-8"}
+                         ${isDragOver
+                           ? "border-[#7D9B76] bg-[#7D9B76]/5"
+                           : "border-[#D1D0CB] bg-white hover:border-[#9B9A94] hover:bg-[#F5F5F0]"
+                         }
+                         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76]`}
+              aria-label="Déposer les plans du bien"
+            >
+              <svg
+                width={planFiles.length > 0 ? "20" : "32"}
+                height={planFiles.length > 0 ? "20" : "32"}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke={isDragOver ? "#7D9B76" : "#9B9A94"}
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
               >
-                <svg
-                  width="32"
-                  height="32"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke={isDragOver ? "#7D9B76" : "#9B9A94"}
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                  <polyline points="17 8 12 3 7 8" />
-                  <line x1="12" y1="3" x2="12" y2="15" />
-                </svg>
-                <span className="text-sm font-medium text-[#1C1C1E]">
-                  Déposer ou cliquer pour sélectionner
-                </span>
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg>
+              <span className="text-sm font-medium text-[#1C1C1E]">
+                {planFiles.length > 0
+                  ? "Ajouter un autre étage"
+                  : "Déposer ou cliquer pour sélectionner"}
+              </span>
+              {planFiles.length === 0 && (
                 <span className="text-xs text-[#9B9A94]">
-                  PDF, PNG, JPG — max {MAX_FILE_SIZE_MB} Mo
+                  PDF, PNG, JPG — max {MAX_FILE_SIZE_MB} Mo par fichier
                 </span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-3 p-4 rounded-lg border border-[#D1D0CB] bg-white">
-                {/* Preview */}
-                {planPreviewUrl ? (
-                  <img
-                    src={planPreviewUrl}
-                    alt="Aperçu du plan"
-                    className="w-16 h-16 rounded object-cover flex-shrink-0"
-                  />
-                ) : (
-                  <div className="w-16 h-16 rounded bg-[#F5F5F0] flex items-center justify-center flex-shrink-0">
-                    <svg
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="#9B9A94"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
+              )}
+            </div>
+
+            {/* File list */}
+            {planFiles.length > 0 && (
+              <div className="mt-3 space-y-2">
+                {planFiles.map((file, index) => {
+                  const previewUrl = planPreviewUrls.get(fileKey(file));
+                  return (
+                    <div
+                      key={fileKey(file)}
+                      className="flex items-center gap-3 p-3 rounded-lg border border-[#D1D0CB] bg-white"
                     >
-                      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-                      <polyline points="14 2 14 8 20 8" />
-                    </svg>
-                  </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-[#1C1C1E] truncate">
-                    {planFile.name}
-                  </p>
-                  <p className="text-xs text-[#9B9A94]">
-                    {(planFile.size / (1024 * 1024)).toFixed(1)} Mo
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleRemovePlan}
-                  className="flex-shrink-0 p-3 rounded-md text-[#9B9A94] hover:text-[#B91C1C]
-                             hover:bg-[#FEF2F2] transition-colors min-w-[44px] min-h-[44px]
-                             flex items-center justify-center
-                             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EF4444]"
-                  aria-label="Supprimer le plan"
-                >
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
-                </button>
+                      {/* Preview or PDF icon */}
+                      {previewUrl ? (
+                        <img
+                          src={previewUrl}
+                          alt={`Aperçu ${file.name}`}
+                          className="w-12 h-12 rounded object-cover flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded bg-[#F5F5F0] flex items-center justify-center flex-shrink-0">
+                          <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="#9B9A94"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                          >
+                            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                          </svg>
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-[#1C1C1E] truncate">
+                          {planFiles.length > 1 && (
+                            <span className="text-[#7D9B76] mr-1.5">
+                              Étage {index}{" "}—
+                            </span>
+                          )}
+                          {file.name}
+                        </p>
+                        <p className="text-xs text-[#9B9A94]">
+                          {(file.size / (1024 * 1024)).toFixed(1)} Mo
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleRemovePlan(index)}
+                        className="flex-shrink-0 p-3 rounded-md text-[#9B9A94] hover:text-[#B91C1C]
+                                   hover:bg-[#FEF2F2] transition-colors min-w-[44px] min-h-[44px]
+                                   flex items-center justify-center
+                                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EF4444]"
+                        aria-label={`Supprimer ${file.name}`}
+                      >
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
+                          <line x1="18" y1="6" x2="6" y2="18" />
+                          <line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             )}
 
@@ -504,8 +536,9 @@ export default function NouveauProjetPage() {
               type="file"
               accept={ACCEPTED_PLAN_TYPES}
               onChange={handlePlanSelect}
+              multiple
               className="hidden"
-              aria-label="Sélectionner le plan du bien"
+              aria-label="Sélectionner les plans du bien"
             />
           </div>
 
@@ -560,7 +593,7 @@ export default function NouveauProjetPage() {
 
             <button
               type="submit"
-              disabled={isSubmitting || !adresse.trim() || !planFile}
+              disabled={isSubmitting || !adresse.trim() || planFiles.length === 0}
               className="w-full py-3 px-4 rounded-lg text-sm font-semibold text-white
                          bg-[#7D9B76] hover:bg-[#4A7A42] disabled:bg-[#D1D0CB] disabled:cursor-not-allowed
                          transition-colors focus-visible:outline-none

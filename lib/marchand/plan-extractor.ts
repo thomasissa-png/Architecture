@@ -1,9 +1,14 @@
 /**
- * Extraction de plan via GPT-4.1 vision.
+ * Extraction de plan via GPT-4.1 vision (images) ou GPT-4o (PDF natif).
  *
  * Source de vérité : docs/marchand-pivot/ia/technical-architecture.md sections 1.1 et 4.1.
- * Envoie le plan (image base64) à GPT-4.1 vision via openai.responses.create,
- * retourne un JSON validé par le schema Zod PlanExtractionResult.
+ *
+ * PDF handling: GPT-4.1 ne supporte PAS les PDF en input.
+ * Quand le fichier est un PDF, on utilise GPT-4o qui supporte les PDF nativement
+ * via le type `input_file` (base64 inline). Chaque page du PDF est traitée.
+ *
+ * Multi-fichier : `extractMultiplePlans()` traite un tableau de plans (1 par étage)
+ * et fusionne les résultats avec floor auto-incrémenté.
  */
 import OpenAI from "openai";
 import {
@@ -19,6 +24,16 @@ function getOpenAI(): OpenAI {
     _openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   }
   return _openaiClient;
+}
+
+// ─── PDF detection ─────────────────────────────────────────────────
+/**
+ * Detect if a base64-encoded file is a PDF.
+ * Checks MIME type first, then magic bytes (%PDF- = JVBERi0 in base64).
+ */
+function isPdf(mimeType: string, base64Data: string): boolean {
+  if (mimeType === "application/pdf") return true;
+  return base64Data.startsWith("JVBERi0");
 }
 
 // ─── System prompt ──────────────────────────────────────────────────
@@ -138,17 +153,19 @@ export async function extractPlanData(
   const openai = getOpenAI();
   const systemPrompt = buildSystemPrompt(typeBien);
 
-  // Map MIME type to OpenAI-compatible format
-  const mediaType = mimeType.startsWith("image/")
-    ? (mimeType as "image/jpeg" | "image/png" | "image/gif" | "image/webp")
-    : "image/jpeg"; // Fallback for PDF-rendered images
+  // Detect PDF — use GPT-4o with input_file for PDFs, GPT-4.1 with input_image for images
+  const pdfMode = isPdf(mimeType, planBase64);
 
-  const dataUrl = `data:${mediaType};base64,${planBase64}`;
+  if (pdfMode) {
+    console.log("[plan-extractor] PDF detected — using GPT-4o with native PDF input");
+  }
 
   // First attempt
   let rawJson: string;
   try {
-    rawJson = await callVisionExtraction(openai, systemPrompt, dataUrl);
+    rawJson = pdfMode
+      ? await callPdfExtraction(openai, systemPrompt, planBase64)
+      : await callVisionExtraction(openai, systemPrompt, buildImageDataUrl(mimeType, planBase64));
   } catch (err) {
     // Retry once after 5s on API error
     console.warn(
@@ -157,12 +174,15 @@ export async function extractPlanData(
     );
     await sleep(5000);
     try {
-      rawJson = await callVisionExtraction(openai, systemPrompt, dataUrl);
+      rawJson = pdfMode
+        ? await callPdfExtraction(openai, systemPrompt, planBase64)
+        : await callVisionExtraction(openai, systemPrompt, buildImageDataUrl(mimeType, planBase64));
     } catch (retryErr) {
-      throw new PlanExtractionError(
-        "API_ERROR",
-        `Extraction failed after retry: ${retryErr instanceof Error ? retryErr.message : String(retryErr)}`
-      );
+      // Provide a clear error message for PDF failures
+      const reason = pdfMode
+        ? "L'extraction du PDF a échoué. Vérifiez que le fichier n'est pas protégé par mot de passe. Vous pouvez aussi réessayer en uploadant une image (JPG, PNG) du plan."
+        : `Extraction failed after retry: ${retryErr instanceof Error ? retryErr.message : String(retryErr)}`;
+      throw new PlanExtractionError("API_ERROR", reason);
     }
   }
 
@@ -186,13 +206,19 @@ export async function extractPlanData(
     validation.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`)
   );
 
+  // Build the input content for self-correction based on file type
+  const correctionInput = pdfMode
+    ? `data:application/pdf;base64,${planBase64}`
+    : buildImageDataUrl(mimeType, planBase64);
+
   try {
     const correctedJson = await callSelfCorrection(
       openai,
       systemPrompt,
-      dataUrl,
+      correctionInput,
       rawJson,
-      validation.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("\n")
+      validation.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("\n"),
+      pdfMode
     );
     const correctedParsed = JSON.parse(correctedJson);
     const correctedValidation = PlanExtractionResultSchema.safeParse(correctedParsed);
@@ -212,8 +238,111 @@ export async function extractPlanData(
   }
 }
 
+// ─── Multi-plan extraction ─────────────────────────────────────────
+
+interface PlanInput {
+  base64: string;
+  mimeType: string;
+  /** Floor index override (0 = RDC, 1 = 1er étage, etc.) */
+  floorIndex: number;
+}
+
+/**
+ * Extract rooms from multiple plan files (1 per floor/étage).
+ * Results are merged with floor numbers auto-assigned from the floorIndex of each plan.
+ * Processes plans sequentially to avoid hitting OpenAI rate limits.
+ */
+export async function extractMultiplePlans(
+  plans: PlanInput[],
+  typeBien: TypeBien
+): Promise<PlanExtractionResult> {
+  if (plans.length === 0) {
+    throw new PlanExtractionError("PLAN_UNREADABLE", "Aucun plan fourni.");
+  }
+
+  // Single plan — no merge needed
+  if (plans.length === 1) {
+    return extractPlanData(plans[0].base64, plans[0].mimeType, typeBien);
+  }
+
+  const allRooms: PlanExtractionResult["rooms"] = [];
+  const allWarnings: Set<string> = new Set();
+  let totalSurface = 0;
+  let hasAnySurface = false;
+  let scaleRef: PlanExtractionResult["scale_reference"] = "none";
+
+  // Process each plan sequentially (avoid rate limits)
+  for (const plan of plans) {
+    console.log(`[plan-extractor] Extracting floor ${plan.floorIndex} (${plan.mimeType})`);
+
+    const result = await extractPlanData(plan.base64, plan.mimeType, typeBien);
+
+    // Override floor number for each room to match the plan's floor index
+    for (const room of result.rooms) {
+      allRooms.push({
+        ...room,
+        floor: plan.floorIndex,
+        temp_id: `f${plan.floorIndex}_${room.temp_id}`,
+      });
+    }
+
+    // Merge warnings
+    for (const w of result.extraction_warnings) {
+      allWarnings.add(w);
+    }
+
+    // Accumulate surface
+    if (result.total_surface_m2 !== null) {
+      totalSurface += result.total_surface_m2;
+      hasAnySurface = true;
+    }
+
+    // Keep the best scale reference
+    if (result.scale_reference !== "none") {
+      scaleRef = result.scale_reference;
+    }
+  }
+
+  return {
+    rooms: allRooms,
+    total_surface_m2: hasAnySurface ? totalSurface : null,
+    floors_count: plans.length,
+    extraction_warnings: Array.from(allWarnings) as PlanExtractionResult["extraction_warnings"],
+    scale_reference: scaleRef,
+  };
+}
+
 // ─── Internal helpers ───────────────────────────────────────────────
 
+/**
+ * Build a data URL for image content.
+ */
+function buildImageDataUrl(mimeType: string, base64Data: string): string {
+  const mediaType = mimeType.startsWith("image/")
+    ? mimeType
+    : "image/jpeg";
+  return `data:${mediaType};base64,${base64Data}`;
+}
+
+/**
+ * Extract text from the OpenAI Responses API output.
+ */
+function extractTextFromResponse(response: { output: Array<{ type: string; content?: Array<{ type: string; text?: string }> }> }, label: string): string {
+  const textOutput = response.output.find((o) => o.type === "message");
+  if (!textOutput || textOutput.type !== "message") {
+    throw new Error(`No message output from ${label}`);
+  }
+  const msg = textOutput as { type: "message"; content: Array<{ type: string; text?: string }> };
+  const textContent = msg.content.find((c) => c.type === "output_text");
+  if (!textContent || textContent.type !== "output_text" || !textContent.text) {
+    throw new Error(`No text content in ${label} response`);
+  }
+  return textContent.text;
+}
+
+/**
+ * Call GPT-4.1 vision for image-based plan extraction.
+ */
 async function callVisionExtraction(
   openai: OpenAI,
   systemPrompt: string,
@@ -246,40 +375,34 @@ async function callVisionExtraction(
     },
   });
 
-  // Extract text output from response
-  const textOutput = response.output.find((o) => o.type === "message");
-  if (!textOutput || textOutput.type !== "message") {
-    throw new Error("No message output from GPT-4.1 vision");
-  }
-  const textContent = textOutput.content.find((c) => c.type === "output_text");
-  if (!textContent || textContent.type !== "output_text") {
-    throw new Error("No text content in GPT-4.1 vision response");
-  }
-  return textContent.text;
+  return extractTextFromResponse(response as unknown as { output: Array<{ type: string; content?: Array<{ type: string; text?: string }> }> }, "GPT-4.1 vision");
 }
 
-async function callSelfCorrection(
+/**
+ * Call GPT-4o with native PDF input for plan extraction.
+ * GPT-4.1 does NOT support PDF files — only GPT-4o does via the `input_file` type.
+ * See: https://platform.openai.com/docs/guides/pdf-files
+ */
+async function callPdfExtraction(
   openai: OpenAI,
   systemPrompt: string,
-  imageDataUrl: string,
-  previousJson: string,
-  zodErrors: string
+  pdfBase64: string
 ): Promise<string> {
   const response = await openai.responses.create({
-    model: "gpt-4.1",
+    model: "gpt-4o",
     input: [
       { role: "system", content: systemPrompt },
       {
         role: "user",
         content: [
           {
-            type: "input_image",
-            image_url: imageDataUrl,
-            detail: "high",
-          },
+            type: "input_file",
+            filename: "plan.pdf",
+            file_data: `data:application/pdf;base64,${pdfBase64}`,
+          } as Record<string, unknown>,
           {
             type: "input_text",
-            text: `Your previous output had validation errors. Fix them and return valid JSON.\n\nPrevious output:\n${previousJson}\n\nValidation errors:\n${zodErrors}`,
+            text: "Extract all rooms from this floor plan PDF. Return the JSON only.",
           },
         ],
       },
@@ -292,15 +415,60 @@ async function callSelfCorrection(
     },
   });
 
-  const textOutput = response.output.find((o) => o.type === "message");
-  if (!textOutput || textOutput.type !== "message") {
-    throw new Error("No message output from self-correction");
-  }
-  const textContent = textOutput.content.find((c) => c.type === "output_text");
-  if (!textContent || textContent.type !== "output_text") {
-    throw new Error("No text content in self-correction response");
-  }
-  return textContent.text;
+  return extractTextFromResponse(response as unknown as { output: Array<{ type: string; content?: Array<{ type: string; text?: string }> }> }, "GPT-4o PDF");
+}
+
+/**
+ * Self-correction: send Zod validation errors back to the model for a fixed output.
+ * Uses GPT-4o for PDFs, GPT-4.1 for images.
+ */
+async function callSelfCorrection(
+  openai: OpenAI,
+  systemPrompt: string,
+  dataUrl: string,
+  previousJson: string,
+  zodErrors: string,
+  pdfMode = false
+): Promise<string> {
+  const correctionText = `Your previous output had validation errors. Fix them and return valid JSON.\n\nPrevious output:\n${previousJson}\n\nValidation errors:\n${zodErrors}`;
+
+  // Build file/image content depending on mode
+  const fileContent = pdfMode
+    ? {
+        type: "input_file" as const,
+        filename: "plan.pdf",
+        file_data: dataUrl,
+      }
+    : {
+        type: "input_image" as const,
+        image_url: dataUrl,
+        detail: "high" as const,
+      };
+
+  const response = await openai.responses.create({
+    model: pdfMode ? "gpt-4o" : "gpt-4.1",
+    input: [
+      { role: "system", content: systemPrompt },
+      {
+        role: "user",
+        content: [
+          fileContent as Record<string, unknown>,
+          {
+            type: "input_text",
+            text: correctionText,
+          },
+        ],
+      },
+    ],
+    text: {
+      format: {
+        type: "json_schema",
+        ...PLAN_EXTRACTION_JSON_SCHEMA,
+      },
+    },
+  });
+
+  return extractTextFromResponse(response as unknown as { output: Array<{ type: string; content?: Array<{ type: string; text?: string }> }> }, "self-correction");
 }
 
 function sleep(ms: number): Promise<void> {

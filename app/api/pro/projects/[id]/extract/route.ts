@@ -17,7 +17,7 @@ import {
   isErrorResponse,
   checkRateLimit,
 } from "@/lib/marchand/auth-helpers";
-import { extractPlanData } from "@/lib/marchand/plan-extractor";
+import { extractMultiplePlans, PlanExtractionError } from "@/lib/marchand/plan-extractor";
 import type { TypeBien } from "@/lib/marchand/schemas";
 // TODO: import { suggestLots } from "@/lib/marchand/plan-extractor";
 
@@ -82,7 +82,7 @@ export async function POST(
   }
 
   try {
-    // ─── Load plan from Object Storage ────────────────────────────
+    // ─── Load plan(s) from Object Storage ─────────────────────────
     if (!project.plan_file_path) {
       return NextResponse.json(
         { error: "PLAN_REQUIRED", message: "Aucun plan trouvé pour ce projet." },
@@ -90,32 +90,66 @@ export async function POST(
       );
     }
 
-    let planBuffer: Buffer = Buffer.alloc(0);
-    await withStorageRetry(async (client) => {
-      const result = await client.downloadAsBytes(project.plan_file_path!);
-      if (result.value) {
-        planBuffer = Buffer.from(result.value as unknown as ArrayBuffer);
+    // plan_file_path can be a single path or JSON array of paths (multi-file)
+    let planPaths: string[];
+    let planMimeTypes: string[];
+    try {
+      const parsed = JSON.parse(project.plan_file_path);
+      if (Array.isArray(parsed)) {
+        planPaths = parsed;
+        // plan_mime_type is also a JSON array when multi-file
+        const mimes = project.plan_mime_type ? JSON.parse(project.plan_mime_type) : [];
+        planMimeTypes = Array.isArray(mimes)
+          ? mimes
+          : planPaths.map(() => project.plan_mime_type || "image/jpeg");
+      } else {
+        planPaths = [project.plan_file_path];
+        planMimeTypes = [project.plan_mime_type || "image/jpeg"];
       }
-    }, `downloadPlan(${project.plan_file_path})`);
+    } catch {
+      // Not JSON — single path string
+      planPaths = [project.plan_file_path];
+      planMimeTypes = [project.plan_mime_type || "image/jpeg"];
+    }
 
-    if (planBuffer.length === 0) {
+    // Download all plans from Object Storage
+    const planInputs: Array<{ base64: string; mimeType: string; floorIndex: number }> = [];
+
+    for (let i = 0; i < planPaths.length; i++) {
+      const path = planPaths[i];
+      let planBuffer: Buffer = Buffer.alloc(0);
+      await withStorageRetry(async (client) => {
+        const result = await client.downloadAsBytes(path);
+        if (result.value) {
+          planBuffer = Buffer.from(result.value as unknown as ArrayBuffer);
+        }
+      }, `downloadPlan(${path})`);
+
+      if (planBuffer.length === 0) {
+        console.warn(`[extract] Plan file empty or unreadable: ${path}`);
+        continue;
+      }
+
+      planInputs.push({
+        base64: planBuffer.toString("base64"),
+        mimeType: planMimeTypes[i] || "image/jpeg",
+        floorIndex: i,
+      });
+    }
+
+    if (planInputs.length === 0) {
       return NextResponse.json(
-        { error: "PLAN_UNREADABLE", message: "Impossible de lire le plan. Réuploadez-le." },
+        {
+          error: "PLAN_UNREADABLE",
+          message: "Impossible de lire le(s) plan(s). Réuploadez-les au format JPG, PNG ou PDF.",
+        },
         { status: 422 }
       );
     }
 
-    // ─── Convert to base64 for vision API ─────────────────────────
-    const mimeType = project.plan_mime_type || "image/jpeg";
-    const planBase64 = planBuffer.toString("base64");
-
-    // TODO: If PDF, render page 1 to image via sharp or pdf-lib
-    // For now, pass the raw base64 — plan-extractor will handle format
-
     // ─── Call extraction IA ───────────────────────────────────────
-    const extractionResult = await extractPlanData(
-      planBase64,
-      mimeType,
+    const extractionResult = await extractMultiplePlans(
+      planInputs,
       project.type_bien as TypeBien
     );
 
@@ -244,11 +278,33 @@ export async function POST(
       // Swallow DB error in error handler
     }
 
+    // Provide specific error messages based on the error type
+    let userMessage = "Erreur lors de l'extraction. Réessayez ou uploadez une image (JPG, PNG) du plan.";
+    let reason: string = "API_ERROR";
+
+    if (err instanceof PlanExtractionError) {
+      reason = err.reason;
+      switch (err.reason) {
+        case "API_ERROR":
+          userMessage = err.message; // Already user-friendly from plan-extractor
+          break;
+        case "PARSING_FAILED":
+          userMessage = "L'IA n'a pas pu interpréter ce plan. Essayez avec une image plus nette ou un autre format.";
+          break;
+        case "PLAN_UNREADABLE":
+          userMessage = "Le plan est illisible. Vérifiez la qualité du fichier et réessayez.";
+          break;
+        case "NO_ROOMS_DETECTED":
+          userMessage = "Aucune pièce détectée. Vérifiez que le fichier contient bien un plan architectural.";
+          break;
+      }
+    }
+
     return NextResponse.json(
       {
         status: "extraction_failed",
-        reason: "API_ERROR",
-        message: "Erreur lors de l'extraction. Réessayez.",
+        reason,
+        message: userMessage,
       },
       { status: 500 }
     );
