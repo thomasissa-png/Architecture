@@ -25,6 +25,7 @@ interface RoomStatus {
   name: string;
   room_type: string;
   lot_name: string | null;
+  style_id: string | null;
   generation_status: "pending" | "generating_pass1" | "generating_pass2" | "done" | "failed";
   visual_output_path: string | null;
   visual_pass1_path: string | null;
@@ -40,6 +41,23 @@ interface StatusSummary {
 }
 
 type PageState = "triggering" | "generating" | "complete" | "error";
+
+// ─── Style labels (hyphenated keys matching DB values) ──────────────
+
+const STYLE_LABELS: Record<string, string> = {
+  scandinavian: "Scandinave",
+  contemporary: "Contemporain",
+  industrial: "Industriel",
+  japandi: "Japandi",
+  "art-deco": "Art Déco",
+  "mid-century": "Mid-Century",
+  bohemian: "Bohème",
+  mediterranean: "Méditerranéen",
+  cosy: "Cosy Moderne",
+  "wabi-sabi": "Wabi-Sabi",
+  maximalist: "Maximaliste",
+  haussmannian: "Haussmannien",
+};
 
 // ─── Status display config ──────────────────────────────────────────
 
@@ -479,9 +497,17 @@ export default function GenerationPage() {
                         {statusConfig.label}
                       </span>
                     </div>
-                    {room.lot_name && (
-                      <p className="text-xs text-[#9B9A94] mt-0.5">{room.lot_name}</p>
-                    )}
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      {room.lot_name && (
+                        <span className="text-xs text-[#9B9A94]">{room.lot_name}</span>
+                      )}
+                      {room.style_id && (
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px]
+                                        font-medium tracking-[0.02em] bg-[#F5F5F0] text-[#9B9A94] border border-[#D1D0CB]/40">
+                          {STYLE_LABELS[room.style_id] || room.style_id}
+                        </span>
+                      )}
+                    </div>
                     {room.error && (
                       <p className="text-xs text-[#B91C1C] mt-1">{room.error}</p>
                     )}

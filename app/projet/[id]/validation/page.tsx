@@ -661,15 +661,15 @@ export default function ValidationPage() {
                   {/* Delete button */}
                   <button
                     onClick={() => deleteRoom(room.id, room.name)}
-                    className="flex-shrink-0 self-start p-1.5 rounded-md text-[#9B9A94]
+                    className="flex-shrink-0 self-start w-10 h-10 rounded-md text-[#9B9A94]
                                hover:text-[#B91C1C] hover:bg-[#FEF2F2] transition-colors
-                               min-w-[44px] min-h-[44px] flex items-center justify-center
+                               flex items-center justify-center
                                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EF4444]"
                     aria-label={`Supprimer ${room.name || "cette pièce"}`}
                   >
                     <svg
-                      width="14"
-                      height="14"
+                      width="16"
+                      height="16"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
@@ -768,47 +768,20 @@ export default function ValidationPage() {
               </div>
             )}
 
-            {/* Navigation */}
-            <div className="flex gap-3 pt-4 border-t border-[#D1D0CB]/40">
-              <button
-                onClick={() => router.back()}
-                className="py-2.5 px-4 rounded-lg border border-[#D1D0CB] bg-white
-                           text-sm font-medium text-[#1C1C1E] hover:bg-[#F5F5F0]
-                           transition-colors focus-visible:outline-none
-                           focus-visible:ring-2 focus-visible:ring-[#7D9B76]"
-              >
-                Retour
-              </button>
-              <button
-                onClick={handleSaveDraft}
-                disabled={isSavingDraft || rooms.length === 0}
-                className="py-2.5 px-4 rounded-lg border border-[#7D9B76] bg-white
-                           text-sm font-medium text-[#7D9B76] hover:bg-[#F0FDF4]
-                           disabled:opacity-50 disabled:cursor-not-allowed
-                           transition-colors focus-visible:outline-none
-                           focus-visible:ring-2 focus-visible:ring-[#7D9B76]"
-              >
-                {isSavingDraft ? (
-                  <span className="inline-flex items-center gap-2">
-                    <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
-                    Sauvegarde…
-                  </span>
-                ) : "Sauvegarder le brouillon"}
-              </button>
+            {/* Navigation — stacked on mobile, inline on sm+ */}
+            <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-[#D1D0CB]/40">
+              {/* Primary CTA first on mobile (visual order = importance) */}
               <button
                 onClick={handleValidate}
                 disabled={isValidating || rooms.length === 0}
-                className="flex-1 py-2.5 px-4 rounded-lg bg-[#7D9B76] text-white
+                className="w-full sm:w-auto sm:flex-1 order-first sm:order-last py-2.5 px-4 rounded-lg bg-[#7D9B76] text-white
                            text-sm font-medium hover:bg-[#4A7A42]
                            disabled:bg-[#D1D0CB] disabled:cursor-not-allowed
                            transition-colors focus-visible:outline-none
                            focus-visible:ring-2 focus-visible:ring-[#7D9B76] focus-visible:ring-offset-2"
               >
                 {isValidating ? (
-                  <span className="inline-flex items-center gap-2">
+                  <span className="inline-flex items-center justify-center gap-2">
                     <svg
                       className="animate-spin w-4 h-4"
                       viewBox="0 0 24 24"
@@ -835,6 +808,36 @@ export default function ValidationPage() {
                   "Valider et continuer"
                 )}
               </button>
+              <div className="flex gap-3 order-last sm:order-first">
+                <button
+                  onClick={() => router.back()}
+                  className="flex-1 sm:flex-none py-2.5 px-4 rounded-lg border border-[#D1D0CB] bg-white
+                             text-sm font-medium text-[#1C1C1E] hover:bg-[#F5F5F0]
+                             transition-colors focus-visible:outline-none
+                             focus-visible:ring-2 focus-visible:ring-[#7D9B76]"
+                >
+                  Retour
+                </button>
+                <button
+                  onClick={handleSaveDraft}
+                  disabled={isSavingDraft || rooms.length === 0}
+                  className="flex-1 sm:flex-none py-2.5 px-4 rounded-lg border border-[#7D9B76] bg-white
+                             text-sm font-medium text-[#7D9B76] hover:bg-[#F0FDF4]
+                             disabled:opacity-50 disabled:cursor-not-allowed
+                             transition-colors focus-visible:outline-none
+                             focus-visible:ring-2 focus-visible:ring-[#7D9B76]"
+                >
+                  {isSavingDraft ? (
+                    <span className="inline-flex items-center gap-2">
+                      <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      Sauvegarde…
+                    </span>
+                  ) : "Sauvegarder"}
+                </button>
+              </div>
             </div>
           </div>
         )}

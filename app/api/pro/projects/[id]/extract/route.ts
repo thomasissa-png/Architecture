@@ -176,7 +176,13 @@ export async function POST(
           "ai_extraction",
         ]
       );
-      insertedRooms.push(insertResult.rows[0]);
+      const row = insertResult.rows[0];
+      insertedRooms.push({
+        id: row.id,
+        name: row.name,
+        room_type: row.room_type,
+        surface_m2: row.surface_m2 !== null ? Number(row.surface_m2) : null,
+      });
     }
 
     // ─── Auto-assign rooms to lot for non-immeuble projects ─────

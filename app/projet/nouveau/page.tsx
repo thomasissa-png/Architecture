@@ -1,9 +1,9 @@
 "use client";
 
 /**
- * Page création projet marchand + paiement (Étape 1).
+ * Page création projet marchand (Étape 1).
  *
- * Rendu : Client Component — formulaire interactif avec upload et paiement.
+ * Rendu : Client Component — formulaire interactif avec upload de plan.
  *
  * Flow : Thomas saisit l'adresse, le type de bien, la surface,
  * uploade le plan (PDF/JPG/PNG), puis crée le projet (gratuit pendant la bêta).
