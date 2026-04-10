@@ -348,6 +348,7 @@ async function callVisionExtraction(
   systemPrompt: string,
   imageDataUrl: string
 ): Promise<string> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const response = await openai.responses.create({
     model: "gpt-4.1",
     input: [
@@ -366,14 +367,14 @@ async function callVisionExtraction(
           },
         ],
       },
-    ],
+    ] as any, // SDK types don't include input_image/input_file content types
     text: {
       format: {
         type: "json_schema",
         ...PLAN_EXTRACTION_JSON_SCHEMA,
       },
     },
-  });
+  } as any);
 
   return extractTextFromResponse(response as unknown as { output: Array<{ type: string; content?: Array<{ type: string; text?: string }> }> }, "GPT-4.1 vision");
 }
@@ -388,6 +389,7 @@ async function callPdfExtraction(
   systemPrompt: string,
   pdfBase64: string
 ): Promise<string> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const response = await openai.responses.create({
     model: "gpt-4o",
     input: [
@@ -399,21 +401,21 @@ async function callPdfExtraction(
             type: "input_file",
             filename: "plan.pdf",
             file_data: `data:application/pdf;base64,${pdfBase64}`,
-          } as Record<string, unknown>,
+          },
           {
             type: "input_text",
             text: "Extract all rooms from this floor plan PDF. Return the JSON only.",
           },
         ],
       },
-    ],
+    ] as any, // SDK types don't include input_file content type
     text: {
       format: {
         type: "json_schema",
         ...PLAN_EXTRACTION_JSON_SCHEMA,
       },
     },
-  });
+  } as any);
 
   return extractTextFromResponse(response as unknown as { output: Array<{ type: string; content?: Array<{ type: string; text?: string }> }> }, "GPT-4o PDF");
 }
@@ -445,6 +447,7 @@ async function callSelfCorrection(
         detail: "high" as const,
       };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const response = await openai.responses.create({
     model: pdfMode ? "gpt-4o" : "gpt-4.1",
     input: [
@@ -452,21 +455,21 @@ async function callSelfCorrection(
       {
         role: "user",
         content: [
-          fileContent as Record<string, unknown>,
+          fileContent,
           {
             type: "input_text",
             text: correctionText,
           },
         ],
       },
-    ],
+    ] as any, // SDK types don't include input_file/input_image content types
     text: {
       format: {
         type: "json_schema",
         ...PLAN_EXTRACTION_JSON_SCHEMA,
       },
     },
-  });
+  } as any);
 
   return extractTextFromResponse(response as unknown as { output: Array<{ type: string; content?: Array<{ type: string; text?: string }> }> }, "self-correction");
 }
