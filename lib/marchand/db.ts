@@ -167,6 +167,20 @@ export async function ensureProTables(): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_pro_share_links_lot_id ON pro_share_links(lot_id);
   `);
 
+  // ─── Migrations (additive columns on existing tables) ────────────
+  // share_token: UUID for public share link (per-project)
+  await db.query(`
+    ALTER TABLE pro_projects ADD COLUMN IF NOT EXISTS share_token TEXT UNIQUE;
+  `).catch(() => { /* column may already exist */ });
+  await db.query(`
+    CREATE INDEX IF NOT EXISTS idx_pro_projects_share_token ON pro_projects(share_token);
+  `).catch(() => { /* index may already exist */ });
+
+  // selling_price: prix de vente du bien
+  await db.query(`
+    ALTER TABLE pro_projects ADD COLUMN IF NOT EXISTS selling_price DECIMAL(12,2) CHECK (selling_price IS NULL OR selling_price > 0);
+  `).catch(() => { /* column may already exist */ });
+
   proTablesEnsured = true;
 }
 
@@ -619,4 +633,75 @@ export async function verifyProjectOwnership(
     [projectId, userId]
   );
   return parseInt(result.rows[0].count, 10) > 0;
+}
+
+// ─── Share token (project-level) ────────────────────────────────────
+
+/**
+ * Get or create a share token for a pro project.
+ * The token is a UUID that allows public (unauthenticated) access
+ * to a read-only view of the project dossier.
+ */
+export async function getOrCreateShareToken(projectId: string): Promise<string> {
+  await ensureProTables();
+  const db = getPool();
+
+  // Check if token already exists
+  const existing = await db.query<{ share_token: string | null }>(
+    `SELECT share_token FROM pro_projects WHERE id = $1`,
+    [projectId]
+  );
+
+  if (existing.rows[0]?.share_token) {
+    return existing.rows[0].share_token;
+  }
+
+  // Generate and store a new token
+  const token = crypto.randomUUID();
+  await db.query(
+    `UPDATE pro_projects SET share_token = $1, updated_at = NOW() WHERE id = $2`,
+    [token, projectId]
+  );
+
+  return token;
+}
+
+/**
+ * Fetch a pro project by its share token (public, no auth).
+ * Returns project data + lots + rooms with visuals for the public dossier view.
+ */
+export async function getProjectByShareToken(token: string): Promise<{
+  project: ProProject & { selling_price: number | null };
+  lots: Array<ProLot & { rooms: ProRoom[] }>;
+} | null> {
+  await ensureProTables();
+  const db = getPool();
+
+  const projectResult = await db.query(
+    `SELECT *, selling_price FROM pro_projects WHERE share_token = $1`,
+    [token]
+  );
+
+  if (projectResult.rows.length === 0) return null;
+
+  const project = projectResult.rows[0] as ProProject & { selling_price: number | null };
+
+  // Load lots
+  const lotsResult = await db.query<ProLot>(
+    `SELECT * FROM pro_lots WHERE project_id = $1 ORDER BY floor ASC, name ASC`,
+    [project.id]
+  );
+
+  // Load rooms for each lot
+  const lotsWithRooms = await Promise.all(
+    lotsResult.rows.map(async (lot) => {
+      const roomsResult = await db.query<ProRoom>(
+        `SELECT * FROM pro_rooms WHERE lot_id = $1 ORDER BY name ASC`,
+        [lot.id]
+      );
+      return { ...lot, rooms: roomsResult.rows };
+    })
+  );
+
+  return { project, lots: lotsWithRooms };
 }
