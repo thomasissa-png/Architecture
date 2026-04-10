@@ -51,6 +51,7 @@ export default function ValidationPage() {
   const [rooms, setRooms] = useState<RoomEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isValidating, setIsValidating] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
@@ -135,14 +136,68 @@ export default function ValidationPage() {
 
   // ─── Validate and continue ───────────────────────────────────────
 
+  // ─── Upload a single room photo to the server ────────────────────
+  const uploadRoomPhoto = useCallback(
+    async (roomId: string, file: File): Promise<boolean> => {
+      const formData = new FormData();
+      formData.append("photo", file);
+      const res = await fetch(
+        `/api/pro/projects/${projectId}/rooms/${roomId}/photo`,
+        { method: "POST", body: formData }
+      );
+      return res.ok;
+    },
+    [projectId]
+  );
+
   const handleValidate = useCallback(async () => {
     setIsValidating(true);
+    setUploadProgress(null);
     setValidationErrors([]);
     setError(null);
 
     try {
+      // ── Phase 1 : upload photos des pièces EXISTANTES (avant validate) ─
+      const existingWithPhoto = rooms.filter(
+        (r) => r.photoFile && !r.id.startsWith("new-")
+      );
+      const newWithPhoto = rooms.filter(
+        (r) => r.photoFile && r.id.startsWith("new-")
+      );
+      const totalUploads = existingWithPhoto.length + newWithPhoto.length;
+      let uploadedCount = 0;
+
+      for (const room of existingWithPhoto) {
+        uploadedCount++;
+        setUploadProgress(
+          `Upload photo ${uploadedCount}/${totalUploads}…`
+        );
+        const ok = await uploadRoomPhoto(room.id, room.photoFile!);
+        if (!ok) {
+          setError(
+            `Échec de l'upload de la photo pour « ${room.name || "pièce"} ». Réessayez.`
+          );
+          return;
+        }
+      }
+
+      // ── Phase 2 : appel PUT /validate (crée les nouvelles pièces) ──
+      setUploadProgress(
+        totalUploads > 0 ? "Validation en cours…" : null
+      );
+
       const response = await fetch(`/api/pro/projects/${projectId}/validate`, {
         method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          rooms: rooms.map((r) => ({
+            id: r.id,
+            name: r.name,
+            room_type: r.room_type,
+            surface_m2: r.surface_m2,
+            isNew: r.isNew || false,
+          })),
+        }),
       });
 
       const data = await response.json();
@@ -156,14 +211,41 @@ export default function ValidationPage() {
         return;
       }
 
+      // ── Phase 3 : upload photos des pièces NOUVELLES (après validate) ─
+      // Le validate retourne un mapping old_id → new_id pour les pièces créées
+      const idMapping: Record<string, string> = data.room_id_mapping || {};
+
+      for (const room of newWithPhoto) {
+        const realId = idMapping[room.id];
+        if (!realId) {
+          console.warn(
+            `[validation] Pas de mapping d'ID pour la pièce « ${room.name} » (${room.id}) — photo non uploadée`
+          );
+          continue;
+        }
+        uploadedCount++;
+        setUploadProgress(
+          `Upload photo ${uploadedCount}/${totalUploads}…`
+        );
+        const ok = await uploadRoomPhoto(realId, room.photoFile!);
+        if (!ok) {
+          // Non bloquant : la validation est déjà faite, on log l'erreur
+          console.error(
+            `[validation] Échec upload photo pour nouvelle pièce « ${room.name} » (${realId})`
+          );
+        }
+      }
+
       // Success — navigate to qualification (step 4)
+      isDirty.current = false;
       router.push(`/projet/${projectId}/qualification`);
     } catch {
       setError("Erreur de connexion. Vérifiez votre réseau.");
     } finally {
       setIsValidating(false);
+      setUploadProgress(null);
     }
-  }, [projectId, router]);
+  }, [projectId, router, rooms, uploadRoomPhoto]);
 
   // ─── Stats ───────────────────────────────────────────────────────
 
@@ -559,7 +641,7 @@ export default function ValidationPage() {
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                       />
                     </svg>
-                    Validation…
+                    {uploadProgress || "Validation…"}
                   </span>
                 ) : (
                   "Valider et continuer"

@@ -4,12 +4,19 @@
  * Rendu : SSR (force-dynamic) — données utilisateur authentifié.
  *
  * Auth + ownership obligatoires.
+ * Accepte un body JSON optionnel { rooms: [...] } pour sauvegarder les
+ * modifications de pièces (nom, type, surface) avant validation.
+ * - id commençant par "new-" → INSERT (pièce ajoutée manuellement)
+ * - id existant → UPDATE name, room_type, surface_m2
+ * - id en DB mais absent du body → DELETE (pièce supprimée par l'utilisateur)
+ *
  * Vérifie que toutes les pièces ont un nom et un room_type.
  * Si immeuble : vérifie que chaque pièce est assignée à un lot.
  * Passe le projet en status 'validated'.
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { getPool } from "@/lib/db";
 import { ensureProTables } from "@/lib/marchand/db";
 import {
@@ -18,6 +25,23 @@ import {
 } from "@/lib/marchand/auth-helpers";
 
 export const dynamic = "force-dynamic";
+
+// ─── Zod schema for request body ────────────────────────────────────
+
+const RoomInputSchema = z.object({
+  id: z.string().min(1),
+  name: z.string(),
+  room_type: z.enum([
+    "salon", "cuisine", "chambre", "sdb", "wc",
+    "bureau", "couloir", "cave", "autre",
+  ]),
+  surface_m2: z.number().positive().max(999).nullable(),
+  isNew: z.boolean().optional().default(false),
+});
+
+const ValidateBodySchema = z.object({
+  rooms: z.array(RoomInputSchema).min(1, "Au moins une pièce est requise."),
+});
 
 // ─── PUT handler ────────────────────────────────────────────────────
 
@@ -49,7 +73,74 @@ export async function PUT(
   try {
     const db = getPool();
 
-    // ─── Fetch all rooms for this project ─────────────────────────
+    // ─── Parse body (rooms modifications) ─────────────────────────
+    let bodyRooms: z.infer<typeof ValidateBodySchema>["rooms"] | null = null;
+
+    const contentType = request.headers.get("content-type") || "";
+    if (contentType.includes("application/json")) {
+      const rawBody = await request.json();
+      if (rawBody && rawBody.rooms) {
+        const parseResult = ValidateBodySchema.safeParse(rawBody);
+        if (!parseResult.success) {
+          return NextResponse.json(
+            {
+              error: "VALIDATION_ERROR",
+              message: "Données de pièces invalides.",
+              details: parseResult.error.flatten().fieldErrors,
+            },
+            { status: 400 }
+          );
+        }
+        bodyRooms = parseResult.data.rooms;
+      }
+    }
+
+    // ─── Apply room modifications if body provided ────────────────
+    if (bodyRooms) {
+      // 1. Fetch existing room IDs in DB for this project
+      const existingResult = await db.query<{ id: string }>(
+        `SELECT id FROM pro_rooms WHERE project_id = $1`,
+        [projectId]
+      );
+      const existingIds = new Set(existingResult.rows.map((r) => r.id));
+
+      // 2. Collect IDs sent by client (excluding new rooms)
+      const sentIds = new Set(
+        bodyRooms.filter((r) => !r.isNew && !r.id.startsWith("new-")).map((r) => r.id)
+      );
+
+      // 3. DELETE rooms that exist in DB but are absent from body
+      for (const existingId of Array.from(existingIds)) {
+        if (!sentIds.has(existingId)) {
+          await db.query(
+            `DELETE FROM pro_rooms WHERE id = $1 AND project_id = $2`,
+            [existingId, projectId]
+          );
+        }
+      }
+
+      // 4. UPDATE or INSERT each room from body
+      for (const room of bodyRooms) {
+        if (room.isNew || room.id.startsWith("new-")) {
+          // INSERT — new room added manually by user
+          await db.query(
+            `INSERT INTO pro_rooms (project_id, name, room_type, surface_m2, source)
+             VALUES ($1, $2, $3, $4, 'manual')`,
+            [projectId, room.name, room.room_type, room.surface_m2]
+          );
+        } else {
+          // UPDATE — existing room modified by user
+          await db.query(
+            `UPDATE pro_rooms
+             SET name = $1, room_type = $2, surface_m2 = $3
+             WHERE id = $4 AND project_id = $5`,
+            [room.name, room.room_type, room.surface_m2, room.id, projectId]
+          );
+        }
+      }
+    }
+
+    // ─── Fetch all rooms for validation checks ────────────────────
     const roomsResult = await db.query(
       `SELECT id, name, room_type, lot_id FROM pro_rooms WHERE project_id = $1`,
       [projectId]
