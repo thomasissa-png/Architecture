@@ -11,6 +11,15 @@
  */
 
 import { useState, useRef, useCallback } from "react";
+
+// ─── Address autocomplete types ──────────────────────────────────
+interface AddressSuggestion {
+  label: string;
+  postcode: string;
+  city: string;
+  lat: number;
+  lon: number;
+}
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Header from "@/components/Header";
@@ -60,11 +69,50 @@ export default function NouveauProjetPage() {
   const [planFile, setPlanFile] = useState<File | null>(null);
   const [planPreviewUrl, setPlanPreviewUrl] = useState<string | null>(null);
 
+  // Address autocomplete
+  const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+
   // UI state
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   const [showAuthModal, setShowAuthModal] = useState(false);
+
+  // ─── Address autocomplete with debounce ────────────────────────────
+
+  const handleAddressInput = (value: string) => {
+    setAdresse(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    if (value.length < 3) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `/api/merchant/enrich-property?q=${encodeURIComponent(value)}`
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setSuggestions(data.suggestions || []);
+          setShowSuggestions(true);
+        }
+      } catch (err) {
+        console.error("Erreur autocomplétion adresse:", err);
+      }
+    }, 300);
+  };
+
+  const selectSuggestion = (s: AddressSuggestion) => {
+    setAdresse(s.label);
+    setSuggestions([]);
+    setShowSuggestions(false);
+  };
 
   // ─── Plan file handling ───────────────────────────────────────────
 
@@ -228,8 +276,8 @@ export default function NouveauProjetPage() {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Adresse */}
-          <div>
+          {/* Adresse avec autocomplétion */}
+          <div className="relative">
             <label
               htmlFor="adresse"
               className="block text-sm font-medium text-[#1C1C1E] mb-1.5"
@@ -239,17 +287,44 @@ export default function NouveauProjetPage() {
             <input
               id="adresse"
               type="text"
+              role="combobox"
               value={adresse}
-              onChange={(e) => setAdresse(e.target.value)}
+              onChange={(e) => handleAddressInput(e.target.value)}
+              onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 300)}
               placeholder="Ex : 12 rue de la Paix, 33000 Bordeaux"
               required
               minLength={5}
               maxLength={200}
+              aria-expanded={showSuggestions && suggestions.length > 0}
+              aria-controls="nouveau-address-suggestions-listbox"
+              aria-autocomplete="list"
               className="w-full px-3 py-2.5 rounded-lg border border-[#D1D0CB] bg-white
                          text-sm text-[#1C1C1E] placeholder-[#9B9A94]
                          focus:outline-none focus:ring-2 focus:ring-[#7D9B76] focus:border-transparent
                          transition-shadow"
             />
+            {showSuggestions && suggestions.length > 0 && (
+              <div
+                id="nouveau-address-suggestions-listbox"
+                role="listbox"
+                className="absolute top-full left-0 right-0 z-10 mt-1 bg-white border border-[#D1D0CB] rounded-lg shadow-lg overflow-hidden"
+              >
+                {suggestions.map((s, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    role="option"
+                    aria-selected={false}
+                    onMouseDown={() => selectSuggestion(s)}
+                    className="w-full text-left text-sm font-light px-3 py-2.5 min-h-[44px] flex items-center
+                               text-[#1C1C1E] hover:bg-[#F0F0ED] transition-colors"
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            )}
             {fieldErrors.adresse && (
               <p className="mt-1 text-xs text-[#B91C1C]" role="alert">
                 {fieldErrors.adresse[0]}
