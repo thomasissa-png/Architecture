@@ -110,6 +110,28 @@ export default function ValidationPage() {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [isDirty]);
 
+  // ─── Track blob URLs for cleanup (Fix P1 fuite mémoire) ──────────
+
+  const blobUrlsRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    // Collecter les nouvelles blob URLs
+    rooms.forEach((room) => {
+      if (room.photoUrl?.startsWith("blob:")) {
+        blobUrlsRef.current.add(room.photoUrl);
+      }
+    });
+  }, [rooms]);
+
+  useEffect(() => {
+    const ref = blobUrlsRef;
+    return () => {
+      // Au démontage, révoquer toutes les blob URLs pour libérer la mémoire
+      ref.current.forEach((url) => URL.revokeObjectURL(url));
+      ref.current.clear();
+    };
+  }, []);
+
   // ─── Room editing ────────────────────────────────────────────────
 
   const updateRoom = useCallback((roomId: string, field: keyof RoomEntry, value: string | number | null) => {
@@ -278,6 +300,21 @@ export default function ValidationPage() {
     setError(null);
 
     try {
+      // ── Phase 1 : uploader les photos des pièces EXISTANTES ────
+      const existingWithPhoto = rooms.filter(
+        (r) => r.photoFile && !r.id.startsWith("new-")
+      );
+      for (const room of existingWithPhoto) {
+        const ok = await uploadRoomPhoto(room.id, room.photoFile!);
+        if (!ok) {
+          setError(
+            `Échec de l'upload de la photo pour « ${room.name || "pièce"} ». Réessayez.`
+          );
+          return;
+        }
+      }
+
+      // ── Phase 2 : sauvegarder le brouillon (crée les nouvelles pièces) ──
       const response = await fetch(`/api/pro/projects/${projectId}/draft`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -299,16 +336,40 @@ export default function ValidationPage() {
       }
 
       const data = await response.json();
+      const idMapping: Record<string, string> = data.room_id_mapping || {};
 
-      // Update room IDs for newly created rooms
-      if (data.room_id_mapping) {
-        setRooms((prev) =>
-          prev.map((r) => {
-            const newId = data.room_id_mapping[r.id];
-            return newId ? { ...r, id: newId, isNew: false } : r;
-          })
-        );
+      // ── Phase 3 : uploader les photos des pièces NOUVELLES ────
+      const newWithPhoto = rooms.filter(
+        (r) => r.photoFile && r.id.startsWith("new-")
+      );
+      for (const room of newWithPhoto) {
+        const realId = idMapping[room.id];
+        if (!realId) {
+          console.warn(
+            `[draft] Pas de mapping d'ID pour « ${room.name} » (${room.id}) — photo non uploadée`
+          );
+          continue;
+        }
+        const ok = await uploadRoomPhoto(realId, room.photoFile!);
+        if (!ok) {
+          console.error(
+            `[draft] Échec upload photo pour nouvelle pièce « ${room.name} » (${realId})`
+          );
+        }
       }
+
+      // ── Phase 4 : mettre à jour le state local ────────────────
+      setRooms((prev) =>
+        prev.map((r) => {
+          const newId = idMapping[r.id];
+          const updatedRoom = newId ? { ...r, id: newId, isNew: false } : r;
+          // Effacer photoFile car la photo est maintenant persistée côté serveur
+          if (updatedRoom.photoFile) {
+            return { ...updatedRoom, photoFile: null };
+          }
+          return updatedRoom;
+        })
+      );
 
       setIsDirty(false);
       setDraftSaved(true);
@@ -318,7 +379,7 @@ export default function ValidationPage() {
     } finally {
       setIsSavingDraft(false);
     }
-  }, [projectId, rooms]);
+  }, [projectId, rooms, uploadRoomPhoto]);
 
   // ─── Stats ───────────────────────────────────────────────────────
 
@@ -440,9 +501,24 @@ export default function ValidationPage() {
                           className="w-full h-full object-cover"
                         />
                         <button
-                          onClick={() => {
+                          onClick={async () => {
                             if (room.photoUrl?.startsWith("blob:")) {
                               URL.revokeObjectURL(room.photoUrl);
+                            }
+                            // Si la photo est stockée côté serveur, supprimer via DELETE
+                            if (
+                              room.photoUrl &&
+                              !room.photoUrl.startsWith("blob:") &&
+                              !room.id.startsWith("new-")
+                            ) {
+                              try {
+                                await fetch(
+                                  `/api/pro/projects/${projectId}/rooms/${room.id}/photo`,
+                                  { method: "DELETE" }
+                                );
+                              } catch {
+                                // Non bloquant : on supprime localement même si le serveur échoue
+                              }
                             }
                             setRooms((prev) =>
                               prev.map((r) =>
@@ -451,6 +527,7 @@ export default function ValidationPage() {
                                   : r
                               )
                             );
+                            setIsDirty(true);
                           }}
                           className="absolute top-1 right-1 w-8 h-8 min-w-[44px] min-h-[44px] rounded-full bg-black/50
                                      flex items-center justify-center text-white

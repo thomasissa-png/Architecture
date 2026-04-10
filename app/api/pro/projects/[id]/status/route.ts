@@ -98,6 +98,8 @@ export async function GET(
 
     return NextResponse.json({
       project_status: project.status,
+      project_adresse: project.adresse || null,
+      project_type_bien: project.type_bien || null,
       summary: { total, done, failed, generating, pending },
       rooms,
     });

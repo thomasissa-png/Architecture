@@ -91,7 +91,8 @@ export async function POST(
   await ensureProTables();
 
   // ─── Status check ──────────────────────────────────────────────
-  const allowedStatuses = ["validated", "qualified", "plan_final"];
+  // Allow "visuals_done" for retry-per-room (some rooms failed, others done)
+  const allowedStatuses = ["validated", "qualified", "plan_final", "visuals_done"];
   if (!allowedStatuses.includes(project.status)) {
     return NextResponse.json(
       {
