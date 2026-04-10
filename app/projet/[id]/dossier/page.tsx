@@ -294,9 +294,9 @@ export default function DossierPage() {
   // ─── Share helpers ─────────────────────────────────────────────────
 
   /** Construit l'URL publique du dossier.
-   *  TODO: utiliser un share token (pro_share_links) au lieu du projectId brut. */
+   *  TODO: implémenter une page publique /projet/[id]/partage avec vérification share token. */
   function getShareUrl(): string {
-    return `${window.location.origin}/dossier/${projectId}`;
+    return `${window.location.origin}/projet/${projectId}/dossier`;
   }
 
   // ─── Share handlers ───────────────────────────────────────────────

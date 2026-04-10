@@ -60,11 +60,14 @@ export async function PUT(
   await ensureProTables();
 
   // ─── Status check ──────────────────────────────────────────────
-  if (project.status !== "extraction_done") {
+  // Accept extraction_done (normal flow), extraction_failed (manual room entry),
+  // and plan_uploaded (user skips extraction to enter rooms manually)
+  const validStatuses = ["extraction_done", "extraction_failed", "plan_uploaded"];
+  if (!validStatuses.includes(project.status)) {
     return NextResponse.json(
       {
         error: "INVALID_STATUS",
-        message: "La validation n'est possible qu'après l'extraction du plan.",
+        message: "La validation n'est possible qu'après l'upload du plan.",
       },
       { status: 409 }
     );
