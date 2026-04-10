@@ -501,7 +501,7 @@ export default function RecommandationsPage() {
 
         {/* Recommendations by lot */}
         {pageState === "ready" && (
-          <div className="space-y-8">
+          <div className="space-y-8 pb-24">
             {lotRecommendations.map((lotRec) => (
               <section key={lotRec.lot_id}>
                 {/* Lot header */}

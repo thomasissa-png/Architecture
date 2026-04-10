@@ -78,6 +78,14 @@ const STYLE_OPTIONS = [
 
 // getCompletedSteps imported from lib/constants.ts
 
+const TYPE_BIEN_LABELS: Record<string, string> = {
+  appartement: "Appartement",
+  maison: "Maison",
+  immeuble: "Immeuble",
+  bureaux: "Bureaux",
+  local_commercial: "Local commercial",
+};
+
 // ─── Component ──────────────────────────────────────────────────────
 
 export default function QualificationPage() {
@@ -92,6 +100,21 @@ export default function QualificationPage() {
   const [error, setError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [projectStatus, setProjectStatus] = useState<string>("validated");
+  const [projectAdresse, setProjectAdresse] = useState<string | null>(null);
+  const [projectTypeBien, setProjectTypeBien] = useState<string | null>(null);
+  const [totalRooms, setTotalRooms] = useState<number>(0);
+  const [isDirty, setIsDirty] = useState(false);
+
+  // ─── beforeunload guard (unsaved changes) ─────────────────────────
+
+  useEffect(() => {
+    if (!isDirty) return;
+    function handleBeforeUnload(e: BeforeUnloadEvent) {
+      e.preventDefault();
+    }
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isDirty]);
 
   // ─── Load lots and rooms from project ────────────────────────────
 
@@ -110,10 +133,11 @@ export default function QualificationPage() {
 
       const data = await response.json();
 
-      // Track project status for dynamic stepper
-      if (data.project?.status) {
-        setProjectStatus(data.project.status);
-      }
+      // Track project info for stepper + recap banner
+      if (data.project_status) setProjectStatus(data.project_status);
+      if (data.project_adresse) setProjectAdresse(data.project_adresse);
+      if (data.project_type_bien) setProjectTypeBien(data.project_type_bien);
+      if (data.summary?.total) setTotalRooms(data.summary.total);
 
       // Fetch lots separately for qualification fields
       const lotsResponse = await fetch(`/api/pro/projects/${projectId}/lots`);
@@ -204,6 +228,7 @@ export default function QualificationPage() {
       return next;
     });
     setSaveSuccess(false);
+    setIsDirty(true);
   }
 
   // ─── Validate & Save ─────────────────────────────────────────────
@@ -258,6 +283,7 @@ export default function QualificationPage() {
       }
 
       setSaveSuccess(true);
+      setIsDirty(false);
 
       // Redirect to recommendations after delay (1500ms for visual confirmation)
       setTimeout(() => {
@@ -285,6 +311,59 @@ export default function QualificationPage() {
             projectId={projectId}
           />
         </div>
+
+        {/* Project recap banner */}
+        {(projectAdresse || projectTypeBien) && (
+          <div className="mb-6 rounded-lg bg-[#1C1C1E]/[0.03] border border-[#D1D0CB]/40 p-4">
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-sm text-[#1C1C1E]">
+              {projectAdresse && (
+                <span className="flex items-center gap-1.5">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                    className="text-[#9B9A94] flex-shrink-0"
+                  >
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+                    <circle cx="12" cy="10" r="3" />
+                  </svg>
+                  {projectAdresse}
+                </span>
+              )}
+              {projectTypeBien && (
+                <span className="flex items-center gap-1.5">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                    className="text-[#9B9A94] flex-shrink-0"
+                  >
+                    <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                    <polyline points="9 22 9 12 15 12 15 22" />
+                  </svg>
+                  {TYPE_BIEN_LABELS[projectTypeBien] || projectTypeBien}
+                </span>
+              )}
+              {totalRooms > 0 && (
+                <span className="flex items-center gap-1.5 text-[#9B9A94]">
+                  {totalRooms} pièce{totalRooms > 1 ? "s" : ""}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Page title */}
         <div className="mb-6">

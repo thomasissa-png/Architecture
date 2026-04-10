@@ -6,8 +6,8 @@
  * Rendu : Client Component — formulaire interactif avec upload et paiement.
  *
  * Flow : Thomas saisit l'adresse, le type de bien, la surface,
- * uploade le plan (PDF/JPG/PNG), puis paie 99€ (ou utilise un crédit Pro).
- * Après paiement : redirect vers /projet/[id]/extraction.
+ * uploade le plan (PDF/JPG/PNG), puis crée le projet (gratuit pendant la bêta).
+ * Après création : redirect vers /projet/[id]/extraction.
  */
 
 import { useState, useRef, useCallback } from "react";

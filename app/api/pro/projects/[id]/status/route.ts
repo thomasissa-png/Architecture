@@ -100,6 +100,7 @@ export async function GET(
       project_status: project.status,
       project_adresse: project.adresse || null,
       project_type_bien: project.type_bien || null,
+      project_plan_path: project.plan_file_path || null,
       summary: { total, done, failed, generating, pending },
       rooms,
     });

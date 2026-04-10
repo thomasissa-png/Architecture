@@ -56,6 +56,7 @@ export default function ValidationPage() {
   const [error, setError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [projectStatus, setProjectStatus] = useState<string>("extraction_done");
+  const [projectAdresse, setProjectAdresse] = useState<string | null>(null);
 
   const fileInputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
   const [isDirty, setIsDirty] = useState(false);
@@ -73,8 +74,11 @@ export default function ValidationPage() {
           return;
         }
         const data = await response.json();
-        if (data.project?.status) {
-          setProjectStatus(data.project.status);
+        if (data.project_status) {
+          setProjectStatus(data.project_status);
+        }
+        if (data.project_adresse) {
+          setProjectAdresse(data.project_adresse);
         }
         const loadedRooms: RoomEntry[] = (data.rooms || []).map(
           (r: { id: string; name: string; room_type: string; surface_m2?: number | null; photo_path?: string | null }) => ({
@@ -407,6 +411,9 @@ export default function ValidationPage() {
           <h1 className="text-2xl font-bold text-[#1C1C1E] tracking-tight">
             Vérifiez les pièces de votre bien
           </h1>
+          {projectAdresse && (
+            <p className="text-sm text-[#9B9A94] mt-0.5">{projectAdresse}</p>
+          )}
           <p className="text-sm text-[#9B9A94] mt-1">
             Corrigez les noms, types et surfaces si nécessaire. Associez une photo à chaque pièce.
           </p>
@@ -529,14 +536,14 @@ export default function ValidationPage() {
                             );
                             setIsDirty(true);
                           }}
-                          className="absolute top-1 right-1 w-8 h-8 min-w-[44px] min-h-[44px] rounded-full bg-black/50
+                          className="absolute top-1 right-1 w-7 h-7 rounded-full bg-black/50
                                      flex items-center justify-center text-white
                                      hover:bg-black/70 transition-colors"
                           aria-label="Supprimer la photo"
                         >
                           <svg
-                            width="10"
-                            height="10"
+                            width="14"
+                            height="14"
                             viewBox="0 0 24 24"
                             fill="none"
                             stroke="currentColor"

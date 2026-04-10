@@ -220,7 +220,7 @@ export default function RecommendationCard({
         <div className="flex gap-2">
           <button
             onClick={() => onAccept(recommendation.id)}
-            className="flex-1 py-2 px-3 rounded-md text-sm font-medium
+            className="flex-1 min-h-[44px] py-2 px-3 rounded-md text-sm font-medium
                        bg-[#7D9B76] text-white hover:bg-[#4A7A42]
                        transition-colors focus-visible:outline-none
                        focus-visible:ring-2 focus-visible:ring-[#7D9B76] focus-visible:ring-offset-2"
@@ -229,7 +229,7 @@ export default function RecommendationCard({
           </button>
           <button
             onClick={() => onReject(recommendation.id)}
-            className="flex-1 py-2 px-3 rounded-md text-sm font-medium
+            className="flex-1 min-h-[44px] py-2 px-3 rounded-md text-sm font-medium
                        bg-[#FEF2F2] text-[#B91C1C] hover:bg-[#FEE2E2]
                        transition-colors focus-visible:outline-none
                        focus-visible:ring-2 focus-visible:ring-[#EF4444] focus-visible:ring-offset-2"

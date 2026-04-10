@@ -40,6 +40,8 @@ export default function ExtractionPage() {
   const [rooms, setRooms] = useState<ExtractedRoom[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [projectAdresse, setProjectAdresse] = useState<string | null>(null);
+  const [planPath, setPlanPath] = useState<string | null>(null);
 
   // ─── Timer for loading state ──────────────────────────────────────
 
@@ -101,7 +103,9 @@ export default function ExtractionPage() {
         const res = await fetch(`/api/pro/projects/${projectId}/status`);
         if (res.ok) {
           const data = await res.json();
-          const status = data.project?.status;
+          const status = data.project_status;
+          if (data.project_adresse) setProjectAdresse(data.project_adresse);
+          if (data.project_plan_path) setPlanPath(data.project_plan_path);
           // If already past extraction, redirect immediately without loading flash
           if (status && status !== "plan_uploaded" && status !== "extraction_failed") {
             router.replace(`/projet/${projectId}/validation`);
@@ -149,6 +153,9 @@ export default function ExtractionPage() {
           <h1 className="text-2xl font-bold text-[#1C1C1E] tracking-tight">
             Extraction du plan
           </h1>
+          {projectAdresse && (
+            <p className="text-sm text-[#9B9A94] mt-0.5">{projectAdresse}</p>
+          )}
           <p className="text-sm text-[#9B9A94] mt-1">
             L&apos;IA analyse votre plan pour détecter les pièces et leurs dimensions.
           </p>
@@ -157,24 +164,32 @@ export default function ExtractionPage() {
         {/* Loading state */}
         {state === "loading" && (
           <div className="flex flex-col items-center justify-center py-16 gap-4">
-            {/* Scan animation */}
+            {/* Scan animation with plan thumbnail */}
             <div className="relative w-48 h-48 rounded-lg bg-[#F5F5F0] overflow-hidden">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <svg
-                  width="48"
-                  height="48"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#D1D0CB"
-                  strokeWidth="1"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <rect x="3" y="3" width="18" height="18" rx="2" />
-                  <path d="M9 3v18M3 9h18M3 15h18M15 3v18" />
-                </svg>
-              </div>
+              {planPath ? (
+                <img
+                  src={`/api/logs/image?path=${encodeURIComponent(planPath)}`}
+                  alt="Plan du bien en cours d'analyse"
+                  className="w-full h-full object-contain opacity-60"
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <svg
+                    width="48"
+                    height="48"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#D1D0CB"
+                    strokeWidth="1"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                    <path d="M9 3v18M3 9h18M3 15h18M15 3v18" />
+                  </svg>
+                </div>
+              )}
               {/* Scan line */}
               <div
                 className="absolute left-0 right-0 h-0.5 bg-[#3B82F6] animate-[scanLine_2s_ease-in-out_infinite]"
@@ -293,6 +308,7 @@ export default function ExtractionPage() {
                     id: room.id,
                     name: room.name,
                     room_type: room.room_type,
+                    surface_m2: room.surface_m2,
                     status: "validated",
                   }}
                 />
