@@ -18,6 +18,66 @@ import { z } from "zod";
 
 export const dynamic = "force-dynamic";
 
+// ─── GET handler ────────────────────────────────────────────────────
+
+export async function GET() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return NextResponse.json(
+      { error: "UNAUTHENTICATED", message: "Connexion requise." },
+      { status: 401 }
+    );
+  }
+
+  try {
+    await ensureProTables();
+    const db = getPool();
+
+    // Fetch all projects for this user
+    const projectsResult = await db.query(
+      `SELECT id, adresse, type_bien, status, created_at, updated_at
+       FROM pro_projects
+       WHERE user_id = $1
+       ORDER BY updated_at DESC`,
+      [session.user.id]
+    );
+
+    const projects = projectsResult.rows;
+
+    if (projects.length === 0) {
+      return NextResponse.json([]);
+    }
+
+    // Get room counts per project in a single query
+    const projectIds = projects.map((p: { id: string }) => p.id);
+    const roomCountsResult = await db.query(
+      `SELECT project_id, COUNT(*)::int as room_count
+       FROM pro_rooms
+       WHERE project_id = ANY($1)
+       GROUP BY project_id`,
+      [projectIds]
+    );
+
+    const roomCountMap = new Map<string, number>();
+    for (const row of roomCountsResult.rows) {
+      roomCountMap.set(row.project_id, row.room_count);
+    }
+
+    const enrichedProjects = projects.map((p: { id: string; adresse: string; type_bien: string; status: string; created_at: string; updated_at: string }) => ({
+      ...p,
+      room_count: roomCountMap.get(p.id) ?? 0,
+    }));
+
+    return NextResponse.json(enrichedProjects);
+  } catch (err) {
+    console.error("[GET /api/pro/projects] Error:", err);
+    return NextResponse.json(
+      { error: "SERVER_ERROR", message: "Erreur lors de la récupération des projets." },
+      { status: 500 }
+    );
+  }
+}
+
 // ─── Validation schemas ─────────────────────────────────────────────
 
 const TypeBienEnum = z.enum([

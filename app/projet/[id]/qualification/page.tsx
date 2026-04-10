@@ -108,7 +108,8 @@ export default function QualificationPage() {
       // Fetch lots with rooms
       const response = await fetch(`/api/pro/projects/${projectId}/status`);
       if (!response.ok) {
-        setError("Impossible de charger les données du projet.");
+        const errData = await response.json().catch(() => null);
+        setError(errData?.message || `Impossible de charger les données du projet (erreur ${response.status}).`);
         setIsLoading(false);
         return;
       }
@@ -251,8 +252,8 @@ export default function QualificationPage() {
       });
 
       if (!response.ok) {
-        const data = await response.json();
-        setError(data.message || "Erreur lors de la sauvegarde.");
+        const data = await response.json().catch(() => null);
+        setError(data?.message || `Erreur lors de la sauvegarde (erreur ${response.status}). Réessayez.`);
         setIsSaving(false);
         return;
       }
@@ -282,6 +283,7 @@ export default function QualificationPage() {
           <ProStepper
             currentStep={4}
             completedSteps={[1, 2, 3]}
+            projectId={projectId}
           />
         </div>
 

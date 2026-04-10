@@ -121,6 +121,7 @@ export default function ExtractionPage() {
             currentStep={2}
             completedSteps={[1]}
             errorSteps={state === "error" ? [2] : []}
+            projectId={projectId}
           />
         </div>
 

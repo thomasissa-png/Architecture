@@ -96,13 +96,13 @@ export default function GenerationPage() {
         });
 
         if (!response.ok) {
-          const data = await response.json();
+          const data = await response.json().catch(() => null);
           if (response.status === 409) {
             // Already generating — just start polling
             setPageState("generating");
             return;
           }
-          setError(data.message || "Erreur lors du lancement de la génération.");
+          setError(data?.message || `Erreur lors du lancement de la génération (erreur ${response.status}).`);
           setPageState("error");
           return;
         }
@@ -190,6 +190,7 @@ export default function GenerationPage() {
             currentStep={6}
             completedSteps={[1, 2, 3, 4, 5]}
             errorSteps={pageState === "error" ? [6] : []}
+            projectId={projectId}
           />
         </div>
 

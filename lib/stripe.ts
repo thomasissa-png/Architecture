@@ -26,6 +26,10 @@ export const PACKS = [
   // Recharges Pro
   { id: "recharge-pro-20", name: "Recharge Pro +20 visuels", credits: 20, priceCents: 900, mode: "payment" as const },
   { id: "recharge-pro-50", name: "Recharge Pro +50 visuels", credits: 50, priceCents: 1900, mode: "payment" as const },
+  // Dossiers Pro (pipeline marchand)
+  { id: "pro-dossier-1", name: "Dossier Pro — 1 projet", credits: 1, priceCents: 4900, mode: "payment" as const },
+  { id: "pro-dossier-5", name: "Dossier Pro — 5 projets", credits: 5, priceCents: 19900, mode: "payment" as const },
+  { id: "pro-dossier-illimite", name: "Dossier Pro — Illimité", credits: 999, priceCents: 9900, mode: "subscription" as const },
 ] as const;
 
 export type PackId = (typeof PACKS)[number]["id"];

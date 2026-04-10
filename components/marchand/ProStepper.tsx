@@ -3,12 +3,14 @@
 /**
  * ProStepper — Stepper 7 étapes pour le parcours marchand.
  *
- * Rendu : Client Component (états visuels interactifs).
+ * Rendu : Client Component (états visuels interactifs + navigation).
  *
  * Props :
  * - currentStep : étape active (1-7)
  * - completedSteps : étapes terminées (ex: [1, 2, 3])
  * - errorSteps? : étapes en erreur (ex: [2])
+ * - projectId? : ID du projet pour la navigation
+ * - onStepClick? : callback custom au lieu de la navigation par défaut
  *
  * Design tokens issus de docs/marchand-pivot/design/page-compositions.md :
  * - Completed : #7D9B76 (sage) + check blanc
@@ -17,6 +19,8 @@
  * - Error : #EF4444
  * - Connecteur done : #7D9B76, pending : #D1D0CB
  */
+
+import { useRouter } from "next/navigation";
 
 const STEPS = [
   { label: "Projet", sublabel: "Upload" },
@@ -32,6 +36,8 @@ interface ProStepperProps {
   currentStep: number;
   completedSteps: number[];
   errorSteps?: number[];
+  projectId?: string;
+  onStepClick?: (stepNumber: number) => void;
 }
 
 type StepState = "completed" | "active" | "locked" | "error";
@@ -47,6 +53,21 @@ function getStepState(
   if (completedSteps.includes(stepNumber)) return "completed";
   if (stepNumber === currentStep) return "active";
   return "locked";
+}
+
+/** Build the route for a given step number. */
+function getStepRoute(stepNumber: number, projectId?: string): string | null {
+  if (stepNumber === 1) return "/projet/nouveau";
+  if (!projectId) return null;
+  switch (stepNumber) {
+    case 2: return `/projet/${projectId}/extraction`;
+    case 3: return `/projet/${projectId}/validation`;
+    case 4: return `/projet/${projectId}/qualification`;
+    case 5: return `/projet/${projectId}/recommandations`;
+    case 6: return `/projet/${projectId}/generation`;
+    case 7: return `/projet/${projectId}/dossier`;
+    default: return null;
+  }
 }
 
 /** Check icon SVG for completed steps. */
@@ -90,7 +111,36 @@ export default function ProStepper({
   currentStep,
   completedSteps,
   errorSteps = [],
+  projectId,
+  onStepClick,
 }: ProStepperProps) {
+  const router = useRouter();
+
+  function handleStepClick(stepNumber: number, state: StepState) {
+    // Only completed and active steps are clickable
+    if (state === "locked") return;
+
+    // Don't navigate if we're already on this step
+    if (stepNumber === currentStep) return;
+
+    if (onStepClick) {
+      onStepClick(stepNumber);
+      return;
+    }
+
+    const route = getStepRoute(stepNumber, projectId);
+    if (route) {
+      router.push(route);
+    }
+  }
+
+  /** Whether a step is clickable (completed or active, and not current). */
+  function isClickable(stepNumber: number, state: StepState): boolean {
+    if (state === "locked") return false;
+    if (stepNumber === currentStep) return false;
+    return true;
+  }
+
   return (
     <nav
       aria-label="Progression du projet"
@@ -101,6 +151,8 @@ export default function ProStepper({
         {STEPS.map((step, i) => {
           const state = getStepState(i, currentStep, completedSteps, errorSteps);
           const isLast = i === STEPS.length - 1;
+          const stepNumber = i + 1;
+          const clickable = isClickable(stepNumber, state);
 
           return (
             <li
@@ -108,7 +160,24 @@ export default function ProStepper({
               className="flex items-center flex-1 last:flex-none"
               aria-current={state === "active" ? "step" : undefined}
             >
-              <div className="flex flex-col items-center min-w-[60px]">
+              <button
+                type="button"
+                onClick={() => handleStepClick(stepNumber, state)}
+                disabled={!clickable}
+                className={`flex flex-col items-center min-w-[60px] transition-opacity duration-200
+                  ${clickable
+                    ? "cursor-pointer hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] rounded-lg"
+                    : state === "locked"
+                      ? "cursor-not-allowed"
+                      : "cursor-default"
+                  }`}
+                aria-label={`${step.label} — ${
+                  state === "completed" ? "terminée" :
+                  state === "active" ? "en cours" :
+                  state === "error" ? "erreur" :
+                  "verrouillée"
+                }`}
+              >
                 {/* Dot */}
                 <div
                   className={`flex items-center justify-center w-8 h-8 rounded-full text-xs transition-all duration-300 ${DOT_STYLES[state]}`}
@@ -118,7 +187,7 @@ export default function ProStepper({
                   ) : state === "error" ? (
                     <span aria-hidden="true">!</span>
                   ) : (
-                    <span>{i + 1}</span>
+                    <span>{stepNumber}</span>
                   )}
                 </div>
                 {/* Label */}
@@ -130,7 +199,7 @@ export default function ProStepper({
                 <span className="text-[11px] text-[#9B9A94] leading-[14px] text-center">
                   {step.sublabel}
                 </span>
-              </div>
+              </button>
 
               {/* Connector */}
               {!isLast && (
@@ -153,6 +222,8 @@ export default function ProStepper({
         {STEPS.map((step, i) => {
           const state = getStepState(i, currentStep, completedSteps, errorSteps);
           const isLast = i === STEPS.length - 1;
+          const stepNumber = i + 1;
+          const clickable = isClickable(stepNumber, state);
 
           return (
             <li
@@ -162,17 +233,32 @@ export default function ProStepper({
             >
               <div className="flex flex-col items-center">
                 {/* Dot — w-6 h-6 au lieu de w-8 h-8 sur mobile */}
-                <div
-                  className={`flex items-center justify-center w-6 h-6 rounded-full text-[10px] transition-all duration-300 ${DOT_STYLES[state]}`}
+                <button
+                  type="button"
+                  onClick={() => handleStepClick(stepNumber, state)}
+                  disabled={!clickable}
+                  className={`flex items-center justify-center w-6 h-6 rounded-full text-[10px] transition-all duration-300 ${DOT_STYLES[state]}
+                    ${clickable
+                      ? "cursor-pointer hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76]"
+                      : state === "locked"
+                        ? "cursor-not-allowed"
+                        : "cursor-default"
+                    }`}
+                  aria-label={`${step.label} — ${
+                    state === "completed" ? "terminée" :
+                    state === "active" ? "en cours" :
+                    state === "error" ? "erreur" :
+                    "verrouillée"
+                  }`}
                 >
                   {state === "completed" ? (
                     <CheckIcon />
                   ) : state === "error" ? (
                     <span aria-hidden="true">!</span>
                   ) : (
-                    <span>{i + 1}</span>
+                    <span>{stepNumber}</span>
                   )}
-                </div>
+                </button>
                 {/* Vertical connector — réduit */}
                 {!isLast && (
                   <div
@@ -186,13 +272,24 @@ export default function ProStepper({
                 )}
               </div>
               {/* Label uniquement — sublabels masqués sur mobile */}
-              <div className="pt-0.5">
+              <button
+                type="button"
+                onClick={() => handleStepClick(stepNumber, state)}
+                disabled={!clickable}
+                className={`pt-0.5 text-left
+                  ${clickable
+                    ? "cursor-pointer hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] rounded"
+                    : state === "locked"
+                      ? "cursor-not-allowed"
+                      : "cursor-default"
+                  }`}
+              >
                 <span
                   className={`text-xs tracking-[0.02em] leading-4 ${LABEL_STYLES[state]}`}
                 >
                   {step.label}
                 </span>
-              </div>
+              </button>
             </li>
           );
         })}

@@ -85,6 +85,16 @@ export default function DossierPage() {
 
   const textareaRefs = useRef<Map<string, HTMLTextAreaElement>>(new Map());
   const pdfAutoTriggered = useRef(false);
+  const pdfUrlRef = useRef<string | null>(null);
+
+  // Cleanup blob URL on unmount to avoid memory leak
+  useEffect(() => {
+    return () => {
+      if (pdfUrlRef.current) {
+        URL.revokeObjectURL(pdfUrlRef.current);
+      }
+    };
+  }, []);
 
   // ─── Load data ────────────────────────────────────────────────────
 
@@ -274,16 +284,26 @@ export default function DossierPage() {
       });
 
       if (!response.ok) {
-        const data = await response.json();
-        setError(data.message || "Erreur lors de la génération du dossier.");
+        // Try to parse error JSON, fallback to generic message
+        try {
+          const data = await response.json();
+          setError(data.message || "Erreur lors de la génération du dossier.");
+        } catch {
+          setError("Erreur lors de la génération du dossier.");
+        }
         setIsGeneratingPdf(false);
         return;
       }
 
-      const data = await response.json();
-      // V1: API returns JSON dossier summary, not a PDF URL yet
-      // Store the dossier data for display; PDF rendering coming in V1.1
-      setPdfUrl(data.generated_at ? "ready" : null);
+      // Response is a PDF blob — create an Object URL for preview + download
+      const blob = await response.blob();
+      // Revoke previous URL to avoid memory leak
+      if (pdfUrlRef.current) {
+        URL.revokeObjectURL(pdfUrlRef.current);
+      }
+      const url = URL.createObjectURL(blob);
+      pdfUrlRef.current = url;
+      setPdfUrl(url);
     } catch {
       setError("Erreur de connexion lors de la génération du dossier.");
     } finally {
@@ -384,6 +404,7 @@ export default function DossierPage() {
           <ProStepper
             currentStep={7}
             completedSteps={[1, 2, 3, 4, 5, 6]}
+            projectId={projectId}
           />
         </div>
 
@@ -566,6 +587,59 @@ export default function DossierPage() {
                 Email
               </button>
             </div>
+
+            {/* PDF Preview */}
+            {pdfUrl && (
+              <div className="rounded-lg bg-white border border-[#D1D0CB]/40 overflow-hidden
+                              shadow-[0_1px_3px_rgba(28,28,30,0.08),0_1px_2px_rgba(28,28,30,0.04)]">
+                <div className="px-4 py-3 bg-[#F5F5F0] border-b border-[#D1D0CB]/40 flex items-center justify-between">
+                  <h2 className="text-sm font-semibold text-[#1C1C1E]">
+                    Aperçu du dossier PDF
+                  </h2>
+                  <button
+                    onClick={handleDownloadPdf}
+                    className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-md text-xs font-medium
+                               bg-[#1C1C1E] text-white hover:bg-[#3A3A3C] transition-colors
+                               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1C1E]"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                      <polyline points="7 10 12 15 17 10" />
+                      <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                    Télécharger
+                  </button>
+                </div>
+                <div className="p-2">
+                  <object
+                    data={pdfUrl}
+                    type="application/pdf"
+                    className="w-full rounded"
+                    style={{ height: "600px" }}
+                    aria-label="Aperçu du dossier PDF"
+                  >
+                    {/* Fallback for browsers that don't support inline PDF */}
+                    <div className="flex flex-col items-center justify-center py-12 gap-3 text-center">
+                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#7D9B76" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                      </svg>
+                      <p className="text-sm text-[#9B9A94]">
+                        L&apos;aperçu PDF n&apos;est pas disponible dans ce navigateur.
+                      </p>
+                      <button
+                        onClick={handleDownloadPdf}
+                        className="py-2 px-4 rounded-lg bg-[#7D9B76] text-white text-sm font-medium
+                                   hover:bg-[#4A7A42] transition-colors
+                                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76]"
+                      >
+                        Télécharger le PDF
+                      </button>
+                    </div>
+                  </object>
+                </div>
+              </div>
+            )}
 
             {/* Lot dossiers */}
             {lotDossiers.map((lot) => {

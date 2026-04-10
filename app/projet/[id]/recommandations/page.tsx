@@ -73,17 +73,96 @@ export default function RecommandationsPage() {
 
   const hasTriggered = useRef(false);
 
-  // ─── Load lots and generate recommendations ──────────────────────
+  const [isRegenerating, setIsRegenerating] = useState(false);
 
-  const loadAndGenerate = useCallback(async () => {
-    if (hasTriggered.current) return;
+  // ─── Map API recommendations to UI format ──────────────────────────
+
+  function mapApiRec(rec: {
+    id: string;
+    title: string;
+    description: string;
+    action_type: string;
+    estimated_cost_eur: number | null;
+    impact_level: string;
+    affected_rooms?: string[];
+    is_accepted?: boolean | null;
+  }): { rec: Recommendation; decision: RecommendationDecision } {
+    const decision: RecommendationDecision =
+      rec.is_accepted === true ? "accepted" :
+      rec.is_accepted === false ? "rejected" : "pending";
+    return {
+      rec: {
+        id: rec.id,
+        type: ACTION_TYPE_MAP[rec.action_type] || "optimize",
+        room_name: rec.title,
+        description: rec.description,
+        estimated_cost: rec.estimated_cost_eur
+          ? `${rec.estimated_cost_eur.toLocaleString("fr-FR")} €`
+          : null,
+        impact: IMPACT_LABELS[rec.impact_level] || rec.impact_level,
+      },
+      decision,
+    };
+  }
+
+  // ─── Load existing OR generate new recommendations ────────────────
+
+  const loadAndGenerate = useCallback(async (forceRegenerate = false) => {
+    if (hasTriggered.current && !forceRegenerate) return;
     hasTriggered.current = true;
 
     try {
-      // Fetch lots
+      // Step 1: Check for existing recommendations (unless forced)
+      if (!forceRegenerate) {
+        const existingRes = await fetch(`/api/pro/projects/${projectId}/recommendations`);
+        if (existingRes.ok) {
+          const existingData = await existingRes.json();
+          if (existingData.has_recommendations && existingData.lots?.length > 0) {
+            // Load existing recommendations — no need to regenerate
+            const newDecisions = new Map<string, RecommendationDecision>();
+            const loadedLotRecs: LotRecommendations[] = existingData.lots.map(
+              (lot: {
+                lot_id: string;
+                lot_name: string;
+                recommendations: Array<{
+                  id: string;
+                  title: string;
+                  description: string;
+                  action_type: string;
+                  estimated_cost_eur: number | null;
+                  impact_level: string;
+                  affected_rooms: string[];
+                  is_accepted: boolean | null;
+                }>;
+              }) => {
+                const mapped = lot.recommendations.map((r) => {
+                  const { rec, decision } = mapApiRec(r);
+                  newDecisions.set(rec.id, decision);
+                  return rec;
+                });
+                return {
+                  lot_id: lot.lot_id,
+                  lot_name: lot.lot_name,
+                  recommendations: mapped,
+                  summary: "",
+                  isLoading: false,
+                  error: null,
+                };
+              }
+            );
+            setLotRecommendations(loadedLotRecs);
+            setDecisions(newDecisions);
+            setPageState("ready");
+            return;
+          }
+        }
+      }
+
+      // Step 2: No existing recommendations — generate new ones
       const lotsResponse = await fetch(`/api/pro/projects/${projectId}/lots`);
       if (!lotsResponse.ok) {
-        setGlobalError("Impossible de charger les lots du projet.");
+        const errData = await lotsResponse.json().catch(() => null);
+        setGlobalError(errData?.message || `Impossible de charger les lots du projet (erreur ${lotsResponse.status}).`);
         setPageState("error");
         return;
       }
@@ -119,8 +198,8 @@ export default function RecommandationsPage() {
           });
 
           if (!response.ok) {
-            const data = await response.json();
-            throw new Error(data.message || "Erreur lors de la génération.");
+            const data = await response.json().catch(() => null);
+            throw new Error(data?.message || `Erreur lors de la génération des recommandations (erreur ${response.status}).`);
           }
 
           return { lot_id: lot.id, data: await response.json() };
@@ -147,17 +226,9 @@ export default function RecommandationsPage() {
               impact_level: string;
               affected_rooms: string[];
             }) => {
-              newDecisions.set(rec.id, "pending");
-              return {
-                id: rec.id,
-                type: ACTION_TYPE_MAP[rec.action_type] || "optimize",
-                room_name: rec.title,
-                description: rec.description,
-                estimated_cost: rec.estimated_cost_eur
-                  ? `${rec.estimated_cost_eur.toLocaleString("fr-FR")} \u20AC`
-                  : null,
-                impact: IMPACT_LABELS[rec.impact_level] || rec.impact_level,
-              };
+              const { rec: mappedRec, decision } = mapApiRec(rec);
+              newDecisions.set(mappedRec.id, decision);
+              return mappedRec;
             }
           );
 
@@ -192,6 +263,8 @@ export default function RecommandationsPage() {
     } catch {
       setGlobalError("Erreur de connexion. Vérifiez votre réseau.");
       setPageState("error");
+    } finally {
+      setIsRegenerating(false);
     }
   }, [projectId]);
 
@@ -251,6 +324,7 @@ export default function RecommandationsPage() {
             currentStep={5}
             completedSteps={[1, 2, 3, 4]}
             errorSteps={pageState === "error" ? [5] : []}
+            projectId={projectId}
           />
         </div>
 
@@ -480,6 +554,31 @@ export default function RecommandationsPage() {
                            shadow-[0_2px_8px_rgba(28,28,30,0.12)]"
               >
                 Lancer la génération des visuels
+              </button>
+              <button
+                onClick={() => {
+                  setIsRegenerating(true);
+                  hasTriggered.current = false;
+                  setPageState("loading");
+                  setGlobalError(null);
+                  loadAndGenerate(true);
+                }}
+                disabled={isRegenerating}
+                className="py-3 px-4 rounded-lg border border-[#D1D0CB] bg-white
+                           text-sm font-medium text-[#1C1C1E] hover:bg-[#F5F5F0]
+                           transition-colors focus-visible:outline-none
+                           focus-visible:ring-2 focus-visible:ring-[#7D9B76]
+                           disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isRegenerating ? (
+                  <span className="flex items-center gap-2">
+                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    Régénération...
+                  </span>
+                ) : "Régénérer les recommandations"}
               </button>
               <button
                 onClick={() => router.push(`/projet/${projectId}/qualification`)}

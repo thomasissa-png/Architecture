@@ -65,7 +65,8 @@ export default function ValidationPage() {
       try {
         const response = await fetch(`/api/pro/projects/${projectId}/status`);
         if (!response.ok) {
-          setError("Impossible de charger les données du projet.");
+          const data = await response.json().catch(() => null);
+          setError(data?.message || `Impossible de charger les données du projet (erreur ${response.status}).`);
           setIsLoading(false);
           return;
         }
@@ -103,7 +104,11 @@ export default function ValidationPage() {
     isDirty.current = true;
   }, []);
 
-  const deleteRoom = useCallback((roomId: string) => {
+  const deleteRoom = useCallback((roomId: string, roomName: string) => {
+    const confirmed = window.confirm(
+      `Supprimer "${roomName || "cette pièce"}" ? Cette action est irréversible.`
+    );
+    if (!confirmed) return;
     setRooms((prev) => prev.filter((r) => r.id !== roomId));
     isDirty.current = true;
   }, []);
@@ -247,6 +252,59 @@ export default function ValidationPage() {
     }
   }, [projectId, router, rooms, uploadRoomPhoto]);
 
+  // ─── Draft save ─────────────────────────────────────────────────
+
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
+  const [draftSaved, setDraftSaved] = useState(false);
+
+  const handleSaveDraft = useCallback(async () => {
+    if (rooms.length === 0) return;
+    setIsSavingDraft(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/pro/projects/${projectId}/draft`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          rooms: rooms.map((r) => ({
+            id: r.id,
+            name: r.name,
+            room_type: r.room_type,
+            surface_m2: r.surface_m2,
+            isNew: r.isNew || false,
+          })),
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        setError(data?.message || "Erreur lors de la sauvegarde du brouillon.");
+        return;
+      }
+
+      const data = await response.json();
+
+      // Update room IDs for newly created rooms
+      if (data.room_id_mapping) {
+        setRooms((prev) =>
+          prev.map((r) => {
+            const newId = data.room_id_mapping[r.id];
+            return newId ? { ...r, id: newId, isNew: false } : r;
+          })
+        );
+      }
+
+      isDirty.current = false;
+      setDraftSaved(true);
+      setTimeout(() => setDraftSaved(false), 3000);
+    } catch {
+      setError("Erreur de connexion lors de la sauvegarde.");
+    } finally {
+      setIsSavingDraft(false);
+    }
+  }, [projectId, rooms]);
+
   // ─── Stats ───────────────────────────────────────────────────────
 
   const roomsWithPhoto = rooms.filter((r) => r.photoUrl).length;
@@ -264,6 +322,7 @@ export default function ValidationPage() {
           <ProStepper
             currentStep={3}
             completedSteps={[1, 2]}
+            projectId={projectId}
           />
         </div>
 
@@ -503,7 +562,7 @@ export default function ValidationPage() {
 
                   {/* Delete button */}
                   <button
-                    onClick={() => deleteRoom(room.id)}
+                    onClick={() => deleteRoom(room.id, room.name)}
                     className="flex-shrink-0 self-start p-1.5 rounded-md text-[#9B9A94]
                                hover:text-[#B91C1C] hover:bg-[#FEF2F2] transition-colors
                                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EF4444]"
@@ -599,6 +658,17 @@ export default function ValidationPage() {
               </button>
             )}
 
+            {/* Draft saved feedback */}
+            {draftSaved && (
+              <div className="p-3 rounded-lg bg-[#F0FDF4] border border-[#7D9B76]/20 text-sm text-[#4A7A42] flex items-center gap-2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
+                  <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+                Brouillon sauvegardé
+              </div>
+            )}
+
             {/* Navigation */}
             <div className="flex gap-3 pt-4 border-t border-[#D1D0CB]/40">
               <button
@@ -609,6 +679,25 @@ export default function ValidationPage() {
                            focus-visible:ring-2 focus-visible:ring-[#7D9B76]"
               >
                 Retour
+              </button>
+              <button
+                onClick={handleSaveDraft}
+                disabled={isSavingDraft || rooms.length === 0}
+                className="py-2.5 px-4 rounded-lg border border-[#7D9B76] bg-white
+                           text-sm font-medium text-[#7D9B76] hover:bg-[#F0FDF4]
+                           disabled:opacity-50 disabled:cursor-not-allowed
+                           transition-colors focus-visible:outline-none
+                           focus-visible:ring-2 focus-visible:ring-[#7D9B76]"
+              >
+                {isSavingDraft ? (
+                  <span className="inline-flex items-center gap-2">
+                    <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    Sauvegarde…
+                  </span>
+                ) : "Sauvegarder le brouillon"}
               </button>
               <button
                 onClick={handleValidate}
