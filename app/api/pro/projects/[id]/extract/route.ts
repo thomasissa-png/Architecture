@@ -106,8 +106,13 @@ export async function POST(
         planPaths = [project.plan_file_path];
         planMimeTypes = [project.plan_mime_type || "image/jpeg"];
       }
-    } catch {
+    } catch (parseErr) {
       // Not JSON — single path string
+      console.warn(
+        `[extract] plan_file_path JSON parse failed for project ${projectId}, treating as single path:`,
+        parseErr instanceof Error ? parseErr.message : parseErr,
+        `| raw value: "${project.plan_file_path?.slice(0, 200)}"`
+      );
       planPaths = [project.plan_file_path];
       planMimeTypes = [project.plan_mime_type || "image/jpeg"];
     }
@@ -130,9 +135,21 @@ export async function POST(
         continue;
       }
 
+      // Validate and normalize MIME type before passing to extractor
+      const VALID_EXTRACTION_MIMES = new Set([
+        "image/jpeg", "image/png", "image/webp", "image/heic", "image/heif", "application/pdf",
+      ]);
+      let mimeType = planMimeTypes[i] || "";
+      if (!mimeType || !VALID_EXTRACTION_MIMES.has(mimeType)) {
+        console.warn(
+          `[extract] Invalid or missing MIME type "${mimeType}" for plan ${i} of project ${projectId}, falling back to image/jpeg`
+        );
+        mimeType = "image/jpeg";
+      }
+
       planInputs.push({
         base64: planBuffer.toString("base64"),
-        mimeType: planMimeTypes[i] || "image/jpeg",
+        mimeType,
         floorIndex: i,
       });
     }

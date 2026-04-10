@@ -287,6 +287,17 @@ export async function POST(request: NextRequest) {
       ? mimeTypes[0]
       : JSON.stringify(mimeTypes);
 
+    // Validate total path length before storing (DB column limit safety)
+    if (planFilePath.length > 2000) {
+      return NextResponse.json(
+        {
+          error: "PATH_TOO_LONG",
+          message: "Trop de fichiers uploadés. Le chemin de stockage dépasse la limite autorisée. Réduisez le nombre de fichiers.",
+        },
+        { status: 400 }
+      );
+    }
+
     // Update project with file path(s)
     await db.query(
       `UPDATE pro_projects SET plan_file_path = $1, plan_mime_type = $2 WHERE id = $3`,

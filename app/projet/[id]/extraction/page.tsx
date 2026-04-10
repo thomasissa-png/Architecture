@@ -11,7 +11,7 @@
  * En cas d'erreur : message + lien vers saisie manuelle (validation).
  */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -42,6 +42,21 @@ export default function ExtractionPage() {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [projectAdresse, setProjectAdresse] = useState<string | null>(null);
   const [planPath, setPlanPath] = useState<string | null>(null);
+  const [activePlanIndex, setActivePlanIndex] = useState(0);
+
+  // Parse planPath into array — handles single path or JSON array string
+  const parsedPlanPaths = useMemo(() => {
+    if (!planPath) return [];
+    try {
+      if (planPath.startsWith("[")) {
+        const parsed = JSON.parse(planPath);
+        return Array.isArray(parsed) ? (parsed as string[]) : [planPath];
+      }
+      return [planPath];
+    } catch {
+      return [planPath];
+    }
+  }, [planPath]);
 
   // ─── Timer for loading state ──────────────────────────────────────
 
@@ -164,12 +179,12 @@ export default function ExtractionPage() {
         {/* Loading state */}
         {state === "loading" && (
           <div className="flex flex-col items-center justify-center py-16 gap-4">
-            {/* Scan animation with plan thumbnail */}
+            {/* Scan animation with plan thumbnail(s) */}
             <div className="relative w-48 h-48 rounded-lg bg-[#F5F5F0] overflow-hidden">
-              {planPath ? (
+              {parsedPlanPaths.length > 0 ? (
                 <img
-                  src={`/api/logs/image?path=${encodeURIComponent(planPath)}`}
-                  alt="Plan du bien en cours d'analyse"
+                  src={`/api/logs/image?path=${encodeURIComponent(parsedPlanPaths[activePlanIndex] ?? parsedPlanPaths[0])}`}
+                  alt={`Plan ${activePlanIndex + 1}/${parsedPlanPaths.length} en cours d'analyse`}
                   className="w-full h-full object-contain opacity-60"
                 />
               ) : (
@@ -196,6 +211,34 @@ export default function ExtractionPage() {
                 aria-hidden="true"
               />
             </div>
+
+            {/* Multi-plan thumbnails */}
+            {parsedPlanPaths.length > 1 && (
+              <div className="flex items-center gap-2 mt-2">
+                {parsedPlanPaths.map((path, i) => (
+                  <button
+                    key={path}
+                    type="button"
+                    onClick={() => setActivePlanIndex(i)}
+                    className={`w-10 h-10 rounded border overflow-hidden transition-all
+                      ${i === activePlanIndex
+                        ? "border-[#3B82F6] ring-2 ring-[#3B82F6]/30"
+                        : "border-[#D1D0CB] opacity-60 hover:opacity-100"
+                      }`}
+                    aria-label={`Voir plan ${i + 1}`}
+                  >
+                    <img
+                      src={`/api/logs/image?path=${encodeURIComponent(path)}`}
+                      alt={`Plan ${i + 1}`}
+                      className="w-full h-full object-contain"
+                    />
+                  </button>
+                ))}
+                <span className="text-xs text-[#9B9A94] ml-1">
+                  Plan {activePlanIndex + 1}/{parsedPlanPaths.length}
+                </span>
+              </div>
+            )}
 
             <div className="text-center">
               <p className="text-sm font-medium text-[#1C1C1E]">

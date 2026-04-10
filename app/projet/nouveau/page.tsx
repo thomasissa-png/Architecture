@@ -10,7 +10,7 @@
  * Après création : redirect vers /projet/[id]/extraction.
  */
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 
 // ─── Address autocomplete types ──────────────────────────────────
 interface AddressSuggestion {
@@ -68,6 +68,14 @@ export default function NouveauProjetPage() {
   const [surface, setSurface] = useState("");
   const [planFiles, setPlanFiles] = useState<File[]>([]);
   const [planPreviewUrls, setPlanPreviewUrls] = useState<Map<string, string>>(new Map());
+
+  // Cleanup blob URLs on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      planPreviewUrls.forEach((url) => URL.revokeObjectURL(url));
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Address autocomplete
   const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
@@ -452,6 +460,31 @@ export default function NouveauProjetPage() {
                 </span>
               )}
             </div>
+
+            {/* Multi-file order warning */}
+            {planFiles.length > 1 && (
+              <div className="mt-2 flex items-start gap-2 p-2.5 rounded-lg bg-[#FFF8E1] border border-[#F9A825]/20">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#F57F17"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="flex-shrink-0 mt-0.5"
+                  aria-hidden="true"
+                >
+                  <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                  <line x1="12" y1="9" x2="12" y2="13" />
+                  <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+                <p className="text-xs text-[#5D4037]">
+                  Les fichiers sont traités dans l&apos;ordre d&apos;upload. Uploadez le RDC en premier, puis les étages supérieurs.
+                </p>
+              </div>
+            )}
 
             {/* File list */}
             {planFiles.length > 0 && (
