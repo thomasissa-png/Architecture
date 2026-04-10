@@ -432,6 +432,13 @@ export default function DossierPage() {
           />
         </div>
 
+        {/* Project info */}
+        {projectAddress && (
+          <div className="mb-4 text-sm text-[#6B6A65]">
+            <span>{projectAddress}</span>
+          </div>
+        )}
+
         {/* Page title */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-[#1C1C1E] tracking-tight">
@@ -519,7 +526,7 @@ export default function DossierPage() {
               <button
                 onClick={handleGeneratePdf}
                 disabled={isGeneratingPdf}
-                className="inline-flex items-center gap-2 py-2 px-3 rounded-md text-sm font-medium
+                className="inline-flex items-center gap-2 py-2 px-3 min-h-[44px] rounded-md text-sm font-medium
                            bg-[#7D9B76] text-white hover:bg-[#4A7A42] transition-colors
                            disabled:opacity-50 disabled:cursor-not-allowed
                            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76]"
@@ -550,7 +557,7 @@ export default function DossierPage() {
               {pdfUrl && (
                 <button
                   onClick={handleDownloadPdf}
-                  className="inline-flex items-center gap-2 py-2 px-3 rounded-md text-sm font-medium
+                  className="inline-flex items-center gap-2 py-2 px-3 min-h-[44px] rounded-md text-sm font-medium
                              bg-[#1C1C1E] text-white hover:bg-[#3A3A3C] transition-colors
                              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1C1E]"
                 >

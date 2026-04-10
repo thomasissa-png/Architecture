@@ -24,6 +24,7 @@ import {
 } from "@/lib/marchand/auth-helpers";
 import { ensureProTables } from "@/lib/marchand/db";
 import { getMerchantProfile } from "@/lib/merchant";
+import { roomTypeLabel } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
 
@@ -673,7 +674,7 @@ export async function POST(
         });
         ry -= 20;
 
-        safeDrawText(roomPage, room.room_type, {
+        safeDrawText(roomPage, roomTypeLabel(room.room_type), {
           x: MARGIN,
           y: ry,
           size: 9,

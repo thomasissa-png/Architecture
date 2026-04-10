@@ -366,7 +366,7 @@ export default function GenerationPage() {
                 isGenerationTriggered.current = false;
                 window.location.reload();
               }}
-              className="py-2.5 px-4 rounded-lg bg-[#7D9B76] text-white text-sm font-medium
+              className="py-2.5 px-4 min-h-[44px] rounded-lg bg-[#7D9B76] text-white text-sm font-medium
                          hover:bg-[#4A7A42] transition-colors
                          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76]"
             >
@@ -514,7 +514,7 @@ export default function GenerationPage() {
                     {room.generation_status === "failed" && !retryingRooms.has(room.id) && (
                       <button
                         onClick={() => retryRoom(room.id)}
-                        className="mt-2 w-full py-1.5 px-3 rounded-md text-xs font-medium
+                        className="mt-2 w-full py-1.5 px-3 min-h-[44px] rounded-md text-xs font-medium
                                    bg-[#FEF2F2] text-[#B91C1C] border border-[#EF4444]/20
                                    hover:bg-[#FEE2E2] transition-colors
                                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EF4444]/50"

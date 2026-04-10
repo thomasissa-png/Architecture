@@ -66,7 +66,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
-  const { project } = data;
+  const { project, lots } = data;
   const details: string[] = [];
   if (project.type_bien) details.push(TYPE_LABELS[project.type_bien] || project.type_bien);
   if (project.surface_totale) details.push(`${project.surface_totale} m²`);
@@ -81,6 +81,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     ? `${title} — ${details.join(", ")}. Visuels meublés par IA.`
     : `${title} — Visuels meublés par IA.`;
 
+  // Find first visual output for OG image
+  let ogImageUrl: string | undefined;
+  for (const lot of lots) {
+    for (const room of lot.rooms) {
+      if (room.visual_output_path) {
+        ogImageUrl = `https://versimo.fr/api/logs/image?path=${encodeURIComponent(room.visual_output_path)}`;
+        break;
+      }
+    }
+    if (ogImageUrl) break;
+  }
+
   return {
     title: `${title} — Versimo`,
     description,
@@ -89,6 +101,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description,
       type: "website",
       siteName: "Versimo",
+      ...(ogImageUrl ? { images: [{ url: ogImageUrl, width: 1200, height: 630, alt: `Visuel meublé — ${project.adresse}` }] } : {}),
     },
   };
 }
