@@ -31,7 +31,7 @@ const TYPE_BIEN_OPTIONS = [
 const ACCEPTED_PLAN_TYPES = "image/jpeg,image/png,image/webp,image/heic,image/heif,application/pdf";
 const MAX_FILE_SIZE_MB = 20;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
-const PRICE_PER_BIEN = "99€";
+// Pricing removed — free during beta (founder decision session 41)
 
 // ─── Helpers ───────────────────────────────────────────────────────
 
@@ -50,7 +50,7 @@ function useProStatus(session: ReturnType<typeof useSession>["data"]) {
 export default function NouveauProjetPage() {
   const router = useRouter();
   const { data: session, status: sessionStatus } = useSession();
-  const { isPro, hasCredits } = useProStatus(session);
+  const { hasCredits } = useProStatus(session);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form state
@@ -71,6 +71,13 @@ export default function NouveauProjetPage() {
   const handlePlanSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // Validate MIME type
+    const allowedTypes = ACCEPTED_PLAN_TYPES.split(",");
+    if (!allowedTypes.includes(file.type)) {
+      setError("Format accepté : PDF, JPG, PNG, WEBP, HEIC.");
+      return;
+    }
 
     if (file.size > MAX_FILE_SIZE_BYTES) {
       setError(`Le fichier ne doit pas dépasser ${MAX_FILE_SIZE_MB} Mo.`);
@@ -119,6 +126,13 @@ export default function NouveauProjetPage() {
     setIsDragOver(false);
     const file = e.dataTransfer.files[0];
     if (!file) return;
+
+    // Validate MIME type (drag & drop bypasses input accept attribute)
+    const allowedTypes = ACCEPTED_PLAN_TYPES.split(",");
+    if (!allowedTypes.includes(file.type)) {
+      setError("Format accepté : PDF, JPG, PNG, WEBP, HEIC.");
+      return;
+    }
 
     if (file.size > MAX_FILE_SIZE_BYTES) {
       setError(`Le fichier ne doit pas dépasser ${MAX_FILE_SIZE_MB} Mo.`);
@@ -386,8 +400,9 @@ export default function NouveauProjetPage() {
                 <button
                   type="button"
                   onClick={handleRemovePlan}
-                  className="flex-shrink-0 p-2 rounded-md text-[#9B9A94] hover:text-[#B91C1C]
-                             hover:bg-[#FEF2F2] transition-colors
+                  className="flex-shrink-0 p-3 rounded-md text-[#9B9A94] hover:text-[#B91C1C]
+                             hover:bg-[#FEF2F2] transition-colors min-w-[44px] min-h-[44px]
+                             flex items-center justify-center
                              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EF4444]"
                   aria-label="Supprimer le plan"
                 >
@@ -449,17 +464,17 @@ export default function NouveauProjetPage() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-sm text-[#9B9A94]">
-                  {hasCredits ? "Crédit Pro" : "Tarif par bien"}
+                  {hasCredits ? "Forfait Pro" : "Accès bêta"}
                 </p>
                 {hasCredits ? (
                   <p className="text-3xl font-bold text-[#7D9B76] tracking-tight">
-                    1 crédit
+                    1 projet
                     <span className="text-sm font-normal text-[#9B9A94] ml-1">inclus dans votre abonnement</span>
                   </p>
                 ) : (
-                  <p className="text-3xl font-bold text-[#1C1C1E] tracking-tight">
-                    {PRICE_PER_BIEN}
-                    <span className="text-sm font-normal text-[#9B9A94] ml-1">TTC</span>
+                  <p className="text-3xl font-bold text-[#7D9B76] tracking-tight">
+                    Gratuit
+                    <span className="text-sm font-normal text-[#9B9A94] ml-1">pendant la bêta</span>
                   </p>
                 )}
               </div>
@@ -503,32 +518,14 @@ export default function NouveauProjetPage() {
                 </span>
               ) : sessionStatus !== "authenticated" ? (
                 "Se connecter pour continuer"
-              ) : hasCredits ? (
-                "Utiliser 1 crédit Pro et commencer"
               ) : (
-                `Payer ${PRICE_PER_BIEN} et commencer`
+                "Créer le projet et commencer"
               )}
             </button>
 
-            {/* Lien pricing pour les non-abonnés Pro */}
-            {sessionStatus === "authenticated" && !isPro && (
-              <p className="text-xs text-[#9B9A94] text-center mt-3">
-                {PRICE_PER_BIEN} TTC — ou{" "}
-                <a
-                  href="/pricing?buy=pro"
-                  className="text-[#7D9B76] hover:text-[#4A7A42] underline underline-offset-2
-                             transition-colors focus-visible:outline-none focus-visible:ring-2
-                             focus-visible:ring-[#7D9B76] rounded"
-                >
-                  abonnez-vous au Pro pour 29 €/mois
-                </a>
-              </p>
-            )}
-            {(sessionStatus !== "authenticated" || isPro) && (
-              <p className="text-xs text-[#9B9A94] text-center mt-3">
-                Paiement sécurisé — Remboursé si résultats non conformes
-              </p>
-            )}
+            <p className="text-xs text-[#9B9A94] text-center mt-3">
+              Gratuit pendant la bêta — Dossier PDF et visuels IA inclus
+            </p>
           </div>
         </form>
       </main>

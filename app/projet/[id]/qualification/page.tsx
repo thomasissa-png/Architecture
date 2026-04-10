@@ -16,6 +16,7 @@ import { useParams, useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProStepper from "@/components/marchand/ProStepper";
+import { roomTypeLabel, getCompletedSteps } from "@/lib/constants";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -73,17 +74,9 @@ const STYLE_OPTIONS = [
   { value: "haussmannian", label: "Haussmannien" },
 ] as const;
 
-const ROOM_TYPE_LABELS: Record<string, string> = {
-  salon: "Salon",
-  cuisine: "Cuisine",
-  chambre: "Chambre",
-  sdb: "Salle de bain",
-  wc: "WC",
-  bureau: "Bureau",
-  couloir: "Couloir",
-  cave: "Cave",
-  autre: "Autre",
-};
+// ROOM_TYPE_LABELS now imported from lib/constants.ts (centralized)
+
+// getCompletedSteps imported from lib/constants.ts
 
 // ─── Component ──────────────────────────────────────────────────────
 
@@ -98,6 +91,7 @@ export default function QualificationPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [projectStatus, setProjectStatus] = useState<string>("validated");
 
   // ─── Load lots and rooms from project ────────────────────────────
 
@@ -115,6 +109,11 @@ export default function QualificationPage() {
       }
 
       const data = await response.json();
+
+      // Track project status for dynamic stepper
+      if (data.project?.status) {
+        setProjectStatus(data.project.status);
+      }
 
       // Fetch lots separately for qualification fields
       const lotsResponse = await fetch(`/api/pro/projects/${projectId}/lots`);
@@ -260,10 +259,10 @@ export default function QualificationPage() {
 
       setSaveSuccess(true);
 
-      // Redirect to recommendations after short delay
+      // Redirect to recommendations after delay (1500ms for visual confirmation)
       setTimeout(() => {
         router.push(`/projet/${projectId}/recommandations`);
-      }, 800);
+      }, 1500);
     } catch {
       setError("Erreur de connexion. Vérifiez votre réseau.");
     } finally {
@@ -282,7 +281,7 @@ export default function QualificationPage() {
         <div className="mb-8">
           <ProStepper
             currentStep={4}
-            completedSteps={[1, 2, 3]}
+            completedSteps={getCompletedSteps(projectStatus)}
             projectId={projectId}
           />
         </div>
@@ -520,7 +519,7 @@ export default function QualificationPage() {
                                   {room.name}
                                 </p>
                                 <p className="text-[11px] text-[#9B9A94]">
-                                  {ROOM_TYPE_LABELS[room.room_type] || room.room_type}
+                                  {roomTypeLabel(room.room_type)}
                                   {room.surface_m2 ? ` — ${room.surface_m2} m²` : ""}
                                 </p>
                               </div>

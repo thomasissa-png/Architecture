@@ -16,6 +16,7 @@ import { useParams, useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProStepper from "@/components/marchand/ProStepper";
+import { getCompletedSteps } from "@/lib/constants";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -65,6 +66,7 @@ export default function GenerationPage() {
   const [summary, setSummary] = useState<StatusSummary>({ total: 0, done: 0, failed: 0, generating: 0, pending: 0 });
   const [error, setError] = useState<string | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [projectStatus, setProjectStatus] = useState<string>("plan_final");
 
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isGenerationTriggered = useRef(false);
@@ -128,6 +130,7 @@ export default function GenerationPage() {
       const newRooms = data.rooms as RoomStatus[];
       const newSummary = data.summary as StatusSummary;
 
+      if (data.project?.status) setProjectStatus(data.project.status);
       setRooms(newRooms);
       setSummary(newSummary);
 
@@ -188,7 +191,7 @@ export default function GenerationPage() {
         <div className="mb-8">
           <ProStepper
             currentStep={6}
-            completedSteps={[1, 2, 3, 4, 5]}
+            completedSteps={getCompletedSteps(projectStatus)}
             errorSteps={pageState === "error" ? [6] : []}
             projectId={projectId}
           />

@@ -14,6 +14,7 @@ import { useParams, useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProStepper from "@/components/marchand/ProStepper";
+import { getCompletedSteps } from "@/lib/constants";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -82,6 +83,7 @@ export default function DossierPage() {
   const [shareSuccess, setShareSuccess] = useState<string | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [projectAddress, setProjectAddress] = useState("");
+  const [projectStatus, setProjectStatus] = useState<string>("visuals_done");
 
   const textareaRefs = useRef<Map<string, HTMLTextAreaElement>>(new Map());
   const pdfAutoTriggered = useRef(false);
@@ -110,6 +112,8 @@ export default function DossierPage() {
         return;
       }
       const statusData = await statusResponse.json();
+
+      if (statusData.project?.status) setProjectStatus(statusData.project.status);
 
       // Fetch lots
       const lotsResponse = await fetch(`/api/pro/projects/${projectId}/lots`);
@@ -403,7 +407,7 @@ export default function DossierPage() {
         <div className="mb-8">
           <ProStepper
             currentStep={7}
-            completedSteps={[1, 2, 3, 4, 5, 6]}
+            completedSteps={getCompletedSteps(projectStatus)}
             projectId={projectId}
           />
         </div>

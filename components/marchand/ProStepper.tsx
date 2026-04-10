@@ -232,14 +232,14 @@ export default function ProStepper({
               aria-current={state === "active" ? "step" : undefined}
             >
               <div className="flex flex-col items-center">
-                {/* Dot — w-6 h-6 au lieu de w-8 h-8 sur mobile */}
+                {/* Dot — visual 24px, touch target 44px (Apple minimum) */}
                 <button
                   type="button"
                   onClick={() => handleStepClick(stepNumber, state)}
                   disabled={!clickable}
-                  className={`flex items-center justify-center w-6 h-6 rounded-full text-[10px] transition-all duration-300 ${DOT_STYLES[state]}
+                  className={`flex items-center justify-center min-w-[44px] min-h-[44px] -m-[10px]
                     ${clickable
-                      ? "cursor-pointer hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76]"
+                      ? "cursor-pointer hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] rounded-lg"
                       : state === "locked"
                         ? "cursor-not-allowed"
                         : "cursor-default"
@@ -251,13 +251,15 @@ export default function ProStepper({
                     "verrouillée"
                   }`}
                 >
-                  {state === "completed" ? (
-                    <CheckIcon />
-                  ) : state === "error" ? (
-                    <span aria-hidden="true">!</span>
-                  ) : (
-                    <span>{stepNumber}</span>
-                  )}
+                  <div className={`flex items-center justify-center w-6 h-6 rounded-full text-[10px] transition-all duration-300 ${DOT_STYLES[state]}`}>
+                    {state === "completed" ? (
+                      <CheckIcon />
+                    ) : state === "error" ? (
+                      <span aria-hidden="true">!</span>
+                    ) : (
+                      <span>{stepNumber}</span>
+                    )}
+                  </div>
                 </button>
                 {/* Vertical connector — réduit */}
                 {!isLast && (

@@ -24,6 +24,7 @@ interface ExtractedRoom {
   id: string;
   name: string;
   room_type: string;
+  surface_m2?: number | null;
 }
 
 type ExtractionState = "idle" | "loading" | "success" | "error";
@@ -94,7 +95,25 @@ export default function ExtractionPage() {
   }, [projectId, router]);
 
   useEffect(() => {
-    runExtraction();
+    // Check project status first to avoid flash on back navigation
+    async function checkAndRun() {
+      try {
+        const res = await fetch(`/api/pro/projects/${projectId}/status`);
+        if (res.ok) {
+          const data = await res.json();
+          const status = data.project?.status;
+          // If already past extraction, redirect immediately without loading flash
+          if (status && status !== "plan_uploaded" && status !== "extraction_failed") {
+            router.replace(`/projet/${projectId}/validation`);
+            return;
+          }
+        }
+      } catch {
+        // Status check failed — proceed with extraction anyway
+      }
+      runExtraction();
+    }
+    checkAndRun();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

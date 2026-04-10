@@ -23,6 +23,26 @@ import type { TypeBien } from "@/lib/marchand/schemas";
 
 export const dynamic = "force-dynamic";
 
+// ─── Room type inference from name_raw ──────────────────────────────
+
+/**
+ * Infer room_type from the AI-extracted name_raw (e.g. "Salon" → "salon").
+ * Handles French room names with accents and common abbreviations.
+ * Fallback to "autre" only if no pattern matches.
+ */
+function inferRoomType(nameRaw: string): string {
+  const n = nameRaw.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  if (/salon|sejour|living|salle.*manger/.test(n)) return "salon";
+  if (/cuisine|kitchen|kitchenette/.test(n)) return "cuisine";
+  if (/chambre|bedroom/.test(n)) return "chambre";
+  if (/salle.*bain|sdb|bathroom/.test(n)) return "sdb";
+  if (/\bwc\b|toilet/.test(n)) return "wc";
+  if (/bureau|office/.test(n)) return "bureau";
+  if (/couloir|hall|entree|degagement|palier/.test(n)) return "couloir";
+  if (/cave|cellier|rangement|buanderie/.test(n)) return "cave";
+  return "autre";
+}
+
 // ─── POST handler ───────────────────────────────────────────────────
 
 export async function POST(
@@ -128,7 +148,7 @@ export async function POST(
     );
 
     // Insert rooms
-    const insertedRooms: Array<{ id: string; name: string; room_type: string }> = [];
+    const insertedRooms: Array<{ id: string; name: string; room_type: string; surface_m2: number | null }> = [];
 
     for (const room of extractionResult.rooms) {
       const insertResult = await db.query(
@@ -138,11 +158,11 @@ export async function POST(
           windows_count, doors_count, floor, shape,
           is_estimated, confidence, source
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
-        RETURNING id, name, room_type`,
+        RETURNING id, name, room_type, surface_m2`,
         [
           projectId,
           room.name_raw,
-          "autre", // Default — user corrects in step 3
+          inferRoomType(room.name_raw),
           room.surface_m2,
           room.dimensions?.length_m ?? null,
           room.dimensions?.width_m ?? null,

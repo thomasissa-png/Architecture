@@ -16,6 +16,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProStepper from "@/components/marchand/ProStepper";
 import RecommendationCard from "@/components/marchand/RecommendationCard";
+import { getCompletedSteps } from "@/lib/constants";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -74,6 +75,7 @@ export default function RecommandationsPage() {
   const hasTriggered = useRef(false);
 
   const [isRegenerating, setIsRegenerating] = useState(false);
+  const [projectStatus, setProjectStatus] = useState<string>("qualified");
 
   // ─── Map API recommendations to UI format ──────────────────────────
 
@@ -112,6 +114,15 @@ export default function RecommandationsPage() {
     hasTriggered.current = true;
 
     try {
+      // Fetch project status for dynamic stepper
+      try {
+        const statusRes = await fetch(`/api/pro/projects/${projectId}/status`);
+        if (statusRes.ok) {
+          const statusData = await statusRes.json();
+          if (statusData.project?.status) setProjectStatus(statusData.project.status);
+        }
+      } catch { /* non-blocking */ }
+
       // Step 1: Check for existing recommendations (unless forced)
       if (!forceRegenerate) {
         const existingRes = await fetch(`/api/pro/projects/${projectId}/recommendations`);
@@ -322,7 +333,7 @@ export default function RecommandationsPage() {
         <div className="mb-8">
           <ProStepper
             currentStep={5}
-            completedSteps={[1, 2, 3, 4]}
+            completedSteps={getCompletedSteps(projectStatus)}
             errorSteps={pageState === "error" ? [5] : []}
             projectId={projectId}
           />

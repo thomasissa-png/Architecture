@@ -16,6 +16,7 @@ import { useParams, useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProStepper from "@/components/marchand/ProStepper";
+import { getCompletedSteps } from "@/lib/constants";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -54,6 +55,7 @@ export default function ValidationPage() {
   const [uploadProgress, setUploadProgress] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [projectStatus, setProjectStatus] = useState<string>("extraction_done");
 
   const fileInputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
   const isDirty = useRef(false);
@@ -71,6 +73,9 @@ export default function ValidationPage() {
           return;
         }
         const data = await response.json();
+        if (data.project?.status) {
+          setProjectStatus(data.project.status);
+        }
         const loadedRooms: RoomEntry[] = (data.rooms || []).map(
           (r: { id: string; name: string; room_type: string; surface_m2?: number | null; photo_path?: string | null }) => ({
             id: r.id,
@@ -321,7 +326,7 @@ export default function ValidationPage() {
         <div className="mb-8">
           <ProStepper
             currentStep={3}
-            completedSteps={[1, 2]}
+            completedSteps={getCompletedSteps(projectStatus)}
             projectId={projectId}
           />
         </div>

@@ -20,6 +20,7 @@ export const STYLE_LABELS: Record<string, string> = {
 };
 
 export const ROOM_TYPE_LABELS: Record<string, string> = {
+  // English keys (from B2C + legacy extraction)
   living_room: "Salon",
   bedroom: "Chambre",
   bedroom_adults: "Chambre",
@@ -37,6 +38,15 @@ export const ROOM_TYPE_LABELS: Record<string, string> = {
   laundry: "Buanderie",
   cellar: "Cave",
   other: "Autre",
+  // French keys (from pro extraction inferRoomType)
+  salon: "Salon",
+  cuisine: "Cuisine",
+  chambre: "Chambre",
+  sdb: "Salle de bain",
+  bureau: "Bureau",
+  couloir: "Couloir / Entrée",
+  cave: "Cave / Rangement",
+  autre: "Autre",
 };
 
 /**
@@ -49,6 +59,34 @@ export function translateRoomLabel(label: string | null | undefined, fallback?: 
   if (ROOM_TYPE_LABELS[label]) return ROOM_TYPE_LABELS[label];
   // Otherwise it's already a user-provided French label
   return label;
+}
+
+/**
+ * Get a French label for a room_type key.
+ * Works with both English keys (living_room) and French keys (salon).
+ * Returns the key itself if no match found.
+ */
+export function roomTypeLabel(roomType: string): string {
+  return ROOM_TYPE_LABELS[roomType] || roomType;
+}
+
+/**
+ * Derive completed steps from project status for the ProStepper.
+ * Used across all step pages to show accurate progress.
+ */
+export function getCompletedSteps(status: string): number[] {
+  switch (status) {
+    case "plan_uploaded": return [1];
+    case "extraction_done": return [1, 2];
+    case "extraction_failed": return [1];
+    case "validated": return [1, 2, 3];
+    case "qualified": return [1, 2, 3, 4];
+    case "plan_final": return [1, 2, 3, 4, 5];
+    case "generating": return [1, 2, 3, 4, 5];
+    case "visuals_done": return [1, 2, 3, 4, 5, 6];
+    case "delivered": return [1, 2, 3, 4, 5, 6, 7];
+    default: return [1];
+  }
 }
 
 export const TYPE_LABELS: Record<string, string> = {
