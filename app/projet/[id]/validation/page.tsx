@@ -579,6 +579,7 @@ export default function ValidationPage() {
                     onClick={() => deleteRoom(room.id, room.name)}
                     className="flex-shrink-0 self-start p-1.5 rounded-md text-[#9B9A94]
                                hover:text-[#B91C1C] hover:bg-[#FEF2F2] transition-colors
+                               min-w-[44px] min-h-[44px] flex items-center justify-center
                                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EF4444]"
                     aria-label={`Supprimer ${room.name || "cette pièce"}`}
                   >

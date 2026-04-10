@@ -180,7 +180,7 @@ export default function ProStepper({
               >
                 {/* Dot */}
                 <div
-                  className={`flex items-center justify-center w-8 h-8 rounded-full text-xs transition-all duration-300 ${DOT_STYLES[state]}`}
+                  className={`flex items-center justify-center w-10 h-10 rounded-full text-xs transition-all duration-300 ${DOT_STYLES[state]}`}
                 >
                   {state === "completed" ? (
                     <CheckIcon />
@@ -204,7 +204,7 @@ export default function ProStepper({
               {/* Connector */}
               {!isLast && (
                 <div
-                  className={`flex-1 h-0.5 mx-2 mt-4 self-start transition-colors duration-300 ${
+                  className={`flex-1 h-0.5 mx-2 mt-5 self-start transition-colors duration-300 ${
                     completedSteps.includes(i + 1)
                       ? "bg-[#7D9B76]"
                       : "bg-[#D1D0CB]"
