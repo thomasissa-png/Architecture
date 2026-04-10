@@ -148,21 +148,21 @@ export async function POST(
                r.generation_status, r.lot_id,
                l.style_id, l.custom_style_text, l.target_buyer
         FROM pro_rooms r
-        JOIN pro_lots l ON r.lot_id = l.id
+        LEFT JOIN pro_lots l ON r.lot_id = l.id
         WHERE r.project_id = $1 AND r.lot_id = ANY($2)
         ORDER BY r.lot_id, r.name`;
       roomsParams = [projectId, lot_ids];
     } else {
-      // All lots
+      // All lots (LEFT JOIN to include rooms without lot_id)
       roomsQuery = `
         SELECT r.id, r.name, r.room_type, r.surface_m2, r.length_m, r.width_m,
                r.ceiling_height_m, r.windows_count, r.photo_path,
                r.generation_status, r.lot_id,
                l.style_id, l.custom_style_text, l.target_buyer
         FROM pro_rooms r
-        JOIN pro_lots l ON r.lot_id = l.id
+        LEFT JOIN pro_lots l ON r.lot_id = l.id
         WHERE r.project_id = $1
-        ORDER BY r.lot_id, r.name`;
+        ORDER BY r.lot_id NULLS LAST, r.name`;
       roomsParams = [projectId];
     }
 

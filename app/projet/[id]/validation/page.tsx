@@ -58,7 +58,7 @@ export default function ValidationPage() {
   const [projectStatus, setProjectStatus] = useState<string>("extraction_done");
 
   const fileInputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
-  const isDirty = useRef(false);
+  const [isDirty, setIsDirty] = useState(false);
 
   // ─── Load rooms from project ─────────────────────────────────────
 
@@ -106,7 +106,7 @@ export default function ValidationPage() {
     setRooms((prev) =>
       prev.map((r) => (r.id === roomId ? { ...r, [field]: value } : r))
     );
-    isDirty.current = true;
+    setIsDirty(true);
   }, []);
 
   const deleteRoom = useCallback((roomId: string, roomName: string) => {
@@ -115,7 +115,7 @@ export default function ValidationPage() {
     );
     if (!confirmed) return;
     setRooms((prev) => prev.filter((r) => r.id !== roomId));
-    isDirty.current = true;
+    setIsDirty(true);
   }, []);
 
   const addRoom = useCallback(() => {
@@ -129,7 +129,7 @@ export default function ValidationPage() {
       isNew: true,
     };
     setRooms((prev) => [...prev, newRoom]);
-    isDirty.current = true;
+    setIsDirty(true);
   }, []);
 
   // ─── Photo upload per room ───────────────────────────────────────
@@ -141,7 +141,7 @@ export default function ValidationPage() {
         r.id === roomId ? { ...r, photoUrl: url, photoFile: file } : r
       )
     );
-    isDirty.current = true;
+    setIsDirty(true);
   }, []);
 
   // ─── Validate and continue ───────────────────────────────────────
@@ -247,7 +247,7 @@ export default function ValidationPage() {
       }
 
       // Success — navigate to qualification (step 4)
-      isDirty.current = false;
+      setIsDirty(false);
       router.push(`/projet/${projectId}/qualification`);
     } catch {
       setError("Erreur de connexion. Vérifiez votre réseau.");
@@ -300,7 +300,7 @@ export default function ValidationPage() {
         );
       }
 
-      isDirty.current = false;
+      setIsDirty(false);
       setDraftSaved(true);
       setTimeout(() => setDraftSaved(false), 3000);
     } catch {
@@ -405,7 +405,7 @@ export default function ValidationPage() {
               <p className="text-xs text-[#9B9A94]">
                 {roomsWithPhoto}/{totalRooms} pièce{totalRooms > 1 ? "s" : ""} avec photo
               </p>
-              {isDirty.current && (
+              {isDirty && (
                 <span className="text-xs text-[#D97706]">
                   Modifications non sauvegardées
                 </span>
@@ -529,8 +529,7 @@ export default function ValidationPage() {
                         onChange={(e) => updateRoom(room.id, "room_type", e.target.value)}
                         className="flex-1 px-2.5 py-1.5 rounded border border-[#D1D0CB] bg-white
                                    text-xs text-[#1C1C1E]
-                                   focus:outline-none focus:ring-1 focus:ring-[#7D9B76]
-                                   appearance-none"
+                                   focus:outline-none focus:ring-1 focus:ring-[#7D9B76]"
                         aria-label={`Type de ${room.name || "pièce"}`}
                       >
                         {ROOM_TYPE_OPTIONS.map((opt) => (
