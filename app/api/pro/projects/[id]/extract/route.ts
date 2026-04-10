@@ -159,6 +159,24 @@ export async function POST(
       insertedRooms.push(insertResult.rows[0]);
     }
 
+    // ─── Auto-assign rooms to lot for non-immeuble projects ─────
+    if (project.type_bien !== "immeuble") {
+      const lotResult = await db.query(
+        `SELECT id FROM pro_lots WHERE project_id = $1 LIMIT 1`,
+        [projectId]
+      );
+      if (lotResult.rows.length > 0) {
+        const lotId = lotResult.rows[0].id;
+        const roomIds = insertedRooms.map((r) => r.id);
+        if (roomIds.length > 0) {
+          await db.query(
+            `UPDATE pro_rooms SET lot_id = $1 WHERE id = ANY($2)`,
+            [lotId, roomIds]
+          );
+        }
+      }
+    }
+
     // ─── Lot suggestions for immeuble with multiple floors ────────
     const lotSuggestions = undefined;
 

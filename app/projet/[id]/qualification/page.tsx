@@ -144,24 +144,28 @@ export default function QualificationPage() {
         rooms: roomsByLot.get(lot.id) || [],
       }));
 
-      // If no lots but rooms exist (single-unit project), create a virtual lot
+      // If no lots from API but rooms exist, rooms may not be assigned yet.
+      // This shouldn't happen with the auto-assign fix, but handle gracefully.
       if (mergedLots.length === 0 && (data.rooms || []).length > 0) {
-        mergedLots.push({
-          id: "default",
-          name: "Votre bien",
-          floor: null,
-          target_buyer: null,
-          style_id: null,
-          budget_travaux: null,
-          contraintes: null,
-          rooms: data.rooms.map((r: { id: string; name: string; room_type: string; surface_m2?: number | null; visual_output_path?: string | null; photo_path?: string | null }) => ({
+        setError("Aucun lot trouvé. Vérifiez que le projet a été correctement créé.");
+        setIsLoading(false);
+        return;
+      }
+
+      // For single-lot projects, attach unassigned rooms to the single lot
+      if (mergedLots.length === 1) {
+        const unassignedRooms = (data.rooms || [])
+          .filter((r: { lot_id: string | null }) => !r.lot_id)
+          .map((r: { id: string; name: string; room_type: string; surface_m2?: number | null; visual_output_path?: string | null; photo_path?: string | null }) => ({
             id: r.id,
             name: r.name,
             room_type: r.room_type,
             surface_m2: r.surface_m2 ?? null,
             photo_path: r.visual_output_path || r.photo_path || null,
-          })),
-        });
+          }));
+        if (unassignedRooms.length > 0) {
+          mergedLots[0].rooms = [...mergedLots[0].rooms, ...unassignedRooms];
+        }
       }
 
       setLots(mergedLots);
@@ -241,7 +245,7 @@ export default function QualificationPage() {
       });
 
       const response = await fetch(`/api/pro/projects/${projectId}/qualify`, {
-        method: "PUT",
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ lots: lotsPayload }),
       });
