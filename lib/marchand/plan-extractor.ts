@@ -170,11 +170,11 @@ export async function extractPlanData(
   }
 
   try {
-    return await _extractWithRetry(openai, systemPrompt, planBase64, mimeType, pdfMode, pdfFileId, typeBien);
+    return await _extractWithRetry(openai, systemPrompt, planBase64, mimeType, pdfMode, pdfFileId);
   } finally {
     // Clean up uploaded PDF file (best-effort)
     if (pdfFileId) {
-      openai.files.del(pdfFileId).catch(() => {});
+      openai.files.delete(pdfFileId).catch(() => {});
     }
   }
 }
@@ -186,8 +186,7 @@ async function _extractWithRetry(
   planBase64: string,
   mimeType: string,
   pdfMode: boolean,
-  pdfFileId: string | undefined,
-  typeBien: TypeBien
+  pdfFileId: string | undefined
 ): Promise<PlanExtractionResult> {
   // First attempt
   let rawJson: string;
