@@ -49,6 +49,20 @@ export async function PATCH(
   const authResult = await requireProjectOwnership(request, projectId);
   if (isErrorResponse(authResult)) return authResult;
 
+  const { project } = authResult;
+
+  // ─── Status check ──────────────────────────────────────────────
+  const validStatuses = ["validated", "qualified"];
+  if (!validStatuses.includes(project.status)) {
+    return NextResponse.json(
+      {
+        error: "INVALID_STATUS",
+        message: "La qualification n'est possible qu'après validation du plan.",
+      },
+      { status: 409 }
+    );
+  }
+
   try {
     await ensureProTables();
 

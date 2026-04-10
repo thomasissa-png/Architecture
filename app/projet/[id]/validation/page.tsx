@@ -71,13 +71,13 @@ export default function ValidationPage() {
         }
         const data = await response.json();
         const loadedRooms: RoomEntry[] = (data.rooms || []).map(
-          (r: { id: string; name: string; room_type: string; surface_m2?: number | null; visual_output_path?: string | null }) => ({
+          (r: { id: string; name: string; room_type: string; surface_m2?: number | null; photo_path?: string | null }) => ({
             id: r.id,
             name: r.name,
             room_type: r.room_type || "autre",
             surface_m2: r.surface_m2 ?? null,
-            photoUrl: r.visual_output_path
-              ? `/api/logs/image?path=${encodeURIComponent(r.visual_output_path)}`
+            photoUrl: r.photo_path
+              ? `/api/logs/image?path=${encodeURIComponent(r.photo_path)}`
               : null,
             photoFile: null,
           })

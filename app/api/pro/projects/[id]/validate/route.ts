@@ -180,7 +180,7 @@ export async function PUT(
     }
 
     const roomsMissingType = rooms.filter(
-      (r) => !r.room_type || r.room_type === "autre"
+      (r) => !r.room_type
     );
     if (roomsMissingType.length > 0) {
       missing.push(

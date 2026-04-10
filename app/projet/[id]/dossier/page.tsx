@@ -256,22 +256,36 @@ export default function DossierPage() {
     setError(null);
 
     try {
+      // Collect lot IDs from loaded dossiers
+      const lotIds = lotDossiers
+        .map((lot) => lot.id)
+        .filter((id) => id !== "default");
+
+      if (lotIds.length === 0) {
+        setError("Aucun lot disponible pour générer le dossier.");
+        setIsGeneratingPdf(false);
+        return;
+      }
+
       const response = await fetch(`/api/pro/projects/${projectId}/dossier/pdf`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lot_ids: lotIds }),
       });
 
       if (!response.ok) {
         const data = await response.json();
-        setError(data.message || "Erreur lors de la génération du PDF.");
+        setError(data.message || "Erreur lors de la génération du dossier.");
         setIsGeneratingPdf(false);
         return;
       }
 
       const data = await response.json();
-      setPdfUrl(data.pdf_url || null);
+      // V1: API returns JSON dossier summary, not a PDF URL yet
+      // Store the dossier data for display; PDF rendering coming in V1.1
+      setPdfUrl(data.generated_at ? "ready" : null);
     } catch {
-      setError("Erreur de connexion lors de la génération du PDF.");
+      setError("Erreur de connexion lors de la génération du dossier.");
     } finally {
       setIsGeneratingPdf(false);
     }

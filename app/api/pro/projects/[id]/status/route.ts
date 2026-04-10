@@ -40,6 +40,7 @@ export async function GET(
     // ─── Fetch all rooms with generation status ──────────────────
     const roomsResult = await db.query(
       `SELECT r.id, r.lot_id, r.name, r.room_type,
+              r.surface_m2, r.photo_path,
               r.generation_status, r.visual_output_path,
               r.visual_pass1_path, r.generation_error,
               l.name AS lot_name
@@ -56,6 +57,8 @@ export async function GET(
         lot_id: string | null;
         name: string;
         room_type: string;
+        surface_m2: string | null;
+        photo_path: string | null;
         generation_status: string;
         visual_output_path: string | null;
         visual_pass1_path: string | null;
@@ -67,6 +70,8 @@ export async function GET(
         lot_name: r.lot_name,
         name: r.name,
         room_type: r.room_type,
+        surface_m2: r.surface_m2 !== null ? Number(r.surface_m2) : null,
+        photo_path: r.photo_path,
         generation_status: r.generation_status,
         visual_output_path: r.visual_output_path,
         visual_pass1_path: r.visual_pass1_path,
