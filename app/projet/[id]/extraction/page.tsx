@@ -33,6 +33,8 @@ interface ExtractedRoom {
   name: string;
   room_type: string;
   surface_m2?: number | null;
+  length_m?: number | null;
+  width_m?: number | null;
   floor_index: number;
   is_new?: boolean;
   confidence?: number;
@@ -299,6 +301,8 @@ export default function ExtractionPage() {
           name: String(r.name ?? ""),
           room_type: String(r.room_type ?? "autre"),
           surface_m2: r.surface_m2 != null ? Number(r.surface_m2) : null,
+          length_m: r.length_m != null ? Number(r.length_m) : null,
+          width_m: r.width_m != null ? Number(r.width_m) : null,
           floor_index: typeof r.floor_index === "number" ? r.floor_index : 0,
           confidence: typeof r.confidence === "number" ? r.confidence : undefined,
           bounding_box: r.bounding_box && typeof r.bounding_box === "object"
@@ -749,9 +753,12 @@ export default function ExtractionPage() {
                                 {room.name || "Sans nom"}
                               </button>
                             )}
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                               {room.surface_m2 != null && (
                                 <span className="text-xs text-[#9B9A94]">{room.surface_m2} m²</span>
+                              )}
+                              {room.length_m != null && room.width_m != null && (
+                                <span className="text-xs text-[#9B9A94]">{room.length_m} × {room.width_m} m</span>
                               )}
                               {room.confidence != null && (
                                 <span

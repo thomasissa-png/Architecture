@@ -209,6 +209,8 @@ export async function POST(
       name: string;
       room_type: string;
       surface_m2: number | null;
+      length_m: number | null;
+      width_m: number | null;
       floor_index: number;
       confidence: number;
       bounding_box?: { x_percent: number; y_percent: number; width_percent: number; height_percent: number } | null;
