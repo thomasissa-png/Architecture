@@ -180,6 +180,8 @@ export default function ExtractionPage() {
   const [planRooms, setPlanRooms] = useState<PlanRoom[]>([]);
   const [planNaturalWidth, setPlanNaturalWidth] = useState(0);
   const planInitializedRef = useRef(false);
+  // P0 — scaleFactor lifted to parent so syncPlanToExtracted uses calibrated value (Thomas)
+  const [scaleFactor, setScaleFactor] = useState(50);
 
   // Quand les rooms extraites changent ET que le plan est visible, initialiser les PlanRooms
   const initializePlanRooms = useCallback(
@@ -196,11 +198,11 @@ export default function ExtractionPage() {
   const handlePlanRoomsChange = useCallback(
     (newPlanRooms: PlanRoom[]) => {
       setPlanRooms(newPlanRooms);
-      // Synchro vers la liste textuelle (scaleFactor par defaut 50)
-      const synced = syncPlanToExtracted(newPlanRooms, 50);
+      // P0 — Use the calibrated scaleFactor instead of hardcoded 50 (Thomas)
+      const synced = syncPlanToExtracted(newPlanRooms, scaleFactor);
       setRooms(synced);
     },
-    []
+    [scaleFactor]
   );
 
   // Charger les dimensions naturelles du plan quand on ouvre l'editeur
@@ -615,7 +617,8 @@ export default function ExtractionPage() {
                       planImageUrl={`/api/logs/image?path=${encodeURIComponent(parsedPlanPaths[activePlanIndex] ?? parsedPlanPaths[0])}`}
                       rooms={planRooms}
                       onRoomsChange={handlePlanRoomsChange}
-                      scaleFactor={50}
+                      scaleFactor={scaleFactor}
+                      onScaleFactorChange={(sf) => setScaleFactor(sf)}
                     />
                   </div>
                 )}

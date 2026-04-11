@@ -237,11 +237,31 @@ export default function PlanEditor({
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   // Multi-selection for fusion (Shift+click or long-press second room)
   const [selectedRoomIds, setSelectedRoomIds] = useState<Set<string>>(new Set());
+  // Pending delete confirmation (UX C1)
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  // Toolbar collapse — advanced options hidden by default (UX C3)
+  const [showAdvancedTools, setShowAdvancedTools] = useState(false);
+  // Mobile fusion mode — "Fusionner avec..." tap flow (Moi)
+  const [fusionMode, setFusionMode] = useState(false);
+  // Zoom level (Moi)
+  const [zoomLevel, setZoomLevel] = useState(1);
+  // Help collapsed by default (UX C5)
+  const [helpExpanded, setHelpExpanded] = useState(false);
   // Long-press timer for touch rename
   const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Track the natural image dimensions to compute the displayed scale
   const [naturalSize, setNaturalSize] = useState<{ width: number; height: number } | null>(null);
+
+  // P1 — Cleanup long-press timer on unmount (QA B6)
+  useEffect(() => {
+    return () => {
+      if (longPressTimerRef.current) {
+        clearTimeout(longPressTimerRef.current);
+        longPressTimerRef.current = null;
+      }
+    };
+  }, []);
 
   // ─── Undo / Redo ────────────────────────────────────────────────
   const [undoStack, setUndoStack] = useState<PlanRoom[][]>([]);
@@ -560,7 +580,13 @@ export default function PlanEditor({
     setTimeout(() => setEditingNameId(id), 100);
   }, [rooms, onRoomsChange, selectedRoomIds, pushUndo]);
 
-  const deleteRoom = useCallback(
+  /** P1 — Request delete shows confirmation inline (UX C1) */
+  const requestDelete = useCallback((roomId: string) => {
+    setPendingDeleteId(roomId);
+  }, []);
+
+  /** P1 — Confirm delete after user approval */
+  const confirmDelete = useCallback(
     (roomId: string) => {
       pushUndo();
       onRoomsChange(rooms.filter((r) => r.id !== roomId));
@@ -570,9 +596,14 @@ export default function PlanEditor({
         next.delete(roomId);
         return next;
       });
+      setPendingDeleteId(null);
     },
     [rooms, onRoomsChange, selectedRoomId, pushUndo]
   );
+
+  const cancelDelete = useCallback(() => {
+    setPendingDeleteId(null);
+  }, []);
 
   const updateRoomName = useCallback(
     (roomId: string, name: string) => {
@@ -581,11 +612,23 @@ export default function PlanEditor({
     [rooms, onRoomsChange]
   );
 
-  /** Push undo snapshot when rename is committed (on blur or Enter) */
-  const commitRoomName = useCallback(() => {
-    pushUndo();
-    setEditingNameId(null);
-  }, [pushUndo]);
+  /** Push undo snapshot when rename is committed (on blur or Enter).
+   *  P1 — If the name is empty/whitespace, restore the previous name (QA B3). */
+  const commitRoomName = useCallback(
+    (roomId: string, previousName: string) => {
+      const room = rooms.find((r) => r.id === roomId);
+      if (room && (!room.name || !room.name.trim())) {
+        // Restore old name — do NOT push undo for a no-op
+        onRoomsChange(rooms.map((r) => (r.id === roomId ? { ...r, name: previousName || "Sans nom" } : r)));
+      } else {
+        pushUndo();
+      }
+      setEditingNameId(null);
+    },
+    [rooms, onRoomsChange, pushUndo]
+  );
+  // Track the name at edit start for rollback on empty
+  const editNameBeforeRef = useRef<string>("");
 
   const updateRoomType = useCallback(
     (roomId: string, roomType: string) => {
@@ -625,6 +668,8 @@ export default function PlanEditor({
     if (!distMetres || distMetres <= 0) return;
 
     const distPx = distancePx(calibrationPointA, calibrationPointB);
+    // P0 — Guard against div/0 when both points are (nearly) the same pixel
+    if (distPx < 1) return;
     const newScaleFactor = distPx / distMetres;
 
     if (onScaleFactorChange) {
@@ -681,15 +726,27 @@ export default function PlanEditor({
 
   return (
     <div className="space-y-3">
-      {/* Help text — ABOVE the editor so Thomas sees it first */}
+      {/* P2 — Help text collapsible (UX C5) — single line + expand */}
       <div className="p-3 rounded-lg bg-[#F0F4EE] border border-[#7D9B76]/20 text-[13px] text-[#4A7A42] leading-relaxed">
-        <p className="font-medium mb-1">Comment utiliser l&apos;éditeur :</p>
-        <ul className="space-y-0.5 text-[12px]">
-          <li>Glissez une pièce pour la déplacer. Tirez les coins pour redimensionner.</li>
-          <li>Appui long sur le nom (ou double-clic) pour renommer.</li>
-          <li>Shift+clic sur 2 pièces puis &quot;Fusionner&quot; pour casser un mur.</li>
-          <li><span className="inline-block w-3 h-2 border-2 border-dashed border-[#7D9B76] rounded-sm mr-1" />= pièce projet (ajoutée par vous) &nbsp; <span className="inline-block w-3 h-2 border-2 border-solid border-[#6495ED] rounded-sm mr-1" />= pièce existante</li>
-        </ul>
+        <p>
+          Déplacez les pièces, redimensionnez-les, ou ajoutez-en de nouvelles.{" "}
+          <button
+            type="button"
+            onClick={() => setHelpExpanded((v) => !v)}
+            className="underline underline-offset-2 hover:text-[#4A7A42]/80 transition-colors
+                       focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] rounded"
+          >
+            {helpExpanded ? "Réduire" : "En savoir plus"}
+          </button>
+        </p>
+        {helpExpanded && (
+          <ul className="space-y-0.5 text-[12px] mt-2">
+            <li>Glissez une pièce pour la déplacer. Tirez les coins pour redimensionner.</li>
+            <li>Appui long sur le nom (ou double-clic) pour renommer.</li>
+            <li>Shift+clic (ou « Fusionner avec… » sur mobile) sur 2 pièces pour casser un mur.</li>
+            <li><span className="inline-block w-3 h-2 border-2 border-dashed border-[#7D9B76] rounded-sm mr-1" />= pièce projet (ajoutée par vous) &nbsp; <span className="inline-block w-3 h-2 border-2 border-solid border-[#6495ED] rounded-sm mr-1" />= pièce existante</li>
+          </ul>
+        )}
       </div>
 
       {/* Header toolbar */}
@@ -712,12 +769,12 @@ export default function PlanEditor({
           )}
         </div>
         <div className="flex items-center gap-1.5 flex-wrap">
-          {/* Undo / Redo */}
+          {/* P2 — Undo / Redo with text labels (UX C4) */}
           <button
             type="button"
             onClick={handleUndo}
             disabled={undoStack.length === 0}
-            className="inline-flex items-center justify-center w-10 h-10 rounded-md
+            className="inline-flex items-center gap-1 px-2.5 h-10 rounded-md
                        border border-[#D1D0CB]/60 text-[#1C1C1E]/70 text-xs
                        hover:bg-[#F5F5F0] transition-colors
                        focus-visible:outline-none focus-visible:ring-2
@@ -726,16 +783,17 @@ export default function PlanEditor({
             aria-label="Annuler (Ctrl+Z)"
             title="Annuler (Ctrl+Z)"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <polyline points="1 4 1 10 7 10" />
               <path d="M3.51 15a9 9 0 102.13-9.36L1 10" />
             </svg>
+            <span className="hidden sm:inline">Annuler</span>
           </button>
           <button
             type="button"
             onClick={handleRedo}
             disabled={redoStack.length === 0}
-            className="inline-flex items-center justify-center w-10 h-10 rounded-md
+            className="inline-flex items-center gap-1 px-2.5 h-10 rounded-md
                        border border-[#D1D0CB]/60 text-[#1C1C1E]/70 text-xs
                        hover:bg-[#F5F5F0] transition-colors
                        focus-visible:outline-none focus-visible:ring-2
@@ -744,15 +802,138 @@ export default function PlanEditor({
             aria-label="Refaire (Ctrl+Shift+Z)"
             title="Refaire (Ctrl+Shift+Z)"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <polyline points="23 4 23 10 17 10" />
               <path d="M20.49 15a9 9 0 11-2.13-9.36L23 10" />
             </svg>
+            <span className="hidden sm:inline">Refaire</span>
           </button>
 
           {/* Separator */}
           <div className="w-px h-6 bg-[#D1D0CB]/40 mx-0.5" aria-hidden="true" />
 
+          {/* Merge button — visible when 2+ rooms selected */}
+          {canMerge && (
+            <button
+              type="button"
+              onClick={mergeSelectedRooms}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md
+                         bg-[#7D9B76] text-white text-xs font-medium
+                         hover:bg-[#4A7A42] transition-colors
+                         focus-visible:outline-none focus-visible:ring-2
+                         focus-visible:ring-[#7D9B76] min-h-[44px]
+                         shadow-sm"
+              aria-label={`Fusionner les ${selectedRoomIds.size} pièces sélectionnées`}
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M8 3H5a2 2 0 00-2 2v3" />
+                <path d="M21 8V5a2 2 0 00-2-2h-3" />
+                <path d="M3 16v3a2 2 0 002 2h3" />
+                <path d="M16 21h3a2 2 0 002-2v-3" />
+              </svg>
+              Fusionner ({selectedRoomIds.size})
+            </button>
+          )}
+
+          {/* P1 — Mobile fusion button (Moi) — visible when 1 room selected and not in canMerge mode */}
+          {selectedRoomId && !canMerge && (
+            <button
+              type="button"
+              onClick={() => {
+                if (fusionMode) {
+                  setFusionMode(false);
+                } else {
+                  // Ensure the single selected room is in the multi-select set
+                  setSelectedRoomIds(new Set([selectedRoomId]));
+                  setFusionMode(true);
+                }
+              }}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md
+                         text-xs font-medium transition-colors
+                         focus-visible:outline-none focus-visible:ring-2
+                         focus-visible:ring-[#7D9B76] min-h-[44px]
+                         ${fusionMode
+                           ? "bg-[#7D9B76] text-white shadow-sm"
+                           : "border border-[#D1D0CB]/60 text-[#1C1C1E]/70 hover:bg-[#F5F5F0]"
+                         }`}
+              aria-label={fusionMode ? "Annuler la fusion" : "Fusionner avec une autre pièce"}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M8 3H5a2 2 0 00-2 2v3" />
+                <path d="M21 8V5a2 2 0 00-2-2h-3" />
+                <path d="M3 16v3a2 2 0 002 2h3" />
+                <path d="M16 21h3a2 2 0 002-2v-3" />
+              </svg>
+              {fusionMode ? "Annuler fusion" : "Fusionner avec…"}
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={addNewRoom}
+            disabled={!isReady}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md
+                       border border-dashed border-[#7D9B76] text-xs font-medium
+                       text-[#7D9B76] hover:bg-[#7D9B76]/10 transition-colors
+                       focus-visible:outline-none focus-visible:ring-2
+                       focus-visible:ring-[#7D9B76] min-h-[44px]
+                       disabled:opacity-40 disabled:cursor-not-allowed"
+            aria-label="Ajouter une nouvelle pièce sur le plan"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Nouvelle pièce
+          </button>
+
+          {/* Separator */}
+          <div className="w-px h-6 bg-[#D1D0CB]/40 mx-0.5" aria-hidden="true" />
+
+          {/* P1 — Advanced options toggle (UX C3) */}
+          <button
+            type="button"
+            onClick={() => setShowAdvancedTools((v) => !v)}
+            className="inline-flex items-center gap-1 px-2.5 h-10 rounded-md
+                       border border-[#D1D0CB]/60 text-[#1C1C1E]/70 text-xs
+                       hover:bg-[#F5F5F0] transition-colors
+                       focus-visible:outline-none focus-visible:ring-2
+                       focus-visible:ring-[#7D9B76] min-w-[44px] min-h-[44px]"
+            aria-expanded={showAdvancedTools}
+            aria-label="Options avancées"
+          >
+            Options
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
+              className={`transition-transform ${showAdvancedTools ? "rotate-180" : ""}`}>
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* P1 — Advanced tools row (UX C3) — Calibrer + Toggle plan/projet */}
+      {showAdvancedTools && (
+        <div className="flex items-center gap-1.5 flex-wrap">
           {/* Calibration button */}
           <button
             type="button"
@@ -784,9 +965,6 @@ export default function PlanEditor({
             </svg>
             {isCalibrating ? "Annuler" : "Calibrer"}
           </button>
-
-          {/* Separator */}
-          <div className="w-px h-6 bg-[#D1D0CB]/40 mx-0.5" aria-hidden="true" />
 
           {/* View mode toggle */}
           {newCount > 0 && (
@@ -825,72 +1003,8 @@ export default function PlanEditor({
               </button>
             </div>
           )}
-
-          {/* Separator */}
-          <div className="w-px h-6 bg-[#D1D0CB]/40 mx-0.5" aria-hidden="true" />
-
-          {/* Merge button — visible when 2+ rooms selected */}
-          {canMerge && (
-            <button
-              type="button"
-              onClick={mergeSelectedRooms}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md
-                         bg-[#7D9B76] text-white text-xs font-medium
-                         hover:bg-[#4A7A42] transition-colors
-                         focus-visible:outline-none focus-visible:ring-2
-                         focus-visible:ring-[#7D9B76] min-h-[44px]
-                         shadow-sm"
-              aria-label={`Fusionner les ${selectedRoomIds.size} pièces sélectionnées`}
-            >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M8 3H5a2 2 0 00-2 2v3" />
-                <path d="M21 8V5a2 2 0 00-2-2h-3" />
-                <path d="M3 16v3a2 2 0 002 2h3" />
-                <path d="M16 21h3a2 2 0 002-2v-3" />
-              </svg>
-              Fusionner ({selectedRoomIds.size})
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={addNewRoom}
-            disabled={!isReady}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md
-                       border border-dashed border-[#7D9B76] text-xs font-medium
-                       text-[#7D9B76] hover:bg-[#7D9B76]/10 transition-colors
-                       focus-visible:outline-none focus-visible:ring-2
-                       focus-visible:ring-[#7D9B76] min-h-[44px]
-                       disabled:opacity-40 disabled:cursor-not-allowed"
-            aria-label="Ajouter une nouvelle pièce sur le plan"
-          >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            Nouvelle pièce
-          </button>
         </div>
-      </div>
+      )}
 
       {/* Calibration instruction banner */}
       {isCalibrating && (
@@ -906,25 +1020,40 @@ export default function PlanEditor({
         </div>
       )}
 
+      {/* P1 — Fusion mode banner */}
+      {fusionMode && (
+        <div className="p-2.5 rounded-lg bg-[#EEF2FF] border border-[#6366F1]/20 text-[13px] text-[#4338CA]">
+          Touchez la pièce à fusionner avec <strong>{rooms.find((r) => r.id === selectedRoomId)?.name || "la pièce sélectionnée"}</strong>.
+        </div>
+      )}
+
       {/* Plan container */}
       <div
-        ref={containerRef}
         className="relative overflow-auto rounded-lg border border-[#D1D0CB]/40
-                   bg-[#F5F5F0] shadow-[0_1px_3px_rgba(28,28,30,0.06)]
-                   touch-pan-x touch-pan-y"
+                   bg-[#F5F5F0] shadow-[0_1px_3px_rgba(28,28,30,0.06)]"
         style={{ maxHeight: "70vh" }}
-        onClick={handleBackgroundClick}
-        role="application"
-        aria-label="Éditeur de plan interactif — déplacez et redimensionnez les pièces"
       >
-        {/* Plan image */}
-        <img
-          src={planImageUrl}
-          alt="Plan du bien"
-          onLoad={handleImageLoad}
-          className="block w-full h-auto select-none pointer-events-none"
-          draggable={false}
-        />
+        <div
+          ref={containerRef}
+          className="relative touch-pan-x touch-pan-y"
+          style={{
+            transform: `scale(${zoomLevel})`,
+            transformOrigin: "top left",
+            /* Ensure the scrollable area accounts for the zoomed size */
+            width: zoomLevel !== 1 ? `${100 / zoomLevel}%` : "100%",
+          }}
+          onClick={handleBackgroundClick}
+          role="application"
+          aria-label="Éditeur de plan interactif — déplacez et redimensionnez les pièces"
+        >
+          {/* Plan image */}
+          <img
+            src={planImageUrl}
+            alt="Plan du bien"
+            onLoad={handleImageLoad}
+            className="block w-full h-auto select-none pointer-events-none"
+            draggable={false}
+          />
 
         {/* Alignment guides SVG overlay */}
         {isReady && dragState && (alignmentGuides.horizontal.length > 0 || alignmentGuides.vertical.length > 0) && (
@@ -1044,6 +1173,36 @@ export default function PlanEditor({
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
+                  // P1 — Fusion mode: second tap merges with the first room (Moi)
+                  if (fusionMode && selectedRoomId && room.id !== selectedRoomId) {
+                    const mergeIds = new Set([selectedRoomId, room.id]);
+                    setSelectedRoomIds(mergeIds);
+                    setFusionMode(false);
+                    // Auto-merge after setting the IDs — use a microtask to let state settle
+                    setTimeout(() => {
+                      // Inline merge logic (same as mergeSelectedRooms but with explicit IDs)
+                      const selected = rooms.filter((r) => mergeIds.has(r.id));
+                      if (selected.length < 2) return;
+                      pushUndo();
+                      const minX = Math.min(...selected.map((r) => r.x));
+                      const minY = Math.min(...selected.map((r) => r.y));
+                      const maxX = Math.max(...selected.map((r) => r.x + r.width));
+                      const maxY = Math.max(...selected.map((r) => r.y + r.height));
+                      const largest = selected.reduce((a, b) => (a.width * a.height > b.width * b.height ? a : b));
+                      const newId = `plan_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+                      const merged: PlanRoom = {
+                        id: newId, name: largest.name, roomType: largest.roomType,
+                        x: minX, y: minY, width: maxX - minX, height: maxY - minY,
+                        color: colorForType(largest.roomType), isNew: true,
+                      };
+                      const remaining = rooms.filter((r) => !mergeIds.has(r.id));
+                      onRoomsChange([...remaining, merged]);
+                      setSelectedRoomId(newId);
+                      setSelectedRoomIds(new Set([newId]));
+                      setTimeout(() => setEditingNameId(newId), 100);
+                    }, 0);
+                    return;
+                  }
                   // Shift+click = multi-select for fusion
                   if (e.shiftKey) {
                     setSelectedRoomIds((prev) => {
@@ -1062,6 +1221,8 @@ export default function PlanEditor({
                   } else {
                     setSelectedRoomId(room.id);
                     setSelectedRoomIds(new Set([room.id]));
+                    // Cancel fusion mode if user clicks without using it
+                    if (fusionMode) setFusionMode(false);
                   }
                 }}
                 onMouseDown={(e) => handlePointerDown(e, room.id, "move")}
@@ -1070,6 +1231,7 @@ export default function PlanEditor({
                   // Long-press (500ms) to rename on touch
                   if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
                   longPressTimerRef.current = setTimeout(() => {
+                    editNameBeforeRef.current = room.name || "Sans nom";
                     setEditingNameId(room.id);
                   }, 500);
                 }}
@@ -1091,13 +1253,13 @@ export default function PlanEditor({
                 aria-label={`${room.name} — ${surface} m²${isNewRoom ? " (projet)" : " (existante)"}. Déplacer avec la souris ou le doigt.`}
                 onKeyDown={(e) => {
                   if (e.key === "Delete" || e.key === "Backspace") {
-                    deleteRoom(room.id);
+                    requestDelete(room.id);
                   }
                 }}
               >
                 {/* Zone background — dashed border for new/project rooms, solid for existing */}
                 <div
-                  className="absolute inset-0 rounded-sm transition-shadow duration-150"
+                  className="absolute inset-0 rounded-sm"
                   style={{
                     backgroundColor: isNewRoom ? bgColor.replace("0.3)", "0.4)") : bgColor,
                     border: isNewRoom
@@ -1106,6 +1268,7 @@ export default function PlanEditor({
                     boxShadow: isSelected || isMultiSelected
                       ? `0 0 0 2px ${brdColor}, 0 2px 8px rgba(0,0,0,0.15)`
                       : "none",
+                    transition: "box-shadow 150ms ease, background-color 150ms ease",
                   }}
                 />
 
@@ -1128,10 +1291,10 @@ export default function PlanEditor({
                       type="text"
                       value={room.name}
                       onChange={(e) => updateRoomName(room.id, e.target.value)}
-                      onBlur={commitRoomName}
+                      onBlur={() => commitRoomName(room.id, editNameBeforeRef.current)}
                       onKeyDown={(e) => {
                         if (e.key === "Enter" || e.key === "Escape") {
-                          commitRoomName();
+                          commitRoomName(room.id, editNameBeforeRef.current);
                         }
                       }}
                       onClick={(e) => e.stopPropagation()}
@@ -1148,10 +1311,12 @@ export default function PlanEditor({
                   ) : (
                     <span
                       className="text-[13px] font-semibold text-[#1C1C1E] leading-tight
-                                 truncate max-w-full text-center drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)]
+                                 truncate max-w-full text-center
+                                 bg-white/75 rounded px-1
                                  pointer-events-auto cursor-text"
                       onDoubleClick={(e) => {
                         e.stopPropagation();
+                        editNameBeforeRef.current = room.name || "Sans nom";
                         setEditingNameId(room.id);
                       }}
                       title="Double-cliquer pour renommer (appui long sur mobile)"
@@ -1161,8 +1326,8 @@ export default function PlanEditor({
                   )}
 
                   <span
-                    className="text-[12px] text-[#1C1C1E]/70 leading-tight
-                               drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)]"
+                    className="text-[12px] text-[#1C1C1E] leading-tight
+                               bg-white/60 rounded px-1"
                   >
                     {surface} m²
                   </span>
@@ -1180,6 +1345,7 @@ export default function PlanEditor({
                                min-w-[44px] min-h-[44px] -m-[9px]"
                     onClick={(e) => {
                       e.stopPropagation();
+                      editNameBeforeRef.current = room.name || "Sans nom";
                       setEditingNameId(room.id);
                     }}
                     onMouseDown={(e) => e.stopPropagation()}
@@ -1231,8 +1397,8 @@ export default function PlanEditor({
                   </div>
                 )}
 
-                {/* Delete button (top-right) */}
-                {isSelected && (
+                {/* Delete button (top-right) — triggers confirmation (UX C1) */}
+                {isSelected && pendingDeleteId !== room.id && (
                   <button
                     type="button"
                     className="absolute -top-2 -right-2 w-8 h-8 rounded-full
@@ -1243,7 +1409,7 @@ export default function PlanEditor({
                                min-w-[44px] min-h-[44px] -m-[8px]"
                     onClick={(e) => {
                       e.stopPropagation();
-                      deleteRoom(room.id);
+                      requestDelete(room.id);
                     }}
                     onMouseDown={(e) => e.stopPropagation()}
                     onTouchStart={(e) => e.stopPropagation()}
@@ -1263,6 +1429,40 @@ export default function PlanEditor({
                       <line x1="6" y1="6" x2="18" y2="18" />
                     </svg>
                   </button>
+                )}
+
+                {/* P1 — Delete confirmation inline (UX C1) */}
+                {pendingDeleteId === room.id && (
+                  <div
+                    className="absolute -bottom-1 left-1/2 -translate-x-1/2 translate-y-full z-40
+                               flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white
+                               border border-[#B91C1C]/30 shadow-lg text-xs whitespace-nowrap"
+                    onClick={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onTouchStart={(e) => e.stopPropagation()}
+                  >
+                    <span className="text-[#1C1C1E]">Supprimer {room.name || "cette pièce"} ?</span>
+                    <button
+                      type="button"
+                      onClick={() => confirmDelete(room.id)}
+                      className="px-2 py-1 rounded bg-[#B91C1C] text-white font-medium
+                                 hover:bg-[#991B1B] transition-colors min-h-[32px] min-w-[44px]
+                                 focus-visible:outline-none focus-visible:ring-2
+                                 focus-visible:ring-[#B91C1C]"
+                    >
+                      Oui
+                    </button>
+                    <button
+                      type="button"
+                      onClick={cancelDelete}
+                      className="px-2 py-1 rounded border border-[#D1D0CB] text-[#1C1C1E]
+                                 hover:bg-[#F5F5F0] transition-colors min-h-[32px] min-w-[44px]
+                                 focus-visible:outline-none focus-visible:ring-2
+                                 focus-visible:ring-[#7D9B76]"
+                    >
+                      Non
+                    </button>
+                  </div>
                 )}
 
                 {/* Type badge (bottom — click to change) — min-h-[44px] for mobile */}
@@ -1316,7 +1516,7 @@ export default function PlanEditor({
                         }}
                         onMouseDown={(e) => handlePointerDown(e, room.id, "resize", handle)}
                         onTouchStart={(e) => handlePointerDown(e, room.id, "resize", handle)}
-                        role="img"
+                        role="presentation"
                         aria-label={`Redimensionner ${room.name} depuis le coin ${handle === "nw" ? "haut-gauche" : handle === "ne" ? "haut-droite" : handle === "sw" ? "bas-gauche" : "bas-droite"}`}
                         tabIndex={-1}
                       >
@@ -1330,6 +1530,45 @@ export default function PlanEditor({
               </div>
             );
           })}
+        </div>
+        {/* P1 — Zoom controls (Moi) — positioned bottom-right of scrollable area */}
+        <div className="absolute bottom-3 right-3 z-30 flex flex-col gap-1">
+          <button
+            type="button"
+            onClick={() => setZoomLevel((z) => Math.min(z + 0.25, 3))}
+            disabled={zoomLevel >= 3}
+            className="w-10 h-10 rounded-md bg-white/90 border border-[#D1D0CB]/60
+                       text-[#1C1C1E] text-lg font-medium shadow-sm
+                       hover:bg-[#F5F5F0] transition-colors
+                       focus-visible:outline-none focus-visible:ring-2
+                       focus-visible:ring-[#7D9B76] min-w-[44px] min-h-[44px]
+                       disabled:opacity-30 disabled:cursor-not-allowed
+                       flex items-center justify-center"
+            aria-label="Zoomer"
+          >
+            +
+          </button>
+          {zoomLevel !== 1 && (
+            <span className="text-[10px] text-center text-[#9B9A94] font-mono">
+              {Math.round(zoomLevel * 100)}%
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={() => setZoomLevel((z) => Math.max(z - 0.25, 0.5))}
+            disabled={zoomLevel <= 0.5}
+            className="w-10 h-10 rounded-md bg-white/90 border border-[#D1D0CB]/60
+                       text-[#1C1C1E] text-lg font-medium shadow-sm
+                       hover:bg-[#F5F5F0] transition-colors
+                       focus-visible:outline-none focus-visible:ring-2
+                       focus-visible:ring-[#7D9B76] min-w-[44px] min-h-[44px]
+                       disabled:opacity-30 disabled:cursor-not-allowed
+                       flex items-center justify-center"
+            aria-label="Dézoomer"
+          >
+            −
+          </button>
+        </div>
       </div>
 
       {/* Legend */}
@@ -1393,12 +1632,12 @@ export default function PlanEditor({
           <span
             className="inline-block w-3 h-3 rounded-sm border-2 border-dashed"
             style={{
-              backgroundColor: "rgba(169, 169, 169, 0.3)",
-              borderColor: "rgba(125, 155, 118, 0.8)",
+              backgroundColor: ROOM_COLORS.salon.replace("0.3)", "0.4)"),
+              borderColor: ROOM_BORDER_COLORS.salon,
             }}
             aria-hidden="true"
           />
-          Projet
+          Pièce ajoutée (projet)
         </span>
       </div>
 
@@ -1412,7 +1651,7 @@ export default function PlanEditor({
       {/* Calibration modal */}
       {showCalibrationModal && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40"
           onClick={(e) => {
             if (e.target === e.currentTarget) cancelCalibration();
           }}
@@ -1420,7 +1659,7 @@ export default function PlanEditor({
           aria-modal="true"
           aria-label="Calibration de l'échelle"
         >
-          <div className="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4 space-y-4">
+          <div className="bg-white rounded-t-2xl sm:rounded-xl shadow-2xl p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] max-w-sm w-full sm:mx-4 space-y-4">
             <h4 className="text-base font-semibold text-[#1C1C1E]">
               Calibrer l&apos;échelle
             </h4>
