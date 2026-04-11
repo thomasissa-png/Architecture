@@ -275,6 +275,24 @@ export async function POST(request: NextRequest) {
         `uploadPlan(${storageKey})`
       );
 
+      // For PDFs: also generate a PNG preview for the extraction page
+      if (planFile.type === "application/pdf") {
+        try {
+          const { pdf: pdfToImg } = await import("pdf-to-img");
+          const pages = await pdfToImg(fileBuffer, { scale: 2 });
+          for await (const page of pages) {
+            const previewKey = storageKey.replace(/\.pdf$/i, "-preview.png");
+            await withStorageRetry(
+              (client) => client.uploadFromBytes(previewKey, Buffer.from(page)),
+              `uploadPlanPreview(${previewKey})`
+            );
+            break; // First page only
+          }
+        } catch (previewErr) {
+          console.warn("[projects] PDF preview generation failed (non-blocking):", previewErr);
+        }
+      }
+
       storagePaths.push(storageKey);
       mimeTypes.push(planFile.type);
     }

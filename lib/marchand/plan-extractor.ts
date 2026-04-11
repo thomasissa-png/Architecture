@@ -1,16 +1,17 @@
 /**
- * Extraction de plan via GPT-4.1 vision (images) ou GPT-4o (PDF natif).
+ * Extraction de plan via GPT-4.1 vision.
  *
  * Source de vérité : docs/marchand-pivot/ia/technical-architecture.md sections 1.1 et 4.1.
  *
- * PDF handling: GPT-4.1 ne supporte PAS les PDF en input.
- * Quand le fichier est un PDF, on utilise GPT-4o qui supporte les PDF nativement
- * via le type `input_file` (base64 inline). Chaque page du PDF est traitée.
+ * PDF handling: les PDF sont convertis en PNG via pdf-to-img (pdfjs-dist) AVANT
+ * l'envoi à GPT-4.1 vision. Cela garantit que le même pipeline est utilisé pour
+ * tous les formats (images ET PDF). Plus besoin de GPT-4o ni de Files API.
  *
  * Multi-fichier : `extractMultiplePlans()` traite un tableau de plans (1 par étage)
  * et fusionne les résultats avec floor auto-incrémenté.
  */
 import OpenAI from "openai";
+import { pdf } from "pdf-to-img";
 import {
   PlanExtractionResultSchema,
   type PlanExtractionResult,
@@ -153,47 +154,37 @@ export async function extractPlanData(
   const openai = getOpenAI();
   const systemPrompt = buildSystemPrompt(typeBien);
 
-  // Detect PDF — use GPT-4o with input_file for PDFs, GPT-4.1 with input_image for images
-  const pdfMode = isPdf(mimeType, planBase64);
+  // If PDF, convert to PNG first — same pipeline for all formats
+  let imageBase64 = planBase64;
+  let imageMimeType = mimeType;
 
-  // For PDFs: upload once via Files API, reuse file_id for extraction + self-correction
-  let pdfFileId: string | undefined;
-  if (pdfMode) {
-    console.log("[plan-extractor] PDF detected — uploading to OpenAI Files API...");
-    const pdfBuffer = Buffer.from(planBase64, "base64");
-    const file = await openai.files.create({
-      file: new File([pdfBuffer], "plan.pdf", { type: "application/pdf" }),
-      purpose: "assistants",
-    });
-    pdfFileId = file.id;
-    console.log(`[plan-extractor] PDF uploaded: ${pdfFileId} (${pdfBuffer.length} bytes)`);
-  }
-
-  try {
-    return await _extractWithRetry(openai, systemPrompt, planBase64, mimeType, pdfMode, pdfFileId);
-  } finally {
-    // Clean up uploaded PDF file (best-effort)
-    if (pdfFileId) {
-      openai.files.delete(pdfFileId).catch(() => {});
+  if (isPdf(mimeType, planBase64)) {
+    console.log("[plan-extractor] PDF detected — converting to PNG via pdf-to-img...");
+    try {
+      const pdfBuffer = Buffer.from(planBase64, "base64");
+      const pages = await pdf(pdfBuffer, { scale: 2 });
+      for await (const page of pages) {
+        // Use first page only (multi-page handled by extractMultiplePlans)
+        imageBase64 = Buffer.from(page).toString("base64");
+        imageMimeType = "image/png";
+        console.log(`[plan-extractor] PDF→PNG conversion OK: ${page.length} bytes`);
+        break;
+      }
+    } catch (convErr) {
+      console.error("[plan-extractor] PDF→PNG conversion failed:", convErr);
+      throw new PlanExtractionError(
+        "API_ERROR",
+        "Impossible de lire ce PDF. Vérifiez qu'il n'est pas protégé par mot de passe. Vous pouvez aussi réessayer en uploadant une image (JPG, PNG) du plan."
+      );
     }
   }
-}
 
-/** Internal extraction with retry + self-correction. file_id is reused across attempts. */
-async function _extractWithRetry(
-  openai: OpenAI,
-  systemPrompt: string,
-  planBase64: string,
-  mimeType: string,
-  pdfMode: boolean,
-  pdfFileId: string | undefined
-): Promise<PlanExtractionResult> {
+  const imageDataUrl = buildImageDataUrl(imageMimeType, imageBase64);
+
   // First attempt
   let rawJson: string;
   try {
-    rawJson = pdfMode && pdfFileId
-      ? await callPdfExtraction(openai, systemPrompt, pdfFileId)
-      : await callVisionExtraction(openai, systemPrompt, buildImageDataUrl(mimeType, planBase64));
+    rawJson = await callVisionExtraction(openai, systemPrompt, imageDataUrl);
   } catch (err) {
     // Retry once after 5s on API error
     console.warn(
@@ -202,14 +193,12 @@ async function _extractWithRetry(
     );
     await sleep(5000);
     try {
-      rawJson = pdfMode && pdfFileId
-        ? await callPdfExtraction(openai, systemPrompt, pdfFileId)
-        : await callVisionExtraction(openai, systemPrompt, buildImageDataUrl(mimeType, planBase64));
+      rawJson = await callVisionExtraction(openai, systemPrompt, imageDataUrl);
     } catch (retryErr) {
-      const reason = pdfMode
-        ? "L'extraction du PDF a échoué. Vérifiez que le fichier n'est pas protégé par mot de passe. Vous pouvez aussi réessayer en uploadant une image (JPG, PNG) du plan."
-        : `Extraction failed after retry: ${retryErr instanceof Error ? retryErr.message : String(retryErr)}`;
-      throw new PlanExtractionError("API_ERROR", reason);
+      throw new PlanExtractionError(
+        "API_ERROR",
+        `Extraction failed after retry: ${retryErr instanceof Error ? retryErr.message : String(retryErr)}`
+      );
     }
   }
 
@@ -233,17 +222,13 @@ async function _extractWithRetry(
     validation.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`)
   );
 
-  const correctionInput = pdfMode ? "" : buildImageDataUrl(mimeType, planBase64);
-
   try {
     const correctedJson = await callSelfCorrection(
       openai,
       systemPrompt,
-      correctionInput,
+      imageDataUrl,
       rawJson,
-      validation.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("\n"),
-      pdfMode,
-      pdfFileId
+      validation.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("\n")
     );
     const correctedParsed = JSON.parse(correctedJson);
     const correctedValidation = PlanExtractionResultSchema.safeParse(correctedParsed);
@@ -407,79 +392,30 @@ async function callVisionExtraction(
  * Call GPT-4o with native PDF input for plan extraction.
  * GPT-4.1 does NOT support PDF files — only GPT-4o does via the `input_file` type.
  * We upload the PDF via the Files API first, then reference the file_id.
- * Inline base64 `file_data` is unreliable — file_id is the documented method.
- * See: https://platform.openai.com/docs/guides/pdf-files
- */
-async function callPdfExtraction(
-  openai: OpenAI,
-  systemPrompt: string,
-  fileId: string
-): Promise<string> {
-  const response = await openai.responses.create({
-    model: "gpt-4o",
-    input: [
-      { role: "system", content: systemPrompt },
-      {
-        role: "user",
-        content: [
-          {
-            type: "input_file",
-            file_id: fileId,
-          },
-          {
-            type: "input_text",
-            text: "Extract all rooms from this floor plan PDF. Return the JSON only.",
-          },
-        ],
-      },
-    ] as unknown as Parameters<typeof openai.responses.create>[0]["input"],
-    text: {
-      format: {
-        type: "json_schema",
-        ...PLAN_EXTRACTION_JSON_SCHEMA,
-      },
-    },
-  });
-
-  return extractTextFromResponse(response as unknown as { output: Array<{ type: string; content?: Array<{ type: string; text?: string }> }> }, "GPT-4o PDF");
-}
-
-/**
  * Self-correction: send Zod validation errors back to the model for a fixed output.
- * Uses GPT-4o for PDFs (with file_id), GPT-4.1 for images.
- * For PDFs, pdfFileId must be provided (uploaded via Files API in callPdfExtraction).
+ * Always uses GPT-4.1 vision (PDFs are already converted to PNG upstream).
  */
 async function callSelfCorrection(
   openai: OpenAI,
   systemPrompt: string,
-  dataUrl: string,
+  imageDataUrl: string,
   previousJson: string,
-  zodErrors: string,
-  pdfMode = false,
-  pdfFileId?: string
+  zodErrors: string
 ): Promise<string> {
   const correctionText = `Your previous output had validation errors. Fix them and return valid JSON.\n\nPrevious output:\n${previousJson}\n\nValidation errors:\n${zodErrors}`;
 
-  // Build file/image content depending on mode
-  const fileContent = pdfMode && pdfFileId
-    ? {
-        type: "input_file" as const,
-        file_id: pdfFileId,
-      }
-    : {
-        type: "input_image" as const,
-        image_url: dataUrl,
-        detail: "high" as const,
-      };
-
   const response = await openai.responses.create({
-    model: pdfMode ? "gpt-4o" : "gpt-4.1",
+    model: "gpt-4.1",
     input: [
       { role: "system", content: systemPrompt },
       {
         role: "user",
         content: [
-          fileContent,
+          {
+            type: "input_image",
+            image_url: imageDataUrl,
+            detail: "high",
+          },
           {
             type: "input_text",
             text: correctionText,

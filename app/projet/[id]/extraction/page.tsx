@@ -45,17 +45,24 @@ export default function ExtractionPage() {
   const [activePlanIndex, setActivePlanIndex] = useState(0);
 
   // Parse planPath into array — handles single path or JSON array string
+  // For PDFs: use the -preview.png version for display in <img> tags
   const parsedPlanPaths = useMemo(() => {
     if (!planPath) return [];
+    let paths: string[];
     try {
       if (planPath.startsWith("[")) {
         const parsed = JSON.parse(planPath);
-        return Array.isArray(parsed) ? (parsed as string[]) : [planPath];
+        paths = Array.isArray(parsed) ? (parsed as string[]) : [planPath];
+      } else {
+        paths = [planPath];
       }
-      return [planPath];
     } catch {
-      return [planPath];
+      paths = [planPath];
     }
+    // PDF files can't be displayed in <img> tags — use the preview PNG instead
+    return paths.map((p) =>
+      p.toLowerCase().endsWith(".pdf") ? p.replace(/\.pdf$/i, "-preview.png") : p
+    );
   }, [planPath]);
 
   // ─── Timer for loading state ──────────────────────────────────────
