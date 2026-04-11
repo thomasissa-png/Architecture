@@ -125,8 +125,12 @@ export async function POST(
       let planBuffer: Buffer = Buffer.alloc(0);
       await withStorageRetry(async (client) => {
         const result = await client.downloadAsBytes(path);
-        if (result.value) {
-          planBuffer = Buffer.from(result.value as unknown as ArrayBuffer);
+        // SDK returns { ok, value: [Buffer] } — value is a TUPLE, not a Buffer directly
+        if (result.ok && result.value) {
+          const buf = result.value[0];
+          if (buf) {
+            planBuffer = Buffer.from(buf.buffer, buf.byteOffset, buf.byteLength);
+          }
         }
       }, `downloadPlan(${path})`);
 
