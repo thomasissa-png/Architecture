@@ -268,15 +268,19 @@ export default function PlanEditor({
   const [redoStack, setRedoStack] = useState<PlanRoom[][]>([]);
   const skipSnapshotRef = useRef(false);
 
+  // Ref to always capture latest rooms for undo snapshots (avoids stale closure)
+  const roomsRef = useRef(rooms);
+  roomsRef.current = rooms;
+
   /** Push current rooms state onto undo stack before a mutation */
   const pushUndo = useCallback(() => {
     setUndoStack((prev) => {
-      const next = [...prev, rooms];
+      const next = [...prev, roomsRef.current];
       if (next.length > UNDO_MAX_HISTORY) next.shift();
       return next;
     });
     setRedoStack([]);
-  }, [rooms]);
+  }, []);
 
   const handleUndo = useCallback(() => {
     if (undoStack.length === 0) return;
@@ -410,13 +414,22 @@ export default function PlanEditor({
     [rooms, getRelativePos, isCalibrating, pushUndo]
   );
 
+  // rAF throttle to avoid excessive re-renders during drag (QA B5)
+  const rafRef = useRef<number | null>(null);
+
   const handlePointerMove = useCallback(
     (e: MouseEvent | TouchEvent) => {
       if (!dragState || !naturalSize) return;
 
       const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
       const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
-      const pos = getRelativePos(clientX, clientY);
+
+      // Cancel previous frame if not yet rendered
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+
+      rafRef.current = requestAnimationFrame(() => {
+        rafRef.current = null;
+        const pos = getRelativePos(clientX, clientY);
 
       const dx = pos.x - dragState.startX;
       const dy = pos.y - dragState.startY;
@@ -482,6 +495,7 @@ export default function PlanEditor({
       onRoomsChange(
         rooms.map((r) => (r.id === dragState.roomId ? { ...r, ...updated } : r))
       );
+      }); // end requestAnimationFrame
     },
     [dragState, rooms, onRoomsChange, naturalSize, getRelativePos]
   );
@@ -1446,7 +1460,7 @@ export default function PlanEditor({
                       type="button"
                       onClick={() => confirmDelete(room.id)}
                       className="px-2 py-1 rounded bg-[#B91C1C] text-white font-medium
-                                 hover:bg-[#991B1B] transition-colors min-h-[32px] min-w-[44px]
+                                 hover:bg-[#991B1B] transition-colors min-h-[44px] min-w-[44px]
                                  focus-visible:outline-none focus-visible:ring-2
                                  focus-visible:ring-[#B91C1C]"
                     >
@@ -1456,7 +1470,7 @@ export default function PlanEditor({
                       type="button"
                       onClick={cancelDelete}
                       className="px-2 py-1 rounded border border-[#D1D0CB] text-[#1C1C1E]
-                                 hover:bg-[#F5F5F0] transition-colors min-h-[32px] min-w-[44px]
+                                 hover:bg-[#F5F5F0] transition-colors min-h-[44px] min-w-[44px]
                                  focus-visible:outline-none focus-visible:ring-2
                                  focus-visible:ring-[#7D9B76]"
                     >
