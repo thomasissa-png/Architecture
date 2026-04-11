@@ -39,6 +39,7 @@ interface PlanEditorProps {
   rooms: PlanRoom[];
   onRoomsChange: (rooms: PlanRoom[]) => void;
   scaleFactor?: number;
+  onScaleFactorChange?: (sf: number) => void;
 }
 
 type HandlePosition = "nw" | "ne" | "sw" | "se";
@@ -54,6 +55,14 @@ interface DragState {
   origWidth: number;
   origHeight: number;
 }
+
+/** Point for calibration line */
+interface CalibrationPoint {
+  x: number;
+  y: number;
+}
+
+type ViewMode = "projet" | "actuel";
 
 // ─── Constants ──────────────────────────────────────────────────────
 
@@ -121,6 +130,9 @@ const ROOM_TYPE_OPTIONS = Object.entries(ROOM_TYPE_LABELS);
 
 const HANDLE_SIZE = 20;
 const MIN_ROOM_SIZE = 40;
+const SNAP_GRID = 10;
+const SNAP_GUIDE_THRESHOLD = 8;
+const UNDO_MAX_HISTORY = 20;
 
 // ─── Helpers ────────────────────────────────────────────────────────
 
@@ -144,6 +156,70 @@ function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
+/** Snap une valeur sur la grille la plus proche */
+function snapToGrid(value: number, gridSize: number): number {
+  return Math.round(value / gridSize) * gridSize;
+}
+
+/** Distance entre deux points en pixels */
+function distancePx(a: CalibrationPoint, b: CalibrationPoint): number {
+  return Math.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2);
+}
+
+/** Trouve les guides d'alignement : bords d'une room qui s'alignent avec les bords des autres rooms */
+function findAlignmentGuides(
+  movingRoom: PlanRoom,
+  otherRooms: PlanRoom[],
+  threshold: number
+): { horizontal: number[]; vertical: number[] } {
+  const horizontal: number[] = [];
+  const vertical: number[] = [];
+
+  const movingEdges = {
+    left: movingRoom.x,
+    right: movingRoom.x + movingRoom.width,
+    top: movingRoom.y,
+    bottom: movingRoom.y + movingRoom.height,
+    centerX: movingRoom.x + movingRoom.width / 2,
+    centerY: movingRoom.y + movingRoom.height / 2,
+  };
+
+  for (const other of otherRooms) {
+    const otherEdges = {
+      left: other.x,
+      right: other.x + other.width,
+      top: other.y,
+      bottom: other.y + other.height,
+      centerX: other.x + other.width / 2,
+      centerY: other.y + other.height / 2,
+    };
+
+    // Vertical guides (x-axis alignment)
+    for (const mEdge of [movingEdges.left, movingEdges.right, movingEdges.centerX]) {
+      for (const oEdge of [otherEdges.left, otherEdges.right, otherEdges.centerX]) {
+        if (Math.abs(mEdge - oEdge) < threshold) {
+          vertical.push(oEdge);
+        }
+      }
+    }
+
+    // Horizontal guides (y-axis alignment)
+    for (const mEdge of [movingEdges.top, movingEdges.bottom, movingEdges.centerY]) {
+      for (const oEdge of [otherEdges.top, otherEdges.bottom, otherEdges.centerY]) {
+        if (Math.abs(mEdge - oEdge) < threshold) {
+          horizontal.push(oEdge);
+        }
+      }
+    }
+  }
+
+  // Deduplicate
+  return {
+    horizontal: horizontal.filter((v, i, a) => a.indexOf(v) === i),
+    vertical: vertical.filter((v, i, a) => a.indexOf(v) === i),
+  };
+}
+
 // ─── Component ──────────────────────────────────────────────────────
 
 export default function PlanEditor({
@@ -151,6 +227,7 @@ export default function PlanEditor({
   rooms,
   onRoomsChange,
   scaleFactor = 50,
+  onScaleFactorChange,
 }: PlanEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [imgSize, setImgSize] = useState<{ width: number; height: number } | null>(null);
@@ -165,6 +242,53 @@ export default function PlanEditor({
 
   // Track the natural image dimensions to compute the displayed scale
   const [naturalSize, setNaturalSize] = useState<{ width: number; height: number } | null>(null);
+
+  // ─── Undo / Redo ────────────────────────────────────────────────
+  const [undoStack, setUndoStack] = useState<PlanRoom[][]>([]);
+  const [redoStack, setRedoStack] = useState<PlanRoom[][]>([]);
+  const skipSnapshotRef = useRef(false);
+
+  /** Push current rooms state onto undo stack before a mutation */
+  const pushUndo = useCallback(() => {
+    setUndoStack((prev) => {
+      const next = [...prev, rooms];
+      if (next.length > UNDO_MAX_HISTORY) next.shift();
+      return next;
+    });
+    setRedoStack([]);
+  }, [rooms]);
+
+  const handleUndo = useCallback(() => {
+    if (undoStack.length === 0) return;
+    const prev = undoStack[undoStack.length - 1];
+    setUndoStack((s) => s.slice(0, -1));
+    setRedoStack((s) => [...s, rooms]);
+    skipSnapshotRef.current = true;
+    onRoomsChange(prev);
+  }, [undoStack, rooms, onRoomsChange]);
+
+  const handleRedo = useCallback(() => {
+    if (redoStack.length === 0) return;
+    const next = redoStack[redoStack.length - 1];
+    setRedoStack((s) => s.slice(0, -1));
+    setUndoStack((s) => [...s, rooms]);
+    skipSnapshotRef.current = true;
+    onRoomsChange(next);
+  }, [redoStack, rooms, onRoomsChange]);
+
+  // ─── Calibration ────────────────────────────────────────────────
+  const [isCalibrating, setIsCalibrating] = useState(false);
+  const [calibrationPointA, setCalibrationPointA] = useState<CalibrationPoint | null>(null);
+  const [calibrationPointB, setCalibrationPointB] = useState<CalibrationPoint | null>(null);
+  const [showCalibrationModal, setShowCalibrationModal] = useState(false);
+  const [calibrationInput, setCalibrationInput] = useState("");
+  const [isCalibrated, setIsCalibrated] = useState(false);
+
+  // ─── View mode toggle ──────────────────────────────────────────
+  const [viewMode, setViewMode] = useState<ViewMode>("projet");
+
+  // ─── Alignment guides ──────────────────────────────────────────
+  const [alignmentGuides, setAlignmentGuides] = useState<{ horizontal: number[]; vertical: number[] }>({ horizontal: [], vertical: [] });
 
   // ─── Image load ─────────────────────────────────────────────────
 
@@ -191,6 +315,22 @@ export default function PlanEditor({
     if (!imgSize || !naturalSize) return 1;
     return imgSize.width / naturalSize.width;
   }, [imgSize, naturalSize]);
+
+  // ─── Keyboard shortcuts (Ctrl+Z / Ctrl+Shift+Z) ─────────────────
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if ((e.ctrlKey || e.metaKey) && e.key === "z") {
+        e.preventDefault();
+        if (e.shiftKey) {
+          handleRedo();
+        } else {
+          handleUndo();
+        }
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleUndo, handleRedo]);
 
   // ─── Pointer helpers ──────────────────────────────────────────────
 
@@ -221,12 +361,18 @@ export default function PlanEditor({
       e.preventDefault();
       e.stopPropagation();
 
+      // If calibrating, ignore room drag
+      if (isCalibrating) return;
+
       const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
       const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
       const pos = getRelativePos(clientX, clientY);
 
       const room = rooms.find((r) => r.id === roomId);
       if (!room) return;
+
+      // Push undo snapshot before drag starts
+      pushUndo();
 
       setSelectedRoomId(roomId);
       setDragState({
@@ -241,7 +387,7 @@ export default function PlanEditor({
         origHeight: room.height,
       });
     },
-    [rooms, getRelativePos]
+    [rooms, getRelativePos, isCalibrating, pushUndo]
   );
 
   const handlePointerMove = useCallback(
@@ -261,9 +407,11 @@ export default function PlanEditor({
       let updated: Partial<PlanRoom>;
 
       if (dragState.type === "move") {
+        const rawX = clamp(dragState.origX + dx, 0, maxW - dragState.origWidth);
+        const rawY = clamp(dragState.origY + dy, 0, maxH - dragState.origHeight);
         updated = {
-          x: clamp(dragState.origX + dx, 0, maxW - dragState.origWidth),
-          y: clamp(dragState.origY + dy, 0, maxH - dragState.origHeight),
+          x: snapToGrid(rawX, SNAP_GRID),
+          y: snapToGrid(rawY, SNAP_GRID),
         };
       } else {
         // Resize from handle
@@ -295,8 +443,21 @@ export default function PlanEditor({
             break;
         }
 
-        updated = { x: newX, y: newY, width: newW, height: newH };
+        updated = {
+          x: snapToGrid(newX, SNAP_GRID),
+          y: snapToGrid(newY, SNAP_GRID),
+          width: snapToGrid(newW, SNAP_GRID),
+          height: snapToGrid(newH, SNAP_GRID),
+        };
       }
+
+      // Compute alignment guides for visual feedback
+      const movingRoom: PlanRoom = {
+        ...rooms.find((r) => r.id === dragState.roomId)!,
+        ...updated,
+      };
+      const otherRooms = rooms.filter((r) => r.id !== dragState.roomId);
+      setAlignmentGuides(findAlignmentGuides(movingRoom, otherRooms, SNAP_GUIDE_THRESHOLD));
 
       onRoomsChange(
         rooms.map((r) => (r.id === dragState.roomId ? { ...r, ...updated } : r))
@@ -307,6 +468,7 @@ export default function PlanEditor({
 
   const handlePointerUp = useCallback(() => {
     setDragState(null);
+    setAlignmentGuides({ horizontal: [], vertical: [] });
   }, []);
 
   // Global listeners for drag
@@ -336,6 +498,7 @@ export default function PlanEditor({
 
   const addNewRoom = useCallback(() => {
     if (!naturalSize) return;
+    pushUndo();
 
     const id = `plan_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     // Place near last selected room if possible, otherwise center. Size = 15% of plan.
@@ -359,11 +522,12 @@ export default function PlanEditor({
     setSelectedRoomIds(new Set([id]));
     // Auto-edit the name
     setTimeout(() => setEditingNameId(id), 100);
-  }, [rooms, onRoomsChange, naturalSize, selectedRoomId]);
+  }, [rooms, onRoomsChange, naturalSize, selectedRoomId, pushUndo]);
 
   /** Fusionner les pièces sélectionnées en une seule (bounding box englobante) */
   const mergeSelectedRooms = useCallback(() => {
     if (selectedRoomIds.size < 2) return;
+    pushUndo();
     const selected = rooms.filter((r) => selectedRoomIds.has(r.id));
     if (selected.length < 2) return;
 
@@ -394,10 +558,11 @@ export default function PlanEditor({
     setSelectedRoomId(id);
     setSelectedRoomIds(new Set([id]));
     setTimeout(() => setEditingNameId(id), 100);
-  }, [rooms, onRoomsChange, selectedRoomIds]);
+  }, [rooms, onRoomsChange, selectedRoomIds, pushUndo]);
 
   const deleteRoom = useCallback(
     (roomId: string) => {
+      pushUndo();
       onRoomsChange(rooms.filter((r) => r.id !== roomId));
       if (selectedRoomId === roomId) setSelectedRoomId(null);
       setSelectedRoomIds((prev) => {
@@ -406,7 +571,7 @@ export default function PlanEditor({
         return next;
       });
     },
-    [rooms, onRoomsChange, selectedRoomId]
+    [rooms, onRoomsChange, selectedRoomId, pushUndo]
   );
 
   const updateRoomName = useCallback(
@@ -416,8 +581,15 @@ export default function PlanEditor({
     [rooms, onRoomsChange]
   );
 
+  /** Push undo snapshot when rename is committed (on blur or Enter) */
+  const commitRoomName = useCallback(() => {
+    pushUndo();
+    setEditingNameId(null);
+  }, [pushUndo]);
+
   const updateRoomType = useCallback(
     (roomId: string, roomType: string) => {
+      pushUndo();
       onRoomsChange(
         rooms.map((r) =>
           r.id === roomId ? { ...r, roomType, color: colorForType(roomType) } : r
@@ -425,25 +597,87 @@ export default function PlanEditor({
       );
       setEditingTypeId(null);
     },
-    [rooms, onRoomsChange]
+    [rooms, onRoomsChange, pushUndo]
   );
 
-  // Deselect when clicking the background
-  const handleBackgroundClick = useCallback(() => {
-    setSelectedRoomId(null);
-    setSelectedRoomIds(new Set());
-    setEditingNameId(null);
-    setEditingTypeId(null);
+  // ─── Calibration click logic ──────────────────────────────────────
+  const handleCalibrationClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (!isCalibrating) return;
+      e.stopPropagation();
+
+      const pos = getRelativePos(e.clientX, e.clientY);
+      const point: CalibrationPoint = { x: pos.x, y: pos.y };
+
+      if (!calibrationPointA) {
+        setCalibrationPointA(point);
+      } else if (!calibrationPointB) {
+        setCalibrationPointB(point);
+        setShowCalibrationModal(true);
+      }
+    },
+    [isCalibrating, calibrationPointA, calibrationPointB, getRelativePos]
+  );
+
+  const confirmCalibration = useCallback(() => {
+    if (!calibrationPointA || !calibrationPointB) return;
+    const distMetres = parseFloat(calibrationInput);
+    if (!distMetres || distMetres <= 0) return;
+
+    const distPx = distancePx(calibrationPointA, calibrationPointB);
+    const newScaleFactor = distPx / distMetres;
+
+    if (onScaleFactorChange) {
+      onScaleFactorChange(newScaleFactor);
+    }
+
+    setIsCalibrated(true);
+    setIsCalibrating(false);
+    setCalibrationPointA(null);
+    setCalibrationPointB(null);
+    setShowCalibrationModal(false);
+    setCalibrationInput("");
+  }, [calibrationPointA, calibrationPointB, calibrationInput, onScaleFactorChange]);
+
+  const cancelCalibration = useCallback(() => {
+    setIsCalibrating(false);
+    setCalibrationPointA(null);
+    setCalibrationPointB(null);
+    setShowCalibrationModal(false);
+    setCalibrationInput("");
   }, []);
+
+  // Deselect when clicking the background
+  const handleBackgroundClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (isCalibrating) {
+        handleCalibrationClick(e);
+        return;
+      }
+      setSelectedRoomId(null);
+      setSelectedRoomIds(new Set());
+      setEditingNameId(null);
+      setEditingTypeId(null);
+    },
+    [isCalibrating, handleCalibrationClick]
+  );
 
   // ─── Render ───────────────────────────────────────────────────────
 
   const isReady = imgSize && naturalSize;
 
+  // Filter rooms based on view mode
+  const visibleRooms = viewMode === "actuel" ? rooms.filter((r) => !r.isNew) : rooms;
+
   // Count existing vs new rooms
   const existingCount = rooms.filter((r) => !r.isNew).length;
   const newCount = rooms.filter((r) => r.isNew).length;
   const canMerge = selectedRoomIds.size >= 2;
+
+  // Scale indicator text
+  const scaleIndicatorText = isCalibrated
+    ? `1 m = ${scaleFactor.toFixed(0)} px`
+    : null;
 
   return (
     <div className="space-y-3">
@@ -471,8 +705,130 @@ export default function PlanEditor({
               {newCount > 0 && <span className="text-[#7D9B76] font-medium">{newCount} projet</span>}
             </span>
           )}
+          {scaleIndicatorText && (
+            <span className="text-[11px] text-[#7D9B76] bg-[#F0F4EE] rounded px-1.5 py-0.5 font-mono">
+              {scaleIndicatorText}
+            </span>
+          )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {/* Undo / Redo */}
+          <button
+            type="button"
+            onClick={handleUndo}
+            disabled={undoStack.length === 0}
+            className="inline-flex items-center justify-center w-10 h-10 rounded-md
+                       border border-[#D1D0CB]/60 text-[#1C1C1E]/70 text-xs
+                       hover:bg-[#F5F5F0] transition-colors
+                       focus-visible:outline-none focus-visible:ring-2
+                       focus-visible:ring-[#7D9B76] min-w-[44px] min-h-[44px]
+                       disabled:opacity-30 disabled:cursor-not-allowed"
+            aria-label="Annuler (Ctrl+Z)"
+            title="Annuler (Ctrl+Z)"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <polyline points="1 4 1 10 7 10" />
+              <path d="M3.51 15a9 9 0 102.13-9.36L1 10" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            onClick={handleRedo}
+            disabled={redoStack.length === 0}
+            className="inline-flex items-center justify-center w-10 h-10 rounded-md
+                       border border-[#D1D0CB]/60 text-[#1C1C1E]/70 text-xs
+                       hover:bg-[#F5F5F0] transition-colors
+                       focus-visible:outline-none focus-visible:ring-2
+                       focus-visible:ring-[#7D9B76] min-w-[44px] min-h-[44px]
+                       disabled:opacity-30 disabled:cursor-not-allowed"
+            aria-label="Refaire (Ctrl+Shift+Z)"
+            title="Refaire (Ctrl+Shift+Z)"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <polyline points="23 4 23 10 17 10" />
+              <path d="M20.49 15a9 9 0 11-2.13-9.36L23 10" />
+            </svg>
+          </button>
+
+          {/* Separator */}
+          <div className="w-px h-6 bg-[#D1D0CB]/40 mx-0.5" aria-hidden="true" />
+
+          {/* Calibration button */}
+          <button
+            type="button"
+            onClick={() => {
+              if (isCalibrating) {
+                cancelCalibration();
+              } else {
+                setIsCalibrating(true);
+                setCalibrationPointA(null);
+                setCalibrationPointB(null);
+              }
+            }}
+            disabled={!isReady}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md
+                       text-xs font-medium transition-colors
+                       focus-visible:outline-none focus-visible:ring-2
+                       focus-visible:ring-[#7D9B76] min-h-[44px]
+                       disabled:opacity-40 disabled:cursor-not-allowed
+                       ${isCalibrating
+                         ? "bg-[#7D9B76] text-white shadow-sm"
+                         : "border border-[#D1D0CB]/60 text-[#1C1C1E]/70 hover:bg-[#F5F5F0]"
+                       }`}
+            aria-label={isCalibrating ? "Annuler la calibration" : "Calibrer les distances"}
+            title={isCalibrating ? "Annuler la calibration" : "Calibrer les distances"}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M21.3 15.3a2.4 2.4 0 010 3.4l-2.6 2.6a2.4 2.4 0 01-3.4 0L2.7 8.7a2.41 2.41 0 010-3.4l2.6-2.6a2.41 2.41 0 013.4 0z" />
+              <line x1="14.5" y1="12.5" x2="11.5" y2="9.5" />
+            </svg>
+            {isCalibrating ? "Annuler" : "Calibrer"}
+          </button>
+
+          {/* Separator */}
+          <div className="w-px h-6 bg-[#D1D0CB]/40 mx-0.5" aria-hidden="true" />
+
+          {/* View mode toggle */}
+          {newCount > 0 && (
+            <div className="inline-flex rounded-md border border-[#D1D0CB]/60 overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setViewMode("actuel")}
+                className={`px-3 py-1.5 text-xs font-medium transition-colors
+                           min-h-[44px]
+                           focus-visible:outline-none focus-visible:ring-2
+                           focus-visible:ring-[#7D9B76] focus-visible:ring-inset
+                           ${viewMode === "actuel"
+                             ? "bg-[#1C1C1E] text-white"
+                             : "text-[#1C1C1E]/70 hover:bg-[#F5F5F0]"
+                           }`}
+                aria-label="Voir le plan actuel (sans les pièces projet)"
+                aria-pressed={viewMode === "actuel"}
+              >
+                Plan actuel
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("projet")}
+                className={`px-3 py-1.5 text-xs font-medium transition-colors
+                           min-h-[44px]
+                           focus-visible:outline-none focus-visible:ring-2
+                           focus-visible:ring-[#7D9B76] focus-visible:ring-inset
+                           ${viewMode === "projet"
+                             ? "bg-[#7D9B76] text-white"
+                             : "text-[#1C1C1E]/70 hover:bg-[#F5F5F0]"
+                           }`}
+                aria-label="Voir le projet complet (existantes + projet)"
+                aria-pressed={viewMode === "projet"}
+              >
+                Mon projet
+              </button>
+            </div>
+          )}
+
+          {/* Separator */}
+          <div className="w-px h-6 bg-[#D1D0CB]/40 mx-0.5" aria-hidden="true" />
+
           {/* Merge button — visible when 2+ rooms selected */}
           {canMerge && (
             <button
@@ -536,6 +892,20 @@ export default function PlanEditor({
         </div>
       </div>
 
+      {/* Calibration instruction banner */}
+      {isCalibrating && (
+        <div className="p-3 rounded-lg bg-[#EEF2FF] border border-[#6366F1]/20 text-[13px] text-[#4338CA] leading-relaxed">
+          <p className="font-medium">
+            {!calibrationPointA
+              ? "Cliquez sur le premier point de la distance de référence (ex : un bord de porte)"
+              : "Cliquez sur le deuxième point (ex : l'autre bord de la porte)"}
+          </p>
+          <p className="text-[12px] mt-0.5 text-[#4338CA]/70">
+            Choisissez une distance dont vous connaissez la mesure réelle (porte, fenêtre, mur...).
+          </p>
+        </div>
+      )}
+
       {/* Plan container */}
       <div
         ref={containerRef}
@@ -556,9 +926,94 @@ export default function PlanEditor({
           draggable={false}
         />
 
+        {/* Alignment guides SVG overlay */}
+        {isReady && dragState && (alignmentGuides.horizontal.length > 0 || alignmentGuides.vertical.length > 0) && (
+          <svg
+            className="absolute inset-0 pointer-events-none z-[5]"
+            style={{ width: imgSize!.width, height: imgSize!.height }}
+            aria-hidden="true"
+          >
+            {alignmentGuides.vertical.map((x, i) => (
+              <line
+                key={`v-${i}`}
+                x1={x * displayScale}
+                y1={0}
+                x2={x * displayScale}
+                y2={imgSize!.height}
+                stroke="#6366F1"
+                strokeWidth="1"
+                strokeDasharray="4 4"
+                opacity="0.7"
+              />
+            ))}
+            {alignmentGuides.horizontal.map((y, i) => (
+              <line
+                key={`h-${i}`}
+                x1={0}
+                y1={y * displayScale}
+                x2={imgSize!.width}
+                y2={y * displayScale}
+                stroke="#6366F1"
+                strokeWidth="1"
+                strokeDasharray="4 4"
+                opacity="0.7"
+              />
+            ))}
+          </svg>
+        )}
+
+        {/* Calibration points + line overlay */}
+        {isReady && isCalibrating && calibrationPointA && (
+          <svg
+            className="absolute inset-0 pointer-events-none z-[25]"
+            style={{ width: imgSize!.width, height: imgSize!.height }}
+            aria-hidden="true"
+          >
+            {/* Point A */}
+            <circle
+              cx={calibrationPointA.x * displayScale}
+              cy={calibrationPointA.y * displayScale}
+              r={6}
+              fill="#6366F1"
+              stroke="#fff"
+              strokeWidth="2"
+            />
+            {/* Point B + connecting line */}
+            {calibrationPointB && (
+              <>
+                <line
+                  x1={calibrationPointA.x * displayScale}
+                  y1={calibrationPointA.y * displayScale}
+                  x2={calibrationPointB.x * displayScale}
+                  y2={calibrationPointB.y * displayScale}
+                  stroke="#6366F1"
+                  strokeWidth="2"
+                  strokeDasharray="6 3"
+                />
+                <circle
+                  cx={calibrationPointB.x * displayScale}
+                  cy={calibrationPointB.y * displayScale}
+                  r={6}
+                  fill="#6366F1"
+                  stroke="#fff"
+                  strokeWidth="2"
+                />
+              </>
+            )}
+          </svg>
+        )}
+
+        {/* Calibration crosshair cursor */}
+        {isCalibrating && (
+          <div
+            className="absolute inset-0 z-[24]"
+            style={{ cursor: "crosshair" }}
+          />
+        )}
+
         {/* Room overlays */}
         {isReady &&
-          rooms.map((room) => {
+          visibleRooms.map((room) => {
             const isSelected = selectedRoomId === room.id;
             const isMultiSelected = selectedRoomIds.has(room.id);
             const isDragging = dragState?.roomId === room.id;
@@ -673,10 +1128,10 @@ export default function PlanEditor({
                       type="text"
                       value={room.name}
                       onChange={(e) => updateRoomName(room.id, e.target.value)}
-                      onBlur={() => setEditingNameId(null)}
+                      onBlur={commitRoomName}
                       onKeyDown={(e) => {
                         if (e.key === "Enter" || e.key === "Escape") {
-                          setEditingNameId(null);
+                          commitRoomName();
                         }
                       }}
                       onClick={(e) => e.stopPropagation()}
@@ -949,8 +1404,81 @@ export default function PlanEditor({
 
       {/* Surface warning */}
       <p className="text-[11px] text-[#C68A2E] bg-[#FFF8EE] border border-[#C68A2E]/20 rounded px-2 py-1.5 leading-relaxed">
-        Les surfaces sont indicatives et dépendent du calibrage du plan. Pour des surfaces exactes, utilisez les mesures réelles de votre géomètre.
+        {isCalibrated
+          ? "Échelle calibrée. Les surfaces sont des estimations basées sur votre calibration. Pour des surfaces exactes, utilisez les mesures de votre géomètre."
+          : "Les surfaces sont indicatives et dépendent du calibrage du plan. Utilisez le bouton « Calibrer » pour améliorer la précision."}
       </p>
+
+      {/* Calibration modal */}
+      {showCalibrationModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) cancelCalibration();
+          }}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Calibration de l'échelle"
+        >
+          <div className="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4 space-y-4">
+            <h4 className="text-base font-semibold text-[#1C1C1E]">
+              Calibrer l&apos;échelle
+            </h4>
+            <p className="text-sm text-[#9B9A94] leading-relaxed">
+              Quelle est la distance réelle entre les 2 points que vous avez tracés ?
+            </p>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                step="0.01"
+                min="0.1"
+                value={calibrationInput}
+                onChange={(e) => setCalibrationInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") confirmCalibration();
+                  if (e.key === "Escape") cancelCalibration();
+                }}
+                autoFocus
+                placeholder="Ex : 0.83"
+                className="flex-1 text-sm text-[#1C1C1E] bg-white border border-[#D1D0CB]
+                           rounded-lg px-3 py-2 min-h-[44px]
+                           focus-visible:outline-none focus-visible:ring-2
+                           focus-visible:ring-[#7D9B76]"
+                aria-label="Distance réelle en mètres"
+              />
+              <span className="text-sm text-[#9B9A94] font-medium">mètres</span>
+            </div>
+            <p className="text-[11px] text-[#9B9A94]">
+              Astuce : une porte standard mesure 0,83 m de large, une baie vitrée entre 1,80 et 2,40 m.
+            </p>
+            <div className="flex gap-2 justify-end">
+              <button
+                type="button"
+                onClick={cancelCalibration}
+                className="px-4 py-2 rounded-lg text-sm text-[#1C1C1E]/70
+                           border border-[#D1D0CB]/60 hover:bg-[#F5F5F0]
+                           transition-colors min-h-[44px]
+                           focus-visible:outline-none focus-visible:ring-2
+                           focus-visible:ring-[#7D9B76]"
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                onClick={confirmCalibration}
+                disabled={!calibrationInput || parseFloat(calibrationInput) <= 0}
+                className="px-4 py-2 rounded-lg text-sm font-medium text-white
+                           bg-[#7D9B76] hover:bg-[#4A7A42] transition-colors
+                           min-h-[44px] disabled:opacity-40 disabled:cursor-not-allowed
+                           focus-visible:outline-none focus-visible:ring-2
+                           focus-visible:ring-[#7D9B76] focus-visible:ring-offset-1"
+              >
+                Valider
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
