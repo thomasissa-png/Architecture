@@ -27,6 +27,7 @@ interface ExtractedRoom {
   room_type: string;
   surface_m2?: number | null;
   floor_index: number;
+  is_new?: boolean;
 }
 
 type ExtractionState = "idle" | "loading" | "success" | "error";
@@ -46,11 +47,19 @@ const ROOM_TYPE_OPTIONS = Object.entries(ROOM_TYPE_LABELS);
 /** Couleurs par type de pièce pour l'éditeur de plan */
 const PLAN_ROOM_COLORS: Record<string, string> = {
   salon: "rgba(125, 155, 118, 0.3)",
+  sejour: "rgba(125, 155, 118, 0.3)",
   chambre: "rgba(100, 149, 237, 0.3)",
+  chambre_parentale: "rgba(70, 130, 220, 0.3)",
   cuisine: "rgba(255, 165, 0, 0.3)",
   sdb: "rgba(0, 191, 255, 0.3)",
   wc: "rgba(0, 191, 255, 0.3)",
   bureau: "rgba(147, 112, 219, 0.3)",
+  entree: "rgba(200, 180, 140, 0.3)",
+  dressing: "rgba(180, 160, 200, 0.3)",
+  cellier: "rgba(160, 180, 140, 0.3)",
+  terrasse: "rgba(100, 200, 100, 0.3)",
+  garage: "rgba(120, 120, 140, 0.3)",
+  salle_a_manger: "rgba(230, 140, 80, 0.3)",
   couloir: "rgba(169, 169, 169, 0.3)",
   cave: "rgba(169, 169, 169, 0.3)",
   autre: "rgba(169, 169, 169, 0.3)",
@@ -58,6 +67,7 @@ const PLAN_ROOM_COLORS: Record<string, string> = {
 
 /**
  * Distribue les pièces en grille sur le plan quand elles n'ont pas de coordonnées.
+ * Les dimensions sont proportionnelles aux surfaces extraites (si disponibles).
  * Retourne des PlanRoom avec positions et dimensions calculées.
  */
 function distributeRoomsOnPlan(
@@ -81,13 +91,19 @@ function distributeRoomsOnPlan(
   const cellW = usableW / cols;
   const cellH = usableH / rows;
 
-  // Chaque zone occupe 85% de sa cellule
-  const roomW = Math.round(cellW * 0.85);
-  const roomH = Math.round(cellH * 0.85);
+  // Compute proportional sizing based on surface_m2 (if available)
+  const surfaces = rooms.map((r) => r.surface_m2 ?? 10); // default 10m2 if unknown
+  const maxSurface = Math.max(...surfaces, 1);
 
   return rooms.map((room, i) => {
     const col = i % cols;
     const row = Math.floor(i / cols);
+
+    // Scale between 40% and 90% of cell based on surface ratio
+    const surfaceRatio = (room.surface_m2 ?? 10) / maxSurface;
+    const fillRatio = 0.40 + surfaceRatio * 0.50; // 40% min, 90% max
+    const roomW = Math.round(cellW * fillRatio);
+    const roomH = Math.round(cellH * fillRatio);
 
     return {
       id: room.id,
@@ -98,6 +114,7 @@ function distributeRoomsOnPlan(
       width: roomW,
       height: roomH,
       color: PLAN_ROOM_COLORS[room.room_type] || PLAN_ROOM_COLORS.autre,
+      isNew: false, // Extracted rooms are existing
     };
   });
 }
@@ -116,6 +133,7 @@ function syncPlanToExtracted(
     room_type: pr.roomType,
     surface_m2: parseFloat(((pr.width / scaleFactor) * (pr.height / scaleFactor)).toFixed(1)),
     floor_index: 0,
+    is_new: pr.isNew ?? false,
   }));
 }
 
@@ -647,11 +665,19 @@ export default function ExtractionPage() {
                           <div className="flex-shrink-0 w-9 h-9 rounded bg-[#F5F5F0] flex items-center justify-center">
                             <span className="text-base leading-none" aria-hidden="true">
                               {room.room_type === "salon" && "🛋️"}
+                              {room.room_type === "sejour" && "🛋️"}
+                              {room.room_type === "salle_a_manger" && "🍽️"}
                               {room.room_type === "cuisine" && "🍳"}
                               {room.room_type === "chambre" && "🛏️"}
+                              {room.room_type === "chambre_parentale" && "🛏️"}
                               {room.room_type === "sdb" && "🚿"}
                               {room.room_type === "wc" && "🚽"}
                               {room.room_type === "bureau" && "💻"}
+                              {room.room_type === "entree" && "🚪"}
+                              {room.room_type === "dressing" && "👔"}
+                              {room.room_type === "cellier" && "🧺"}
+                              {room.room_type === "terrasse" && "🌿"}
+                              {room.room_type === "garage" && "🚗"}
                               {room.room_type === "couloir" && "🚪"}
                               {room.room_type === "cave" && "📦"}
                               {(!room.room_type || room.room_type === "autre") && "📐"}
