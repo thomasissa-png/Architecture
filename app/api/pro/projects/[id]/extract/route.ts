@@ -37,9 +37,10 @@ function inferRoomType(nameRaw: string): string {
   if (/chambre|bedroom/.test(n)) return "chambre";
   if (/salle.*bain|sdb|bathroom/.test(n)) return "sdb";
   if (/\bwc\b|toilet/.test(n)) return "wc";
-  if (/bureau|office/.test(n)) return "bureau";
-  if (/couloir|hall|entree|degagement|palier/.test(n)) return "couloir";
-  if (/cave|cellier|rangement|buanderie/.test(n)) return "cave";
+  if (/bureau|office|salle.*reunion|meeting/.test(n)) return "bureau";
+  if (/open.*space/.test(n)) return "salon";
+  if (/couloir|hall|entree|degagement|palier|accueil|reception/.test(n)) return "couloir";
+  if (/cave|cellier|rangement|buanderie|local.*technique|technique|archive|stockage/.test(n)) return "cave";
   return "autre";
 }
 
@@ -203,7 +204,15 @@ export async function POST(
     );
 
     // Insert rooms
-    const insertedRooms: Array<{ id: string; name: string; room_type: string; surface_m2: number | null; floor_index: number }> = [];
+    const insertedRooms: Array<{
+      id: string;
+      name: string;
+      room_type: string;
+      surface_m2: number | null;
+      floor_index: number;
+      confidence: number;
+      bounding_box?: { x_percent: number; y_percent: number; width_percent: number; height_percent: number } | null;
+    }> = [];
 
     for (const room of extractionResult.rooms) {
       const insertResult = await db.query(
@@ -213,7 +222,7 @@ export async function POST(
           windows_count, doors_count, floor, shape,
           is_estimated, confidence, source
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
-        RETURNING id, name, room_type, surface_m2, floor`,
+        RETURNING id, name, room_type, surface_m2, floor, confidence`,
         [
           projectId,
           room.name_raw,
@@ -238,6 +247,8 @@ export async function POST(
         room_type: row.room_type,
         surface_m2: row.surface_m2 !== null ? Number(row.surface_m2) : null,
         floor_index: row.floor ?? 0,
+        confidence: typeof row.confidence === "number" ? row.confidence : room.confidence,
+        bounding_box: room.bounding_box ?? null,
       });
     }
 

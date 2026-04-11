@@ -52,6 +52,7 @@ EXTRACTION RULES:
 6. FLOOR DETECTION: If the plan shows multiple floors or levels, set the floor number for each room (0 = ground floor). If single level, all rooms are floor 0.
 7. CONFIDENCE: Rate your confidence 0-1 for each room. Lower confidence for: rooms partially occluded, dimensions estimated (not read), ambiguous room function.
 8. IGNORE: Electrical symbols, plumbing symbols, dimension arrows (just read the numbers), furniture drawn on plan, north arrow, title block.
+9. BOUNDING BOX: For each room, estimate its bounding box position on the floor plan image as percentages (0-100) of the image width and height. The top-left corner of the image is (0, 0). x_percent and y_percent are the top-left corner of the room's bounding box. width_percent and height_percent are the room's size relative to the full image. Be as accurate as possible — use wall lines, labels, and spatial relationships to estimate positions.
 
 TYPE DE BIEN CONTEXT: This plan is for a "${typeBien}". If "immeuble", there may be multiple units — identify them if possible.
 
@@ -101,11 +102,27 @@ const PLAN_EXTRACTION_JSON_SCHEMA = {
               ],
             },
             notes: { type: ["string", "null"] as const },
+            bounding_box: {
+              anyOf: [
+                {
+                  type: "object" as const,
+                  properties: {
+                    x_percent: { type: "number" as const },
+                    y_percent: { type: "number" as const },
+                    width_percent: { type: "number" as const },
+                    height_percent: { type: "number" as const },
+                  },
+                  required: ["x_percent", "y_percent", "width_percent", "height_percent"],
+                  additionalProperties: false,
+                },
+                { type: "null" as const },
+              ],
+            },
           },
           required: [
             "temp_id", "name_raw", "surface_m2", "dimensions",
             "ceiling_height_m", "windows_count", "doors_count",
-            "floor", "confidence", "shape", "notes",
+            "floor", "confidence", "shape", "notes", "bounding_box",
           ],
           additionalProperties: false,
         },

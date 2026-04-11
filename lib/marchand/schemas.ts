@@ -176,6 +176,15 @@ export const ExtractedRoomSchema = z.object({
     .string()
     .nullable()
     .describe("Notes IA (ex: mur porteur detecte, piece humide)"),
+  bounding_box: z
+    .object({
+      x_percent: z.number().min(0).max(100).describe("Position X en % de la largeur de l'image (0-100)"),
+      y_percent: z.number().min(0).max(100).describe("Position Y en % de la hauteur de l'image (0-100)"),
+      width_percent: z.number().min(0).max(100).describe("Largeur en % de la largeur de l'image"),
+      height_percent: z.number().min(0).max(100).describe("Hauteur en % de la hauteur de l'image"),
+    })
+    .optional()
+    .describe("Position estimée de la pièce sur le plan (pourcentages 0-100)"),
 });
 export type ExtractedRoom = z.infer<typeof ExtractedRoomSchema>;
 

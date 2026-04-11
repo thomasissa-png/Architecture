@@ -21,6 +21,13 @@ import PlanEditor, { type PlanRoom } from "@/components/marchand/PlanEditor";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
+interface BoundingBox {
+  x_percent: number;
+  y_percent: number;
+  width_percent: number;
+  height_percent: number;
+}
+
 interface ExtractedRoom {
   id: string;
   name: string;
@@ -28,6 +35,8 @@ interface ExtractedRoom {
   surface_m2?: number | null;
   floor_index: number;
   is_new?: boolean;
+  confidence?: number;
+  bounding_box?: BoundingBox | null;
 }
 
 type ExtractionState = "idle" | "loading" | "success" | "error";
@@ -96,6 +105,23 @@ function distributeRoomsOnPlan(
   const maxSurface = Math.max(...surfaces, 1);
 
   return rooms.map((room, i) => {
+    // Si la pièce a un bounding_box IA, utiliser les coordonnées réelles
+    if (room.bounding_box) {
+      const bb = room.bounding_box;
+      return {
+        id: room.id,
+        name: room.name || "Sans nom",
+        roomType: room.room_type || "autre",
+        x: Math.round(planWidth * bb.x_percent / 100),
+        y: Math.round(planHeight * bb.y_percent / 100),
+        width: Math.max(40, Math.round(planWidth * bb.width_percent / 100)),
+        height: Math.max(30, Math.round(planHeight * bb.height_percent / 100)),
+        color: PLAN_ROOM_COLORS[room.room_type] || PLAN_ROOM_COLORS.autre,
+        isNew: false,
+      };
+    }
+
+    // Sinon fallback sur la grille
     const col = i % cols;
     const row = Math.floor(i / cols);
 
@@ -114,7 +140,7 @@ function distributeRoomsOnPlan(
       width: roomW,
       height: roomH,
       color: PLAN_ROOM_COLORS[room.room_type] || PLAN_ROOM_COLORS.autre,
-      isNew: false, // Extracted rooms are existing
+      isNew: false,
     };
   });
 }
@@ -274,6 +300,10 @@ export default function ExtractionPage() {
           room_type: String(r.room_type ?? "autre"),
           surface_m2: r.surface_m2 != null ? Number(r.surface_m2) : null,
           floor_index: typeof r.floor_index === "number" ? r.floor_index : 0,
+          confidence: typeof r.confidence === "number" ? r.confidence : undefined,
+          bounding_box: r.bounding_box && typeof r.bounding_box === "object"
+            ? r.bounding_box as BoundingBox
+            : undefined,
         })
       );
       setRooms(extractedRooms);
@@ -719,9 +749,29 @@ export default function ExtractionPage() {
                                 {room.name || "Sans nom"}
                               </button>
                             )}
-                            {room.surface_m2 != null && (
-                              <span className="text-xs text-[#9B9A94]">{room.surface_m2} m²</span>
-                            )}
+                            <div className="flex items-center gap-2">
+                              {room.surface_m2 != null && (
+                                <span className="text-xs text-[#9B9A94]">{room.surface_m2} m²</span>
+                              )}
+                              {room.confidence != null && (
+                                <span
+                                  className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium leading-tight ${
+                                    room.confidence >= 0.8
+                                      ? "bg-[#ECFDF5] text-[#047857]"
+                                      : room.confidence >= 0.5
+                                        ? "bg-[#FFFBEB] text-[#B45309]"
+                                        : "bg-[#FEF2F2] text-[#B91C1C]"
+                                  }`}
+                                  title={`Confiance IA : ${Math.round(room.confidence * 100)}%`}
+                                >
+                                  {room.confidence >= 0.8
+                                    ? "Fiable"
+                                    : room.confidence >= 0.5
+                                      ? "À vérifier"
+                                      : "Incertain"}
+                                </span>
+                              )}
+                            </div>
                           </div>
 
                           {/* Room type select */}
