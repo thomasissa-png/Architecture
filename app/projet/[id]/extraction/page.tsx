@@ -17,6 +17,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProStepper from "@/components/marchand/ProStepper";
 import { ROOM_TYPE_LABELS } from "@/components/marchand/RoomCard";
+import PlanEditor, { type PlanRoom } from "@/components/marchand/PlanEditor";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -39,6 +40,84 @@ function floorLabel(floorIndex: number): string {
 
 /** Room type options for the select dropdown */
 const ROOM_TYPE_OPTIONS = Object.entries(ROOM_TYPE_LABELS);
+
+// ─── Plan Editor helpers ────────────────────────────────────────────
+
+/** Couleurs par type de pièce pour l'éditeur de plan */
+const PLAN_ROOM_COLORS: Record<string, string> = {
+  salon: "rgba(125, 155, 118, 0.3)",
+  chambre: "rgba(100, 149, 237, 0.3)",
+  cuisine: "rgba(255, 165, 0, 0.3)",
+  sdb: "rgba(0, 191, 255, 0.3)",
+  wc: "rgba(0, 191, 255, 0.3)",
+  bureau: "rgba(147, 112, 219, 0.3)",
+  couloir: "rgba(169, 169, 169, 0.3)",
+  cave: "rgba(169, 169, 169, 0.3)",
+  autre: "rgba(169, 169, 169, 0.3)",
+};
+
+/**
+ * Distribue les pièces en grille sur le plan quand elles n'ont pas de coordonnées.
+ * Retourne des PlanRoom avec positions et dimensions calculées.
+ */
+function distributeRoomsOnPlan(
+  rooms: ExtractedRoom[],
+  planWidth: number,
+  planHeight: number
+): PlanRoom[] {
+  const count = rooms.length;
+  if (count === 0) return [];
+
+  // Grille : colonnes = ceil(sqrt(n)), lignes = ceil(n/cols)
+  const cols = Math.ceil(Math.sqrt(count));
+  const rows = Math.ceil(count / cols);
+
+  // Marge entre les zones (10% du plan)
+  const marginX = planWidth * 0.05;
+  const marginY = planHeight * 0.05;
+  const usableW = planWidth - marginX * 2;
+  const usableH = planHeight - marginY * 2;
+
+  const cellW = usableW / cols;
+  const cellH = usableH / rows;
+
+  // Chaque zone occupe 85% de sa cellule
+  const roomW = Math.round(cellW * 0.85);
+  const roomH = Math.round(cellH * 0.85);
+
+  return rooms.map((room, i) => {
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+
+    return {
+      id: room.id,
+      name: room.name || "Sans nom",
+      roomType: room.room_type || "autre",
+      x: Math.round(marginX + col * cellW + (cellW - roomW) / 2),
+      y: Math.round(marginY + row * cellH + (cellH - roomH) / 2),
+      width: roomW,
+      height: roomH,
+      color: PLAN_ROOM_COLORS[room.room_type] || PLAN_ROOM_COLORS.autre,
+    };
+  });
+}
+
+/**
+ * Synchronise les modifications du PlanEditor vers les ExtractedRoom.
+ * Retourne les ExtractedRoom mises à jour (noms, types, ajouts, suppressions).
+ */
+function syncPlanToExtracted(
+  planRooms: PlanRoom[],
+  scaleFactor: number
+): ExtractedRoom[] {
+  return planRooms.map((pr) => ({
+    id: pr.id,
+    name: pr.name,
+    room_type: pr.roomType,
+    surface_m2: parseFloat(((pr.width / scaleFactor) * (pr.height / scaleFactor)).toFixed(1)),
+    floor_index: 0,
+  }));
+}
 
 // ─── Component ──────────────────────────────────────────────────────
 
@@ -77,6 +156,51 @@ export default function ExtractionPage() {
       p.toLowerCase().endsWith(".pdf") ? p.replace(/\.pdf$/i, "-preview.png") : p
     );
   }, [planPath]);
+
+  // ─── Plan Editor state ────────────────────────────────────────────
+  const [showPlanEditor, setShowPlanEditor] = useState(false);
+  const [planRooms, setPlanRooms] = useState<PlanRoom[]>([]);
+  const [planNaturalWidth, setPlanNaturalWidth] = useState(0);
+  const planInitializedRef = useRef(false);
+
+  // Quand les rooms extraites changent ET que le plan est visible, initialiser les PlanRooms
+  const initializePlanRooms = useCallback(
+    (extractedRooms: ExtractedRoom[], imgWidth: number, imgHeight: number) => {
+      if (imgWidth === 0 || imgHeight === 0) return;
+      const distributed = distributeRoomsOnPlan(extractedRooms, imgWidth, imgHeight);
+      setPlanRooms(distributed);
+      planInitializedRef.current = true;
+    },
+    []
+  );
+
+  // Quand le PlanEditor modifie les rooms, synchroniser vers ExtractedRoom
+  const handlePlanRoomsChange = useCallback(
+    (newPlanRooms: PlanRoom[]) => {
+      setPlanRooms(newPlanRooms);
+      // Synchro vers la liste textuelle (scaleFactor par defaut 50)
+      const synced = syncPlanToExtracted(newPlanRooms, 50);
+      setRooms(synced);
+    },
+    []
+  );
+
+  // Charger les dimensions naturelles du plan quand on ouvre l'editeur
+  const handleOpenPlanEditor = useCallback(() => {
+    if (!parsedPlanPaths.length) return;
+    setShowPlanEditor(true);
+
+    // Si pas encore initialise, charger l'image pour obtenir les dimensions naturelles
+    if (!planInitializedRef.current) {
+      const imgUrl = `/api/logs/image?path=${encodeURIComponent(parsedPlanPaths[activePlanIndex] ?? parsedPlanPaths[0])}`;
+      const img = new Image();
+      img.onload = () => {
+        setPlanNaturalWidth(img.naturalWidth);
+        initializePlanRooms(rooms, img.naturalWidth, img.naturalHeight);
+      };
+      img.src = imgUrl;
+    }
+  }, [parsedPlanPaths, activePlanIndex, rooms, initializePlanRooms]);
 
   // ─── Timer for loading state ──────────────────────────────────────
 
@@ -421,6 +545,64 @@ export default function ExtractionPage() {
             <p className="text-sm text-[#9B9A94]">
               Vérifiez les pièces détectées. Vous pouvez renommer, changer le type, supprimer ou ajouter des pièces avant de continuer.
             </p>
+
+            {/* Plan Editor toggle + component */}
+            {parsedPlanPaths.length > 0 && (
+              <div className="space-y-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (showPlanEditor) {
+                      setShowPlanEditor(false);
+                    } else {
+                      handleOpenPlanEditor();
+                    }
+                  }}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 px-4
+                             rounded-lg border border-[#D1D0CB] bg-white text-sm font-medium
+                             text-[#1C1C1E] hover:bg-[#F5F5F0] transition-colors
+                             focus-visible:outline-none focus-visible:ring-2
+                             focus-visible:ring-[#7D9B76] min-h-[44px]"
+                  aria-expanded={showPlanEditor}
+                  aria-controls="plan-editor-section"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    {showPlanEditor ? (
+                      <>
+                        <polyline points="18 15 12 9 6 15" />
+                      </>
+                    ) : (
+                      <>
+                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                        <path d="M9 3v18M3 9h18M3 15h18M15 3v18" />
+                      </>
+                    )}
+                  </svg>
+                  {showPlanEditor ? "Masquer l'éditeur de plan" : "Voir et éditer sur le plan"}
+                </button>
+
+                {showPlanEditor && planNaturalWidth > 0 && (
+                  <div id="plan-editor-section" className="animate-in fade-in duration-300">
+                    <PlanEditor
+                      planImageUrl={`/api/logs/image?path=${encodeURIComponent(parsedPlanPaths[activePlanIndex] ?? parsedPlanPaths[0])}`}
+                      rooms={planRooms}
+                      onRoomsChange={handlePlanRoomsChange}
+                      scaleFactor={50}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Rooms grouped by floor */}
             <div className="space-y-6">
