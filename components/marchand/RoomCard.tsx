@@ -89,6 +89,11 @@ export const ROOM_TYPE_LABELS: Record<string, string> = {
   garage: "Garage",
   couloir: "Couloir",
   cave: "Cave",
+  // Types professionnels
+  salle_reunion: "Salle de réunion",
+  open_space: "Open space",
+  accueil: "Accueil",
+  local_technique: "Local technique",
   autre: "Autre",
 };
 

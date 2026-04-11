@@ -32,13 +32,25 @@ interface RoomEntry {
 
 const ROOM_TYPE_OPTIONS = [
   { value: "salon", label: "Salon" },
+  { value: "sejour", label: "Séjour" },
+  { value: "salle_a_manger", label: "Salle à manger" },
   { value: "cuisine", label: "Cuisine" },
   { value: "chambre", label: "Chambre" },
+  { value: "chambre_parentale", label: "Chambre parentale" },
   { value: "sdb", label: "Salle de bain" },
   { value: "wc", label: "WC" },
   { value: "bureau", label: "Bureau" },
+  { value: "entree", label: "Entrée" },
+  { value: "dressing", label: "Dressing" },
+  { value: "cellier", label: "Cellier / Buanderie" },
+  { value: "terrasse", label: "Terrasse / Balcon" },
+  { value: "garage", label: "Garage" },
   { value: "couloir", label: "Couloir" },
   { value: "cave", label: "Cave" },
+  { value: "salle_reunion", label: "Salle de réunion" },
+  { value: "open_space", label: "Open space" },
+  { value: "accueil", label: "Accueil" },
+  { value: "local_technique", label: "Local technique" },
   { value: "autre", label: "Autre" },
 ] as const;
 
@@ -615,6 +627,10 @@ export default function ValidationPage() {
                                  focus:outline-none focus:ring-1 focus:ring-[#7D9B76] focus:border-transparent"
                       aria-label={`Nom de la pièce ${room.name || ""}`}
                     />
+
+                    <p className="text-[10px] text-[#9B9A94] leading-tight">
+                      Changez le type pour transformer la pièce. Par exemple, changez « Bureau » en « Chambre » et l&apos;IA générera un visuel meublé en chambre.
+                    </p>
 
                     <div className="flex gap-2">
                       {/* Type */}

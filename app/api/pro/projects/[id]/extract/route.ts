@@ -222,7 +222,7 @@ export async function POST(
           windows_count, doors_count, floor, shape,
           is_estimated, confidence, source
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
-        RETURNING id, name, room_type, surface_m2, floor, confidence`,
+        RETURNING id, name, room_type, surface_m2, length_m, width_m, floor, confidence`,
         [
           projectId,
           room.name_raw,
@@ -246,6 +246,8 @@ export async function POST(
         name: row.name,
         room_type: row.room_type,
         surface_m2: row.surface_m2 !== null ? Number(row.surface_m2) : null,
+        length_m: row.length_m !== null && row.length_m !== undefined ? Number(row.length_m) : null,
+        width_m: row.width_m !== null && row.width_m !== undefined ? Number(row.width_m) : null,
         floor_index: row.floor ?? 0,
         confidence: typeof row.confidence === "number" ? row.confidence : room.confidence,
         bounding_box: room.bounding_box ?? null,
