@@ -389,9 +389,6 @@ async function callVisionExtraction(
 }
 
 /**
- * Call GPT-4o with native PDF input for plan extraction.
- * GPT-4.1 does NOT support PDF files — only GPT-4o does via the `input_file` type.
- * We upload the PDF via the Files API first, then reference the file_id.
  * Self-correction: send Zod validation errors back to the model for a fixed output.
  * Always uses GPT-4.1 vision (PDFs are already converted to PNG upstream).
  */
