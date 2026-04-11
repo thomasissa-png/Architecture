@@ -203,7 +203,7 @@ export async function POST(
     );
 
     // Insert rooms
-    const insertedRooms: Array<{ id: string; name: string; room_type: string; surface_m2: number | null }> = [];
+    const insertedRooms: Array<{ id: string; name: string; room_type: string; surface_m2: number | null; floor_index: number }> = [];
 
     for (const room of extractionResult.rooms) {
       const insertResult = await db.query(
@@ -213,7 +213,7 @@ export async function POST(
           windows_count, doors_count, floor, shape,
           is_estimated, confidence, source
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
-        RETURNING id, name, room_type, surface_m2`,
+        RETURNING id, name, room_type, surface_m2, floor`,
         [
           projectId,
           room.name_raw,
@@ -237,6 +237,7 @@ export async function POST(
         name: row.name,
         room_type: row.room_type,
         surface_m2: row.surface_m2 !== null ? Number(row.surface_m2) : null,
+        floor_index: row.floor ?? 0,
       });
     }
 

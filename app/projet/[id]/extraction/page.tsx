@@ -6,17 +6,17 @@
  * Rendu : Client Component — appel API + polling + affichage résultats.
  *
  * Au mount : appelle POST /api/pro/projects/[id]/extract.
- * Affiche les pièces extraites avec RoomCard.
+ * Affiche les pièces extraites groupées par étage avec édition inline.
  * Bouton "Valider et continuer" redirige vers /projet/[id]/validation.
  * En cas d'erreur : message + lien vers saisie manuelle (validation).
  */
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProStepper from "@/components/marchand/ProStepper";
-import RoomCard from "@/components/marchand/RoomCard";
+import { ROOM_TYPE_LABELS } from "@/components/marchand/RoomCard";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -25,9 +25,20 @@ interface ExtractedRoom {
   name: string;
   room_type: string;
   surface_m2?: number | null;
+  floor_index: number;
 }
 
 type ExtractionState = "idle" | "loading" | "success" | "error";
+
+/** Label français pour un numéro d'étage */
+function floorLabel(floorIndex: number): string {
+  if (floorIndex === 0) return "Rez-de-chaussée";
+  if (floorIndex === 1) return "Étage 1";
+  return `Étage ${floorIndex}`;
+}
+
+/** Room type options for the select dropdown */
+const ROOM_TYPE_OPTIONS = Object.entries(ROOM_TYPE_LABELS);
 
 // ─── Component ──────────────────────────────────────────────────────
 
@@ -43,6 +54,8 @@ export default function ExtractionPage() {
   const [projectAdresse, setProjectAdresse] = useState<string | null>(null);
   const [planPath, setPlanPath] = useState<string | null>(null);
   const [activePlanIndex, setActivePlanIndex] = useState(0);
+  const [editingNameId, setEditingNameId] = useState<string | null>(null);
+  const nextTempIdRef = useRef(1);
 
   // Parse planPath into array — handles single path or JSON array string
   // For PDFs: use the -preview.png version for display in <img> tags
@@ -109,8 +122,17 @@ export default function ExtractionPage() {
         return;
       }
 
-      // Success
-      setRooms(data.rooms || []);
+      // Success — ensure floor_index is present (default 0 for backward compat)
+      const extractedRooms: ExtractedRoom[] = (data.rooms || []).map(
+        (r: Record<string, unknown>) => ({
+          id: String(r.id ?? ""),
+          name: String(r.name ?? ""),
+          room_type: String(r.room_type ?? "autre"),
+          surface_m2: r.surface_m2 != null ? Number(r.surface_m2) : null,
+          floor_index: typeof r.floor_index === "number" ? r.floor_index : 0,
+        })
+      );
+      setRooms(extractedRooms);
       setState("success");
     } catch {
       setState("error");
@@ -141,6 +163,52 @@ export default function ExtractionPage() {
     }
     checkAndRun();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ─── Room editing (local state only) ──────────────────────────────
+
+  /** Group rooms by floor_index */
+  const roomsByFloor = useMemo(() => {
+    const map = new Map<number, ExtractedRoom[]>();
+    for (const room of rooms) {
+      const floor = room.floor_index ?? 0;
+      if (!map.has(floor)) map.set(floor, []);
+      map.get(floor)!.push(room);
+    }
+    // Sort by floor index
+    return Array.from(map.entries()).sort(([a], [b]) => a - b);
+  }, [rooms]);
+
+  const hasMultipleFloors = roomsByFloor.length > 1;
+
+  /** Update a single room field */
+  const updateRoom = useCallback(
+    (roomId: string, updates: Partial<ExtractedRoom>) => {
+      setRooms((prev) =>
+        prev.map((r) => (r.id === roomId ? { ...r, ...updates } : r))
+      );
+    },
+    []
+  );
+
+  /** Delete a room */
+  const deleteRoom = useCallback((roomId: string) => {
+    setRooms((prev) => prev.filter((r) => r.id !== roomId));
+  }, []);
+
+  /** Add a new empty room to a given floor */
+  const addRoom = useCallback((floorIndex: number) => {
+    const tempId = `temp_${nextTempIdRef.current++}`;
+    const newRoom: ExtractedRoom = {
+      id: tempId,
+      name: "",
+      room_type: "autre",
+      surface_m2: null,
+      floor_index: floorIndex,
+    };
+    setRooms((prev) => [...prev, newRoom]);
+    // Auto-focus the name field
+    setTimeout(() => setEditingNameId(tempId), 50);
   }, []);
 
   // ─── Navigation ──────────────────────────────────────────────────
@@ -349,20 +417,178 @@ export default function ExtractionPage() {
               {rooms.length} pièce{rooms.length > 1 ? "s" : ""} détectée{rooms.length > 1 ? "s" : ""}
             </div>
 
-            {/* Room list */}
-            <div className="space-y-3">
-              {rooms.map((room) => (
-                <RoomCard
-                  key={room.id}
-                  room={{
-                    id: room.id,
-                    name: room.name,
-                    room_type: room.room_type,
-                    surface_m2: room.surface_m2,
-                    status: "validated",
-                  }}
-                />
-              ))}
+            {/* Help text */}
+            <p className="text-sm text-[#9B9A94]">
+              Vérifiez les pièces détectées. Vous pouvez renommer, changer le type, supprimer ou ajouter des pièces avant de continuer.
+            </p>
+
+            {/* Rooms grouped by floor */}
+            <div className="space-y-6">
+              {roomsByFloor.map(([floorIndex, floorRooms]) => {
+                const planPreview = parsedPlanPaths[floorIndex] ?? parsedPlanPaths[0] ?? null;
+
+                return (
+                  <section key={floorIndex} aria-label={floorLabel(floorIndex)}>
+                    {/* Floor header with plan preview */}
+                    {hasMultipleFloors && (
+                      <div className="flex items-center gap-3 mb-3 pb-2 border-b border-[#D1D0CB]/40">
+                        {planPreview && (
+                          <div className="flex-shrink-0 w-[60px] h-[60px] sm:w-[80px] sm:h-[80px] rounded border border-[#D1D0CB]/40 overflow-hidden bg-[#F5F5F0]">
+                            <img
+                              src={`/api/logs/image?path=${encodeURIComponent(planPreview)}`}
+                              alt={`Plan ${floorLabel(floorIndex)}`}
+                              className="w-full h-full object-contain"
+                              loading="lazy"
+                            />
+                          </div>
+                        )}
+                        <div>
+                          <h2 className="text-sm font-semibold text-[#1C1C1E]">
+                            {floorLabel(floorIndex)}
+                          </h2>
+                          <p className="text-xs text-[#9B9A94]">
+                            {floorRooms.length} pièce{floorRooms.length > 1 ? "s" : ""}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Room list for this floor */}
+                    <div className="space-y-2">
+                      {floorRooms.map((room) => (
+                        <div
+                          key={room.id}
+                          className="flex items-center gap-2 p-3 rounded-lg bg-white border border-[#D1D0CB]/40
+                                     shadow-[0_1px_3px_rgba(28,28,30,0.06)]"
+                        >
+                          {/* Room type icon */}
+                          <div className="flex-shrink-0 w-9 h-9 rounded bg-[#F5F5F0] flex items-center justify-center">
+                            <span className="text-base leading-none" aria-hidden="true">
+                              {room.room_type === "salon" && "🛋️"}
+                              {room.room_type === "cuisine" && "🍳"}
+                              {room.room_type === "chambre" && "🛏️"}
+                              {room.room_type === "sdb" && "🚿"}
+                              {room.room_type === "wc" && "🚽"}
+                              {room.room_type === "bureau" && "💻"}
+                              {room.room_type === "couloir" && "🚪"}
+                              {room.room_type === "cave" && "📦"}
+                              {(!room.room_type || room.room_type === "autre") && "📐"}
+                            </span>
+                          </div>
+
+                          {/* Name (editable on click) */}
+                          <div className="flex-1 min-w-0">
+                            {editingNameId === room.id ? (
+                              <input
+                                type="text"
+                                value={room.name}
+                                onChange={(e) => updateRoom(room.id, { name: e.target.value })}
+                                onBlur={() => setEditingNameId(null)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" || e.key === "Escape") {
+                                    setEditingNameId(null);
+                                  }
+                                }}
+                                autoFocus
+                                className="w-full text-sm font-medium text-[#1C1C1E] bg-transparent
+                                           border-b border-[#7D9B76] outline-none py-0.5
+                                           focus-visible:ring-0"
+                                aria-label="Nom de la pièce"
+                              />
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => setEditingNameId(room.id)}
+                                className="text-left w-full text-sm font-medium text-[#1C1C1E] truncate
+                                           hover:text-[#7D9B76] transition-colors cursor-text
+                                           focus-visible:outline-none focus-visible:ring-2
+                                           focus-visible:ring-[#7D9B76] rounded py-0.5"
+                                title="Cliquer pour renommer"
+                              >
+                                {room.name || "Sans nom"}
+                              </button>
+                            )}
+                            {room.surface_m2 != null && (
+                              <span className="text-xs text-[#9B9A94]">{room.surface_m2} m²</span>
+                            )}
+                          </div>
+
+                          {/* Room type select */}
+                          <select
+                            value={room.room_type}
+                            onChange={(e) => updateRoom(room.id, { room_type: e.target.value })}
+                            className="flex-shrink-0 text-xs text-[#1C1C1E] bg-[#F5F5F0] border border-[#D1D0CB]/40
+                                       rounded-md px-2 py-1.5 min-h-[44px] min-w-[44px]
+                                       focus-visible:outline-none focus-visible:ring-2
+                                       focus-visible:ring-[#7D9B76] cursor-pointer"
+                            aria-label={`Type de la pièce ${room.name}`}
+                          >
+                            {ROOM_TYPE_OPTIONS.map(([value, label]) => (
+                              <option key={value} value={value}>{label}</option>
+                            ))}
+                          </select>
+
+                          {/* Delete button */}
+                          <button
+                            type="button"
+                            onClick={() => deleteRoom(room.id)}
+                            className="flex-shrink-0 w-11 h-11 flex items-center justify-center
+                                       rounded-md text-[#9B9A94] hover:text-[#B91C1C] hover:bg-[#FEF2F2]
+                                       transition-colors focus-visible:outline-none
+                                       focus-visible:ring-2 focus-visible:ring-[#B91C1C]"
+                            aria-label={`Supprimer ${room.name || "cette pièce"}`}
+                          >
+                            <svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              aria-hidden="true"
+                            >
+                              <path d="M3 6h18" />
+                              <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6" />
+                              <path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                            </svg>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Add room button */}
+                    <button
+                      type="button"
+                      onClick={() => addRoom(floorIndex)}
+                      className="mt-2 w-full flex items-center justify-center gap-1.5 py-2.5
+                                 rounded-lg border border-dashed border-[#D1D0CB] text-sm
+                                 text-[#9B9A94] hover:text-[#7D9B76] hover:border-[#7D9B76]
+                                 transition-colors focus-visible:outline-none
+                                 focus-visible:ring-2 focus-visible:ring-[#7D9B76]
+                                 min-h-[44px]"
+                      aria-label={`Ajouter une pièce ${hasMultipleFloors ? `au ${floorLabel(floorIndex).toLowerCase()}` : ""}`}
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                      </svg>
+                      Ajouter une pièce
+                    </button>
+                  </section>
+                );
+              })}
             </div>
 
             {rooms.length === 0 && (
@@ -380,7 +606,8 @@ export default function ExtractionPage() {
                 className="py-2.5 px-4 rounded-lg border border-[#D1D0CB] bg-white
                            text-sm font-medium text-[#1C1C1E] hover:bg-[#F5F5F0]
                            transition-colors focus-visible:outline-none
-                           focus-visible:ring-2 focus-visible:ring-[#7D9B76]"
+                           focus-visible:ring-2 focus-visible:ring-[#7D9B76]
+                           min-h-[44px]"
               >
                 Retour
               </button>
@@ -389,7 +616,8 @@ export default function ExtractionPage() {
                 className="flex-1 py-2.5 px-4 rounded-lg bg-[#7D9B76] text-white
                            text-sm font-medium hover:bg-[#4A7A42]
                            transition-colors focus-visible:outline-none
-                           focus-visible:ring-2 focus-visible:ring-[#7D9B76] focus-visible:ring-offset-2"
+                           focus-visible:ring-2 focus-visible:ring-[#7D9B76] focus-visible:ring-offset-2
+                           min-h-[44px]"
               >
                 Valider et continuer
               </button>

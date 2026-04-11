@@ -72,7 +72,7 @@ const STATUS_CONFIG: Record<RoomStatus, { label: string; bg: string; text: strin
 
 // ─── Room type labels (FR) ──────────────────────────────────────────
 
-const ROOM_TYPE_LABELS: Record<string, string> = {
+export const ROOM_TYPE_LABELS: Record<string, string> = {
   salon: "Salon",
   cuisine: "Cuisine",
   chambre: "Chambre",
