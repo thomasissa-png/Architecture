@@ -636,13 +636,13 @@ export function validateExtraction(
     warnings.push(`Surface totale de ${totalSurface.toFixed(1)}m² — semble trop grande.`);
   }
 
-  // GATE 3 — Bounding boxes within image bounds (C3: warning FR)
+  // GATE 3 — Bounding boxes within image bounds (strict 100%, no tolerance)
   const outOfBounds = data.rooms.filter((r) => {
     if (!r.bounding_box) return false;
     const bb = r.bounding_box;
     return bb.x_percent < 0 || bb.y_percent < 0
-      || bb.x_percent + bb.width_percent > 105
-      || bb.y_percent + bb.height_percent > 105;
+      || bb.x_percent + bb.width_percent > 100
+      || bb.y_percent + bb.height_percent > 100;
   });
   gates.push({
     id: "G3_BBOX_IN_BOUNDS",
@@ -745,10 +745,9 @@ export function validateExtraction(
   const passedCount = gates.filter((g) => g.passed).length;
   const score = Math.round((passedCount / gates.length) * 100);
 
-  // Should retry if critical gates fail (surfaces or total)
-  const criticalFails = gates.filter((g) =>
-    !g.passed && (g.id === "G1_SURFACE_RANGE" || g.id === "G2_TOTAL_SURFACE" || g.id === "G6_MIN_ROOMS")
-  );
+  // Should retry if critical gates fail (surfaces, total, bbox, or min rooms)
+  const criticalGateIds = new Set(["G1_SURFACE_RANGE", "G2_TOTAL_SURFACE", "G3_BBOX_IN_BOUNDS", "G6_MIN_ROOMS"]);
+  const criticalFails = gates.filter((g) => !g.passed && criticalGateIds.has(g.id));
   const shouldRetry = criticalFails.length > 0;
 
   return { score, gates, warnings, shouldRetry };
