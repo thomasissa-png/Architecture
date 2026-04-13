@@ -169,8 +169,9 @@ const UNDO_MAX_HISTORY = 20;
 
 // ─── Building outline design tokens ──────────────────────────────────
 const OUTLINE_COLOR = "#7D9B76"; // sage — cohérent palette Versimo
+const OUTLINE_COLOR_DARK = "#5E7A57"; // sage foncé — contraste WCAG 4.5:1 sur blanc
 const OUTLINE_BORDER = `2.5px dashed ${OUTLINE_COLOR}`;
-const OUTLINE_SHADOW = `0 0 0 1px rgba(125, 155, 118, 0.15)`;
+const OUTLINE_SHADOW = `0 0 0 1px ${OUTLINE_COLOR}26`; // 15% opacity derived from OUTLINE_COLOR
 const OUTLINE_HANDLE_BG = OUTLINE_COLOR;
 const OUTLINE_HANDLE_BORDER = "2px solid white";
 const OUTLINE_HANDLE_VISUAL_SIZE = 14;
@@ -1241,8 +1242,8 @@ export default function PlanEditor({
           >
             {/* Label — inside top-left for viewport safety */}
             <span
-              className="absolute top-1 left-1.5 text-[12px] font-medium px-1.5 py-0.5 rounded"
-              style={{ color: OUTLINE_COLOR, background: OUTLINE_LABEL_BG }}
+              className="absolute top-1 left-1.5 text-[12px] font-semibold px-1.5 py-0.5 rounded"
+              style={{ color: OUTLINE_COLOR_DARK, background: OUTLINE_LABEL_BG }}
             >
               Contour du bâtiment
             </span>
@@ -1261,10 +1262,14 @@ export default function PlanEditor({
               height: `${buildingOutline.height_percent}%`,
             }}
           >
-            {(["nw", "ne", "sw", "se"] as const).map((corner) => (
+            {(["nw", "ne", "sw", "se"] as const).map((corner) => {
+              const cornerLabels = { nw: "nord-ouest", ne: "nord-est", sw: "sud-ouest", se: "sud-est" };
+              return (
               <div
                 key={`outline-handle-${corner}`}
                 className="absolute pointer-events-auto"
+                role="button"
+                aria-label={`Redimensionner le contour — coin ${cornerLabels[corner]}`}
                 style={{
                   width: HANDLE_HIT_SIZE,
                   height: HANDLE_HIT_SIZE,
@@ -1297,7 +1302,8 @@ export default function PlanEditor({
                   }}
                 />
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
@@ -1544,8 +1550,8 @@ export default function PlanEditor({
 
                 {/* "Hors contour" warning badge — room overflows building outline */}
                 {isOutOfOutline && (
-                  <div className="absolute bottom-0.5 right-0.5 z-20">
-                    <span className="text-[8px] font-bold text-white bg-[#DC3C3C] rounded px-1 py-px uppercase tracking-wide">
+                  <div className="absolute bottom-0.5 right-0.5 z-20" title="Cette pièce dépasse le contour du bâtiment — ajustez-la ou redimensionnez le contour">
+                    <span className="text-[10px] font-bold text-white bg-[#DC3C3C] rounded px-1 py-px uppercase tracking-wide">
                       Hors contour
                     </span>
                   </div>
