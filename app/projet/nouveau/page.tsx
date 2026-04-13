@@ -521,7 +521,7 @@ export default function NouveauProjetPage() {
           <div>
             <label
               htmlFor="surface"
-              className="block text-sm font-medium text-[#1C1C1E] mb-1.5"
+              className="block text-sm font-medium text-[#1C1C1E] mb-2"
             >
               Surface totale (m²)
               <span className="text-[#9B9A94] font-normal ml-1">— optionnel</span>

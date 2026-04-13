@@ -63,7 +63,7 @@ const PLAN_ROOM_COLORS: Record<string, string> = {
   chambre_parentale: "rgba(70, 130, 220, 0.3)",
   cuisine: "rgba(255, 165, 0, 0.3)",
   sdb: "rgba(0, 191, 255, 0.3)",
-  wc: "rgba(0, 191, 255, 0.3)",
+  wc: "rgba(160, 100, 220, 0.3)",
   bureau: "rgba(147, 112, 219, 0.3)",
   entree: "rgba(200, 180, 140, 0.3)",
   dressing: "rgba(180, 160, 200, 0.3)",
