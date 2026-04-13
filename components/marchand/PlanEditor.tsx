@@ -42,6 +42,14 @@ export interface BuildingOutlineRect {
   height_percent: number;
 }
 
+/** Lot zone drawn on the plan — colored rectangle per lot */
+export interface LotZone {
+  id: string;        // lot id
+  name: string;      // lot display name
+  color: string;     // hex color
+  zoneRect: BuildingOutlineRect | null;  // same format as outline
+}
+
 interface PlanEditorProps {
   planImageUrl: string;
   rooms: PlanRoom[];
@@ -56,6 +64,14 @@ interface PlanEditorProps {
   buildingOutline?: BuildingOutlineRect | null;
   /** Callback when user adjusts the building outline */
   onBuildingOutlineChange?: (outline: BuildingOutlineRect) => void;
+  /** Lot zones drawn on the plan — colored rectangles per lot */
+  lotZones?: LotZone[];
+  /** Callback when a lot zone is drawn or adjusted */
+  onLotZoneChange?: (lotId: string, rect: BuildingOutlineRect | null) => void;
+  /** ID of lot currently being drawn (enables crosshair + draw mode) */
+  drawingLotId?: string | null;
+  /** Called when zone drawing is complete */
+  onDrawingComplete?: () => void;
 }
 
 type HandlePosition = "nw" | "ne" | "sw" | "se";
@@ -177,6 +193,8 @@ const OUTLINE_HANDLE_BORDER = "2px solid white";
 const OUTLINE_HANDLE_VISUAL_SIZE = 14;
 const OUTLINE_LABEL_BG = "rgba(255,255,255,0.9)";
 const OUTLINE_Z_VISUAL = 1; // under rooms
+const ZONE_Z_VISUAL = 2;    // between outline and rooms
+const ZONE_Z_HANDLES = 3;   // zone handles, below outline handles
 const OUTLINE_Z_HANDLES = 4; // above rooms, below alignment guides (z-5)
 
 // ─── Helpers ────────────────────────────────────────────────────────
@@ -277,6 +295,10 @@ export default function PlanEditor({
   onRoomClick,
   buildingOutline,
   onBuildingOutlineChange,
+  lotZones,
+  onLotZoneChange,
+  drawingLotId,
+  onDrawingComplete,
 }: PlanEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [imgSize, setImgSize] = useState<{ width: number; height: number } | null>(null);
@@ -373,6 +395,11 @@ export default function PlanEditor({
 
   // ─── Alignment guides ──────────────────────────────────────────
   const [alignmentGuides, setAlignmentGuides] = useState<{ horizontal: number[]; vertical: number[] }>({ horizontal: [], vertical: [] });
+
+  // ─── Zone drawing state ────────────────────────────────────────
+  const [zoneDrawStart, setZoneDrawStart] = useState<{ x: number; y: number } | null>(null);
+  const [zoneDrawCurrent, setZoneDrawCurrent] = useState<{ x: number; y: number } | null>(null);
+  const isDrawingZone = drawingLotId != null;
 
   // ─── Image load ─────────────────────────────────────────────────
 
@@ -791,6 +818,8 @@ export default function PlanEditor({
   // Deselect when clicking the background
   const handleBackgroundClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
+      // Zone drawing mode — don't deselect on click (mousedown/up handles it)
+      if (isDrawingZone) return;
       if (isCalibrating) {
         handleCalibrationClick(e);
         return;
@@ -800,7 +829,124 @@ export default function PlanEditor({
       setEditingNameId(null);
       setEditingTypeId(null);
     },
-    [isCalibrating, handleCalibrationClick]
+    [isCalibrating, isDrawingZone, handleCalibrationClick]
+  );
+
+  // ─── Zone drawing handlers ────────────────────────────────────────
+
+  const handleZoneDrawStart = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (!isDrawingZone || !imgSize) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const pos = getRelativePos(e.clientX, e.clientY);
+      // Convert to % of image
+      const xPct = (pos.x / (imgSize.width / displayScale)) * 100;
+      const yPct = (pos.y / (imgSize.height / displayScale)) * 100;
+      setZoneDrawStart({ x: xPct, y: yPct });
+      setZoneDrawCurrent({ x: xPct, y: yPct });
+    },
+    [isDrawingZone, imgSize, getRelativePos, displayScale]
+  );
+
+  const handleZoneDrawMove = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (!zoneDrawStart || !imgSize) return;
+      e.preventDefault();
+      const pos = getRelativePos(e.clientX, e.clientY);
+      const xPct = clamp((pos.x / (imgSize.width / displayScale)) * 100, 0, 100);
+      const yPct = clamp((pos.y / (imgSize.height / displayScale)) * 100, 0, 100);
+      setZoneDrawCurrent({ x: xPct, y: yPct });
+    },
+    [zoneDrawStart, imgSize, getRelativePos, displayScale]
+  );
+
+  const handleZoneDrawEnd = useCallback(() => {
+    if (!zoneDrawStart || !zoneDrawCurrent || !drawingLotId || !onLotZoneChange) {
+      setZoneDrawStart(null);
+      setZoneDrawCurrent(null);
+      return;
+    }
+    const x1 = Math.min(zoneDrawStart.x, zoneDrawCurrent.x);
+    const y1 = Math.min(zoneDrawStart.y, zoneDrawCurrent.y);
+    const x2 = Math.max(zoneDrawStart.x, zoneDrawCurrent.x);
+    const y2 = Math.max(zoneDrawStart.y, zoneDrawCurrent.y);
+    const w = x2 - x1;
+    const h = y2 - y1;
+    // Minimum 2% size to prevent accidental micro-draws
+    if (w >= 2 && h >= 2) {
+      onLotZoneChange(drawingLotId, {
+        x_percent: x1,
+        y_percent: y1,
+        width_percent: w,
+        height_percent: h,
+      });
+    }
+    setZoneDrawStart(null);
+    setZoneDrawCurrent(null);
+    onDrawingComplete?.();
+  }, [zoneDrawStart, zoneDrawCurrent, drawingLotId, onLotZoneChange, onDrawingComplete]);
+
+  // Zone drag/resize handlers (for existing zones)
+  const handleZoneDragStart = useCallback(
+    (lotId: string, type: "move" | "resize", clientX: number, clientY: number, handle?: HandlePosition) => {
+      const zone = lotZones?.find((z) => z.id === lotId);
+      if (!zone?.zoneRect || !onLotZoneChange || !imgSize) return;
+
+      const startState = {
+        type,
+        lotId,
+        handle,
+        startX: clientX,
+        startY: clientY,
+        origRect: { ...zone.zoneRect },
+      };
+      const handleMouseMove = (e: MouseEvent | TouchEvent) => {
+        const cx = "touches" in e ? e.touches[0].clientX : e.clientX;
+        const cy = "touches" in e ? e.touches[0].clientY : e.clientY;
+        const dxPct = ((cx - startState.startX) / imgSize.width) * 100;
+        const dyPct = ((cy - startState.startY) / imgSize.height) * 100;
+        const o = startState.origRect;
+
+        if (startState.type === "move") {
+          const newX = clamp(o.x_percent + dxPct, 0, 100 - o.width_percent);
+          const newY = clamp(o.y_percent + dyPct, 0, 100 - o.height_percent);
+          onLotZoneChange(lotId, { ...o, x_percent: newX, y_percent: newY });
+        } else if (startState.type === "resize" && startState.handle) {
+          let newX = o.x_percent;
+          let newY = o.y_percent;
+          let newW = o.width_percent;
+          let newH = o.height_percent;
+
+          if (startState.handle.includes("w")) {
+            newX = clamp(o.x_percent + dxPct, 0, o.x_percent + o.width_percent - 3);
+            newW = o.width_percent - (newX - o.x_percent);
+          } else {
+            newW = clamp(o.width_percent + dxPct, 3, 100 - o.x_percent);
+          }
+          if (startState.handle.includes("n")) {
+            newY = clamp(o.y_percent + dyPct, 0, o.y_percent + o.height_percent - 3);
+            newH = o.height_percent - (newY - o.y_percent);
+          } else {
+            newH = clamp(o.height_percent + dyPct, 3, 100 - o.y_percent);
+          }
+          onLotZoneChange(lotId, { x_percent: newX, y_percent: newY, width_percent: newW, height_percent: newH });
+        }
+      };
+
+      const handleMouseUp = () => {
+        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("mouseup", handleMouseUp);
+        document.removeEventListener("touchmove", handleMouseMove);
+        document.removeEventListener("touchend", handleMouseUp);
+      };
+
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+      document.addEventListener("touchmove", handleMouseMove, { passive: false });
+      document.addEventListener("touchend", handleMouseUp);
+    },
+    [lotZones, onLotZoneChange, imgSize]
   );
 
   // ─── Building outline resize ──────────────────────────────────────
@@ -1208,10 +1354,13 @@ export default function PlanEditor({
           style={{
             transform: `scale(${zoomLevel})`,
             transformOrigin: "top left",
-            /* Ensure the scrollable area accounts for the zoomed size */
             width: zoomLevel !== 1 ? `${100 / zoomLevel}%` : "100%",
+            cursor: isDrawingZone ? "crosshair" : undefined,
           }}
           onClick={handleBackgroundClick}
+          onMouseDown={isDrawingZone ? handleZoneDrawStart : undefined}
+          onMouseMove={isDrawingZone && zoneDrawStart ? handleZoneDrawMove : undefined}
+          onMouseUp={isDrawingZone && zoneDrawStart ? handleZoneDrawEnd : undefined}
           role="application"
           aria-label="Éditeur de plan interactif — déplacez et redimensionnez les pièces"
         >
@@ -1306,6 +1455,180 @@ export default function PlanEditor({
             })}
           </div>
         )}
+
+        {/* Lot zone overlays — colored semi-transparent rectangles (z-2) */}
+        {isReady && lotZones && lotZones.map((zone) => {
+          if (!zone.zoneRect) return null;
+          const r = zone.zoneRect;
+          return (
+            <div key={`zone-${zone.id}`}>
+              {/* Zone visual rectangle */}
+              <div
+                className="absolute"
+                style={{
+                  zIndex: ZONE_Z_VISUAL,
+                  left: `${r.x_percent}%`,
+                  top: `${r.y_percent}%`,
+                  width: `${r.width_percent}%`,
+                  height: `${r.height_percent}%`,
+                  backgroundColor: applyOpacityToColor(zone.color, 0.12),
+                  border: `2px solid ${applyOpacityToColor(zone.color, 0.6)}`,
+                  borderRadius: "3px",
+                  pointerEvents: "none",
+                }}
+                aria-label={`Zone ${zone.name}`}
+              >
+                {/* Zone label */}
+                <span
+                  className="absolute top-1 left-1.5 text-[11px] font-semibold px-1.5 py-0.5 rounded whitespace-nowrap"
+                  style={{
+                    color: "white",
+                    background: applyOpacityToColor(zone.color, 0.75),
+                  }}
+                >
+                  {zone.name}
+                </span>
+              </div>
+
+              {/* Zone drag/resize handles (z-3) */}
+              {onLotZoneChange && !isDrawingZone && (
+                <div
+                  className="absolute"
+                  style={{
+                    zIndex: ZONE_Z_HANDLES,
+                    left: `${r.x_percent}%`,
+                    top: `${r.y_percent}%`,
+                    width: `${r.width_percent}%`,
+                    height: `${r.height_percent}%`,
+                    pointerEvents: "none",
+                  }}
+                >
+                  {/* Move handle — center of zone */}
+                  <div
+                    className="absolute pointer-events-auto"
+                    style={{
+                      top: "50%",
+                      left: "50%",
+                      transform: "translate(-50%, -50%)",
+                      width: HANDLE_HIT_SIZE,
+                      height: HANDLE_HIT_SIZE,
+                      cursor: "move",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      handleZoneDragStart(zone.id, "move", e.clientX, e.clientY);
+                    }}
+                    onTouchStart={(e) => {
+                      e.stopPropagation();
+                      const t = e.touches[0];
+                      handleZoneDragStart(zone.id, "move", t.clientX, t.clientY);
+                    }}
+                    role="button"
+                    aria-label={`Déplacer la zone ${zone.name}`}
+                  >
+                    <div
+                      style={{
+                        width: 20,
+                        height: 20,
+                        borderRadius: "50%",
+                        background: applyOpacityToColor(zone.color, 0.8),
+                        border: "2px solid white",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        pointerEvents: "none",
+                      }}
+                    >
+                      <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                        <path d="M5 1v8M1 5h8" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+                      </svg>
+                    </div>
+                  </div>
+
+                  {/* Corner resize handles */}
+                  {(["nw", "ne", "sw", "se"] as const).map((corner) => (
+                    <div
+                      key={`zone-handle-${zone.id}-${corner}`}
+                      className="absolute pointer-events-auto"
+                      style={{
+                        width: HANDLE_HIT_SIZE,
+                        height: HANDLE_HIT_SIZE,
+                        ...(corner.includes("n") ? { top: -HANDLE_HIT_SIZE / 2 } : { bottom: -HANDLE_HIT_SIZE / 2 }),
+                        ...(corner.includes("w") ? { left: -HANDLE_HIT_SIZE / 2 } : { right: -HANDLE_HIT_SIZE / 2 }),
+                        cursor: corner === "nw" || corner === "se" ? "nwse-resize" : "nesw-resize",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        handleZoneDragStart(zone.id, "resize", e.clientX, e.clientY, corner);
+                      }}
+                      onTouchStart={(e) => {
+                        e.stopPropagation();
+                        const t = e.touches[0];
+                        handleZoneDragStart(zone.id, "resize", t.clientX, t.clientY, corner);
+                      }}
+                      role="button"
+                      aria-label={`Redimensionner la zone ${zone.name} — coin ${corner}`}
+                    >
+                      <div
+                        style={{
+                          width: 10,
+                          height: 10,
+                          borderRadius: "50%",
+                          background: applyOpacityToColor(zone.color, 0.8),
+                          border: "2px solid white",
+                          pointerEvents: "none",
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+        {/* Zone drawing preview — while user is drawing a new zone */}
+        {isReady && isDrawingZone && zoneDrawStart && zoneDrawCurrent && (() => {
+          const drawingZone = lotZones?.find((z) => z.id === drawingLotId);
+          if (!drawingZone) return null;
+          const x1 = Math.min(zoneDrawStart.x, zoneDrawCurrent.x);
+          const y1 = Math.min(zoneDrawStart.y, zoneDrawCurrent.y);
+          const w = Math.abs(zoneDrawCurrent.x - zoneDrawStart.x);
+          const h = Math.abs(zoneDrawCurrent.y - zoneDrawStart.y);
+          return (
+            <div
+              className="absolute pointer-events-none"
+              style={{
+                zIndex: ZONE_Z_HANDLES + 1,
+                left: `${x1}%`,
+                top: `${y1}%`,
+                width: `${w}%`,
+                height: `${h}%`,
+                backgroundColor: applyOpacityToColor(drawingZone.color, 0.2),
+                border: `2px dashed ${applyOpacityToColor(drawingZone.color, 0.8)}`,
+                borderRadius: "3px",
+              }}
+            >
+              <span
+                className="absolute top-1 left-1.5 text-[11px] font-semibold px-1.5 py-0.5 rounded whitespace-nowrap"
+                style={{
+                  color: "white",
+                  background: applyOpacityToColor(drawingZone.color, 0.75),
+                }}
+              >
+                {drawingZone.name}
+              </span>
+            </div>
+          );
+        })()}
 
         {/* Alignment guides SVG overlay */}
         {isReady && dragState && (alignmentGuides.horizontal.length > 0 || alignmentGuides.vertical.length > 0) && (

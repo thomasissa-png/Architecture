@@ -74,6 +74,12 @@ interface LotInput {
   lot_type?: string;
   color?: string;
   room_ids: string[];
+  zone_rect?: {
+    x_percent: number;
+    y_percent: number;
+    width_percent: number;
+    height_percent: number;
+  } | null;
 }
 
 export async function PUT(
@@ -145,6 +151,7 @@ export async function PUT(
         lotType,
         color: lotInput.color || null,
         sortOrder: i,
+        zoneRect: lotInput.zone_rect || null,
       });
 
       // Assign rooms to this lot
