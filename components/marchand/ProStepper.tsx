@@ -1,12 +1,12 @@
 "use client";
 
 /**
- * ProStepper — Stepper 7 étapes pour le parcours marchand.
+ * ProStepper — Stepper 8 étapes pour le parcours marchand.
  *
  * Rendu : Client Component (états visuels interactifs + navigation).
  *
  * Props :
- * - currentStep : étape active (1-7)
+ * - currentStep : étape active (1-8)
  * - completedSteps : étapes terminées (ex: [1, 2, 3])
  * - errorSteps? : étapes en erreur (ex: [2])
  * - projectId? : ID du projet pour la navigation
@@ -25,6 +25,7 @@ import { useRouter } from "next/navigation";
 const STEPS = [
   { label: "Projet", sublabel: "Upload" },
   { label: "Analyse", sublabel: "Détection des pièces" },
+  { label: "Découpe", sublabel: "Biens et lots" },
   { label: "Validation", sublabel: "Pièces" },
   { label: "Qualification", sublabel: "Cible" },
   { label: "Recommandations", sublabel: "Architecte" },
@@ -61,11 +62,12 @@ function getStepRoute(stepNumber: number, projectId?: string): string | null {
   if (!projectId) return null;
   switch (stepNumber) {
     case 2: return `/projet/${projectId}/extraction`;
-    case 3: return `/projet/${projectId}/validation`;
-    case 4: return `/projet/${projectId}/qualification`;
-    case 5: return `/projet/${projectId}/recommandations`;
-    case 6: return `/projet/${projectId}/generation`;
-    case 7: return `/projet/${projectId}/dossier`;
+    case 3: return `/projet/${projectId}/decoupe`;
+    case 4: return `/projet/${projectId}/validation`;
+    case 5: return `/projet/${projectId}/qualification`;
+    case 6: return `/projet/${projectId}/recommandations`;
+    case 7: return `/projet/${projectId}/generation`;
+    case 8: return `/projet/${projectId}/dossier`;
     default: return null;
   }
 }

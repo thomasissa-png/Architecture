@@ -286,9 +286,9 @@ export default function GenerationPage() {
         {/* Stepper */}
         <div className="mb-8">
           <ProStepper
-            currentStep={6}
+            currentStep={7}
             completedSteps={getCompletedSteps(projectStatus)}
-            errorSteps={pageState === "error" ? [6] : []}
+            errorSteps={pageState === "error" ? [7] : []}
             projectId={projectId}
           />
         </div>

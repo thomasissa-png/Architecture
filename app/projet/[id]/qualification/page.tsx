@@ -306,7 +306,7 @@ export default function QualificationPage() {
         {/* Stepper */}
         <div className="mb-8">
           <ProStepper
-            currentStep={4}
+            currentStep={5}
             completedSteps={getCompletedSteps(projectStatus)}
             projectId={projectId}
           />

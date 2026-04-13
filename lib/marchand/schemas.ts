@@ -43,6 +43,7 @@ export type TargetBuyer = z.infer<typeof TargetBuyerEnum>;
 export const ProjectStatusEnum = z.enum([
   "plan_uploaded",
   "extraction_done",
+  "lots_defined",
   "validated",
   "qualified",
   "plan_final",

@@ -426,7 +426,7 @@ export default function DossierPage() {
         {/* Stepper */}
         <div className="mb-8">
           <ProStepper
-            currentStep={7}
+            currentStep={8}
             completedSteps={getCompletedSteps(projectStatus)}
             projectId={projectId}
           />

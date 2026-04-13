@@ -412,7 +412,7 @@ export default function ValidationPage() {
         {/* Stepper */}
         <div className="mb-8">
           <ProStepper
-            currentStep={3}
+            currentStep={4}
             completedSteps={getCompletedSteps(projectStatus)}
             projectId={projectId}
           />

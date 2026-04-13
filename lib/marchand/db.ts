@@ -181,6 +181,32 @@ export async function ensureProTables(): Promise<void> {
     ALTER TABLE pro_projects ADD COLUMN IF NOT EXISTS selling_price DECIMAL(12,2) CHECK (selling_price IS NULL OR selling_price > 0);
   `).catch(() => { /* column may already exist */ });
 
+  // ─── Sprint lots/biens — colonnes découpe ─────────────────────────
+  // lot_type: type de lot (appartement, commerce, bureau, parking, autre)
+  await db.query(`
+    ALTER TABLE pro_lots ADD COLUMN IF NOT EXISTS lot_type VARCHAR(20) DEFAULT 'appartement';
+  `).catch(() => { /* column may already exist */ });
+
+  // color: couleur hex pour l'affichage plan
+  await db.query(`
+    ALTER TABLE pro_lots ADD COLUMN IF NOT EXISTS color VARCHAR(7);
+  `).catch(() => { /* column may already exist */ });
+
+  // sort_order: ordre d'affichage des lots
+  await db.query(`
+    ALTER TABLE pro_lots ADD COLUMN IF NOT EXISTS sort_order INTEGER DEFAULT 0;
+  `).catch(() => { /* column may already exist */ });
+
+  // lots_defined status on pro_projects
+  await db.query(`
+    ALTER TABLE pro_projects DROP CONSTRAINT IF EXISTS pro_projects_status_check;
+  `).catch(() => { /* constraint may not exist */ });
+  await db.query(`
+    ALTER TABLE pro_projects ADD CONSTRAINT pro_projects_status_check
+      CHECK (status IN ('plan_uploaded','extraction_done','lots_defined','validated','qualified',
+                        'plan_final','generating','visuals_done','delivered','extraction_failed'));
+  `).catch(() => { /* constraint may already exist with new values */ });
+
   proTablesEnsured = true;
 }
 
@@ -277,6 +303,9 @@ export interface CreateLotInput {
   floor?: number | null;
   targetBuyer?: TargetBuyer | null;
   styleId?: string | null;
+  lotType?: string | null;
+  color?: string | null;
+  sortOrder?: number | null;
 }
 
 export interface ProLot {
@@ -293,6 +322,9 @@ export interface ProLot {
   commercial_description: string | null;
   description_is_manual: boolean;
   status: LotStatus;
+  lot_type: string | null;
+  color: string | null;
+  sort_order: number | null;
   created_at: Date;
 }
 
@@ -300,8 +332,8 @@ export async function createLot(input: CreateLotInput): Promise<ProLot> {
   await ensureProTables();
   const db = getPool();
   const result = await db.query<ProLot>(
-    `INSERT INTO pro_lots (project_id, name, floor, target_buyer, style_id)
-     VALUES ($1, $2, $3, $4, $5)
+    `INSERT INTO pro_lots (project_id, name, floor, target_buyer, style_id, lot_type, color, sort_order)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
      RETURNING *`,
     [
       input.projectId,
@@ -309,6 +341,9 @@ export async function createLot(input: CreateLotInput): Promise<ProLot> {
       input.floor ?? 0,
       input.targetBuyer ?? null,
       input.styleId ?? null,
+      input.lotType ?? "appartement",
+      input.color ?? null,
+      input.sortOrder ?? 0,
     ]
   );
   return result.rows[0];
@@ -351,6 +386,29 @@ export async function updateLot(
     `UPDATE pro_lots SET ${setClauses.join(", ")} WHERE id = $${entries.length + 1}`,
     [...values, lotId]
   );
+}
+
+export async function deleteLot(lotId: string): Promise<void> {
+  await ensureProTables();
+  const db = getPool();
+  // Unassign rooms before deleting (set lot_id to NULL)
+  await db.query(`UPDATE pro_rooms SET lot_id = NULL WHERE lot_id = $1`, [lotId]);
+  await db.query(`DELETE FROM pro_lots WHERE id = $1`, [lotId]);
+}
+
+export async function deleteProjectLots(projectId: string): Promise<void> {
+  await ensureProTables();
+  const db = getPool();
+  // Unassign all rooms first
+  await db.query(`UPDATE pro_rooms SET lot_id = NULL WHERE project_id = $1`, [projectId]);
+  // Delete all lots for this project
+  await db.query(`DELETE FROM pro_lots WHERE project_id = $1`, [projectId]);
+}
+
+export async function updateRoomLot(roomId: string, lotId: string | null): Promise<void> {
+  await ensureProTables();
+  const db = getPool();
+  await db.query(`UPDATE pro_rooms SET lot_id = $1 WHERE id = $2`, [lotId, roomId]);
 }
 
 // ─── Room CRUD ──────────────────────────────────────────────────────

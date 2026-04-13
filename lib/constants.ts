@@ -79,12 +79,13 @@ export function getCompletedSteps(status: string): number[] {
     case "plan_uploaded": return [1];
     case "extraction_done": return [1, 2];
     case "extraction_failed": return [1];
-    case "validated": return [1, 2, 3];
-    case "qualified": return [1, 2, 3, 4];
-    case "plan_final": return [1, 2, 3, 4, 5];
-    case "generating": return [1, 2, 3, 4, 5];
-    case "visuals_done": return [1, 2, 3, 4, 5, 6];
-    case "delivered": return [1, 2, 3, 4, 5, 6, 7];
+    case "lots_defined": return [1, 2, 3];
+    case "validated": return [1, 2, 3, 4];
+    case "qualified": return [1, 2, 3, 4, 5];
+    case "plan_final": return [1, 2, 3, 4, 5, 6];
+    case "generating": return [1, 2, 3, 4, 5, 6];
+    case "visuals_done": return [1, 2, 3, 4, 5, 6, 7];
+    case "delivered": return [1, 2, 3, 4, 5, 6, 7, 8];
     default: return [1];
   }
 }

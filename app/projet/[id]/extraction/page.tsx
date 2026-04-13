@@ -7,8 +7,8 @@
  *
  * Au mount : appelle POST /api/pro/projects/[id]/extract.
  * Affiche les pièces extraites groupées par étage avec édition inline.
- * Bouton "Valider et continuer" redirige vers /projet/[id]/validation.
- * En cas d'erreur : message + lien vers saisie manuelle (validation).
+ * Bouton "Valider et continuer" redirige vers /projet/[id]/decoupe.
+ * En cas d'erreur : message + lien vers saisie manuelle (decoupe).
  */
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
@@ -332,8 +332,8 @@ export default function ExtractionPage() {
         } else if (response.status === 429) {
           setErrorMessage(data.message || "Trop de tentatives. Réessayez plus tard.");
         } else if (response.status === 409) {
-          // Already extracted — redirect to validation
-          router.push(`/projet/${projectId}/validation`);
+          // Already extracted — redirect to decoupe (lot assignment)
+          router.push(`/projet/${projectId}/decoupe`);
           return;
         } else {
           setErrorMessage(data.message || "Erreur lors de l'analyse du plan.");
@@ -381,7 +381,7 @@ export default function ExtractionPage() {
           if (data.project_plan_path) setPlanPath(data.project_plan_path);
           // If already past extraction, redirect immediately without loading flash
           if (status && status !== "plan_uploaded" && status !== "extraction_failed") {
-            router.replace(`/projet/${projectId}/validation`);
+            router.replace(`/projet/${projectId}/decoupe`);
             return;
           }
         }
@@ -456,11 +456,11 @@ export default function ExtractionPage() {
   // ─── Navigation ──────────────────────────────────────────────────
 
   const handleContinue = useCallback(() => {
-    router.push(`/projet/${projectId}/validation`);
+    router.push(`/projet/${projectId}/decoupe`);
   }, [router, projectId]);
 
   const handleSkipToManual = useCallback(() => {
-    router.push(`/projet/${projectId}/validation`);
+    router.push(`/projet/${projectId}/decoupe`);
   }, [router, projectId]);
 
   // ─── Render ──────────────────────────────────────────────────────

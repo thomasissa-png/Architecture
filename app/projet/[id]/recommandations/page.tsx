@@ -360,9 +360,9 @@ export default function RecommandationsPage() {
         {/* Stepper */}
         <div className="mb-8">
           <ProStepper
-            currentStep={5}
+            currentStep={6}
             completedSteps={getCompletedSteps(projectStatus)}
-            errorSteps={pageState === "error" ? [5] : []}
+            errorSteps={pageState === "error" ? [6] : []}
             projectId={projectId}
           />
         </div>
