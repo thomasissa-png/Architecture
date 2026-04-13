@@ -263,7 +263,7 @@ export async function extractPlanData(
   // Validate with Zod
   const validation = PlanExtractionResultSchema.safeParse(parsed);
   if (validation.success) {
-    return sanitizeSurfaces(validation.data);
+    return validation.data;
   }
 
   // Self-correction: send Zod errors back to the model for a second try
@@ -283,7 +283,7 @@ export async function extractPlanData(
     const correctedParsed = JSON.parse(correctedJson);
     const correctedValidation = PlanExtractionResultSchema.safeParse(correctedParsed);
     if (correctedValidation.success) {
-      return sanitizeSurfaces(correctedValidation.data);
+      return correctedValidation.data;
     }
     throw new PlanExtractionError(
       "PARSING_FAILED",
@@ -373,30 +373,47 @@ export async function extractMultiplePlans(
 }
 
 // ─── Surface sanity checks (post-extraction) ──────────────────────
+
+export interface SanitizationEntry {
+  room: string;
+  from: number | null;
+  to: number | null;
+  reason: string;
+}
+
+interface SanitizeResult {
+  data: PlanExtractionResult;
+  log: SanitizationEntry[];
+}
+
 /**
- * Fix obviously wrong surfaces that GPT may have produced.
- * Common errors: 10x factor (reading "25.8" as 258 then computing wrong),
- * cm read as m, cotes assigned to wrong room.
+ * Fix obviously wrong surfaces. Returns corrected data + a log of all changes
+ * so validateExtraction can produce user-facing warnings.
  */
-function sanitizeSurfaces(data: PlanExtractionResult): PlanExtractionResult {
+export function sanitizeSurfaces(data: PlanExtractionResult, typeBien?: string): SanitizeResult {
   const rooms = [...data.rooms];
   let totalSurface = data.total_surface_m2;
+  const log: SanitizationEntry[] = [];
+
+  // Max surface per room depends on type de bien
+  const maxRoomSurface = typeBien === "maison" ? 150 : typeBien === "immeuble" || typeBien === "local_commercial" ? 250 : 80;
 
   // ── Fix 0: Detect systematic 10x error ──────────────────────────
-  // If the MEDIAN surface is > 50m², ALL surfaces are likely ~10x too large.
-  // This is the most common GPT misread pattern (25.8m² → 258 → /10 correction).
   const validSurfaces = rooms.filter((r) => r.surface_m2 !== null).map((r) => r.surface_m2!).sort((a, b) => a - b);
   if (validSurfaces.length >= 2) {
     const median = validSurfaces[Math.floor(validSurfaces.length / 2)];
-    if (median > 50) {
-      console.warn(`[plan-extractor] Median surface ${median}m² > 50m² — systematic 10x error detected, dividing all surfaces by 10`);
+    if (median > maxRoomSurface) {
+      console.warn(`[plan-extractor] Median surface ${median}m² > ${maxRoomSurface}m² — systematic 10x error, dividing all by 10`);
       for (const room of rooms) {
         if (room.surface_m2 !== null) {
-          room.surface_m2 = Math.round(room.surface_m2 * 10) / 100; // divide by 10, round to 1 decimal
+          const before = room.surface_m2;
+          room.surface_m2 = Math.round(room.surface_m2 * 10) / 100;
+          log.push({ room: room.name_raw, from: before, to: room.surface_m2, reason: "10x_correction" });
         }
         if (room.dimensions) {
-          room.dimensions.length_m = Math.round(room.dimensions.length_m * 100 / Math.sqrt(10)) / 100;
-          room.dimensions.width_m = Math.round(room.dimensions.width_m * 100 / Math.sqrt(10)) / 100;
+          // Fix C4: divide dimensions by sqrt(10) ≈ 3.16 so that L×W = surface/10
+          room.dimensions.length_m = Math.round(room.dimensions.length_m / Math.sqrt(10) * 100) / 100;
+          room.dimensions.width_m = Math.round(room.dimensions.width_m / Math.sqrt(10) * 100) / 100;
         }
         room.confidence = Math.min(room.confidence, 0.5);
       }
@@ -406,46 +423,41 @@ function sanitizeSurfaces(data: PlanExtractionResult): PlanExtractionResult {
     }
   }
 
-  // ── Fix 1: Individual room dimension checks ─────────────────────
+  // ── Fix 1: Individual room checks ─────────────────────────────
   for (const room of rooms) {
     if (room.surface_m2 === null) continue;
 
-    // If dimensions look like centimeters (length or width > 50m), convert
+    // cm→m conversion
     if (room.dimensions) {
       let fixed = false;
-      if (room.dimensions.length_m > 50) {
-        room.dimensions.length_m = room.dimensions.length_m / 100;
-        fixed = true;
-      }
-      if (room.dimensions.width_m > 50) {
-        room.dimensions.width_m = room.dimensions.width_m / 100;
-        fixed = true;
-      }
+      if (room.dimensions.length_m > 50) { room.dimensions.length_m /= 100; fixed = true; }
+      if (room.dimensions.width_m > 50) { room.dimensions.width_m /= 100; fixed = true; }
       if (fixed) {
+        const before = room.surface_m2;
         room.surface_m2 = Math.round(room.dimensions.length_m * room.dimensions.width_m * 100) / 100;
         room.confidence = Math.min(room.confidence, 0.5);
-        console.warn(`[plan-extractor] Sanitized dimensions for "${room.name_raw}" (cm→m): ${room.surface_m2}m²`);
+        log.push({ room: room.name_raw, from: before, to: room.surface_m2, reason: "cm_to_m" });
       }
     }
 
-    // Cap individual rooms at 80m² (standard residential max)
-    if (room.surface_m2 > 80) {
-      console.warn(`[plan-extractor] Room "${room.name_raw}" surface ${room.surface_m2}m² > 80m² — capping to null`);
+    // Cap per typeBien
+    if (room.surface_m2 > maxRoomSurface) {
+      log.push({ room: room.name_raw, from: room.surface_m2, to: null, reason: `cap_${maxRoomSurface}m2` });
       room.surface_m2 = null;
       room.dimensions = null;
       room.confidence = Math.min(room.confidence, 0.3);
     }
 
-    // If a single room is larger than total surface, it's wrong
+    // Room > total
     if (totalSurface !== null && room.surface_m2 !== null && room.surface_m2 > totalSurface) {
-      console.warn(`[plan-extractor] Room "${room.name_raw}" ${room.surface_m2}m² exceeds total ${totalSurface}m² — capping`);
+      log.push({ room: room.name_raw, from: room.surface_m2, to: null, reason: "exceeds_total" });
       room.surface_m2 = null;
       room.dimensions = null;
       room.confidence = Math.min(room.confidence, 0.3);
     }
   }
 
-  // ── Fix 2: Recalculate total if needed ──────────────────────────
+  // ── Fix 2: Recalculate total ──────────────────────────────────
   const sumSurfaces = rooms.reduce((s, r) => s + (r.surface_m2 ?? 0), 0);
   let correctedTotal = totalSurface;
   if (correctedTotal === null || (sumSurfaces > 0 && Math.abs(sumSurfaces - (correctedTotal ?? 0)) > sumSurfaces * 0.3)) {
@@ -453,9 +465,8 @@ function sanitizeSurfaces(data: PlanExtractionResult): PlanExtractionResult {
   }
 
   return {
-    ...data,
-    rooms,
-    total_surface_m2: correctedTotal,
+    data: { ...data, rooms, total_surface_m2: correctedTotal },
+    log,
   };
 }
 
@@ -477,40 +488,66 @@ export interface ExtractionQualityReport {
 
 /**
  * Validate extraction quality BEFORE displaying to user.
- * Returns a structured report with gate pass/fail, score, and user-facing warnings.
+ * Accepts optional sanitization log to produce explicit warnings per room.
+ * Accepts typeBien for context-dependent thresholds.
  */
-export function validateExtraction(data: PlanExtractionResult): ExtractionQualityReport {
+export function validateExtraction(
+  data: PlanExtractionResult,
+  sanitizationLog?: SanitizationEntry[],
+  typeBien?: string
+): ExtractionQualityReport {
   const gates: ExtractionQualityGate[] = [];
   const warnings: string[] = [];
 
-  // GATE 1 — Surfaces in realistic ranges (no room > 80m²)
-  const oversizedRooms = data.rooms.filter((r) => r.surface_m2 !== null && r.surface_m2 > 80);
+  // C1: Convert sanitization log to explicit user warnings
+  if (sanitizationLog && sanitizationLog.length > 0) {
+    for (const entry of sanitizationLog) {
+      if (entry.reason === "10x_correction") {
+        warnings.push(`${entry.room} : surface corrigée de ${entry.from}m² → ${entry.to}m² (erreur de lecture détectée).`);
+      } else if (entry.reason.startsWith("cap_")) {
+        warnings.push(`${entry.room} : surface de ${entry.from}m² aberrante, supprimée. Saisissez-la manuellement.`);
+      } else if (entry.reason === "exceeds_total") {
+        warnings.push(`${entry.room} : surface de ${entry.from}m² dépasse le total, supprimée.`);
+      } else if (entry.reason === "cm_to_m") {
+        warnings.push(`${entry.room} : dimensions converties cm→m (${entry.from}m² → ${entry.to}m²).`);
+      }
+    }
+  }
+
+  // C2: Thresholds depend on typeBien
+  const maxRoomSurface = typeBien === "maison" ? 150 : typeBien === "immeuble" || typeBien === "local_commercial" ? 250 : 80;
+  const maxTotalSurface = typeBien === "maison" ? 500 : typeBien === "immeuble" || typeBien === "local_commercial" ? 800 : 300;
+
+  // GATE 1 — Surfaces in realistic ranges
+  const oversizedRooms = data.rooms.filter((r) => r.surface_m2 !== null && r.surface_m2 > maxRoomSurface);
   gates.push({
     id: "G1_SURFACE_RANGE",
-    label: "Surfaces dans les plages réalistes",
+    label: `Surfaces dans les plages réalistes (< ${maxRoomSurface}m²)`,
     passed: oversizedRooms.length === 0,
     detail: oversizedRooms.length > 0
-      ? `${oversizedRooms.length} pièce(s) > 80m² : ${oversizedRooms.map((r) => `${r.name_raw} (${r.surface_m2}m²)`).join(", ")}`
+      ? oversizedRooms.map((r) => `${r.name_raw} (${r.surface_m2}m²)`).join(", ")
       : undefined,
   });
   if (oversizedRooms.length > 0) {
-    warnings.push(`${oversizedRooms.length} pièce(s) avec une surface anormalement grande. Vérifiez les surfaces manuellement.`);
+    for (const r of oversizedRooms) {
+      warnings.push(`${r.name_raw} : ${r.surface_m2}m² semble trop grand. Vérifiez cette surface.`);
+    }
   }
 
-  // GATE 2 — Total surface coherent (< 300m² for a single floor)
+  // GATE 2 — Total surface coherent
   const totalSurface = data.rooms.reduce((s, r) => s + (r.surface_m2 ?? 0), 0);
-  const totalOk = totalSurface > 0 && totalSurface < 300;
+  const totalOk = totalSurface > 0 && totalSurface < maxTotalSurface;
   gates.push({
     id: "G2_TOTAL_SURFACE",
-    label: "Surface totale cohérente (< 300m²/étage)",
+    label: `Surface totale cohérente (< ${maxTotalSurface}m²)`,
     passed: totalOk,
     detail: !totalOk ? `Surface totale : ${totalSurface.toFixed(1)}m²` : undefined,
   });
-  if (!totalOk && totalSurface >= 300) {
-    warnings.push(`Surface totale de ${totalSurface.toFixed(1)}m² — semble trop grande. Les surfaces sont peut-être surestimées.`);
+  if (!totalOk && totalSurface >= maxTotalSurface) {
+    warnings.push(`Surface totale de ${totalSurface.toFixed(1)}m² — semble trop grande.`);
   }
 
-  // GATE 3 — Bounding boxes within image bounds
+  // GATE 3 — Bounding boxes within image bounds (C3: warning FR)
   const outOfBounds = data.rooms.filter((r) => {
     if (!r.bounding_box) return false;
     const bb = r.bounding_box;
@@ -522,25 +559,28 @@ export function validateExtraction(data: PlanExtractionResult): ExtractionQualit
     id: "G3_BBOX_IN_BOUNDS",
     label: "Pièces dans les limites du plan",
     passed: outOfBounds.length === 0,
-    detail: outOfBounds.length > 0 ? `${outOfBounds.length} pièce(s) débordent du plan` : undefined,
+    detail: outOfBounds.length > 0 ? outOfBounds.map((r) => r.name_raw).join(", ") : undefined,
   });
   if (outOfBounds.length > 0) {
-    warnings.push(`${outOfBounds.length} pièce(s) positionnées en dehors du plan. Repositionnez-les manuellement.`);
+    warnings.push(`${outOfBounds.length} pièce(s) hors du plan : ${outOfBounds.map((r) => r.name_raw).join(", ")}. Repositionnez-les.`);
   }
 
-  // GATE 4 — Bounding boxes not empty (w>1%, h>1%)
+  // GATE 4 — Bounding boxes not empty (C3: warning FR)
   const emptyBoxes = data.rooms.filter((r) => {
-    if (!r.bounding_box) return true; // no bbox at all
+    if (!r.bounding_box) return true;
     return r.bounding_box.width_percent < 1 || r.bounding_box.height_percent < 1;
   });
   gates.push({
     id: "G4_BBOX_NOT_EMPTY",
     label: "Toutes les pièces ont une position",
     passed: emptyBoxes.length === 0,
-    detail: emptyBoxes.length > 0 ? `${emptyBoxes.length} pièce(s) sans position détectée` : undefined,
+    detail: emptyBoxes.length > 0 ? `${emptyBoxes.length} pièce(s) sans position` : undefined,
   });
+  if (emptyBoxes.length > 0) {
+    warnings.push(`${emptyBoxes.length} pièce(s) sans position sur le plan. Repositionnez-les manuellement.`);
+  }
 
-  // GATE 5 — Bounding box sizes proportional to surfaces
+  // GATE 5 — Bounding box sizes proportional to surfaces (C3: warning FR)
   const roomsWithBoth = data.rooms.filter((r) => r.surface_m2 !== null && r.bounding_box);
   let proportionalOk = true;
   if (roomsWithBoth.length >= 2) {
@@ -548,40 +588,43 @@ export function validateExtraction(data: PlanExtractionResult): ExtractionQualit
     const surfaceMax = Math.max(...roomsWithBoth.map((r) => r.surface_m2!));
     const bboxMin = Math.min(...roomsWithBoth.map((r) => r.bounding_box!.width_percent * r.bounding_box!.height_percent));
     const bboxMax = Math.max(...roomsWithBoth.map((r) => r.bounding_box!.width_percent * r.bounding_box!.height_percent));
-    // If the smallest surface has the biggest bbox, something is very wrong
     if (surfaceMax > surfaceMin * 3 && bboxMax > 0 && bboxMin > 0) {
-      const surfaceRatio = surfaceMax / surfaceMin;
       const bboxRatio = bboxMax / bboxMin;
-      proportionalOk = bboxRatio > surfaceRatio * 0.2; // bbox should roughly follow surface proportions
+      const surfaceRatio = surfaceMax / surfaceMin;
+      proportionalOk = bboxRatio > surfaceRatio * 0.2;
     }
   }
   gates.push({
     id: "G5_BBOX_PROPORTIONAL",
-    label: "Tailles des pièces proportionnelles",
+    label: "Tailles visuelles proportionnelles aux surfaces",
     passed: proportionalOk,
     detail: !proportionalOk ? "Les tailles visuelles ne correspondent pas aux surfaces" : undefined,
   });
+  if (!proportionalOk) {
+    warnings.push("Les tailles visuelles des pièces ne semblent pas proportionnelles aux surfaces. Vérifiez le positionnement.");
+  }
 
   // GATE 6 — At least 2 rooms detected
   gates.push({
     id: "G6_MIN_ROOMS",
     label: "Au moins 2 pièces détectées",
     passed: data.rooms.length >= 2,
-    detail: data.rooms.length < 2 ? `Seulement ${data.rooms.length} pièce(s) détectée(s)` : undefined,
+    detail: data.rooms.length < 2 ? `Seulement ${data.rooms.length} pièce(s)` : undefined,
   });
   if (data.rooms.length < 2) {
-    warnings.push("Très peu de pièces détectées. Le plan est peut-être illisible ou de mauvaise qualité.");
+    warnings.push("Très peu de pièces détectées. Le plan est peut-être illisible.");
   }
 
-  // GATE 7 — No duplicate rooms (same name + overlapping position)
+  // GATE 7 — No duplicate rooms (C5: by bbox overlap only, name not required)
   let duplicates = 0;
   for (let i = 0; i < data.rooms.length; i++) {
     for (let j = i + 1; j < data.rooms.length; j++) {
       const a = data.rooms[i];
       const b = data.rooms[j];
-      if (a.name_raw === b.name_raw && a.bounding_box && b.bounding_box) {
+      if (a.bounding_box && b.bounding_box) {
         const overlap = Math.abs(a.bounding_box.x_percent - b.bounding_box.x_percent) < 5
-          && Math.abs(a.bounding_box.y_percent - b.bounding_box.y_percent) < 5;
+          && Math.abs(a.bounding_box.y_percent - b.bounding_box.y_percent) < 5
+          && a.bounding_box.width_percent > 0 && b.bounding_box.width_percent > 0;
         if (overlap) duplicates++;
       }
     }
@@ -592,6 +635,22 @@ export function validateExtraction(data: PlanExtractionResult): ExtractionQualit
     passed: duplicates === 0,
     detail: duplicates > 0 ? `${duplicates} doublon(s) détecté(s)` : undefined,
   });
+  if (duplicates > 0) {
+    warnings.push(`${duplicates} pièce(s) semblent en double (même position). Supprimez les doublons.`);
+  }
+
+  // GATE 8 — C6: At least 50% of rooms have a surface (not all null)
+  const roomsWithSurface = data.rooms.filter((r) => r.surface_m2 !== null).length;
+  const surfaceCoverage = data.rooms.length > 0 ? roomsWithSurface / data.rooms.length : 0;
+  gates.push({
+    id: "G8_SURFACE_COVERAGE",
+    label: "Surfaces détectées sur la majorité des pièces",
+    passed: surfaceCoverage >= 0.5,
+    detail: surfaceCoverage < 0.5 ? `${roomsWithSurface}/${data.rooms.length} pièces avec surface` : undefined,
+  });
+  if (surfaceCoverage < 0.5) {
+    warnings.push("La majorité des surfaces n'ont pas pu être lues. Saisissez-les manuellement.");
+  }
 
   // ── Score calculation ──────────────────────────────────────────
   const passedCount = gates.filter((g) => g.passed).length;

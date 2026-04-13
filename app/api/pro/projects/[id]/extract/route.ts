@@ -17,7 +17,7 @@ import {
   isErrorResponse,
   checkRateLimit,
 } from "@/lib/marchand/auth-helpers";
-import { extractMultiplePlans, PlanExtractionError, validateExtraction } from "@/lib/marchand/plan-extractor";
+import { extractMultiplePlans, PlanExtractionError, sanitizeSurfaces, validateExtraction } from "@/lib/marchand/plan-extractor";
 import type { TypeBien } from "@/lib/marchand/schemas";
 // TODO: import { suggestLots } from "@/lib/marchand/plan-extractor";
 
@@ -169,29 +169,34 @@ export async function POST(
       );
     }
 
-    // ─── Call extraction IA + quality gates ─────────────────────
-    let extractionResult = await extractMultiplePlans(
+    // ─── Call extraction IA + sanitize + quality gates ──────────
+    let rawResult = await extractMultiplePlans(
       planInputs,
       project.type_bien as TypeBien
     );
 
-    // ── Quality gates — validate before displaying ──────────────
-    let qualityReport = validateExtraction(extractionResult);
-    console.log(`[extract] Quality score: ${qualityReport.score}/100, gates: ${qualityReport.gates.filter(g => g.passed).length}/${qualityReport.gates.length}, shouldRetry: ${qualityReport.shouldRetry}`);
+    // Sanitize surfaces (10x correction, cm→m, cap per typeBien)
+    let sanitized = sanitizeSurfaces(rawResult, project.type_bien);
+    let extractionResult = sanitized.data;
 
-    // Auto-retry ONCE if critical gates fail (surfaces wrong, too few rooms)
+    // Quality gates with sanitization log for explicit warnings
+    let qualityReport = validateExtraction(extractionResult, sanitized.log, project.type_bien);
+    console.log(`[extract] Quality score: ${qualityReport.score}/100, gates: ${qualityReport.gates.filter(g => g.passed).length}/${qualityReport.gates.length}, shouldRetry: ${qualityReport.shouldRetry}, sanitized: ${sanitized.log.length} corrections`);
+
+    // Auto-retry ONCE if critical gates fail
     if (qualityReport.shouldRetry) {
       console.warn(`[extract] Quality gates failed — retrying extraction...`);
       try {
-        extractionResult = await extractMultiplePlans(
+        rawResult = await extractMultiplePlans(
           planInputs,
           project.type_bien as TypeBien
         );
-        qualityReport = validateExtraction(extractionResult);
+        sanitized = sanitizeSurfaces(rawResult, project.type_bien);
+        extractionResult = sanitized.data;
+        qualityReport = validateExtraction(extractionResult, sanitized.log, project.type_bien);
         console.log(`[extract] Retry quality score: ${qualityReport.score}/100`);
       } catch (retryErr) {
         console.error(`[extract] Retry failed:`, retryErr);
-        // Keep the first result
       }
     }
 
