@@ -251,8 +251,9 @@ export default function PlanEditor({
   const [showAdvancedTools, setShowAdvancedTools] = useState(false);
   // Mobile fusion mode — "Fusionner avec..." tap flow (Moi)
   const [fusionMode, setFusionMode] = useState(false);
-  // Zoom level (Moi)
+  // Zoom level (Moi) + scroll-wheel zoom
   const [zoomLevel, setZoomLevel] = useState(1);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   // Help collapsed by default (UX C5)
   const [helpExpanded, setHelpExpanded] = useState(false);
   // Long-press timer for touch rename
@@ -540,6 +541,23 @@ export default function PlanEditor({
       window.removeEventListener("touchend", onUp);
     };
   }, [dragState, handlePointerMove, handlePointerUp]);
+
+  // ─── Scroll-wheel zoom (Ctrl+wheel or trackpad pinch) ────────────
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    function handleWheel(e: WheelEvent) {
+      // Only zoom on Ctrl+wheel (trackpad pinch sends ctrlKey=true)
+      if (!e.ctrlKey && !e.metaKey) return;
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? -0.1 : 0.1;
+      setZoomLevel((z) => Math.max(0.5, Math.min(3, Math.round((z + delta) * 100) / 100)));
+    }
+
+    container.addEventListener("wheel", handleWheel, { passive: false });
+    return () => container.removeEventListener("wheel", handleWheel);
+  }, []);
 
   // ─── Room actions ─────────────────────────────────────────────────
 
@@ -1054,10 +1072,11 @@ export default function PlanEditor({
         </div>
       )}
 
-      {/* Plan container */}
+      {/* Plan container — scrollable, zoom via Ctrl+wheel */}
       <div
+        ref={scrollContainerRef}
         className="relative overflow-auto rounded-lg border border-[#D1D0CB]/40
-                   bg-[#F5F5F0] shadow-[0_1px_3px_rgba(28,28,30,0.06)]"
+                   bg-[#F5F5F0] shadow-[0_1px_3px_rgba(28,28,30,0.06)] cursor-grab active:cursor-grabbing"
         style={{ maxHeight: "70vh" }}
       >
         <div
@@ -1435,16 +1454,16 @@ export default function PlanEditor({
                   </div>
                 )}
 
-                {/* Delete button (top-right) — triggers confirmation (UX C1) */}
+                {/* Delete button (mid-right, outside room) — avoids resize corner conflict */}
                 {isSelected && pendingDeleteId !== room.id && (
                   <button
                     type="button"
-                    className="absolute -top-2 -right-2 w-8 h-8 rounded-full
+                    className="absolute top-1/2 -translate-y-1/2 -right-3 translate-x-full w-7 h-7 rounded-full
                                bg-[#B91C1C] text-white flex items-center justify-center
                                shadow-md hover:bg-[#991B1B] transition-colors z-30
                                focus-visible:outline-none focus-visible:ring-2
                                focus-visible:ring-[#B91C1C] focus-visible:ring-offset-1
-                               min-w-[44px] min-h-[44px] -m-[8px]"
+                               min-w-[44px] min-h-[44px]"
                     onClick={(e) => {
                       e.stopPropagation();
                       requestDelete(room.id);
@@ -1570,8 +1589,8 @@ export default function PlanEditor({
             );
           })}
         </div>
-        {/* P1 — Zoom controls (Moi) — positioned bottom-right of scrollable area */}
-        <div className="absolute bottom-3 right-3 z-30 flex flex-col gap-1">
+        {/* Zoom controls — bottom-right. Also: Ctrl+scroll or trackpad pinch to zoom */}
+        <div className="absolute bottom-3 right-3 z-30 flex flex-col gap-1" title="Ctrl+molette pour zoomer">
           <button
             type="button"
             onClick={() => setZoomLevel((z) => Math.min(z + 0.25, 3))}
@@ -1588,9 +1607,17 @@ export default function PlanEditor({
             +
           </button>
           {zoomLevel !== 1 && (
-            <span className="text-[10px] text-center text-[#9B9A94] font-mono">
+            <button
+              type="button"
+              onClick={() => setZoomLevel(1)}
+              className="text-[10px] text-center text-[#9B9A94] font-mono hover:text-[#7D9B76]
+                         bg-white/90 border border-[#D1D0CB]/60 rounded px-1 py-0.5
+                         transition-colors cursor-pointer"
+              title="Réinitialiser le zoom à 100%"
+              aria-label="Réinitialiser le zoom"
+            >
               {Math.round(zoomLevel * 100)}%
-            </span>
+            </button>
           )}
           <button
             type="button"
