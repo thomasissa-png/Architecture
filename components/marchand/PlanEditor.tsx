@@ -788,7 +788,7 @@ export default function PlanEditor({
   return (
     <div className="space-y-3">
       {/* P2 — Help text collapsible (UX C5) — single line + expand */}
-      <div className="p-3 rounded-lg bg-[#7D9B76]/[0.08] border border-[#7D9B76]/20 text-[13px] text-[#7D9B76] leading-relaxed">
+      <div className="p-3 rounded-lg bg-[#7D9B76]/10 border border-[#7D9B76]/20 text-[13px] text-[#7D9B76] leading-relaxed">
         <p>
           Déplacez les pièces, redimensionnez-les, ou ajoutez-en de nouvelles.{" "}
           <button
@@ -824,7 +824,7 @@ export default function PlanEditor({
             </span>
           )}
           {scaleIndicatorText && (
-            <span className="text-[11px] text-[#7D9B76] bg-[#7D9B76]/[0.08] rounded px-1.5 py-0.5 font-mono">
+            <span className="text-[11px] text-[#7D9B76] bg-[#7D9B76]/10 rounded px-1.5 py-0.5 font-mono">
               {scaleIndicatorText}
             </span>
           )}
@@ -1083,7 +1083,7 @@ export default function PlanEditor({
 
       {/* P1 — Fusion mode banner */}
       {fusionMode && (
-        <div className="p-2.5 rounded-lg bg-[#7D9B76]/[0.08] border border-[#7D9B76]/20 text-[13px] text-[#7D9B76]">
+        <div className="p-2.5 rounded-lg bg-[#7D9B76]/10 border border-[#7D9B76]/20 text-[13px] text-[#7D9B76]">
           Touchez la pièce à fusionner avec <strong>{rooms.find((r) => r.id === selectedRoomId)?.name || "la pièce sélectionnée"}</strong>.
         </div>
       )}
