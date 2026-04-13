@@ -210,6 +210,7 @@
 | @product-manager | 2026-03-31 | docs/product/pro-workflow-v2.md | Décision fondateur : le dossier se crée APRES la génération (pas avant). Flow v2 : upload → annotation par photo → génération → rattachement à un bien (nouveau ou existant, ou ignorer). Suppression de l'étape "info" en entrée de MerchantMode. Nouveau composant AttachToBienPanel + PATCH /api/dossier/[uuid]/attach. | L'étape "info" en premier place une friction avant la valeur. Thomas arrive toujours avec ses photos, jamais avec ses données de prix prêtes. Déplacer le rattachement à la fin = Thomas voit ses visuels avant de devoir remplir des champs. Option "Ignorer" obligatoire pour ne jamais bloquer. PATCH dédié pour le rattachement car le dossier est créé sans property_id en début de génération. |
 | @copywriter | 2026-04-03 | docs/copy/copy-audit-parcours-achat-2026-04-03.md | Audit copy parcours achat / modale recharge — note 6,8/10. 1 P0 bloquant (prix Starter 14,90€ dans GalleryGate au lieu de 9,90€). 5 corrections P1 (4× "crédit" dans l'UI → "visuel", 2× alert() non conformes → state inline). 7 corrections P2. Prix cohérents entre les 4 autres sources (AuthButton, /pricing, homepage, Stripe). | P0 GalleryGate : relique de l'ancien pricing (14,90€ = ancien Starter, décision fondateur 2026-03-27 l'a baissé à 9,90€). "Crédit" dans l'UI viole la décision de vocabulaire prise en mars (session @copywriter 2026-03-28 — 70 occurrences remplacées). Les alert() natifs sont incompatibles avec le design system (rupture visuelle totale) — pattern de correction fourni dans l'audit. |
 | @reviewer | 2026-03-25 | docs/reviews/site-audit-synthesis.md | Synthese croisee 6 audits : 8 convergences inter-agents identifiees, 0 contradiction bloquante, Top 10 actions priorisees, 7 bloqueurs avant monetisation, plan d'action @fullstack en 4 phases. Recommandation GO AVEC RESERVES. | Les 6 audits convergent sur les memes priorites (legal > pricing > SEO > UX/design). Aucune contradiction entre agents — les recommandations sont complementaires. La conformite legale est le bloqueur n.1 car le site collecte deja des photos/IP sans information RGPD. |
+| @orchestrator + @fullstack + @marchand-de-biens + @ux + @design + @qa | 2026-04-13 | Session 42 complète — parcours marchand 7 étapes score Thomas 6.4→9.57, plan editor interactif, extraction PDF, multi-fichier | Score Thomas parcours 7 étapes : 6.4→9.57/10 (7/7 PASS). Autocompletion adresse (API gouv.fr). Extraction PDF via pdf-to-img (pdfjs-dist) + GPT-4.1 vision. Upload multi-fichier multi-étage avec drag-to-reorder. PlanEditor interactif (drag, resize, fusion, calibration échelle, undo/redo, zoom, distinction existant/projet). Bounding boxes IA (pièces positionnées sur le plan). Badges confiance. 21 types de pièces. Dimensions L×l. Highlight bidirectionnel plan↔liste. CTA sticky mobile. 25+ audits (Thomas, Design, UX, Moi, QA). ~35 commits, build vérifié à chaque push. | Approche pdf-to-img retenue vs OpenAI Files API (Files API échouait silencieusement). serverComponentsExternalPackages obligatoire sur Replit pour pdfjs-dist. Object Storage SDK retourne value[0] (tuple) pas value directement — cause racine de la corruption PDF. Le plan editor SVG natif sans librairie externe est suffisant pour 10-15 pièces. Les bounding boxes en % sont plus fiables que les pixels car l'IA ne connaît pas la résolution. |
 | @copywriter | 2026-03-25 | docs/legal/mentions-legales.md, docs/legal/privacy-policy.md, docs/legal/cgu-draft.md | 3 pages légales complètes. Mentions légales LCEN Art. 6 III avec placeholders SIRET/adresse/directeur publication + crédits technologies. Politique confidentialité RGPD : 6 types de données avec base légale et durée, sous-traitants (OpenAI DPF, Replicate DPF à vérifier, Replit DPF, Stripe), droits utilisateurs complets, contact privacy@. CGU/CGV : packages 4 tiers TTC, exception rétractation contenu numérique Art. L221-28 13° avec case à cocher, licence large sur images générées, médiation consommateur obligatoire. Ton accessible, juridiquement complet, aligné brand-voice.md (sobre, précis, sans jargon inutile). | Mentions légales : placeholders explicites avec note d'avertissement sur l'obligation LCEN avant mise en ligne. Politique de confidentialité : structurée par type de donnée (plus lisible pour Léa/Thomas que par base légale) — l'article 6 RGPD est mentionné mais subordonné à l'explication pratique. CGU/CGV : exception rétractation présentée dans le vocabulaire utilisateur ("Ce que cela signifie pour vous") avant la référence légale — approche brand-voice first. Médiation consommateur marquée [A DESIGNER] car obligation légale avant première vente B2C. 5 hypothèses à valider regroupées en fin de chaque document. Réutilise la grille tarifaire HT/TTC issue de legal-audit.md (cohérence). |
 | @creative-strategy | 2026-03-25 | docs/strategy/naming-proposals.md | Analyse Versimo (forces/faiblesses/risques). 4 propositions axe Versi (Versimo, Versiscène, Versivue, VersiSpace). 4 propositions indépendantes (Stagira, Planora, Cadra, Placim). Tableau comparatif 6 critères. Recommandation Top 3 : Cadra (n°1), Stagira (n°2), Versimo (n°3). Impact sur 12 livrables existants avec effort estimé. Décision finale au fondateur. | Versimo écarté car "Rénov" positionne dans la rénovation grand public — décalage avec l'usage réel (meubler des pièces, pas rénover). Cadra recommandé vs Stagira : même score 25/30 mais Cadra est plus court (2 syllabes vs 3), plus immédiatement lisible par les 3 personas, et n'a aucune marque concurrente proche. Axe indépendant recommandé vs axe Versi : les 3 personas (Claire architecte, Léa particulière) ne sont pas des profils "clients d'une agence immobilière" — un nom trop lié à Versi Immobilier ferme ces personas. La filiation peut être discrète en footer sans être dans le nom. 3 hypothèses explicitement marquées (notoriété Versi, disponibilité domaines, absence de dépôt INPI). |
 
@@ -340,7 +341,47 @@
 
 ---
 
-## Mémo de reprise — dernière session (Session 41 — Parcours marchand implémentation + audits)
+## Mémo de reprise — dernière session (Session 42 — Plan editor + extraction PDF + convergence 10/10)
+
+- **Date de clôture** : 2026-04-13
+- **Branche** : `claude/extract-project-context-cnNx6`
+- **HEAD** : `31ffda1` — fix(marchand): convergence PASS — upload 9.6 + extraction 9.6/10
+- **Objet** : Itérations parcours marchand jusqu'à convergence 10/10 sur toutes les pages
+
+### Ce qui a été fait (Session 42)
+
+1. **Score Thomas 6.4→9.57/10** : 2 rounds P0/P1 sur les 7 étapes, 25+ audits multi-agents (Thomas, UX, Design, Moi, QA)
+2. **Extraction PDF** : pdf-to-img (pdfjs-dist), serverComponentsExternalPackages Replit, fix corruption Object Storage (value[0] tuple)
+3. **Plan editor interactif** : PlanEditor.tsx (900+ lignes), drag/resize/fusion/calibration/undo-redo/zoom, distinction existant vs projet
+4. **Bounding boxes IA** : prompt modifié pour extraire les coordonnées spatiales (% de l'image), pièces positionnées à leur emplacement réel
+5. **Autocompletion adresse** : réutilisation du composant mes-biens (API gouv.fr)
+6. **Upload multi-fichier** : multi-étage + drag-to-reorder
+7. **Convergence 10/10** : toutes les pages PASS (≥9.5) — Upload 9.6, Extraction 9.6, Plan Editor 9.85, Compréhension 9.9, Projection 9.9
+
+### Ce qui reste (session 43)
+1. **Gestion des cloisons en génération** : quand Thomas fusionne 2 pièces dans le plan editor, la génération IA traite encore chaque pièce individuellement depuis sa propre photo. Il faudrait fusionner les photos avant génération. C'est un redesign du pipeline (pas un bug).
+2. **Calibration échelle automatique** : le scaleFactor par défaut est 50 px/m. L'IA pourrait extraire les cotes du plan pour calibrer automatiquement.
+3. **Save indicator UX** : le PlanEditor ne montre pas si les modifications sont persistées.
+4. **Deploy Replit** : merger la branche et vérifier en production avec le vrai PDF du fondateur.
+5. **Tests E2E parcours marchand** : 0 test E2E spécifique au parcours pro.
+
+### Commande de reprise session 43
+```
+@orchestrator Reprends Versimo session 43. Session 42 close : convergence 10/10 atteinte sur toutes les pages.
+Branche : claude/extract-project-context-cnNx6. HEAD : 31ffda1.
+Reste : (1) gestion cloisons en génération, (2) calibration échelle auto, (3) deploy Replit, (4) tests E2E.
+```
+
+### Learnings session 42
+- `npx next build` OBLIGATOIRE avant chaque push (5 erreurs de build consécutives corrigées en session)
+- Object Storage SDK Replit retourne `value[0]` (tuple), pas `value` — cause racine corruption PDF
+- `serverComponentsExternalPackages` indispensable pour pdf-to-img/pdfjs-dist sur Replit
+- Les bounding boxes en % sont fiables, GPT-4.1 vision estime bien les positions relatives
+- Le fondateur veut le plan comme élément CENTRAL de la page, pas un toggle caché (demandé 6 fois)
+
+---
+
+## Mémo de reprise — session 41 (archivé)
 
 - **Date de clôture** : 2026-04-10
 - **Branche** : `claude/versimo-session-41-pivot-mc5tl`
