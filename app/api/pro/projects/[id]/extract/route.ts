@@ -183,13 +183,23 @@ export async function POST(
     let qualityReport = validateExtraction(extractionResult, sanitized.log, project.type_bien);
     console.log(`[extract] Quality score: ${qualityReport.score}/100, gates: ${qualityReport.gates.filter(g => g.passed).length}/${qualityReport.gates.length}, shouldRetry: ${qualityReport.shouldRetry}, sanitized: ${sanitized.log.length} corrections`);
 
-    // Auto-retry ONCE if critical gates fail
+    // Auto-retry ONCE if critical gates fail — with contextual feedback
     if (qualityReport.shouldRetry) {
-      console.warn(`[extract] Quality gates failed — retrying extraction...`);
+      // Build retry context from failed gates + sanitization warnings
+      const failedGates = qualityReport.gates
+        .filter((g) => !g.passed)
+        .map((g) => `- ${g.id}: ${g.detail || g.label}`)
+        .join("\n");
+      const retryContext = failedGates
+        ? `Quality gate failures:\n${failedGates}`
+        : undefined;
+
+      console.warn(`[extract] Quality gates failed — retrying with context: ${retryContext?.substring(0, 200)}`);
       try {
         rawResult = await extractMultiplePlans(
           planInputs,
-          project.type_bien as TypeBien
+          project.type_bien as TypeBien,
+          retryContext
         );
         sanitized = sanitizeSurfaces(rawResult, project.type_bien);
         extractionResult = sanitized.data;

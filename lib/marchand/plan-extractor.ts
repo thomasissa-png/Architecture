@@ -199,7 +199,8 @@ const PLAN_EXTRACTION_JSON_SCHEMA = {
 export async function extractPlanData(
   planBase64: string,
   mimeType: string,
-  typeBien: TypeBien
+  typeBien: TypeBien,
+  retryContext?: string
 ): Promise<PlanExtractionResult> {
   const openai = getOpenAI();
   const systemPrompt = buildSystemPrompt(typeBien);
@@ -234,7 +235,7 @@ export async function extractPlanData(
   // First attempt
   let rawJson: string;
   try {
-    rawJson = await callVisionExtraction(openai, systemPrompt, imageDataUrl);
+    rawJson = await callVisionExtraction(openai, systemPrompt, imageDataUrl, retryContext);
   } catch (err) {
     // Retry once after 5s on API error
     console.warn(
@@ -243,7 +244,7 @@ export async function extractPlanData(
     );
     await sleep(5000);
     try {
-      rawJson = await callVisionExtraction(openai, systemPrompt, imageDataUrl);
+      rawJson = await callVisionExtraction(openai, systemPrompt, imageDataUrl, retryContext);
     } catch (retryErr) {
       throw new PlanExtractionError(
         "API_ERROR",
@@ -314,7 +315,8 @@ interface PlanInput {
  */
 export async function extractMultiplePlans(
   plans: PlanInput[],
-  typeBien: TypeBien
+  typeBien: TypeBien,
+  retryContext?: string
 ): Promise<PlanExtractionResult> {
   if (plans.length === 0) {
     throw new PlanExtractionError("PLAN_UNREADABLE", "Aucun plan fourni.");
@@ -322,7 +324,7 @@ export async function extractMultiplePlans(
 
   // Single plan — no merge needed
   if (plans.length === 1) {
-    return extractPlanData(plans[0].base64, plans[0].mimeType, typeBien);
+    return extractPlanData(plans[0].base64, plans[0].mimeType, typeBien, retryContext);
   }
 
   const allRooms: PlanExtractionResult["rooms"] = [];
@@ -335,7 +337,7 @@ export async function extractMultiplePlans(
   for (const plan of plans) {
     console.log(`[plan-extractor] Extracting floor ${plan.floorIndex} (${plan.mimeType})`);
 
-    const result = await extractPlanData(plan.base64, plan.mimeType, typeBien);
+    const result = await extractPlanData(plan.base64, plan.mimeType, typeBien, retryContext);
 
     // Override floor number for each room to match the plan's floor index
     for (const room of result.rooms) {
@@ -699,8 +701,13 @@ function extractTextFromResponse(response: { output: Array<{ type: string; conte
 async function callVisionExtraction(
   openai: OpenAI,
   systemPrompt: string,
-  imageDataUrl: string
+  imageDataUrl: string,
+  retryContext?: string
 ): Promise<string> {
+  const userText = retryContext
+    ? `Extract all rooms from this floor plan. Return the JSON only.\n\nIMPORTANT — Previous extraction had these errors:\n${retryContext}\nFix these issues in your new extraction.`
+    : "Extract all rooms from this floor plan. Return the JSON only.";
+
   const response = await openai.responses.create({
     model: "gpt-4.1",
     input: [
@@ -715,7 +722,7 @@ async function callVisionExtraction(
           },
           {
             type: "input_text",
-            text: "Extract all rooms from this floor plan. Return the JSON only.",
+            text: userText,
           },
         ],
       },
