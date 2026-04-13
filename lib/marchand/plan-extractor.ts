@@ -459,6 +459,153 @@ function sanitizeSurfaces(data: PlanExtractionResult): PlanExtractionResult {
   };
 }
 
+// ─── Quality gates (post-extraction, post-sanitization) ────────────
+
+export interface ExtractionQualityGate {
+  id: string;
+  label: string;
+  passed: boolean;
+  detail?: string;
+}
+
+export interface ExtractionQualityReport {
+  score: number; // 0-100
+  gates: ExtractionQualityGate[];
+  warnings: string[]; // User-facing FR warnings
+  shouldRetry: boolean; // If true, extraction quality is too low — auto-retry recommended
+}
+
+/**
+ * Validate extraction quality BEFORE displaying to user.
+ * Returns a structured report with gate pass/fail, score, and user-facing warnings.
+ */
+export function validateExtraction(data: PlanExtractionResult): ExtractionQualityReport {
+  const gates: ExtractionQualityGate[] = [];
+  const warnings: string[] = [];
+
+  // GATE 1 — Surfaces in realistic ranges (no room > 80m²)
+  const oversizedRooms = data.rooms.filter((r) => r.surface_m2 !== null && r.surface_m2 > 80);
+  gates.push({
+    id: "G1_SURFACE_RANGE",
+    label: "Surfaces dans les plages réalistes",
+    passed: oversizedRooms.length === 0,
+    detail: oversizedRooms.length > 0
+      ? `${oversizedRooms.length} pièce(s) > 80m² : ${oversizedRooms.map((r) => `${r.name_raw} (${r.surface_m2}m²)`).join(", ")}`
+      : undefined,
+  });
+  if (oversizedRooms.length > 0) {
+    warnings.push(`${oversizedRooms.length} pièce(s) avec une surface anormalement grande. Vérifiez les surfaces manuellement.`);
+  }
+
+  // GATE 2 — Total surface coherent (< 300m² for a single floor)
+  const totalSurface = data.rooms.reduce((s, r) => s + (r.surface_m2 ?? 0), 0);
+  const totalOk = totalSurface > 0 && totalSurface < 300;
+  gates.push({
+    id: "G2_TOTAL_SURFACE",
+    label: "Surface totale cohérente (< 300m²/étage)",
+    passed: totalOk,
+    detail: !totalOk ? `Surface totale : ${totalSurface.toFixed(1)}m²` : undefined,
+  });
+  if (!totalOk && totalSurface >= 300) {
+    warnings.push(`Surface totale de ${totalSurface.toFixed(1)}m² — semble trop grande. Les surfaces sont peut-être surestimées.`);
+  }
+
+  // GATE 3 — Bounding boxes within image bounds
+  const outOfBounds = data.rooms.filter((r) => {
+    if (!r.bounding_box) return false;
+    const bb = r.bounding_box;
+    return bb.x_percent < 0 || bb.y_percent < 0
+      || bb.x_percent + bb.width_percent > 105
+      || bb.y_percent + bb.height_percent > 105;
+  });
+  gates.push({
+    id: "G3_BBOX_IN_BOUNDS",
+    label: "Pièces dans les limites du plan",
+    passed: outOfBounds.length === 0,
+    detail: outOfBounds.length > 0 ? `${outOfBounds.length} pièce(s) débordent du plan` : undefined,
+  });
+  if (outOfBounds.length > 0) {
+    warnings.push(`${outOfBounds.length} pièce(s) positionnées en dehors du plan. Repositionnez-les manuellement.`);
+  }
+
+  // GATE 4 — Bounding boxes not empty (w>1%, h>1%)
+  const emptyBoxes = data.rooms.filter((r) => {
+    if (!r.bounding_box) return true; // no bbox at all
+    return r.bounding_box.width_percent < 1 || r.bounding_box.height_percent < 1;
+  });
+  gates.push({
+    id: "G4_BBOX_NOT_EMPTY",
+    label: "Toutes les pièces ont une position",
+    passed: emptyBoxes.length === 0,
+    detail: emptyBoxes.length > 0 ? `${emptyBoxes.length} pièce(s) sans position détectée` : undefined,
+  });
+
+  // GATE 5 — Bounding box sizes proportional to surfaces
+  const roomsWithBoth = data.rooms.filter((r) => r.surface_m2 !== null && r.bounding_box);
+  let proportionalOk = true;
+  if (roomsWithBoth.length >= 2) {
+    const surfaceMin = Math.min(...roomsWithBoth.map((r) => r.surface_m2!));
+    const surfaceMax = Math.max(...roomsWithBoth.map((r) => r.surface_m2!));
+    const bboxMin = Math.min(...roomsWithBoth.map((r) => r.bounding_box!.width_percent * r.bounding_box!.height_percent));
+    const bboxMax = Math.max(...roomsWithBoth.map((r) => r.bounding_box!.width_percent * r.bounding_box!.height_percent));
+    // If the smallest surface has the biggest bbox, something is very wrong
+    if (surfaceMax > surfaceMin * 3 && bboxMax > 0 && bboxMin > 0) {
+      const surfaceRatio = surfaceMax / surfaceMin;
+      const bboxRatio = bboxMax / bboxMin;
+      proportionalOk = bboxRatio > surfaceRatio * 0.2; // bbox should roughly follow surface proportions
+    }
+  }
+  gates.push({
+    id: "G5_BBOX_PROPORTIONAL",
+    label: "Tailles des pièces proportionnelles",
+    passed: proportionalOk,
+    detail: !proportionalOk ? "Les tailles visuelles ne correspondent pas aux surfaces" : undefined,
+  });
+
+  // GATE 6 — At least 2 rooms detected
+  gates.push({
+    id: "G6_MIN_ROOMS",
+    label: "Au moins 2 pièces détectées",
+    passed: data.rooms.length >= 2,
+    detail: data.rooms.length < 2 ? `Seulement ${data.rooms.length} pièce(s) détectée(s)` : undefined,
+  });
+  if (data.rooms.length < 2) {
+    warnings.push("Très peu de pièces détectées. Le plan est peut-être illisible ou de mauvaise qualité.");
+  }
+
+  // GATE 7 — No duplicate rooms (same name + overlapping position)
+  let duplicates = 0;
+  for (let i = 0; i < data.rooms.length; i++) {
+    for (let j = i + 1; j < data.rooms.length; j++) {
+      const a = data.rooms[i];
+      const b = data.rooms[j];
+      if (a.name_raw === b.name_raw && a.bounding_box && b.bounding_box) {
+        const overlap = Math.abs(a.bounding_box.x_percent - b.bounding_box.x_percent) < 5
+          && Math.abs(a.bounding_box.y_percent - b.bounding_box.y_percent) < 5;
+        if (overlap) duplicates++;
+      }
+    }
+  }
+  gates.push({
+    id: "G7_NO_DUPLICATES",
+    label: "Pas de pièces en double",
+    passed: duplicates === 0,
+    detail: duplicates > 0 ? `${duplicates} doublon(s) détecté(s)` : undefined,
+  });
+
+  // ── Score calculation ──────────────────────────────────────────
+  const passedCount = gates.filter((g) => g.passed).length;
+  const score = Math.round((passedCount / gates.length) * 100);
+
+  // Should retry if critical gates fail (surfaces or total)
+  const criticalFails = gates.filter((g) =>
+    !g.passed && (g.id === "G1_SURFACE_RANGE" || g.id === "G2_TOTAL_SURFACE" || g.id === "G6_MIN_ROOMS")
+  );
+  const shouldRetry = criticalFails.length > 0;
+
+  return { score, gates, warnings, shouldRetry };
+}
+
 // ─── Internal helpers ───────────────────────────────────────────────
 
 /**

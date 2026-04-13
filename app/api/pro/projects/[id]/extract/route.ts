@@ -17,7 +17,7 @@ import {
   isErrorResponse,
   checkRateLimit,
 } from "@/lib/marchand/auth-helpers";
-import { extractMultiplePlans, PlanExtractionError } from "@/lib/marchand/plan-extractor";
+import { extractMultiplePlans, PlanExtractionError, validateExtraction } from "@/lib/marchand/plan-extractor";
 import type { TypeBien } from "@/lib/marchand/schemas";
 // TODO: import { suggestLots } from "@/lib/marchand/plan-extractor";
 
@@ -169,11 +169,31 @@ export async function POST(
       );
     }
 
-    // ─── Call extraction IA ───────────────────────────────────────
-    const extractionResult = await extractMultiplePlans(
+    // ─── Call extraction IA + quality gates ─────────────────────
+    let extractionResult = await extractMultiplePlans(
       planInputs,
       project.type_bien as TypeBien
     );
+
+    // ── Quality gates — validate before displaying ──────────────
+    let qualityReport = validateExtraction(extractionResult);
+    console.log(`[extract] Quality score: ${qualityReport.score}/100, gates: ${qualityReport.gates.filter(g => g.passed).length}/${qualityReport.gates.length}, shouldRetry: ${qualityReport.shouldRetry}`);
+
+    // Auto-retry ONCE if critical gates fail (surfaces wrong, too few rooms)
+    if (qualityReport.shouldRetry) {
+      console.warn(`[extract] Quality gates failed — retrying extraction...`);
+      try {
+        extractionResult = await extractMultiplePlans(
+          planInputs,
+          project.type_bien as TypeBien
+        );
+        qualityReport = validateExtraction(extractionResult);
+        console.log(`[extract] Retry quality score: ${qualityReport.score}/100`);
+      } catch (retryErr) {
+        console.error(`[extract] Retry failed:`, retryErr);
+        // Keep the first result
+      }
+    }
 
     if (extractionResult.rooms.length === 0) {
       // Mark project as extraction_failed
@@ -300,6 +320,12 @@ export async function POST(
       rooms_count: insertedRooms.length,
       rooms: insertedRooms,
       lot_suggestions: lotSuggestions,
+      quality: {
+        score: qualityReport.score,
+        warnings: qualityReport.warnings,
+        gates_passed: qualityReport.gates.filter((g) => g.passed).length,
+        gates_total: qualityReport.gates.length,
+      },
     });
   } catch (err) {
     console.error(`[POST /api/pro/projects/${projectId}/extract] Error:`, err);

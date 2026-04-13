@@ -182,6 +182,7 @@ export default function ExtractionPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [projectAdresse, setProjectAdresse] = useState<string | null>(null);
+  const [qualityWarnings, setQualityWarnings] = useState<string[]>([]);
   const [planPath, setPlanPath] = useState<string | null>(null);
   const [activePlanIndex, setActivePlanIndex] = useState(0);
   const [editingNameId, setEditingNameId] = useState<string | null>(null);
@@ -357,6 +358,10 @@ export default function ExtractionPage() {
         })
       );
       setRooms(extractedRooms);
+      // Capture quality warnings from extraction gates
+      if (data.quality?.warnings?.length > 0) {
+        setQualityWarnings(data.quality.warnings);
+      }
       setState("success");
     } catch {
       setState("error");
@@ -657,6 +662,27 @@ export default function ExtractionPage() {
                   <> — {rooms.reduce((sum, r) => sum + (r.surface_m2 ?? 0), 0).toFixed(1)} m² au total</>
                 )}
               </div>
+
+              {/* Quality warnings from extraction gates */}
+              {qualityWarnings.length > 0 && (
+                <div className="p-3 rounded-lg bg-[#FFFBEB] border border-[#F59E0B]/20 text-sm text-[#92400E]" role="alert">
+                  <div className="flex items-start gap-2">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 mt-0.5" aria-hidden="true">
+                      <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                      <line x1="12" y1="9" x2="12" y2="13"/>
+                      <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                    <div>
+                      <p className="font-medium mb-1">Points à vérifier :</p>
+                      <ul className="list-disc list-inside space-y-0.5 text-xs">
+                        {qualityWarnings.map((w, i) => (
+                          <li key={i}>{w}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Plan Editor — pleine largeur, composant principal */}
