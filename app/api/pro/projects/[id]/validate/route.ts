@@ -62,7 +62,7 @@ export async function PUT(
   // ─── Status check ──────────────────────────────────────────────
   // Accept extraction_done (normal flow), extraction_failed (manual room entry),
   // and plan_uploaded (user skips extraction to enter rooms manually)
-  const validStatuses = ["extraction_done", "extraction_failed", "plan_uploaded"];
+  const validStatuses = ["extraction_done", "extraction_failed", "plan_uploaded", "lots_defined"];
   if (!validStatuses.includes(project.status)) {
     return NextResponse.json(
       {

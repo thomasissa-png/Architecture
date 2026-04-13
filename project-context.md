@@ -210,6 +210,7 @@
 | @product-manager | 2026-03-31 | docs/product/pro-workflow-v2.md | Décision fondateur : le dossier se crée APRES la génération (pas avant). Flow v2 : upload → annotation par photo → génération → rattachement à un bien (nouveau ou existant, ou ignorer). Suppression de l'étape "info" en entrée de MerchantMode. Nouveau composant AttachToBienPanel + PATCH /api/dossier/[uuid]/attach. | L'étape "info" en premier place une friction avant la valeur. Thomas arrive toujours avec ses photos, jamais avec ses données de prix prêtes. Déplacer le rattachement à la fin = Thomas voit ses visuels avant de devoir remplir des champs. Option "Ignorer" obligatoire pour ne jamais bloquer. PATCH dédié pour le rattachement car le dossier est créé sans property_id en début de génération. |
 | @copywriter | 2026-04-03 | docs/copy/copy-audit-parcours-achat-2026-04-03.md | Audit copy parcours achat / modale recharge — note 6,8/10. 1 P0 bloquant (prix Starter 14,90€ dans GalleryGate au lieu de 9,90€). 5 corrections P1 (4× "crédit" dans l'UI → "visuel", 2× alert() non conformes → state inline). 7 corrections P2. Prix cohérents entre les 4 autres sources (AuthButton, /pricing, homepage, Stripe). | P0 GalleryGate : relique de l'ancien pricing (14,90€ = ancien Starter, décision fondateur 2026-03-27 l'a baissé à 9,90€). "Crédit" dans l'UI viole la décision de vocabulaire prise en mars (session @copywriter 2026-03-28 — 70 occurrences remplacées). Les alert() natifs sont incompatibles avec le design system (rupture visuelle totale) — pattern de correction fourni dans l'audit. |
 | @reviewer | 2026-03-25 | docs/reviews/site-audit-synthesis.md | Synthese croisee 6 audits : 8 convergences inter-agents identifiees, 0 contradiction bloquante, Top 10 actions priorisees, 7 bloqueurs avant monetisation, plan d'action @fullstack en 4 phases. Recommandation GO AVEC RESERVES. | Les 6 audits convergent sur les memes priorites (legal > pricing > SEO > UX/design). Aucune contradiction entre agents — les recommandations sont complementaires. La conformite legale est le bloqueur n.1 car le site collecte deja des photos/IP sans information RGPD. |
+| @orchestrator + @fullstack + @qa | 2026-04-13 | Session 44 — Implémentation lots/biens, tests quality gates, intégration e2e | Page decoupe (500 lignes, 6 US), APIs (GET /rooms, PUT /lots, POST /lots/detect), bounding_box JSONB persisté, ProStepper 8 étapes, 27 tests unitaires sanitizeSurfaces + validateExtraction, fix validate/route.ts accepte lots_defined, build clean. 4 commits. | bounding_box non persisté = bug silencieux (page decoupe sans positionnement plan). Status lots_defined non accepté par validate = 409 bloquant. Array.from() obligatoire pour Map/Set (TS target). Noms de champs API (project_status, project_plan_path) doivent être vérifiés avant consommation client. |
 | @orchestrator + @design + @ux + @qa + @ia + @moi + @marchand-de-biens + @product-manager | 2026-04-13 | Session 43 — extraction plan rewrite, 8 gates qualité, ProStepper redesign, specs lots/biens | Prompt extraction reécrit 6 étapes (lire surfaces ÉCRITES en priorité, self-review GPT). 8 quality gates (G1-G8) avec retry auto + warnings FR explicites par pièce. sanitizeSurfaces avec log de corrections + détection 10x + seuils dynamiques par typeBien. ProStepper redesigné (ancrage visuel, ring actif). Z-index header fixé (7 pages). Scroll fix drag PlanEditor. Filtrage par étage (plan + liste). Cache planRooms par étage. Delete button déplacé (libère resize). Zoom Ctrl+scroll. Validation non-bloquante (photos + lots). Specs lots/biens 6 US. 4 audits parallèles gates (QA 7.8, IA 7.5, Moi 6.0, Marchand 6.5 → 7 corrections convergentes appliquées). ~12 commits. | L'extraction GPT calculait les surfaces au lieu de lire celles écrites sur le plan (cause racine erreur 10x). Les gates post-extraction sont indispensables car GPT n'est pas fiable sur les surfaces. Les seuils doivent dépendre du typeBien (80m² appart vs 250m² immeuble). La sanitization doit retourner un log pour que les corrections soient visibles par l'utilisateur (pas de correction silencieuse). L'interface lots/biens doit être plan-centric (décision fondateur). |
 | @orchestrator + @fullstack + @marchand-de-biens + @ux + @design + @qa | 2026-04-13 | Session 42 complète — parcours marchand 7 étapes score Thomas 6.4→9.57, plan editor interactif, extraction PDF, multi-fichier | Score Thomas parcours 7 étapes : 6.4→9.57/10 (7/7 PASS). Autocompletion adresse (API gouv.fr). Extraction PDF via pdf-to-img (pdfjs-dist) + GPT-4.1 vision. Upload multi-fichier multi-étage avec drag-to-reorder. PlanEditor interactif (drag, resize, fusion, calibration échelle, undo/redo, zoom, distinction existant/projet). Bounding boxes IA (pièces positionnées sur le plan). Badges confiance. 21 types de pièces. Dimensions L×l. Highlight bidirectionnel plan↔liste. CTA sticky mobile. 25+ audits (Thomas, Design, UX, Moi, QA). ~35 commits, build vérifié à chaque push. | Approche pdf-to-img retenue vs OpenAI Files API (Files API échouait silencieusement). serverComponentsExternalPackages obligatoire sur Replit pour pdfjs-dist. Object Storage SDK retourne value[0] (tuple) pas value directement — cause racine de la corruption PDF. Le plan editor SVG natif sans librairie externe est suffisant pour 10-15 pièces. Les bounding boxes en % sont plus fiables que les pixels car l'IA ne connaît pas la résolution. |
 | @copywriter | 2026-03-25 | docs/legal/mentions-legales.md, docs/legal/privacy-policy.md, docs/legal/cgu-draft.md | 3 pages légales complètes. Mentions légales LCEN Art. 6 III avec placeholders SIRET/adresse/directeur publication + crédits technologies. Politique confidentialité RGPD : 6 types de données avec base légale et durée, sous-traitants (OpenAI DPF, Replicate DPF à vérifier, Replit DPF, Stripe), droits utilisateurs complets, contact privacy@. CGU/CGV : packages 4 tiers TTC, exception rétractation contenu numérique Art. L221-28 13° avec case à cocher, licence large sur images générées, médiation consommateur obligatoire. Ton accessible, juridiquement complet, aligné brand-voice.md (sobre, précis, sans jargon inutile). | Mentions légales : placeholders explicites avec note d'avertissement sur l'obligation LCEN avant mise en ligne. Politique de confidentialité : structurée par type de donnée (plus lisible pour Léa/Thomas que par base légale) — l'article 6 RGPD est mentionné mais subordonné à l'explication pratique. CGU/CGV : exception rétractation présentée dans le vocabulaire utilisateur ("Ce que cela signifie pour vous") avant la référence légale — approche brand-voice first. Médiation consommateur marquée [A DESIGNER] car obligation légale avant première vente B2C. 5 hypothèses à valider regroupées en fin de chaque document. Réutilise la grille tarifaire HT/TTC issue de legal-audit.md (cohérence). |
@@ -342,41 +343,51 @@
 
 ---
 
-## Mémo de reprise — dernière session (Session 43 — Extraction rewrite + gates qualité + specs lots/biens)
+## Mémo de reprise — dernière session (Session 44 — Implémentation lots/biens + tests quality gates)
+
+- **Date de clôture** : 2026-04-13
+- **Branche** : `claude/session-recovery-analysis-SoNoa`
+- **HEAD** : voir dernier commit sur la branche
+- **Objet** : Implémentation complète de la fonctionnalité lots/biens (étape 3 du parcours marchand), tests unitaires quality gates, intégration end-to-end
+
+### Ce qui a été fait (Session 44)
+
+1. **27 tests unitaires** sanitizeSurfaces + validateExtraction (quality-gates.test.ts) — couvre les 8 gates, détection 10x par typeBien, cap surfaces, cm→m, log structuré, score, shouldRetry
+2. **Structure lots/biens** : ProStepper 7→8 étapes, DB migrations (lot_type, color, sort_order), ProjectStatusEnum + getCompletedSteps mis à jour, 6 pages step index +1
+3. **API PUT /lots** : sauvegarde complète lots + assignation pièces, validation room_ids, update status → lots_defined
+4. **API POST /lots/detect** : détection IA lots via GPT-4.1 vision, fallback 1 lot par étage, validation room_ids
+5. **Page decoupe** (~500 lignes) : détection IA au mount, PlanEditor avec couleurs lots, sidebar gestion lots (ajout/suppr/rename/type), assignation pièce→lot via clic plan, tabs étages, pills mobile, CTA save → redirect /validation
+6. **API GET /rooms** : nouvel endpoint listant les pièces avec floor, surface, bounding_box
+7. **Persistence bounding_box** : colonne JSONB ajoutée à pro_rooms, stockée à l'extraction (était perdue avant)
+8. **Fix intégration critique** : validate/route.ts accepte désormais le statut `lots_defined` (sinon 409 bloquant le flow decoupe→validation)
+9. **Build vérifié** : 0 ESLint, 0 TypeScript, 27/27 tests PASS
+
+### Ce qui reste (session 45)
+1. **Deploy Replit** + re-test extraction avec vrai PDF d'immeuble
+2. **Retry contextuel** (passer les erreurs détectées au prompt de retry — P2)
+3. **Validation page lot grouping** (P3, nice-to-have — validation affiche les pièces en liste plate, pas groupées par lot)
+4. **Audit Thomas** sur le flow complet decoupe → validation → qualification avec lots
+
+### Commande de reprise session 45
+```
+@orchestrator Reprends Versimo session 45. Session 44 close : lots/biens implémenté (page + APIs + DB + tests).
+Branche : claude/session-recovery-analysis-SoNoa.
+Reste : (1) deploy Replit + test vrai PDF, (2) retry contextuel P2, (3) audit Thomas flow lots complet.
+```
+
+### Learnings session 44
+- Les bounding_box de l'extraction GPT n'étaient PAS persistées en DB — perdues après la réponse API. Ajout colonne JSONB obligatoire pour que la page decoupe puisse positionner les pièces sur le plan
+- Le status `lots_defined` n'était pas accepté par validate/route.ts — aurait causé un 409 bloquant silencieusement le flow. Toujours vérifier les transitions de statut quand on en ajoute un nouveau
+- Les spread `[...map.entries()]` et `[...new Set()]` provoquent TS2802 en target < es2015 — utiliser `Array.from()` systématiquement
+- Le status endpoint retourne `project_status` et `project_plan_path` (pas `status` ni `plan_image_url`) — toujours vérifier les noms de champs API avant de les consommer côté client
+
+## Mémo de reprise — session 43 (archivé)
 
 - **Date de clôture** : 2026-04-13
 - **Branche** : `claude/extract-project-context-FXB3N`
-- **HEAD** : `ecdccdf` — docs(product): specs fonctionnelles découpe biens/lots
+- **HEAD** : `ecdccdf`
 - **Objet** : Correction extraction plan (surfaces 10x, bounding boxes), quality gates, redesign ProStepper, specs lots/biens
-
-### Ce qui a été fait (Session 43)
-
-1. **Extraction plan reécrite** : prompt GPT 6 étapes (LIRE les surfaces écrites en priorité au lieu de calculer), self-review obligatoire, bounding boxes doivent suivre les murs
-2. **8 quality gates** (G1-G8) : validation AVANT affichage, retry auto si critiques fail, warnings FR explicites par pièce. sanitizeSurfaces avec log de corrections + détection 10x + seuils dynamiques par typeBien
-3. **4 audits croisés** (QA 7.8, IA 7.5, Moi 6.0, Marchand 6.5) → 7 corrections convergentes appliquées
-4. **ProStepper redesigné** (ancrage visuel, ring actif, fusion bouton mobile, sr-only erreur)
-5. **Fixes UX** : z-index header (7 pages), scroll fix drag, filtrage par étage, cache planRooms, delete button déplacé, zoom Ctrl+scroll, validation non-bloquante (photos + lots), surface totale dans bandeau
-6. **Specs lots/biens** : 6 US fonctionnelles, modèle données, écrans, prompt IA detection, cas limites
-
-### Ce qui reste (session 44)
-1. **Implémentation lots/biens** : nouvelle page `app/projet/[id]/decoupe/page.tsx`, endpoint detection IA, ProStepper 8 étapes. Specs dans `docs/product/lots-biens-specs.md`.
-2. **Tests unitaires** validateExtraction + sanitizeSurfaces (P0 @qa — 0 test actuellement)
-3. **Deploy Replit** + re-test extraction avec vrai PDF d'immeuble
-4. **Retry contextuel** (passer les erreurs détectées au prompt de retry — P2)
-
-### Commande de reprise session 44
-```
-@orchestrator Reprends Versimo session 44. Session 43 close : extraction rewrite + 8 gates qualité + specs lots/biens.
-Branche : claude/extract-project-context-FXB3N.
-Reste : (1) implémenter lots/biens (specs dans docs/product/lots-biens-specs.md — 6 US), (2) tests unitaires gates, (3) deploy + test vrai PDF, (4) retry contextuel.
-```
-
-### Learnings session 43
-- L'extraction GPT CALCULAIT les surfaces au lieu de LIRE celles écrites sur le plan — cause racine de l'erreur 10x systématique
-- Les quality gates post-extraction sont indispensables — GPT n'est pas fiable sur les surfaces
-- La sanitization silencieuse (correction sans feedback) est inacceptable — le fondateur veut savoir POURQUOI une surface est vide
-- Les seuils fixes (80m²) créent des faux positifs — doivent dépendre de typeBien
-- Le fondateur veut une interface plan-centric pour la découpe en lots (pas un tableau)
+- **Fait** : extraction reécrite (6 étapes), 8 quality gates (G1-G8), 4 audits croisés, ProStepper redesigné, fixes UX (z-index, scroll, filtrage, zoom), specs lots/biens 6 US
 - L'étape lots/biens doit être TOUJOURS visible (pas conditionnelle sur type_bien)
 
 ---
