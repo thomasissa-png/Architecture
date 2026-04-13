@@ -43,55 +43,51 @@ function buildSystemPrompt(typeBien: TypeBien): string {
 
 TASK: Analyze this floor plan and return a JSON object listing every room with its properties.
 
-EXTRACTION RULES:
-1. ROOM IDENTIFICATION: Identify every enclosed space. Include living rooms, bedrooms, kitchens, bathrooms, toilets, offices, hallways, storage, cellars. Exclude outdoor spaces (balconies, terraces) unless they are enclosed.
-2. DIMENSIONS — READ CAREFULLY:
-   - Look for dimension annotations (cotes) printed on the plan — numbers near walls or inside rooms.
-   - These are ALWAYS in METERS (e.g., "4.20" means 4.20 meters, "3.15" means 3.15 meters).
-   - If a number seems very large (e.g., 420, 315), it is likely in CENTIMETERS — divide by 100 to get meters.
-   - MATCH each dimension to the CORRECT room — do not assign a dimension from one room to another.
-   - If no dimensions are readable for a room, set dimensions to null.
-   - If no dimensions are readable for ANY room, add "no_dimensions_found" to warnings.
-3. SURFACE ESTIMATION:
-   - If dimensions are available for a room, calculate surface_m2 = length_m × width_m.
-   - If dimensions are null, estimate surface from relative proportions using the door as scale reference (standard French door = 83cm wide, standard door height = 204cm).
-   - SANITY CHECK — typical residential room sizes in France:
-     * WC: 1–4 m²
-     * Salle de bain: 3–15 m²
-     * Chambre: 8–25 m²
-     * Cuisine: 5–25 m²
-     * Salon/séjour: 15–60 m²
-     * Couloir/entrée: 2–15 m²
-     * Cellier/buanderie: 2–10 m²
-     * Garage: 12–40 m²
-   - If a calculated surface falls OUTSIDE these ranges, re-read the dimensions — you likely misread a cote or assigned it to the wrong room.
-   - CRITICAL: The sum of all room surfaces on one floor must NOT exceed total_surface_m2. If it does, you have misread dimensions — reduce the largest rooms.
-   - No single room can be larger than 70% of the total floor surface.
-4. SCALE REFERENCE: Report which scale reference you used: "dimensions_on_plan" if cotes are readable, "door_standard_83cm" if you estimated from door width, "scale_bar" if a graphical scale is present, "none" if no reference was available.
-5. WINDOWS & DOORS: Count windows (typically thin parallel lines on exterior walls) and doors (arcs or gaps in walls) for each room.
-6. FLOOR DETECTION: If the plan shows multiple floors or levels, set the floor number for each room (0 = ground floor). If single level, all rooms are floor 0.
-7. CONFIDENCE: Rate your confidence 0-1 for each room. Lower confidence for: rooms partially occluded, dimensions estimated (not read), ambiguous room function.
-8. IGNORE: Electrical symbols, plumbing symbols, dimension arrows (just read the numbers), furniture drawn on plan, north arrow, title block.
-9. BOUNDING BOX — CRITICAL FOR VISUAL ACCURACY:
-   - Each room's bounding box must TIGHTLY follow the room's walls on the plan.
-   - x_percent and y_percent = top-left corner of the room (0-100% of image).
-   - width_percent and height_percent = room dimensions relative to full image.
-   - RULES:
-     * ALL rooms must be INSIDE the plan outline. If the plan occupies 60% of the image, rooms must be within that 60%.
-     * Look at the EXTERIOR WALLS of the building first. No room can extend beyond these walls.
-     * Adjacent rooms must have ADJACENT (touching) bounding boxes, NOT overlapping ones.
-     * The bounding box must match the room's SHAPE — a narrow corridor should have a narrow width_percent.
-     * x_percent + width_percent must be <= 100. y_percent + height_percent must be <= 100.
-     * Small rooms (WC, SDB) should have SMALL bounding boxes. Large rooms (séjour) should have LARGE ones. The box size must be PROPORTIONAL to the room's surface.
-   - PROCESS: First identify the plan's outer boundary rectangle. Then place each room relative to that boundary, using wall intersections as guides.
-10. CROSS-CHECK BEFORE RETURNING:
-   - Verify that total_surface_m2 equals the sum of all room surfaces (within 10% tolerance for walls/corridors).
-   - Verify no room is larger than total_surface_m2.
-   - Verify dimensions make physical sense (no room 50m long in a residential building).
-   - Verify ALL bounding boxes are WITHIN the plan outline — no room extends outside the building walls.
-   - Verify bounding box sizes are PROPORTIONAL to surface_m2 — a 5m² WC cannot have a bigger box than a 30m² salon.
+STEP 1 — IDENTIFY THE BUILDING OUTLINE:
+Before looking at individual rooms, identify the EXTERIOR WALLS of the building on this plan. Note the approximate rectangle they form as a percentage of the full image. ALL rooms MUST be placed INSIDE this outline. Nothing can be outside the building walls.
 
-TYPE DE BIEN CONTEXT: This plan is for a "${typeBien}". If "immeuble", there may be multiple units — identify them if possible.
+STEP 2 — IDENTIFY EVERY ROOM:
+Identify every enclosed space: living rooms, bedrooms, kitchens, bathrooms, toilets, offices, hallways, storage, cellars. Exclude outdoor spaces (balconies, terraces) unless enclosed.
+
+STEP 3 — READ SURFACES (PRIORITY ORDER):
+For each room, determine surface_m2 using this priority:
+  A. FIRST: Look for surface values WRITTEN DIRECTLY on the plan (e.g., "25.8 m²", "12.3", "S=8.5m²"). These are the MOST RELIABLE. Use them AS-IS. This is by far the most common format on French architectural plans.
+  B. SECOND: If no surface is written but LENGTH × WIDTH dimensions are readable, calculate surface_m2 = length_m × width_m. Dimensions are in METERS. If values seem > 50, they are in centimeters — divide by 100.
+  C. LAST RESORT: If nothing is readable, estimate from relative room proportions using door width as reference (standard French door = 83cm).
+
+SANITY CHECK on every surface:
+  - WC: 1–4 m²  |  Salle de bain: 3–15 m²  |  Chambre: 8–25 m²
+  - Cuisine: 5–25 m²  |  Salon/séjour: 15–60 m²  |  Couloir/entrée: 2–15 m²
+  - If a surface is OUTSIDE these ranges, you MISREAD it. Look again at the plan.
+  - The sum of all rooms on one floor CANNOT exceed 200 m² for a typical apartment.
+  - No single room can be > 60 m² in a standard residential building.
+
+STEP 4 — BOUNDING BOXES (follow the walls):
+  - x_percent, y_percent = top-left corner of the room (0-100% of image width/height).
+  - width_percent, height_percent = room size relative to full image.
+  - TRACE THE WALLS: each box must align with the interior walls visible on the plan.
+  - The building outline you identified in STEP 1 is the ABSOLUTE BOUNDARY — no room extends beyond it.
+  - Adjacent rooms share walls → their bounding boxes must be ADJACENT (touching), never overlapping.
+  - Box SIZE must be proportional to surface_m2 — a 3m² WC is MUCH smaller than a 25m² séjour.
+  - x_percent + width_percent <= 100. y_percent + height_percent <= 100.
+
+STEP 5 — METADATA:
+  - WINDOWS & DOORS: Count windows and doors for each room.
+  - FLOOR: If multiple levels visible, set floor (0 = RDC). Otherwise all rooms = floor 0.
+  - CONFIDENCE: 0-1. Lower if surface was estimated or room function is ambiguous.
+  - SCALE REFERENCE: "dimensions_on_plan" if cotes/surfaces readable, "door_standard_83cm" if estimated, "scale_bar" if graphical scale present, "none" otherwise.
+  - IGNORE: Electrical symbols, plumbing, furniture, north arrow, title block.
+
+STEP 6 — SELF-REVIEW (mandatory before returning):
+  Ask yourself these questions and FIX any issues:
+  1. Does each room's surface_m2 match what is WRITTEN on the plan? If the plan says "25.8 m²" and I have 241 m², I made an error.
+  2. Is any room larger than 60 m²? If yes, re-read the plan — I likely misread a dimension or surface.
+  3. Does the sum of all surfaces make sense for a ${typeBien}? A typical apartment floor is 40-120 m² total.
+  4. Are ALL bounding boxes INSIDE the building outline? If a room is outside the walls, I placed it wrong.
+  5. Do bounding boxes follow the visible wall lines? If not, adjust to match the walls.
+  6. Are small rooms (WC, SDB) smaller than large rooms (séjour) in both surface AND bounding box?
+
+TYPE DE BIEN: "${typeBien}". If "immeuble", there may be multiple units — identify them if possible.
 
 OUTPUT: Return valid JSON matching the provided schema. French room names. No commentary outside the JSON.`;
 }
@@ -379,16 +375,42 @@ export async function extractMultiplePlans(
 // ─── Surface sanity checks (post-extraction) ──────────────────────
 /**
  * Fix obviously wrong surfaces that GPT may have produced.
- * Common errors: cm read as m (×100 too large), cotes assigned to wrong room.
+ * Common errors: 10x factor (reading "25.8" as 258 then computing wrong),
+ * cm read as m, cotes assigned to wrong room.
  */
 function sanitizeSurfaces(data: PlanExtractionResult): PlanExtractionResult {
   const rooms = [...data.rooms];
-  const totalSurface = data.total_surface_m2;
+  let totalSurface = data.total_surface_m2;
 
+  // ── Fix 0: Detect systematic 10x error ──────────────────────────
+  // If the MEDIAN surface is > 50m², ALL surfaces are likely ~10x too large.
+  // This is the most common GPT misread pattern (25.8m² → 258 → /10 correction).
+  const validSurfaces = rooms.filter((r) => r.surface_m2 !== null).map((r) => r.surface_m2!).sort((a, b) => a - b);
+  if (validSurfaces.length >= 2) {
+    const median = validSurfaces[Math.floor(validSurfaces.length / 2)];
+    if (median > 50) {
+      console.warn(`[plan-extractor] Median surface ${median}m² > 50m² — systematic 10x error detected, dividing all surfaces by 10`);
+      for (const room of rooms) {
+        if (room.surface_m2 !== null) {
+          room.surface_m2 = Math.round(room.surface_m2 * 10) / 100; // divide by 10, round to 1 decimal
+        }
+        if (room.dimensions) {
+          room.dimensions.length_m = Math.round(room.dimensions.length_m * 100 / Math.sqrt(10)) / 100;
+          room.dimensions.width_m = Math.round(room.dimensions.width_m * 100 / Math.sqrt(10)) / 100;
+        }
+        room.confidence = Math.min(room.confidence, 0.5);
+      }
+      if (totalSurface !== null) {
+        totalSurface = Math.round(totalSurface * 10) / 100;
+      }
+    }
+  }
+
+  // ── Fix 1: Individual room dimension checks ─────────────────────
   for (const room of rooms) {
     if (room.surface_m2 === null) continue;
 
-    // Fix 1: If dimensions look like centimeters (length or width > 50m), convert
+    // If dimensions look like centimeters (length or width > 50m), convert
     if (room.dimensions) {
       let fixed = false;
       if (room.dimensions.length_m > 50) {
@@ -402,32 +424,31 @@ function sanitizeSurfaces(data: PlanExtractionResult): PlanExtractionResult {
       if (fixed) {
         room.surface_m2 = Math.round(room.dimensions.length_m * room.dimensions.width_m * 100) / 100;
         room.confidence = Math.min(room.confidence, 0.5);
-        console.warn(`[plan-extractor] Sanitized dimensions for "${room.name_raw}" (cm→m conversion): ${room.surface_m2}m²`);
+        console.warn(`[plan-extractor] Sanitized dimensions for "${room.name_raw}" (cm→m): ${room.surface_m2}m²`);
       }
     }
 
-    // Fix 2: If a single room is larger than total surface, it's wrong
-    if (totalSurface !== null && room.surface_m2 > totalSurface) {
-      console.warn(`[plan-extractor] Room "${room.name_raw}" surface ${room.surface_m2}m² exceeds total ${totalSurface}m² — capping`);
+    // Cap individual rooms at 80m² (standard residential max)
+    if (room.surface_m2 > 80) {
+      console.warn(`[plan-extractor] Room "${room.name_raw}" surface ${room.surface_m2}m² > 80m² — capping to null`);
       room.surface_m2 = null;
       room.dimensions = null;
       room.confidence = Math.min(room.confidence, 0.3);
     }
 
-    // Fix 3: Unreasonably large room (> 200m² for a single room in residential)
-    if (room.surface_m2 !== null && room.surface_m2 > 200) {
-      console.warn(`[plan-extractor] Room "${room.name_raw}" surface ${room.surface_m2}m² unreasonably large — nullifying`);
+    // If a single room is larger than total surface, it's wrong
+    if (totalSurface !== null && room.surface_m2 !== null && room.surface_m2 > totalSurface) {
+      console.warn(`[plan-extractor] Room "${room.name_raw}" ${room.surface_m2}m² exceeds total ${totalSurface}m² — capping`);
       room.surface_m2 = null;
       room.dimensions = null;
       room.confidence = Math.min(room.confidence, 0.3);
     }
   }
 
-  // Fix 4: If sum of room surfaces exceeds total by > 20%, recalculate total
+  // ── Fix 2: Recalculate total if needed ──────────────────────────
   const sumSurfaces = rooms.reduce((s, r) => s + (r.surface_m2 ?? 0), 0);
   let correctedTotal = totalSurface;
-  if (totalSurface !== null && sumSurfaces > totalSurface * 1.2) {
-    console.warn(`[plan-extractor] Sum of rooms (${sumSurfaces}m²) exceeds total (${totalSurface}m²) by >20% — using sum as total`);
+  if (correctedTotal === null || (sumSurfaces > 0 && Math.abs(sumSurfaces - (correctedTotal ?? 0)) > sumSurfaces * 0.3)) {
     correctedTotal = Math.round(sumSurfaces * 100) / 100;
   }
 

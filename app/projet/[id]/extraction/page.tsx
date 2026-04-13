@@ -220,28 +220,41 @@ export default function ExtractionPage() {
   // P1 UX — état dirty : Thomas a modifié le plan, signal visuel de prise en compte
   const [isPlanDirty, setIsPlanDirty] = useState(false);
 
+  // ─── Cache planRooms per floor to preserve edits on floor switch ──
+  const planRoomsCacheRef = useRef<Map<number, PlanRoom[]>>(new Map());
+
   // Quand les rooms extraites changent ET que le plan est visible, initialiser les PlanRooms
   const initializePlanRooms = useCallback(
-    (extractedRooms: ExtractedRoom[], imgWidth: number, imgHeight: number) => {
+    (extractedRooms: ExtractedRoom[], imgWidth: number, imgHeight: number, floorIdx?: number) => {
       if (imgWidth === 0 || imgHeight === 0) return;
-      const distributed = distributeRoomsOnPlan(extractedRooms, imgWidth, imgHeight);
-      setPlanRooms(distributed);
+      const floor = floorIdx ?? 0;
+      // Check cache first — if user already edited this floor, restore their changes
+      const cached = planRoomsCacheRef.current.get(floor);
+      if (cached && cached.length > 0) {
+        setPlanRooms(cached);
+      } else {
+        const distributed = distributeRoomsOnPlan(extractedRooms, imgWidth, imgHeight);
+        setPlanRooms(distributed);
+        planRoomsCacheRef.current.set(floor, distributed);
+      }
       planInitializedRef.current = true;
     },
     []
   );
 
-  // Quand le PlanEditor modifie les rooms, synchroniser vers ExtractedRoom
+  // Quand le PlanEditor modifie les rooms, synchroniser vers ExtractedRoom + cache
   const handlePlanRoomsChange = useCallback(
     (newPlanRooms: PlanRoom[]) => {
       setPlanRooms(newPlanRooms);
+      // Save to floor cache so switching floors preserves changes
+      planRoomsCacheRef.current.set(activePlanIndex, newPlanRooms);
       // P0 — Use the calibrated scaleFactor instead of hardcoded 50 (Thomas)
       const synced = syncPlanToExtracted(newPlanRooms, scaleFactor);
       setRooms(synced);
       // P1 UX — signaler que le plan a été modifié
       setIsPlanDirty(true);
     },
-    [scaleFactor]
+    [scaleFactor, activePlanIndex]
   );
 
   // Charger les dimensions naturelles du plan quand on ouvre l'editeur
@@ -258,7 +271,7 @@ export default function ExtractionPage() {
         setPlanNaturalWidth(img.naturalWidth);
         // Only initialize rooms for the active floor — not all floors on one plan
         const floorRooms = rooms.filter((r) => (r.floor_index ?? 0) === floorIdx);
-        initializePlanRooms(floorRooms, img.naturalWidth, img.naturalHeight);
+        initializePlanRooms(floorRooms, img.naturalWidth, img.naturalHeight, floorIdx);
       };
       img.src = imgUrl;
     }
@@ -675,15 +688,16 @@ export default function ExtractionPage() {
                         role="tab"
                         aria-selected={i === activePlanIndex}
                         onClick={() => {
+                          // Save current floor's planRooms before switching
+                          planRoomsCacheRef.current.set(activePlanIndex, planRooms);
                           setActivePlanIndex(i);
                           planInitializedRef.current = false;
                           const imgUrl = `/api/logs/image?path=${encodeURIComponent(path)}`;
                           const img = new Image();
                           img.onload = () => {
                             setPlanNaturalWidth(img.naturalWidth);
-                            // Only initialize rooms for this floor
                             const floorRooms = rooms.filter((r) => (r.floor_index ?? 0) === i);
-                            initializePlanRooms(floorRooms, img.naturalWidth, img.naturalHeight);
+                            initializePlanRooms(floorRooms, img.naturalWidth, img.naturalHeight, i);
                           };
                           img.src = imgUrl;
                         }}
@@ -741,6 +755,8 @@ export default function ExtractionPage() {
                         role="tab"
                         aria-selected={fi === activePlanIndex}
                         onClick={() => {
+                          // Save current floor's planRooms before switching
+                          planRoomsCacheRef.current.set(activePlanIndex, planRooms);
                           setActivePlanIndex(fi);
                           planInitializedRef.current = false;
                           const path = parsedPlanPaths[fi] ?? parsedPlanPaths[0];
@@ -749,9 +765,8 @@ export default function ExtractionPage() {
                             const img = new Image();
                             img.onload = () => {
                               setPlanNaturalWidth(img.naturalWidth);
-                              // Only initialize rooms for this floor
                               const floorRooms = rooms.filter((r) => (r.floor_index ?? 0) === fi);
-                              initializePlanRooms(floorRooms, img.naturalWidth, img.naturalHeight);
+                              initializePlanRooms(floorRooms, img.naturalWidth, img.naturalHeight, fi);
                             };
                             img.src = imgUrl;
                           }
