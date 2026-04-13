@@ -88,6 +88,9 @@ export default function GenerationPage() {
   const [projectAdresse, setProjectAdresse] = useState<string | null>(null);
   const [projectTypeBien, setProjectTypeBien] = useState<string | null>(null);
   const [retryingRooms, setRetryingRooms] = useState<Set<string>>(new Set());
+  const [iteratingRooms, setIteratingRooms] = useState<Set<string>>(new Set());
+  const [iterationComments, setIterationComments] = useState<Map<string, string>>(new Map());
+  const [iterationErrors, setIterationErrors] = useState<Map<string, string>>(new Map());
 
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isGenerationTriggered = useRef(false);
@@ -260,6 +263,55 @@ export default function GenerationPage() {
       });
     }
   }, [projectId, pageState]);
+
+  // ─── Iterate on a generated room ──────────────────────────────────
+
+  const iterateRoom = useCallback(async (roomId: string) => {
+    const comment = iterationComments.get(roomId)?.trim();
+    if (!comment) return;
+
+    setIteratingRooms((prev) => new Set(prev).add(roomId));
+    setIterationErrors((prev) => {
+      const updated = new Map(prev);
+      updated.delete(roomId);
+      return updated;
+    });
+
+    try {
+      const response = await fetch(
+        `/api/pro/projects/${projectId}/rooms/${roomId}/iterate`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ comment }),
+        }
+      );
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        setIterationErrors((prev) => new Map(prev).set(roomId, data?.message || "Erreur lors de l'itération."));
+        return;
+      }
+
+      // Success — clear comment, refresh status
+      setIterationComments((prev) => {
+        const updated = new Map(prev);
+        updated.delete(roomId);
+        return updated;
+      });
+
+      // Poll once to refresh the image
+      await pollStatus();
+    } catch {
+      setIterationErrors((prev) => new Map(prev).set(roomId, "Erreur de connexion."));
+    } finally {
+      setIteratingRooms((prev) => {
+        const updated = new Set(prev);
+        updated.delete(roomId);
+        return updated;
+      });
+    }
+  }, [projectId, iterationComments, pollStatus]);
 
   // ─── Progress percentage ──────────────────────────────────────────
 
@@ -527,6 +579,61 @@ export default function GenerationPage() {
                         <span className="w-1.5 h-1.5 rounded-full bg-[#1D4ED8] animate-pulse" aria-hidden="true" />
                         Relancement en cours…
                       </p>
+                    )}
+
+                    {/* Iteration: text input to refine the visual */}
+                    {room.generation_status === "done" && !iteratingRooms.has(room.id) && (
+                      <div className="mt-3 pt-3 border-t border-[#D1D0CB]/30">
+                        <div className="flex gap-1.5">
+                          <input
+                            type="text"
+                            value={iterationComments.get(room.id) || ""}
+                            onChange={(e) =>
+                              setIterationComments((prev) => new Map(prev).set(room.id, e.target.value))
+                            }
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" && !e.shiftKey) {
+                                e.preventDefault();
+                                iterateRoom(room.id);
+                              }
+                            }}
+                            placeholder="Affiner : « ajouter un canapé gris », « enlever la plante »…"
+                            className="flex-1 px-2.5 py-1.5 rounded border border-[#D1D0CB] bg-[#FAFAF8]
+                                       text-xs text-[#1C1C1E] placeholder-[#9B9A94]
+                                       focus:outline-none focus:ring-1 focus:ring-[#7D9B76] focus:border-transparent"
+                            aria-label={`Affiner le visuel de ${room.name}`}
+                          />
+                          <button
+                            onClick={() => iterateRoom(room.id)}
+                            disabled={!iterationComments.get(room.id)?.trim()}
+                            className="flex-shrink-0 px-2.5 py-1.5 rounded bg-[#7D9B76] text-white text-xs font-medium
+                                       hover:bg-[#4A7A42] disabled:bg-[#D1D0CB] disabled:cursor-not-allowed
+                                       transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76]"
+                            aria-label={`Envoyer l'instruction pour ${room.name}`}
+                          >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                              <line x1="22" y1="2" x2="11" y2="13" />
+                              <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                            </svg>
+                          </button>
+                        </div>
+                        {iterationErrors.get(room.id) && (
+                          <p className="mt-1 text-xs text-[#B91C1C]">{iterationErrors.get(room.id)}</p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Iterating state */}
+                    {iteratingRooms.has(room.id) && (
+                      <div className="mt-3 pt-3 border-t border-[#D1D0CB]/30">
+                        <p className="text-xs text-[#1D4ED8] flex items-center gap-1.5">
+                          <svg className="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                          </svg>
+                          Itération en cours…
+                        </p>
+                      </div>
                     )}
                   </div>
                 </article>
