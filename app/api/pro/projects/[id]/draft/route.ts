@@ -33,8 +33,16 @@ const RoomDraftSchema = z.object({
   isNew: z.boolean().optional().default(false),
 });
 
+const BuildingOutlineSchema = z.object({
+  x_percent: z.number().min(0).max(100),
+  y_percent: z.number().min(0).max(100),
+  width_percent: z.number().min(1).max(100),
+  height_percent: z.number().min(1).max(100),
+});
+
 const DraftBodySchema = z.object({
   rooms: z.array(RoomDraftSchema),
+  building_outline: BuildingOutlineSchema.nullable().optional(),
 });
 
 // ─── PATCH handler ─────────────────────────────────────────────────
@@ -113,11 +121,23 @@ export async function PATCH(
       }
     }
 
-    // ─── Update project timestamp only ───────────────────────────
-    await db.query(
-      `UPDATE pro_projects SET updated_at = NOW() WHERE id = $1`,
-      [projectId]
-    );
+    // ─── Update building outline in extraction_data if provided ──
+    const { building_outline } = parseResult.data;
+    if (building_outline !== undefined) {
+      await db.query(
+        `UPDATE pro_projects
+         SET extraction_data = COALESCE(extraction_data, '{}'::jsonb) || jsonb_build_object('building_outline', $1::jsonb),
+             updated_at = NOW()
+         WHERE id = $2`,
+        [building_outline ? JSON.stringify(building_outline) : "null", projectId]
+      );
+    } else {
+      // ─── Update project timestamp only ───────────────────────
+      await db.query(
+        `UPDATE pro_projects SET updated_at = NOW() WHERE id = $1`,
+        [projectId]
+      );
+    }
 
     return NextResponse.json({
       saved: true,

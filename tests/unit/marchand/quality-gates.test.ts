@@ -61,6 +61,7 @@ function makeExtraction(overrides: Partial<PlanExtractionResult> = {}): PlanExtr
     floors_count: 1,
     extraction_warnings: [],
     scale_reference: "dimensions_on_plan",
+    building_outline: { x_percent: 5, y_percent: 5, width_percent: 90, height_percent: 90 },
     ...overrides,
   };
 }

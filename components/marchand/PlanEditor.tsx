@@ -167,6 +167,17 @@ const SNAP_GRID = 10;
 const SNAP_GUIDE_THRESHOLD = 8;
 const UNDO_MAX_HISTORY = 20;
 
+// ─── Building outline design tokens ──────────────────────────────────
+const OUTLINE_COLOR = "#7D9B76"; // sage — cohérent palette Versimo
+const OUTLINE_BORDER = `2.5px dashed ${OUTLINE_COLOR}`;
+const OUTLINE_SHADOW = `0 0 0 1px rgba(125, 155, 118, 0.15)`;
+const OUTLINE_HANDLE_BG = OUTLINE_COLOR;
+const OUTLINE_HANDLE_BORDER = "2px solid white";
+const OUTLINE_HANDLE_VISUAL_SIZE = 14;
+const OUTLINE_LABEL_BG = "rgba(255,255,255,0.9)";
+const OUTLINE_Z_VISUAL = 1; // under rooms
+const OUTLINE_Z_HANDLES = 4; // above rooms, below alignment guides (z-5)
+
 // ─── Helpers ────────────────────────────────────────────────────────
 
 function colorForType(roomType: string): string {
@@ -302,19 +313,22 @@ export default function PlanEditor({
     };
   }, []);
 
-  // ─── Undo / Redo ────────────────────────────────────────────────
-  const [undoStack, setUndoStack] = useState<PlanRoom[][]>([]);
-  const [redoStack, setRedoStack] = useState<PlanRoom[][]>([]);
+  // ─── Undo / Redo (rooms + outline) ──────────────────────────────
+  type UndoSnapshot = { rooms: PlanRoom[]; outline: BuildingOutlineRect | null };
+  const [undoStack, setUndoStack] = useState<UndoSnapshot[]>([]);
+  const [redoStack, setRedoStack] = useState<UndoSnapshot[]>([]);
   const skipSnapshotRef = useRef(false);
 
-  // Ref to always capture latest rooms for undo snapshots (avoids stale closure)
+  // Refs to always capture latest state for undo snapshots (avoids stale closure)
   const roomsRef = useRef(rooms);
   roomsRef.current = rooms;
+  const outlineRef = useRef(buildingOutline ?? null);
+  outlineRef.current = buildingOutline ?? null;
 
-  /** Push current rooms state onto undo stack before a mutation */
+  /** Push current rooms+outline state onto undo stack before a mutation */
   const pushUndo = useCallback(() => {
     setUndoStack((prev) => {
-      const next = [...prev, roomsRef.current];
+      const next = [...prev, { rooms: roomsRef.current, outline: outlineRef.current }];
       if (next.length > UNDO_MAX_HISTORY) next.shift();
       return next;
     });
@@ -325,19 +339,25 @@ export default function PlanEditor({
     if (undoStack.length === 0) return;
     const prev = undoStack[undoStack.length - 1];
     setUndoStack((s) => s.slice(0, -1));
-    setRedoStack((s) => [...s, rooms]);
+    setRedoStack((s) => [...s, { rooms, outline: buildingOutline ?? null }]);
     skipSnapshotRef.current = true;
-    onRoomsChange(prev);
-  }, [undoStack, rooms, onRoomsChange]);
+    onRoomsChange(prev.rooms);
+    if (onBuildingOutlineChange && prev.outline) {
+      onBuildingOutlineChange(prev.outline);
+    }
+  }, [undoStack, rooms, buildingOutline, onRoomsChange, onBuildingOutlineChange]);
 
   const handleRedo = useCallback(() => {
     if (redoStack.length === 0) return;
     const next = redoStack[redoStack.length - 1];
     setRedoStack((s) => s.slice(0, -1));
-    setUndoStack((s) => [...s, rooms]);
+    setUndoStack((s) => [...s, { rooms, outline: buildingOutline ?? null }]);
     skipSnapshotRef.current = true;
-    onRoomsChange(next);
-  }, [redoStack, rooms, onRoomsChange]);
+    onRoomsChange(next.rooms);
+    if (onBuildingOutlineChange && next.outline) {
+      onBuildingOutlineChange(next.outline);
+    }
+  }, [redoStack, rooms, buildingOutline, onRoomsChange, onBuildingOutlineChange]);
 
   // ─── Calibration ────────────────────────────────────────────────
   const [isCalibrating, setIsCalibrating] = useState(false);
@@ -793,6 +813,7 @@ export default function PlanEditor({
   const handleOutlineResizeStart = useCallback(
     (corner: "nw" | "ne" | "sw" | "se", clientX: number, clientY: number) => {
       if (!buildingOutline || !onBuildingOutlineChange) return;
+      pushUndo(); // Snapshot before outline resize for undo support
       outlineResizeRef.current = {
         corner,
         startX: clientX,
@@ -847,7 +868,7 @@ export default function PlanEditor({
       window.addEventListener("touchmove", handleMouseMove, { passive: false });
       window.addEventListener("touchend", handleMouseUp);
     },
-    [buildingOutline, onBuildingOutlineChange, imgSize]
+    [buildingOutline, onBuildingOutlineChange, imgSize, pushUndo]
   );
 
   // ─── Render ───────────────────────────────────────────────────────
@@ -889,7 +910,7 @@ export default function PlanEditor({
             <li>Shift+clic (ou « Fusionner avec… » sur mobile) sur 2 pièces pour casser un mur.</li>
             <li><span className="inline-block w-3 h-2 border-2 border-dashed border-[#7D9B76] rounded-sm mr-1" />= pièce projet (ajoutée par vous) &nbsp; <span className="inline-block w-3 h-2 border-2 border-solid border-[#6495ED] rounded-sm mr-1" />= pièce existante</li>
             {buildingOutline && (
-              <li><span className="inline-block w-3 h-2 border-2 border-dashed rounded-sm mr-1" style={{ borderColor: "rgba(220, 60, 60, 0.7)" }} />= contour du bâtiment (ajustez en tirant les coins rouges)</li>
+              <li><span className="inline-block w-3 h-2 border-2 border-dashed rounded-sm mr-1" style={{ borderColor: OUTLINE_COLOR }} />= contour du bâtiment — les pièces sont contraintes dans cette zone. Ajustez en tirant les coins.</li>
             )}
           </ul>
         )}
@@ -1202,59 +1223,81 @@ export default function PlanEditor({
             draggable={false}
           />
 
-        {/* Building outline overlay — dashed rectangle showing building boundaries */}
+        {/* Building outline overlay — visual dashed rectangle (z-1, under rooms) */}
         {isReady && buildingOutline && naturalSize && (
           <div
-            className="absolute pointer-events-none z-[2]"
+            className="absolute pointer-events-none"
             style={{
+              zIndex: OUTLINE_Z_VISUAL,
               left: `${buildingOutline.x_percent}%`,
               top: `${buildingOutline.y_percent}%`,
               width: `${buildingOutline.width_percent}%`,
               height: `${buildingOutline.height_percent}%`,
-              border: "2.5px dashed rgba(220, 60, 60, 0.7)",
+              border: OUTLINE_BORDER,
               borderRadius: "2px",
-              boxShadow: "0 0 0 1px rgba(220, 60, 60, 0.15)",
+              boxShadow: OUTLINE_SHADOW,
             }}
             aria-label="Contour du bâtiment détecté par l'IA"
           >
-            {/* Corner drag handles for adjusting the outline */}
-            {onBuildingOutlineChange && (
-              <>
-                {(["nw", "ne", "sw", "se"] as const).map((corner) => (
-                  <div
-                    key={`outline-handle-${corner}`}
-                    className="absolute pointer-events-auto cursor-nwse-resize"
-                    style={{
-                      width: 14,
-                      height: 14,
-                      borderRadius: "50%",
-                      background: "rgba(220, 60, 60, 0.9)",
-                      border: "2px solid white",
-                      ...(corner.includes("n") ? { top: -7 } : { bottom: -7 }),
-                      ...(corner.includes("w") ? { left: -7 } : { right: -7 }),
-                      cursor: corner === "nw" || corner === "se" ? "nwse-resize" : "nesw-resize",
-                    }}
-                    onMouseDown={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      handleOutlineResizeStart(corner, e.clientX, e.clientY);
-                    }}
-                    onTouchStart={(e) => {
-                      e.stopPropagation();
-                      const t = e.touches[0];
-                      handleOutlineResizeStart(corner, t.clientX, t.clientY);
-                    }}
-                  />
-                ))}
-              </>
-            )}
-            {/* Label */}
+            {/* Label — inside top-left for viewport safety */}
             <span
-              className="absolute -top-5 left-1 text-[10px] font-medium px-1 rounded"
-              style={{ color: "rgba(220, 60, 60, 0.9)", background: "rgba(255,255,255,0.85)" }}
+              className="absolute top-1 left-1.5 text-[12px] font-medium px-1.5 py-0.5 rounded"
+              style={{ color: OUTLINE_COLOR, background: OUTLINE_LABEL_BG }}
             >
               Contour du bâtiment
             </span>
+          </div>
+        )}
+
+        {/* Building outline drag handles — separate layer (z-4, above rooms, below guides) */}
+        {isReady && buildingOutline && naturalSize && onBuildingOutlineChange && (
+          <div
+            className="absolute pointer-events-none"
+            style={{
+              zIndex: OUTLINE_Z_HANDLES,
+              left: `${buildingOutline.x_percent}%`,
+              top: `${buildingOutline.y_percent}%`,
+              width: `${buildingOutline.width_percent}%`,
+              height: `${buildingOutline.height_percent}%`,
+            }}
+          >
+            {(["nw", "ne", "sw", "se"] as const).map((corner) => (
+              <div
+                key={`outline-handle-${corner}`}
+                className="absolute pointer-events-auto"
+                style={{
+                  width: HANDLE_HIT_SIZE,
+                  height: HANDLE_HIT_SIZE,
+                  ...(corner.includes("n") ? { top: -HANDLE_HIT_SIZE / 2 } : { bottom: -HANDLE_HIT_SIZE / 2 }),
+                  ...(corner.includes("w") ? { left: -HANDLE_HIT_SIZE / 2 } : { right: -HANDLE_HIT_SIZE / 2 }),
+                  cursor: corner === "nw" || corner === "se" ? "nwse-resize" : "nesw-resize",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+                onMouseDown={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  handleOutlineResizeStart(corner, e.clientX, e.clientY);
+                }}
+                onTouchStart={(e) => {
+                  e.stopPropagation();
+                  const t = e.touches[0];
+                  handleOutlineResizeStart(corner, t.clientX, t.clientY);
+                }}
+              >
+                <div
+                  style={{
+                    width: OUTLINE_HANDLE_VISUAL_SIZE,
+                    height: OUTLINE_HANDLE_VISUAL_SIZE,
+                    borderRadius: "50%",
+                    background: OUTLINE_HANDLE_BG,
+                    border: OUTLINE_HANDLE_BORDER,
+                    pointerEvents: "none",
+                  }}
+                />
+              </div>
+            ))}
           </div>
         )}
 
@@ -1361,6 +1404,17 @@ export default function PlanEditor({
             const dh = room.height * displayScale;
 
             const surface = computeSurface(room.width, room.height, scaleFactor);
+
+            // Check if room overflows the building outline (soft constraint — visual warning)
+            const isOutOfOutline = (() => {
+              if (!buildingOutline || !naturalSize) return false;
+              const oLeft = (buildingOutline.x_percent / 100) * naturalSize.width;
+              const oTop = (buildingOutline.y_percent / 100) * naturalSize.height;
+              const oRight = oLeft + (buildingOutline.width_percent / 100) * naturalSize.width;
+              const oBottom = oTop + (buildingOutline.height_percent / 100) * naturalSize.height;
+              return room.x < oLeft - 2 || room.y < oTop - 2
+                || room.x + room.width > oRight + 2 || room.y + room.height > oBottom + 2;
+            })();
 
             return (
               <div
@@ -1479,12 +1533,23 @@ export default function PlanEditor({
                         : `2px solid ${brdColor}`,
                     boxShadow: isHighlighted
                       ? `0 0 0 3px ${brdColor}, 0 4px 12px rgba(0,0,0,0.25)`
-                      : isSelected || isMultiSelected
-                        ? `0 0 0 2px ${brdColor}, 0 2px 8px rgba(0,0,0,0.15)`
-                        : "none",
+                      : isOutOfOutline
+                        ? `0 0 0 2px #DC3C3C, 0 2px 8px rgba(220,60,60,0.3)`
+                        : isSelected || isMultiSelected
+                          ? `0 0 0 2px ${brdColor}, 0 2px 8px rgba(0,0,0,0.15)`
+                          : "none",
                     transition: "box-shadow 150ms ease, background-color 150ms ease, border 150ms ease",
                   }}
                 />
+
+                {/* "Hors contour" warning badge — room overflows building outline */}
+                {isOutOfOutline && (
+                  <div className="absolute bottom-0.5 right-0.5 z-20">
+                    <span className="text-[8px] font-bold text-white bg-[#DC3C3C] rounded px-1 py-px uppercase tracking-wide">
+                      Hors contour
+                    </span>
+                  </div>
+                )}
 
                 {/* "PROJET" badge for new rooms */}
                 {isNewRoom && (

@@ -456,9 +456,29 @@ export default function ExtractionPage() {
 
   // ─── Navigation ──────────────────────────────────────────────────
 
-  const handleContinue = useCallback(() => {
+  const handleContinue = useCallback(async () => {
+    // Save building outline to DB if it was modified
+    if (buildingOutline && isPlanDirty) {
+      try {
+        await fetch(`/api/pro/projects/${projectId}/draft`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            rooms: rooms.map((r) => ({
+              id: r.id,
+              name: r.name,
+              room_type: r.room_type,
+              surface_m2: r.surface_m2,
+            })),
+            building_outline: buildingOutline,
+          }),
+        });
+      } catch {
+        // Best-effort — don't block navigation
+      }
+    }
     router.push(`/projet/${projectId}/decoupe`);
-  }, [router, projectId]);
+  }, [router, projectId, buildingOutline, isPlanDirty, rooms]);
 
   const handleSkipToManual = useCallback(() => {
     router.push(`/projet/${projectId}/decoupe`);

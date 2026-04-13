@@ -59,6 +59,7 @@ function validPlanExtractionResult(overrides: Record<string, unknown> = {}) {
     floors_count: 1,
     extraction_warnings: [] as string[],
     scale_reference: "dimensions_on_plan" as const,
+    building_outline: { x_percent: 5, y_percent: 5, width_percent: 90, height_percent: 90 },
     ...overrides,
   };
 }
