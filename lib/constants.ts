@@ -71,6 +71,16 @@ export function roomTypeLabel(roomType: string): string {
 }
 
 /**
+ * Human-readable floor label.
+ * Used across extraction, decoupe, and validation pages.
+ */
+export function floorLabel(floorIndex: number): string {
+  if (floorIndex === 0) return "Rez-de-chaussée";
+  if (floorIndex === 1) return "Étage 1";
+  return `Étage ${floorIndex}`;
+}
+
+/**
  * Derive completed steps from project status for the ProStepper.
  * Used across all step pages to show accurate progress.
  */

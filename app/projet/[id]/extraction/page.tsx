@@ -18,6 +18,7 @@ import Footer from "@/components/Footer";
 import ProStepper from "@/components/marchand/ProStepper";
 import { ROOM_TYPE_LABELS } from "@/components/marchand/RoomCard";
 import PlanEditor, { type PlanRoom } from "@/components/marchand/PlanEditor";
+import { floorLabel } from "@/lib/constants";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -42,13 +43,6 @@ interface ExtractedRoom {
 }
 
 type ExtractionState = "idle" | "loading" | "success" | "error";
-
-/** Label français pour un numéro d'étage */
-function floorLabel(floorIndex: number): string {
-  if (floorIndex === 0) return "Rez-de-chaussée";
-  if (floorIndex === 1) return "Étage 1";
-  return `Étage ${floorIndex}`;
-}
 
 /** Room type options for the select dropdown */
 const ROOM_TYPE_OPTIONS = Object.entries(ROOM_TYPE_LABELS);

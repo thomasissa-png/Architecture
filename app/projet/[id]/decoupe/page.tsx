@@ -8,6 +8,10 @@
  * Au mount : charge les pièces du projet et lance la détection IA.
  * Thomas clique sur une pièce du plan pour changer son lot.
  * Bouton "Confirmer et continuer" sauvegarde et redirige vers /validation.
+ *
+ * Note: hex tokens (#FAFAF8, #1C1C1E, #7D9B76) are used directly for
+ * cross-page consistency with extraction, validation, qualification pages.
+ * Deliberate decision — see audit-design-decoupe-r2.md.
  */
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
@@ -16,7 +20,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProStepper from "@/components/marchand/ProStepper";
 import PlanEditor, { type PlanRoom } from "@/components/marchand/PlanEditor";
-import { getCompletedSteps } from "@/lib/constants";
+import { getCompletedSteps, floorLabel } from "@/lib/constants";
 
 // ─── Constants ─────────────────────────────────────────────────────
 
@@ -68,14 +72,6 @@ interface DetectedLot {
 }
 
 type PageState = "loading" | "detecting" | "ready" | "saving" | "error";
-
-// ─── Helpers ───────────────────────────────────────────────────────
-
-function floorLabel(floorIndex: number): string {
-  if (floorIndex === 0) return "Rez-de-chaussée";
-  if (floorIndex === 1) return "Étage 1";
-  return `Étage ${floorIndex}`;
-}
 
 // ─── Component ─────────────────────────────────────────────────────
 
@@ -668,10 +664,13 @@ export default function DecoupePage() {
                         ) : (
                           <button
                             onClick={() => startRename(lot.id, lot.name)}
-                            className="flex-1 text-left text-sm font-medium text-[#1C1C1E] hover:text-[#7D9B76] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] rounded"
+                            className="flex-1 text-left text-sm font-medium text-[#1C1C1E] hover:text-[#7D9B76] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] rounded flex items-center gap-1"
                             title="Cliquez pour renommer"
                           >
                             {lot.name}
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-[#1C1C1E]/20 shrink-0">
+                              <path d="M8.5 1.5l2 2M1.5 8.5l5.5-5.5 2 2-5.5 5.5H1.5v-2z" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
                           </button>
                         )}
                         {lots.length > 1 && (
@@ -709,7 +708,7 @@ export default function DecoupePage() {
                       <select
                         value={lot.lot_type}
                         onChange={(e) => changeLotType(lot.id, e.target.value)}
-                        className="w-full text-xs border border-[#1C1C1E]/10 rounded px-2 py-1.5 mb-2 bg-[#FAFAF8] text-[#1C1C1E]/70 appearance-none focus:outline-none focus:ring-2 focus:ring-[#7D9B76]"
+                        className="w-full text-xs border border-[#1C1C1E]/10 rounded px-2 py-1.5 mb-2 bg-[#FAFAF8] text-[#1C1C1E]/70 appearance-none focus:outline-none focus:ring-2 focus:ring-[#7D9B76] min-h-[44px]"
                       >
                         {LOT_TYPE_OPTIONS.map((opt) => (
                           <option key={opt.value} value={opt.value}>
