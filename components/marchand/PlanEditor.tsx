@@ -77,7 +77,7 @@ const ROOM_COLORS: Record<string, string> = {
   chambre_parentale: "rgba(70, 130, 220, 0.3)",
   cuisine: "rgba(255, 165, 0, 0.3)",
   sdb: "rgba(0, 191, 255, 0.3)",
-  wc: "rgba(0, 191, 255, 0.3)",
+  wc: "rgba(168, 85, 247, 0.3)",
   bureau: "rgba(147, 112, 219, 0.3)",
   entree: "rgba(200, 180, 140, 0.3)",
   dressing: "rgba(180, 160, 200, 0.3)",
@@ -97,7 +97,7 @@ const ROOM_BORDER_COLORS: Record<string, string> = {
   chambre_parentale: "rgba(70, 130, 220, 0.8)",
   cuisine: "rgba(255, 165, 0, 0.8)",
   sdb: "rgba(0, 191, 255, 0.8)",
-  wc: "rgba(0, 191, 255, 0.8)",
+  wc: "rgba(168, 85, 247, 0.8)",
   bureau: "rgba(147, 112, 219, 0.8)",
   entree: "rgba(200, 180, 140, 0.8)",
   dressing: "rgba(180, 160, 200, 0.8)",
@@ -1518,9 +1518,8 @@ export default function PlanEditor({
                   </button>
                 )}
 
-                {/* Resize handles (visible when selected) — bigger for mobile */}
-                {isSelected &&
-                  (["nw", "ne", "sw", "se"] as HandlePosition[]).map((handle) => {
+                {/* Resize handles — TOUJOURS visibles (mobile n'a pas de hover) */}
+                {(["nw", "ne", "sw", "se"] as HandlePosition[]).map((handle) => {
                     const isLeft = handle.includes("w");
                     const isTop = handle.includes("n");
                     const cursor =
@@ -1543,6 +1542,8 @@ export default function PlanEditor({
                           // Enlarge touch target to HANDLE_HIT_SIZE (44px)
                           padding: (HANDLE_HIT_SIZE - HANDLE_SIZE) / 2,
                           margin: -(HANDLE_HIT_SIZE - HANDLE_SIZE) / 2,
+                          opacity: isSelected ? 1 : 0.6,
+                          transition: "opacity 150ms ease",
                         }}
                         onMouseDown={(e) => handlePointerDown(e, room.id, "resize", handle)}
                         onTouchStart={(e) => handlePointerDown(e, room.id, "resize", handle)}
