@@ -212,6 +212,8 @@ export default function ExtractionPage() {
   const planInitializedRef = useRef(false);
   // P0 — scaleFactor lifted to parent so syncPlanToExtracted uses calibrated value (Thomas)
   const [scaleFactor, setScaleFactor] = useState(50);
+  // P1 UX — état dirty : Thomas a modifié le plan, signal visuel de prise en compte
+  const [isPlanDirty, setIsPlanDirty] = useState(false);
 
   // Quand les rooms extraites changent ET que le plan est visible, initialiser les PlanRooms
   const initializePlanRooms = useCallback(
@@ -231,6 +233,8 @@ export default function ExtractionPage() {
       // P0 — Use the calibrated scaleFactor instead of hardcoded 50 (Thomas)
       const synced = syncPlanToExtracted(newPlanRooms, scaleFactor);
       setRooms(synced);
+      // P1 UX — signaler que le plan a été modifié
+      setIsPlanDirty(true);
     },
     [scaleFactor]
   );
@@ -481,7 +485,7 @@ export default function ExtractionPage() {
               )}
               {/* Scan line */}
               <div
-                className="absolute left-0 right-0 h-0.5 bg-[#3B82F6] animate-[scanLine_2s_ease-in-out_infinite]"
+                className="absolute left-0 right-0 h-0.5 bg-[#7D9B76] animate-[scanLine_2s_ease-in-out_infinite]"
                 aria-hidden="true"
               />
             </div>
@@ -496,7 +500,7 @@ export default function ExtractionPage() {
                     onClick={() => setActivePlanIndex(i)}
                     className={`w-10 h-10 rounded border overflow-hidden transition-all
                       ${i === activePlanIndex
-                        ? "border-[#3B82F6] ring-2 ring-[#3B82F6]/30"
+                        ? "border-[#7D9B76] ring-2 ring-[#7D9B76]/30"
                         : "border-[#D1D0CB] opacity-60 hover:opacity-100"
                       }`}
                     aria-label={`Voir plan ${i + 1}`}
@@ -529,9 +533,9 @@ export default function ExtractionPage() {
 
             {/* Pulsing dots */}
             <div className="flex gap-1.5" aria-hidden="true">
-              <span className="w-2 h-2 rounded-full bg-[#3B82F6] animate-pulse" />
-              <span className="w-2 h-2 rounded-full bg-[#3B82F6] animate-pulse [animation-delay:200ms]" />
-              <span className="w-2 h-2 rounded-full bg-[#3B82F6] animate-pulse [animation-delay:400ms]" />
+              <span className="w-2 h-2 rounded-full bg-[#7D9B76] animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-[#7D9B76] animate-pulse [animation-delay:200ms]" />
+              <span className="w-2 h-2 rounded-full bg-[#7D9B76] animate-pulse [animation-delay:400ms]" />
             </div>
           </div>
         )}
@@ -620,11 +624,55 @@ export default function ExtractionPage() {
 
             {/* Plan Editor — pleine largeur, composant principal */}
             {parsedPlanPaths.length > 0 && showPlanEditor && planNaturalWidth > 0 && (
-              <div className="w-full max-w-5xl mx-auto space-y-2">
-                {/* Help text au-dessus du plan */}
-                <p className="text-sm text-[#9B9A94] px-1">
-                  Voici votre plan avec les pièces détectées. Les zones colorées montrent l&apos;emplacement de chaque pièce. Vous pouvez les déplacer, redimensionner, renommer ou en ajouter de nouvelles.
-                </p>
+              <div className="w-full max-w-5xl mx-auto space-y-3">
+                {/* Affordances pills — actions disponibles en un coup d'oeil */}
+                <div className="flex flex-wrap items-center gap-2 px-1">
+                  <span className="inline-flex items-center gap-1 text-xs text-[#9B9A94] bg-[#F5F5F0] rounded-full px-2.5 py-1">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="5 9 2 12 5 15"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+                    Déplacer
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-xs text-[#9B9A94] bg-[#F5F5F0] rounded-full px-2.5 py-1">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Redimensionner (coins)
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-xs text-[#9B9A94] bg-[#F5F5F0] rounded-full px-2.5 py-1">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    Double-clic pour renommer
+                  </span>
+                </div>
+
+                {/* Switcher d'étage — visible uniquement si plusieurs plans */}
+                {parsedPlanPaths.length > 1 && (
+                  <div className="flex items-center gap-2 px-1" role="tablist" aria-label="Navigation par étage">
+                    {parsedPlanPaths.map((path, i) => (
+                      <button
+                        key={path}
+                        type="button"
+                        role="tab"
+                        aria-selected={i === activePlanIndex}
+                        onClick={() => {
+                          setActivePlanIndex(i);
+                          planInitializedRef.current = false;
+                          const imgUrl = `/api/logs/image?path=${encodeURIComponent(path)}`;
+                          const img = new Image();
+                          img.onload = () => {
+                            setPlanNaturalWidth(img.naturalWidth);
+                            initializePlanRooms(rooms, img.naturalWidth, img.naturalHeight);
+                          };
+                          img.src = imgUrl;
+                        }}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all
+                          ${i === activePlanIndex
+                            ? "bg-[#7D9B76] text-white"
+                            : "bg-[#F5F5F0] text-[#9B9A94] hover:bg-[#ECFDF5] hover:text-[#4A7A42]"
+                          }
+                          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76]`}
+                      >
+                        <span>{i === 0 ? "RDC" : `Étage ${i}`}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
 
                 <div id="plan-editor-section" className="animate-in fade-in duration-300">
                   <PlanEditor
@@ -642,9 +690,17 @@ export default function ExtractionPage() {
 
             {/* Rooms grouped by floor — centré, en dessous du plan */}
             <div className="max-w-2xl mx-auto space-y-6">
-              <h2 className="text-sm font-semibold text-[#1C1C1E] border-b border-[#D1D0CB]/40 pb-2">
-                Détails des pièces
-              </h2>
+              <div className="flex items-center gap-2 border-b border-[#D1D0CB]/40 pb-2">
+                <h2 className="text-sm font-semibold text-[#1C1C1E]">
+                  Détails des pièces
+                </h2>
+                {isPlanDirty && (
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-[#7D9B76] bg-[#ECFDF5] rounded-full px-2 py-0.5">
+                    <svg width="8" height="8" viewBox="0 0 8 8" aria-hidden="true"><circle cx="4" cy="4" r="4" fill="currentColor"/></svg>
+                    Modifié
+                  </span>
+                )}
+              </div>
               {roomsByFloor.map(([floorIndex, floorRooms]) => {
                 const planPreview = parsedPlanPaths[floorIndex] ?? parsedPlanPaths[0] ?? null;
 
@@ -729,8 +785,8 @@ export default function ExtractionPage() {
                                 }}
                                 autoFocus
                                 className="w-full text-sm font-medium text-[#1C1C1E] bg-transparent
-                                           border-b border-[#7D9B76] outline-none py-0.5
-                                           focus-visible:ring-0"
+                                           border-b-2 border-[#7D9B76] outline-none py-0.5
+                                           focus-visible:ring-0 focus-visible:border-b-2"
                                 aria-label="Nom de la pièce"
                               />
                             ) : (
@@ -852,10 +908,42 @@ export default function ExtractionPage() {
               })}
 
               {rooms.length === 0 && (
-                <div className="text-center py-8">
-                  <p className="text-sm text-[#9B9A94]">
-                    Aucune pièce extraite. Passez à l&apos;étape suivante pour les ajouter manuellement.
+                <div className="text-center py-10 px-4 rounded-lg border-2 border-dashed border-[#D1D0CB]">
+                  <svg
+                    width="40"
+                    height="40"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#D1D0CB"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="mx-auto mb-3"
+                    aria-hidden="true"
+                  >
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                    <path d="M9 3v18M3 9h18M3 15h18M15 3v18" />
+                  </svg>
+                  <p className="text-sm font-medium text-[#1C1C1E] mb-1">
+                    Aucune pièce détectée automatiquement
                   </p>
+                  <p className="text-xs text-[#9B9A94] mb-4">
+                    Le plan n&apos;a pas pu être lu. Ajoutez les pièces manuellement ou passez à l&apos;étape suivante.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => addRoom(0)}
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#7D9B76] text-white
+                               text-sm font-medium hover:bg-[#4A7A42] transition-colors
+                               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] focus-visible:ring-offset-2
+                               min-h-[44px]"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <line x1="12" y1="5" x2="12" y2="19" />
+                      <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                    Ajouter une pièce
+                  </button>
                 </div>
               )}
 

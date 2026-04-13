@@ -132,7 +132,8 @@ const ROOM_TYPE_LABELS: Record<string, string> = {
 
 const ROOM_TYPE_OPTIONS = Object.entries(ROOM_TYPE_LABELS);
 
-const HANDLE_SIZE = 20;
+const HANDLE_SIZE = 16; // taille visuelle de la poignée
+const HANDLE_HIT_SIZE = 44; // zone de hit touch (WCAG 2.2 AA — 44×44px minimum)
 const MIN_ROOM_SIZE = 40;
 const SNAP_GRID = 10;
 const SNAP_GUIDE_THRESHOLD = 8;
@@ -1042,7 +1043,7 @@ export default function PlanEditor({
 
       {/* P1 — Fusion mode banner */}
       {fusionMode && (
-        <div className="p-2.5 rounded-lg bg-[#EEF2FF] border border-[#6366F1]/20 text-[13px] text-[#4338CA]">
+        <div className="p-2.5 rounded-lg bg-[#F0F4EE] border border-[#7D9B76]/20 text-[13px] text-[#4A7A42]">
           Touchez la pièce à fusionner avec <strong>{rooms.find((r) => r.id === selectedRoomId)?.name || "la pièce sélectionnée"}</strong>.
         </div>
       )}
@@ -1089,7 +1090,7 @@ export default function PlanEditor({
                 y1={0}
                 x2={x * displayScale}
                 y2={imgSize!.height}
-                stroke="#6366F1"
+                stroke="#7D9B76"
                 strokeWidth="1"
                 strokeDasharray="4 4"
                 opacity="0.7"
@@ -1102,7 +1103,7 @@ export default function PlanEditor({
                 y1={y * displayScale}
                 x2={imgSize!.width}
                 y2={y * displayScale}
-                stroke="#6366F1"
+                stroke="#7D9B76"
                 strokeWidth="1"
                 strokeDasharray="4 4"
                 opacity="0.7"
@@ -1123,7 +1124,7 @@ export default function PlanEditor({
               cx={calibrationPointA.x * displayScale}
               cy={calibrationPointA.y * displayScale}
               r={6}
-              fill="#6366F1"
+              fill="#7D9B76"
               stroke="#fff"
               strokeWidth="2"
             />
@@ -1135,7 +1136,7 @@ export default function PlanEditor({
                   y1={calibrationPointA.y * displayScale}
                   x2={calibrationPointB.x * displayScale}
                   y2={calibrationPointB.y * displayScale}
-                  stroke="#6366F1"
+                  stroke="#7D9B76"
                   strokeWidth="2"
                   strokeDasharray="6 3"
                 />
@@ -1143,7 +1144,7 @@ export default function PlanEditor({
                   cx={calibrationPointB.x * displayScale}
                   cy={calibrationPointB.y * displayScale}
                   r={6}
-                  fill="#6366F1"
+                  fill="#7D9B76"
                   stroke="#fff"
                   strokeWidth="2"
                 />
@@ -1341,7 +1342,7 @@ export default function PlanEditor({
                     <span
                       className="text-[13px] font-semibold text-[#1C1C1E] leading-tight
                                  truncate max-w-full text-center
-                                 bg-white/75 rounded px-1
+                                 bg-white/90 rounded px-1
                                  pointer-events-auto cursor-text"
                       onDoubleClick={(e) => {
                         e.stopPropagation();
@@ -1355,8 +1356,8 @@ export default function PlanEditor({
                   )}
 
                   <span
-                    className="text-[12px] text-[#1C1C1E] leading-tight
-                               bg-white/60 rounded px-1"
+                    className="text-[12px] font-medium text-[#1C1C1E] leading-tight
+                               bg-white/90 rounded px-1"
                   >
                     {surface} m²
                   </span>
@@ -1539,9 +1540,9 @@ export default function PlanEditor({
                           top: isTop ? -HANDLE_SIZE / 2 : undefined,
                           bottom: isTop ? undefined : -HANDLE_SIZE / 2,
                           cursor,
-                          // Enlarge touch target to 44px
-                          padding: 12,
-                          margin: -12,
+                          // Enlarge touch target to HANDLE_HIT_SIZE (44px)
+                          padding: (HANDLE_HIT_SIZE - HANDLE_SIZE) / 2,
+                          margin: -(HANDLE_HIT_SIZE - HANDLE_SIZE) / 2,
                         }}
                         onMouseDown={(e) => handlePointerDown(e, room.id, "resize", handle)}
                         onTouchStart={(e) => handlePointerDown(e, room.id, "resize", handle)}
