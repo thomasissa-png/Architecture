@@ -777,8 +777,8 @@ export default function PlanEditor({
       </div>
 
       {/* Header toolbar */}
-      <div className="flex items-center justify-between gap-2 flex-wrap">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between gap-2 sm:flex-wrap">
+        <div className="flex items-center gap-3 shrink-0">
           <h3 className="text-sm font-semibold text-[#1C1C1E]">
             Éditeur de plan
           </h3>
@@ -795,7 +795,7 @@ export default function PlanEditor({
             </span>
           )}
         </div>
-        <div className="flex items-center gap-1.5 flex-wrap">
+        <div className="flex items-center gap-1.5 overflow-x-auto sm:flex-wrap">
           {/* P2 — Undo / Redo with text labels (UX C4) */}
           <button
             type="button"
@@ -934,34 +934,7 @@ export default function PlanEditor({
             Nouvelle pièce
           </button>
 
-          {/* Separator */}
-          <div className="w-px h-6 bg-[#D1D0CB]/40 mx-0.5" aria-hidden="true" />
-
-          {/* P1 — Advanced options toggle (UX C3) */}
-          <button
-            type="button"
-            onClick={() => setShowAdvancedTools((v) => !v)}
-            className="inline-flex items-center gap-1 px-2.5 h-10 rounded-md
-                       border border-[#D1D0CB]/60 text-[#1C1C1E]/70 text-xs
-                       hover:bg-[#F5F5F0] transition-colors
-                       focus-visible:outline-none focus-visible:ring-2
-                       focus-visible:ring-[#7D9B76] min-w-[44px] min-h-[44px]"
-            aria-expanded={showAdvancedTools}
-            aria-label="Options avancées"
-          >
-            Options
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
-              className={`transition-transform ${showAdvancedTools ? "rotate-180" : ""}`}>
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      {/* P1 — Advanced tools row (UX C3) — Calibrer + Toggle plan/projet */}
-      {showAdvancedTools && (
-        <div className="flex items-center gap-1.5 flex-wrap">
-          {/* Calibration button */}
+          {/* Calibration — always visible (Thomas needs to see it) */}
           <button
             type="button"
             onClick={() => {
@@ -984,15 +957,42 @@ export default function PlanEditor({
                          : "border border-[#D1D0CB]/60 text-[#1C1C1E]/70 hover:bg-[#F5F5F0]"
                        }`}
             aria-label={isCalibrating ? "Annuler la calibration" : "Calibrer les distances"}
-            title={isCalibrating ? "Annuler la calibration" : "Calibrer les distances"}
+            title={isCalibrating ? "Cliquez pour annuler" : "Calibrer les distances réelles"}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M21.3 15.3a2.4 2.4 0 010 3.4l-2.6 2.6a2.4 2.4 0 01-3.4 0L2.7 8.7a2.41 2.41 0 010-3.4l2.6-2.6a2.41 2.41 0 013.4 0z" />
               <line x1="14.5" y1="12.5" x2="11.5" y2="9.5" />
             </svg>
-            {isCalibrating ? "Annuler" : "Calibrer"}
+            <span className="hidden sm:inline">{isCalibrating ? "Annuler" : "Calibrer"}</span>
           </button>
 
+          {/* Separator */}
+          <div className="w-px h-6 bg-[#D1D0CB]/40 mx-0.5" aria-hidden="true" />
+
+          {/* Advanced options toggle — plan/projet only */}
+          <button
+            type="button"
+            onClick={() => setShowAdvancedTools((v) => !v)}
+            className="inline-flex items-center gap-1 px-2.5 h-10 rounded-md
+                       border border-[#D1D0CB]/60 text-[#1C1C1E]/70 text-xs
+                       hover:bg-[#F5F5F0] transition-colors
+                       focus-visible:outline-none focus-visible:ring-2
+                       focus-visible:ring-[#7D9B76] min-w-[44px] min-h-[44px]"
+            aria-expanded={showAdvancedTools}
+            aria-label="Options avancées"
+          >
+            Options
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
+              className={`transition-transform ${showAdvancedTools ? "rotate-180" : ""}`}>
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* Advanced tools row — View mode toggle plan/projet */}
+      {showAdvancedTools && (
+        <div className="flex items-center gap-1.5 flex-wrap">
           {/* View mode toggle */}
           {newCount > 0 && (
             <div className="inline-flex rounded-md border border-[#D1D0CB]/60 overflow-hidden">

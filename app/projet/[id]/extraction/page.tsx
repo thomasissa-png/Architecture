@@ -637,6 +637,9 @@ export default function ExtractionPage() {
                   <polyline points="22 4 12 14.01 9 11.01" />
                 </svg>
                 {rooms.length} pièce{rooms.length > 1 ? "s" : ""} détectée{rooms.length > 1 ? "s" : ""}
+                {rooms.some((r) => r.surface_m2 != null) && (
+                  <> — {rooms.reduce((sum, r) => sum + (r.surface_m2 ?? 0), 0).toFixed(1)} m² au total</>
+                )}
               </div>
             </div>
 
