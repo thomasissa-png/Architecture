@@ -68,6 +68,12 @@ function validExtractionJson() {
         notes: null,
       },
     ],
+    building_outline: {
+      x_percent: 10,
+      y_percent: 5,
+      width_percent: 80,
+      height_percent: 90,
+    },
     total_surface_m2: 37.0,
     floors_count: 1,
     extraction_warnings: [],
@@ -141,6 +147,7 @@ describe("extractPlanData", () => {
           notes: "Piece partiellement masquee",
         },
       ],
+      building_outline: null,
       total_surface_m2: null,
       floors_count: 1,
       extraction_warnings: ["no_dimensions_found", "partial_occlusion"],
@@ -221,6 +228,7 @@ describe("extractPlanData", () => {
     // First response: valid JSON but fails Zod (rooms empty)
     mockOpenAIResponse({
       rooms: [], // min(1) fails
+      building_outline: null,
       total_surface_m2: 10,
       floors_count: 1,
       extraction_warnings: [],
@@ -250,6 +258,7 @@ describe("extractPlanData", () => {
     // Self-correction also returns invalid (rooms still empty)
     mockOpenAIResponse({
       rooms: [],
+      building_outline: null,
       total_surface_m2: 5,
       floors_count: 1,
       extraction_warnings: [],
@@ -355,6 +364,7 @@ describe("extractMultiplePlans", () => {
           notes: null,
         },
       ],
+      building_outline: { x_percent: 5, y_percent: 5, width_percent: 90, height_percent: 90 },
       total_surface_m2: 25.0,
       floors_count: 1,
       extraction_warnings: [],
@@ -378,6 +388,7 @@ describe("extractMultiplePlans", () => {
           notes: null,
         },
       ],
+      building_outline: { x_percent: 5, y_percent: 5, width_percent: 90, height_percent: 90 },
       total_surface_m2: 15.0,
       floors_count: 1,
       extraction_warnings: ["no_scale_reference"],
@@ -444,8 +455,9 @@ describe("sanitizeSurfaces", () => {
     bounding_box: bbox ?? null,
   });
 
-  const makeResult = (rooms: ReturnType<typeof makeRoom>[]) => ({
+  const makeResult = (rooms: ReturnType<typeof makeRoom>[], outline?: { x_percent: number; y_percent: number; width_percent: number; height_percent: number } | null) => ({
     rooms,
+    building_outline: outline ?? { x_percent: 5, y_percent: 5, width_percent: 90, height_percent: 90 },
     total_surface_m2: rooms.reduce((s, r) => s + (r.surface_m2 ?? 0), 0),
     floors_count: 1,
     extraction_warnings: [] as string[],
@@ -520,12 +532,13 @@ describe("sanitizeSurfaces", () => {
     expect(bb.x_percent + bb.width_percent).toBeLessThanOrEqual(100);
   });
 
-  it("clampe les bounding boxes trop larges (>60%)", () => {
+  it("clampe les bounding boxes trop larges (>60% du contour bâtiment)", () => {
+    // With building outline at 90% width, maxW = 90 * 0.6 = 54
     const rooms = [
       makeRoom("Salon", 25, { x_percent: 5, y_percent: 5, width_percent: 80, height_percent: 30 }),
     ];
     const result = sanitizeSurfaces(makeResult(rooms), "appartement");
-    expect(result.data.rooms[0].bounding_box!.width_percent).toBe(60);
+    expect(result.data.rooms[0].bounding_box!.width_percent).toBe(54);
     expect(result.log.some(l => l.reason === "bbox_width_clamped")).toBe(true);
   });
 
@@ -561,6 +574,7 @@ describe("validateExtraction — quality gates", () => {
   it("G1 échoue sur surfaces hors plage par type", () => {
     const data = {
       rooms: [makeRoom("Chambre", 50), makeRoom("WC", 2)],
+      building_outline: { x_percent: 5, y_percent: 5, width_percent: 90, height_percent: 90 },
       total_surface_m2: 52,
       floors_count: 1,
       extraction_warnings: [] as string[],
@@ -575,6 +589,7 @@ describe("validateExtraction — quality gates", () => {
   it("G1 passe sur surfaces raisonnables", () => {
     const data = {
       rooms: [makeRoom("Chambre", 15), makeRoom("WC", 2)],
+      building_outline: { x_percent: 5, y_percent: 5, width_percent: 90, height_percent: 90 },
       total_surface_m2: 17,
       floors_count: 1,
       extraction_warnings: [] as string[],
@@ -583,5 +598,154 @@ describe("validateExtraction — quality gates", () => {
     const report = validateExtraction(data, [], "appartement");
     const g1 = report.gates.find(g => g.id === "G1_SURFACE_RANGE");
     expect(g1!.passed).toBe(true);
+  });
+
+  it("G3B détecte l'absence de contour bâtiment", () => {
+    const data = {
+      rooms: [makeRoom("Chambre", 15), makeRoom("WC", 2)],
+      building_outline: null,
+      total_surface_m2: 17,
+      floors_count: 1,
+      extraction_warnings: [] as string[],
+      scale_reference: "dimensions_on_plan" as const,
+    };
+    const report = validateExtraction(data, [], "appartement");
+    const g3b = report.gates.find(g => g.id === "G3B_OUTLINE_EXISTS");
+    expect(g3b).toBeDefined();
+    expect(g3b!.passed).toBe(false);
+  });
+
+  it("G3B passe quand contour bâtiment présent", () => {
+    const data = {
+      rooms: [makeRoom("Chambre", 15), makeRoom("WC", 2)],
+      building_outline: { x_percent: 10, y_percent: 10, width_percent: 80, height_percent: 80 },
+      total_surface_m2: 17,
+      floors_count: 1,
+      extraction_warnings: [] as string[],
+      scale_reference: "dimensions_on_plan" as const,
+    };
+    const report = validateExtraction(data, [], "appartement");
+    const g3b = report.gates.find(g => g.id === "G3B_OUTLINE_EXISTS");
+    expect(g3b).toBeDefined();
+    expect(g3b!.passed).toBe(true);
+  });
+});
+
+describe("building outline — sanitization + gates", () => {
+  const makeRoom = (name: string, surface: number | null, bbox?: { x_percent: number; y_percent: number; width_percent: number; height_percent: number }) => ({
+    name_raw: name,
+    surface_m2: surface,
+    dimensions: null as null,
+    ceiling_height_m: null as number | null,
+    windows_count: 1,
+    doors_count: 1,
+    floor: 0,
+    shape: "rectangle" as const,
+    confidence: 0.8,
+    bounding_box: bbox ?? null,
+  });
+
+  it("clampe les bbox au contour du bâtiment (pas aux bords de l'image)", () => {
+    // Building outline: x=20..80 (20+60=80), y=10..90 (10+80=90)
+    // Room bbox extends beyond: x=75, width=20 → should be clamped to x=75, width=5
+    const rooms = [
+      makeRoom("Salon", 25, { x_percent: 75, y_percent: 15, width_percent: 20, height_percent: 15 }),
+    ];
+    const data = {
+      rooms,
+      building_outline: { x_percent: 20, y_percent: 10, width_percent: 60, height_percent: 80 },
+      total_surface_m2: 25,
+      floors_count: 1,
+      extraction_warnings: [] as string[],
+      scale_reference: "dimensions_on_plan" as const,
+    };
+    const result = sanitizeSurfaces(data, "appartement");
+    const bb = result.data.rooms[0].bounding_box!;
+    // x=75, building max x = 20+60=80, so width should be clamped to 80-75=5
+    expect(bb.x_percent + bb.width_percent).toBeLessThanOrEqual(80);
+  });
+
+  it("clampe les bbox qui démarrent avant le contour", () => {
+    // Building outline starts at x=15, but room starts at x=5
+    const rooms = [
+      makeRoom("Chambre", 15, { x_percent: 5, y_percent: 8, width_percent: 20, height_percent: 15 }),
+    ];
+    const data = {
+      rooms,
+      building_outline: { x_percent: 15, y_percent: 10, width_percent: 70, height_percent: 80 },
+      total_surface_m2: 15,
+      floors_count: 1,
+      extraction_warnings: [] as string[],
+      scale_reference: "dimensions_on_plan" as const,
+    };
+    const result = sanitizeSurfaces(data, "appartement");
+    const bb = result.data.rooms[0].bounding_box!;
+    // x should be clamped to building min x=15
+    expect(bb.x_percent).toBeGreaterThanOrEqual(15);
+    // y should be clamped to building min y=10
+    expect(bb.y_percent).toBeGreaterThanOrEqual(10);
+  });
+
+  it("G3 échoue sur pièces hors contour bâtiment", () => {
+    const makeGateRoom = (name: string, surface: number | null, bbox?: { x_percent: number; y_percent: number; width_percent: number; height_percent: number } | null) => ({
+      name_raw: name,
+      surface_m2: surface,
+      dimensions: null as null,
+      ceiling_height_m: null as number | null,
+      windows_count: 1,
+      doors_count: 1,
+      floor: 0,
+      shape: "rectangle" as const,
+      confidence: 0.8,
+      temp_id: `r_${name}`,
+      notes: null as string | null,
+      bounding_box: bbox ?? undefined,
+    });
+    // Building outline: x=20..80, y=10..90
+    // Room bbox goes to x=85 (outside building at 80)
+    const data = {
+      rooms: [makeGateRoom("Salon", 25, { x_percent: 70, y_percent: 15, width_percent: 15, height_percent: 15 })],
+      building_outline: { x_percent: 20, y_percent: 10, width_percent: 60, height_percent: 80 },
+      total_surface_m2: 25,
+      floors_count: 1,
+      extraction_warnings: [] as ("no_dimensions_found" | "low_resolution" | "partial_occlusion" | "no_scale_reference" | "technical_symbols_ignored")[],
+      scale_reference: "dimensions_on_plan" as const,
+    };
+    const report = validateExtraction(data, [], "appartement");
+    const g3 = report.gates.find(g => g.id === "G3_BBOX_IN_BOUNDS");
+    expect(g3!.passed).toBe(false);
+    expect(g3!.detail).toContain("Salon");
+    // Should trigger retry
+    expect(report.shouldRetry).toBe(true);
+  });
+
+  it("sans contour, G3 utilise les bords de l'image (0-100%)", () => {
+    const makeGateRoom = (name: string, surface: number | null, bbox?: { x_percent: number; y_percent: number; width_percent: number; height_percent: number } | null) => ({
+      name_raw: name,
+      surface_m2: surface,
+      dimensions: null as null,
+      ceiling_height_m: null as number | null,
+      windows_count: 1,
+      doors_count: 1,
+      floor: 0,
+      shape: "rectangle" as const,
+      confidence: 0.8,
+      temp_id: `r_${name}`,
+      notes: null as string | null,
+      bounding_box: bbox ?? undefined,
+    });
+    // No building outline — falls back to image bounds
+    const data = {
+      rooms: [makeGateRoom("Salon", 25, { x_percent: 10, y_percent: 10, width_percent: 30, height_percent: 30 })],
+      building_outline: null,
+      total_surface_m2: 25,
+      floors_count: 1,
+      extraction_warnings: [] as ("no_dimensions_found" | "low_resolution" | "partial_occlusion" | "no_scale_reference" | "technical_symbols_ignored")[],
+      scale_reference: "dimensions_on_plan" as const,
+    };
+    const report = validateExtraction(data, [], "appartement");
+    const g3 = report.gates.find(g => g.id === "G3_BBOX_IN_BOUNDS");
+    // Room is within image bounds → should pass
+    expect(g3!.passed).toBe(true);
   });
 });

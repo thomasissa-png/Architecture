@@ -189,11 +189,22 @@ export const ExtractedRoomSchema = z.object({
 });
 export type ExtractedRoom = z.infer<typeof ExtractedRoomSchema>;
 
+export const BuildingOutlineSchema = z.object({
+  x_percent: z.number().min(0).max(100).describe("Position X du coin haut-gauche du bâtiment en % de l'image"),
+  y_percent: z.number().min(0).max(100).describe("Position Y du coin haut-gauche du bâtiment en % de l'image"),
+  width_percent: z.number().min(1).max(100).describe("Largeur du bâtiment en % de l'image"),
+  height_percent: z.number().min(1).max(100).describe("Hauteur du bâtiment en % de l'image"),
+});
+export type BuildingOutline = z.infer<typeof BuildingOutlineSchema>;
+
 export const PlanExtractionResultSchema = z.object({
   rooms: z
     .array(ExtractedRoomSchema)
     .min(1)
     .describe("Liste des pieces detectees"),
+  building_outline: BuildingOutlineSchema
+    .nullable()
+    .describe("Rectangle englobant les murs extérieurs du bâtiment (en % de l'image)"),
   total_surface_m2: z
     .number()
     .positive()

@@ -44,7 +44,7 @@ function buildSystemPrompt(typeBien: TypeBien): string {
 TASK: Analyze this floor plan and return a JSON object listing every room with its properties.
 
 STEP 1 — IDENTIFY THE BUILDING OUTLINE:
-Before looking at individual rooms, identify the EXTERIOR WALLS of the building on this plan. Note the approximate rectangle they form as a percentage of the full image. ALL rooms MUST be placed INSIDE this outline. Nothing can be outside the building walls.
+Before looking at individual rooms, identify the EXTERIOR WALLS of the building on this plan. Determine the tightest-fitting rectangle that contains ALL exterior walls. Express it as percentages of the full image: x_percent, y_percent (top-left corner), width_percent, height_percent. Return this in the "building_outline" field. ALL rooms MUST be placed INSIDE this outline. Nothing can be outside the building walls.
 
 STEP 2 — IDENTIFY EVERY ROOM:
 Identify every enclosed space: living rooms, bedrooms, kitchens, bathrooms, toilets, offices, hallways, storage, cellars. Exclude outdoor spaces (balconies, terraces) unless enclosed.
@@ -86,6 +86,8 @@ STEP 6 — SELF-REVIEW (mandatory before returning):
   4. Are ALL bounding boxes INSIDE the building outline? If a room is outside the walls, I placed it wrong.
   5. Do bounding boxes follow the visible wall lines? If not, adjust to match the walls.
   6. Are small rooms (WC, SDB) smaller than large rooms (séjour) in both surface AND bounding box?
+  7. Is the building_outline tight around the exterior walls? It should NOT include title blocks, legends, annotations, or outdoor spaces.
+  8. Do ALL room bounding boxes fit WITHIN building_outline? Check: room.x >= outline.x AND room.x+room.width <= outline.x+outline.width (same for y).
 
 TYPE DE BIEN: "${typeBien}". If "immeuble", there may be multiple units — identify them if possible.
 
@@ -160,6 +162,22 @@ const PLAN_EXTRACTION_JSON_SCHEMA = {
           additionalProperties: false,
         },
       },
+      building_outline: {
+        anyOf: [
+          {
+            type: "object" as const,
+            properties: {
+              x_percent: { type: "number" as const },
+              y_percent: { type: "number" as const },
+              width_percent: { type: "number" as const },
+              height_percent: { type: "number" as const },
+            },
+            required: ["x_percent", "y_percent", "width_percent", "height_percent"],
+            additionalProperties: false,
+          },
+          { type: "null" as const },
+        ],
+      },
       total_surface_m2: { type: ["number", "null"] as const },
       floors_count: { type: "integer" as const },
       extraction_warnings: {
@@ -180,7 +198,7 @@ const PLAN_EXTRACTION_JSON_SCHEMA = {
         enum: ["dimensions_on_plan", "door_standard_83cm", "scale_bar", "none"],
       },
     },
-    required: ["rooms", "total_surface_m2", "floors_count", "extraction_warnings", "scale_reference"],
+    required: ["rooms", "building_outline", "total_surface_m2", "floors_count", "extraction_warnings", "scale_reference"],
     additionalProperties: false,
   },
 };
@@ -332,12 +350,18 @@ export async function extractMultiplePlans(
   let totalSurface = 0;
   let hasAnySurface = false;
   let scaleRef: PlanExtractionResult["scale_reference"] = "none";
+  let firstBuildingOutline: PlanExtractionResult["building_outline"] = null;
 
   // Process each plan sequentially (avoid rate limits)
   for (const plan of plans) {
     console.log(`[plan-extractor] Extracting floor ${plan.floorIndex} (${plan.mimeType})`);
 
     const result = await extractPlanData(plan.base64, plan.mimeType, typeBien, retryContext);
+
+    // Keep first floor's building outline
+    if (firstBuildingOutline === null && result.building_outline) {
+      firstBuildingOutline = result.building_outline;
+    }
 
     // Override floor number for each room to match the plan's floor index
     for (const room of result.rooms) {
@@ -367,6 +391,8 @@ export async function extractMultiplePlans(
 
   return {
     rooms: allRooms,
+    // Multi-floor: use outline from first floor (each floor has its own image, user can adjust)
+    building_outline: firstBuildingOutline,
     total_surface_m2: hasAnySurface ? totalSurface : null,
     floors_count: plans.length,
     extraction_warnings: Array.from(allWarnings) as PlanExtractionResult["extraction_warnings"],
@@ -396,6 +422,17 @@ export function sanitizeSurfaces(data: PlanExtractionResult, typeBien?: string):
   const rooms = [...data.rooms];
   let totalSurface = data.total_surface_m2;
   const log: SanitizationEntry[] = [];
+
+  // ── Fix -1: Sanitize building outline itself ────────────────────
+  const buildingOutline = data.building_outline ? { ...data.building_outline } : null;
+  if (buildingOutline) {
+    buildingOutline.x_percent = Math.max(0, Math.min(buildingOutline.x_percent, 99));
+    buildingOutline.y_percent = Math.max(0, Math.min(buildingOutline.y_percent, 99));
+    buildingOutline.width_percent = Math.max(5, Math.min(buildingOutline.width_percent, 100 - buildingOutline.x_percent));
+    buildingOutline.height_percent = Math.max(5, Math.min(buildingOutline.height_percent, 100 - buildingOutline.y_percent));
+  }
+  // Replace data.building_outline with sanitized version for downstream use
+  data = { ...data, building_outline: buildingOutline };
 
   // Global max surface per room depends on type de bien
   const globalMaxRoom = typeBien === "maison" ? 150 : typeBien === "immeuble" || typeBien === "local_commercial" ? 250 : 80;
@@ -503,21 +540,33 @@ export function sanitizeSurfaces(data: PlanExtractionResult, typeBien?: string):
     }
   }
 
-  // ── Fix 2: Clamp bounding boxes to image bounds ────────────────
+  // ── Fix 2: Clamp bounding boxes to building outline (or image bounds as fallback) ─
+  const outline = data.building_outline;
+  // Building outline bounds (fallback to full image 0-100 if no outline)
+  const oMinX = outline ? outline.x_percent : 0;
+  const oMinY = outline ? outline.y_percent : 0;
+  const oMaxX = outline ? outline.x_percent + outline.width_percent : 100;
+  const oMaxY = outline ? outline.y_percent + outline.height_percent : 100;
+
   for (const room of rooms) {
     if (!room.bounding_box) continue;
     const bb = room.bounding_box;
-    bb.x_percent = Math.max(0, Math.min(bb.x_percent, 99));
-    bb.y_percent = Math.max(0, Math.min(bb.y_percent, 99));
-    bb.width_percent = Math.max(1, Math.min(bb.width_percent, 100 - bb.x_percent));
-    bb.height_percent = Math.max(1, Math.min(bb.height_percent, 100 - bb.y_percent));
-    // No single room should take more than 60% of plan in either direction
-    if (bb.width_percent > 60) {
-      bb.width_percent = 60;
+
+    // Clamp to building outline (or image bounds)
+    bb.x_percent = Math.max(oMinX, Math.min(bb.x_percent, oMaxX - 1));
+    bb.y_percent = Math.max(oMinY, Math.min(bb.y_percent, oMaxY - 1));
+    bb.width_percent = Math.max(1, Math.min(bb.width_percent, oMaxX - bb.x_percent));
+    bb.height_percent = Math.max(1, Math.min(bb.height_percent, oMaxY - bb.y_percent));
+
+    // No single room should take more than 60% of the building outline in either direction
+    const maxW = outline ? outline.width_percent * 0.6 : 60;
+    const maxH = outline ? outline.height_percent * 0.6 : 60;
+    if (bb.width_percent > maxW) {
+      bb.width_percent = maxW;
       log.push({ room: room.name_raw, from: null, to: null, reason: "bbox_width_clamped" });
     }
-    if (bb.height_percent > 60) {
-      bb.height_percent = 60;
+    if (bb.height_percent > maxH) {
+      bb.height_percent = maxH;
       log.push({ room: room.name_raw, from: null, to: null, reason: "bbox_height_clamped" });
     }
   }
@@ -636,23 +685,37 @@ export function validateExtraction(
     warnings.push(`Surface totale de ${totalSurface.toFixed(1)}m² — semble trop grande.`);
   }
 
-  // GATE 3 — Bounding boxes within image bounds (strict 100%, no tolerance)
+  // GATE 3 — Bounding boxes within BUILDING OUTLINE (or image bounds as fallback)
+  const bOutline = data.building_outline;
+  const gMinX = bOutline ? bOutline.x_percent : 0;
+  const gMinY = bOutline ? bOutline.y_percent : 0;
+  const gMaxX = bOutline ? bOutline.x_percent + bOutline.width_percent : 100;
+  const gMaxY = bOutline ? bOutline.y_percent + bOutline.height_percent : 100;
   const outOfBounds = data.rooms.filter((r) => {
     if (!r.bounding_box) return false;
     const bb = r.bounding_box;
-    return bb.x_percent < 0 || bb.y_percent < 0
-      || bb.x_percent + bb.width_percent > 100
-      || bb.y_percent + bb.height_percent > 100;
+    return bb.x_percent < gMinX || bb.y_percent < gMinY
+      || bb.x_percent + bb.width_percent > gMaxX
+      || bb.y_percent + bb.height_percent > gMaxY;
   });
   gates.push({
     id: "G3_BBOX_IN_BOUNDS",
-    label: "Pièces dans les limites du plan",
+    label: bOutline ? "Pièces dans les limites du bâtiment" : "Pièces dans les limites du plan",
     passed: outOfBounds.length === 0,
     detail: outOfBounds.length > 0 ? outOfBounds.map((r) => r.name_raw).join(", ") : undefined,
   });
   if (outOfBounds.length > 0) {
-    warnings.push(`${outOfBounds.length} pièce(s) hors du plan : ${outOfBounds.map((r) => r.name_raw).join(", ")}. Repositionnez-les.`);
+    const boundaryLabel = bOutline ? "du bâtiment" : "du plan";
+    warnings.push(`${outOfBounds.length} pièce(s) hors ${boundaryLabel} : ${outOfBounds.map((r) => r.name_raw).join(", ")}. Repositionnez-les.`);
   }
+
+  // GATE 3b — Building outline exists (critical for bbox accuracy)
+  gates.push({
+    id: "G3B_OUTLINE_EXISTS",
+    label: "Contour du bâtiment détecté",
+    passed: bOutline !== null && bOutline !== undefined,
+    detail: !bOutline ? "L'IA n'a pas détecté le contour du bâtiment" : undefined,
+  });
 
   // GATE 4 — Bounding boxes not empty (C3: warning FR)
   const emptyBoxes = data.rooms.filter((r) => {

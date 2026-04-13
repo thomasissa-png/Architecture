@@ -17,7 +17,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProStepper from "@/components/marchand/ProStepper";
 import { ROOM_TYPE_LABELS } from "@/components/marchand/RoomCard";
-import PlanEditor, { type PlanRoom } from "@/components/marchand/PlanEditor";
+import PlanEditor, { type PlanRoom, type BuildingOutlineRect } from "@/components/marchand/PlanEditor";
 import { floorLabel } from "@/lib/constants";
 
 // ─── Types ──────────────────────────────────────────────────────────
@@ -214,6 +214,8 @@ export default function ExtractionPage() {
   const [scaleFactor, setScaleFactor] = useState(50);
   // P1 UX — état dirty : Thomas a modifié le plan, signal visuel de prise en compte
   const [isPlanDirty, setIsPlanDirty] = useState(false);
+  // Building outline detected by AI (percentages 0-100)
+  const [buildingOutline, setBuildingOutline] = useState<BuildingOutlineRect | null>(null);
 
   // ─── Cache planRooms per floor to preserve edits on floor switch ──
   const planRoomsCacheRef = useRef<Map<number, PlanRoom[]>>(new Map());
@@ -352,6 +354,10 @@ export default function ExtractionPage() {
         })
       );
       setRooms(extractedRooms);
+      // Capture building outline from extraction
+      if (data.building_outline && typeof data.building_outline === "object") {
+        setBuildingOutline(data.building_outline as BuildingOutlineRect);
+      }
       // Capture quality warnings from extraction gates
       if (data.quality?.warnings?.length > 0) {
         setQualityWarnings(data.quality.warnings);
@@ -373,6 +379,7 @@ export default function ExtractionPage() {
           const status = data.project_status;
           if (data.project_adresse) setProjectAdresse(data.project_adresse);
           if (data.project_plan_path) setPlanPath(data.project_plan_path);
+          if (data.building_outline) setBuildingOutline(data.building_outline as BuildingOutlineRect);
           // If already past extraction, redirect immediately without loading flash
           if (status && status !== "plan_uploaded" && status !== "extraction_failed") {
             router.replace(`/projet/${projectId}/decoupe`);
@@ -743,6 +750,11 @@ export default function ExtractionPage() {
                     onScaleFactorChange={(sf) => setScaleFactor(sf)}
                     highlightedRoomId={hoveredRoomId}
                     onRoomClick={handlePlanRoomClick}
+                    buildingOutline={buildingOutline}
+                    onBuildingOutlineChange={(outline) => {
+                      setBuildingOutline(outline);
+                      setIsPlanDirty(true);
+                    }}
                   />
                 </div>
               </div>

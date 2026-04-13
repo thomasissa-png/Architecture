@@ -335,6 +335,7 @@ export async function POST(
       status: "extraction_done",
       rooms_count: insertedRooms.length,
       rooms: insertedRooms,
+      building_outline: extractionResult.building_outline ?? null,
       lot_suggestions: lotSuggestions,
       quality: {
         score: qualityReport.score,

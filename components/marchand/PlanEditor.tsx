@@ -34,6 +34,14 @@ export interface PlanRoom {
   isNew?: boolean;
 }
 
+/** Building outline in percentages (0-100) of the image */
+export interface BuildingOutlineRect {
+  x_percent: number;
+  y_percent: number;
+  width_percent: number;
+  height_percent: number;
+}
+
 interface PlanEditorProps {
   planImageUrl: string;
   rooms: PlanRoom[];
@@ -44,6 +52,10 @@ interface PlanEditorProps {
   highlightedRoomId?: string | null;
   /** Callback quand une pièce est cliquée sur le plan (pour scroll-into-view dans la liste) */
   onRoomClick?: (roomId: string) => void;
+  /** Building outline detected by AI — shown as dashed border, user can adjust */
+  buildingOutline?: BuildingOutlineRect | null;
+  /** Callback when user adjusts the building outline */
+  onBuildingOutlineChange?: (outline: BuildingOutlineRect) => void;
 }
 
 type HandlePosition = "nw" | "ne" | "sw" | "se";
@@ -251,6 +263,8 @@ export default function PlanEditor({
   onScaleFactorChange,
   highlightedRoomId,
   onRoomClick,
+  buildingOutline,
+  onBuildingOutlineChange,
 }: PlanEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [imgSize, setImgSize] = useState<{ width: number; height: number } | null>(null);
@@ -768,6 +782,74 @@ export default function PlanEditor({
     [isCalibrating, handleCalibrationClick]
   );
 
+  // ─── Building outline resize ──────────────────────────────────────
+  const outlineResizeRef = useRef<{
+    corner: "nw" | "ne" | "sw" | "se";
+    startX: number;
+    startY: number;
+    origOutline: BuildingOutlineRect;
+  } | null>(null);
+
+  const handleOutlineResizeStart = useCallback(
+    (corner: "nw" | "ne" | "sw" | "se", clientX: number, clientY: number) => {
+      if (!buildingOutline || !onBuildingOutlineChange) return;
+      outlineResizeRef.current = {
+        corner,
+        startX: clientX,
+        startY: clientY,
+        origOutline: { ...buildingOutline },
+      };
+
+      const handleMouseMove = (e: MouseEvent | TouchEvent) => {
+        const ref = outlineResizeRef.current;
+        if (!ref || !imgSize) return;
+        const cx = "touches" in e ? e.touches[0].clientX : e.clientX;
+        const cy = "touches" in e ? e.touches[0].clientY : e.clientY;
+        const dxPct = ((cx - ref.startX) / imgSize.width) * 100;
+        const dyPct = ((cy - ref.startY) / imgSize.height) * 100;
+        const o = ref.origOutline;
+        let newX = o.x_percent;
+        let newY = o.y_percent;
+        let newW = o.width_percent;
+        let newH = o.height_percent;
+
+        if (ref.corner.includes("w")) {
+          newX = Math.max(0, Math.min(o.x_percent + dxPct, o.x_percent + o.width_percent - 5));
+          newW = o.width_percent - (newX - o.x_percent);
+        } else {
+          newW = Math.max(5, Math.min(o.width_percent + dxPct, 100 - o.x_percent));
+        }
+        if (ref.corner.includes("n")) {
+          newY = Math.max(0, Math.min(o.y_percent + dyPct, o.y_percent + o.height_percent - 5));
+          newH = o.height_percent - (newY - o.y_percent);
+        } else {
+          newH = Math.max(5, Math.min(o.height_percent + dyPct, 100 - o.y_percent));
+        }
+
+        onBuildingOutlineChange({
+          x_percent: Math.round(newX * 10) / 10,
+          y_percent: Math.round(newY * 10) / 10,
+          width_percent: Math.round(newW * 10) / 10,
+          height_percent: Math.round(newH * 10) / 10,
+        });
+      };
+
+      const handleMouseUp = () => {
+        outlineResizeRef.current = null;
+        window.removeEventListener("mousemove", handleMouseMove);
+        window.removeEventListener("mouseup", handleMouseUp);
+        window.removeEventListener("touchmove", handleMouseMove);
+        window.removeEventListener("touchend", handleMouseUp);
+      };
+
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
+      window.addEventListener("touchmove", handleMouseMove, { passive: false });
+      window.addEventListener("touchend", handleMouseUp);
+    },
+    [buildingOutline, onBuildingOutlineChange, imgSize]
+  );
+
   // ─── Render ───────────────────────────────────────────────────────
 
   const isReady = imgSize && naturalSize;
@@ -806,6 +888,9 @@ export default function PlanEditor({
             <li>Appui long sur le nom (ou double-clic) pour renommer.</li>
             <li>Shift+clic (ou « Fusionner avec… » sur mobile) sur 2 pièces pour casser un mur.</li>
             <li><span className="inline-block w-3 h-2 border-2 border-dashed border-[#7D9B76] rounded-sm mr-1" />= pièce projet (ajoutée par vous) &nbsp; <span className="inline-block w-3 h-2 border-2 border-solid border-[#6495ED] rounded-sm mr-1" />= pièce existante</li>
+            {buildingOutline && (
+              <li><span className="inline-block w-3 h-2 border-2 border-dashed rounded-sm mr-1" style={{ borderColor: "rgba(220, 60, 60, 0.7)" }} />= contour du bâtiment (ajustez en tirant les coins rouges)</li>
+            )}
           </ul>
         )}
       </div>
@@ -1116,6 +1201,62 @@ export default function PlanEditor({
             className="block w-full h-auto select-none pointer-events-none"
             draggable={false}
           />
+
+        {/* Building outline overlay — dashed rectangle showing building boundaries */}
+        {isReady && buildingOutline && naturalSize && (
+          <div
+            className="absolute pointer-events-none z-[2]"
+            style={{
+              left: `${buildingOutline.x_percent}%`,
+              top: `${buildingOutline.y_percent}%`,
+              width: `${buildingOutline.width_percent}%`,
+              height: `${buildingOutline.height_percent}%`,
+              border: "2.5px dashed rgba(220, 60, 60, 0.7)",
+              borderRadius: "2px",
+              boxShadow: "0 0 0 1px rgba(220, 60, 60, 0.15)",
+            }}
+            aria-label="Contour du bâtiment détecté par l'IA"
+          >
+            {/* Corner drag handles for adjusting the outline */}
+            {onBuildingOutlineChange && (
+              <>
+                {(["nw", "ne", "sw", "se"] as const).map((corner) => (
+                  <div
+                    key={`outline-handle-${corner}`}
+                    className="absolute pointer-events-auto cursor-nwse-resize"
+                    style={{
+                      width: 14,
+                      height: 14,
+                      borderRadius: "50%",
+                      background: "rgba(220, 60, 60, 0.9)",
+                      border: "2px solid white",
+                      ...(corner.includes("n") ? { top: -7 } : { bottom: -7 }),
+                      ...(corner.includes("w") ? { left: -7 } : { right: -7 }),
+                      cursor: corner === "nw" || corner === "se" ? "nwse-resize" : "nesw-resize",
+                    }}
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      handleOutlineResizeStart(corner, e.clientX, e.clientY);
+                    }}
+                    onTouchStart={(e) => {
+                      e.stopPropagation();
+                      const t = e.touches[0];
+                      handleOutlineResizeStart(corner, t.clientX, t.clientY);
+                    }}
+                  />
+                ))}
+              </>
+            )}
+            {/* Label */}
+            <span
+              className="absolute -top-5 left-1 text-[10px] font-medium px-1 rounded"
+              style={{ color: "rgba(220, 60, 60, 0.9)", background: "rgba(255,255,255,0.85)" }}
+            >
+              Contour du bâtiment
+            </span>
+          </div>
+        )}
 
         {/* Alignment guides SVG overlay */}
         {isReady && dragState && (alignmentGuides.horizontal.length > 0 || alignmentGuides.vertical.length > 0) && (

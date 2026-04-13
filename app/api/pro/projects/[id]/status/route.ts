@@ -98,11 +98,22 @@ export async function GET(
       (r: { generation_status: string }) => r.generation_status === "pending"
     ).length;
 
+    // Fetch building_outline from extraction_data (stored as JSONB in DB)
+    const extractionDataResult = await db.query(
+      `SELECT extraction_data FROM pro_projects WHERE id = $1`,
+      [projectId]
+    );
+    const extractionData = extractionDataResult.rows[0]?.extraction_data;
+    const buildingOutline = extractionData && typeof extractionData === "object" && "building_outline" in extractionData
+      ? (extractionData as { building_outline: unknown }).building_outline
+      : null;
+
     return NextResponse.json({
       project_status: project.status,
       project_adresse: project.adresse || null,
       project_type_bien: project.type_bien || null,
       project_plan_path: project.plan_file_path || null,
+      building_outline: buildingOutline,
       summary: { total, done, failed, generating, pending },
       rooms,
     });
