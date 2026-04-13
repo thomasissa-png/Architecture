@@ -786,7 +786,7 @@ export async function POST(
 
       // ── Recommendations page (if any) ────────────────────────
       if (lot.recommendations.length > 0) {
-        const recPage = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
+        let recPage = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
         let ry = PAGE_HEIGHT - MARGIN;
 
         safeDrawText(recPage, `Recommandations — ${lot.name}`, {
@@ -805,11 +805,11 @@ export async function POST(
           if (ry < FOOTER_HEIGHT + 80) {
             // Start new page if running out of space
             drawFooter(recPage, font, footerDisclaimer);
-            const nextRecPage = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
+            recPage = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
             ry = PAGE_HEIGHT - MARGIN;
 
             safeDrawText(
-              nextRecPage,
+              recPage,
               `Recommandations — ${lot.name} (suite)`,
               {
                 x: MARGIN,
@@ -820,13 +820,8 @@ export async function POST(
               }
             );
             ry -= 26;
-            drawSeparator(nextRecPage, ry);
+            drawSeparator(recPage, ry);
             ry -= 20;
-
-            // Draw on new page — but we already drew footer on old page,
-            // we need to draw on the new page from here.
-            // Since we can't easily reassign const, let's handle multi-page
-            // recommendations in a simpler way.
           }
 
           // Impact badge
