@@ -65,6 +65,21 @@ Projet existant — Pivot majeur sur MVP en production. Branche : `claude/extrac
 - 8/8 P0 persona corrigés
 - 5 gaps identifies pour session 42 (PATCH rooms, Stripe, upload photos, PDF réel, lot-splitter)
 
+### Phase 6 — Extraction plan v2 + gates qualité (COMPLETE — session 43)
+- @orchestrator : prompt extraction reécrit (6 étapes, surfaces écrites, self-review, bounding boxes murs)
+- @orchestrator : 8 quality gates (G1-G8) + sanitizeSurfaces avec log + retry auto
+- @orchestrator : ProStepper redesigné, z-index header, scroll fix, filtrage par étage, cache planRooms
+- @design + @ux : audits ProStepper (5.8 et 5.2 → redesign appliqué)
+- @marchand-de-biens : audit extraction 9.0→9.5/10 PASS
+- @qa + @ia + @moi + @marchand : 4 audits gates convergents → 7 corrections P0/P1 appliquées
+- @product-manager : specs lots/biens (6 US, modèle données, écrans, prompt IA)
+- Build PASS, ~12 commits
+
+### Phase 7 — Implémentation lots/biens (À FAIRE — session 44)
+- @fullstack : page decoupe, endpoint detection IA, ProStepper 8 étapes
+- @marchand-de-biens : audit UX jusqu'à 9.5/10
+- Deploy Replit + test avec vrai PDF d'immeuble
+
 ## Métriques live
 | Phase | Agents | Parallèles | Statut |
 |---|---|---|---|
@@ -76,5 +91,7 @@ Projet existant — Pivot majeur sur MVP en production. Branche : `claude/extrac
 | 3 | 2 fullstack (A fix + B create) | 2 | COMPLETE |
 | 4 | 4 (qa + marchand + 2 fullstack fix) | 4 | COMPLETE |
 | 5 | 1 reviewer | — | COMPLETE |
+| 6 | 8 (orchestrator + design + ux + qa + ia + moi + marchand + PM) | 4 | COMPLETE |
+| 7 | TBD (fullstack + marchand) | — | À FAIRE |
 
-<!-- SESSION: phases=7 tasks_prod=15 tasks_consult=0 -->
+<!-- SESSION: phases=8 tasks_prod=18 tasks_consult=4 -->

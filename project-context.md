@@ -210,6 +210,7 @@
 | @product-manager | 2026-03-31 | docs/product/pro-workflow-v2.md | Décision fondateur : le dossier se crée APRES la génération (pas avant). Flow v2 : upload → annotation par photo → génération → rattachement à un bien (nouveau ou existant, ou ignorer). Suppression de l'étape "info" en entrée de MerchantMode. Nouveau composant AttachToBienPanel + PATCH /api/dossier/[uuid]/attach. | L'étape "info" en premier place une friction avant la valeur. Thomas arrive toujours avec ses photos, jamais avec ses données de prix prêtes. Déplacer le rattachement à la fin = Thomas voit ses visuels avant de devoir remplir des champs. Option "Ignorer" obligatoire pour ne jamais bloquer. PATCH dédié pour le rattachement car le dossier est créé sans property_id en début de génération. |
 | @copywriter | 2026-04-03 | docs/copy/copy-audit-parcours-achat-2026-04-03.md | Audit copy parcours achat / modale recharge — note 6,8/10. 1 P0 bloquant (prix Starter 14,90€ dans GalleryGate au lieu de 9,90€). 5 corrections P1 (4× "crédit" dans l'UI → "visuel", 2× alert() non conformes → state inline). 7 corrections P2. Prix cohérents entre les 4 autres sources (AuthButton, /pricing, homepage, Stripe). | P0 GalleryGate : relique de l'ancien pricing (14,90€ = ancien Starter, décision fondateur 2026-03-27 l'a baissé à 9,90€). "Crédit" dans l'UI viole la décision de vocabulaire prise en mars (session @copywriter 2026-03-28 — 70 occurrences remplacées). Les alert() natifs sont incompatibles avec le design system (rupture visuelle totale) — pattern de correction fourni dans l'audit. |
 | @reviewer | 2026-03-25 | docs/reviews/site-audit-synthesis.md | Synthese croisee 6 audits : 8 convergences inter-agents identifiees, 0 contradiction bloquante, Top 10 actions priorisees, 7 bloqueurs avant monetisation, plan d'action @fullstack en 4 phases. Recommandation GO AVEC RESERVES. | Les 6 audits convergent sur les memes priorites (legal > pricing > SEO > UX/design). Aucune contradiction entre agents — les recommandations sont complementaires. La conformite legale est le bloqueur n.1 car le site collecte deja des photos/IP sans information RGPD. |
+| @orchestrator + @design + @ux + @qa + @ia + @moi + @marchand-de-biens + @product-manager | 2026-04-13 | Session 43 — extraction plan rewrite, 8 gates qualité, ProStepper redesign, specs lots/biens | Prompt extraction reécrit 6 étapes (lire surfaces ÉCRITES en priorité, self-review GPT). 8 quality gates (G1-G8) avec retry auto + warnings FR explicites par pièce. sanitizeSurfaces avec log de corrections + détection 10x + seuils dynamiques par typeBien. ProStepper redesigné (ancrage visuel, ring actif). Z-index header fixé (7 pages). Scroll fix drag PlanEditor. Filtrage par étage (plan + liste). Cache planRooms par étage. Delete button déplacé (libère resize). Zoom Ctrl+scroll. Validation non-bloquante (photos + lots). Specs lots/biens 6 US. 4 audits parallèles gates (QA 7.8, IA 7.5, Moi 6.0, Marchand 6.5 → 7 corrections convergentes appliquées). ~12 commits. | L'extraction GPT calculait les surfaces au lieu de lire celles écrites sur le plan (cause racine erreur 10x). Les gates post-extraction sont indispensables car GPT n'est pas fiable sur les surfaces. Les seuils doivent dépendre du typeBien (80m² appart vs 250m² immeuble). La sanitization doit retourner un log pour que les corrections soient visibles par l'utilisateur (pas de correction silencieuse). L'interface lots/biens doit être plan-centric (décision fondateur). |
 | @orchestrator + @fullstack + @marchand-de-biens + @ux + @design + @qa | 2026-04-13 | Session 42 complète — parcours marchand 7 étapes score Thomas 6.4→9.57, plan editor interactif, extraction PDF, multi-fichier | Score Thomas parcours 7 étapes : 6.4→9.57/10 (7/7 PASS). Autocompletion adresse (API gouv.fr). Extraction PDF via pdf-to-img (pdfjs-dist) + GPT-4.1 vision. Upload multi-fichier multi-étage avec drag-to-reorder. PlanEditor interactif (drag, resize, fusion, calibration échelle, undo/redo, zoom, distinction existant/projet). Bounding boxes IA (pièces positionnées sur le plan). Badges confiance. 21 types de pièces. Dimensions L×l. Highlight bidirectionnel plan↔liste. CTA sticky mobile. 25+ audits (Thomas, Design, UX, Moi, QA). ~35 commits, build vérifié à chaque push. | Approche pdf-to-img retenue vs OpenAI Files API (Files API échouait silencieusement). serverComponentsExternalPackages obligatoire sur Replit pour pdfjs-dist. Object Storage SDK retourne value[0] (tuple) pas value directement — cause racine de la corruption PDF. Le plan editor SVG natif sans librairie externe est suffisant pour 10-15 pièces. Les bounding boxes en % sont plus fiables que les pixels car l'IA ne connaît pas la résolution. |
 | @copywriter | 2026-03-25 | docs/legal/mentions-legales.md, docs/legal/privacy-policy.md, docs/legal/cgu-draft.md | 3 pages légales complètes. Mentions légales LCEN Art. 6 III avec placeholders SIRET/adresse/directeur publication + crédits technologies. Politique confidentialité RGPD : 6 types de données avec base légale et durée, sous-traitants (OpenAI DPF, Replicate DPF à vérifier, Replit DPF, Stripe), droits utilisateurs complets, contact privacy@. CGU/CGV : packages 4 tiers TTC, exception rétractation contenu numérique Art. L221-28 13° avec case à cocher, licence large sur images générées, médiation consommateur obligatoire. Ton accessible, juridiquement complet, aligné brand-voice.md (sobre, précis, sans jargon inutile). | Mentions légales : placeholders explicites avec note d'avertissement sur l'obligation LCEN avant mise en ligne. Politique de confidentialité : structurée par type de donnée (plus lisible pour Léa/Thomas que par base légale) — l'article 6 RGPD est mentionné mais subordonné à l'explication pratique. CGU/CGV : exception rétractation présentée dans le vocabulaire utilisateur ("Ce que cela signifie pour vous") avant la référence légale — approche brand-voice first. Médiation consommateur marquée [A DESIGNER] car obligation légale avant première vente B2C. 5 hypothèses à valider regroupées en fin de chaque document. Réutilise la grille tarifaire HT/TTC issue de legal-audit.md (cohérence). |
 | @creative-strategy | 2026-03-25 | docs/strategy/naming-proposals.md | Analyse Versimo (forces/faiblesses/risques). 4 propositions axe Versi (Versimo, Versiscène, Versivue, VersiSpace). 4 propositions indépendantes (Stagira, Planora, Cadra, Placim). Tableau comparatif 6 critères. Recommandation Top 3 : Cadra (n°1), Stagira (n°2), Versimo (n°3). Impact sur 12 livrables existants avec effort estimé. Décision finale au fondateur. | Versimo écarté car "Rénov" positionne dans la rénovation grand public — décalage avec l'usage réel (meubler des pièces, pas rénover). Cadra recommandé vs Stagira : même score 25/30 mais Cadra est plus court (2 syllabes vs 3), plus immédiatement lisible par les 3 personas, et n'a aucune marque concurrente proche. Axe indépendant recommandé vs axe Versi : les 3 personas (Claire architecte, Léa particulière) ne sont pas des profils "clients d'une agence immobilière" — un nom trop lié à Versi Immobilier ferme ces personas. La filiation peut être discrète en footer sans être dans le nom. 3 hypothèses explicitement marquées (notoriété Versi, disponibilité domaines, absence de dépôt INPI). |
@@ -341,7 +342,46 @@
 
 ---
 
-## Mémo de reprise — dernière session (Session 42 — Plan editor + extraction PDF + convergence 10/10)
+## Mémo de reprise — dernière session (Session 43 — Extraction rewrite + gates qualité + specs lots/biens)
+
+- **Date de clôture** : 2026-04-13
+- **Branche** : `claude/extract-project-context-FXB3N`
+- **HEAD** : `ecdccdf` — docs(product): specs fonctionnelles découpe biens/lots
+- **Objet** : Correction extraction plan (surfaces 10x, bounding boxes), quality gates, redesign ProStepper, specs lots/biens
+
+### Ce qui a été fait (Session 43)
+
+1. **Extraction plan reécrite** : prompt GPT 6 étapes (LIRE les surfaces écrites en priorité au lieu de calculer), self-review obligatoire, bounding boxes doivent suivre les murs
+2. **8 quality gates** (G1-G8) : validation AVANT affichage, retry auto si critiques fail, warnings FR explicites par pièce. sanitizeSurfaces avec log de corrections + détection 10x + seuils dynamiques par typeBien
+3. **4 audits croisés** (QA 7.8, IA 7.5, Moi 6.0, Marchand 6.5) → 7 corrections convergentes appliquées
+4. **ProStepper redesigné** (ancrage visuel, ring actif, fusion bouton mobile, sr-only erreur)
+5. **Fixes UX** : z-index header (7 pages), scroll fix drag, filtrage par étage, cache planRooms, delete button déplacé, zoom Ctrl+scroll, validation non-bloquante (photos + lots), surface totale dans bandeau
+6. **Specs lots/biens** : 6 US fonctionnelles, modèle données, écrans, prompt IA detection, cas limites
+
+### Ce qui reste (session 44)
+1. **Implémentation lots/biens** : nouvelle page `app/projet/[id]/decoupe/page.tsx`, endpoint detection IA, ProStepper 8 étapes. Specs dans `docs/product/lots-biens-specs.md`.
+2. **Tests unitaires** validateExtraction + sanitizeSurfaces (P0 @qa — 0 test actuellement)
+3. **Deploy Replit** + re-test extraction avec vrai PDF d'immeuble
+4. **Retry contextuel** (passer les erreurs détectées au prompt de retry — P2)
+
+### Commande de reprise session 44
+```
+@orchestrator Reprends Versimo session 44. Session 43 close : extraction rewrite + 8 gates qualité + specs lots/biens.
+Branche : claude/extract-project-context-FXB3N.
+Reste : (1) implémenter lots/biens (specs dans docs/product/lots-biens-specs.md — 6 US), (2) tests unitaires gates, (3) deploy + test vrai PDF, (4) retry contextuel.
+```
+
+### Learnings session 43
+- L'extraction GPT CALCULAIT les surfaces au lieu de LIRE celles écrites sur le plan — cause racine de l'erreur 10x systématique
+- Les quality gates post-extraction sont indispensables — GPT n'est pas fiable sur les surfaces
+- La sanitization silencieuse (correction sans feedback) est inacceptable — le fondateur veut savoir POURQUOI une surface est vide
+- Les seuils fixes (80m²) créent des faux positifs — doivent dépendre de typeBien
+- Le fondateur veut une interface plan-centric pour la découpe en lots (pas un tableau)
+- L'étape lots/biens doit être TOUJOURS visible (pas conditionnelle sur type_bien)
+
+---
+
+## Mémo de reprise — session 42 (archivé)
 
 - **Date de clôture** : 2026-04-13
 - **Branche** : `claude/extract-project-context-cnNx6`
