@@ -50,6 +50,15 @@ export interface LotZone {
   zoneRect: BuildingOutlineRect | null;  // same format as outline
 }
 
+/** Photo direction marker on the plan — camera position + angle */
+export interface PhotoMarker {
+  roomId: string;
+  roomName: string;
+  x_percent: number;    // camera position X (0-100)
+  y_percent: number;    // camera position Y (0-100)
+  angle_deg: number;    // direction angle (0=right, 90=down)
+}
+
 interface PlanEditorProps {
   planImageUrl: string;
   rooms: PlanRoom[];
@@ -72,6 +81,14 @@ interface PlanEditorProps {
   drawingLotId?: string | null;
   /** Called when zone drawing is complete */
   onDrawingComplete?: () => void;
+  /** Photo direction markers to display on the plan */
+  photoMarkers?: PhotoMarker[];
+  /** Callback when a photo direction is placed/changed (click to place, drag to set angle) */
+  onPhotoDirectionChange?: (roomId: string, x_percent: number, y_percent: number, angle_deg: number) => void;
+  /** Room ID whose photo direction is being placed */
+  placingPhotoRoomId?: string | null;
+  /** Called when photo placement is complete */
+  onPhotoPlacementComplete?: () => void;
 }
 
 type HandlePosition = "nw" | "ne" | "sw" | "se";
@@ -196,6 +213,7 @@ const OUTLINE_Z_VISUAL = 1; // under rooms
 const ZONE_Z_VISUAL = 2;    // between outline and rooms
 const ZONE_Z_HANDLES = 3;   // zone handles, below outline handles
 const OUTLINE_Z_HANDLES = 4; // above rooms, below alignment guides (z-5)
+const PHOTO_MARKER_Z = 22;  // above rooms, below calibration
 
 // ─── Helpers ────────────────────────────────────────────────────────
 
@@ -299,6 +317,10 @@ export default function PlanEditor({
   onLotZoneChange,
   drawingLotId,
   onDrawingComplete,
+  photoMarkers,
+  onPhotoDirectionChange,
+  placingPhotoRoomId,
+  onPhotoPlacementComplete,
 }: PlanEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [imgSize, setImgSize] = useState<{ width: number; height: number } | null>(null);
@@ -400,6 +422,11 @@ export default function PlanEditor({
   const [zoneDrawStart, setZoneDrawStart] = useState<{ x: number; y: number } | null>(null);
   const [zoneDrawCurrent, setZoneDrawCurrent] = useState<{ x: number; y: number } | null>(null);
   const isDrawingZone = drawingLotId != null;
+
+  // Photo direction placement state
+  const [photoPlaceStart, setPhotoPlaceStart] = useState<{ x: number; y: number } | null>(null);
+  const [photoPlaceCurrent, setPhotoPlaceCurrent] = useState<{ x: number; y: number } | null>(null);
+  const isPlacingPhoto = placingPhotoRoomId != null;
 
   // ─── Image load ─────────────────────────────────────────────────
 
@@ -818,8 +845,8 @@ export default function PlanEditor({
   // Deselect when clicking the background
   const handleBackgroundClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
-      // Zone drawing mode — don't deselect on click (mousedown/up handles it)
-      if (isDrawingZone) return;
+      // Zone drawing / photo placement mode — don't deselect on click (mousedown/up handles it)
+      if (isDrawingZone || isPlacingPhoto) return;
       if (isCalibrating) {
         handleCalibrationClick(e);
         return;
@@ -829,7 +856,7 @@ export default function PlanEditor({
       setEditingNameId(null);
       setEditingTypeId(null);
     },
-    [isCalibrating, isDrawingZone, handleCalibrationClick]
+    [isCalibrating, isDrawingZone, isPlacingPhoto, handleCalibrationClick]
   );
 
   // ─── Zone drawing handlers ────────────────────────────────────────
@@ -948,6 +975,58 @@ export default function PlanEditor({
     },
     [lotZones, onLotZoneChange, imgSize]
   );
+
+  // ─── Photo direction placement handlers ────────────────────────────
+
+  const handlePhotoPlaceStart = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (!isPlacingPhoto || !imgSize) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const pos = getRelativePos(e.clientX, e.clientY);
+      const xPct = (pos.x / (imgSize.width / displayScale)) * 100;
+      const yPct = (pos.y / (imgSize.height / displayScale)) * 100;
+      setPhotoPlaceStart({ x: clamp(xPct, 0, 100), y: clamp(yPct, 0, 100) });
+      setPhotoPlaceCurrent({ x: clamp(xPct, 0, 100), y: clamp(yPct, 0, 100) });
+    },
+    [isPlacingPhoto, imgSize, getRelativePos, displayScale]
+  );
+
+  const handlePhotoPlaceMove = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (!photoPlaceStart || !imgSize) return;
+      e.preventDefault();
+      const pos = getRelativePos(e.clientX, e.clientY);
+      const xPct = clamp((pos.x / (imgSize.width / displayScale)) * 100, 0, 100);
+      const yPct = clamp((pos.y / (imgSize.height / displayScale)) * 100, 0, 100);
+      setPhotoPlaceCurrent({ x: xPct, y: yPct });
+    },
+    [photoPlaceStart, imgSize, getRelativePos, displayScale]
+  );
+
+  const handlePhotoPlaceEnd = useCallback(() => {
+    if (!photoPlaceStart || !photoPlaceCurrent || !placingPhotoRoomId || !onPhotoDirectionChange) {
+      setPhotoPlaceStart(null);
+      setPhotoPlaceCurrent(null);
+      return;
+    }
+    const dx = photoPlaceCurrent.x - photoPlaceStart.x;
+    const dy = photoPlaceCurrent.y - photoPlaceStart.y;
+    // Calculate angle from drag direction (0 = right, 90 = down)
+    const angleDeg = Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5
+      ? 0  // Default direction (right) if user just clicked without dragging
+      : ((Math.atan2(dy, dx) * 180) / Math.PI + 360) % 360;
+
+    onPhotoDirectionChange(
+      placingPhotoRoomId,
+      photoPlaceStart.x,
+      photoPlaceStart.y,
+      Math.round(angleDeg)
+    );
+    setPhotoPlaceStart(null);
+    setPhotoPlaceCurrent(null);
+    onPhotoPlacementComplete?.();
+  }, [photoPlaceStart, photoPlaceCurrent, placingPhotoRoomId, onPhotoDirectionChange, onPhotoPlacementComplete]);
 
   // ─── Building outline resize ──────────────────────────────────────
   const outlineResizeRef = useRef<{
@@ -1355,12 +1434,20 @@ export default function PlanEditor({
             transform: `scale(${zoomLevel})`,
             transformOrigin: "top left",
             width: zoomLevel !== 1 ? `${100 / zoomLevel}%` : "100%",
-            cursor: isDrawingZone ? "crosshair" : undefined,
+            cursor: isDrawingZone || isPlacingPhoto ? "crosshair" : undefined,
           }}
           onClick={handleBackgroundClick}
-          onMouseDown={isDrawingZone ? handleZoneDrawStart : undefined}
-          onMouseMove={isDrawingZone && zoneDrawStart ? handleZoneDrawMove : undefined}
-          onMouseUp={isDrawingZone && zoneDrawStart ? handleZoneDrawEnd : undefined}
+          onMouseDown={isDrawingZone ? handleZoneDrawStart : isPlacingPhoto ? handlePhotoPlaceStart : undefined}
+          onMouseMove={
+            isDrawingZone && zoneDrawStart ? handleZoneDrawMove
+            : isPlacingPhoto && photoPlaceStart ? handlePhotoPlaceMove
+            : undefined
+          }
+          onMouseUp={
+            isDrawingZone && zoneDrawStart ? handleZoneDrawEnd
+            : isPlacingPhoto && photoPlaceStart ? handlePhotoPlaceEnd
+            : undefined
+          }
           role="application"
           aria-label="Éditeur de plan interactif — déplacez et redimensionnez les pièces"
         >
@@ -1627,6 +1714,130 @@ export default function PlanEditor({
                 {drawingZone.name}
               </span>
             </div>
+          );
+        })()}
+
+        {/* Photo direction markers */}
+        {isReady && photoMarkers && photoMarkers.map((marker) => {
+          const arrowLen = 3; // Arrow length in % of image
+          const endX = marker.x_percent + arrowLen * Math.cos((marker.angle_deg * Math.PI) / 180);
+          const endY = marker.y_percent + arrowLen * Math.sin((marker.angle_deg * Math.PI) / 180);
+          return (
+            <div
+              key={`photo-marker-${marker.roomId}`}
+              className="absolute pointer-events-none"
+              style={{
+                zIndex: PHOTO_MARKER_Z,
+                left: `${marker.x_percent}%`,
+                top: `${marker.y_percent}%`,
+                transform: "translate(-50%, -50%)",
+              }}
+            >
+              {/* Camera icon */}
+              <div
+                className="relative flex items-center justify-center"
+                style={{ width: 28, height: 28 }}
+              >
+                <div
+                  className="absolute inset-0 rounded-full bg-[#1C1C1E] shadow-md"
+                  style={{ opacity: 0.85 }}
+                />
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="relative z-10">
+                  <path d="M2 5.5a1 1 0 011-1h2l1-1.5h4l1 1.5h2a1 1 0 011 1v6a1 1 0 01-1 1H3a1 1 0 01-1-1v-6z" stroke="white" strokeWidth="1.2" fill="none" />
+                  <circle cx="8" cy="8" r="2" stroke="white" strokeWidth="1.2" fill="none" />
+                </svg>
+              </div>
+              {/* Room name label */}
+              <div
+                className="absolute left-1/2 -bottom-5 -translate-x-1/2 whitespace-nowrap
+                           text-[9px] font-semibold bg-[#1C1C1E]/80 text-white px-1.5 py-0.5 rounded"
+              >
+                {marker.roomName}
+              </div>
+            </div>
+          );
+          // Render the direction arrow as a separate SVG positioned at marker location
+          void endX; void endY; // Used below
+        })}
+
+        {/* Photo direction arrows (SVG overlay) */}
+        {isReady && photoMarkers && photoMarkers.length > 0 && imgSize && (
+          <svg
+            className="absolute inset-0 pointer-events-none"
+            style={{ zIndex: PHOTO_MARKER_Z - 1, width: "100%", height: "100%" }}
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+          >
+            {photoMarkers.map((marker) => {
+              const arrowLen = 4;
+              const rad = (marker.angle_deg * Math.PI) / 180;
+              const ex = marker.x_percent + arrowLen * Math.cos(rad);
+              const ey = marker.y_percent + arrowLen * Math.sin(rad);
+              // Arrowhead
+              const headLen = 1;
+              const headAngle = Math.PI / 6;
+              const ax1 = ex - headLen * Math.cos(rad - headAngle);
+              const ay1 = ey - headLen * Math.sin(rad - headAngle);
+              const ax2 = ex - headLen * Math.cos(rad + headAngle);
+              const ay2 = ey - headLen * Math.sin(rad + headAngle);
+              return (
+                <g key={`photo-arrow-${marker.roomId}`}>
+                  <line
+                    x1={marker.x_percent} y1={marker.y_percent}
+                    x2={ex} y2={ey}
+                    stroke="#1C1C1E" strokeWidth="0.3" strokeLinecap="round"
+                    opacity="0.7"
+                  />
+                  <polygon
+                    points={`${ex},${ey} ${ax1},${ay1} ${ax2},${ay2}`}
+                    fill="#1C1C1E" opacity="0.7"
+                  />
+                </g>
+              );
+            })}
+          </svg>
+        )}
+
+        {/* Photo placement preview — while user is placing a photo direction */}
+        {isReady && isPlacingPhoto && photoPlaceStart && photoPlaceCurrent && (() => {
+          const dx = photoPlaceCurrent.x - photoPlaceStart.x;
+          const dy = photoPlaceCurrent.y - photoPlaceStart.y;
+          const hasDrag = Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5;
+          return (
+            <>
+              {/* Placement dot */}
+              <div
+                className="absolute pointer-events-none"
+                style={{
+                  zIndex: PHOTO_MARKER_Z + 1,
+                  left: `${photoPlaceStart.x}%`,
+                  top: `${photoPlaceStart.y}%`,
+                  transform: "translate(-50%, -50%)",
+                  width: 24,
+                  height: 24,
+                  borderRadius: "50%",
+                  backgroundColor: "#7D9B76",
+                  border: "2px solid white",
+                  boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+                }}
+              />
+              {/* Direction line while dragging */}
+              {hasDrag && (
+                <svg
+                  className="absolute inset-0 pointer-events-none"
+                  style={{ zIndex: PHOTO_MARKER_Z + 1, width: "100%", height: "100%" }}
+                  viewBox="0 0 100 100"
+                  preserveAspectRatio="none"
+                >
+                  <line
+                    x1={photoPlaceStart.x} y1={photoPlaceStart.y}
+                    x2={photoPlaceCurrent.x} y2={photoPlaceCurrent.y}
+                    stroke="#7D9B76" strokeWidth="0.4" strokeLinecap="round"
+                    strokeDasharray="0.8 0.4"
+                  />
+                </svg>
+              )}
+            </>
           );
         })()}
 

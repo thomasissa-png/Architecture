@@ -202,6 +202,11 @@ export async function ensureProTables(): Promise<void> {
     ALTER TABLE pro_lots ADD COLUMN IF NOT EXISTS zone_rect JSONB;
   `).catch(() => { /* column may already exist */ });
 
+  // photo_direction: position et angle de prise de vue sur le plan
+  await db.query(`
+    ALTER TABLE pro_rooms ADD COLUMN IF NOT EXISTS photo_direction JSONB;
+  `).catch(() => { /* column may already exist */ });
+
   // Add bounding_box JSONB column to pro_rooms (for plan spatial positioning)
   await db.query(`
     ALTER TABLE pro_rooms ADD COLUMN IF NOT EXISTS bounding_box JSONB;
@@ -433,6 +438,12 @@ export async function updateRoomLot(roomId: string, lotId: string | null): Promi
 
 // ─── Room CRUD ──────────────────────────────────────────────────────
 
+export interface PhotoDirection {
+  x_percent: number;  // camera position X on plan (0-100)
+  y_percent: number;  // camera position Y on plan (0-100)
+  angle_deg: number;  // direction angle in degrees (0=right, 90=down, 180=left, 270=up)
+}
+
 export interface ProRoom {
   id: string;
   lot_id: string | null;
@@ -456,6 +467,7 @@ export interface ProRoom {
   generation_error: string | null;
   source: RoomSource;
   bounding_box: { x_percent: number; y_percent: number; width_percent: number; height_percent: number } | null;
+  photo_direction: PhotoDirection | null;
   created_at: Date;
 }
 
@@ -532,7 +544,7 @@ export async function getRoom(roomId: string): Promise<ProRoom | null> {
 
 export async function updateRoom(
   roomId: string,
-  fields: Partial<Pick<ProRoom, "lot_id" | "name" | "room_type" | "surface_m2" | "length_m" | "width_m" | "ceiling_height_m" | "windows_count" | "doors_count" | "floor" | "shape" | "is_estimated" | "photo_path" | "visual_pass1_path" | "visual_output_path" | "generation_status" | "generation_error">>
+  fields: Partial<Pick<ProRoom, "lot_id" | "name" | "room_type" | "surface_m2" | "length_m" | "width_m" | "ceiling_height_m" | "windows_count" | "doors_count" | "floor" | "shape" | "is_estimated" | "photo_path" | "visual_pass1_path" | "visual_output_path" | "generation_status" | "generation_error" | "photo_direction">>
 ): Promise<void> {
   await ensureProTables();
   const db = getPool();

@@ -43,6 +43,7 @@ export async function GET(
               r.surface_m2, r.photo_path,
               r.generation_status, r.visual_output_path,
               r.visual_pass1_path, r.generation_error,
+              r.bounding_box, r.photo_direction,
               l.name AS lot_name, l.style_id AS lot_style_id
        FROM pro_rooms r
        LEFT JOIN pro_lots l ON r.lot_id = l.id
@@ -63,6 +64,8 @@ export async function GET(
         visual_output_path: string | null;
         visual_pass1_path: string | null;
         generation_error: string | null;
+        bounding_box: { x_percent: number; y_percent: number; width_percent: number; height_percent: number } | null;
+        photo_direction: { x_percent: number; y_percent: number; angle_deg: number } | null;
         lot_name: string | null;
         lot_style_id: string | null;
       }) => ({
@@ -78,6 +81,8 @@ export async function GET(
         visual_pass1_path: r.visual_pass1_path,
         error: r.generation_error,
         style_id: r.lot_style_id,
+        bounding_box: r.bounding_box,
+        photo_direction: r.photo_direction,
       })
     );
 

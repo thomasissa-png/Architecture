@@ -11,14 +11,21 @@
  * validation (PUT /api/pro/projects/[id]/validate).
  */
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProStepper from "@/components/marchand/ProStepper";
+import PlanEditor, { type PlanRoom, type PhotoMarker } from "@/components/marchand/PlanEditor";
 import { getCompletedSteps } from "@/lib/constants";
 
 // ─── Types ──────────────────────────────────────────────────────────
+
+interface PhotoDirection {
+  x_percent: number;
+  y_percent: number;
+  angle_deg: number;
+}
 
 interface RoomEntry {
   id: string;
@@ -28,6 +35,8 @@ interface RoomEntry {
   photoUrl: string | null;
   photoFile: File | null;
   isNew?: boolean;
+  bounding_box?: { x_percent: number; y_percent: number; width_percent: number; height_percent: number } | null;
+  photo_direction?: PhotoDirection | null;
 }
 
 const ROOM_TYPE_OPTIONS = [
@@ -72,6 +81,9 @@ export default function ValidationPage() {
 
   const fileInputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
   const [isDirty, setIsDirty] = useState(false);
+  const [planImageUrl, setPlanImageUrl] = useState<string | null>(null);
+  const [showPlan, setShowPlan] = useState(false);
+  const [placingPhotoRoomId, setPlacingPhotoRoomId] = useState<string | null>(null);
 
   // ─── Load rooms from project ─────────────────────────────────────
 
@@ -92,8 +104,20 @@ export default function ValidationPage() {
         if (data.project_adresse) {
           setProjectAdresse(data.project_adresse);
         }
+        // Plan image URL
+        if (data.project_plan_path) {
+          let firstPath = data.project_plan_path;
+          try {
+            if (firstPath.startsWith("[")) {
+              const parsed = JSON.parse(firstPath);
+              firstPath = Array.isArray(parsed) ? parsed[0] : firstPath;
+            }
+          } catch { /* use raw path */ }
+          if (firstPath.endsWith(".pdf")) firstPath = firstPath + "-preview.png";
+          setPlanImageUrl(`/api/logs/image?path=${encodeURIComponent(firstPath)}`);
+        }
         const loadedRooms: RoomEntry[] = (data.rooms || []).map(
-          (r: { id: string; name: string; room_type: string; surface_m2?: number | null; photo_path?: string | null }) => ({
+          (r: { id: string; name: string; room_type: string; surface_m2?: number | null; photo_path?: string | null; bounding_box?: { x_percent: number; y_percent: number; width_percent: number; height_percent: number } | null; photo_direction?: PhotoDirection | null }) => ({
             id: r.id,
             name: r.name,
             room_type: r.room_type || "autre",
@@ -102,6 +126,8 @@ export default function ValidationPage() {
               ? `/api/logs/image?path=${encodeURIComponent(r.photo_path)}`
               : null,
             photoFile: null,
+            bounding_box: r.bounding_box || null,
+            photo_direction: r.photo_direction || null,
           })
         );
         setRooms(loadedRooms);
@@ -147,6 +173,58 @@ export default function ValidationPage() {
       ref.current.clear();
     };
   }, []);
+
+  // ─── Plan rooms for PlanEditor (read-only on validation page) ────
+
+  const planRooms: PlanRoom[] = useMemo(() => {
+    return rooms
+      .filter((r) => r.bounding_box && !r.isNew)
+      .map((r) => ({
+        id: r.id,
+        name: r.name,
+        roomType: r.room_type,
+        x: r.bounding_box!.x_percent,
+        y: r.bounding_box!.y_percent,
+        width: r.bounding_box!.width_percent,
+        height: r.bounding_box!.height_percent,
+        color: r.photoUrl ? "rgba(125, 155, 118, 0.3)" : "rgba(169, 169, 169, 0.2)",
+      }));
+  }, [rooms]);
+
+  const photoMarkers: PhotoMarker[] = useMemo(() => {
+    return rooms
+      .filter((r) => r.photo_direction)
+      .map((r) => ({
+        roomId: r.id,
+        roomName: r.name,
+        x_percent: r.photo_direction!.x_percent,
+        y_percent: r.photo_direction!.y_percent,
+        angle_deg: r.photo_direction!.angle_deg,
+      }));
+  }, [rooms]);
+
+  // ─── Photo direction handlers ────────────────────────────────────
+
+  const handlePhotoDirectionChange = useCallback(
+    async (roomId: string, x_percent: number, y_percent: number, angle_deg: number) => {
+      const direction: PhotoDirection = { x_percent, y_percent, angle_deg };
+      // Optimistic update
+      setRooms((prev) =>
+        prev.map((r) => (r.id === roomId ? { ...r, photo_direction: direction } : r))
+      );
+      // Persist to server (fire-and-forget for new rooms, save for existing)
+      if (!roomId.startsWith("new-")) {
+        try {
+          await fetch(`/api/pro/projects/${projectId}/rooms/${roomId}/direction`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(direction),
+          });
+        } catch { /* best-effort */ }
+      }
+    },
+    [projectId]
+  );
 
   // ─── Room editing ────────────────────────────────────────────────
 
@@ -502,6 +580,70 @@ export default function ValidationPage() {
               )}
             </div>
 
+            {/* Collapsible plan view with photo direction markers */}
+            {planImageUrl && (
+              <div className="rounded-lg border border-[#D1D0CB]/40 bg-white overflow-hidden
+                              shadow-[0_1px_3px_rgba(28,28,30,0.08),0_1px_2px_rgba(28,28,30,0.04)]">
+                <button
+                  onClick={() => setShowPlan((v) => !v)}
+                  className="w-full px-4 py-3 flex items-center justify-between text-sm font-medium text-[#1C1C1E]
+                             hover:bg-[#F5F5F0] transition-colors
+                             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76]"
+                >
+                  <span className="flex items-center gap-2">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <rect x="3" y="3" width="18" height="18" rx="2" />
+                      <circle cx="8.5" cy="8.5" r="1.5" />
+                      <path d="M21 15l-5-5L5 21" />
+                    </svg>
+                    Voir le plan — directions photo
+                    {photoMarkers.length > 0 && (
+                      <span className="text-xs text-[#7D9B76] bg-[#7D9B76]/10 px-1.5 py-0.5 rounded-full">
+                        {photoMarkers.length} marqueur{photoMarkers.length > 1 ? "s" : ""}
+                      </span>
+                    )}
+                  </span>
+                  <svg
+                    width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
+                    className={`transition-transform ${showPlan ? "rotate-180" : ""}`}
+                  >
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </button>
+
+                {showPlan && (
+                  <div className="border-t border-[#D1D0CB]/40">
+                    {/* Instruction banner when placing */}
+                    {placingPhotoRoomId && (
+                      <div className="px-4 py-2 bg-[#7D9B76]/10 border-b border-[#7D9B76]/20 flex items-center justify-between">
+                        <p className="text-xs text-[#4A7A42]">
+                          Cliquez sur le plan pour placer la direction photo de <strong>{rooms.find((r) => r.id === placingPhotoRoomId)?.name || "la pièce"}</strong>. Glissez pour orienter.
+                        </p>
+                        <button
+                          onClick={() => setPlacingPhotoRoomId(null)}
+                          className="text-xs text-[#9B9A94] hover:text-[#1C1C1E] ml-2 whitespace-nowrap"
+                        >
+                          Annuler
+                        </button>
+                      </div>
+                    )}
+                    <div className="p-2">
+                      <PlanEditor
+                        planImageUrl={planImageUrl}
+                        rooms={planRooms}
+                        onRoomsChange={() => {/* read-only on validation page */}}
+                        photoMarkers={photoMarkers}
+                        onPhotoDirectionChange={handlePhotoDirectionChange}
+                        placingPhotoRoomId={placingPhotoRoomId}
+                        onPhotoPlacementComplete={() => setPlacingPhotoRoomId(null)}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Room entries */}
             {rooms.map((room) => (
               <div
@@ -672,6 +814,28 @@ export default function ValidationPage() {
                         <span className="text-xs text-[#9B9A94]">m²</span>
                       </div>
                     </div>
+
+                    {/* Photo direction button — only for rooms with bounding box on the plan */}
+                    {planImageUrl && room.bounding_box && (
+                      <button
+                        onClick={() => {
+                          setPlacingPhotoRoomId(room.id);
+                          setShowPlan(true);
+                        }}
+                        className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded
+                                   transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76]
+                                   ${room.photo_direction
+                                     ? "text-[#7D9B76] bg-[#7D9B76]/10 hover:bg-[#7D9B76]/20"
+                                     : "text-[#9B9A94] hover:text-[#7D9B76] hover:bg-[#7D9B76]/5"
+                                   }`}
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
+                          <circle cx="12" cy="13" r="4" />
+                        </svg>
+                        {room.photo_direction ? "Direction photo définie" : "Indiquer la direction photo"}
+                      </button>
+                    )}
                   </div>
 
                   {/* Delete button */}
