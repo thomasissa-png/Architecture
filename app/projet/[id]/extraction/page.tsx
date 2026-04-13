@@ -947,28 +947,30 @@ export default function ExtractionPage() {
                 </div>
               )}
 
-              {/* Navigation */}
-              <div className="flex gap-3 pt-4 border-t border-[#D1D0CB]/40">
-                <button
-                  onClick={() => router.back()}
-                  className="py-2.5 px-4 rounded-lg border border-[#D1D0CB] bg-white
-                             text-sm font-medium text-[#1C1C1E] hover:bg-[#F5F5F0]
-                             transition-colors focus-visible:outline-none
-                             focus-visible:ring-2 focus-visible:ring-[#7D9B76]
-                             min-h-[44px]"
-                >
-                  Retour
-                </button>
-                <button
-                  onClick={handleContinue}
-                  className="flex-1 py-2.5 px-4 rounded-lg bg-[#7D9B76] text-white
-                             text-sm font-medium hover:bg-[#4A7A42]
-                             transition-colors focus-visible:outline-none
-                             focus-visible:ring-2 focus-visible:ring-[#7D9B76] focus-visible:ring-offset-2
-                             min-h-[44px]"
-                >
-                  Valider et continuer
-                </button>
+              {/* Navigation — sticky sur mobile pour accès permanent */}
+              <div className="sticky bottom-0 z-20 -mx-4 px-4 pb-4 pt-3 bg-[#FAFAF8] shadow-[0_-4px_12px_rgba(28,28,30,0.08)] sm:static sm:mx-0 sm:px-0 sm:pb-0 sm:pt-4 sm:bg-transparent sm:shadow-none sm:border-t sm:border-[#D1D0CB]/40">
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => router.back()}
+                    className="py-2.5 px-4 rounded-lg border border-[#D1D0CB] bg-white
+                               text-sm font-medium text-[#1C1C1E] hover:bg-[#F5F5F0]
+                               transition-colors focus-visible:outline-none
+                               focus-visible:ring-2 focus-visible:ring-[#7D9B76]
+                               min-h-[44px]"
+                  >
+                    Retour
+                  </button>
+                  <button
+                    onClick={handleContinue}
+                    className="flex-1 py-2.5 px-4 rounded-lg bg-[#7D9B76] text-white
+                               text-sm font-medium hover:bg-[#4A7A42]
+                               transition-colors focus-visible:outline-none
+                               focus-visible:ring-2 focus-visible:ring-[#7D9B76] focus-visible:ring-offset-2
+                               min-h-[44px]"
+                  >
+                    Valider et continuer
+                  </button>
+                </div>
               </div>
             </div>
           </div>

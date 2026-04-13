@@ -423,6 +423,9 @@ export default function NouveauProjetPage() {
           <p className="text-sm text-[#9B9A94] mt-1">
             Renseignez les informations de votre bien et déposez le plan.
           </p>
+          <p className="text-xs text-[#9B9A94] mt-1">
+            <span className="text-[#B91C1C]">*</span> Champs obligatoires
+          </p>
         </div>
 
         {/* Form */}
@@ -433,7 +436,7 @@ export default function NouveauProjetPage() {
               htmlFor="adresse"
               className="block text-sm font-medium text-[#1C1C1E] mb-2"
             >
-              Adresse du bien
+              Adresse du bien <span className="text-[#B91C1C]">*</span>
             </label>
             <input
               id="adresse"
@@ -489,7 +492,7 @@ export default function NouveauProjetPage() {
               htmlFor="type_bien"
               className="block text-sm font-medium text-[#1C1C1E] mb-2"
             >
-              Type de bien
+              Type de bien <span className="text-[#B91C1C]">*</span>
             </label>
             <select
               id="type_bien"
@@ -541,7 +544,7 @@ export default function NouveauProjetPage() {
           {/* Plan upload — multi-file */}
           <div>
             <label className="block text-sm font-medium text-[#1C1C1E] mb-2">
-              Plans du bien
+              Plans du bien <span className="text-[#B91C1C]">*</span>
               <span className="text-[#9B9A94] font-normal ml-1">— 1 fichier par étage</span>
             </label>
 
