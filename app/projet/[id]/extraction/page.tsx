@@ -180,7 +180,9 @@ export default function ExtractionPage() {
   const [planPath, setPlanPath] = useState<string | null>(null);
   const [activePlanIndex, setActivePlanIndex] = useState(0);
   const [editingNameId, setEditingNameId] = useState<string | null>(null);
+  const [hoveredRoomId, setHoveredRoomId] = useState<string | null>(null);
   const nextTempIdRef = useRef(1);
+  const roomListRefsMap = useRef<Map<string, HTMLDivElement>>(new Map());
 
   // Parse planPath into array — handles single path or JSON array string
   // For PDFs: use the -preview.png version for display in <img> tags
@@ -261,6 +263,25 @@ export default function ExtractionPage() {
 
     return () => clearInterval(interval);
   }, [state]);
+
+  // ─── Auto-open PlanEditor quand extraction réussie ────────────────
+  useEffect(() => {
+    if (state === "success" && parsedPlanPaths.length > 0 && !showPlanEditor) {
+      handleOpenPlanEditor();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state, parsedPlanPaths.length]);
+
+  // ─── Scroll-into-view quand clic sur une pièce du plan ──────────
+  const handlePlanRoomClick = useCallback((roomId: string) => {
+    const el = roomListRefsMap.current.get(roomId);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      // Flash visuel temporaire
+      setHoveredRoomId(roomId);
+      setTimeout(() => setHoveredRoomId((prev) => (prev === roomId ? null : prev)), 1500);
+    }
+  }, []);
 
   // ─── Trigger extraction on mount ──────────────────────────────────
 
@@ -405,9 +426,9 @@ export default function ExtractionPage() {
     <div className="min-h-screen bg-[#FAFAF8] flex flex-col">
       <Header variant="internal" />
 
-      <main className="flex-1 w-full max-w-2xl mx-auto px-4 py-8">
-        {/* Stepper */}
-        <div className="mb-8">
+      <main className="flex-1 w-full px-4 py-8">
+        {/* Stepper — centré max-w-2xl */}
+        <div className="max-w-2xl mx-auto mb-8">
           <ProStepper
             currentStep={2}
             completedSteps={[1]}
@@ -416,8 +437,8 @@ export default function ExtractionPage() {
           />
         </div>
 
-        {/* Page title */}
-        <div className="mb-6">
+        {/* Page title — centré max-w-2xl */}
+        <div className="max-w-2xl mx-auto mb-6">
           <h1 className="text-2xl font-bold text-[#1C1C1E] tracking-tight">
             Extraction du plan
           </h1>
@@ -431,7 +452,7 @@ export default function ExtractionPage() {
 
         {/* Loading state */}
         {state === "loading" && (
-          <div className="flex flex-col items-center justify-center py-16 gap-4">
+          <div className="max-w-2xl mx-auto flex flex-col items-center justify-center py-16 gap-4">
             {/* Scan animation with plan thumbnail(s) */}
             <div className="relative w-48 h-48 rounded-lg bg-[#F5F5F0] overflow-hidden">
               {parsedPlanPaths.length > 0 ? (
@@ -517,7 +538,7 @@ export default function ExtractionPage() {
 
         {/* Error state */}
         {state === "error" && (
-          <div className="py-8">
+          <div className="max-w-2xl mx-auto py-8">
             <div
               className="p-4 rounded-lg bg-[#FEF2F2] border border-[#EF4444]/20 mb-6"
               role="alert"
@@ -575,92 +596,55 @@ export default function ExtractionPage() {
 
         {/* Success state */}
         {state === "success" && (
-          <div className="space-y-4">
-            {/* Summary */}
-            <div className="flex items-center gap-2 p-3 rounded-lg bg-[#ECFDF5] text-sm text-[#4A7A42]">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
-                <polyline points="22 4 12 14.01 9 11.01" />
-              </svg>
-              {rooms.length} pièce{rooms.length > 1 ? "s" : ""} détectée{rooms.length > 1 ? "s" : ""}
+          <div className="space-y-6">
+            {/* Summary — centré */}
+            <div className="max-w-2xl mx-auto">
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-[#ECFDF5] text-sm text-[#4A7A42]">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
+                  <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+                {rooms.length} pièce{rooms.length > 1 ? "s" : ""} détectée{rooms.length > 1 ? "s" : ""}
+              </div>
             </div>
 
-            {/* Help text */}
-            <p className="text-sm text-[#9B9A94]">
-              Vérifiez les pièces détectées. Vous pouvez renommer, changer le type, supprimer ou ajouter des pièces avant de continuer.
-            </p>
+            {/* Plan Editor — pleine largeur, composant principal */}
+            {parsedPlanPaths.length > 0 && showPlanEditor && planNaturalWidth > 0 && (
+              <div className="w-full max-w-5xl mx-auto space-y-2">
+                {/* Help text au-dessus du plan */}
+                <p className="text-sm text-[#9B9A94] px-1">
+                  Voici votre plan avec les pièces détectées. Les zones colorées montrent l&apos;emplacement de chaque pièce. Vous pouvez les déplacer, redimensionner, renommer ou en ajouter de nouvelles.
+                </p>
 
-            {/* Plan Editor toggle + component */}
-            {parsedPlanPaths.length > 0 && (
-              <div className="space-y-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (showPlanEditor) {
-                      setShowPlanEditor(false);
-                    } else {
-                      handleOpenPlanEditor();
-                    }
-                  }}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 px-4
-                             rounded-lg border border-[#D1D0CB] bg-white text-sm font-medium
-                             text-[#1C1C1E] hover:bg-[#F5F5F0] transition-colors
-                             focus-visible:outline-none focus-visible:ring-2
-                             focus-visible:ring-[#7D9B76] min-h-[44px]"
-                  aria-expanded={showPlanEditor}
-                  aria-controls="plan-editor-section"
-                >
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    {showPlanEditor ? (
-                      <>
-                        <polyline points="18 15 12 9 6 15" />
-                      </>
-                    ) : (
-                      <>
-                        <rect x="3" y="3" width="18" height="18" rx="2" />
-                        <path d="M9 3v18M3 9h18M3 15h18M15 3v18" />
-                      </>
-                    )}
-                  </svg>
-                  {showPlanEditor ? "Masquer l'éditeur de plan" : "Voir et éditer sur le plan"}
-                </button>
-
-                {showPlanEditor && planNaturalWidth > 0 && (
-                  <div id="plan-editor-section" className="animate-in fade-in duration-300">
-                    <PlanEditor
-                      planImageUrl={`/api/logs/image?path=${encodeURIComponent(parsedPlanPaths[activePlanIndex] ?? parsedPlanPaths[0])}`}
-                      rooms={planRooms}
-                      onRoomsChange={handlePlanRoomsChange}
-                      scaleFactor={scaleFactor}
-                      onScaleFactorChange={(sf) => setScaleFactor(sf)}
-                    />
-                  </div>
-                )}
+                <div id="plan-editor-section" className="animate-in fade-in duration-300">
+                  <PlanEditor
+                    planImageUrl={`/api/logs/image?path=${encodeURIComponent(parsedPlanPaths[activePlanIndex] ?? parsedPlanPaths[0])}`}
+                    rooms={planRooms}
+                    onRoomsChange={handlePlanRoomsChange}
+                    scaleFactor={scaleFactor}
+                    onScaleFactorChange={(sf) => setScaleFactor(sf)}
+                    highlightedRoomId={hoveredRoomId}
+                    onRoomClick={handlePlanRoomClick}
+                  />
+                </div>
               </div>
             )}
 
-            {/* Rooms grouped by floor */}
-            <div className="space-y-6">
+            {/* Rooms grouped by floor — centré, en dessous du plan */}
+            <div className="max-w-2xl mx-auto space-y-6">
+              <h2 className="text-sm font-semibold text-[#1C1C1E] border-b border-[#D1D0CB]/40 pb-2">
+                Détails des pièces
+              </h2>
               {roomsByFloor.map(([floorIndex, floorRooms]) => {
                 const planPreview = parsedPlanPaths[floorIndex] ?? parsedPlanPaths[0] ?? null;
 
@@ -695,8 +679,17 @@ export default function ExtractionPage() {
                       {floorRooms.map((room) => (
                         <div
                           key={room.id}
-                          className="flex items-center gap-2 p-3 rounded-lg bg-white border border-[#D1D0CB]/40
-                                     shadow-[0_1px_3px_rgba(28,28,30,0.06)]"
+                          ref={(el) => {
+                            if (el) roomListRefsMap.current.set(room.id, el);
+                            else roomListRefsMap.current.delete(room.id);
+                          }}
+                          onMouseEnter={() => setHoveredRoomId(room.id)}
+                          onMouseLeave={() => setHoveredRoomId((prev) => (prev === room.id ? null : prev))}
+                          className={`flex items-center gap-2 p-3 rounded-lg bg-white border
+                                     shadow-[0_1px_3px_rgba(28,28,30,0.06)] transition-all duration-150
+                                     ${hoveredRoomId === room.id
+                                       ? "border-[#7D9B76] ring-2 ring-[#7D9B76]/20 bg-[#FAFFF8]"
+                                       : "border-[#D1D0CB]/40"}`}
                         >
                           {/* Room type icon */}
                           <div className="flex-shrink-0 w-9 h-9 rounded bg-[#F5F5F0] flex items-center justify-center">
@@ -857,38 +850,38 @@ export default function ExtractionPage() {
                   </section>
                 );
               })}
-            </div>
 
-            {rooms.length === 0 && (
-              <div className="text-center py-8">
-                <p className="text-sm text-[#9B9A94]">
-                  Aucune pièce extraite. Passez à l&apos;étape suivante pour les ajouter manuellement.
-                </p>
+              {rooms.length === 0 && (
+                <div className="text-center py-8">
+                  <p className="text-sm text-[#9B9A94]">
+                    Aucune pièce extraite. Passez à l&apos;étape suivante pour les ajouter manuellement.
+                  </p>
+                </div>
+              )}
+
+              {/* Navigation */}
+              <div className="flex gap-3 pt-4 border-t border-[#D1D0CB]/40">
+                <button
+                  onClick={() => router.back()}
+                  className="py-2.5 px-4 rounded-lg border border-[#D1D0CB] bg-white
+                             text-sm font-medium text-[#1C1C1E] hover:bg-[#F5F5F0]
+                             transition-colors focus-visible:outline-none
+                             focus-visible:ring-2 focus-visible:ring-[#7D9B76]
+                             min-h-[44px]"
+                >
+                  Retour
+                </button>
+                <button
+                  onClick={handleContinue}
+                  className="flex-1 py-2.5 px-4 rounded-lg bg-[#7D9B76] text-white
+                             text-sm font-medium hover:bg-[#4A7A42]
+                             transition-colors focus-visible:outline-none
+                             focus-visible:ring-2 focus-visible:ring-[#7D9B76] focus-visible:ring-offset-2
+                             min-h-[44px]"
+                >
+                  Valider et continuer
+                </button>
               </div>
-            )}
-
-            {/* Navigation */}
-            <div className="flex gap-3 pt-4 border-t border-[#D1D0CB]/40">
-              <button
-                onClick={() => router.back()}
-                className="py-2.5 px-4 rounded-lg border border-[#D1D0CB] bg-white
-                           text-sm font-medium text-[#1C1C1E] hover:bg-[#F5F5F0]
-                           transition-colors focus-visible:outline-none
-                           focus-visible:ring-2 focus-visible:ring-[#7D9B76]
-                           min-h-[44px]"
-              >
-                Retour
-              </button>
-              <button
-                onClick={handleContinue}
-                className="flex-1 py-2.5 px-4 rounded-lg bg-[#7D9B76] text-white
-                           text-sm font-medium hover:bg-[#4A7A42]
-                           transition-colors focus-visible:outline-none
-                           focus-visible:ring-2 focus-visible:ring-[#7D9B76] focus-visible:ring-offset-2
-                           min-h-[44px]"
-              >
-                Valider et continuer
-              </button>
             </div>
           </div>
         )}

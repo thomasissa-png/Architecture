@@ -40,6 +40,10 @@ interface PlanEditorProps {
   onRoomsChange: (rooms: PlanRoom[]) => void;
   scaleFactor?: number;
   onScaleFactorChange?: (sf: number) => void;
+  /** ID de la pièce survolée dans la liste — highlight visuel sur le plan */
+  highlightedRoomId?: string | null;
+  /** Callback quand une pièce est cliquée sur le plan (pour scroll-into-view dans la liste) */
+  onRoomClick?: (roomId: string) => void;
 }
 
 type HandlePosition = "nw" | "ne" | "sw" | "se";
@@ -228,6 +232,8 @@ export default function PlanEditor({
   onRoomsChange,
   scaleFactor = 50,
   onScaleFactorChange,
+  highlightedRoomId,
+  onRoomClick,
 }: PlanEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [imgSize, setImgSize] = useState<{ width: number; height: number } | null>(null);
@@ -1159,6 +1165,7 @@ export default function PlanEditor({
           visibleRooms.map((room) => {
             const isSelected = selectedRoomId === room.id;
             const isMultiSelected = selectedRoomIds.has(room.id);
+            const isHighlighted = highlightedRoomId === room.id;
             const isDragging = dragState?.roomId === room.id;
             const bgColor = room.color || colorForType(room.roomType);
             const brdColor = borderForType(room.roomType);
@@ -1235,6 +1242,8 @@ export default function PlanEditor({
                   } else {
                     setSelectedRoomId(room.id);
                     setSelectedRoomIds(new Set([room.id]));
+                    // Notify parent for scroll-into-view in room list
+                    onRoomClick?.(room.id);
                     // Cancel fusion mode if user clicks without using it
                     if (fusionMode) setFusionMode(false);
                   }
@@ -1275,14 +1284,20 @@ export default function PlanEditor({
                 <div
                   className="absolute inset-0 rounded-sm"
                   style={{
-                    backgroundColor: isNewRoom ? bgColor.replace("0.3)", "0.4)") : bgColor,
-                    border: isNewRoom
-                      ? `2px dashed ${brdColor}`
-                      : `2px solid ${brdColor}`,
-                    boxShadow: isSelected || isMultiSelected
-                      ? `0 0 0 2px ${brdColor}, 0 2px 8px rgba(0,0,0,0.15)`
-                      : "none",
-                    transition: "box-shadow 150ms ease, background-color 150ms ease",
+                    backgroundColor: isHighlighted
+                      ? bgColor.replace("0.3)", "0.55)")
+                      : isNewRoom ? bgColor.replace("0.3)", "0.4)") : bgColor,
+                    border: isHighlighted
+                      ? `3px solid ${brdColor}`
+                      : isNewRoom
+                        ? `2px dashed ${brdColor}`
+                        : `2px solid ${brdColor}`,
+                    boxShadow: isHighlighted
+                      ? `0 0 0 3px ${brdColor}, 0 4px 12px rgba(0,0,0,0.25)`
+                      : isSelected || isMultiSelected
+                        ? `0 0 0 2px ${brdColor}, 0 2px 8px rgba(0,0,0,0.15)`
+                        : "none",
+                    transition: "box-shadow 150ms ease, background-color 150ms ease, border 150ms ease",
                   }}
                 />
 
