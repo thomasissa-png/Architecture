@@ -23,6 +23,8 @@ import {
   isErrorResponse,
 } from "@/lib/marchand/auth-helpers";
 import { ensureProTables } from "@/lib/marchand/db";
+import { getMerchantProfile } from "@/lib/merchant";
+import { roomTypeLabel } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
 
@@ -135,7 +137,7 @@ async function embedImageFromStorage(
 }
 
 /** Draw the standard footer on every page */
-function drawFooter(page: PDFPage, font: PDFFont) {
+function drawFooter(page: PDFPage, font: PDFFont, disclaimerText?: string) {
   // Light background band
   page.drawRectangle({
     x: 0,
@@ -146,7 +148,7 @@ function drawFooter(page: PDFPage, font: PDFFont) {
     opacity: 0.08,
   });
 
-  safeDrawText(page, AI_DISCLAIMER, {
+  safeDrawText(page, disclaimerText || AI_DISCLAIMER, {
     x: MARGIN,
     y: 10,
     size: 7,
@@ -247,10 +249,32 @@ export async function POST(
   const authResult = await requireProjectOwnership(request, projectId);
   if (isErrorResponse(authResult)) return authResult;
 
-  const { project } = authResult;
+  const { user, project } = authResult;
 
   try {
     await ensureProTables();
+    const db = getPool();
+
+    // ─── Load selling price + merchant profile in parallel ──────
+    const [priceResult, merchantProfile] = await Promise.all([
+      db.query<{ selling_price: string | null }>(
+        `SELECT selling_price FROM pro_projects WHERE id = $1`,
+        [projectId]
+      ),
+      getMerchantProfile(user.id),
+    ]);
+
+    const sellingPrice = priceResult.rows[0]?.selling_price
+      ? Number(priceResult.rows[0].selling_price)
+      : null;
+
+    const hasMerchant = merchantProfile?.is_merchant === true;
+    const brandName = hasMerchant && merchantProfile?.raison_sociale
+      ? merchantProfile.raison_sociale
+      : "Versimo";
+    const footerDisclaimer = hasMerchant && merchantProfile?.raison_sociale
+      ? `Visuels générés par IA à titre indicatif — ${merchantProfile.raison_sociale} via Versimo`
+      : AI_DISCLAIMER;
 
     // ─── Parse body ─────────────────────────────────────────────
     const body = await request.json();
@@ -268,7 +292,6 @@ export async function POST(
     }
 
     const { lot_ids } = parsed.data;
-    const db = getPool();
 
     // ─── Load lots and verify ownership ─────────────────────────
     const lotsResult = await db.query(
@@ -411,8 +434,8 @@ export async function POST(
     // ════════════════════════════════════════════════════════════
     const coverPage = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
 
-    // Versimo logo text
-    safeDrawText(coverPage, "Versimo", {
+    // Brand name (merchant or Versimo)
+    safeDrawText(coverPage, brandName, {
       x: MARGIN,
       y: PAGE_HEIGHT - 50,
       size: 16,
@@ -487,6 +510,23 @@ export async function POST(
       coverY -= 30;
     }
 
+    // Selling price
+    if (sellingPrice) {
+      const priceStr = new Intl.NumberFormat("fr-FR", {
+        style: "currency",
+        currency: "EUR",
+        maximumFractionDigits: 0,
+      }).format(sellingPrice);
+      safeDrawText(coverPage, priceStr, {
+        x: MARGIN,
+        y: coverY,
+        size: 20,
+        font: fontBold,
+        color: rgb(FOREGROUND.r, FOREGROUND.g, FOREGROUND.b),
+      });
+      coverY -= 30;
+    }
+
     // Date
     safeDrawText(coverPage, `Généré le ${dateStr}`, {
       x: MARGIN,
@@ -497,7 +537,7 @@ export async function POST(
     });
 
     // Cover footer
-    drawFooter(coverPage, font);
+    drawFooter(coverPage, font, footerDisclaimer);
 
     // ════════════════════════════════════════════════════════════
     // LOT PAGES
@@ -610,7 +650,7 @@ export async function POST(
         }
       }
 
-      drawFooter(lotPage, font);
+      drawFooter(lotPage, font, footerDisclaimer);
 
       // ── Room pages (1 per room with visuals) ─────────────────
       const roomsWithVisuals = lot.rooms.filter(
@@ -634,7 +674,7 @@ export async function POST(
         });
         ry -= 20;
 
-        safeDrawText(roomPage, room.room_type, {
+        safeDrawText(roomPage, roomTypeLabel(room.room_type), {
           x: MARGIN,
           y: ry,
           size: 9,
@@ -741,7 +781,7 @@ export async function POST(
           });
         }
 
-        drawFooter(roomPage, font);
+        drawFooter(roomPage, font, footerDisclaimer);
       }
 
       // ── Recommendations page (if any) ────────────────────────
@@ -764,7 +804,7 @@ export async function POST(
         for (const rec of lot.recommendations) {
           if (ry < FOOTER_HEIGHT + 80) {
             // Start new page if running out of space
-            drawFooter(recPage, font);
+            drawFooter(recPage, font, footerDisclaimer);
             const nextRecPage = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
             ry = PAGE_HEIGHT - MARGIN;
 
@@ -857,7 +897,7 @@ export async function POST(
           ry -= 12; // Spacing between recommendations
         }
 
-        drawFooter(recPage, font);
+        drawFooter(recPage, font, footerDisclaimer);
       }
     }
 
@@ -867,6 +907,11 @@ export async function POST(
       .replace(/[^a-zA-Z0-9\u00C0-\u024F\s-]/g, "")
       .trim()
       .replace(/\s+/g, "-");
+    const safeBrand = brandName
+      .replace(/[^a-zA-Z0-9\u00C0-\u024F\s-]/g, "")
+      .trim()
+      .replace(/\s+/g, "-")
+      .toLowerCase();
 
     console.log(
       `[POST /api/pro/projects/${projectId}/dossier/pdf] Generated PDF: ${dossierLots.length} lot(s), ${pdfBytes.length} bytes`
@@ -876,7 +921,7 @@ export async function POST(
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="dossier-${safeName}-versimo.pdf"`,
+        "Content-Disposition": `attachment; filename="dossier-${safeName}-${safeBrand}.pdf"`,
         "Cache-Control": "no-cache",
       },
     });

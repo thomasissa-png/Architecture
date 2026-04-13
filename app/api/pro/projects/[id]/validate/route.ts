@@ -178,7 +178,7 @@ export async function PUT(
     );
     if (roomsMissingName.length > 0) {
       missing.push(
-        `${roomsMissingName.length} pièce(s) sans nom : ${roomsMissingName.map((r) => r.id).join(", ")}`
+        `${roomsMissingName.length} pièce(s) sans nom. Donnez un nom à chaque pièce avant de valider.`
       );
     }
 
@@ -187,7 +187,7 @@ export async function PUT(
     );
     if (roomsMissingType.length > 0) {
       missing.push(
-        `${roomsMissingType.length} pièce(s) sans type défini : ${roomsMissingType.map((r) => r.id).join(", ")}`
+        `${roomsMissingType.length} pièce(s) sans type défini. Sélectionnez un type pour chaque pièce.`
       );
     }
 
@@ -196,7 +196,7 @@ export async function PUT(
       const roomsNoLot = rooms.filter((r) => !r.lot_id);
       if (roomsNoLot.length > 0) {
         missing.push(
-          `${roomsNoLot.length} pièce(s) non assignée(s) à un lot : ${roomsNoLot.map((r) => r.id).join(", ")}`
+          `${roomsNoLot.length} pièce(s) non assignée(s) à un lot. Assignez chaque pièce à un lot.`
         );
       }
     }

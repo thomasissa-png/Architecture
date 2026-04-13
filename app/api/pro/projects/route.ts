@@ -176,31 +176,47 @@ export async function POST(request: NextRequest) {
 
     const { adresse, type_bien, surface_totale } = parsed.data;
 
-    // ─── Plan file validation ─────────────────────────────────────
-    const planFile = formData.get("plan_file") as File | null;
+    // ─── Plan file(s) validation ────────────────────────────────────
+    // Supports single file (plan_file) and multiple files (plan_file[])
+    const rawPlanFiles = formData.getAll("plan_file");
+    const planFiles = rawPlanFiles.filter(
+      (f): f is File => f instanceof File && f.size > 0
+    );
 
-    if (!planFile || planFile.size === 0) {
+    if (planFiles.length === 0) {
       return NextResponse.json(
         { error: "PLAN_REQUIRED", message: "Le plan du bien est obligatoire." },
         { status: 400 }
       );
     }
 
-    if (planFile.size > MAX_FILE_SIZE) {
+    if (planFiles.length > 10) {
       return NextResponse.json(
-        { error: "FILE_TOO_LARGE", message: "Le fichier ne doit pas dépasser 20 Mo." },
+        { error: "TOO_MANY_FILES", message: "Maximum 10 fichiers de plan." },
         { status: 400 }
       );
     }
 
-    if (!ALLOWED_MIME_TYPES.has(planFile.type)) {
-      return NextResponse.json(
-        {
-          error: "INVALID_TYPE",
-          message: "Format accepté : PDF, JPG, PNG, WEBP, HEIC.",
-        },
-        { status: 400 }
-      );
+    for (const planFile of planFiles) {
+      if (planFile.size > MAX_FILE_SIZE) {
+        return NextResponse.json(
+          {
+            error: "FILE_TOO_LARGE",
+            message: `Le fichier "${planFile.name}" dépasse 20 Mo.`,
+          },
+          { status: 400 }
+        );
+      }
+
+      if (!ALLOWED_MIME_TYPES.has(planFile.type)) {
+        return NextResponse.json(
+          {
+            error: "INVALID_TYPE",
+            message: `Format non accepté pour "${planFile.name}". Formats acceptés : PDF, JPG, PNG, WEBP, HEIC.`,
+          },
+          { status: 400 }
+        );
+      }
     }
 
     // ─── Ensure pro tables exist ─────────────────────────────────
@@ -236,25 +252,74 @@ export async function POST(request: NextRequest) {
 
     const projectId = insertResult.rows[0].id as string;
 
-    // ─── Upload plan to Object Storage ────────────────────────────
-    const fileBuffer = Buffer.from(await planFile.arrayBuffer());
-    const ext = planFile.type === "application/pdf" ? "pdf"
-      : planFile.type === "image/png" ? "png"
-      : planFile.type === "image/webp" ? "webp"
-      : planFile.type === "image/heic" || planFile.type === "image/heif" ? "heic"
-      : "jpg";
+    // ─── Upload plan(s) to Object Storage ───────────────────────────
+    const storagePaths: string[] = [];
+    const mimeTypes: string[] = [];
 
-    const storageKey = `pro/${projectId}/plan.${ext}`;
+    for (let i = 0; i < planFiles.length; i++) {
+      const planFile = planFiles[i];
+      const fileBuffer = Buffer.from(await planFile.arrayBuffer());
+      const ext = planFile.type === "application/pdf" ? "pdf"
+        : planFile.type === "image/png" ? "png"
+        : planFile.type === "image/webp" ? "webp"
+        : planFile.type === "image/heic" || planFile.type === "image/heif" ? "heic"
+        : "jpg";
 
-    await withStorageRetry(
-      (client) => client.uploadFromBytes(storageKey, fileBuffer),
-      `uploadPlan(${storageKey})`
-    );
+      // Single file: pro/{id}/plan.jpg — Multi-file: pro/{id}/plan-0.jpg, plan-1.jpg
+      const storageKey = planFiles.length === 1
+        ? `pro/${projectId}/plan.${ext}`
+        : `pro/${projectId}/plan-${i}.${ext}`;
 
-    // Update project with file path
+      await withStorageRetry(
+        (client) => client.uploadFromBytes(storageKey, fileBuffer),
+        `uploadPlan(${storageKey})`
+      );
+
+      // For PDFs: also generate a PNG preview for the extraction page
+      if (planFile.type === "application/pdf") {
+        try {
+          const { pdf: pdfToImg } = await import("pdf-to-img");
+          const pages = await pdfToImg(fileBuffer, { scale: 2 });
+          for await (const page of pages) {
+            const previewKey = storageKey.replace(/\.pdf$/i, "-preview.png");
+            await withStorageRetry(
+              (client) => client.uploadFromBytes(previewKey, Buffer.from(page)),
+              `uploadPlanPreview(${previewKey})`
+            );
+            break; // First page only
+          }
+        } catch (previewErr) {
+          console.warn("[projects] PDF preview generation failed (non-blocking):", previewErr);
+        }
+      }
+
+      storagePaths.push(storageKey);
+      mimeTypes.push(planFile.type);
+    }
+
+    // Store as single string for 1 file, JSON array for multiple
+    const planFilePath = storagePaths.length === 1
+      ? storagePaths[0]
+      : JSON.stringify(storagePaths);
+    const planMimeType = mimeTypes.length === 1
+      ? mimeTypes[0]
+      : JSON.stringify(mimeTypes);
+
+    // Validate total path length before storing (DB column limit safety)
+    if (planFilePath.length > 2000) {
+      return NextResponse.json(
+        {
+          error: "PATH_TOO_LONG",
+          message: "Trop de fichiers uploadés. Le chemin de stockage dépasse la limite autorisée. Réduisez le nombre de fichiers.",
+        },
+        { status: 400 }
+      );
+    }
+
+    // Update project with file path(s)
     await db.query(
       `UPDATE pro_projects SET plan_file_path = $1, plan_mime_type = $2 WHERE id = $3`,
-      [storageKey, planFile.type, projectId]
+      [planFilePath, planMimeType, projectId]
     );
 
     // ─── Auto-create lot for non-immeuble ─────────────────────────

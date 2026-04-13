@@ -17,7 +17,7 @@ import {
   isErrorResponse,
   checkRateLimit,
 } from "@/lib/marchand/auth-helpers";
-import { extractPlanData } from "@/lib/marchand/plan-extractor";
+import { extractMultiplePlans, PlanExtractionError } from "@/lib/marchand/plan-extractor";
 import type { TypeBien } from "@/lib/marchand/schemas";
 // TODO: import { suggestLots } from "@/lib/marchand/plan-extractor";
 
@@ -37,9 +37,10 @@ function inferRoomType(nameRaw: string): string {
   if (/chambre|bedroom/.test(n)) return "chambre";
   if (/salle.*bain|sdb|bathroom/.test(n)) return "sdb";
   if (/\bwc\b|toilet/.test(n)) return "wc";
-  if (/bureau|office/.test(n)) return "bureau";
-  if (/couloir|hall|entree|degagement|palier/.test(n)) return "couloir";
-  if (/cave|cellier|rangement|buanderie/.test(n)) return "cave";
+  if (/bureau|office|salle.*reunion|meeting/.test(n)) return "bureau";
+  if (/open.*space/.test(n)) return "salon";
+  if (/couloir|hall|entree|degagement|palier|accueil|reception/.test(n)) return "couloir";
+  if (/cave|cellier|rangement|buanderie|local.*technique|technique|archive|stockage/.test(n)) return "cave";
   return "autre";
 }
 
@@ -82,7 +83,7 @@ export async function POST(
   }
 
   try {
-    // ─── Load plan from Object Storage ────────────────────────────
+    // ─── Load plan(s) from Object Storage ─────────────────────────
     if (!project.plan_file_path) {
       return NextResponse.json(
         { error: "PLAN_REQUIRED", message: "Aucun plan trouvé pour ce projet." },
@@ -90,32 +91,87 @@ export async function POST(
       );
     }
 
-    let planBuffer: Buffer = Buffer.alloc(0);
-    await withStorageRetry(async (client) => {
-      const result = await client.downloadAsBytes(project.plan_file_path!);
-      if (result.value) {
-        planBuffer = Buffer.from(result.value as unknown as ArrayBuffer);
+    // plan_file_path can be a single path or JSON array of paths (multi-file)
+    let planPaths: string[];
+    let planMimeTypes: string[];
+    try {
+      const parsed = JSON.parse(project.plan_file_path);
+      if (Array.isArray(parsed)) {
+        planPaths = parsed;
+        // plan_mime_type is also a JSON array when multi-file
+        const mimes = project.plan_mime_type ? JSON.parse(project.plan_mime_type) : [];
+        planMimeTypes = Array.isArray(mimes)
+          ? mimes
+          : planPaths.map(() => project.plan_mime_type || "image/jpeg");
+      } else {
+        planPaths = [project.plan_file_path];
+        planMimeTypes = [project.plan_mime_type || "image/jpeg"];
       }
-    }, `downloadPlan(${project.plan_file_path})`);
+    } catch (parseErr) {
+      // Not JSON — single path string
+      console.warn(
+        `[extract] plan_file_path JSON parse failed for project ${projectId}, treating as single path:`,
+        parseErr instanceof Error ? parseErr.message : parseErr,
+        `| raw value: "${project.plan_file_path?.slice(0, 200)}"`
+      );
+      planPaths = [project.plan_file_path];
+      planMimeTypes = [project.plan_mime_type || "image/jpeg"];
+    }
 
-    if (planBuffer.length === 0) {
+    // Download all plans from Object Storage
+    const planInputs: Array<{ base64: string; mimeType: string; floorIndex: number }> = [];
+
+    for (let i = 0; i < planPaths.length; i++) {
+      const path = planPaths[i];
+      let planBuffer: Buffer = Buffer.alloc(0);
+      await withStorageRetry(async (client) => {
+        const result = await client.downloadAsBytes(path);
+        // SDK returns { ok, value: [Buffer] } — value is a TUPLE, not a Buffer directly
+        if (result.ok && result.value) {
+          const buf = result.value[0];
+          if (buf) {
+            planBuffer = Buffer.from(buf.buffer, buf.byteOffset, buf.byteLength);
+          }
+        }
+      }, `downloadPlan(${path})`);
+
+      if (planBuffer.length === 0) {
+        console.warn(`[extract] Plan file empty or unreadable: ${path}`);
+        continue;
+      }
+
+      // Validate and normalize MIME type before passing to extractor
+      const VALID_EXTRACTION_MIMES = new Set([
+        "image/jpeg", "image/png", "image/webp", "image/heic", "image/heif", "application/pdf",
+      ]);
+      let mimeType = planMimeTypes[i] || "";
+      if (!mimeType || !VALID_EXTRACTION_MIMES.has(mimeType)) {
+        console.warn(
+          `[extract] Invalid or missing MIME type "${mimeType}" for plan ${i} of project ${projectId}, falling back to image/jpeg`
+        );
+        mimeType = "image/jpeg";
+      }
+
+      planInputs.push({
+        base64: planBuffer.toString("base64"),
+        mimeType,
+        floorIndex: i,
+      });
+    }
+
+    if (planInputs.length === 0) {
       return NextResponse.json(
-        { error: "PLAN_UNREADABLE", message: "Impossible de lire le plan. Réuploadez-le." },
+        {
+          error: "PLAN_UNREADABLE",
+          message: "Impossible de lire le(s) plan(s). Réuploadez-les au format JPG, PNG ou PDF.",
+        },
         { status: 422 }
       );
     }
 
-    // ─── Convert to base64 for vision API ─────────────────────────
-    const mimeType = project.plan_mime_type || "image/jpeg";
-    const planBase64 = planBuffer.toString("base64");
-
-    // TODO: If PDF, render page 1 to image via sharp or pdf-lib
-    // For now, pass the raw base64 — plan-extractor will handle format
-
     // ─── Call extraction IA ───────────────────────────────────────
-    const extractionResult = await extractPlanData(
-      planBase64,
-      mimeType,
+    const extractionResult = await extractMultiplePlans(
+      planInputs,
       project.type_bien as TypeBien
     );
 
@@ -148,7 +204,17 @@ export async function POST(
     );
 
     // Insert rooms
-    const insertedRooms: Array<{ id: string; name: string; room_type: string; surface_m2: number | null }> = [];
+    const insertedRooms: Array<{
+      id: string;
+      name: string;
+      room_type: string;
+      surface_m2: number | null;
+      length_m: number | null;
+      width_m: number | null;
+      floor_index: number;
+      confidence: number;
+      bounding_box?: { x_percent: number; y_percent: number; width_percent: number; height_percent: number } | null;
+    }> = [];
 
     for (const room of extractionResult.rooms) {
       const insertResult = await db.query(
@@ -158,7 +224,7 @@ export async function POST(
           windows_count, doors_count, floor, shape,
           is_estimated, confidence, source
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
-        RETURNING id, name, room_type, surface_m2`,
+        RETURNING id, name, room_type, surface_m2, length_m, width_m, floor, confidence`,
         [
           projectId,
           room.name_raw,
@@ -176,7 +242,18 @@ export async function POST(
           "ai_extraction",
         ]
       );
-      insertedRooms.push(insertResult.rows[0]);
+      const row = insertResult.rows[0];
+      insertedRooms.push({
+        id: row.id,
+        name: row.name,
+        room_type: row.room_type,
+        surface_m2: row.surface_m2 !== null ? Number(row.surface_m2) : null,
+        length_m: row.length_m !== null && row.length_m !== undefined ? Number(row.length_m) : null,
+        width_m: row.width_m !== null && row.width_m !== undefined ? Number(row.width_m) : null,
+        floor_index: row.floor ?? 0,
+        confidence: typeof row.confidence === "number" ? row.confidence : room.confidence,
+        bounding_box: room.bounding_box ?? null,
+      });
     }
 
     // ─── Auto-assign rooms to lot for non-immeuble projects ─────
@@ -238,11 +315,33 @@ export async function POST(
       // Swallow DB error in error handler
     }
 
+    // Provide specific error messages based on the error type
+    let userMessage = "Erreur lors de l'extraction. Réessayez ou uploadez une image (JPG, PNG) du plan.";
+    let reason: string = "API_ERROR";
+
+    if (err instanceof PlanExtractionError) {
+      reason = err.reason;
+      switch (err.reason) {
+        case "API_ERROR":
+          userMessage = err.message; // Already user-friendly from plan-extractor
+          break;
+        case "PARSING_FAILED":
+          userMessage = "L'IA n'a pas pu interpréter ce plan. Essayez avec une image plus nette ou un autre format.";
+          break;
+        case "PLAN_UNREADABLE":
+          userMessage = "Le plan est illisible. Vérifiez la qualité du fichier et réessayez.";
+          break;
+        case "NO_ROOMS_DETECTED":
+          userMessage = "Aucune pièce détectée. Vérifiez que le fichier contient bien un plan architectural.";
+          break;
+      }
+    }
+
     return NextResponse.json(
       {
         status: "extraction_failed",
-        reason: "API_ERROR",
-        message: "Erreur lors de l'extraction. Réessayez.",
+        reason,
+        message: userMessage,
       },
       { status: 500 }
     );

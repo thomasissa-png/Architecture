@@ -27,7 +27,7 @@ vi.mock("openai", () => {
 
 // ─── Import after mock ────────────────────────────────────────────
 
-import { extractPlanData, PlanExtractionError } from "@/lib/marchand/plan-extractor";
+import { extractPlanData, extractMultiplePlans, PlanExtractionError } from "@/lib/marchand/plan-extractor";
 
 // ─── Setup ────────────────────────────────────────────────────────
 
@@ -296,16 +296,121 @@ describe("extractPlanData", () => {
     expect(imageContent.image_url).toBe("data:image/png;base64,abc123base64");
   });
 
-  it("fallback MIME type vers image/jpeg pour PDF", async () => {
+  it("utilise GPT-4o avec input_file pour les PDF", async () => {
     mockOpenAIResponse(validExtractionJson());
 
-    await extractPlanData("pdfcontent", "application/pdf", "immeuble");
+    await extractPlanData("JVBERi0xLjQK", "application/pdf", "immeuble");
 
     const callArgs = responsesCreateMock.mock.calls[0][0];
-    const imageContent = callArgs.input[1].content.find(
-      (c: { type: string }) => c.type === "input_image"
+    // Should use gpt-4o for PDF
+    expect(callArgs.model).toBe("gpt-4o");
+    // Should use input_file type (not input_image)
+    const fileContent = callArgs.input[1].content.find(
+      (c: { type: string }) => c.type === "input_file"
     );
-    expect(imageContent.image_url).toBe("data:image/jpeg;base64,pdfcontent");
+    expect(fileContent).toBeDefined();
+    expect(fileContent.filename).toBe("plan.pdf");
+    expect(fileContent.file_data).toBe("data:application/pdf;base64,JVBERi0xLjQK");
+  });
+
+  it("detecte PDF via magic bytes meme si MIME type est incorrect", async () => {
+    mockOpenAIResponse(validExtractionJson());
+
+    // MIME type says image/jpeg but base64 starts with PDF magic bytes
+    await extractPlanData("JVBERi0xLjQKfake", "image/jpeg", "appartement");
+
+    const callArgs = responsesCreateMock.mock.calls[0][0];
+    expect(callArgs.model).toBe("gpt-4o");
+  });
+});
+
+describe("extractMultiplePlans", () => {
+  it("delegue a extractPlanData pour un seul plan", async () => {
+    mockOpenAIResponse(validExtractionJson());
+
+    const result = await extractMultiplePlans(
+      [{ base64: "abc123", mimeType: "image/jpeg", floorIndex: 0 }],
+      "appartement"
+    );
+
+    expect(result.rooms).toHaveLength(2);
+    expect(result.floors_count).toBe(1);
+  });
+
+  it("fusionne les pieces de plusieurs plans avec floor auto-assigne", async () => {
+    // Floor 0
+    mockOpenAIResponse({
+      rooms: [
+        {
+          temp_id: "r1",
+          name_raw: "Salon",
+          surface_m2: 25.0,
+          dimensions: { length_m: 5.0, width_m: 5.0 },
+          ceiling_height_m: 2.5,
+          windows_count: 2,
+          doors_count: 1,
+          floor: 0,
+          confidence: 0.85,
+          shape: "rectangular",
+          notes: null,
+        },
+      ],
+      total_surface_m2: 25.0,
+      floors_count: 1,
+      extraction_warnings: [],
+      scale_reference: "dimensions_on_plan",
+    });
+
+    // Floor 1
+    mockOpenAIResponse({
+      rooms: [
+        {
+          temp_id: "r1",
+          name_raw: "Chambre",
+          surface_m2: 15.0,
+          dimensions: { length_m: 5.0, width_m: 3.0 },
+          ceiling_height_m: 2.5,
+          windows_count: 1,
+          doors_count: 1,
+          floor: 0,
+          confidence: 0.9,
+          shape: "rectangular",
+          notes: null,
+        },
+      ],
+      total_surface_m2: 15.0,
+      floors_count: 1,
+      extraction_warnings: ["no_scale_reference"],
+      scale_reference: "door_standard_83cm",
+    });
+
+    const result = await extractMultiplePlans(
+      [
+        { base64: "floor0", mimeType: "image/jpeg", floorIndex: 0 },
+        { base64: "floor1", mimeType: "image/png", floorIndex: 1 },
+      ],
+      "immeuble"
+    );
+
+    expect(result.rooms).toHaveLength(2);
+    expect(result.rooms[0].floor).toBe(0);
+    expect(result.rooms[0].temp_id).toBe("f0_r1");
+    expect(result.rooms[1].floor).toBe(1);
+    expect(result.rooms[1].temp_id).toBe("f1_r1");
+    expect(result.total_surface_m2).toBe(40.0);
+    expect(result.floors_count).toBe(2);
+    expect(result.extraction_warnings).toContain("no_scale_reference");
+    expect(result.scale_reference).toBe("dimensions_on_plan");
+  });
+
+  it("lance PlanExtractionError si aucun plan fourni", async () => {
+    try {
+      await extractMultiplePlans([], "maison");
+      expect.unreachable("Should have thrown");
+    } catch (err) {
+      expect(err).toBeInstanceOf(PlanExtractionError);
+      expect((err as PlanExtractionError).reason).toBe("PLAN_UNREADABLE");
+    }
   });
 });
 

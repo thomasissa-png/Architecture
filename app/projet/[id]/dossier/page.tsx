@@ -83,6 +83,7 @@ export default function DossierPage() {
   const [shareSuccess, setShareSuccess] = useState<string | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [projectAddress, setProjectAddress] = useState("");
+  const [shareToken, setShareToken] = useState<string | null>(null);
   const [projectStatus, setProjectStatus] = useState<string>("visuals_done");
 
   const textareaRefs = useRef<Map<string, HTMLTextAreaElement>>(new Map());
@@ -315,11 +316,30 @@ export default function DossierPage() {
     }
   }
 
+  // ─── Fetch share token on mount ─────────────────────────────────────
+
+  useEffect(() => {
+    if (pageState !== "ready") return;
+    if (shareToken) return;
+
+    fetch(`/api/pro/projects/${projectId}/share-token`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.share_token) setShareToken(data.share_token);
+      })
+      .catch(() => {
+        // Non-critical — fallback to authenticated URL
+      });
+  }, [pageState, projectId, shareToken]);
+
   // ─── Share helpers ─────────────────────────────────────────────────
 
-  /** Construit l'URL publique du dossier.
-   *  TODO: implémenter une page publique /projet/[id]/partage avec vérification share token. */
+  /** Construit l'URL publique du dossier (page /projet/partage/[token], sans auth). */
   function getShareUrl(): string {
+    if (shareToken) {
+      return `${window.location.origin}/projet/partage/${shareToken}`;
+    }
+    // Fallback si le token n'est pas encore chargé
     return `${window.location.origin}/projet/${projectId}/dossier`;
   }
 
@@ -412,6 +432,13 @@ export default function DossierPage() {
           />
         </div>
 
+        {/* Project info */}
+        {projectAddress && (
+          <div className="mb-4 text-sm text-[#6B6A65]">
+            <span>{projectAddress}</span>
+          </div>
+        )}
+
         {/* Page title */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-[#1C1C1E] tracking-tight">
@@ -499,7 +526,7 @@ export default function DossierPage() {
               <button
                 onClick={handleGeneratePdf}
                 disabled={isGeneratingPdf}
-                className="inline-flex items-center gap-2 py-2 px-3 rounded-md text-sm font-medium
+                className="inline-flex items-center gap-2 py-2 px-3 min-h-[44px] rounded-md text-sm font-medium
                            bg-[#7D9B76] text-white hover:bg-[#4A7A42] transition-colors
                            disabled:opacity-50 disabled:cursor-not-allowed
                            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76]"
@@ -530,7 +557,7 @@ export default function DossierPage() {
               {pdfUrl && (
                 <button
                   onClick={handleDownloadPdf}
-                  className="inline-flex items-center gap-2 py-2 px-3 rounded-md text-sm font-medium
+                  className="inline-flex items-center gap-2 py-2 px-3 min-h-[44px] rounded-md text-sm font-medium
                              bg-[#1C1C1E] text-white hover:bg-[#3A3A3C] transition-colors
                              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1C1E]"
                 >
@@ -549,7 +576,7 @@ export default function DossierPage() {
               {/* Copy link */}
               <button
                 onClick={handleCopyLink}
-                className="inline-flex items-center gap-2 py-2 px-3 rounded-md text-sm font-medium
+                className="inline-flex items-center gap-2 py-2 px-3 min-h-[44px] rounded-md text-sm font-medium
                            border border-[#D1D0CB] bg-white text-[#1C1C1E] hover:bg-[#F5F5F0]
                            transition-colors focus-visible:outline-none
                            focus-visible:ring-2 focus-visible:ring-[#7D9B76]"
@@ -564,7 +591,7 @@ export default function DossierPage() {
               {/* WhatsApp */}
               <button
                 onClick={handleShareWhatsApp}
-                className="inline-flex items-center gap-2 py-2 px-3 rounded-md text-sm font-medium
+                className="inline-flex items-center gap-2 py-2 px-3 min-h-[44px] rounded-md text-sm font-medium
                            border border-[#D1D0CB] bg-white text-[#1C1C1E] hover:bg-[#F5F5F0]
                            transition-colors focus-visible:outline-none
                            focus-visible:ring-2 focus-visible:ring-[#7D9B76]"
@@ -579,7 +606,7 @@ export default function DossierPage() {
               {/* Email */}
               <button
                 onClick={handleShareEmail}
-                className="inline-flex items-center gap-2 py-2 px-3 rounded-md text-sm font-medium
+                className="inline-flex items-center gap-2 py-2 px-3 min-h-[44px] rounded-md text-sm font-medium
                            border border-[#D1D0CB] bg-white text-[#1C1C1E] hover:bg-[#F5F5F0]
                            transition-colors focus-visible:outline-none
                            focus-visible:ring-2 focus-visible:ring-[#7D9B76]"
@@ -873,7 +900,7 @@ export default function DossierPage() {
                            transition-colors focus-visible:outline-none
                            focus-visible:ring-2 focus-visible:ring-[#7D9B76]"
               >
-                Retour aux visuels
+                Modifier les visuels
               </button>
             </div>
           </div>

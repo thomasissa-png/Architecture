@@ -25,6 +25,7 @@ interface RoomStatus {
   name: string;
   room_type: string;
   lot_name: string | null;
+  style_id: string | null;
   generation_status: "pending" | "generating_pass1" | "generating_pass2" | "done" | "failed";
   visual_output_path: string | null;
   visual_pass1_path: string | null;
@@ -40,6 +41,23 @@ interface StatusSummary {
 }
 
 type PageState = "triggering" | "generating" | "complete" | "error";
+
+// ─── Style labels (hyphenated keys matching DB values) ──────────────
+
+const STYLE_LABELS: Record<string, string> = {
+  scandinavian: "Scandinave",
+  contemporary: "Contemporain",
+  industrial: "Industriel",
+  japandi: "Japandi",
+  "art-deco": "Art Déco",
+  "mid-century": "Mid-Century",
+  bohemian: "Bohème",
+  mediterranean: "Méditerranéen",
+  cosy: "Cosy Moderne",
+  "wabi-sabi": "Wabi-Sabi",
+  maximalist: "Maximaliste",
+  haussmannian: "Haussmannien",
+};
 
 // ─── Status display config ──────────────────────────────────────────
 
@@ -67,6 +85,9 @@ export default function GenerationPage() {
   const [error, setError] = useState<string | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [projectStatus, setProjectStatus] = useState<string>("plan_final");
+  const [projectAdresse, setProjectAdresse] = useState<string | null>(null);
+  const [projectTypeBien, setProjectTypeBien] = useState<string | null>(null);
+  const [retryingRooms, setRetryingRooms] = useState<Set<string>>(new Set());
 
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isGenerationTriggered = useRef(false);
@@ -97,6 +118,8 @@ export default function GenerationPage() {
           const statusData = await statusRes.json();
           const status = statusData.project_status || statusData.project?.status;
           if (status) setProjectStatus(status);
+          if (statusData.project_adresse) setProjectAdresse(statusData.project_adresse);
+          if (statusData.project_type_bien) setProjectTypeBien(statusData.project_type_bien);
 
           if (status === "visuals_done" || status === "delivered") {
             // Already generated — show results without re-triggering
@@ -155,9 +178,22 @@ export default function GenerationPage() {
       const newRooms = data.rooms as RoomStatus[];
       const newSummary = data.summary as StatusSummary;
 
-      if (data.project?.status) setProjectStatus(data.project.status);
+      if (data.project_status) setProjectStatus(data.project_status);
+      if (data.project_adresse) setProjectAdresse(data.project_adresse);
+      if (data.project_type_bien) setProjectTypeBien(data.project_type_bien);
       setRooms(newRooms);
       setSummary(newSummary);
+
+      // Clear retrying state for rooms that are no longer failed
+      setRetryingRooms((prev: Set<string>) => {
+        const updated = new Set(prev);
+        for (const room of newRooms) {
+          if (room.generation_status !== "failed") {
+            updated.delete(room.id);
+          }
+        }
+        return updated.size === prev.size ? prev : updated;
+      });
 
       // Check if generation is complete
       const allDone = newSummary.pending === 0 && newSummary.generating === 0;
@@ -190,6 +226,41 @@ export default function GenerationPage() {
     };
   }, [pageState, pollStatus]);
 
+  // ─── Retry individual room ────────────────────────────────────────
+
+  const retryRoom = useCallback(async (roomId: string) => {
+    setRetryingRooms((prev: Set<string>) => new Set(prev).add(roomId));
+
+    try {
+      const response = await fetch(`/api/pro/projects/${projectId}/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ room_ids: [roomId] }),
+      });
+
+      if (!response.ok) {
+        // Keep the room in retryingRooms so the user sees feedback
+        setRetryingRooms((prev: Set<string>) => {
+          const updated = new Set(prev);
+          updated.delete(roomId);
+          return updated;
+        });
+        return;
+      }
+
+      // Start polling if not already
+      if (pageState === "complete") {
+        setPageState("generating");
+      }
+    } catch {
+      setRetryingRooms((prev: Set<string>) => {
+        const updated = new Set(prev);
+        updated.delete(roomId);
+        return updated;
+      });
+    }
+  }, [projectId, pageState]);
+
   // ─── Progress percentage ──────────────────────────────────────────
 
   const progressPercent = summary.total > 0
@@ -221,6 +292,18 @@ export default function GenerationPage() {
             projectId={projectId}
           />
         </div>
+
+        {/* Project info */}
+        {projectAdresse && (
+          <div className="mb-4 flex items-center gap-2 text-sm text-[#6B6A65]">
+            {projectTypeBien && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded bg-[#F5F5F0] text-xs font-medium text-[#1C1C1E] border border-[#D1D0CB]/40">
+                {projectTypeBien}
+              </span>
+            )}
+            <span>{projectAdresse}</span>
+          </div>
+        )}
 
         {/* Page title */}
         <div className="mb-6">
@@ -283,7 +366,7 @@ export default function GenerationPage() {
                 isGenerationTriggered.current = false;
                 window.location.reload();
               }}
-              className="py-2.5 px-4 rounded-lg bg-[#7D9B76] text-white text-sm font-medium
+              className="py-2.5 px-4 min-h-[44px] rounded-lg bg-[#7D9B76] text-white text-sm font-medium
                          hover:bg-[#4A7A42] transition-colors
                          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76]"
             >
@@ -414,11 +497,36 @@ export default function GenerationPage() {
                         {statusConfig.label}
                       </span>
                     </div>
-                    {room.lot_name && (
-                      <p className="text-xs text-[#9B9A94] mt-0.5">{room.lot_name}</p>
-                    )}
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      {room.lot_name && (
+                        <span className="text-xs text-[#9B9A94]">{room.lot_name}</span>
+                      )}
+                      {room.style_id && (
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px]
+                                        font-medium tracking-[0.02em] bg-[#F5F5F0] text-[#9B9A94] border border-[#D1D0CB]/40">
+                          {STYLE_LABELS[room.style_id] || room.style_id}
+                        </span>
+                      )}
+                    </div>
                     {room.error && (
                       <p className="text-xs text-[#B91C1C] mt-1">{room.error}</p>
+                    )}
+                    {room.generation_status === "failed" && !retryingRooms.has(room.id) && (
+                      <button
+                        onClick={() => retryRoom(room.id)}
+                        className="mt-2 w-full py-1.5 px-3 min-h-[44px] rounded-md text-xs font-medium
+                                   bg-[#FEF2F2] text-[#B91C1C] border border-[#EF4444]/20
+                                   hover:bg-[#FEE2E2] transition-colors
+                                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EF4444]/50"
+                      >
+                        Réessayer cette pièce
+                      </button>
+                    )}
+                    {retryingRooms.has(room.id) && (
+                      <p className="mt-2 text-xs text-[#1D4ED8] flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#1D4ED8] animate-pulse" aria-hidden="true" />
+                        Relancement en cours…
+                      </p>
                     )}
                   </div>
                 </article>

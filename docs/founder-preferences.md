@@ -58,3 +58,13 @@
 |---|---|---|---|
 | 2026-04-10 | **"Fais implémenter tout" = vision complète, zéro scope réduit** | Session 41 : le fondateur a demandé d'implémenter TOUTES les API + câblages restants du parcours marchand en une session | L'instruction "implémente tout" signifie : pas de priorisation par effort, pas de "on fera ça plus tard". Implémenter l'intégralité du scope. La seule raison de ne pas implémenter : dépendance technique bloquante non résoluble dans la session. |
 | 2026-04-10 | **Audits step-by-step individuels** | "que le marchand de bien et @reviewer/@qa ré-auditent à nouveau, mais cette fois-ci, chaque étape du parcours, individuellement" | Pour les parcours multi-étapes, les audits globaux ne suffisent pas. Chaque étape doit être auditée individuellement pour détecter les bugs spécifiques au contexte de l'étape. |
+
+## Session 42 — 2026-04-13
+
+| Date | Préférence | Contexte | Règle pour les agents |
+|---|---|---|---|
+| 2026-04-13 | **Le plan doit être l'élément CENTRAL, pas un toggle caché** | Demandé 6 fois. Le plan avec zones colorées doit être la première chose visible, en grand. | Quand un composant visuel est la VALEUR PRINCIPALE d'une page, il doit être le hero. Jamais derrière un toggle, accordion, ou "voir plus". |
+| 2026-04-13 | **Ne me dis pas "vérifié" si tu ne l'as pas TESTÉ** | 5 erreurs de build consécutives après des messages "build vérifié" basés sur une simulation | Ne JAMAIS confirmer qu'un build passe sans `npx next build`. "J'ai simulé le flow" n'est pas une vérification. |
+| 2026-04-13 | **Ne recommence pas ce qui marche déjà** | "On a déjà fait plein de choses dans le premier site : autocomplétion adresse, dossiers" | Avant de coder une feature, grep le codebase. Le fondateur refuse qu'on recode ce qui fonctionne. |
+| 2026-04-13 | **Le marchand de biens doit être impliqué pour développer les features** | "Je veux que notre agent marchand de biens soit impliqué pour développer cette feature" | Les features métier doivent être spécifiées par le persona avant implémentation. Pas de feature sans validation persona. |
+| 2026-04-13 | **Drag-to-reorder plutôt que supprimer+re-uploader** | "Si pas dans le bon ordre il faut tout supprimer pour les remettre. Peut-on simplement les glisser ?" | Toujours prévoir la réordination par drag quand l'ordre importe. Ne jamais forcer supprimer+recréer. |

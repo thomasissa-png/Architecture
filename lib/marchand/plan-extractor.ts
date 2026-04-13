@@ -2,10 +2,16 @@
  * Extraction de plan via GPT-4.1 vision.
  *
  * Source de vérité : docs/marchand-pivot/ia/technical-architecture.md sections 1.1 et 4.1.
- * Envoie le plan (image base64) à GPT-4.1 vision via openai.responses.create,
- * retourne un JSON validé par le schema Zod PlanExtractionResult.
+ *
+ * PDF handling: les PDF sont convertis en PNG via pdf-to-img (pdfjs-dist) AVANT
+ * l'envoi à GPT-4.1 vision. Cela garantit que le même pipeline est utilisé pour
+ * tous les formats (images ET PDF). Plus besoin de GPT-4o ni de Files API.
+ *
+ * Multi-fichier : `extractMultiplePlans()` traite un tableau de plans (1 par étage)
+ * et fusionne les résultats avec floor auto-incrémenté.
  */
 import OpenAI from "openai";
+import { pdf } from "pdf-to-img";
 import {
   PlanExtractionResultSchema,
   type PlanExtractionResult,
@@ -19,6 +25,16 @@ function getOpenAI(): OpenAI {
     _openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   }
   return _openaiClient;
+}
+
+// ─── PDF detection ─────────────────────────────────────────────────
+/**
+ * Detect if a base64-encoded file is a PDF.
+ * Checks MIME type first, then magic bytes (%PDF- = JVBERi0 in base64).
+ */
+function isPdf(mimeType: string, base64Data: string): boolean {
+  if (mimeType === "application/pdf") return true;
+  return base64Data.startsWith("JVBERi0");
 }
 
 // ─── System prompt ──────────────────────────────────────────────────
@@ -36,6 +52,7 @@ EXTRACTION RULES:
 6. FLOOR DETECTION: If the plan shows multiple floors or levels, set the floor number for each room (0 = ground floor). If single level, all rooms are floor 0.
 7. CONFIDENCE: Rate your confidence 0-1 for each room. Lower confidence for: rooms partially occluded, dimensions estimated (not read), ambiguous room function.
 8. IGNORE: Electrical symbols, plumbing symbols, dimension arrows (just read the numbers), furniture drawn on plan, north arrow, title block.
+9. BOUNDING BOX: For each room, estimate its bounding box position on the floor plan image as percentages (0-100) of the image width and height. The top-left corner of the image is (0, 0). x_percent and y_percent are the top-left corner of the room's bounding box. width_percent and height_percent are the room's size relative to the full image. Be as accurate as possible — use wall lines, labels, and spatial relationships to estimate positions.
 
 TYPE DE BIEN CONTEXT: This plan is for a "${typeBien}". If "immeuble", there may be multiple units — identify them if possible.
 
@@ -85,11 +102,27 @@ const PLAN_EXTRACTION_JSON_SCHEMA = {
               ],
             },
             notes: { type: ["string", "null"] as const },
+            bounding_box: {
+              anyOf: [
+                {
+                  type: "object" as const,
+                  properties: {
+                    x_percent: { type: "number" as const },
+                    y_percent: { type: "number" as const },
+                    width_percent: { type: "number" as const },
+                    height_percent: { type: "number" as const },
+                  },
+                  required: ["x_percent", "y_percent", "width_percent", "height_percent"],
+                  additionalProperties: false,
+                },
+                { type: "null" as const },
+              ],
+            },
           },
           required: [
             "temp_id", "name_raw", "surface_m2", "dimensions",
             "ceiling_height_m", "windows_count", "doors_count",
-            "floor", "confidence", "shape", "notes",
+            "floor", "confidence", "shape", "notes", "bounding_box",
           ],
           additionalProperties: false,
         },
@@ -138,17 +171,37 @@ export async function extractPlanData(
   const openai = getOpenAI();
   const systemPrompt = buildSystemPrompt(typeBien);
 
-  // Map MIME type to OpenAI-compatible format
-  const mediaType = mimeType.startsWith("image/")
-    ? (mimeType as "image/jpeg" | "image/png" | "image/gif" | "image/webp")
-    : "image/jpeg"; // Fallback for PDF-rendered images
+  // If PDF, convert to PNG first — same pipeline for all formats
+  let imageBase64 = planBase64;
+  let imageMimeType = mimeType;
 
-  const dataUrl = `data:${mediaType};base64,${planBase64}`;
+  if (isPdf(mimeType, planBase64)) {
+    console.log("[plan-extractor] PDF detected — converting to PNG via pdf-to-img...");
+    try {
+      const pdfBuffer = Buffer.from(planBase64, "base64");
+      const pages = await pdf(pdfBuffer, { scale: 2 });
+      for await (const page of pages) {
+        // Use first page only (multi-page handled by extractMultiplePlans)
+        imageBase64 = Buffer.from(page).toString("base64");
+        imageMimeType = "image/png";
+        console.log(`[plan-extractor] PDF→PNG conversion OK: ${page.length} bytes`);
+        break;
+      }
+    } catch (convErr) {
+      console.error("[plan-extractor] PDF→PNG conversion failed:", convErr);
+      throw new PlanExtractionError(
+        "API_ERROR",
+        "Impossible de lire ce PDF. Vérifiez qu'il n'est pas protégé par mot de passe. Vous pouvez aussi réessayer en uploadant une image (JPG, PNG) du plan."
+      );
+    }
+  }
+
+  const imageDataUrl = buildImageDataUrl(imageMimeType, imageBase64);
 
   // First attempt
   let rawJson: string;
   try {
-    rawJson = await callVisionExtraction(openai, systemPrompt, dataUrl);
+    rawJson = await callVisionExtraction(openai, systemPrompt, imageDataUrl);
   } catch (err) {
     // Retry once after 5s on API error
     console.warn(
@@ -157,7 +210,7 @@ export async function extractPlanData(
     );
     await sleep(5000);
     try {
-      rawJson = await callVisionExtraction(openai, systemPrompt, dataUrl);
+      rawJson = await callVisionExtraction(openai, systemPrompt, imageDataUrl);
     } catch (retryErr) {
       throw new PlanExtractionError(
         "API_ERROR",
@@ -190,7 +243,7 @@ export async function extractPlanData(
     const correctedJson = await callSelfCorrection(
       openai,
       systemPrompt,
-      dataUrl,
+      imageDataUrl,
       rawJson,
       validation.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("\n")
     );
@@ -212,8 +265,111 @@ export async function extractPlanData(
   }
 }
 
+// ─── Multi-plan extraction ─────────────────────────────────────────
+
+interface PlanInput {
+  base64: string;
+  mimeType: string;
+  /** Floor index override (0 = RDC, 1 = 1er étage, etc.) */
+  floorIndex: number;
+}
+
+/**
+ * Extract rooms from multiple plan files (1 per floor/étage).
+ * Results are merged with floor numbers auto-assigned from the floorIndex of each plan.
+ * Processes plans sequentially to avoid hitting OpenAI rate limits.
+ */
+export async function extractMultiplePlans(
+  plans: PlanInput[],
+  typeBien: TypeBien
+): Promise<PlanExtractionResult> {
+  if (plans.length === 0) {
+    throw new PlanExtractionError("PLAN_UNREADABLE", "Aucun plan fourni.");
+  }
+
+  // Single plan — no merge needed
+  if (plans.length === 1) {
+    return extractPlanData(plans[0].base64, plans[0].mimeType, typeBien);
+  }
+
+  const allRooms: PlanExtractionResult["rooms"] = [];
+  const allWarnings: Set<string> = new Set();
+  let totalSurface = 0;
+  let hasAnySurface = false;
+  let scaleRef: PlanExtractionResult["scale_reference"] = "none";
+
+  // Process each plan sequentially (avoid rate limits)
+  for (const plan of plans) {
+    console.log(`[plan-extractor] Extracting floor ${plan.floorIndex} (${plan.mimeType})`);
+
+    const result = await extractPlanData(plan.base64, plan.mimeType, typeBien);
+
+    // Override floor number for each room to match the plan's floor index
+    for (const room of result.rooms) {
+      allRooms.push({
+        ...room,
+        floor: plan.floorIndex,
+        temp_id: `f${plan.floorIndex}_${room.temp_id}`,
+      });
+    }
+
+    // Merge warnings
+    for (const w of result.extraction_warnings) {
+      allWarnings.add(w);
+    }
+
+    // Accumulate surface
+    if (result.total_surface_m2 !== null) {
+      totalSurface += result.total_surface_m2;
+      hasAnySurface = true;
+    }
+
+    // Keep the best scale reference
+    if (result.scale_reference !== "none") {
+      scaleRef = result.scale_reference;
+    }
+  }
+
+  return {
+    rooms: allRooms,
+    total_surface_m2: hasAnySurface ? totalSurface : null,
+    floors_count: plans.length,
+    extraction_warnings: Array.from(allWarnings) as PlanExtractionResult["extraction_warnings"],
+    scale_reference: scaleRef,
+  };
+}
+
 // ─── Internal helpers ───────────────────────────────────────────────
 
+/**
+ * Build a data URL for image content.
+ */
+function buildImageDataUrl(mimeType: string, base64Data: string): string {
+  const mediaType = mimeType.startsWith("image/")
+    ? mimeType
+    : "image/jpeg";
+  return `data:${mediaType};base64,${base64Data}`;
+}
+
+/**
+ * Extract text from the OpenAI Responses API output.
+ */
+function extractTextFromResponse(response: { output: Array<{ type: string; content?: Array<{ type: string; text?: string }> }> }, label: string): string {
+  const textOutput = response.output.find((o) => o.type === "message");
+  if (!textOutput || textOutput.type !== "message") {
+    throw new Error(`No message output from ${label}`);
+  }
+  const msg = textOutput as { type: "message"; content: Array<{ type: string; text?: string }> };
+  const textContent = msg.content.find((c) => c.type === "output_text");
+  if (!textContent || textContent.type !== "output_text" || !textContent.text) {
+    throw new Error(`No text content in ${label} response`);
+  }
+  return textContent.text;
+}
+
+/**
+ * Call GPT-4.1 vision for image-based plan extraction.
+ */
 async function callVisionExtraction(
   openai: OpenAI,
   systemPrompt: string,
@@ -237,7 +393,7 @@ async function callVisionExtraction(
           },
         ],
       },
-    ],
+    ] as unknown as Parameters<typeof openai.responses.create>[0]["input"],
     text: {
       format: {
         type: "json_schema",
@@ -246,18 +402,13 @@ async function callVisionExtraction(
     },
   });
 
-  // Extract text output from response
-  const textOutput = response.output.find((o) => o.type === "message");
-  if (!textOutput || textOutput.type !== "message") {
-    throw new Error("No message output from GPT-4.1 vision");
-  }
-  const textContent = textOutput.content.find((c) => c.type === "output_text");
-  if (!textContent || textContent.type !== "output_text") {
-    throw new Error("No text content in GPT-4.1 vision response");
-  }
-  return textContent.text;
+  return extractTextFromResponse(response as unknown as { output: Array<{ type: string; content?: Array<{ type: string; text?: string }> }> }, "GPT-4.1 vision");
 }
 
+/**
+ * Self-correction: send Zod validation errors back to the model for a fixed output.
+ * Always uses GPT-4.1 vision (PDFs are already converted to PNG upstream).
+ */
 async function callSelfCorrection(
   openai: OpenAI,
   systemPrompt: string,
@@ -265,6 +416,8 @@ async function callSelfCorrection(
   previousJson: string,
   zodErrors: string
 ): Promise<string> {
+  const correctionText = `Your previous output had validation errors. Fix them and return valid JSON.\n\nPrevious output:\n${previousJson}\n\nValidation errors:\n${zodErrors}`;
+
   const response = await openai.responses.create({
     model: "gpt-4.1",
     input: [
@@ -279,11 +432,11 @@ async function callSelfCorrection(
           },
           {
             type: "input_text",
-            text: `Your previous output had validation errors. Fix them and return valid JSON.\n\nPrevious output:\n${previousJson}\n\nValidation errors:\n${zodErrors}`,
+            text: correctionText,
           },
         ],
       },
-    ],
+    ] as unknown as Parameters<typeof openai.responses.create>[0]["input"],
     text: {
       format: {
         type: "json_schema",
@@ -292,15 +445,7 @@ async function callSelfCorrection(
     },
   });
 
-  const textOutput = response.output.find((o) => o.type === "message");
-  if (!textOutput || textOutput.type !== "message") {
-    throw new Error("No message output from self-correction");
-  }
-  const textContent = textOutput.content.find((c) => c.type === "output_text");
-  if (!textContent || textContent.type !== "output_text") {
-    throw new Error("No text content in self-correction response");
-  }
-  return textContent.text;
+  return extractTextFromResponse(response as unknown as { output: Array<{ type: string; content?: Array<{ type: string; text?: string }> }> }, "self-correction");
 }
 
 function sleep(ms: number): Promise<void> {

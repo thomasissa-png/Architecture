@@ -1,16 +1,25 @@
 "use client";
 
 /**
- * Page création projet marchand + paiement (Étape 1).
+ * Page création projet marchand (Étape 1).
  *
- * Rendu : Client Component — formulaire interactif avec upload et paiement.
+ * Rendu : Client Component — formulaire interactif avec upload de plan.
  *
  * Flow : Thomas saisit l'adresse, le type de bien, la surface,
- * uploade le plan (PDF/JPG/PNG), puis paie 99€ (ou utilise un crédit Pro).
- * Après paiement : redirect vers /projet/[id]/extraction.
+ * uploade le plan (PDF/JPG/PNG), puis crée le projet (gratuit pendant la bêta).
+ * Après création : redirect vers /projet/[id]/extraction.
  */
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
+
+// ─── Address autocomplete types ──────────────────────────────────
+interface AddressSuggestion {
+  label: string;
+  postcode: string;
+  city: string;
+  lat: number;
+  lon: number;
+}
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Header from "@/components/Header";
@@ -57,8 +66,21 @@ export default function NouveauProjetPage() {
   const [adresse, setAdresse] = useState("");
   const [typeBien, setTypeBien] = useState("appartement");
   const [surface, setSurface] = useState("");
-  const [planFile, setPlanFile] = useState<File | null>(null);
-  const [planPreviewUrl, setPlanPreviewUrl] = useState<string | null>(null);
+  const [planFiles, setPlanFiles] = useState<File[]>([]);
+  const [planPreviewUrls, setPlanPreviewUrls] = useState<Map<string, string>>(new Map());
+
+  // Cleanup blob URLs on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      planPreviewUrls.forEach((url) => URL.revokeObjectURL(url));
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Address autocomplete
+  const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
   // UI state
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -66,48 +88,244 @@ export default function NouveauProjetPage() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   const [showAuthModal, setShowAuthModal] = useState(false);
 
-  // ─── Plan file handling ───────────────────────────────────────────
+  // ─── Drag-to-reorder state ─────────────────────────────────────
+  const [dragReorderIndex, setDragReorderIndex] = useState<number | null>(null);
+  const [dropTargetIndex, setDropTargetIndex] = useState<number | null>(null);
+  /** "before" = indicator line above target, "after" = below target */
+  const [dropPosition, setDropPosition] = useState<"before" | "after">("before");
+  const touchStartRef = useRef<{ index: number; startY: number; currentY: number } | null>(null);
+  const listItemRefs = useRef<Map<number, HTMLDivElement>>(new Map());
 
-  const handlePlanSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  // ─── Address autocomplete with debounce ────────────────────────────
 
-    // Validate MIME type
-    const allowedTypes = ACCEPTED_PLAN_TYPES.split(",");
-    if (!allowedTypes.includes(file.type)) {
-      setError("Format accepté : PDF, JPG, PNG, WEBP, HEIC.");
+  const handleAddressInput = (value: string) => {
+    setAdresse(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    if (value.length < 3) {
+      setSuggestions([]);
+      setShowSuggestions(false);
       return;
     }
 
-    if (file.size > MAX_FILE_SIZE_BYTES) {
-      setError(`Le fichier ne doit pas dépasser ${MAX_FILE_SIZE_MB} Mo.`);
-      return;
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `/api/merchant/enrich-property?q=${encodeURIComponent(value)}`
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setSuggestions(data.suggestions || []);
+          setShowSuggestions(true);
+        }
+      } catch (err) {
+        console.error("Erreur autocomplétion adresse:", err);
+      }
+    }, 300);
+  };
+
+  const selectSuggestion = (s: AddressSuggestion) => {
+    setAdresse(s.label);
+    setSuggestions([]);
+    setShowSuggestions(false);
+  };
+
+  // ─── Plan file handling ───────────────────────────────────────────
+
+  /** Generate a stable key for a File (name + size + lastModified). */
+  const fileKey = useCallback((f: File) => `${f.name}_${f.size}_${f.lastModified}`, []);
+
+  const addPlanFiles = useCallback((newFiles: File[]) => {
+    const allowedTypes = ACCEPTED_PLAN_TYPES.split(",");
+    const validFiles: File[] = [];
+
+    for (const file of newFiles) {
+      if (!allowedTypes.includes(file.type)) {
+        setError(`Format non accepté pour "${file.name}". Formats : PDF, JPG, PNG, WEBP, HEIC.`);
+        return;
+      }
+      if (file.size > MAX_FILE_SIZE_BYTES) {
+        setError(`"${file.name}" dépasse ${MAX_FILE_SIZE_MB} Mo.`);
+        return;
+      }
+      validFiles.push(file);
+    }
+
+    setPlanFiles((prev) => {
+      const combined = [...prev, ...validFiles];
+      if (combined.length > 10) {
+        setError("Maximum 10 fichiers de plan.");
+        return prev;
+      }
+      return combined;
+    });
+
+    // Create preview URLs for images
+    const newPreviews = new Map<string, string>();
+    for (const file of validFiles) {
+      if (file.type.startsWith("image/")) {
+        newPreviews.set(fileKey(file), URL.createObjectURL(file));
+      }
+    }
+    if (newPreviews.size > 0) {
+      setPlanPreviewUrls((prev) => {
+        const merged = new Map(prev);
+        newPreviews.forEach((v, k) => merged.set(k, v));
+        return merged;
+      });
     }
 
     setError(null);
-    setPlanFile(file);
+  }, [fileKey]);
 
-    // Preview for images (not PDF)
-    if (file.type.startsWith("image/")) {
-      const url = URL.createObjectURL(file);
-      setPlanPreviewUrl(url);
-    } else {
-      setPlanPreviewUrl(null);
-    }
+  const handlePlanSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    addPlanFiles(Array.from(files));
+    // Reset input so the same file can be re-selected
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }, [addPlanFiles]);
+
+  const handleRemovePlan = useCallback((index: number) => {
+    setPlanFiles((prev) => {
+      const file = prev[index];
+      if (file) {
+        const key = fileKey(file);
+        setPlanPreviewUrls((prevUrls) => {
+          const url = prevUrls.get(key);
+          if (url) URL.revokeObjectURL(url);
+          const next = new Map(prevUrls);
+          next.delete(key);
+          return next;
+        });
+      }
+      return prev.filter((_, i) => i !== index);
+    });
+  }, [fileKey]);
+
+  // ─── Drag-to-reorder handlers ────────────────────────────────────
+
+  const reorderFiles = useCallback((fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex) return;
+    setPlanFiles((prev) => {
+      const next = [...prev];
+      const [moved] = next.splice(fromIndex, 1);
+      next.splice(toIndex, 0, moved);
+      return next;
+    });
   }, []);
 
-  const handleRemovePlan = useCallback(() => {
-    setPlanFile(null);
-    if (planPreviewUrl) {
-      URL.revokeObjectURL(planPreviewUrl);
-      setPlanPreviewUrl(null);
-    }
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  }, [planPreviewUrl]);
+  const handleReorderDragStart = useCallback((e: React.DragEvent, index: number) => {
+    setDragReorderIndex(index);
+    e.dataTransfer.effectAllowed = "move";
+    // Transparent drag image — the visual indicator is the drop line
+    const ghost = document.createElement("div");
+    ghost.style.opacity = "0";
+    document.body.appendChild(ghost);
+    e.dataTransfer.setDragImage(ghost, 0, 0);
+    requestAnimationFrame(() => document.body.removeChild(ghost));
+  }, []);
 
-  // ─── Drag & drop ─────────────────────────────────────────────────
+  const handleReorderDragOver = useCallback((e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (dragReorderIndex === null) return;
+    e.dataTransfer.dropEffect = "move";
+    // Determine if cursor is in top or bottom half of the target element
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const midY = rect.top + rect.height / 2;
+    setDropPosition(e.clientY < midY ? "before" : "after");
+    setDropTargetIndex(index);
+  }, [dragReorderIndex]);
+
+  const handleReorderDrop = useCallback((e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (dragReorderIndex !== null && dragReorderIndex !== index) {
+      // Compute effective target: if dropping "after" and source is above target,
+      // the splice-based reorder already handles it correctly. But if "before" and
+      // source is below target, we need to adjust.
+      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+      const midY = rect.top + rect.height / 2;
+      const pos = e.clientY < midY ? "before" : "after";
+      let targetIdx = index;
+      if (pos === "after" && dragReorderIndex < index) {
+        targetIdx = index; // already correct
+      } else if (pos === "before" && dragReorderIndex > index) {
+        targetIdx = index; // already correct
+      } else if (pos === "after" && dragReorderIndex > index) {
+        targetIdx = index + 1;
+      } else if (pos === "before" && dragReorderIndex < index) {
+        targetIdx = index - 1;
+      }
+      reorderFiles(dragReorderIndex, targetIdx);
+    }
+    setDragReorderIndex(null);
+    setDropTargetIndex(null);
+  }, [dragReorderIndex, reorderFiles]);
+
+  const handleReorderDragEnd = useCallback(() => {
+    setDragReorderIndex(null);
+    setDropTargetIndex(null);
+    setDropPosition("before");
+  }, []);
+
+  // ─── Touch reorder handlers (mobile) ───────────────────────────
+
+  const handleTouchStart = useCallback((index: number, e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    touchStartRef.current = { index, startY: touch.clientY, currentY: touch.clientY };
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!touchStartRef.current) return;
+    const touch = e.touches[0];
+    touchStartRef.current.currentY = touch.clientY;
+
+    // Determine which item we're over
+    const items = listItemRefs.current;
+    let closestIndex = touchStartRef.current.index;
+    let closestDist = Infinity;
+    items.forEach((el, idx) => {
+      const rect = el.getBoundingClientRect();
+      const center = rect.top + rect.height / 2;
+      const dist = Math.abs(touch.clientY - center);
+      if (dist < closestDist) {
+        closestDist = dist;
+        closestIndex = idx;
+      }
+    });
+
+    // Determine before/after position relative to closest item's center
+    const closestEl = items.get(closestIndex);
+    if (closestEl) {
+      const rect = closestEl.getBoundingClientRect();
+      const midY = rect.top + rect.height / 2;
+      setDropPosition(touch.clientY < midY ? "before" : "after");
+    }
+
+    setDragReorderIndex(touchStartRef.current.index);
+    setDropTargetIndex(closestIndex);
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    if (touchStartRef.current && dragReorderIndex !== null && dropTargetIndex !== null && dragReorderIndex !== dropTargetIndex) {
+      // Apply same position-aware logic as desktop drop
+      let targetIdx = dropTargetIndex;
+      if (dropPosition === "after" && dragReorderIndex > dropTargetIndex) {
+        targetIdx = dropTargetIndex + 1;
+      } else if (dropPosition === "before" && dragReorderIndex < dropTargetIndex) {
+        targetIdx = dropTargetIndex - 1;
+      }
+      reorderFiles(dragReorderIndex, targetIdx);
+    }
+    touchStartRef.current = null;
+    setDragReorderIndex(null);
+    setDropTargetIndex(null);
+    setDropPosition("before");
+  }, [dragReorderIndex, dropTargetIndex, dropPosition, reorderFiles]);
+
+  // ─── Drag & drop (file upload) ──────────────────────────────────
 
   const [isDragOver, setIsDragOver] = useState(false);
 
@@ -124,31 +342,10 @@ export default function NouveauProjetPage() {
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
-    const file = e.dataTransfer.files[0];
-    if (!file) return;
-
-    // Validate MIME type (drag & drop bypasses input accept attribute)
-    const allowedTypes = ACCEPTED_PLAN_TYPES.split(",");
-    if (!allowedTypes.includes(file.type)) {
-      setError("Format accepté : PDF, JPG, PNG, WEBP, HEIC.");
-      return;
-    }
-
-    if (file.size > MAX_FILE_SIZE_BYTES) {
-      setError(`Le fichier ne doit pas dépasser ${MAX_FILE_SIZE_MB} Mo.`);
-      return;
-    }
-
-    setError(null);
-    setPlanFile(file);
-
-    if (file.type.startsWith("image/")) {
-      const url = URL.createObjectURL(file);
-      setPlanPreviewUrl(url);
-    } else {
-      setPlanPreviewUrl(null);
-    }
-  }, []);
+    const files = e.dataTransfer.files;
+    if (!files || files.length === 0) return;
+    addPlanFiles(Array.from(files));
+  }, [addPlanFiles]);
 
   // ─── Form submission ─────────────────────────────────────────────
 
@@ -160,7 +357,7 @@ export default function NouveauProjetPage() {
       return;
     }
 
-    if (!planFile) {
+    if (planFiles.length === 0) {
       setError("Le plan du bien est obligatoire.");
       return;
     }
@@ -176,7 +373,9 @@ export default function NouveauProjetPage() {
       if (surface) {
         formData.append("surface_totale", surface);
       }
-      formData.append("plan_file", planFile);
+      for (const file of planFiles) {
+        formData.append("plan_file", file);
+      }
 
       const response = await fetch("/api/pro/projects", {
         method: "POST",
@@ -202,7 +401,7 @@ export default function NouveauProjetPage() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [session, planFile, adresse, typeBien, surface, router]);
+  }, [session, planFiles, adresse, typeBien, surface, router]);
 
   // ─── Render ──────────────────────────────────────────────────────
 
@@ -224,32 +423,62 @@ export default function NouveauProjetPage() {
           <p className="text-sm text-[#9B9A94] mt-1">
             Renseignez les informations de votre bien et déposez le plan.
           </p>
+          <p className="text-xs text-[#9B9A94] mt-1">
+            <span className="text-[#B91C1C]">*</span> Champs obligatoires
+          </p>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Adresse */}
-          <div>
+          {/* Adresse avec autocomplétion */}
+          <div className="relative">
             <label
               htmlFor="adresse"
-              className="block text-sm font-medium text-[#1C1C1E] mb-1.5"
+              className="block text-sm font-medium text-[#1C1C1E] mb-2"
             >
-              Adresse du bien
+              Adresse du bien <span className="text-[#B91C1C]">*</span>
             </label>
             <input
               id="adresse"
               type="text"
+              role="combobox"
               value={adresse}
-              onChange={(e) => setAdresse(e.target.value)}
+              onChange={(e) => handleAddressInput(e.target.value)}
+              onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 300)}
               placeholder="Ex : 12 rue de la Paix, 33000 Bordeaux"
               required
               minLength={5}
               maxLength={200}
+              aria-expanded={showSuggestions && suggestions.length > 0}
+              aria-controls="nouveau-address-suggestions-listbox"
+              aria-autocomplete="list"
               className="w-full px-3 py-2.5 rounded-lg border border-[#D1D0CB] bg-white
                          text-sm text-[#1C1C1E] placeholder-[#9B9A94]
                          focus:outline-none focus:ring-2 focus:ring-[#7D9B76] focus:border-transparent
-                         transition-shadow"
+                         transition"
             />
+            {showSuggestions && suggestions.length > 0 && (
+              <div
+                id="nouveau-address-suggestions-listbox"
+                role="listbox"
+                className="absolute top-full left-0 right-0 z-10 mt-1 bg-white border border-[#D1D0CB] rounded-lg shadow-lg overflow-hidden"
+              >
+                {suggestions.map((s, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    role="option"
+                    aria-selected={false}
+                    onMouseDown={() => selectSuggestion(s)}
+                    className="w-full text-left text-sm font-light px-3 py-2.5 min-h-[44px] flex items-center
+                               text-[#1C1C1E] hover:bg-[#F0F0ED] transition-colors"
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            )}
             {fieldErrors.adresse && (
               <p className="mt-1 text-xs text-[#B91C1C]" role="alert">
                 {fieldErrors.adresse[0]}
@@ -261,9 +490,9 @@ export default function NouveauProjetPage() {
           <div>
             <label
               htmlFor="type_bien"
-              className="block text-sm font-medium text-[#1C1C1E] mb-1.5"
+              className="block text-sm font-medium text-[#1C1C1E] mb-2"
             >
-              Type de bien
+              Type de bien <span className="text-[#B91C1C]">*</span>
             </label>
             <select
               id="type_bien"
@@ -272,7 +501,8 @@ export default function NouveauProjetPage() {
               className="w-full px-3 py-2.5 rounded-lg border border-[#D1D0CB] bg-white
                          text-sm text-[#1C1C1E]
                          focus:outline-none focus:ring-2 focus:ring-[#7D9B76] focus:border-transparent
-                         transition-shadow appearance-none"
+                         transition appearance-none
+                         bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%239B9A94%22 stroke-width=%222%22><polyline points=%226 9 12 15 18 9%22/></svg>')] bg-no-repeat bg-[right_0.75rem_center] pr-9"
             >
               {TYPE_BIEN_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -291,7 +521,7 @@ export default function NouveauProjetPage() {
           <div>
             <label
               htmlFor="surface"
-              className="block text-sm font-medium text-[#1C1C1E] mb-1.5"
+              className="block text-sm font-medium text-[#1C1C1E] mb-2"
             >
               Surface totale (m²)
               <span className="text-[#9B9A94] font-normal ml-1">— optionnel</span>
@@ -307,120 +537,233 @@ export default function NouveauProjetPage() {
               className="w-full px-3 py-2.5 rounded-lg border border-[#D1D0CB] bg-white
                          text-sm text-[#1C1C1E] placeholder-[#9B9A94]
                          focus:outline-none focus:ring-2 focus:ring-[#7D9B76] focus:border-transparent
-                         transition-shadow"
+                         transition"
             />
           </div>
 
-          {/* Plan upload */}
+          {/* Plan upload — multi-file */}
           <div>
-            <label className="block text-sm font-medium text-[#1C1C1E] mb-1.5">
-              Plan du bien
+            <label className="block text-sm font-medium text-[#1C1C1E] mb-2">
+              Plans du bien <span className="text-[#B91C1C]">*</span>
+              <span className="text-[#9B9A94] font-normal ml-1">— 1 fichier par étage</span>
             </label>
 
-            {!planFile ? (
-              <div
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-                onClick={() => fileInputRef.current?.click()}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    fileInputRef.current?.click();
-                  }
-                }}
-                className={`flex flex-col items-center justify-center gap-2 p-8 rounded-lg border-2 border-dashed
-                           cursor-pointer transition-all duration-200
-                           ${isDragOver
-                             ? "border-[#7D9B76] bg-[#7D9B76]/5"
-                             : "border-[#D1D0CB] bg-white hover:border-[#9B9A94] hover:bg-[#F5F5F0]"
-                           }
-                           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76]`}
-                aria-label="Déposer le plan du bien"
+            {/* Drop zone — always visible to allow adding more files */}
+            <div
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  fileInputRef.current?.click();
+                }
+              }}
+              className={`flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed
+                         cursor-pointer transition-all duration-200
+                         ${planFiles.length > 0 ? "py-4 px-6" : "p-8"}
+                         ${isDragOver
+                           ? "border-[#7D9B76] bg-[#7D9B76]/5"
+                           : "border-[#D1D0CB] bg-white hover:border-[#9B9A94] hover:bg-[#F5F5F0]"
+                         }
+                         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76]`}
+              aria-label="Déposer les plans du bien"
+            >
+              <svg
+                width={planFiles.length > 0 ? "24" : "32"}
+                height={planFiles.length > 0 ? "24" : "32"}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke={isDragOver ? "#7D9B76" : "#9B9A94"}
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
               >
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg>
+              <span className="text-sm font-medium text-[#1C1C1E]">
+                {planFiles.length > 0
+                  ? "Ajouter un autre étage"
+                  : "Déposer ou cliquer pour sélectionner"}
+              </span>
+              {planFiles.length === 0 && (
+                <span className="text-xs text-[#9B9A94]">
+                  PDF, PNG, JPG — max {MAX_FILE_SIZE_MB} Mo par fichier
+                </span>
+              )}
+            </div>
+
+            {/* Reorder hint — replaces old "upload in order" warning */}
+            {planFiles.length > 1 && (
+              <div className="mt-2 flex items-center gap-2 p-2.5 rounded-lg bg-[#7D9B76]/5 border border-[#7D9B76]/15">
                 <svg
-                  width="32"
-                  height="32"
+                  width="16"
+                  height="16"
                   viewBox="0 0 24 24"
                   fill="none"
-                  stroke={isDragOver ? "#7D9B76" : "#9B9A94"}
-                  strokeWidth="1.5"
+                  stroke="#7D9B76"
+                  strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
+                  className="flex-shrink-0"
                   aria-hidden="true"
                 >
-                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                  <polyline points="17 8 12 3 7 8" />
-                  <line x1="12" y1="3" x2="12" y2="15" />
+                  <polyline points="8 7 12 3 16 7" />
+                  <polyline points="8 17 12 21 16 17" />
+                  <line x1="12" y1="3" x2="12" y2="21" />
                 </svg>
-                <span className="text-sm font-medium text-[#1C1C1E]">
-                  Déposer ou cliquer pour sélectionner
-                </span>
-                <span className="text-xs text-[#9B9A94]">
-                  PDF, PNG, JPG — max {MAX_FILE_SIZE_MB} Mo
-                </span>
+                <p className="text-xs text-[#5D6B58]">
+                  Glissez pour réordonner les étages — le premier fichier correspond au RDC.
+                </p>
               </div>
-            ) : (
-              <div className="flex items-center gap-3 p-4 rounded-lg border border-[#D1D0CB] bg-white">
-                {/* Preview */}
-                {planPreviewUrl ? (
-                  <img
-                    src={planPreviewUrl}
-                    alt="Aperçu du plan"
-                    className="w-16 h-16 rounded object-cover flex-shrink-0"
-                  />
-                ) : (
-                  <div className="w-16 h-16 rounded bg-[#F5F5F0] flex items-center justify-center flex-shrink-0">
-                    <svg
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="#9B9A94"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
+            )}
+
+            {/* File list with drag-to-reorder */}
+            {planFiles.length > 0 && (
+              <div className="mt-3 space-y-0" role="list" aria-label="Liste des plans uploadés">
+                {planFiles.map((file, index) => {
+                  const previewUrl = planPreviewUrls.get(fileKey(file));
+                  const isDragged = dragReorderIndex === index;
+                  const isDropTarget = dropTargetIndex === index && dragReorderIndex !== null && dragReorderIndex !== index;
+                  const showLineBefore = isDropTarget && dropPosition === "before";
+                  const showLineAfter = isDropTarget && dropPosition === "after";
+                  return (
+                    <div key={fileKey(file)} className="relative">
+                      {/* Drop indicator line — before this item */}
+                      <div
+                        className={`h-0.5 rounded-full mx-3 transition-all duration-150 ${
+                          showLineBefore ? "bg-[#7D9B76] my-1" : "bg-transparent my-0"
+                        }`}
+                        aria-hidden="true"
+                      />
+                    <div
+                      role="listitem"
+                      ref={(el) => {
+                        if (el) listItemRefs.current.set(index, el);
+                        else listItemRefs.current.delete(index);
+                      }}
+                      draggable={planFiles.length > 1}
+                      onDragStart={(e) => handleReorderDragStart(e, index)}
+                      onDragOver={(e) => handleReorderDragOver(e, index)}
+                      onDrop={(e) => handleReorderDrop(e, index)}
+                      onDragEnd={handleReorderDragEnd}
+                      onTouchStart={(e) => planFiles.length > 1 && handleTouchStart(index, e)}
+                      onTouchMove={handleTouchMove}
+                      onTouchEnd={handleTouchEnd}
+                      className={`
+                        flex items-center gap-3 p-3 rounded-lg border bg-white
+                        transition-all duration-150 mb-1
+                        ${isDragged
+                          ? "opacity-40 border-[#7D9B76] scale-[0.98]"
+                          : "border-[#D1D0CB]"
+                        }
+                      `}
                     >
-                      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-                      <polyline points="14 2 14 8 20 8" />
-                    </svg>
-                  </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-[#1C1C1E] truncate">
-                    {planFile.name}
-                  </p>
-                  <p className="text-xs text-[#9B9A94]">
-                    {(planFile.size / (1024 * 1024)).toFixed(1)} Mo
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleRemovePlan}
-                  className="flex-shrink-0 p-3 rounded-md text-[#9B9A94] hover:text-[#B91C1C]
-                             hover:bg-[#FEF2F2] transition-colors min-w-[44px] min-h-[44px]
-                             flex items-center justify-center
-                             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EF4444]"
-                  aria-label="Supprimer le plan"
-                >
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
-                </button>
+                      {/* Drag grip handle */}
+                      {planFiles.length > 1 && (
+                        <div
+                          className="flex-shrink-0 cursor-grab active:cursor-grabbing touch-none
+                                     p-1.5 rounded text-[#9B9A94] hover:text-[#7D9B76] hover:bg-[#7D9B76]/5
+                                     transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+                          aria-label={`Déplacer ${file.name}`}
+                        >
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 16 16"
+                            fill="currentColor"
+                            aria-hidden="true"
+                          >
+                            <circle cx="5" cy="3" r="1.5" />
+                            <circle cx="11" cy="3" r="1.5" />
+                            <circle cx="5" cy="8" r="1.5" />
+                            <circle cx="11" cy="8" r="1.5" />
+                            <circle cx="5" cy="13" r="1.5" />
+                            <circle cx="11" cy="13" r="1.5" />
+                          </svg>
+                        </div>
+                      )}
+                      {/* Preview or PDF icon */}
+                      {previewUrl ? (
+                        <img
+                          src={previewUrl}
+                          alt={`Aperçu ${file.name}`}
+                          className="w-12 h-12 rounded object-cover flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded bg-[#F5F5F0] flex items-center justify-center flex-shrink-0">
+                          <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="#9B9A94"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                          >
+                            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                          </svg>
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-[#1C1C1E] truncate">
+                          {planFiles.length > 1 && (
+                            <span className="text-[#7D9B76] mr-1.5">
+                              {index === 0 ? "RDC" : index === 1 ? "1er" : `${index}e`}{" "}—
+                            </span>
+                          )}
+                          {file.name}
+                        </p>
+                        <p className="text-xs text-[#9B9A94]">
+                          {(file.size / (1024 * 1024)).toFixed(1)} Mo
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleRemovePlan(index)}
+                        className="flex-shrink-0 p-3 rounded-md text-[#9B9A94] hover:text-[#B91C1C]
+                                   hover:bg-[#FEF2F2] transition-colors min-w-[44px] min-h-[44px]
+                                   flex items-center justify-center
+                                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EF4444]"
+                        aria-label={`Supprimer ${file.name}`}
+                      >
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
+                          <line x1="18" y1="6" x2="6" y2="18" />
+                          <line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                      </button>
+                    </div>
+                      {/* Drop indicator line — after this item (only on last item) */}
+                      {index === planFiles.length - 1 && (
+                        <div
+                          className={`h-0.5 rounded-full mx-3 transition-all duration-150 ${
+                            showLineAfter ? "bg-[#7D9B76] my-1" : "bg-transparent my-0"
+                          }`}
+                          aria-hidden="true"
+                        />
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
 
@@ -429,8 +772,9 @@ export default function NouveauProjetPage() {
               type="file"
               accept={ACCEPTED_PLAN_TYPES}
               onChange={handlePlanSelect}
+              multiple
               className="hidden"
-              aria-label="Sélectionner le plan du bien"
+              aria-label="Sélectionner les plans du bien"
             />
           </div>
 
@@ -485,7 +829,7 @@ export default function NouveauProjetPage() {
 
             <button
               type="submit"
-              disabled={isSubmitting || !adresse.trim() || !planFile}
+              disabled={isSubmitting || !adresse.trim() || planFiles.length === 0}
               className="w-full py-3 px-4 rounded-lg text-sm font-semibold text-white
                          bg-[#7D9B76] hover:bg-[#4A7A42] disabled:bg-[#D1D0CB] disabled:cursor-not-allowed
                          transition-colors focus-visible:outline-none

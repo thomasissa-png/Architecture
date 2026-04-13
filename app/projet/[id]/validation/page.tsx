@@ -32,13 +32,25 @@ interface RoomEntry {
 
 const ROOM_TYPE_OPTIONS = [
   { value: "salon", label: "Salon" },
+  { value: "sejour", label: "Séjour" },
+  { value: "salle_a_manger", label: "Salle à manger" },
   { value: "cuisine", label: "Cuisine" },
   { value: "chambre", label: "Chambre" },
+  { value: "chambre_parentale", label: "Chambre parentale" },
   { value: "sdb", label: "Salle de bain" },
   { value: "wc", label: "WC" },
   { value: "bureau", label: "Bureau" },
+  { value: "entree", label: "Entrée" },
+  { value: "dressing", label: "Dressing" },
+  { value: "cellier", label: "Cellier / Buanderie" },
+  { value: "terrasse", label: "Terrasse / Balcon" },
+  { value: "garage", label: "Garage" },
   { value: "couloir", label: "Couloir" },
   { value: "cave", label: "Cave" },
+  { value: "salle_reunion", label: "Salle de réunion" },
+  { value: "open_space", label: "Open space" },
+  { value: "accueil", label: "Accueil" },
+  { value: "local_technique", label: "Local technique" },
   { value: "autre", label: "Autre" },
 ] as const;
 
@@ -56,6 +68,7 @@ export default function ValidationPage() {
   const [error, setError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [projectStatus, setProjectStatus] = useState<string>("extraction_done");
+  const [projectAdresse, setProjectAdresse] = useState<string | null>(null);
 
   const fileInputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
   const [isDirty, setIsDirty] = useState(false);
@@ -73,8 +86,11 @@ export default function ValidationPage() {
           return;
         }
         const data = await response.json();
-        if (data.project?.status) {
-          setProjectStatus(data.project.status);
+        if (data.project_status) {
+          setProjectStatus(data.project_status);
+        }
+        if (data.project_adresse) {
+          setProjectAdresse(data.project_adresse);
         }
         const loadedRooms: RoomEntry[] = (data.rooms || []).map(
           (r: { id: string; name: string; room_type: string; surface_m2?: number | null; photo_path?: string | null }) => ({
@@ -109,6 +125,28 @@ export default function ValidationPage() {
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [isDirty]);
+
+  // ─── Track blob URLs for cleanup (Fix P1 fuite mémoire) ──────────
+
+  const blobUrlsRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    // Collecter les nouvelles blob URLs
+    rooms.forEach((room) => {
+      if (room.photoUrl?.startsWith("blob:")) {
+        blobUrlsRef.current.add(room.photoUrl);
+      }
+    });
+  }, [rooms]);
+
+  useEffect(() => {
+    const ref = blobUrlsRef;
+    return () => {
+      // Au démontage, révoquer toutes les blob URLs pour libérer la mémoire
+      ref.current.forEach((url) => URL.revokeObjectURL(url));
+      ref.current.clear();
+    };
+  }, []);
 
   // ─── Room editing ────────────────────────────────────────────────
 
@@ -278,6 +316,21 @@ export default function ValidationPage() {
     setError(null);
 
     try {
+      // ── Phase 1 : uploader les photos des pièces EXISTANTES ────
+      const existingWithPhoto = rooms.filter(
+        (r) => r.photoFile && !r.id.startsWith("new-")
+      );
+      for (const room of existingWithPhoto) {
+        const ok = await uploadRoomPhoto(room.id, room.photoFile!);
+        if (!ok) {
+          setError(
+            `Échec de l'upload de la photo pour « ${room.name || "pièce"} ». Réessayez.`
+          );
+          return;
+        }
+      }
+
+      // ── Phase 2 : sauvegarder le brouillon (crée les nouvelles pièces) ──
       const response = await fetch(`/api/pro/projects/${projectId}/draft`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -299,16 +352,40 @@ export default function ValidationPage() {
       }
 
       const data = await response.json();
+      const idMapping: Record<string, string> = data.room_id_mapping || {};
 
-      // Update room IDs for newly created rooms
-      if (data.room_id_mapping) {
-        setRooms((prev) =>
-          prev.map((r) => {
-            const newId = data.room_id_mapping[r.id];
-            return newId ? { ...r, id: newId, isNew: false } : r;
-          })
-        );
+      // ── Phase 3 : uploader les photos des pièces NOUVELLES ────
+      const newWithPhoto = rooms.filter(
+        (r) => r.photoFile && r.id.startsWith("new-")
+      );
+      for (const room of newWithPhoto) {
+        const realId = idMapping[room.id];
+        if (!realId) {
+          console.warn(
+            `[draft] Pas de mapping d'ID pour « ${room.name} » (${room.id}) — photo non uploadée`
+          );
+          continue;
+        }
+        const ok = await uploadRoomPhoto(realId, room.photoFile!);
+        if (!ok) {
+          console.error(
+            `[draft] Échec upload photo pour nouvelle pièce « ${room.name} » (${realId})`
+          );
+        }
       }
+
+      // ── Phase 4 : mettre à jour le state local ────────────────
+      setRooms((prev) =>
+        prev.map((r) => {
+          const newId = idMapping[r.id];
+          const updatedRoom = newId ? { ...r, id: newId, isNew: false } : r;
+          // Effacer photoFile car la photo est maintenant persistée côté serveur
+          if (updatedRoom.photoFile) {
+            return { ...updatedRoom, photoFile: null };
+          }
+          return updatedRoom;
+        })
+      );
 
       setIsDirty(false);
       setDraftSaved(true);
@@ -318,7 +395,7 @@ export default function ValidationPage() {
     } finally {
       setIsSavingDraft(false);
     }
-  }, [projectId, rooms]);
+  }, [projectId, rooms, uploadRoomPhoto]);
 
   // ─── Stats ───────────────────────────────────────────────────────
 
@@ -346,6 +423,9 @@ export default function ValidationPage() {
           <h1 className="text-2xl font-bold text-[#1C1C1E] tracking-tight">
             Vérifiez les pièces de votre bien
           </h1>
+          {projectAdresse && (
+            <p className="text-sm text-[#9B9A94] mt-0.5">{projectAdresse}</p>
+          )}
           <p className="text-sm text-[#9B9A94] mt-1">
             Corrigez les noms, types et surfaces si nécessaire. Associez une photo à chaque pièce.
           </p>
@@ -440,9 +520,24 @@ export default function ValidationPage() {
                           className="w-full h-full object-cover"
                         />
                         <button
-                          onClick={() => {
+                          onClick={async () => {
                             if (room.photoUrl?.startsWith("blob:")) {
                               URL.revokeObjectURL(room.photoUrl);
+                            }
+                            // Si la photo est stockée côté serveur, supprimer via DELETE
+                            if (
+                              room.photoUrl &&
+                              !room.photoUrl.startsWith("blob:") &&
+                              !room.id.startsWith("new-")
+                            ) {
+                              try {
+                                await fetch(
+                                  `/api/pro/projects/${projectId}/rooms/${room.id}/photo`,
+                                  { method: "DELETE" }
+                                );
+                              } catch {
+                                // Non bloquant : on supprime localement même si le serveur échoue
+                              }
                             }
                             setRooms((prev) =>
                               prev.map((r) =>
@@ -451,15 +546,16 @@ export default function ValidationPage() {
                                   : r
                               )
                             );
+                            setIsDirty(true);
                           }}
-                          className="absolute top-1 right-1 w-8 h-8 min-w-[44px] min-h-[44px] rounded-full bg-black/50
+                          className="absolute top-1 right-1 w-7 h-7 rounded-full bg-black/50
                                      flex items-center justify-center text-white
                                      hover:bg-black/70 transition-colors"
                           aria-label="Supprimer la photo"
                         >
                           <svg
-                            width="10"
-                            height="10"
+                            width="14"
+                            height="14"
                             viewBox="0 0 24 24"
                             fill="none"
                             stroke="currentColor"
@@ -532,6 +628,10 @@ export default function ValidationPage() {
                       aria-label={`Nom de la pièce ${room.name || ""}`}
                     />
 
+                    <p className="text-[10px] text-[#9B9A94] leading-tight">
+                      Changez le type pour transformer la pièce. Par exemple, changez « Bureau » en « Chambre » et l&apos;IA générera un visuel meublé en chambre.
+                    </p>
+
                     <div className="flex gap-2">
                       {/* Type */}
                       <select
@@ -577,14 +677,15 @@ export default function ValidationPage() {
                   {/* Delete button */}
                   <button
                     onClick={() => deleteRoom(room.id, room.name)}
-                    className="flex-shrink-0 self-start p-1.5 rounded-md text-[#9B9A94]
+                    className="flex-shrink-0 self-start w-10 h-10 rounded-md text-[#9B9A94]
                                hover:text-[#B91C1C] hover:bg-[#FEF2F2] transition-colors
+                               flex items-center justify-center
                                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EF4444]"
                     aria-label={`Supprimer ${room.name || "cette pièce"}`}
                   >
                     <svg
-                      width="14"
-                      height="14"
+                      width="16"
+                      height="16"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
@@ -683,47 +784,20 @@ export default function ValidationPage() {
               </div>
             )}
 
-            {/* Navigation */}
-            <div className="flex gap-3 pt-4 border-t border-[#D1D0CB]/40">
-              <button
-                onClick={() => router.back()}
-                className="py-2.5 px-4 rounded-lg border border-[#D1D0CB] bg-white
-                           text-sm font-medium text-[#1C1C1E] hover:bg-[#F5F5F0]
-                           transition-colors focus-visible:outline-none
-                           focus-visible:ring-2 focus-visible:ring-[#7D9B76]"
-              >
-                Retour
-              </button>
-              <button
-                onClick={handleSaveDraft}
-                disabled={isSavingDraft || rooms.length === 0}
-                className="py-2.5 px-4 rounded-lg border border-[#7D9B76] bg-white
-                           text-sm font-medium text-[#7D9B76] hover:bg-[#F0FDF4]
-                           disabled:opacity-50 disabled:cursor-not-allowed
-                           transition-colors focus-visible:outline-none
-                           focus-visible:ring-2 focus-visible:ring-[#7D9B76]"
-              >
-                {isSavingDraft ? (
-                  <span className="inline-flex items-center gap-2">
-                    <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
-                    Sauvegarde…
-                  </span>
-                ) : "Sauvegarder le brouillon"}
-              </button>
+            {/* Navigation — stacked on mobile, inline on sm+ */}
+            <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-[#D1D0CB]/40">
+              {/* Primary CTA first on mobile (visual order = importance) */}
               <button
                 onClick={handleValidate}
                 disabled={isValidating || rooms.length === 0}
-                className="flex-1 py-2.5 px-4 rounded-lg bg-[#7D9B76] text-white
+                className="w-full sm:w-auto sm:flex-1 order-first sm:order-last py-2.5 px-4 rounded-lg bg-[#7D9B76] text-white
                            text-sm font-medium hover:bg-[#4A7A42]
                            disabled:bg-[#D1D0CB] disabled:cursor-not-allowed
                            transition-colors focus-visible:outline-none
                            focus-visible:ring-2 focus-visible:ring-[#7D9B76] focus-visible:ring-offset-2"
               >
                 {isValidating ? (
-                  <span className="inline-flex items-center gap-2">
+                  <span className="inline-flex items-center justify-center gap-2">
                     <svg
                       className="animate-spin w-4 h-4"
                       viewBox="0 0 24 24"
@@ -750,6 +824,36 @@ export default function ValidationPage() {
                   "Valider et continuer"
                 )}
               </button>
+              <div className="flex gap-3 order-last sm:order-first">
+                <button
+                  onClick={() => router.back()}
+                  className="flex-1 sm:flex-none py-2.5 px-4 rounded-lg border border-[#D1D0CB] bg-white
+                             text-sm font-medium text-[#1C1C1E] hover:bg-[#F5F5F0]
+                             transition-colors focus-visible:outline-none
+                             focus-visible:ring-2 focus-visible:ring-[#7D9B76]"
+                >
+                  Retour
+                </button>
+                <button
+                  onClick={handleSaveDraft}
+                  disabled={isSavingDraft || rooms.length === 0}
+                  className="flex-1 sm:flex-none py-2.5 px-4 rounded-lg border border-[#7D9B76] bg-white
+                             text-sm font-medium text-[#7D9B76] hover:bg-[#F0FDF4]
+                             disabled:opacity-50 disabled:cursor-not-allowed
+                             transition-colors focus-visible:outline-none
+                             focus-visible:ring-2 focus-visible:ring-[#7D9B76]"
+                >
+                  {isSavingDraft ? (
+                    <span className="inline-flex items-center gap-2">
+                      <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      Sauvegarde…
+                    </span>
+                  ) : "Sauvegarder"}
+                </button>
+              </div>
             </div>
           </div>
         )}

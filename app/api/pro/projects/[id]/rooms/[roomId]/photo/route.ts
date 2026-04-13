@@ -1,12 +1,14 @@
 /**
  * POST /api/pro/projects/:id/rooms/:roomId/photo — Upload photo source pour une pièce
+ * DELETE /api/pro/projects/:id/rooms/:roomId/photo — Supprimer la photo d'une pièce
  *
- * Rendu : SSR (force-dynamic) — upload multipart authentifié.
+ * Rendu : SSR (force-dynamic) — mutation DB.
  *
  * Auth + ownership obligatoires.
- * Accepte JPEG, PNG, WEBP, HEIC/HEIF — max 10 Mo.
- * Stocke dans Replit Object Storage : clé `pro/{projectId}/rooms/{roomId}/photo.jpg`
- * Met à jour pro_rooms.photo_path.
+ * POST : accepte JPEG, PNG, WEBP, HEIC/HEIF — max 10 Mo.
+ *        Stocke dans Replit Object Storage : clé `pro/{projectId}/rooms/{roomId}/photo.jpg`
+ *        Met à jour pro_rooms.photo_path.
+ * DELETE : met pro_rooms.photo_path à NULL. L'objet storage reste orphelin (acceptable).
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -131,6 +133,65 @@ export async function POST(
       {
         error: "SERVER_ERROR",
         message: "Erreur lors de l'upload de la photo. Réessayez.",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+// ─── DELETE handler — Supprimer la photo d'une pièce ─────────────
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string; roomId: string } }
+) {
+  const projectId = params.id;
+  const roomId = params.roomId;
+
+  // ─── Auth + ownership ───────────────────────────────────────────
+  const authResult = await requireProjectOwnership(request, projectId);
+  if (isErrorResponse(authResult)) return authResult;
+
+  await ensureProTables();
+
+  const db = getPool();
+
+  // ─── Vérifier que la room existe et appartient au projet ───────
+  const roomResult = await db.query<{ id: string; photo_path: string | null }>(
+    `SELECT id, photo_path FROM pro_rooms WHERE id = $1 AND project_id = $2`,
+    [roomId, projectId]
+  );
+
+  if (roomResult.rows.length === 0) {
+    return NextResponse.json(
+      { error: "NOT_FOUND", message: "Pièce introuvable dans ce projet." },
+      { status: 404 }
+    );
+  }
+
+  try {
+    // ─── Mettre photo_path à null en DB ─────────────────────────
+    // Note : l'objet reste dans le Object Storage (orphelin acceptable).
+    // Le SDK @replit/object-storage ne propose pas de delete fiable.
+    await db.query(
+      `UPDATE pro_rooms SET photo_path = NULL WHERE id = $1 AND project_id = $2`,
+      [roomId, projectId]
+    );
+
+    console.log(
+      `[DELETE /api/pro/projects/${projectId}/rooms/${roomId}/photo] Cleared photo_path`
+    );
+
+    return NextResponse.json({ deleted: true });
+  } catch (err) {
+    console.error(
+      `[DELETE /api/pro/projects/${projectId}/rooms/${roomId}/photo] Error:`,
+      err
+    );
+    return NextResponse.json(
+      {
+        error: "SERVER_ERROR",
+        message: "Erreur lors de la suppression de la photo. Réessayez.",
       },
       { status: 500 }
     );

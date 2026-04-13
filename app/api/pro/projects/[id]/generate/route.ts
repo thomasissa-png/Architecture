@@ -25,7 +25,10 @@ import {
 import {
   generatePass,
   getOutputSize,
+  extractRoomInventory,
 } from "@/lib/generation-pipeline";
+import { getStyleById } from "@/lib/style-resolver";
+import sharp from "sharp";
 
 export const dynamic = "force-dynamic";
 
@@ -39,6 +42,7 @@ const ROUTE_DEADLINE_MS = 150_000;
 
 const GenerateBodySchema = z.object({
   lot_ids: z.array(z.string().uuid()).optional().nullable(),
+  room_ids: z.array(z.string().uuid()).optional().nullable(),
 });
 
 // ─── Pool helper: run promises with max concurrency ─────────────────
@@ -87,7 +91,8 @@ export async function POST(
   await ensureProTables();
 
   // ─── Status check ──────────────────────────────────────────────
-  const allowedStatuses = ["validated", "qualified", "plan_final"];
+  // Allow "visuals_done" for retry-per-room (some rooms failed, others done)
+  const allowedStatuses = ["validated", "qualified", "plan_final", "visuals_done"];
   if (!allowedStatuses.includes(project.status)) {
     return NextResponse.json(
       {
@@ -123,7 +128,7 @@ export async function POST(
       );
     }
 
-    const { lot_ids } = parsed.data;
+    const { lot_ids, room_ids } = parsed.data;
 
     const db = getPool();
 
@@ -140,7 +145,19 @@ export async function POST(
     let roomsQuery: string;
     let roomsParams: (string | string[])[];
 
-    if (lot_ids && lot_ids.length > 0) {
+    if (room_ids && room_ids.length > 0) {
+      // Specific rooms (used by retry-per-room)
+      roomsQuery = `
+        SELECT r.id, r.name, r.room_type, r.surface_m2, r.length_m, r.width_m,
+               r.ceiling_height_m, r.windows_count, r.photo_path,
+               r.generation_status, r.lot_id,
+               l.style_id, l.custom_style_text, l.target_buyer
+        FROM pro_rooms r
+        LEFT JOIN pro_lots l ON r.lot_id = l.id
+        WHERE r.project_id = $1 AND r.id = ANY($2)
+        ORDER BY r.lot_id, r.name`;
+      roomsParams = [projectId, room_ids];
+    } else if (lot_ids && lot_ids.length > 0) {
       // Specific lots
       roomsQuery = `
         SELECT r.id, r.name, r.room_type, r.surface_m2, r.length_m, r.width_m,
@@ -247,13 +264,40 @@ export async function POST(
           // Build dimension context for the prompt
           const dimensionBlock = buildDimensionBlock(room);
 
-          // Get style prompts
-          const styleId = room.style_id || "contemporain";
-          const surfacePrompt = `${styleId} style surfaces. ${dimensionBlock}`;
-          const furniturePrompt = `${styleId} style furniture for ${room.room_type}. ${dimensionBlock}`;
+          // Get real style prompts (v57 — 17 sprints of optimization)
+          const styleId = room.style_id || "contemporary";
+          const stylePrompts = getStyleById(styleId, false);
+          let surfacePrompt: string;
+          let furniturePrompt: string;
+          if (stylePrompts) {
+            surfacePrompt = stylePrompts.surfacePrompt;
+            furniturePrompt = stylePrompts.furniturePrompt;
+          } else if (room.custom_style_text) {
+            // Custom style text — use as both prompts (pre-processing would improve this)
+            surfacePrompt = room.custom_style_text;
+            furniturePrompt = room.custom_style_text;
+          } else {
+            // Absolute fallback — should not happen with valid style_id
+            surfacePrompt = `contemporary style surfaces. ${dimensionBlock}`;
+            furniturePrompt = `contemporary style furniture for ${room.room_type}. ${dimensionBlock}`;
+          }
 
-          // Get output size (assume landscape for now)
-          const outputSize = getOutputSize(1536, 1024);
+          // Extract room inventory via vision (fail-open — generation continues without)
+          const roomInventory = await extractRoomInventory(photoBase64);
+
+          // Get output size from actual image dimensions (not hardcoded landscape)
+          let imgWidth = 1536;
+          let imgHeight = 1024;
+          try {
+            const meta = await sharp(photoBuffer).metadata();
+            if (meta.width && meta.height) {
+              imgWidth = meta.width;
+              imgHeight = meta.height;
+            }
+          } catch {
+            // Fallback to landscape if sharp fails
+          }
+          const outputSize = getOutputSize(imgWidth, imgHeight);
 
           // ─── Pass 1: surfaces ──────────────────────────────────
           await db.query(
@@ -267,7 +311,9 @@ export async function POST(
             furniturePrompt,
             1,
             outputSize,
-            room.room_type
+            room.room_type,
+            undefined,
+            roomInventory
           );
 
           // Save pass1 result to Object Storage
@@ -292,7 +338,7 @@ export async function POST(
             outputSize,
             room.room_type,
             undefined,
-            undefined,
+            roomInventory,
             photoBase64
           );
 

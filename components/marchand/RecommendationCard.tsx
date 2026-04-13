@@ -25,6 +25,7 @@ interface Recommendation {
   description: string;
   estimated_cost?: string | null;
   impact: string;
+  rationale_buyer?: string | null;
 }
 
 interface RecommendationCardProps {
@@ -94,7 +95,7 @@ export default function RecommendationCard({
   onAccept,
   onReject,
 }: RecommendationCardProps) {
-  const { type, room_name, description, estimated_cost, impact } = recommendation;
+  const { type, room_name, description, estimated_cost, impact, rationale_buyer } = recommendation;
   const iconConfig = TYPE_ICONS[type] || TYPE_ICONS.optimize;
   const decisionStyle = DECISION_STYLES[decision];
 
@@ -145,9 +146,34 @@ export default function RecommendationCard({
       </div>
 
       {/* Description */}
-      <p className="text-sm text-[#1C1C1E]/80 leading-5 mb-3">
+      <p className="text-sm text-[#1C1C1E]/80 leading-5 mb-2">
         {description}
       </p>
+
+      {/* Rationale buyer — argument de vente */}
+      {rationale_buyer && (
+        <p className="text-xs text-[#7D9B76] leading-4 mb-3 flex items-start gap-1.5">
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+            className="flex-shrink-0 mt-0.5"
+          >
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+          <span>
+            <span className="font-medium">Argument de vente :</span>{" "}
+            {rationale_buyer}
+          </span>
+        </p>
+      )}
 
       {/* Cost + Impact row */}
       <div className="flex flex-wrap gap-3 mb-3 text-xs text-[#9B9A94]">
@@ -194,7 +220,7 @@ export default function RecommendationCard({
         <div className="flex gap-2">
           <button
             onClick={() => onAccept(recommendation.id)}
-            className="flex-1 py-2 px-3 rounded-md text-sm font-medium
+            className="flex-1 min-h-[44px] py-2 px-3 rounded-md text-sm font-medium
                        bg-[#7D9B76] text-white hover:bg-[#4A7A42]
                        transition-colors focus-visible:outline-none
                        focus-visible:ring-2 focus-visible:ring-[#7D9B76] focus-visible:ring-offset-2"
@@ -203,7 +229,7 @@ export default function RecommendationCard({
           </button>
           <button
             onClick={() => onReject(recommendation.id)}
-            className="flex-1 py-2 px-3 rounded-md text-sm font-medium
+            className="flex-1 min-h-[44px] py-2 px-3 rounded-md text-sm font-medium
                        bg-[#FEF2F2] text-[#B91C1C] hover:bg-[#FEE2E2]
                        transition-colors focus-visible:outline-none
                        focus-visible:ring-2 focus-visible:ring-[#EF4444] focus-visible:ring-offset-2"

@@ -72,15 +72,28 @@ const STATUS_CONFIG: Record<RoomStatus, { label: string; bg: string; text: strin
 
 // ─── Room type labels (FR) ──────────────────────────────────────────
 
-const ROOM_TYPE_LABELS: Record<string, string> = {
+export const ROOM_TYPE_LABELS: Record<string, string> = {
   salon: "Salon",
+  sejour: "Séjour",
+  salle_a_manger: "Salle à manger",
   cuisine: "Cuisine",
   chambre: "Chambre",
+  chambre_parentale: "Chambre parentale",
   sdb: "Salle de bain",
   wc: "WC",
   bureau: "Bureau",
+  entree: "Entrée",
+  dressing: "Dressing",
+  cellier: "Cellier / Buanderie",
+  terrasse: "Terrasse / Balcon",
+  garage: "Garage",
   couloir: "Couloir",
   cave: "Cave",
+  // Types professionnels
+  salle_reunion: "Salle de réunion",
+  open_space: "Open space",
+  accueil: "Accueil",
+  local_technique: "Local technique",
   autre: "Autre",
 };
 
