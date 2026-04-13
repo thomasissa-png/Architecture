@@ -98,6 +98,7 @@ export default function DecoupePage() {
   const [deletingLotId, setDeletingLotId] = useState<string | null>(null);
   const [saveToast, setSaveToast] = useState(false);
   const [highlightedLotId, setHighlightedLotId] = useState<string | null>(null);
+  const [detectionFallback, setDetectionFallback] = useState(false);
   const renameInputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -249,6 +250,7 @@ export default function DecoupePage() {
               room_ids: currentRooms.map((r) => r.id),
             },
           ];
+          setDetectionFallback(true);
         }
 
         // Build lots with colors
@@ -273,6 +275,7 @@ export default function DecoupePage() {
         setPageState("ready");
       } catch {
         // Fallback on error: 1 lot = all rooms
+        setDetectionFallback(true);
         const fallbackLot: LotData = {
           id: "temp_0",
           name: "Lot 1",
@@ -444,6 +447,9 @@ export default function DecoupePage() {
                 ? "Chargement des pièces..."
                 : "Détection automatique des lots..."}
             </p>
+            {pageState === "detecting" && (
+              <p className="text-xs text-[#1C1C1E]/40">5 à 15 secondes environ</p>
+            )}
           </div>
         )}
 
@@ -467,8 +473,17 @@ export default function DecoupePage() {
         {/* Main content */}
         {(pageState === "ready" || pageState === "saving") && (
           <>
+            {/* Fallback detection banner */}
+            {detectionFallback && (
+              <div className="bg-[#1C1C1E]/[0.03] border border-[#1C1C1E]/10 rounded-lg p-4 mb-4">
+                <p className="text-sm text-[#1C1C1E]/60">
+                  Détection automatique indisponible — proposition par défaut appliquée. Ajustez manuellement si nécessaire.
+                </p>
+              </div>
+            )}
+
             {/* Simple case message */}
-            {isSingleLot && (
+            {isSingleLot && !detectionFallback && (
               <div className="bg-[#1C1C1E]/[0.03] border border-[#1C1C1E]/10 rounded-lg p-4 mb-6">
                 <p className="text-sm text-[#1C1C1E]">
                   Toutes les pièces sont dans un seul bien. Vous pouvez ajouter des lots si nécessaire.
@@ -500,13 +515,20 @@ export default function DecoupePage() {
               {/* Plan (70%) */}
               <div className="flex-1 lg:w-[70%] relative">
                 {planImageUrl ? (
-                  <PlanEditor
-                    planImageUrl={planImageUrl}
-                    rooms={planRooms}
-                    onRoomsChange={() => {}}
-                    onRoomClick={handlePlanRoomClick}
-                    highlightedRoomId={selectedRoomId}
-                  />
+                  <>
+                    <PlanEditor
+                      planImageUrl={planImageUrl}
+                      rooms={planRooms}
+                      onRoomsChange={() => {}}
+                      onRoomClick={handlePlanRoomClick}
+                      highlightedRoomId={selectedRoomId}
+                    />
+                    {planRooms.length === 0 && roomsOnFloor.length > 0 && (
+                      <p className="text-xs text-[#1C1C1E]/40 mt-2 text-center">
+                        Les pièces n&apos;ont pas pu être localisées sur le plan — assignez-les depuis la liste ci-contre.
+                      </p>
+                    )}
+                  </>
                 ) : (
                   <div className="bg-[#1C1C1E]/5 rounded-lg p-8 text-center">
                     <p className="text-sm text-[#1C1C1E]/40">
@@ -657,13 +679,13 @@ export default function DecoupePage() {
                             <div className="flex items-center gap-1">
                               <button
                                 onClick={() => confirmDeleteLot(lot.id)}
-                                className="text-xs px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 min-h-[32px]"
+                                className="text-xs px-2.5 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 min-h-[44px]"
                               >
                                 Supprimer
                               </button>
                               <button
                                 onClick={() => setDeletingLotId(null)}
-                                className="text-xs px-2 py-1 text-[#1C1C1E]/50 hover:text-[#1C1C1E] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] rounded min-h-[32px]"
+                                className="text-xs px-2.5 py-2 text-[#1C1C1E]/50 hover:text-[#1C1C1E] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] rounded min-h-[44px]"
                               >
                                 Annuler
                               </button>
@@ -791,11 +813,37 @@ export default function DecoupePage() {
               ))}
             </div>
 
+            {/* Recap summary */}
+            {lots.length > 1 && (
+              <div className="mt-6 bg-[#1C1C1E]/[0.02] border border-[#1C1C1E]/10 rounded-lg px-4 py-3">
+                <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-[#1C1C1E]/60">
+                  {lots.map((lot) => {
+                    const lr = rooms.filter((r) => r.lot_id === lot.id);
+                    const s = lr.reduce((a, r) => a + (r.surface_m2 ?? 0), 0);
+                    return (
+                      <span key={lot.id} className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: lot.color }} />
+                        {lot.name} : {lr.length} pièce{lr.length > 1 ? "s" : ""}
+                        {s > 0 && <span className="text-[#1C1C1E]/40">({s.toFixed(0)} m²)</span>}
+                      </span>
+                    );
+                  })}
+                  <span className="font-medium text-[#1C1C1E]/80">
+                    Total : {rooms.filter((r) => r.lot_id).length}/{rooms.length} pièces
+                    {(() => {
+                      const total = rooms.filter((r) => r.lot_id).reduce((a, r) => a + (r.surface_m2 ?? 0), 0);
+                      return total > 0 ? ` · ${total.toFixed(0)} m²` : "";
+                    })()}
+                  </span>
+                </div>
+              </div>
+            )}
+
             {/* CTA sticky */}
             <div className="sticky bottom-0 bg-[#FAFAF8]/95 backdrop-blur-sm border-t border-[#1C1C1E]/10 py-4 mt-8 -mx-4 px-4 flex items-center justify-between gap-3">
               <button
                 onClick={() => router.push(`/projet/${projectId}/extraction`)}
-                className="px-4 py-2.5 text-sm text-[#1C1C1E]/60 hover:text-[#1C1C1E] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] rounded-lg"
+                className="px-4 py-2.5 text-sm text-[#1C1C1E]/60 hover:text-[#1C1C1E] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] rounded-lg min-h-[44px]"
               >
                 Retour
               </button>
