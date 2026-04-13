@@ -251,11 +251,14 @@ export default function ExtractionPage() {
 
     // Si pas encore initialise, charger l'image pour obtenir les dimensions naturelles
     if (!planInitializedRef.current) {
-      const imgUrl = `/api/logs/image?path=${encodeURIComponent(parsedPlanPaths[activePlanIndex] ?? parsedPlanPaths[0])}`;
+      const floorIdx = activePlanIndex;
+      const imgUrl = `/api/logs/image?path=${encodeURIComponent(parsedPlanPaths[floorIdx] ?? parsedPlanPaths[0])}`;
       const img = new Image();
       img.onload = () => {
         setPlanNaturalWidth(img.naturalWidth);
-        initializePlanRooms(rooms, img.naturalWidth, img.naturalHeight);
+        // Only initialize rooms for the active floor — not all floors on one plan
+        const floorRooms = rooms.filter((r) => (r.floor_index ?? 0) === floorIdx);
+        initializePlanRooms(floorRooms, img.naturalWidth, img.naturalHeight);
       };
       img.src = imgUrl;
     }
@@ -678,7 +681,9 @@ export default function ExtractionPage() {
                           const img = new Image();
                           img.onload = () => {
                             setPlanNaturalWidth(img.naturalWidth);
-                            initializePlanRooms(rooms, img.naturalWidth, img.naturalHeight);
+                            // Only initialize rooms for this floor
+                            const floorRooms = rooms.filter((r) => (r.floor_index ?? 0) === i);
+                            initializePlanRooms(floorRooms, img.naturalWidth, img.naturalHeight);
                           };
                           img.src = imgUrl;
                         }}
@@ -744,7 +749,9 @@ export default function ExtractionPage() {
                             const img = new Image();
                             img.onload = () => {
                               setPlanNaturalWidth(img.naturalWidth);
-                              initializePlanRooms(rooms, img.naturalWidth, img.naturalHeight);
+                              // Only initialize rooms for this floor
+                              const floorRooms = rooms.filter((r) => (r.floor_index ?? 0) === fi);
+                              initializePlanRooms(floorRooms, img.naturalWidth, img.naturalHeight);
                             };
                             img.src = imgUrl;
                           }
