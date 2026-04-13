@@ -90,6 +90,22 @@ const ROOM_COLORS: Record<string, string> = {
   autre: "rgba(169, 169, 169, 0.3)",
 };
 
+/** Apply opacity to any color format (hex or rgba) */
+function applyOpacityToColor(color: string, opacity: number): string {
+  if (color.startsWith("rgba")) {
+    return color.replace(/[\d.]+\)$/, `${opacity})`);
+  }
+  if (color.startsWith("rgb(")) {
+    return color.replace("rgb(", "rgba(").replace(")", `, ${opacity})`);
+  }
+  // Hex color — convert to rgba
+  const hex = color.replace("#", "");
+  const r = parseInt(hex.slice(0, 2), 16);
+  const g = parseInt(hex.slice(2, 4), 16);
+  const b = parseInt(hex.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+}
+
 const ROOM_BORDER_COLORS: Record<string, string> = {
   salon: "rgba(125, 155, 118, 0.8)",
   sejour: "rgba(125, 155, 118, 0.8)",
@@ -772,13 +788,13 @@ export default function PlanEditor({
   return (
     <div className="space-y-3">
       {/* P2 — Help text collapsible (UX C5) — single line + expand */}
-      <div className="p-3 rounded-lg bg-[#F0F4EE] border border-[#7D9B76]/20 text-[13px] text-[#4A7A42] leading-relaxed">
+      <div className="p-3 rounded-lg bg-[#7D9B76]/[0.08] border border-[#7D9B76]/20 text-[13px] text-[#7D9B76] leading-relaxed">
         <p>
           Déplacez les pièces, redimensionnez-les, ou ajoutez-en de nouvelles.{" "}
           <button
             type="button"
             onClick={() => setHelpExpanded((v) => !v)}
-            className="underline underline-offset-2 hover:text-[#4A7A42]/80 transition-colors
+            className="underline underline-offset-2 hover:text-[#7D9B76]/80 transition-colors
                        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] rounded"
           >
             {helpExpanded ? "Réduire" : "En savoir plus"}
@@ -808,7 +824,7 @@ export default function PlanEditor({
             </span>
           )}
           {scaleIndicatorText && (
-            <span className="text-[11px] text-[#7D9B76] bg-[#F0F4EE] rounded px-1.5 py-0.5 font-mono">
+            <span className="text-[11px] text-[#7D9B76] bg-[#7D9B76]/[0.08] rounded px-1.5 py-0.5 font-mono">
               {scaleIndicatorText}
             </span>
           )}
@@ -864,7 +880,7 @@ export default function PlanEditor({
               onClick={mergeSelectedRooms}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md
                          bg-[#7D9B76] text-white text-xs font-medium
-                         hover:bg-[#4A7A42] transition-colors
+                         hover:bg-[#6B8A64] transition-colors
                          focus-visible:outline-none focus-visible:ring-2
                          focus-visible:ring-[#7D9B76] min-h-[44px]
                          shadow-sm"
@@ -1067,7 +1083,7 @@ export default function PlanEditor({
 
       {/* P1 — Fusion mode banner */}
       {fusionMode && (
-        <div className="p-2.5 rounded-lg bg-[#F0F4EE] border border-[#7D9B76]/20 text-[13px] text-[#4A7A42]">
+        <div className="p-2.5 rounded-lg bg-[#7D9B76]/[0.08] border border-[#7D9B76]/20 text-[13px] text-[#7D9B76]">
           Touchez la pièce à fusionner avec <strong>{rooms.find((r) => r.id === selectedRoomId)?.name || "la pièce sélectionnée"}</strong>.
         </div>
       )}
@@ -1194,7 +1210,7 @@ export default function PlanEditor({
             const isHighlighted = highlightedRoomId === room.id;
             const isDragging = dragState?.roomId === room.id;
             const bgColor = room.color || colorForType(room.roomType);
-            const brdColor = borderForType(room.roomType);
+            const brdColor = room.color ? applyOpacityToColor(room.color, 0.8) : borderForType(room.roomType);
             const isNewRoom = room.isNew === true;
 
             // Displayed positions (scaled from natural coords)
@@ -1313,8 +1329,8 @@ export default function PlanEditor({
                   className="absolute inset-0 rounded-sm"
                   style={{
                     backgroundColor: isHighlighted
-                      ? bgColor.replace("0.3)", "0.55)")
-                      : isNewRoom ? bgColor.replace("0.3)", "0.4)") : bgColor,
+                      ? applyOpacityToColor(bgColor, 0.45)
+                      : isNewRoom ? applyOpacityToColor(bgColor, 0.35) : applyOpacityToColor(bgColor, 0.25),
                     border: isHighlighted
                       ? `3px solid ${brdColor}`
                       : isNewRoom
@@ -1396,7 +1412,7 @@ export default function PlanEditor({
                     type="button"
                     className="absolute -top-2 -left-2 w-7 h-7 rounded-full
                                bg-[#7D9B76] text-white flex items-center justify-center
-                               shadow-md hover:bg-[#4A7A42] transition-colors z-30
+                               shadow-md hover:bg-[#6B8A64] transition-colors z-30
                                focus-visible:outline-none focus-visible:ring-2
                                focus-visible:ring-[#7D9B76] focus-visible:ring-offset-1
                                min-w-[44px] min-h-[44px] -m-[9px]"
@@ -1773,7 +1789,7 @@ export default function PlanEditor({
                 onClick={confirmCalibration}
                 disabled={!calibrationInput || parseFloat(calibrationInput) <= 0}
                 className="px-4 py-2 rounded-lg text-sm font-medium text-white
-                           bg-[#7D9B76] hover:bg-[#4A7A42] transition-colors
+                           bg-[#7D9B76] hover:bg-[#6B8A64] transition-colors
                            min-h-[44px] disabled:opacity-40 disabled:cursor-not-allowed
                            focus-visible:outline-none focus-visible:ring-2
                            focus-visible:ring-[#7D9B76] focus-visible:ring-offset-1"

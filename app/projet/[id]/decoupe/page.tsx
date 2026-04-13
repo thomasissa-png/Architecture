@@ -21,8 +21,8 @@ import { getCompletedSteps } from "@/lib/constants";
 // ─── Constants ─────────────────────────────────────────────────────
 
 const LOT_COLORS = [
-  "#7D9B76", "#6366F1", "#F59E0B", "#EF4444", "#06B6D4",
-  "#EC4899", "#8B5CF6", "#10B981", "#F97316", "#3B82F6",
+  "#7D9B76", "#6366F1", "#D97706", "#EF4444", "#06B6D4",
+  "#DB2777", "#8B5CF6", "#10B981", "#EA580C", "#3B82F6",
   "#14B8A6", "#A855F7",
 ];
 
@@ -95,7 +95,11 @@ export default function DecoupePage() {
   const [activeFloor, setActiveFloor] = useState(0);
   const [renamingLotId, setRenamingLotId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
+  const [deletingLotId, setDeletingLotId] = useState<string | null>(null);
+  const [saveToast, setSaveToast] = useState(false);
+  const [highlightedLotId, setHighlightedLotId] = useState<string | null>(null);
   const renameInputRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // ─── Derived ───────────────────────────────────────────────────
   const floors = useMemo(() => {
@@ -319,17 +323,30 @@ export default function DecoupePage() {
     setLots((prev) => [...prev, newLot]);
   }, [lots.length]);
 
-  // ─── Delete lot ────────────────────────────────────────────────
-  const deleteLot = useCallback(
+  // ─── Delete lot (with confirmation) ─────────────────────────────
+  const confirmDeleteLot = useCallback(
     (lotId: string) => {
       // Unassign rooms from this lot
       setRooms((prev) =>
         prev.map((r) => (r.lot_id === lotId ? { ...r, lot_id: null } : r))
       );
       setLots((prev) => prev.filter((l) => l.id !== lotId));
+      setDeletingLotId(null);
     },
     []
   );
+
+  // ─── Click-outside dismiss for dropdown ────────────────────────
+  useEffect(() => {
+    if (!selectedRoomId) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setSelectedRoomId(null);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [selectedRoomId]);
 
   // ─── Rename lot ────────────────────────────────────────────────
   const startRename = useCallback((lotId: string, currentName: string) => {
@@ -380,6 +397,9 @@ export default function DecoupePage() {
         throw new Error(data.message || "Erreur lors de la sauvegarde.");
       }
 
+      // Show success toast before redirect
+      setSaveToast(true);
+      await new Promise((r) => setTimeout(r, 800));
       router.push(`/projet/${projectId}/validation`);
     } catch (err) {
       setErrorMessage((err as Error).message);
@@ -408,10 +428,10 @@ export default function DecoupePage() {
         </div>
 
         {/* Title */}
-        <h1 className="text-2xl font-semibold text-[#1C1C1E] mb-2">
+        <h1 className="text-2xl font-bold text-[#1C1C1E] mb-2">
           Découpe en biens
         </h1>
-        <p className="text-sm text-[#1C1C1E]/60 mb-6">
+        <p className="text-sm text-[#9B9A94] mb-6">
           Assignez chaque pièce à un lot. Cliquez sur une pièce du plan pour changer son lot.
         </p>
 
@@ -449,7 +469,7 @@ export default function DecoupePage() {
           <>
             {/* Simple case message */}
             {isSingleLot && (
-              <div className="bg-[#7D9B76]/10 border border-[#7D9B76]/20 rounded-lg p-4 mb-6">
+              <div className="bg-[#1C1C1E]/[0.03] border border-[#1C1C1E]/10 rounded-lg p-4 mb-6">
                 <p className="text-sm text-[#1C1C1E]">
                   Toutes les pièces sont dans un seul bien. Vous pouvez ajouter des lots si nécessaire.
                 </p>
@@ -463,7 +483,7 @@ export default function DecoupePage() {
                   <button
                     key={f}
                     onClick={() => setActiveFloor(f)}
-                    className={`px-3 py-1.5 text-sm rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] ${
+                    className={`px-3 py-2.5 text-sm rounded-md transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] ${
                       f === activeFloor
                         ? "bg-[#1C1C1E] text-white"
                         : "bg-[#1C1C1E]/5 text-[#1C1C1E]/60 hover:bg-[#1C1C1E]/10"
@@ -495,9 +515,9 @@ export default function DecoupePage() {
                   </div>
                 )}
 
-                {/* Room assignment dropdown (shown when a room is selected) */}
+                {/* Room assignment — Desktop dropdown */}
                 {selectedRoomId && (
-                  <div className="absolute top-4 right-4 bg-white border border-[#1C1C1E]/10 rounded-lg shadow-lg p-3 z-20 min-w-[200px]">
+                  <div ref={dropdownRef} className="hidden lg:block absolute top-4 right-4 bg-white border border-[#1C1C1E]/10 rounded-lg shadow-lg p-3 z-20 min-w-[200px]">
                     <p className="text-xs text-[#1C1C1E]/60 mb-2">
                       Assigner à un lot :
                     </p>
@@ -527,6 +547,48 @@ export default function DecoupePage() {
                     </button>
                   </div>
                 )}
+
+                {/* Room assignment — Mobile bottom sheet */}
+                {selectedRoomId && (
+                  <>
+                    <div
+                      className="lg:hidden fixed inset-0 bg-black/20 z-40"
+                      onClick={() => setSelectedRoomId(null)}
+                    />
+                    <div className="lg:hidden fixed inset-x-0 bottom-0 z-50 bg-white border-t border-[#1C1C1E]/10 rounded-t-2xl p-4 shadow-2xl pb-[env(safe-area-inset-bottom)]">
+                      <div className="w-10 h-1 bg-[#1C1C1E]/10 rounded-full mx-auto mb-3" />
+                      <p className="text-xs font-medium text-[#1C1C1E]/60 mb-3">
+                        Assigner «{rooms.find((r) => r.id === selectedRoomId)?.name}» à :
+                      </p>
+                      <div className="flex flex-col gap-1">
+                        {lots.map((lot) => (
+                          <button
+                            key={lot.id}
+                            onClick={() => assignRoomToLot(selectedRoomId, lot.id)}
+                            className="flex items-center gap-2 w-full px-3 py-2.5 text-sm rounded-lg hover:bg-[#1C1C1E]/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] min-h-[44px]"
+                          >
+                            <span
+                              className="w-3 h-3 rounded-full shrink-0"
+                              style={{ backgroundColor: lot.color }}
+                            />
+                            {lot.name}
+                          </button>
+                        ))}
+                        <hr className="my-1 border-[#1C1C1E]/10" />
+                        <button
+                          onClick={() => assignRoomToLot(selectedRoomId, null)}
+                          className="flex items-center gap-2 w-full px-3 py-2.5 text-sm text-[#1C1C1E]/60 rounded-lg hover:bg-[#1C1C1E]/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] min-h-[44px]"
+                        >
+                          <span
+                            className="w-3 h-3 rounded-full shrink-0 border border-dashed border-[#1C1C1E]/30"
+                            style={{ backgroundColor: UNASSIGNED_COLOR }}
+                          />
+                          Non assignée
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Sidebar lots (30%) */}
@@ -555,7 +617,13 @@ export default function DecoupePage() {
                   return (
                     <div
                       key={lot.id}
-                      className="border border-[#1C1C1E]/10 rounded-lg p-3 bg-white"
+                      className={`border rounded-lg p-3 bg-white transition-colors cursor-pointer ${
+                        highlightedLotId === lot.id
+                          ? "border-[#7D9B76] shadow-sm"
+                          : "border-[#1C1C1E]/10 hover:border-[#1C1C1E]/20"
+                      }`}
+                      onMouseEnter={() => setHighlightedLotId(lot.id)}
+                      onMouseLeave={() => setHighlightedLotId(null)}
                     >
                       {/* Header: color + name + actions */}
                       <div className="flex items-center gap-2 mb-2">
@@ -585,16 +653,33 @@ export default function DecoupePage() {
                           </button>
                         )}
                         {lots.length > 1 && (
-                          <button
-                            onClick={() => deleteLot(lot.id)}
-                            className="text-[#1C1C1E]/30 hover:text-red-500 transition-colors p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] rounded"
-                            title="Supprimer ce lot"
-                            aria-label={`Supprimer ${lot.name}`}
-                          >
-                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                              <path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                            </svg>
-                          </button>
+                          deletingLotId === lot.id ? (
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => confirmDeleteLot(lot.id)}
+                                className="text-xs px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 min-h-[32px]"
+                              >
+                                Supprimer
+                              </button>
+                              <button
+                                onClick={() => setDeletingLotId(null)}
+                                className="text-xs px-2 py-1 text-[#1C1C1E]/50 hover:text-[#1C1C1E] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] rounded min-h-[32px]"
+                              >
+                                Annuler
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setDeletingLotId(lot.id)}
+                              className="text-[#1C1C1E]/30 hover:text-red-500 transition-colors p-3 -m-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] rounded min-w-[44px] min-h-[44px] flex items-center justify-center"
+                              title="Supprimer ce lot"
+                              aria-label={`Supprimer ${lot.name}`}
+                            >
+                              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                                <path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                              </svg>
+                            </button>
+                          )
                         )}
                       </div>
 
@@ -602,7 +687,7 @@ export default function DecoupePage() {
                       <select
                         value={lot.lot_type}
                         onChange={(e) => changeLotType(lot.id, e.target.value)}
-                        className="w-full text-xs border border-[#1C1C1E]/10 rounded px-2 py-1 mb-2 bg-[#FAFAF8] text-[#1C1C1E]/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76]"
+                        className="w-full text-xs border border-[#1C1C1E]/10 rounded px-2 py-1.5 mb-2 bg-[#FAFAF8] text-[#1C1C1E]/70 appearance-none focus:outline-none focus:ring-2 focus:ring-[#7D9B76]"
                       >
                         {LOT_TYPE_OPTIONS.map((opt) => (
                           <option key={opt.value} value={opt.value}>
@@ -622,7 +707,7 @@ export default function DecoupePage() {
                           const lotFloors = new Set(lotRooms.map((r) => r.floor));
                           if (lotFloors.size > 1) {
                             return (
-                              <span className="text-[#6366F1]">
+                              <span className="text-[#1C1C1E]/50 font-medium">
                                 Étages {Array.from(lotFloors).sort().join("+")}
                               </span>
                             );
@@ -654,16 +739,25 @@ export default function DecoupePage() {
                   );
                 })}
 
-                {/* Unassigned rooms */}
+                {/* Unassigned rooms warning */}
                 {unassignedRooms.length > 0 && (
-                  <div className="border border-dashed border-[#1C1C1E]/20 rounded-lg p-3 bg-[#FAFAF8]">
-                    <p className="text-xs font-medium text-[#1C1C1E]/50 mb-1.5">
-                      Non assignées ({unassignedRooms.length})
+                  <div className="border border-dashed border-amber-300 rounded-lg p-3 bg-amber-50">
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-amber-500 shrink-0">
+                        <path d="M7 1L13 12H1L7 1z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" fill="none" />
+                        <path d="M7 5.5v2.5M7 9.5v.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+                      </svg>
+                      <p className="text-xs font-medium text-amber-700">
+                        {unassignedRooms.length} pièce{unassignedRooms.length > 1 ? "s" : ""} non assignée{unassignedRooms.length > 1 ? "s" : ""}
+                      </p>
+                    </div>
+                    <p className="text-xs text-amber-600/80 mb-2">
+                      Cliquez sur une pièce du plan pour l&apos;assigner à un lot.
                     </p>
                     {unassignedRooms.map((r) => (
                       <div
                         key={r.id}
-                        className="text-xs text-[#1C1C1E]/40 truncate"
+                        className="text-xs text-amber-700/60 truncate"
                       >
                         {r.name}
                       </div>
@@ -678,7 +772,12 @@ export default function DecoupePage() {
               {lots.map((lot) => (
                 <button
                   key={lot.id}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs whitespace-nowrap border border-[#1C1C1E]/10 bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76]"
+                  onClick={() => setHighlightedLotId((prev) => prev === lot.id ? null : lot.id)}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs whitespace-nowrap border transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] ${
+                    highlightedLotId === lot.id
+                      ? "border-[#7D9B76] bg-[#7D9B76]/10"
+                      : "border-[#1C1C1E]/10 bg-white"
+                  }`}
                 >
                   <span
                     className="w-2.5 h-2.5 rounded-full"
@@ -693,7 +792,7 @@ export default function DecoupePage() {
             </div>
 
             {/* CTA sticky */}
-            <div className="sticky bottom-0 bg-[#FAFAF8] border-t border-[#1C1C1E]/10 py-4 mt-8 -mx-4 px-4 flex items-center justify-between gap-3">
+            <div className="sticky bottom-0 bg-[#FAFAF8]/95 backdrop-blur-sm border-t border-[#1C1C1E]/10 py-4 mt-8 -mx-4 px-4 flex items-center justify-between gap-3">
               <button
                 onClick={() => router.push(`/projet/${projectId}/extraction`)}
                 className="px-4 py-2.5 text-sm text-[#1C1C1E]/60 hover:text-[#1C1C1E] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] rounded-lg"
@@ -720,6 +819,16 @@ export default function DecoupePage() {
       </main>
 
       <Footer />
+
+      {/* Save success toast */}
+      {saveToast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#1C1C1E] text-white px-4 py-2.5 rounded-lg shadow-lg flex items-center gap-2 text-sm animate-fade-in">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M3 8.5l3 3 7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Découpe enregistrée
+        </div>
+      )}
     </div>
   );
 }
