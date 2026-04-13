@@ -88,6 +88,14 @@ export default function NouveauProjetPage() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   const [showAuthModal, setShowAuthModal] = useState(false);
 
+  // ─── Drag-to-reorder state ─────────────────────────────────────
+  const [dragReorderIndex, setDragReorderIndex] = useState<number | null>(null);
+  const [dropTargetIndex, setDropTargetIndex] = useState<number | null>(null);
+  /** "before" = indicator line above target, "after" = below target */
+  const [dropPosition, setDropPosition] = useState<"before" | "after">("before");
+  const touchStartRef = useRef<{ index: number; startY: number; currentY: number } | null>(null);
+  const listItemRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+
   // ─── Address autocomplete with debounce ────────────────────────────
 
   const handleAddressInput = (value: string) => {
@@ -195,7 +203,129 @@ export default function NouveauProjetPage() {
     });
   }, [fileKey]);
 
-  // ─── Drag & drop ─────────────────────────────────────────────────
+  // ─── Drag-to-reorder handlers ────────────────────────────────────
+
+  const reorderFiles = useCallback((fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex) return;
+    setPlanFiles((prev) => {
+      const next = [...prev];
+      const [moved] = next.splice(fromIndex, 1);
+      next.splice(toIndex, 0, moved);
+      return next;
+    });
+  }, []);
+
+  const handleReorderDragStart = useCallback((e: React.DragEvent, index: number) => {
+    setDragReorderIndex(index);
+    e.dataTransfer.effectAllowed = "move";
+    // Transparent drag image — the visual indicator is the drop line
+    const ghost = document.createElement("div");
+    ghost.style.opacity = "0";
+    document.body.appendChild(ghost);
+    e.dataTransfer.setDragImage(ghost, 0, 0);
+    requestAnimationFrame(() => document.body.removeChild(ghost));
+  }, []);
+
+  const handleReorderDragOver = useCallback((e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (dragReorderIndex === null) return;
+    e.dataTransfer.dropEffect = "move";
+    // Determine if cursor is in top or bottom half of the target element
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const midY = rect.top + rect.height / 2;
+    setDropPosition(e.clientY < midY ? "before" : "after");
+    setDropTargetIndex(index);
+  }, [dragReorderIndex]);
+
+  const handleReorderDrop = useCallback((e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (dragReorderIndex !== null && dragReorderIndex !== index) {
+      // Compute effective target: if dropping "after" and source is above target,
+      // the splice-based reorder already handles it correctly. But if "before" and
+      // source is below target, we need to adjust.
+      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+      const midY = rect.top + rect.height / 2;
+      const pos = e.clientY < midY ? "before" : "after";
+      let targetIdx = index;
+      if (pos === "after" && dragReorderIndex < index) {
+        targetIdx = index; // already correct
+      } else if (pos === "before" && dragReorderIndex > index) {
+        targetIdx = index; // already correct
+      } else if (pos === "after" && dragReorderIndex > index) {
+        targetIdx = index + 1;
+      } else if (pos === "before" && dragReorderIndex < index) {
+        targetIdx = index - 1;
+      }
+      reorderFiles(dragReorderIndex, targetIdx);
+    }
+    setDragReorderIndex(null);
+    setDropTargetIndex(null);
+  }, [dragReorderIndex, reorderFiles]);
+
+  const handleReorderDragEnd = useCallback(() => {
+    setDragReorderIndex(null);
+    setDropTargetIndex(null);
+    setDropPosition("before");
+  }, []);
+
+  // ─── Touch reorder handlers (mobile) ───────────────────────────
+
+  const handleTouchStart = useCallback((index: number, e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    touchStartRef.current = { index, startY: touch.clientY, currentY: touch.clientY };
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!touchStartRef.current) return;
+    const touch = e.touches[0];
+    touchStartRef.current.currentY = touch.clientY;
+
+    // Determine which item we're over
+    const items = listItemRefs.current;
+    let closestIndex = touchStartRef.current.index;
+    let closestDist = Infinity;
+    items.forEach((el, idx) => {
+      const rect = el.getBoundingClientRect();
+      const center = rect.top + rect.height / 2;
+      const dist = Math.abs(touch.clientY - center);
+      if (dist < closestDist) {
+        closestDist = dist;
+        closestIndex = idx;
+      }
+    });
+
+    // Determine before/after position relative to closest item's center
+    const closestEl = items.get(closestIndex);
+    if (closestEl) {
+      const rect = closestEl.getBoundingClientRect();
+      const midY = rect.top + rect.height / 2;
+      setDropPosition(touch.clientY < midY ? "before" : "after");
+    }
+
+    setDragReorderIndex(touchStartRef.current.index);
+    setDropTargetIndex(closestIndex);
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    if (touchStartRef.current && dragReorderIndex !== null && dropTargetIndex !== null && dragReorderIndex !== dropTargetIndex) {
+      // Apply same position-aware logic as desktop drop
+      let targetIdx = dropTargetIndex;
+      if (dropPosition === "after" && dragReorderIndex > dropTargetIndex) {
+        targetIdx = dropTargetIndex + 1;
+      } else if (dropPosition === "before" && dragReorderIndex < dropTargetIndex) {
+        targetIdx = dropTargetIndex - 1;
+      }
+      reorderFiles(dragReorderIndex, targetIdx);
+    }
+    touchStartRef.current = null;
+    setDragReorderIndex(null);
+    setDropTargetIndex(null);
+    setDropPosition("before");
+  }, [dragReorderIndex, dropTargetIndex, dropPosition, reorderFiles]);
+
+  // ─── Drag & drop (file upload) ──────────────────────────────────
 
   const [isDragOver, setIsDragOver] = useState(false);
 
@@ -465,41 +595,96 @@ export default function NouveauProjetPage() {
               )}
             </div>
 
-            {/* Multi-file order warning */}
+            {/* Reorder hint — replaces old "upload in order" warning */}
             {planFiles.length > 1 && (
-              <div className="mt-2 flex items-start gap-2 p-2.5 rounded-lg bg-[#FFF8E1] border border-[#F9A825]/20">
+              <div className="mt-2 flex items-center gap-2 p-2.5 rounded-lg bg-[#7D9B76]/5 border border-[#7D9B76]/15">
                 <svg
                   width="16"
                   height="16"
                   viewBox="0 0 24 24"
                   fill="none"
-                  stroke="#F57F17"
+                  stroke="#7D9B76"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className="flex-shrink-0 mt-0.5"
+                  className="flex-shrink-0"
                   aria-hidden="true"
                 >
-                  <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-                  <line x1="12" y1="9" x2="12" y2="13" />
-                  <line x1="12" y1="17" x2="12.01" y2="17" />
+                  <polyline points="8 7 12 3 16 7" />
+                  <polyline points="8 17 12 21 16 17" />
+                  <line x1="12" y1="3" x2="12" y2="21" />
                 </svg>
-                <p className="text-xs text-[#5D4037]">
-                  Les fichiers sont traités dans l&apos;ordre d&apos;upload. Uploadez le RDC en premier, puis les étages supérieurs.
+                <p className="text-xs text-[#5D6B58]">
+                  Glissez pour réordonner les étages — le premier fichier correspond au RDC.
                 </p>
               </div>
             )}
 
-            {/* File list */}
+            {/* File list with drag-to-reorder */}
             {planFiles.length > 0 && (
-              <div className="mt-3 space-y-2">
+              <div className="mt-3 space-y-0" role="list" aria-label="Liste des plans uploadés">
                 {planFiles.map((file, index) => {
                   const previewUrl = planPreviewUrls.get(fileKey(file));
+                  const isDragged = dragReorderIndex === index;
+                  const isDropTarget = dropTargetIndex === index && dragReorderIndex !== null && dragReorderIndex !== index;
+                  const showLineBefore = isDropTarget && dropPosition === "before";
+                  const showLineAfter = isDropTarget && dropPosition === "after";
                   return (
+                    <div key={fileKey(file)} className="relative">
+                      {/* Drop indicator line — before this item */}
+                      <div
+                        className={`h-0.5 rounded-full mx-3 transition-all duration-150 ${
+                          showLineBefore ? "bg-[#7D9B76] my-1" : "bg-transparent my-0"
+                        }`}
+                        aria-hidden="true"
+                      />
                     <div
-                      key={fileKey(file)}
-                      className="flex items-center gap-3 p-3 rounded-lg border border-[#D1D0CB] bg-white"
+                      role="listitem"
+                      ref={(el) => {
+                        if (el) listItemRefs.current.set(index, el);
+                        else listItemRefs.current.delete(index);
+                      }}
+                      draggable={planFiles.length > 1}
+                      onDragStart={(e) => handleReorderDragStart(e, index)}
+                      onDragOver={(e) => handleReorderDragOver(e, index)}
+                      onDrop={(e) => handleReorderDrop(e, index)}
+                      onDragEnd={handleReorderDragEnd}
+                      onTouchStart={(e) => planFiles.length > 1 && handleTouchStart(index, e)}
+                      onTouchMove={handleTouchMove}
+                      onTouchEnd={handleTouchEnd}
+                      className={`
+                        flex items-center gap-3 p-3 rounded-lg border bg-white
+                        transition-all duration-150 mb-1
+                        ${isDragged
+                          ? "opacity-40 border-[#7D9B76] scale-[0.98]"
+                          : "border-[#D1D0CB]"
+                        }
+                      `}
                     >
+                      {/* Drag grip handle */}
+                      {planFiles.length > 1 && (
+                        <div
+                          className="flex-shrink-0 cursor-grab active:cursor-grabbing touch-none
+                                     p-1.5 rounded text-[#9B9A94] hover:text-[#7D9B76] hover:bg-[#7D9B76]/5
+                                     transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+                          aria-label={`Déplacer ${file.name}`}
+                        >
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 16 16"
+                            fill="currentColor"
+                            aria-hidden="true"
+                          >
+                            <circle cx="5" cy="3" r="1.5" />
+                            <circle cx="11" cy="3" r="1.5" />
+                            <circle cx="5" cy="8" r="1.5" />
+                            <circle cx="11" cy="8" r="1.5" />
+                            <circle cx="5" cy="13" r="1.5" />
+                            <circle cx="11" cy="13" r="1.5" />
+                          </svg>
+                        </div>
+                      )}
                       {/* Preview or PDF icon */}
                       {previewUrl ? (
                         <img
@@ -562,6 +747,16 @@ export default function NouveauProjetPage() {
                           <line x1="6" y1="6" x2="18" y2="18" />
                         </svg>
                       </button>
+                    </div>
+                      {/* Drop indicator line — after this item (only on last item) */}
+                      {index === planFiles.length - 1 && (
+                        <div
+                          className={`h-0.5 rounded-full mx-3 transition-all duration-150 ${
+                            showLineAfter ? "bg-[#7D9B76] my-1" : "bg-transparent my-0"
+                          }`}
+                          aria-hidden="true"
+                        />
+                      )}
                     </div>
                   );
                 })}
