@@ -191,12 +191,13 @@ export async function PUT(
       );
     }
 
-    // ─── If immeuble: every room must be assigned to a lot ────────
+    // ─── If immeuble: warn if rooms not assigned to a lot (non-blocking) ─
+    const warnings: string[] = [];
     if (project.type_bien === "immeuble") {
       const roomsNoLot = rooms.filter((r) => !r.lot_id);
       if (roomsNoLot.length > 0) {
-        missing.push(
-          `${roomsNoLot.length} pièce(s) non assignée(s) à un lot. Assignez chaque pièce à un lot.`
+        warnings.push(
+          `${roomsNoLot.length} pièce(s) non assignée(s) à un lot. Vous pourrez les assigner plus tard.`
         );
       }
     }
@@ -234,6 +235,7 @@ export async function PUT(
       rooms_count: rooms.length,
       lots_count: lotsCount,
       room_id_mapping: roomIdMapping,
+      warnings: warnings.length > 0 ? warnings : undefined,
     });
   } catch (err) {
     console.error(`[PUT /api/pro/projects/${projectId}/validate] Error:`, err);

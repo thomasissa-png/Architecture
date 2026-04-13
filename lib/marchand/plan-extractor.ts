@@ -45,14 +45,38 @@ TASK: Analyze this floor plan and return a JSON object listing every room with i
 
 EXTRACTION RULES:
 1. ROOM IDENTIFICATION: Identify every enclosed space. Include living rooms, bedrooms, kitchens, bathrooms, toilets, offices, hallways, storage, cellars. Exclude outdoor spaces (balconies, terraces) unless they are enclosed.
-2. DIMENSIONS: Read all dimension annotations (cotes) on the plan. If dimensions are printed in centimeters, convert to meters. If no dimensions are readable, set dimensions to null and add "no_dimensions_found" to warnings.
-3. SURFACE ESTIMATION: If dimensions are available, calculate surface = length x width. If dimensions are null, estimate surface from the relative proportions of rooms using the door as scale reference (standard French door = 83cm wide).
+2. DIMENSIONS — READ CAREFULLY:
+   - Look for dimension annotations (cotes) printed on the plan — numbers near walls or inside rooms.
+   - These are ALWAYS in METERS (e.g., "4.20" means 4.20 meters, "3.15" means 3.15 meters).
+   - If a number seems very large (e.g., 420, 315), it is likely in CENTIMETERS — divide by 100 to get meters.
+   - MATCH each dimension to the CORRECT room — do not assign a dimension from one room to another.
+   - If no dimensions are readable for a room, set dimensions to null.
+   - If no dimensions are readable for ANY room, add "no_dimensions_found" to warnings.
+3. SURFACE ESTIMATION:
+   - If dimensions are available for a room, calculate surface_m2 = length_m × width_m.
+   - If dimensions are null, estimate surface from relative proportions using the door as scale reference (standard French door = 83cm wide, standard door height = 204cm).
+   - SANITY CHECK — typical residential room sizes in France:
+     * WC: 1–4 m²
+     * Salle de bain: 3–15 m²
+     * Chambre: 8–25 m²
+     * Cuisine: 5–25 m²
+     * Salon/séjour: 15–60 m²
+     * Couloir/entrée: 2–15 m²
+     * Cellier/buanderie: 2–10 m²
+     * Garage: 12–40 m²
+   - If a calculated surface falls OUTSIDE these ranges, re-read the dimensions — you likely misread a cote or assigned it to the wrong room.
+   - CRITICAL: The sum of all room surfaces on one floor must NOT exceed total_surface_m2. If it does, you have misread dimensions — reduce the largest rooms.
+   - No single room can be larger than 70% of the total floor surface.
 4. SCALE REFERENCE: Report which scale reference you used: "dimensions_on_plan" if cotes are readable, "door_standard_83cm" if you estimated from door width, "scale_bar" if a graphical scale is present, "none" if no reference was available.
 5. WINDOWS & DOORS: Count windows (typically thin parallel lines on exterior walls) and doors (arcs or gaps in walls) for each room.
 6. FLOOR DETECTION: If the plan shows multiple floors or levels, set the floor number for each room (0 = ground floor). If single level, all rooms are floor 0.
 7. CONFIDENCE: Rate your confidence 0-1 for each room. Lower confidence for: rooms partially occluded, dimensions estimated (not read), ambiguous room function.
 8. IGNORE: Electrical symbols, plumbing symbols, dimension arrows (just read the numbers), furniture drawn on plan, north arrow, title block.
 9. BOUNDING BOX: For each room, estimate its bounding box position on the floor plan image as percentages (0-100) of the image width and height. The top-left corner of the image is (0, 0). x_percent and y_percent are the top-left corner of the room's bounding box. width_percent and height_percent are the room's size relative to the full image. Be as accurate as possible — use wall lines, labels, and spatial relationships to estimate positions.
+10. CROSS-CHECK BEFORE RETURNING:
+   - Verify that total_surface_m2 equals the sum of all room surfaces (within 10% tolerance for walls/corridors).
+   - Verify no room is larger than total_surface_m2.
+   - Verify dimensions make physical sense (no room 50m long in a residential building).
 
 TYPE DE BIEN CONTEXT: This plan is for a "${typeBien}". If "immeuble", there may be multiple units — identify them if possible.
 
@@ -230,7 +254,7 @@ export async function extractPlanData(
   // Validate with Zod
   const validation = PlanExtractionResultSchema.safeParse(parsed);
   if (validation.success) {
-    return validation.data;
+    return sanitizeSurfaces(validation.data);
   }
 
   // Self-correction: send Zod errors back to the model for a second try
@@ -250,7 +274,7 @@ export async function extractPlanData(
     const correctedParsed = JSON.parse(correctedJson);
     const correctedValidation = PlanExtractionResultSchema.safeParse(correctedParsed);
     if (correctedValidation.success) {
-      return correctedValidation.data;
+      return sanitizeSurfaces(correctedValidation.data);
     }
     throw new PlanExtractionError(
       "PARSING_FAILED",
@@ -336,6 +360,68 @@ export async function extractMultiplePlans(
     floors_count: plans.length,
     extraction_warnings: Array.from(allWarnings) as PlanExtractionResult["extraction_warnings"],
     scale_reference: scaleRef,
+  };
+}
+
+// ─── Surface sanity checks (post-extraction) ──────────────────────
+/**
+ * Fix obviously wrong surfaces that GPT may have produced.
+ * Common errors: cm read as m (×100 too large), cotes assigned to wrong room.
+ */
+function sanitizeSurfaces(data: PlanExtractionResult): PlanExtractionResult {
+  const rooms = [...data.rooms];
+  const totalSurface = data.total_surface_m2;
+
+  for (const room of rooms) {
+    if (room.surface_m2 === null) continue;
+
+    // Fix 1: If dimensions look like centimeters (length or width > 50m), convert
+    if (room.dimensions) {
+      let fixed = false;
+      if (room.dimensions.length_m > 50) {
+        room.dimensions.length_m = room.dimensions.length_m / 100;
+        fixed = true;
+      }
+      if (room.dimensions.width_m > 50) {
+        room.dimensions.width_m = room.dimensions.width_m / 100;
+        fixed = true;
+      }
+      if (fixed) {
+        room.surface_m2 = Math.round(room.dimensions.length_m * room.dimensions.width_m * 100) / 100;
+        room.confidence = Math.min(room.confidence, 0.5);
+        console.warn(`[plan-extractor] Sanitized dimensions for "${room.name_raw}" (cm→m conversion): ${room.surface_m2}m²`);
+      }
+    }
+
+    // Fix 2: If a single room is larger than total surface, it's wrong
+    if (totalSurface !== null && room.surface_m2 > totalSurface) {
+      console.warn(`[plan-extractor] Room "${room.name_raw}" surface ${room.surface_m2}m² exceeds total ${totalSurface}m² — capping`);
+      room.surface_m2 = null;
+      room.dimensions = null;
+      room.confidence = Math.min(room.confidence, 0.3);
+    }
+
+    // Fix 3: Unreasonably large room (> 200m² for a single room in residential)
+    if (room.surface_m2 !== null && room.surface_m2 > 200) {
+      console.warn(`[plan-extractor] Room "${room.name_raw}" surface ${room.surface_m2}m² unreasonably large — nullifying`);
+      room.surface_m2 = null;
+      room.dimensions = null;
+      room.confidence = Math.min(room.confidence, 0.3);
+    }
+  }
+
+  // Fix 4: If sum of room surfaces exceeds total by > 20%, recalculate total
+  const sumSurfaces = rooms.reduce((s, r) => s + (r.surface_m2 ?? 0), 0);
+  let correctedTotal = totalSurface;
+  if (totalSurface !== null && sumSurfaces > totalSurface * 1.2) {
+    console.warn(`[plan-extractor] Sum of rooms (${sumSurfaces}m²) exceeds total (${totalSurface}m²) by >20% — using sum as total`);
+    correctedTotal = Math.round(sumSurfaces * 100) / 100;
+  }
+
+  return {
+    ...data,
+    rooms,
+    total_surface_m2: correctedTotal,
   };
 }
 

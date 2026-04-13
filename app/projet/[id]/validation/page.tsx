@@ -408,7 +408,7 @@ export default function ValidationPage() {
     <div className="min-h-screen bg-[#FAFAF8] flex flex-col">
       <Header variant="internal" />
 
-      <main className="flex-1 w-full max-w-2xl mx-auto px-4 py-8">
+      <main className="flex-1 w-full max-w-2xl mx-auto px-4 pt-20 pb-8">
         {/* Stepper */}
         <div className="mb-8">
           <ProStepper
@@ -427,7 +427,7 @@ export default function ValidationPage() {
             <p className="text-sm text-[#9B9A94] mt-0.5">{projectAdresse}</p>
           )}
           <p className="text-sm text-[#9B9A94] mt-1">
-            Corrigez les noms, types et surfaces si nécessaire. Associez une photo à chaque pièce.
+            Corrigez les noms, types et surfaces si nécessaire. Vous pouvez associer une photo aux pièces que vous souhaitez meubler.
           </p>
         </div>
 
@@ -718,7 +718,7 @@ export default function ValidationPage() {
                       <line x1="12" y1="9" x2="12" y2="13" />
                       <line x1="12" y1="17" x2="12.01" y2="17" />
                     </svg>
-                    Pas de photo — cette pièce ne sera pas générée
+                    Sans photo — vous pourrez en ajouter une plus tard
                   </p>
                 )}
 

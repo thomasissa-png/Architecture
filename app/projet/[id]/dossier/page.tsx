@@ -422,7 +422,7 @@ export default function DossierPage() {
     <div className="min-h-screen bg-[#FAFAF8] flex flex-col">
       <Header variant="internal" />
 
-      <main className="flex-1 w-full max-w-4xl mx-auto px-4 py-8">
+      <main className="flex-1 w-full max-w-4xl mx-auto px-4 pt-20 pb-8">
         {/* Stepper */}
         <div className="mb-8">
           <ProStepper

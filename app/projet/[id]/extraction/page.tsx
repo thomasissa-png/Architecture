@@ -430,7 +430,7 @@ export default function ExtractionPage() {
     <div className="min-h-screen bg-[#FAFAF8] flex flex-col">
       <Header variant="internal" />
 
-      <main className="flex-1 w-full px-4 py-8">
+      <main className="flex-1 w-full px-4 pt-20 pb-8">
         {/* Stepper — centré max-w-2xl */}
         <div className="max-w-2xl mx-auto mb-8">
           <ProStepper
