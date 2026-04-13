@@ -247,9 +247,9 @@ export async function POST(
           project_id, name, room_type, surface_m2,
           length_m, width_m, ceiling_height_m,
           windows_count, doors_count, floor, shape,
-          is_estimated, confidence, source
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
-        RETURNING id, name, room_type, surface_m2, length_m, width_m, floor, confidence`,
+          is_estimated, confidence, source, bounding_box
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+        RETURNING id, name, room_type, surface_m2, length_m, width_m, floor, confidence, bounding_box`,
         [
           projectId,
           room.name_raw,
@@ -265,6 +265,7 @@ export async function POST(
           room.surface_m2 !== null && room.dimensions === null, // is_estimated
           room.confidence,
           "ai_extraction",
+          room.bounding_box ? JSON.stringify(room.bounding_box) : null,
         ]
       );
       const row = insertResult.rows[0];
@@ -277,7 +278,7 @@ export async function POST(
         width_m: row.width_m !== null && row.width_m !== undefined ? Number(row.width_m) : null,
         floor_index: row.floor ?? 0,
         confidence: typeof row.confidence === "number" ? row.confidence : room.confidence,
-        bounding_box: room.bounding_box ?? null,
+        bounding_box: row.bounding_box ?? room.bounding_box ?? null,
       });
     }
 

@@ -242,7 +242,7 @@ function buildFallbackLots(
 
   // Multiple floors — 1 lot per floor
   const lots: DetectedLot[] = [];
-  const sortedFloors = [...byFloor.entries()].sort(([a], [b]) => a - b);
+  const sortedFloors = Array.from(byFloor.entries()).sort(([a], [b]) => a - b);
   for (const [floor, roomIds] of sortedFloors) {
     lots.push({
       lot_name: floor === 0 ? "RDC" : `Étage ${floor}`,

@@ -197,6 +197,11 @@ export async function ensureProTables(): Promise<void> {
     ALTER TABLE pro_lots ADD COLUMN IF NOT EXISTS sort_order INTEGER DEFAULT 0;
   `).catch(() => { /* column may already exist */ });
 
+  // Add bounding_box JSONB column to pro_rooms (for plan spatial positioning)
+  await db.query(`
+    ALTER TABLE pro_rooms ADD COLUMN IF NOT EXISTS bounding_box JSONB;
+  `).catch(() => { /* column may already exist */ });
+
   // lots_defined status on pro_projects
   await db.query(`
     ALTER TABLE pro_projects DROP CONSTRAINT IF EXISTS pro_projects_status_check;
@@ -435,6 +440,7 @@ export interface ProRoom {
   generation_status: GenerationStatus;
   generation_error: string | null;
   source: RoomSource;
+  bounding_box: { x_percent: number; y_percent: number; width_percent: number; height_percent: number } | null;
   created_at: Date;
 }
 
