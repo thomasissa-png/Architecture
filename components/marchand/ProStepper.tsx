@@ -95,7 +95,7 @@ function CheckIcon() {
 /** Dot colors and styles per state. */
 const DOT_STYLES: Record<StepState, string> = {
   completed: "bg-[#7D9B76] text-white",
-  active: "bg-[#1C1C1E] text-white ring-4 ring-[#1C1C1E]/10",
+  active: "bg-[#1C1C1E] text-white ring-4 ring-[#1C1C1E]/20 shadow-md",
   locked: "bg-[#D1D0CB] text-[#9B9A94]",
   error: "bg-[#EF4444] text-white",
 };
@@ -144,10 +144,10 @@ export default function ProStepper({
   return (
     <nav
       aria-label="Progression du projet"
-      className="w-full overflow-x-auto"
+      className="w-full overflow-x-auto bg-[#FAFAF8] border border-[#E8E7E2] rounded-xl px-6 py-5 shadow-[0_1px_4px_0_rgba(28,28,30,0.06)]"
     >
       {/* Desktop : horizontal */}
-      <ol className="hidden sm:flex items-start justify-between gap-0">
+      <ol className="hidden sm:flex items-start justify-between gap-2">
         {STEPS.map((step, i) => {
           const state = getStepState(i, currentStep, completedSteps, errorSteps);
           const isLast = i === STEPS.length - 1;
@@ -164,9 +164,9 @@ export default function ProStepper({
                 type="button"
                 onClick={() => handleStepClick(stepNumber, state)}
                 disabled={!clickable}
-                className={`flex flex-col items-center min-w-[60px] transition-opacity duration-200
+                className={`flex flex-col items-center min-w-[72px] transition-opacity duration-200
                   ${clickable
-                    ? "cursor-pointer hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] rounded-lg"
+                    ? "cursor-pointer hover:opacity-75 hover:ring-2 hover:ring-[#7D9B76]/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] rounded-lg"
                     : state === "locked"
                       ? "cursor-not-allowed"
                       : "cursor-default"
@@ -185,7 +185,7 @@ export default function ProStepper({
                   {state === "completed" ? (
                     <CheckIcon />
                   ) : state === "error" ? (
-                    <span aria-hidden="true">!</span>
+                    <><span aria-hidden="true">!</span><span className="sr-only">Erreur à cette étape</span></>
                   ) : (
                     <span>{stepNumber}</span>
                   )}
@@ -196,7 +196,7 @@ export default function ProStepper({
                 >
                   {step.label}
                 </span>
-                <span className="text-[11px] text-[#9B9A94] leading-[14px] text-center">
+                <span className={`text-[11px] leading-[14px] text-center ${state === "active" ? "text-[#6B6A64]" : "text-[#9B9A94]"}`}>
                   {step.sublabel}
                 </span>
               </button>
@@ -204,7 +204,7 @@ export default function ProStepper({
               {/* Connector */}
               {!isLast && (
                 <div
-                  className={`flex-1 h-0.5 mx-2 mt-5 self-start transition-colors duration-300 ${
+                  className={`flex-1 h-px mx-3 mt-[20px] self-start transition-colors duration-300 ${
                     completedSteps.includes(i + 1)
                       ? "bg-[#7D9B76]"
                       : "bg-[#D1D0CB]"
@@ -217,8 +217,8 @@ export default function ProStepper({
         })}
       </ol>
 
-      {/* Mobile : vertical compact */}
-      <ol className="flex sm:hidden flex-col gap-1.5 px-1">
+      {/* Mobile : vertical compact — single button per step for accessibility */}
+      <ol className="flex sm:hidden flex-col gap-2 px-4 py-4">
         {STEPS.map((step, i) => {
           const state = getStepState(i, currentStep, completedSteps, errorSteps);
           const isLast = i === STEPS.length - 1;
@@ -232,14 +232,14 @@ export default function ProStepper({
               aria-current={state === "active" ? "step" : undefined}
             >
               <div className="flex flex-col items-center">
-                {/* Dot — visual 24px, touch target 44px (Apple minimum) */}
+                {/* Single button wrapping dot + label — 1 focusable per step */}
                 <button
                   type="button"
                   onClick={() => handleStepClick(stepNumber, state)}
                   disabled={!clickable}
-                  className={`flex items-center justify-center min-w-[44px] min-h-[44px] -m-[10px]
+                  className={`flex items-center gap-2.5 min-h-[44px]
                     ${clickable
-                      ? "cursor-pointer hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] rounded-lg"
+                      ? "cursor-pointer hover:opacity-75 hover:ring-2 hover:ring-[#7D9B76]/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] rounded-lg"
                       : state === "locked"
                         ? "cursor-not-allowed"
                         : "cursor-default"
@@ -251,20 +251,32 @@ export default function ProStepper({
                     "verrouillée"
                   }`}
                 >
-                  <div className={`flex items-center justify-center w-6 h-6 rounded-full text-[10px] transition-all duration-300 ${DOT_STYLES[state]}`}>
+                  <div className={`flex items-center justify-center w-6 h-6 rounded-full text-[10px] transition-all duration-300 shrink-0 ${DOT_STYLES[state]}`}>
                     {state === "completed" ? (
                       <CheckIcon />
                     ) : state === "error" ? (
-                      <span aria-hidden="true">!</span>
+                      <><span aria-hidden="true">!</span><span className="sr-only">Erreur à cette étape</span></>
                     ) : (
                       <span>{stepNumber}</span>
                     )}
                   </div>
+                  <div className="text-left">
+                    <span
+                      className={`text-xs tracking-[0.02em] leading-4 ${LABEL_STYLES[state]}`}
+                    >
+                      {step.label}
+                    </span>
+                    {state === "active" && (
+                      <span className="text-[10px] text-[#9B9A94] leading-3 block mt-0.5">
+                        {step.sublabel}
+                      </span>
+                    )}
+                  </div>
                 </button>
-                {/* Vertical connector — réduit */}
+                {/* Vertical connector */}
                 {!isLast && (
                   <div
-                    className={`w-0.5 h-3 mt-0.5 transition-colors duration-300 ${
+                    className={`w-0.5 h-5 mt-0.5 transition-colors duration-300 ${
                       completedSteps.includes(i + 1)
                         ? "bg-[#7D9B76]"
                         : "bg-[#D1D0CB]"
@@ -273,25 +285,6 @@ export default function ProStepper({
                   />
                 )}
               </div>
-              {/* Label uniquement — sublabels masqués sur mobile */}
-              <button
-                type="button"
-                onClick={() => handleStepClick(stepNumber, state)}
-                disabled={!clickable}
-                className={`pt-0.5 text-left
-                  ${clickable
-                    ? "cursor-pointer hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] rounded"
-                    : state === "locked"
-                      ? "cursor-not-allowed"
-                      : "cursor-default"
-                  }`}
-              >
-                <span
-                  className={`text-xs tracking-[0.02em] leading-4 ${LABEL_STYLES[state]}`}
-                >
-                  {step.label}
-                </span>
-              </button>
             </li>
           );
         })}
