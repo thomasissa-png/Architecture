@@ -397,15 +397,26 @@ export function sanitizeSurfaces(data: PlanExtractionResult, typeBien?: string):
   let totalSurface = data.total_surface_m2;
   const log: SanitizationEntry[] = [];
 
-  // Max surface per room depends on type de bien
-  const maxRoomSurface = typeBien === "maison" ? 150 : typeBien === "immeuble" || typeBien === "local_commercial" ? 250 : 80;
+  // Global max surface per room depends on type de bien
+  const globalMaxRoom = typeBien === "maison" ? 150 : typeBien === "immeuble" || typeBien === "local_commercial" ? 250 : 80;
 
-  // ── Fix 0: Detect systematic 10x error ──────────────────────────
+  // ── Room-type specific max surfaces (generous but catch absurdities) ─
+  const ROOM_TYPE_MAX: Record<string, number> = {
+    wc: 8, sdb: 20, chambre: 35, cuisine: 40, salon: 80,
+    bureau: 30, couloir: 25, cave: 40, autre: 60,
+  };
+  // Min surface per room type (to validate /10 corrections)
+  const ROOM_TYPE_MIN: Record<string, number> = {
+    wc: 0.5, sdb: 2, chambre: 5, cuisine: 3, salon: 8,
+    bureau: 3, couloir: 1, cave: 1, autre: 1,
+  };
+
+  // ── Fix 0: Detect systematic 10x error (global median check) ─────
   const validSurfaces = rooms.filter((r) => r.surface_m2 !== null).map((r) => r.surface_m2!).sort((a, b) => a - b);
   if (validSurfaces.length >= 2) {
     const median = validSurfaces[Math.floor(validSurfaces.length / 2)];
-    if (median > maxRoomSurface) {
-      console.warn(`[plan-extractor] Median surface ${median}m² > ${maxRoomSurface}m² — systematic 10x error, dividing all by 10`);
+    if (median > globalMaxRoom) {
+      console.warn(`[plan-extractor] Median surface ${median}m² > ${globalMaxRoom}m² — systematic 10x error, dividing all by 10`);
       for (const room of rooms) {
         if (room.surface_m2 !== null) {
           const before = room.surface_m2;
@@ -413,7 +424,6 @@ export function sanitizeSurfaces(data: PlanExtractionResult, typeBien?: string):
           log.push({ room: room.name_raw, from: before, to: room.surface_m2, reason: "10x_correction" });
         }
         if (room.dimensions) {
-          // Fix C4: divide dimensions by sqrt(10) ≈ 3.16 so that L×W = surface/10
           room.dimensions.length_m = Math.round(room.dimensions.length_m / Math.sqrt(10) * 100) / 100;
           room.dimensions.width_m = Math.round(room.dimensions.width_m / Math.sqrt(10) * 100) / 100;
         }
@@ -421,6 +431,30 @@ export function sanitizeSurfaces(data: PlanExtractionResult, typeBien?: string):
       }
       if (totalSurface !== null) {
         totalSurface = Math.round(totalSurface * 10) / 100;
+      }
+    }
+  }
+
+  // ── Fix 0b: Per-room-type 10x detection (catches mixed errors) ───
+  // When some rooms are correct but others are 10x inflated (e.g. WC=3m² OK but Chambre=131m²)
+  for (const room of rooms) {
+    if (room.surface_m2 === null) continue;
+    const rType = inferRoomTypeFromName(room.name_raw);
+    const maxForType = ROOM_TYPE_MAX[rType] ?? ROOM_TYPE_MAX.autre;
+    const minForType = ROOM_TYPE_MIN[rType] ?? ROOM_TYPE_MIN.autre;
+    // Allow 20% margin above the type max before flagging
+    if (room.surface_m2 > maxForType * 1.2) {
+      const divided = Math.round(room.surface_m2 * 10) / 100;
+      if (divided >= minForType && divided <= maxForType * 1.2) {
+        // /10 gives a reasonable value → apply correction
+        const before = room.surface_m2;
+        room.surface_m2 = divided;
+        room.confidence = Math.min(room.confidence, 0.5);
+        if (room.dimensions) {
+          room.dimensions.length_m = Math.round(room.dimensions.length_m / Math.sqrt(10) * 100) / 100;
+          room.dimensions.width_m = Math.round(room.dimensions.width_m / Math.sqrt(10) * 100) / 100;
+        }
+        log.push({ room: room.name_raw, from: before, to: room.surface_m2, reason: "10x_per_type" });
       }
     }
   }
@@ -442,9 +476,19 @@ export function sanitizeSurfaces(data: PlanExtractionResult, typeBien?: string):
       }
     }
 
-    // Cap per typeBien
-    if (room.surface_m2 > maxRoomSurface) {
-      log.push({ room: room.name_raw, from: room.surface_m2, to: null, reason: `cap_${maxRoomSurface}m2` });
+    // Per-room-type cap (after 10x correction attempts)
+    const rType = inferRoomTypeFromName(room.name_raw);
+    const maxForType = ROOM_TYPE_MAX[rType] ?? ROOM_TYPE_MAX.autre;
+    if (room.surface_m2 > maxForType * 1.2) {
+      log.push({ room: room.name_raw, from: room.surface_m2, to: null, reason: `cap_type_${rType}_${maxForType}m2` });
+      room.surface_m2 = null;
+      room.dimensions = null;
+      room.confidence = Math.min(room.confidence, 0.3);
+    }
+
+    // Global cap per typeBien (safety net)
+    if (room.surface_m2 !== null && room.surface_m2 > globalMaxRoom) {
+      log.push({ room: room.name_raw, from: room.surface_m2, to: null, reason: `cap_${globalMaxRoom}m2` });
       room.surface_m2 = null;
       room.dimensions = null;
       room.confidence = Math.min(room.confidence, 0.3);
@@ -459,7 +503,26 @@ export function sanitizeSurfaces(data: PlanExtractionResult, typeBien?: string):
     }
   }
 
-  // ── Fix 2: Recalculate total ──────────────────────────────────
+  // ── Fix 2: Clamp bounding boxes to image bounds ────────────────
+  for (const room of rooms) {
+    if (!room.bounding_box) continue;
+    const bb = room.bounding_box;
+    bb.x_percent = Math.max(0, Math.min(bb.x_percent, 99));
+    bb.y_percent = Math.max(0, Math.min(bb.y_percent, 99));
+    bb.width_percent = Math.max(1, Math.min(bb.width_percent, 100 - bb.x_percent));
+    bb.height_percent = Math.max(1, Math.min(bb.height_percent, 100 - bb.y_percent));
+    // No single room should take more than 60% of plan in either direction
+    if (bb.width_percent > 60) {
+      bb.width_percent = 60;
+      log.push({ room: room.name_raw, from: null, to: null, reason: "bbox_width_clamped" });
+    }
+    if (bb.height_percent > 60) {
+      bb.height_percent = 60;
+      log.push({ room: room.name_raw, from: null, to: null, reason: "bbox_height_clamped" });
+    }
+  }
+
+  // ── Fix 3: Recalculate total ──────────────────────────────────
   const sumSurfaces = rooms.reduce((s, r) => s + (r.surface_m2 ?? 0), 0);
   let correctedTotal = totalSurface;
   if (correctedTotal === null || (sumSurfaces > 0 && Math.abs(sumSurfaces - (correctedTotal ?? 0)) > sumSurfaces * 0.3)) {
@@ -470,6 +533,20 @@ export function sanitizeSurfaces(data: PlanExtractionResult, typeBien?: string):
     data: { ...data, rooms, total_surface_m2: correctedTotal },
     log,
   };
+}
+
+/** Infer room type from name_raw for surface caps */
+function inferRoomTypeFromName(nameRaw: string): string {
+  const n = nameRaw.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  if (/salon|sejour|living|salle.*manger/.test(n)) return "salon";
+  if (/cuisine|kitchen|kitchenette/.test(n)) return "cuisine";
+  if (/chambre|bedroom/.test(n)) return "chambre";
+  if (/salle.*bain|sdb|bathroom/.test(n)) return "sdb";
+  if (/\bwc\b|toilet/.test(n)) return "wc";
+  if (/bureau|office/.test(n)) return "bureau";
+  if (/couloir|hall|entree|degagement|palier/.test(n)) return "couloir";
+  if (/cave|cellier|rangement|buanderie/.test(n)) return "cave";
+  return "autre";
 }
 
 // ─── Quality gates (post-extraction, post-sanitization) ────────────
@@ -517,14 +594,24 @@ export function validateExtraction(
   }
 
   // C2: Thresholds depend on typeBien
-  const maxRoomSurface = typeBien === "maison" ? 150 : typeBien === "immeuble" || typeBien === "local_commercial" ? 250 : 80;
   const maxTotalSurface = typeBien === "maison" ? 500 : typeBien === "immeuble" || typeBien === "local_commercial" ? 800 : 300;
 
-  // GATE 1 — Surfaces in realistic ranges
-  const oversizedRooms = data.rooms.filter((r) => r.surface_m2 !== null && r.surface_m2 > maxRoomSurface);
+  // Per-room-type max (same as sanitizeSurfaces)
+  const RT_MAX: Record<string, number> = {
+    wc: 8, sdb: 20, chambre: 35, cuisine: 40, salon: 80,
+    bureau: 30, couloir: 25, cave: 40, autre: 60,
+  };
+
+  // GATE 1 — Surfaces in realistic ranges per room type
+  const oversizedRooms = data.rooms.filter((r) => {
+    if (r.surface_m2 === null) return false;
+    const rType = inferRoomTypeFromName(r.name_raw);
+    const max = RT_MAX[rType] ?? RT_MAX.autre;
+    return r.surface_m2 > max * 1.2;
+  });
   gates.push({
     id: "G1_SURFACE_RANGE",
-    label: `Surfaces dans les plages réalistes (< ${maxRoomSurface}m²)`,
+    label: "Surfaces dans les plages réalistes par type de pièce",
     passed: oversizedRooms.length === 0,
     detail: oversizedRooms.length > 0
       ? oversizedRooms.map((r) => `${r.name_raw} (${r.surface_m2}m²)`).join(", ")

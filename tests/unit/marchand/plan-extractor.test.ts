@@ -27,7 +27,7 @@ vi.mock("openai", () => {
 
 // ─── Import after mock ────────────────────────────────────────────
 
-import { extractPlanData, extractMultiplePlans, PlanExtractionError } from "@/lib/marchand/plan-extractor";
+import { extractPlanData, extractMultiplePlans, PlanExtractionError, sanitizeSurfaces, validateExtraction } from "@/lib/marchand/plan-extractor";
 
 // ─── Setup ────────────────────────────────────────────────────────
 
@@ -425,5 +425,163 @@ describe("PlanExtractionError", () => {
   it("est une instance de Error", () => {
     const err = new PlanExtractionError("PARSING_FAILED", "Bad JSON");
     expect(err).toBeInstanceOf(Error);
+  });
+});
+
+// ─── sanitizeSurfaces ──────────────────────────────────────────────
+
+describe("sanitizeSurfaces", () => {
+  const makeRoom = (name: string, surface: number | null, bbox?: { x_percent: number; y_percent: number; width_percent: number; height_percent: number }) => ({
+    name_raw: name,
+    surface_m2: surface,
+    dimensions: null as null,
+    ceiling_height_m: null as number | null,
+    windows_count: 1,
+    doors_count: 1,
+    floor: 0,
+    shape: "rectangle" as const,
+    confidence: 0.8,
+    bounding_box: bbox ?? null,
+  });
+
+  const makeResult = (rooms: ReturnType<typeof makeRoom>[]) => ({
+    rooms,
+    total_surface_m2: rooms.reduce((s, r) => s + (r.surface_m2 ?? 0), 0),
+    floors_count: 1,
+    extraction_warnings: [] as string[],
+    scale_reference: "dimensions_on_plan" as const,
+  });
+
+  it("corrige les surfaces 10x trop grandes par type de pièce (bug cuisine 256m²)", () => {
+    // Real bug: GPT returned Séjour/cuisine=256.1, Chambre=131.4, SdB=68.2
+    const rooms = [
+      makeRoom("WC", 3.0),
+      makeRoom("Entrée", 20.2),
+      makeRoom("Couloir", 20.8),
+      makeRoom("Salle de bain", 68.2),
+      makeRoom("Chambre", 131.4),
+      makeRoom("Séjour / cuisine", 256.1),
+    ];
+    const result = sanitizeSurfaces(makeResult(rooms), "maison");
+
+    // WC, Entrée, Couloir should stay (within range)
+    const wc = result.data.rooms.find(r => r.name_raw === "WC");
+    expect(wc!.surface_m2).toBe(3.0);
+
+    const entree = result.data.rooms.find(r => r.name_raw === "Entrée");
+    expect(entree!.surface_m2).toBe(20.2);
+
+    // SdB 68.2 → 6.82 (10x per-type correction, max sdb=20)
+    const sdb = result.data.rooms.find(r => r.name_raw === "Salle de bain");
+    expect(sdb!.surface_m2).toBe(6.82);
+
+    // Chambre 131.4 → 13.14 (10x per-type correction, max chambre=35)
+    const chambre = result.data.rooms.find(r => r.name_raw === "Chambre");
+    expect(chambre!.surface_m2).toBe(13.14);
+
+    // Séjour/cuisine 256.1 → 25.61 (10x per-type correction, max salon=80)
+    const sejour = result.data.rooms.find(r => r.name_raw === "Séjour / cuisine");
+    expect(sejour!.surface_m2).toBe(25.61);
+
+    // Corrections should be logged
+    expect(result.log.filter(l => l.reason === "10x_per_type").length).toBe(3);
+  });
+
+  it("ne touche pas les surfaces raisonnables", () => {
+    const rooms = [
+      makeRoom("WC", 2.5),
+      makeRoom("Chambre", 12.0),
+      makeRoom("Salon", 25.0),
+      makeRoom("Cuisine", 8.0),
+    ];
+    const result = sanitizeSurfaces(makeResult(rooms), "appartement");
+    expect(result.log.length).toBe(0);
+    expect(result.data.rooms[0].surface_m2).toBe(2.5);
+    expect(result.data.rooms[1].surface_m2).toBe(12.0);
+    expect(result.data.rooms[2].surface_m2).toBe(25.0);
+    expect(result.data.rooms[3].surface_m2).toBe(8.0);
+  });
+
+  it("null les surfaces qui restent aberrantes même après /10", () => {
+    const rooms = [
+      makeRoom("WC", 500), // 500/10=50 → still too big for WC (max 8)
+    ];
+    const result = sanitizeSurfaces(makeResult(rooms), "appartement");
+    expect(result.data.rooms[0].surface_m2).toBeNull();
+  });
+
+  it("clampe les bounding boxes hors limites", () => {
+    const rooms = [
+      makeRoom("Salon", 25, { x_percent: 50, y_percent: 30, width_percent: 70, height_percent: 40 }),
+    ];
+    const result = sanitizeSurfaces(makeResult(rooms), "appartement");
+    const bb = result.data.rooms[0].bounding_box!;
+    // x=50 + width=70 = 120 > 100 → clamped to width=50
+    expect(bb.x_percent + bb.width_percent).toBeLessThanOrEqual(100);
+  });
+
+  it("clampe les bounding boxes trop larges (>60%)", () => {
+    const rooms = [
+      makeRoom("Salon", 25, { x_percent: 5, y_percent: 5, width_percent: 80, height_percent: 30 }),
+    ];
+    const result = sanitizeSurfaces(makeResult(rooms), "appartement");
+    expect(result.data.rooms[0].bounding_box!.width_percent).toBe(60);
+    expect(result.log.some(l => l.reason === "bbox_width_clamped")).toBe(true);
+  });
+
+  it("détection 10x globale quand la médiane dépasse le max global", () => {
+    const rooms = [
+      makeRoom("Chambre 1", 150),
+      makeRoom("Chambre 2", 120),
+      makeRoom("Salon", 250),
+    ];
+    // For appartement, globalMaxRoom=80, median=150 > 80 → all /10
+    const result = sanitizeSurfaces(makeResult(rooms), "appartement");
+    expect(result.data.rooms[0].surface_m2).toBe(15.0);
+    expect(result.data.rooms[1].surface_m2).toBe(12.0);
+    expect(result.data.rooms[2].surface_m2).toBe(25.0);
+    expect(result.log.filter(l => l.reason === "10x_correction").length).toBe(3);
+  });
+});
+
+describe("validateExtraction — quality gates", () => {
+  const makeRoom = (name: string, surface: number | null) => ({
+    name_raw: name,
+    surface_m2: surface,
+    dimensions: null as null,
+    ceiling_height_m: null as number | null,
+    windows_count: 1,
+    doors_count: 1,
+    floor: 0,
+    shape: "rectangle" as const,
+    confidence: 0.8,
+    bounding_box: null,
+  });
+
+  it("G1 échoue sur surfaces hors plage par type", () => {
+    const data = {
+      rooms: [makeRoom("Chambre", 50), makeRoom("WC", 2)],
+      total_surface_m2: 52,
+      floors_count: 1,
+      extraction_warnings: [] as string[],
+      scale_reference: "dimensions_on_plan" as const,
+    };
+    const report = validateExtraction(data, [], "appartement");
+    const g1 = report.gates.find(g => g.id === "G1_SURFACE_RANGE");
+    expect(g1!.passed).toBe(false);
+    expect(g1!.detail).toContain("Chambre");
+  });
+
+  it("G1 passe sur surfaces raisonnables", () => {
+    const data = {
+      rooms: [makeRoom("Chambre", 15), makeRoom("WC", 2)],
+      total_surface_m2: 17,
+      floors_count: 1,
+      extraction_warnings: [] as string[],
+      scale_reference: "dimensions_on_plan" as const,
+    };
+    const report = validateExtraction(data, [], "appartement");
+    const g1 = report.gates.find(g => g.id === "G1_SURFACE_RANGE");
+    expect(g1!.passed).toBe(true);
   });
 });
