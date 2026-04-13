@@ -431,7 +431,7 @@ export default function NouveauProjetPage() {
           <div className="relative">
             <label
               htmlFor="adresse"
-              className="block text-sm font-medium text-[#1C1C1E] mb-1.5"
+              className="block text-sm font-medium text-[#1C1C1E] mb-2"
             >
               Adresse du bien
             </label>
@@ -453,7 +453,7 @@ export default function NouveauProjetPage() {
               className="w-full px-3 py-2.5 rounded-lg border border-[#D1D0CB] bg-white
                          text-sm text-[#1C1C1E] placeholder-[#9B9A94]
                          focus:outline-none focus:ring-2 focus:ring-[#7D9B76] focus:border-transparent
-                         transition-shadow"
+                         transition"
             />
             {showSuggestions && suggestions.length > 0 && (
               <div
@@ -487,7 +487,7 @@ export default function NouveauProjetPage() {
           <div>
             <label
               htmlFor="type_bien"
-              className="block text-sm font-medium text-[#1C1C1E] mb-1.5"
+              className="block text-sm font-medium text-[#1C1C1E] mb-2"
             >
               Type de bien
             </label>
@@ -498,7 +498,8 @@ export default function NouveauProjetPage() {
               className="w-full px-3 py-2.5 rounded-lg border border-[#D1D0CB] bg-white
                          text-sm text-[#1C1C1E]
                          focus:outline-none focus:ring-2 focus:ring-[#7D9B76] focus:border-transparent
-                         transition-shadow appearance-none"
+                         transition appearance-none
+                         bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%239B9A94%22 stroke-width=%222%22><polyline points=%226 9 12 15 18 9%22/></svg>')] bg-no-repeat bg-[right_0.75rem_center] pr-9"
             >
               {TYPE_BIEN_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -533,13 +534,13 @@ export default function NouveauProjetPage() {
               className="w-full px-3 py-2.5 rounded-lg border border-[#D1D0CB] bg-white
                          text-sm text-[#1C1C1E] placeholder-[#9B9A94]
                          focus:outline-none focus:ring-2 focus:ring-[#7D9B76] focus:border-transparent
-                         transition-shadow"
+                         transition"
             />
           </div>
 
           {/* Plan upload — multi-file */}
           <div>
-            <label className="block text-sm font-medium text-[#1C1C1E] mb-1.5">
+            <label className="block text-sm font-medium text-[#1C1C1E] mb-2">
               Plans du bien
               <span className="text-[#9B9A94] font-normal ml-1">— 1 fichier par étage</span>
             </label>
@@ -560,7 +561,7 @@ export default function NouveauProjetPage() {
               }}
               className={`flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed
                          cursor-pointer transition-all duration-200
-                         ${planFiles.length > 0 ? "p-4" : "p-8"}
+                         ${planFiles.length > 0 ? "py-4 px-6" : "p-8"}
                          ${isDragOver
                            ? "border-[#7D9B76] bg-[#7D9B76]/5"
                            : "border-[#D1D0CB] bg-white hover:border-[#9B9A94] hover:bg-[#F5F5F0]"
@@ -569,8 +570,8 @@ export default function NouveauProjetPage() {
               aria-label="Déposer les plans du bien"
             >
               <svg
-                width={planFiles.length > 0 ? "20" : "32"}
-                height={planFiles.length > 0 ? "20" : "32"}
+                width={planFiles.length > 0 ? "24" : "32"}
+                height={planFiles.length > 0 ? "24" : "32"}
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke={isDragOver ? "#7D9B76" : "#9B9A94"}
@@ -714,7 +715,7 @@ export default function NouveauProjetPage() {
                         <p className="text-sm font-medium text-[#1C1C1E] truncate">
                           {planFiles.length > 1 && (
                             <span className="text-[#7D9B76] mr-1.5">
-                              Étage {index}{" "}—
+                              {index === 0 ? "RDC" : index === 1 ? "1er" : `${index}e`}{" "}—
                             </span>
                           )}
                           {file.name}
