@@ -72,11 +72,24 @@ EXTRACTION RULES:
 6. FLOOR DETECTION: If the plan shows multiple floors or levels, set the floor number for each room (0 = ground floor). If single level, all rooms are floor 0.
 7. CONFIDENCE: Rate your confidence 0-1 for each room. Lower confidence for: rooms partially occluded, dimensions estimated (not read), ambiguous room function.
 8. IGNORE: Electrical symbols, plumbing symbols, dimension arrows (just read the numbers), furniture drawn on plan, north arrow, title block.
-9. BOUNDING BOX: For each room, estimate its bounding box position on the floor plan image as percentages (0-100) of the image width and height. The top-left corner of the image is (0, 0). x_percent and y_percent are the top-left corner of the room's bounding box. width_percent and height_percent are the room's size relative to the full image. Be as accurate as possible — use wall lines, labels, and spatial relationships to estimate positions.
+9. BOUNDING BOX — CRITICAL FOR VISUAL ACCURACY:
+   - Each room's bounding box must TIGHTLY follow the room's walls on the plan.
+   - x_percent and y_percent = top-left corner of the room (0-100% of image).
+   - width_percent and height_percent = room dimensions relative to full image.
+   - RULES:
+     * ALL rooms must be INSIDE the plan outline. If the plan occupies 60% of the image, rooms must be within that 60%.
+     * Look at the EXTERIOR WALLS of the building first. No room can extend beyond these walls.
+     * Adjacent rooms must have ADJACENT (touching) bounding boxes, NOT overlapping ones.
+     * The bounding box must match the room's SHAPE — a narrow corridor should have a narrow width_percent.
+     * x_percent + width_percent must be <= 100. y_percent + height_percent must be <= 100.
+     * Small rooms (WC, SDB) should have SMALL bounding boxes. Large rooms (séjour) should have LARGE ones. The box size must be PROPORTIONAL to the room's surface.
+   - PROCESS: First identify the plan's outer boundary rectangle. Then place each room relative to that boundary, using wall intersections as guides.
 10. CROSS-CHECK BEFORE RETURNING:
    - Verify that total_surface_m2 equals the sum of all room surfaces (within 10% tolerance for walls/corridors).
    - Verify no room is larger than total_surface_m2.
    - Verify dimensions make physical sense (no room 50m long in a residential building).
+   - Verify ALL bounding boxes are WITHIN the plan outline — no room extends outside the building walls.
+   - Verify bounding box sizes are PROPORTIONAL to surface_m2 — a 5m² WC cannot have a bigger box than a 30m² salon.
 
 TYPE DE BIEN CONTEXT: This plan is for a "${typeBien}". If "immeuble", there may be multiple units — identify them if possible.
 

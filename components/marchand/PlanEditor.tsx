@@ -239,6 +239,7 @@ export default function PlanEditor({
   const containerRef = useRef<HTMLDivElement>(null);
   const [imgSize, setImgSize] = useState<{ width: number; height: number } | null>(null);
   const [dragState, setDragState] = useState<DragState | null>(null);
+  const justDraggedRef = useRef(false);
   const [editingNameId, setEditingNameId] = useState<string | null>(null);
   const [editingTypeId, setEditingTypeId] = useState<string | null>(null);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
@@ -508,9 +509,14 @@ export default function PlanEditor({
   );
 
   const handlePointerUp = useCallback(() => {
+    if (dragState) {
+      // Mark that we just finished a drag — prevent onClick from firing onRoomClick
+      justDraggedRef.current = true;
+      requestAnimationFrame(() => { justDraggedRef.current = false; });
+    }
     setDragState(null);
     setAlignmentGuides({ horizontal: [], vertical: [] });
-  }, []);
+  }, [dragState]);
 
   // Global listeners for drag
   useEffect(() => {
@@ -1243,8 +1249,10 @@ export default function PlanEditor({
                   } else {
                     setSelectedRoomId(room.id);
                     setSelectedRoomIds(new Set([room.id]));
-                    // Notify parent for scroll-into-view in room list
-                    onRoomClick?.(room.id);
+                    // Notify parent for scroll-into-view — but NOT after drag/resize
+                    if (!justDraggedRef.current) {
+                      onRoomClick?.(room.id);
+                    }
                     // Cancel fusion mode if user clicks without using it
                     if (fusionMode) setFusionMode(false);
                   }

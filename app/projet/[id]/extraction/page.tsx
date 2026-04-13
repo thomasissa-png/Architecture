@@ -107,17 +107,22 @@ function distributeRoomsOnPlan(
   const maxSurface = Math.max(...surfaces, 1);
 
   return rooms.map((room, i) => {
-    // Si la pièce a un bounding_box IA, utiliser les coordonnées réelles
+    // Si la pièce a un bounding_box IA, utiliser les coordonnées réelles (clampées)
     if (room.bounding_box) {
       const bb = room.bounding_box;
+      // Clamp percentages to valid range [0, 100] and ensure box stays within image
+      const xPct = Math.max(0, Math.min(95, bb.x_percent));
+      const yPct = Math.max(0, Math.min(95, bb.y_percent));
+      const wPct = Math.max(2, Math.min(100 - xPct, bb.width_percent));
+      const hPct = Math.max(2, Math.min(100 - yPct, bb.height_percent));
       return {
         id: room.id,
         name: room.name || "Sans nom",
         roomType: room.room_type || "autre",
-        x: Math.round(planWidth * bb.x_percent / 100),
-        y: Math.round(planHeight * bb.y_percent / 100),
-        width: Math.max(40, Math.round(planWidth * bb.width_percent / 100)),
-        height: Math.max(30, Math.round(planHeight * bb.height_percent / 100)),
+        x: Math.round(planWidth * xPct / 100),
+        y: Math.round(planHeight * yPct / 100),
+        width: Math.max(40, Math.round(planWidth * wPct / 100)),
+        height: Math.max(30, Math.round(planHeight * hPct / 100)),
         color: PLAN_ROOM_COLORS[room.room_type] || PLAN_ROOM_COLORS.autre,
         isNew: false,
       };
@@ -383,6 +388,19 @@ export default function ExtractionPage() {
   }, [rooms]);
 
   const hasMultipleFloors = roomsByFloor.length > 1;
+
+  /** Rooms for the active floor only (for PlanEditor and filtered list) */
+  const activeFloorRooms = useMemo(() => {
+    const entry = roomsByFloor.find(([fi]) => fi === activePlanIndex);
+    return entry ? entry[1] : rooms;
+  }, [roomsByFloor, activePlanIndex, rooms]);
+
+  /** PlanRooms filtered to active floor only */
+  const activePlanRooms = useMemo(() => {
+    if (!hasMultipleFloors) return planRooms;
+    const activeIds = new Set(activeFloorRooms.map((r) => r.id));
+    return planRooms.filter((pr) => activeIds.has(pr.id));
+  }, [hasMultipleFloors, planRooms, activeFloorRooms]);
 
   /** Update a single room field */
   const updateRoom = useCallback(
@@ -677,7 +695,7 @@ export default function ExtractionPage() {
                 <div id="plan-editor-section" className="animate-in fade-in duration-300">
                   <PlanEditor
                     planImageUrl={`/api/logs/image?path=${encodeURIComponent(parsedPlanPaths[activePlanIndex] ?? parsedPlanPaths[0])}`}
-                    rooms={planRooms}
+                    rooms={activePlanRooms}
                     onRoomsChange={handlePlanRoomsChange}
                     scaleFactor={scaleFactor}
                     onScaleFactorChange={(sf) => setScaleFactor(sf)}
@@ -688,47 +706,66 @@ export default function ExtractionPage() {
               </div>
             )}
 
-            {/* Rooms grouped by floor — centré, en dessous du plan */}
+            {/* Rooms for active floor — centré, en dessous du plan */}
             <div className="max-w-2xl mx-auto space-y-6">
-              <div className="flex items-center gap-2 border-b border-[#D1D0CB]/40 pb-2">
-                <h2 className="text-sm font-semibold text-[#1C1C1E]">
-                  Détails des pièces
-                </h2>
-                {isPlanDirty && (
-                  <span className="inline-flex items-center gap-1 text-xs font-medium text-[#7D9B76] bg-[#ECFDF5] rounded-full px-2 py-0.5">
-                    <svg width="8" height="8" viewBox="0 0 8 8" aria-hidden="true"><circle cx="4" cy="4" r="4" fill="currentColor"/></svg>
-                    Modifié
+              <div className="flex items-center justify-between border-b border-[#D1D0CB]/40 pb-2">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-sm font-semibold text-[#1C1C1E]">
+                    {hasMultipleFloors ? floorLabel(activePlanIndex) : "Détails des pièces"}
+                  </h2>
+                  <span className="text-xs text-[#9B9A94]">
+                    {activeFloorRooms.length} pièce{activeFloorRooms.length > 1 ? "s" : ""}
                   </span>
+                  {isPlanDirty && (
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-[#7D9B76] bg-[#ECFDF5] rounded-full px-2 py-0.5">
+                      <svg width="8" height="8" viewBox="0 0 8 8" aria-hidden="true"><circle cx="4" cy="4" r="4" fill="currentColor"/></svg>
+                      Modifié
+                    </span>
+                  )}
+                </div>
+                {/* Floor tabs in room list — synced with plan tabs */}
+                {hasMultipleFloors && (
+                  <div className="flex items-center gap-1" role="tablist">
+                    {roomsByFloor.map(([fi]) => (
+                      <button
+                        key={fi}
+                        type="button"
+                        role="tab"
+                        aria-selected={fi === activePlanIndex}
+                        onClick={() => {
+                          setActivePlanIndex(fi);
+                          planInitializedRef.current = false;
+                          const path = parsedPlanPaths[fi] ?? parsedPlanPaths[0];
+                          if (path) {
+                            const imgUrl = `/api/logs/image?path=${encodeURIComponent(path)}`;
+                            const img = new Image();
+                            img.onload = () => {
+                              setPlanNaturalWidth(img.naturalWidth);
+                              initializePlanRooms(rooms, img.naturalWidth, img.naturalHeight);
+                            };
+                            img.src = imgUrl;
+                          }
+                        }}
+                        className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all
+                          ${fi === activePlanIndex
+                            ? "bg-[#7D9B76] text-white"
+                            : "bg-[#F5F5F0] text-[#9B9A94] hover:bg-[#ECFDF5]"
+                          }
+                          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76]`}
+                      >
+                        {fi === 0 ? "RDC" : `Ét. ${fi}`}
+                      </button>
+                    ))}
+                  </div>
                 )}
               </div>
-              {roomsByFloor.map(([floorIndex, floorRooms]) => {
-                const planPreview = parsedPlanPaths[floorIndex] ?? parsedPlanPaths[0] ?? null;
+              {/* Show only the active floor's rooms */}
+              {(() => {
+                const floorIndex = activePlanIndex;
+                const floorRooms = activeFloorRooms;
 
                 return (
                   <section key={floorIndex} aria-label={floorLabel(floorIndex)}>
-                    {/* Floor header with plan preview */}
-                    {hasMultipleFloors && (
-                      <div className="flex items-center gap-3 mb-3 pb-2 border-b border-[#D1D0CB]/40">
-                        {planPreview && (
-                          <div className="flex-shrink-0 w-[60px] h-[60px] sm:w-[80px] sm:h-[80px] rounded border border-[#D1D0CB]/40 overflow-hidden bg-[#F5F5F0]">
-                            <img
-                              src={`/api/logs/image?path=${encodeURIComponent(planPreview)}`}
-                              alt={`Plan ${floorLabel(floorIndex)}`}
-                              className="w-full h-full object-contain"
-                              loading="lazy"
-                            />
-                          </div>
-                        )}
-                        <div>
-                          <h2 className="text-sm font-semibold text-[#1C1C1E]">
-                            {floorLabel(floorIndex)}
-                          </h2>
-                          <p className="text-xs text-[#9B9A94]">
-                            {floorRooms.length} pièce{floorRooms.length > 1 ? "s" : ""}
-                          </p>
-                        </div>
-                      </div>
-                    )}
 
                     {/* Room list for this floor */}
                     <div className="space-y-2">
@@ -905,7 +942,7 @@ export default function ExtractionPage() {
                     </button>
                   </section>
                 );
-              })}
+              })()}
 
               {rooms.length === 0 && (
                 <div className="text-center py-10 px-4 rounded-lg border-2 border-dashed border-[#D1D0CB]">
