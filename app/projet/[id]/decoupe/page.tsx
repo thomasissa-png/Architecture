@@ -70,6 +70,12 @@ interface DetectedLot {
   lot_name: string;
   lot_type: string;
   room_ids: string[];
+  zone_rect: {
+    x_percent: number;
+    y_percent: number;
+    width_percent: number;
+    height_percent: number;
+  } | null;
 }
 
 type PageState = "loading" | "detecting" | "ready" | "saving" | "error";
@@ -87,9 +93,10 @@ export default function DecoupePage() {
   const [projectStatus, setProjectStatus] = useState("plan_uploaded");
   const [rooms, setRooms] = useState<RoomData[]>([]);
   const [lots, setLots] = useState<LotData[]>([]);
-  const [planImageUrl, setPlanImageUrl] = useState<string | null>(null);
+  const [planPath, setPlanPath] = useState<string | null>(null);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [activeFloor, setActiveFloor] = useState(0);
+  const [activePlanIndex, setActivePlanIndex] = useState(0);
   const [renamingLotId, setRenamingLotId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
   const [deletingLotId, setDeletingLotId] = useState<string | null>(null);
@@ -344,6 +351,7 @@ export default function DecoupePage() {
               lot_name: "Lot 1",
               lot_type: "appartement",
               room_ids: [],
+              zone_rect: null,
             },
           ];
           setDetectionFallback(true);
@@ -356,7 +364,7 @@ export default function DecoupePage() {
           lot_type: d.lot_type || "appartement",
           color: LOT_COLORS[i % LOT_COLORS.length],
           room_ids: d.room_ids || [],
-          zone_rect: null,
+          zone_rect: d.zone_rect || null,
         }));
 
         setLots(newLots);

@@ -91,7 +91,7 @@ interface PlanEditorProps {
   onPhotoPlacementComplete?: () => void;
 }
 
-type HandlePosition = "nw" | "ne" | "sw" | "se";
+type HandlePosition = "nw" | "n" | "ne" | "e" | "se" | "s" | "sw" | "w";
 
 interface DragState {
   type: "move" | "resize";
@@ -588,6 +588,20 @@ export default function PlanEditor({
             newX = dragState.origX + dragState.origWidth - newW;
             newY = dragState.origY + dragState.origHeight - newH;
             break;
+          case "n":
+            newH = clamp(dragState.origHeight - dy, MIN_ROOM_SIZE, dragState.origY + dragState.origHeight);
+            newY = dragState.origY + dragState.origHeight - newH;
+            break;
+          case "s":
+            newH = clamp(dragState.origHeight + dy, MIN_ROOM_SIZE, maxH - dragState.origY);
+            break;
+          case "e":
+            newW = clamp(dragState.origWidth + dx, MIN_ROOM_SIZE, maxW - dragState.origX);
+            break;
+          case "w":
+            newW = clamp(dragState.origWidth - dx, MIN_ROOM_SIZE, dragState.origX + dragState.origWidth);
+            newX = dragState.origX + dragState.origWidth - newW;
+            break;
         }
 
         updated = {
@@ -945,16 +959,19 @@ export default function PlanEditor({
           let newW = o.width_percent;
           let newH = o.height_percent;
 
-          if (startState.handle.includes("w")) {
+          const h = startState.handle;
+          // Horizontal axis: "w" = drag left edge, "e"/"ne"/"se" = drag right edge, "n"/"s" = no horizontal change
+          if (h.includes("w")) {
             newX = clamp(o.x_percent + dxPct, 0, o.x_percent + o.width_percent - 3);
             newW = o.width_percent - (newX - o.x_percent);
-          } else {
+          } else if (h.includes("e")) {
             newW = clamp(o.width_percent + dxPct, 3, 100 - o.x_percent);
           }
-          if (startState.handle.includes("n")) {
+          // Vertical axis: "n" = drag top edge, "s"/"se"/"sw" = drag bottom edge, "e"/"w" = no vertical change
+          if (h.includes("n")) {
             newY = clamp(o.y_percent + dyPct, 0, o.y_percent + o.height_percent - 3);
             newH = o.height_percent - (newY - o.y_percent);
-          } else {
+          } else if (h.includes("s")) {
             newH = clamp(o.height_percent + dyPct, 3, 100 - o.y_percent);
           }
           onLotZoneChange(lotId, { x_percent: newX, y_percent: newY, width_percent: newW, height_percent: newH });
@@ -1645,46 +1662,83 @@ export default function PlanEditor({
                   aria-label={`Déplacer la zone ${zone.name}`}
                 >
 
-                  {/* Corner resize handles */}
-                  {(["nw", "ne", "sw", "se"] as const).map((corner) => (
-                    <div
-                      key={`zone-handle-${zone.id}-${corner}`}
-                      className="absolute pointer-events-auto"
-                      style={{
-                        width: HANDLE_HIT_SIZE,
-                        height: HANDLE_HIT_SIZE,
-                        ...(corner.includes("n") ? { top: -HANDLE_HIT_SIZE / 2 } : { bottom: -HANDLE_HIT_SIZE / 2 }),
-                        ...(corner.includes("w") ? { left: -HANDLE_HIT_SIZE / 2 } : { right: -HANDLE_HIT_SIZE / 2 }),
-                        cursor: corner === "nw" || corner === "se" ? "nwse-resize" : "nesw-resize",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                      onMouseDown={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        handleZoneDragStart(zone.id, "resize", e.clientX, e.clientY, corner);
-                      }}
-                      onTouchStart={(e) => {
-                        e.stopPropagation();
-                        const t = e.touches[0];
-                        handleZoneDragStart(zone.id, "resize", t.clientX, t.clientY, corner);
-                      }}
-                      role="button"
-                      aria-label={`Redimensionner la zone ${zone.name} — coin ${corner}`}
-                    >
+                  {/* Resize handles — 4 corners + 4 edges */}
+                  {(["nw", "n", "ne", "e", "se", "s", "sw", "w"] as HandlePosition[]).map((handle) => {
+                    const isCorner = handle.length === 2;
+                    const isEdge = handle.length === 1;
+                    // Position
+                    const posStyle: React.CSSProperties = {};
+                    if (handle.includes("n")) posStyle.top = -HANDLE_HIT_SIZE / 2;
+                    if (handle.includes("s")) posStyle.bottom = -HANDLE_HIT_SIZE / 2;
+                    if (handle.includes("w")) posStyle.left = -HANDLE_HIT_SIZE / 2;
+                    if (handle.includes("e")) posStyle.right = -HANDLE_HIT_SIZE / 2;
+                    // Edge handles: center on the opposite axis
+                    if (handle === "n" || handle === "s") { posStyle.left = "50%"; posStyle.transform = "translateX(-50%)"; }
+                    if (handle === "e" || handle === "w") { posStyle.top = "50%"; posStyle.transform = "translateY(-50%)"; }
+                    // Cursor
+                    const cursorMap: Record<HandlePosition, string> = {
+                      nw: "nwse-resize", se: "nwse-resize",
+                      ne: "nesw-resize", sw: "nesw-resize",
+                      n: "ns-resize", s: "ns-resize",
+                      e: "ew-resize", w: "ew-resize",
+                    };
+                    const ariaLabels: Record<HandlePosition, string> = {
+                      nw: "coin haut-gauche", n: "bord haut", ne: "coin haut-droite",
+                      e: "bord droite", se: "coin bas-droite", s: "bord bas",
+                      sw: "coin bas-gauche", w: "bord gauche",
+                    };
+                    return (
                       <div
+                        key={`zone-handle-${zone.id}-${handle}`}
+                        className="absolute pointer-events-auto"
                         style={{
-                          width: 10,
-                          height: 10,
-                          borderRadius: "50%",
-                          background: applyOpacityToColor(zone.color, 0.8),
-                          border: "2px solid white",
-                          pointerEvents: "none",
+                          width: HANDLE_HIT_SIZE,
+                          height: HANDLE_HIT_SIZE,
+                          ...posStyle,
+                          cursor: cursorMap[handle],
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
                         }}
-                      />
-                    </div>
-                  ))}
+                        onMouseDown={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          handleZoneDragStart(zone.id, "resize", e.clientX, e.clientY, handle);
+                        }}
+                        onTouchStart={(e) => {
+                          e.stopPropagation();
+                          const t = e.touches[0];
+                          handleZoneDragStart(zone.id, "resize", t.clientX, t.clientY, handle);
+                        }}
+                        role="button"
+                        aria-label={`Redimensionner la zone ${zone.name} — ${ariaLabels[handle]}`}
+                      >
+                        {isCorner ? (
+                          <div
+                            style={{
+                              width: 10,
+                              height: 10,
+                              borderRadius: "50%",
+                              background: applyOpacityToColor(zone.color, 0.8),
+                              border: "2px solid white",
+                              pointerEvents: "none",
+                            }}
+                          />
+                        ) : (
+                          <div
+                            style={{
+                              width: handle === "n" || handle === "s" ? 20 : 6,
+                              height: handle === "e" || handle === "w" ? 20 : 6,
+                              borderRadius: 3,
+                              background: applyOpacityToColor(zone.color, 0.8),
+                              border: "1.5px solid white",
+                              pointerEvents: "none",
+                            }}
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
