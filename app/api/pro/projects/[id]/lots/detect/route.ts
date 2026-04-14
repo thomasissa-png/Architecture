@@ -81,9 +81,14 @@ export async function POST(
     // ─── Try IA detection from plan image ────────────────────────
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey || apiKey === "..." || apiKey.startsWith("sk_test_")) {
-      // No valid API key — fallback to single lot
+      // No valid API key — fallback to single lot covering the full plan
       return NextResponse.json({
-        lots: [{ lot_name: "Lot 1", lot_type: "appartement", room_ids: [], zone_rect: null }],
+        lots: [{
+          lot_name: "Lot 1",
+          lot_type: "appartement",
+          room_ids: [],
+          zone_rect: { x_percent: 5, y_percent: 5, width_percent: 90, height_percent: 90 },
+        }],
         source: "fallback",
       });
     }
@@ -91,7 +96,7 @@ export async function POST(
     // Load plan image(s) for vision analysis
     if (!project.plan_file_path) {
       return NextResponse.json({
-        lots: [{ lot_name: "Lot 1", lot_type: "appartement", room_ids: [], zone_rect: null }],
+        lots: [{ lot_name: "Lot 1", lot_type: "appartement", room_ids: [], zone_rect: { x_percent: 5, y_percent: 5, width_percent: 90, height_percent: 90 } }],
         source: "fallback",
       });
     }
@@ -145,7 +150,7 @@ export async function POST(
     // If no plan images could be loaded, fallback
     if (imageBase64List.length === 0) {
       return NextResponse.json({
-        lots: [{ lot_name: "Lot 1", lot_type: "appartement", room_ids: [], zone_rect: null }],
+        lots: [{ lot_name: "Lot 1", lot_type: "appartement", room_ids: [], zone_rect: { x_percent: 5, y_percent: 5, width_percent: 90, height_percent: 90 } }],
         source: "fallback",
       });
     }
@@ -262,7 +267,7 @@ Return a JSON object with this exact structure:
     const content = response.choices[0]?.message?.content;
     if (!content) {
       return NextResponse.json({
-        lots: [{ lot_name: "Lot 1", lot_type: "appartement", room_ids: [], zone_rect: null }],
+        lots: [{ lot_name: "Lot 1", lot_type: "appartement", room_ids: [], zone_rect: { x_percent: 5, y_percent: 5, width_percent: 90, height_percent: 90 } }],
         source: "fallback",
       });
     }
@@ -273,14 +278,14 @@ Return a JSON object with this exact structure:
       parsed = JSON.parse(content);
     } catch {
       return NextResponse.json({
-        lots: [{ lot_name: "Lot 1", lot_type: "appartement", room_ids: [], zone_rect: null }],
+        lots: [{ lot_name: "Lot 1", lot_type: "appartement", room_ids: [], zone_rect: { x_percent: 5, y_percent: 5, width_percent: 90, height_percent: 90 } }],
         source: "fallback",
       });
     }
 
     if (!parsed.lots || !Array.isArray(parsed.lots) || parsed.lots.length === 0) {
       return NextResponse.json({
-        lots: [{ lot_name: "Lot 1", lot_type: "appartement", room_ids: [], zone_rect: null }],
+        lots: [{ lot_name: "Lot 1", lot_type: "appartement", room_ids: [], zone_rect: { x_percent: 5, y_percent: 5, width_percent: 90, height_percent: 90 } }],
         source: "fallback",
       });
     }
@@ -363,7 +368,12 @@ Return a JSON object with this exact structure:
     console.error(`[POST /api/pro/projects/${projectId}/lots/detect] Error:`, err);
 
     return NextResponse.json({
-      lots: [{ lot_name: "Lot 1", lot_type: "appartement", room_ids: [], zone_rect: null }],
+      lots: [{
+        lot_name: "Lot 1",
+        lot_type: "appartement",
+        room_ids: [],
+        zone_rect: { x_percent: 5, y_percent: 5, width_percent: 90, height_percent: 90 },
+      }],
       source: "fallback",
     });
   }

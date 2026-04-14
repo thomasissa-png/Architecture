@@ -1,5 +1,26 @@
 import { Pool } from "pg";
 import { Client as StorageClient } from "@replit/object-storage";
+import fs from "fs";
+import pathModule from "path";
+
+// ─── Local filesystem fallback for Object Storage (dev without Replit) ─
+const LOCAL_STORAGE_DIR = pathModule.join(process.cwd(), ".local-storage");
+const USE_LOCAL_STORAGE = !process.env.REPL_ID; // Not on Replit = use local FS
+
+class LocalStorageClient {
+  async uploadFromBytes(key: string, data: Buffer | Uint8Array): Promise<{ ok: boolean }> {
+    const filePath = pathModule.join(LOCAL_STORAGE_DIR, key);
+    fs.mkdirSync(pathModule.dirname(filePath), { recursive: true });
+    fs.writeFileSync(filePath, data);
+    return { ok: true };
+  }
+  async downloadAsBytes(key: string): Promise<{ ok: boolean; value?: [Buffer] }> {
+    const filePath = pathModule.join(LOCAL_STORAGE_DIR, key);
+    if (!fs.existsSync(filePath)) return { ok: false };
+    const buf = fs.readFileSync(filePath);
+    return { ok: true, value: [buf] as [Buffer] };
+  }
+}
 
 // ─── Singleton Pool ──────────────────────────────────────────────────
 let pool: Pool | null = null;
@@ -161,6 +182,10 @@ export async function ensureTable(): Promise<void> {
 let storageClient: StorageClient | null = null;
 
 function getStorage(): StorageClient {
+  if (USE_LOCAL_STORAGE) {
+    // Local filesystem fallback for development without Replit
+    return new LocalStorageClient() as unknown as StorageClient;
+  }
   if (storageClient) {
     // Check if client is stuck in error state (internal SDK state)
     const state = (storageClient as unknown as { state?: { status?: string } }).state;
