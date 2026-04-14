@@ -340,46 +340,49 @@
 | @orchestrator + @ia + @qa + @ux + @moi + @product-manager + Yann + Lucas + Camille | 2026-04-05 | Session 33 marathon — 60+ commits | **Pipeline génération** : 8 bugs multi-photo corrigés (compteur crédits, MAX_CONCURRENT 5, overlay par photo, tri par fileIndex, refund auto, race conditions). 2 RC corrigées (refresh abort + flicker). userCredits null guard + roomType non-split + crop sur photos bien (CropModal + uncrop). PDF dossier en mode screen au lieu print. Layout résultats responsive sm:max-w-xl→lg:max-w-2xl. Specs F12 6 règles R1-R6. **Prompts** : v49→v52 (anti-élargissement, plomberie, comptage radiateurs, anti-fenêtre mezzanine, IPN, color shift bidirectionnel). v53 = refonte passe 1 (663→220 mots). v54 = condensation passe 2 (478→200) + outdoor (350→200). Validés Yann 8.4/Lucas 8.9/Camille 7.9. **Tests** : 12 E2E Playwright + matrice 135 combinaisons + audit cross-fichier 44 checks. **Build fix** : 3 ESLint errors (currentProcessing, jobIdx, userCredits dep). | Décisions clés : (1) Décrément crédits SYNCHRONE au clic (CustomEvent detail.credits, pas fetch API) — Thomas teste l'annulation en 5 min, doit voir le compteur bouger. (2) MAX_CONCURRENT 2→5 — toutes les images partent en parallèle, plus de "En attente". (3) Refund automatique sur jobs échoués + annulation — F12.5 spec. (4) Refonte prompts en mode "structure FIRST, action SECOND" — gpt-image-1.5 perd focus après ~200 mots. (5) PDF dossier rend la version SCREEN (web parfaite) au lieu de PRINT (DossierPrintView cassé). Alternatives écartées : compositing post-génération (plus complexe que refonte prompts), filtrage des pièces complexes (perte de cas d'usage). |
 
 | @orchestrator + @fullstack + @qa + @reviewer + @marchand-de-biens | 2026-04-10 | Session 41 — Implémentation parcours marchand + audits step-by-step | **Phase 1 — Implémentation** : 6 API routes câblées (GET lots, PUT qualify, PATCH rec/[id], POST/PUT description, POST dossier/pdf), plan-extractor + architect-agent importés, pipeline génération intégré (generatePass, getOutputSize), pdf-lib PDF réel (A4, StandardFonts). 7 pages frontend câblées avec API. ProStepper dynamique (getCompletedSteps). inferRoomType() classification FR. roomTypeLabel() centralisé. **Phase 2 — Fixes** : 8 bugs QA (B1-B8), 5 P0 reviewer, LEFT JOIN génération, isDirty + beforeunload validation, auto-trigger génération check status, optimistic UI + revert recommendations, bouton Annuler. **Phase 3 — Audits** : 9 rapports (QA, reviewer, Thomas UX 6.4, marchand 7.9, cross-review GO CONDITIONNEL, 4 audits étapes 1-4). 1383 tests PASS, lint clean. Commits : bd6a984→421e964 (8 commits). | Implémentation complète choisie (pas de MVP). Parcours 7 étapes fonctionnel e2e. Audits ont confirmé majorité bugs déjà fixés — 4 P1 UX résiduels corrigés (beforeunload, optimistic revert, auto-trigger, Annuler). |
+| @orchestrator | 2026-04-14 | Session 45 — 3 features workflow marchand (zone lots, direction photo, itération visuelle) | **Feature 1** : Zone drawing multi-lot sur plan — rectangles colorés par lot, drag/resize, auto-assignation pièces par containment spatial (center-point, smallest-zone tiebreaker). DB `zone_rect JSONB` sur `pro_lots`. **Feature 2** : Direction photo sur plan — marqueurs caméra + flèche direction, click-to-place + drag-to-angle. DB `photo_direction JSONB` sur `pro_rooms`. API PUT/DELETE. PlanEditor étendu (camera icons, direction arrows). Validation page : plan collapsible + bouton par pièce. **Feature 3** : Itération visuelle par texte — POST /api/pro/projects/:id/rooms/:roomId/iterate. Classify adjust/restyle via GPT-4.1-mini, enrichissement commentaire, génération OpenAI Responses API. UI: input texte + send par pièce done sur page génération. Réutilise infra B2C (iteration-prompt.ts, custom-prompt.ts, generation-pipeline.ts). Tests 1418 PASS (10 pré-existants). 3 commits (7d876a4, 6a30670, 6b1a6f9). | Les 3 features comblent les manques identifiés par audit workflow 7 étapes. Zone drawing prioritaire car impact direct sur l'UX d'assignation pièces→lots (avant : drag-and-drop de pills, après : dessin visuel sur le plan). Direction photo = metadata pour la future génération contextuelle (angle de prise de vue). Itération visuelle réutilise l'infra B2C existante (pas de duplication) — classifyIterationIntent + preprocessIterationComment + builders d'iteration-prompt.ts. Alt écartée pour itération : endpoint dédié batch multi-pièces (trop complexe V1, une pièce à la fois suffit). |
 
 ---
 
-## Mémo de reprise — dernière session (Session 44 — Implémentation lots/biens + tests quality gates)
+## Mémo de reprise — dernière session (Session 45 — 3 features workflow marchand avancées)
+
+- **Date de clôture** : 2026-04-14
+- **Branche** : `claude/session-recovery-analysis-SoNoa`
+- **HEAD** : `6b1a6f9` (feat: visual iteration with text instructions per room)
+- **Objet** : Implémentation de 3 features manquantes du workflow marchand : zone drawing lots, direction photo, itération visuelle
+
+### Ce qui a été fait (Session 45)
+
+1. **Feature 1 — Zone drawing multi-lot** (commit `7d876a4`) : Rectangles colorés par lot sur le plan, drag/resize, auto-assignation pièces par containment spatial (center-point, smallest-zone tiebreaker). DB `zone_rect JSONB` sur `pro_lots`. Bouton "Dessiner la zone" / "Redessiner" par lot.
+2. **Feature 2 — Direction photo** (commit `6a30670`) : Marqueurs caméra + flèches direction sur plan. Click-to-place + drag-to-angle. DB `photo_direction JSONB` sur `pro_rooms`. API PUT/DELETE. Validation page : plan collapsible + bouton "Indiquer la direction photo" par pièce.
+3. **Feature 3 — Itération visuelle** (commit `6b1a6f9`) : POST /api/pro/projects/:id/rooms/:roomId/iterate. Classify adjust/restyle via GPT-4.1-mini, enrichissement commentaire, génération OpenAI Responses API. Input texte + send par pièce done sur page génération.
+4. **Build vérifié** : 0 ESLint, 0 TypeScript, 1418 tests PASS (10 pré-existants échouent — quality-gates 10x, non liés)
+
+### Ce qui reste (session 46)
+1. **Deploy Replit** + test terrain complet du flow lots→zones→photos→direction→génération→itération
+2. **Consommer photo_direction dans le pipeline de génération** — enrichir le prompt avec l'angle de prise de vue (P2, la donnée est stockée mais pas encore injectée)
+3. **Retry contextuel extraction** (passer les erreurs détectées au prompt de retry — P2)
+4. **Audit Thomas** sur le flow complet avec les 3 nouvelles features
+5. **Fix les 10 tests quality-gates** (per-room-type 10x correction eating surface cap — dette technique P2)
+
+### Commande de reprise session 46
+```
+@orchestrator Reprends Versimo session 46. Session 45 close : 3 features workflow marchand implémentées (zone lots, direction photo, itération visuelle).
+Branche : claude/session-recovery-analysis-SoNoa. HEAD : 6b1a6f9.
+Reste : (1) deploy Replit + test terrain complet, (2) injecter photo_direction dans le pipeline de génération P2, (3) audit Thomas flow complet avec nouvelles features.
+```
+
+### Learnings session 45
+- La réutilisation de l'infra B2C d'itération (iteration-prompt.ts, custom-prompt.ts, generation-pipeline.ts) est directe — pas de duplication nécessaire pour le pro. L'endpoint pro `/iterate` est un wrapper léger (~250 LoC) autour des fonctions existantes.
+- PlanEditor supporte maintenant 3 couches d'interaction superposées (outline z-1/z-4, zones z-2/z-3, photo markers z-22) — l'architecture z-index doit être documentée pour éviter les conflits futurs
+- Le pattern optimistic update + fire-and-forget API fonctionne bien pour les metadata secondaires (direction photo) — pas besoin d'attendre la réponse serveur pour continuer à travailler
+
+## Mémo de reprise — session 44 (archivé)
 
 - **Date de clôture** : 2026-04-13
 - **Branche** : `claude/session-recovery-analysis-SoNoa`
-- **HEAD** : voir dernier commit sur la branche
-- **Objet** : Implémentation complète de la fonctionnalité lots/biens (étape 3 du parcours marchand), tests unitaires quality gates, intégration end-to-end
-
-### Ce qui a été fait (Session 44)
-
-1. **27 tests unitaires** sanitizeSurfaces + validateExtraction (quality-gates.test.ts) — couvre les 8 gates, détection 10x par typeBien, cap surfaces, cm→m, log structuré, score, shouldRetry
-2. **Structure lots/biens** : ProStepper 7→8 étapes, DB migrations (lot_type, color, sort_order), ProjectStatusEnum + getCompletedSteps mis à jour, 6 pages step index +1
-3. **API PUT /lots** : sauvegarde complète lots + assignation pièces, validation room_ids, update status → lots_defined
-4. **API POST /lots/detect** : détection IA lots via GPT-4.1 vision, fallback 1 lot par étage, validation room_ids
-5. **Page decoupe** (~500 lignes) : détection IA au mount, PlanEditor avec couleurs lots, sidebar gestion lots (ajout/suppr/rename/type), assignation pièce→lot via clic plan, tabs étages, pills mobile, CTA save → redirect /validation
-6. **API GET /rooms** : nouvel endpoint listant les pièces avec floor, surface, bounding_box
-7. **Persistence bounding_box** : colonne JSONB ajoutée à pro_rooms, stockée à l'extraction (était perdue avant)
-8. **Fix intégration critique** : validate/route.ts accepte désormais le statut `lots_defined` (sinon 409 bloquant le flow decoupe→validation)
-9. **Build vérifié** : 0 ESLint, 0 TypeScript, 27/27 tests PASS
-
-### Ce qui reste (session 45)
-1. **Deploy Replit** + re-test extraction avec vrai PDF d'immeuble
-2. **Retry contextuel** (passer les erreurs détectées au prompt de retry — P2)
-3. **Validation page lot grouping** (P3, nice-to-have — validation affiche les pièces en liste plate, pas groupées par lot)
-4. **Audit Thomas** sur le flow complet decoupe → validation → qualification avec lots
-
-### Commande de reprise session 45
-```
-@orchestrator Reprends Versimo session 45. Session 44 close : lots/biens implémenté (page + APIs + DB + tests).
-Branche : claude/session-recovery-analysis-SoNoa.
-Reste : (1) deploy Replit + test vrai PDF, (2) retry contextuel P2, (3) audit Thomas flow lots complet.
-```
-
-### Learnings session 44
-- Les bounding_box de l'extraction GPT n'étaient PAS persistées en DB — perdues après la réponse API. Ajout colonne JSONB obligatoire pour que la page decoupe puisse positionner les pièces sur le plan
-- Le status `lots_defined` n'était pas accepté par validate/route.ts — aurait causé un 409 bloquant silencieusement le flow. Toujours vérifier les transitions de statut quand on en ajoute un nouveau
-- Les spread `[...map.entries()]` et `[...new Set()]` provoquent TS2802 en target < es2015 — utiliser `Array.from()` systématiquement
-- Le status endpoint retourne `project_status` et `project_plan_path` (pas `status` ni `plan_image_url`) — toujours vérifier les noms de champs API avant de les consommer côté client
+- **Objet** : Implémentation lots/biens (étape 3 du parcours marchand), tests unitaires quality gates
+- 27 tests unitaires, 4 API routes, page decoupe, DB migrations, fix intégration validate status
 
 ## Mémo de reprise — session 43 (archivé)
 

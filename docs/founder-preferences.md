@@ -72,3 +72,9 @@
 | 2026-04-13 | **Ne recommence pas ce qui marche déjà** | "On a déjà fait plein de choses dans le premier site : autocomplétion adresse, dossiers" | Avant de coder une feature, grep le codebase. Le fondateur refuse qu'on recode ce qui fonctionne. |
 | 2026-04-13 | **Le marchand de biens doit être impliqué pour développer les features** | "Je veux que notre agent marchand de biens soit impliqué pour développer cette feature" | Les features métier doivent être spécifiées par le persona avant implémentation. Pas de feature sans validation persona. |
 | 2026-04-13 | **Drag-to-reorder plutôt que supprimer+re-uploader** | "Si pas dans le bon ordre il faut tout supprimer pour les remettre. Peut-on simplement les glisser ?" | Toujours prévoir la réordination par drag quand l'ordre importe. Ne jamais forcer supprimer+recréer. |
+
+## Session 45 — 2026-04-14
+
+| Date | Préférence | Contexte | Règle pour les agents |
+|---|---|---|---|
+| 2026-04-14 | **"On vise le mieux, ne faisons pas les choses à moitié"** | 3 features identifiées comme manquantes dans le workflow marchand. Le fondateur veut l'implémentation complète (DB+API+UI) de chacune, pas des specs ou des ébauches. | Quand une feature workflow est demandée, livrer l'implémentation complète en une session. Ne pas produire de specs préalables sauf si la complexité architecturale l'exige. "Pas de demi-mesure" = chaque feature doit être fonctionnelle de bout en bout. |

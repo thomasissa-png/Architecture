@@ -43,9 +43,22 @@ Marathon — 30+ agents lancés, ~35 commits, 4 rounds d'itération.
 - Compréhension plan : 9.9/10 PASS
 - Photos+projection : 9.9/10 PASS
 
-## État final
-- ~35 commits poussés sur `claude/extract-project-context-cnNx6`
-- Build vérifié : npx next build — 0 erreurs TypeScript/ESLint
-- Toutes les pages PASS (≥ 9.5/10)
+### Phase 5 — Lots/Biens (Session 44, COMPLETE)
+- 27 tests unitaires quality gates
+- Page decoupe (~500 lignes), 4 API routes (lots, detect, rooms, direction)
+- DB migrations (lot_type, color, sort_order, bounding_box JSONB)
+- ProStepper 7→8 étapes, getCompletedSteps mis à jour
 
-<!-- SESSION: phases=4 tasks_prod=20 tasks_consult=12 -->
+### Phase 6 — Features workflow avancées (Session 45, COMPLETE)
+- Feature 1 : Zone drawing multi-lot sur plan (rectangles colorés, auto-assignation)
+- Feature 2 : Direction photo marqueurs sur plan (caméra + flèche, click-to-place)
+- Feature 3 : Itération visuelle par texte (POST iterate, classify intent, enrichissement GPT-4.1-mini)
+- 3 commits (7d876a4, 6a30670, 6b1a6f9)
+
+## État final
+- Commits sessions 42-45 sur `claude/session-recovery-analysis-SoNoa`
+- Build vérifié : tsc + lint = 0 erreurs
+- 1418 tests PASS (10 pré-existants échoués — quality-gates 10x correction, non liés)
+- Parcours marchand 7 étapes complet avec zone lots, direction photo, itération visuelle
+
+<!-- SESSION: phases=6 tasks_prod=26 tasks_consult=14 -->
