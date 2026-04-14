@@ -392,6 +392,22 @@ export default function RecommandationsPage() {
           </p>
         </div>
 
+        {/* Skip button — visible during loading, generating, and ready */}
+        {pageState !== "error" && (
+          <div className="mb-6">
+            <button
+              onClick={handleLaunchGeneration}
+              className="inline-flex items-center gap-1 py-2 px-3 rounded-lg border border-[#D1D0CB]
+                         bg-white text-sm text-[#9B9A94] hover:text-[#1C1C1E] hover:border-[#9B9A94]
+                         transition-colors focus-visible:outline-none
+                         focus-visible:ring-2 focus-visible:ring-[#7D9B76]"
+            >
+              Passer et générer directement
+              <span aria-hidden="true">&rarr;</span>
+            </button>
+          </div>
+        )}
+
         {/* Generating state */}
         {pageState === "generating" && (
           <div className="flex flex-col items-center justify-center py-16 gap-4">

@@ -27,6 +27,7 @@ interface RoomVisual {
   photo_path: string | null;
   visual_output_path: string | null;
   generation_status: string;
+  surface_m2: number | null;
 }
 
 interface LotDossier {
@@ -66,6 +67,14 @@ const TARGET_LABELS: Record<string, string> = {
   professionnel_liberal: "Professionnel",
 };
 
+const TYPE_BIEN_LABELS: Record<string, string> = {
+  immeuble: "Immeuble",
+  appartement: "Appartement",
+  maison: "Maison",
+  bureaux: "Bureaux",
+  local_commercial: "Local commercial",
+};
+
 // ─── Component ──────────────────────────────────────────────────────
 
 export default function DossierPage() {
@@ -83,6 +92,8 @@ export default function DossierPage() {
   const [shareSuccess, setShareSuccess] = useState<string | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [projectAddress, setProjectAddress] = useState("");
+  const [projectTypeBien, setProjectTypeBien] = useState<string | null>(null);
+  const [projectPlanPath, setProjectPlanPath] = useState<string | null>(null);
   const [shareToken, setShareToken] = useState<string | null>(null);
   const [projectStatus, setProjectStatus] = useState<string>("visuals_done");
 
@@ -114,7 +125,10 @@ export default function DossierPage() {
       }
       const statusData = await statusResponse.json();
 
-      if (statusData.project?.status) setProjectStatus(statusData.project.status);
+      if (statusData.project_status) setProjectStatus(statusData.project_status);
+      if (statusData.project_adresse) setProjectAddress(statusData.project_adresse);
+      if (statusData.project_type_bien) setProjectTypeBien(statusData.project_type_bien);
+      if (statusData.project_plan_path) setProjectPlanPath(statusData.project_plan_path);
 
       // Fetch lots
       const lotsResponse = await fetch(`/api/pro/projects/${projectId}/lots`);
@@ -148,6 +162,7 @@ export default function DossierPage() {
           photo_path: room.photo_path || null,
           visual_output_path: room.visual_output_path,
           generation_status: room.generation_status,
+          surface_m2: room.surface_m2 ?? null,
         });
       }
 
@@ -169,9 +184,10 @@ export default function DossierPage() {
           style_id: null,
           target_buyer: null,
           commercial_description: null,
-          rooms: (statusData.rooms || []).map((r: RoomVisual) => ({
+          rooms: (statusData.rooms || []).map((r: RoomVisual & { surface_m2?: number | null }) => ({
             ...r,
             photo_path: r.photo_path || null,
+            surface_m2: r.surface_m2 ?? null,
           })),
         });
       }
@@ -419,6 +435,15 @@ export default function DossierPage() {
     0
   );
 
+  // ─── Computed project summary ────────────────────────────────────
+
+  const allRooms = lotDossiers.flatMap((lot) => lot.rooms);
+  const totalRooms = allRooms.length;
+  const totalSurface = allRooms.reduce(
+    (acc, r) => acc + (r.surface_m2 ?? 0),
+    0
+  );
+
   // ─── Render ──────────────────────────────────────────────────────
 
   return (
@@ -434,13 +459,6 @@ export default function DossierPage() {
             projectId={projectId}
           />
         </div>
-
-        {/* Project info */}
-        {projectAddress && (
-          <div className="mb-4 text-sm text-[#6B6A65]">
-            <span>{projectAddress}</span>
-          </div>
-        )}
 
         {/* Page title */}
         <div className="mb-6">
@@ -522,6 +540,76 @@ export default function DossierPage() {
         {/* Dossier content */}
         {pageState === "ready" && (
           <div className="space-y-8">
+            {/* Project summary card */}
+            {(projectAddress || projectTypeBien || totalSurface > 0 || totalRooms > 0 || projectPlanPath) && (
+              <section
+                className="rounded-lg bg-[#F5F5F0] border border-[#D1D0CB] overflow-hidden"
+                aria-label="Récapitulatif du bien"
+              >
+                <div className="flex flex-col sm:flex-row">
+                  {/* Plan image */}
+                  {projectPlanPath && (
+                    <div className="sm:w-48 sm:min-h-[160px] flex-shrink-0 bg-white border-b sm:border-b-0 sm:border-r border-[#D1D0CB]">
+                      <img
+                        src={`/api/logs/image?path=${encodeURIComponent(projectPlanPath)}`}
+                        alt="Plan du bien"
+                        className="w-full h-full object-contain p-3"
+                        loading="eager"
+                      />
+                    </div>
+                  )}
+
+                  {/* Info fields */}
+                  <div className="flex-1 p-4 sm:p-5">
+                    {projectAddress && (
+                      <h2 className="text-lg font-semibold text-[#1C1C1E] mb-3 leading-snug">
+                        {projectAddress}
+                      </h2>
+                    )}
+                    <div className="flex flex-wrap gap-x-6 gap-y-2">
+                      {projectTypeBien && (
+                        <div className="flex items-center gap-2">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9B9A94" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                            <polyline points="9 22 9 12 15 12 15 22" />
+                          </svg>
+                          <span className="text-sm text-[#1C1C1E]">
+                            {TYPE_BIEN_LABELS[projectTypeBien] || projectTypeBien}
+                          </span>
+                        </div>
+                      )}
+                      {totalSurface > 0 && (
+                        <div className="flex items-center gap-2">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9B9A94" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <rect x="3" y="3" width="18" height="18" rx="2" />
+                            <path d="M3 9h18" />
+                            <path d="M9 3v18" />
+                          </svg>
+                          <span className="text-sm text-[#1C1C1E]">
+                            {totalSurface % 1 === 0
+                              ? `${totalSurface} m\u00B2`
+                              : `${totalSurface.toFixed(1)} m\u00B2`}
+                          </span>
+                        </div>
+                      )}
+                      {totalRooms > 0 && (
+                        <div className="flex items-center gap-2">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9B9A94" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <path d="M2 20h20" />
+                            <path d="M4 20V8l8-5 8 5v12" />
+                            <path d="M9 20v-5h6v5" />
+                          </svg>
+                          <span className="text-sm text-[#1C1C1E]">
+                            {totalRooms} pièce{totalRooms > 1 ? "s" : ""}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </section>
+            )}
+
             {/* Share & PDF actions bar */}
             <div className="flex flex-wrap gap-2 p-4 rounded-lg bg-white border border-[#D1D0CB]/40
                             shadow-[0_1px_3px_rgba(28,28,30,0.08),0_1px_2px_rgba(28,28,30,0.04)]">
