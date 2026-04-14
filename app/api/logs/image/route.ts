@@ -30,7 +30,10 @@ export async function GET(req: NextRequest) {
   if (file.includes("/") && !file.startsWith("/")) {
     keysToTry.push(file);
   }
-  keysToTry.push(normalizedKey);
+  // Add normalized key (logs/{basename}) only if not already present
+  if (!keysToTry.includes(normalizedKey)) {
+    keysToTry.push(normalizedKey);
+  }
   // Also add raw path as last fallback if not already added
   if (!keysToTry.includes(file) && file !== normalizedKey && !file.startsWith("/")) {
     keysToTry.push(file);
@@ -43,7 +46,10 @@ export async function GET(req: NextRequest) {
       if (buffer) {
         console.log(`[/api/logs/image] Found key="${key}", size=${buffer.length} bytes`);
         // Detect content type from extension
-        const contentType = key.endsWith(".png") ? "image/png" : "image/jpeg";
+        const contentType = key.endsWith(".png") ? "image/png"
+          : key.endsWith(".webp") ? "image/webp"
+          : key.endsWith(".heic") || key.endsWith(".heif") ? "image/heic"
+          : "image/jpeg";
         return new NextResponse(new Uint8Array(buffer), {
           headers: {
             "Content-Type": contentType,
