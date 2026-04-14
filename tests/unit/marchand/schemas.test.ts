@@ -93,7 +93,11 @@ describe("Enums Zod", () => {
   });
 
   it("RoomTypeEnum accepte toutes les valeurs valides", () => {
-    const valeurs = ["salon", "cuisine", "chambre", "sdb", "wc", "bureau", "couloir", "cave", "autre"];
+    const valeurs = [
+      "salon", "sejour", "salle_a_manger", "cuisine", "chambre", "chambre_parentale",
+      "sdb", "wc", "bureau", "entree", "dressing", "cellier", "terrasse", "garage",
+      "couloir", "cave", "salle_reunion", "open_space", "accueil", "local_technique", "autre",
+    ];
     for (const v of valeurs) {
       expect(RoomTypeEnum.safeParse(v).success).toBe(true);
     }

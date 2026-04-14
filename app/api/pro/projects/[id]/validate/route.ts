@@ -32,8 +32,9 @@ const RoomInputSchema = z.object({
   id: z.string().min(1),
   name: z.string(),
   room_type: z.enum([
-    "salon", "cuisine", "chambre", "sdb", "wc",
-    "bureau", "couloir", "cave", "autre",
+    "salon", "sejour", "salle_a_manger", "cuisine", "chambre", "chambre_parentale",
+    "sdb", "wc", "bureau", "entree", "dressing", "cellier", "terrasse", "garage",
+    "couloir", "cave", "salle_reunion", "open_space", "accueil", "local_technique", "autre",
   ]),
   surface_m2: z.number().positive().max(999).nullable(),
   isNew: z.boolean().optional().default(false),
