@@ -42,12 +42,18 @@ export interface BuildingOutlineRect {
   height_percent: number;
 }
 
-/** Lot zone drawn on the plan — colored rectangle per lot */
+/** Polygon zone in percentages (0-100) of the image */
+export interface ZonePolygon {
+  points: Array<{ x_percent: number; y_percent: number }>;
+}
+
+/** Lot zone drawn on the plan — rectangle (legacy) or polygon */
 export interface LotZone {
   id: string;        // lot id
   name: string;      // lot display name
   color: string;     // hex color
-  zoneRect: BuildingOutlineRect | null;  // same format as outline
+  zoneRect: BuildingOutlineRect | null;  // Legacy rectangle
+  zonePolygon: ZonePolygon | null;       // New polygon (priority over zoneRect)
 }
 
 /** Photo direction marker on the plan — camera position + angle */
@@ -76,7 +82,7 @@ interface PlanEditorProps {
   /** Lot zones drawn on the plan — colored rectangles per lot */
   lotZones?: LotZone[];
   /** Callback when a lot zone is drawn or adjusted */
-  onLotZoneChange?: (lotId: string, rect: BuildingOutlineRect | null) => void;
+  onLotZoneChange?: (lotId: string, rect: BuildingOutlineRect | null, polygon: ZonePolygon | null) => void;
   /** ID of lot currently being drawn (enables crosshair + draw mode) */
   drawingLotId?: string | null;
   /** Called when zone drawing is complete */
@@ -245,6 +251,31 @@ function snapToGrid(value: number, gridSize: number): number {
 /** Distance entre deux points en pixels */
 function distancePx(a: CalibrationPoint, b: CalibrationPoint): number {
   return Math.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2);
+}
+
+/** Ray casting point-in-polygon test */
+export function pointInPolygon(x: number, y: number, polygon: Array<{ x_percent: number; y_percent: number }>): boolean {
+  let inside = false;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const xi = polygon[i].x_percent, yi = polygon[i].y_percent;
+    const xj = polygon[j].x_percent, yj = polygon[j].y_percent;
+    if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
+
+/** Compute bounding box of a polygon */
+function polygonBBox(points: Array<{ x_percent: number; y_percent: number }>): { minX: number; minY: number; maxX: number; maxY: number } {
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const p of points) {
+    if (p.x_percent < minX) minX = p.x_percent;
+    if (p.y_percent < minY) minY = p.y_percent;
+    if (p.x_percent > maxX) maxX = p.x_percent;
+    if (p.y_percent > maxY) maxY = p.y_percent;
+  }
+  return { minX, minY, maxX, maxY };
 }
 
 /** Trouve les guides d'alignement : bords d'une room qui s'alignent avec les bords des autres rooms */
@@ -418,9 +449,9 @@ export default function PlanEditor({
   // ─── Alignment guides ──────────────────────────────────────────
   const [alignmentGuides, setAlignmentGuides] = useState<{ horizontal: number[]; vertical: number[] }>({ horizontal: [], vertical: [] });
 
-  // ─── Zone drawing state ────────────────────────────────────────
-  const [zoneDrawStart, setZoneDrawStart] = useState<{ x: number; y: number } | null>(null);
-  const [zoneDrawCurrent, setZoneDrawCurrent] = useState<{ x: number; y: number } | null>(null);
+  // ─── Zone drawing state (polygon mode) ─────────────────────────
+  const [zoneDrawPoints, setZoneDrawPoints] = useState<Array<{ x: number; y: number }>>([]);
+  const [zoneDrawCursor, setZoneDrawCursor] = useState<{ x: number; y: number } | null>(null);
   const isDrawingZone = drawingLotId != null;
 
   // Photo direction placement state
@@ -873,122 +904,196 @@ export default function PlanEditor({
     [isCalibrating, isDrawingZone, isPlacingPhoto, handleCalibrationClick]
   );
 
-  // ─── Zone drawing handlers ────────────────────────────────────────
+  // ─── Zone drawing handlers (polygon mode) ─────────────────────────
 
-  const handleZoneDrawStart = useCallback(
+  /** Convert mouse/touch clientX/clientY to percent coordinates on the image */
+  const clientToPercent = useCallback(
+    (clientX: number, clientY: number): { x: number; y: number } => {
+      if (!imgSize) return { x: 0, y: 0 };
+      const pos = getRelativePos(clientX, clientY);
+      return {
+        x: clamp((pos.x / (imgSize.width / displayScale)) * 100, 0, 100),
+        y: clamp((pos.y / (imgSize.height / displayScale)) * 100, 0, 100),
+      };
+    },
+    [imgSize, getRelativePos, displayScale]
+  );
+
+  /** Distance between two percent-space points (used for close-polygon detection) */
+  const pctDistancePx = useCallback(
+    (a: { x: number; y: number }, b: { x: number; y: number }): number => {
+      if (!imgSize) return Infinity;
+      const dx = ((a.x - b.x) / 100) * imgSize.width;
+      const dy = ((a.y - b.y) / 100) * imgSize.height;
+      return Math.sqrt(dx * dx + dy * dy);
+    },
+    [imgSize]
+  );
+
+  const CLOSE_POLYGON_THRESHOLD_PX = 16; // snap-close distance in display pixels
+
+  /** Handle click to add a point or close the polygon */
+  const handleZoneDrawClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       if (!isDrawingZone || !imgSize) return;
       e.preventDefault();
       e.stopPropagation();
-      const pos = getRelativePos(e.clientX, e.clientY);
-      // Convert to % of image
-      const xPct = (pos.x / (imgSize.width / displayScale)) * 100;
-      const yPct = (pos.y / (imgSize.height / displayScale)) * 100;
-      setZoneDrawStart({ x: xPct, y: yPct });
-      setZoneDrawCurrent({ x: xPct, y: yPct });
+      const pt = clientToPercent(e.clientX, e.clientY);
+
+      // If we already have >= 3 points and click near the first point, close the polygon
+      if (zoneDrawPoints.length >= 3) {
+        const first = zoneDrawPoints[0];
+        if (pctDistancePx(pt, first) < CLOSE_POLYGON_THRESHOLD_PX) {
+          // Close polygon
+          if (drawingLotId && onLotZoneChange) {
+            const polygon: ZonePolygon = {
+              points: zoneDrawPoints.map((p) => ({ x_percent: p.x, y_percent: p.y })),
+            };
+            onLotZoneChange(drawingLotId, null, polygon);
+          }
+          setZoneDrawPoints([]);
+          setZoneDrawCursor(null);
+          onDrawingComplete?.();
+          return;
+        }
+      }
+
+      // Add point
+      setZoneDrawPoints((prev) => [...prev, pt]);
     },
-    [isDrawingZone, imgSize, getRelativePos, displayScale]
+    [isDrawingZone, imgSize, clientToPercent, zoneDrawPoints, pctDistancePx, drawingLotId, onLotZoneChange, onDrawingComplete]
   );
 
+  /** Handle double-click to close the polygon */
+  const handleZoneDrawDblClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (!isDrawingZone || zoneDrawPoints.length < 3) return;
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (drawingLotId && onLotZoneChange) {
+        const polygon: ZonePolygon = {
+          points: zoneDrawPoints.map((p) => ({ x_percent: p.x, y_percent: p.y })),
+        };
+        onLotZoneChange(drawingLotId, null, polygon);
+      }
+      setZoneDrawPoints([]);
+      setZoneDrawCursor(null);
+      onDrawingComplete?.();
+    },
+    [isDrawingZone, zoneDrawPoints, drawingLotId, onLotZoneChange, onDrawingComplete]
+  );
+
+  /** Handle mouse move to update the cursor preview line */
   const handleZoneDrawMove = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
-      if (!zoneDrawStart || !imgSize) return;
-      e.preventDefault();
-      const pos = getRelativePos(e.clientX, e.clientY);
-      const xPct = clamp((pos.x / (imgSize.width / displayScale)) * 100, 0, 100);
-      const yPct = clamp((pos.y / (imgSize.height / displayScale)) * 100, 0, 100);
-      setZoneDrawCurrent({ x: xPct, y: yPct });
+      if (!isDrawingZone || !imgSize) return;
+      const pt = clientToPercent(e.clientX, e.clientY);
+      setZoneDrawCursor(pt);
     },
-    [zoneDrawStart, imgSize, getRelativePos, displayScale]
+    [isDrawingZone, imgSize, clientToPercent]
   );
 
-  const handleZoneDrawEnd = useCallback(() => {
-    if (!zoneDrawStart || !zoneDrawCurrent || !drawingLotId || !onLotZoneChange) {
-      setZoneDrawStart(null);
-      setZoneDrawCurrent(null);
-      return;
-    }
-    const x1 = Math.min(zoneDrawStart.x, zoneDrawCurrent.x);
-    const y1 = Math.min(zoneDrawStart.y, zoneDrawCurrent.y);
-    const x2 = Math.max(zoneDrawStart.x, zoneDrawCurrent.x);
-    const y2 = Math.max(zoneDrawStart.y, zoneDrawCurrent.y);
-    const w = x2 - x1;
-    const h = y2 - y1;
-    // Minimum 2% size to prevent accidental micro-draws
-    if (w >= 2 && h >= 2) {
-      onLotZoneChange(drawingLotId, {
-        x_percent: x1,
-        y_percent: y1,
-        width_percent: w,
-        height_percent: h,
-      });
-    }
-    setZoneDrawStart(null);
-    setZoneDrawCurrent(null);
-    onDrawingComplete?.();
-  }, [zoneDrawStart, zoneDrawCurrent, drawingLotId, onLotZoneChange, onDrawingComplete]);
+  /** Escape key cancels polygon drawing */
+  useEffect(() => {
+    if (!isDrawingZone) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setZoneDrawPoints([]);
+        setZoneDrawCursor(null);
+        onDrawingComplete?.();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isDrawingZone, onDrawingComplete]);
 
-  // Zone drag/resize handlers (for existing zones)
+  // Zone drag handlers (for existing zones — supports both rect and polygon)
   const handleZoneDragStart = useCallback(
-    (lotId: string, type: "move" | "resize", clientX: number, clientY: number, handle?: HandlePosition) => {
+    (lotId: string, type: "move" | "resize", clientX: number, clientY: number, vertexIndex?: number) => {
       const zone = lotZones?.find((z) => z.id === lotId);
-      if (!zone?.zoneRect || !onLotZoneChange || !imgSize) return;
+      if (!onLotZoneChange || !imgSize) return;
 
-      const startState = {
-        type,
-        lotId,
-        handle,
-        startX: clientX,
-        startY: clientY,
-        origRect: { ...zone.zoneRect },
-      };
-      const handleMouseMove = (e: MouseEvent | TouchEvent) => {
-        const cx = "touches" in e ? e.touches[0].clientX : e.clientX;
-        const cy = "touches" in e ? e.touches[0].clientY : e.clientY;
-        const dxPct = ((cx - startState.startX) / imgSize.width) * 100;
-        const dyPct = ((cy - startState.startY) / imgSize.height) * 100;
-        const o = startState.origRect;
+      const hasPolygon = zone?.zonePolygon && zone.zonePolygon.points.length >= 3;
+      const hasRect = zone?.zoneRect;
+      if (!hasPolygon && !hasRect) return;
 
-        if (startState.type === "move") {
-          const newX = clamp(o.x_percent + dxPct, 0, 100 - o.width_percent);
-          const newY = clamp(o.y_percent + dyPct, 0, 100 - o.height_percent);
-          onLotZoneChange(lotId, { ...o, x_percent: newX, y_percent: newY });
-        } else if (startState.type === "resize" && startState.handle) {
-          let newX = o.x_percent;
-          let newY = o.y_percent;
-          let newW = o.width_percent;
-          let newH = o.height_percent;
+      if (hasPolygon) {
+        // Polygon drag: move entire polygon or drag a single vertex
+        const origPoints = zone!.zonePolygon!.points.map((p) => ({ ...p }));
+        const startX = clientX;
+        const startY = clientY;
 
-          const h = startState.handle;
-          // Horizontal axis: "w" = drag left edge, "e"/"ne"/"se" = drag right edge, "n"/"s" = no horizontal change
-          if (h.includes("w")) {
-            newX = clamp(o.x_percent + dxPct, 0, o.x_percent + o.width_percent - 3);
-            newW = o.width_percent - (newX - o.x_percent);
-          } else if (h.includes("e")) {
-            newW = clamp(o.width_percent + dxPct, 3, 100 - o.x_percent);
+        const handleMouseMove = (e: MouseEvent | TouchEvent) => {
+          const cx = "touches" in e ? e.touches[0].clientX : e.clientX;
+          const cy = "touches" in e ? e.touches[0].clientY : e.clientY;
+          const dxPct = ((cx - startX) / imgSize.width) * 100;
+          const dyPct = ((cy - startY) / imgSize.height) * 100;
+
+          if (type === "move") {
+            // Translate all points
+            const newPoints = origPoints.map((p) => ({
+              x_percent: clamp(p.x_percent + dxPct, 0, 100),
+              y_percent: clamp(p.y_percent + dyPct, 0, 100),
+            }));
+            onLotZoneChange(lotId, null, { points: newPoints });
+          } else if (type === "resize" && vertexIndex !== undefined) {
+            // Move single vertex
+            const newPoints = origPoints.map((p, i) => {
+              if (i === vertexIndex) {
+                return {
+                  x_percent: clamp(p.x_percent + dxPct, 0, 100),
+                  y_percent: clamp(p.y_percent + dyPct, 0, 100),
+                };
+              }
+              return { ...p };
+            });
+            onLotZoneChange(lotId, null, { points: newPoints });
           }
-          // Vertical axis: "n" = drag top edge, "s"/"se"/"sw" = drag bottom edge, "e"/"w" = no vertical change
-          if (h.includes("n")) {
-            newY = clamp(o.y_percent + dyPct, 0, o.y_percent + o.height_percent - 3);
-            newH = o.height_percent - (newY - o.y_percent);
-          } else if (h.includes("s")) {
-            newH = clamp(o.height_percent + dyPct, 3, 100 - o.y_percent);
+        };
+
+        const handleMouseUp = () => {
+          document.removeEventListener("mousemove", handleMouseMove);
+          document.removeEventListener("mouseup", handleMouseUp);
+          document.removeEventListener("touchmove", handleMouseMove);
+          document.removeEventListener("touchend", handleMouseUp);
+        };
+
+        document.addEventListener("mousemove", handleMouseMove);
+        document.addEventListener("mouseup", handleMouseUp);
+        document.addEventListener("touchmove", handleMouseMove, { passive: false });
+        document.addEventListener("touchend", handleMouseUp);
+      } else if (hasRect) {
+        // Legacy rectangle drag/resize (backward compat)
+        const origRect = { ...zone!.zoneRect! };
+        const startX = clientX;
+        const startY = clientY;
+
+        const handleMouseMove = (e: MouseEvent | TouchEvent) => {
+          const cx = "touches" in e ? e.touches[0].clientX : e.clientX;
+          const cy = "touches" in e ? e.touches[0].clientY : e.clientY;
+          const dxPct = ((cx - startX) / imgSize.width) * 100;
+          const dyPct = ((cy - startY) / imgSize.height) * 100;
+
+          if (type === "move") {
+            const newX = clamp(origRect.x_percent + dxPct, 0, 100 - origRect.width_percent);
+            const newY = clamp(origRect.y_percent + dyPct, 0, 100 - origRect.height_percent);
+            onLotZoneChange(lotId, { ...origRect, x_percent: newX, y_percent: newY }, null);
           }
-          onLotZoneChange(lotId, { x_percent: newX, y_percent: newY, width_percent: newW, height_percent: newH });
-        }
-      };
+        };
 
-      const handleMouseUp = () => {
-        document.removeEventListener("mousemove", handleMouseMove);
-        document.removeEventListener("mouseup", handleMouseUp);
-        document.removeEventListener("touchmove", handleMouseMove);
-        document.removeEventListener("touchend", handleMouseUp);
-      };
+        const handleMouseUp = () => {
+          document.removeEventListener("mousemove", handleMouseMove);
+          document.removeEventListener("mouseup", handleMouseUp);
+          document.removeEventListener("touchmove", handleMouseMove);
+          document.removeEventListener("touchend", handleMouseUp);
+        };
 
-      document.addEventListener("mousemove", handleMouseMove);
-      document.addEventListener("mouseup", handleMouseUp);
-      document.addEventListener("touchmove", handleMouseMove, { passive: false });
-      document.addEventListener("touchend", handleMouseUp);
+        document.addEventListener("mousemove", handleMouseMove);
+        document.addEventListener("mouseup", handleMouseUp);
+        document.addEventListener("touchmove", handleMouseMove, { passive: false });
+        document.addEventListener("touchend", handleMouseUp);
+      }
     },
     [lotZones, onLotZoneChange, imgSize]
   );
@@ -1437,6 +1542,22 @@ export default function PlanEditor({
         </div>
       )}
 
+      {/* Polygon drawing instruction banner */}
+      {isDrawingZone && (
+        <div className="p-3 rounded-lg bg-[#7D9B76]/10 border border-[#7D9B76]/20 text-[13px] text-[#7D9B76] leading-relaxed">
+          <p className="font-medium">
+            {zoneDrawPoints.length === 0
+              ? "Cliquez pour placer le premier point du contour de la zone."
+              : zoneDrawPoints.length < 3
+              ? `${zoneDrawPoints.length} point${zoneDrawPoints.length > 1 ? "s" : ""} placé${zoneDrawPoints.length > 1 ? "s" : ""}. Continuez à cliquer pour tracer le contour (minimum 3 points).`
+              : `${zoneDrawPoints.length} points placés. Cliquez sur le premier point ou double-cliquez pour fermer le polygone.`}
+          </p>
+          <p className="text-[12px] mt-0.5 text-[#7D9B76]/70">
+            Appuyez sur Échap pour annuler.
+          </p>
+        </div>
+      )}
+
       {/* Plan container — scrollable, zoom via Ctrl+wheel */}
       <div
         ref={scrollContainerRef}
@@ -1453,29 +1574,30 @@ export default function PlanEditor({
             width: zoomLevel !== 1 ? `${100 / zoomLevel}%` : "100%",
             cursor: isDrawingZone || isPlacingPhoto ? "crosshair" : undefined,
           }}
-          onClick={handleBackgroundClick}
-          onMouseDown={isDrawingZone ? handleZoneDrawStart : isPlacingPhoto ? handlePhotoPlaceStart : undefined}
+          onClick={isDrawingZone ? handleZoneDrawClick : handleBackgroundClick}
+          onDoubleClick={isDrawingZone ? handleZoneDrawDblClick : undefined}
           onMouseMove={
-            isDrawingZone && zoneDrawStart ? handleZoneDrawMove
+            isDrawingZone ? handleZoneDrawMove
             : isPlacingPhoto && photoPlaceStart ? handlePhotoPlaceMove
             : undefined
           }
+          onMouseDown={isPlacingPhoto ? handlePhotoPlaceStart : undefined}
           onMouseUp={
-            isDrawingZone && zoneDrawStart ? handleZoneDrawEnd
-            : isPlacingPhoto && photoPlaceStart ? handlePhotoPlaceEnd
+            isPlacingPhoto && photoPlaceStart ? handlePhotoPlaceEnd
             : undefined
           }
           onTouchStart={isDrawingZone ? (e) => {
+            // Touch: tap to add a point (handled via click on touch devices)
             e.preventDefault();
             const t = e.touches[0];
-            handleZoneDrawStart({ clientX: t.clientX, clientY: t.clientY, stopPropagation: () => {}, preventDefault: () => {} } as unknown as React.MouseEvent<HTMLDivElement>);
+            handleZoneDrawClick({ clientX: t.clientX, clientY: t.clientY, stopPropagation: () => {}, preventDefault: () => {} } as unknown as React.MouseEvent<HTMLDivElement>);
           } : isPlacingPhoto ? (e) => {
             e.preventDefault();
             const t = e.touches[0];
             handlePhotoPlaceStart({ clientX: t.clientX, clientY: t.clientY, stopPropagation: () => {}, preventDefault: () => {} } as unknown as React.MouseEvent<HTMLDivElement>);
           } : undefined}
           onTouchMove={
-            isDrawingZone && zoneDrawStart ? (e) => {
+            isDrawingZone ? (e) => {
               e.preventDefault();
               const t = e.touches[0];
               handleZoneDrawMove({ clientX: t.clientX, clientY: t.clientY } as unknown as React.MouseEvent<HTMLDivElement>);
@@ -1488,10 +1610,7 @@ export default function PlanEditor({
             : undefined
           }
           onTouchEnd={
-            isDrawingZone && zoneDrawStart ? () => {
-              handleZoneDrawEnd();
-            }
-            : isPlacingPhoto && photoPlaceStart ? () => {
+            isPlacingPhoto && photoPlaceStart ? () => {
               handlePhotoPlaceEnd();
             }
             : undefined
@@ -1600,119 +1719,155 @@ export default function PlanEditor({
           </div>
         )}
 
-        {/* Lot zone overlays — colored semi-transparent rectangles (z-2) */}
-        {isReady && lotZones && lotZones.map((zone) => {
-          if (!zone.zoneRect) return null;
-          const r = zone.zoneRect;
+        {/* Lot zone overlays — SVG polygons or legacy rectangles (z-2) */}
+        {isReady && lotZones && (() => {
+          const zonesWithShape = lotZones.filter((z) => z.zonePolygon || z.zoneRect);
+          if (zonesWithShape.length === 0) return null;
           return (
-            <div key={`zone-${zone.id}`}>
-              {/* Zone visual rectangle */}
-              <div
-                className="absolute"
-                style={{
-                  zIndex: ZONE_Z_VISUAL,
-                  left: `${r.x_percent}%`,
-                  top: `${r.y_percent}%`,
-                  width: `${r.width_percent}%`,
-                  height: `${r.height_percent}%`,
-                  backgroundColor: applyOpacityToColor(zone.color, 0.12),
-                  border: `2px solid ${applyOpacityToColor(zone.color, 0.6)}`,
-                  borderRadius: "3px",
-                  pointerEvents: "none",
-                }}
-                aria-label={`Zone ${zone.name}`}
+            <>
+              {/* SVG layer for zone fills + strokes */}
+              <svg
+                className="absolute inset-0 w-full h-full"
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
+                style={{ zIndex: ZONE_Z_VISUAL, pointerEvents: "none" }}
+                aria-hidden="true"
               >
-                {/* Zone label */}
-                <span
-                  className="absolute top-1 left-1.5 text-[11px] font-semibold px-1.5 py-0.5 rounded whitespace-nowrap"
-                  style={{
-                    color: "white",
-                    background: applyOpacityToColor(zone.color, 0.75),
-                  }}
-                >
-                  {zone.name}
-                </span>
-              </div>
-
-              {/* Zone drag/resize handles (z-3) */}
-              {onLotZoneChange && !isDrawingZone && (
-                <div
-                  className="absolute"
-                  style={{
-                    zIndex: ZONE_Z_HANDLES,
-                    left: `${r.x_percent}%`,
-                    top: `${r.y_percent}%`,
-                    width: `${r.width_percent}%`,
-                    height: `${r.height_percent}%`,
-                    cursor: "move",
-                    pointerEvents: "auto",
-                  }}
-                  onMouseDown={(e) => {
-                    // Drag from anywhere inside the zone to move it
-                    e.stopPropagation();
-                    e.preventDefault();
-                    handleZoneDragStart(zone.id, "move", e.clientX, e.clientY);
-                  }}
-                  onTouchStart={(e) => {
-                    e.stopPropagation();
-                    const t = e.touches[0];
-                    handleZoneDragStart(zone.id, "move", t.clientX, t.clientY);
-                  }}
-                  role="button"
-                  aria-label={`Déplacer la zone ${zone.name}`}
-                >
-
-                  {/* Resize handles — 4 corners + 4 edges */}
-                  {(["nw", "n", "ne", "e", "se", "s", "sw", "w"] as HandlePosition[]).map((handle) => {
-                    const isCorner = handle.length === 2;
-                    // Position
-                    const posStyle: React.CSSProperties = {};
-                    if (handle.includes("n")) posStyle.top = -HANDLE_HIT_SIZE / 2;
-                    if (handle.includes("s")) posStyle.bottom = -HANDLE_HIT_SIZE / 2;
-                    if (handle.includes("w")) posStyle.left = -HANDLE_HIT_SIZE / 2;
-                    if (handle.includes("e")) posStyle.right = -HANDLE_HIT_SIZE / 2;
-                    // Edge handles: center on the opposite axis
-                    if (handle === "n" || handle === "s") { posStyle.left = "50%"; posStyle.transform = "translateX(-50%)"; }
-                    if (handle === "e" || handle === "w") { posStyle.top = "50%"; posStyle.transform = "translateY(-50%)"; }
-                    // Cursor
-                    const cursorMap: Record<HandlePosition, string> = {
-                      nw: "nwse-resize", se: "nwse-resize",
-                      ne: "nesw-resize", sw: "nesw-resize",
-                      n: "ns-resize", s: "ns-resize",
-                      e: "ew-resize", w: "ew-resize",
-                    };
-                    const ariaLabels: Record<HandlePosition, string> = {
-                      nw: "coin haut-gauche", n: "bord haut", ne: "coin haut-droite",
-                      e: "bord droite", se: "coin bas-droite", s: "bord bas",
-                      sw: "coin bas-gauche", w: "bord gauche",
-                    };
+                {zonesWithShape.map((zone) => {
+                  if (zone.zonePolygon && zone.zonePolygon.points.length >= 3) {
+                    const pts = zone.zonePolygon.points.map((p) => `${p.x_percent},${p.y_percent}`).join(" ");
                     return (
+                      <polygon
+                        key={`zone-svg-${zone.id}`}
+                        points={pts}
+                        fill={applyOpacityToColor(zone.color, 0.12)}
+                        stroke={applyOpacityToColor(zone.color, 0.6)}
+                        strokeWidth="0.3"
+                      />
+                    );
+                  }
+                  if (zone.zoneRect) {
+                    const r = zone.zoneRect;
+                    return (
+                      <rect
+                        key={`zone-svg-${zone.id}`}
+                        x={r.x_percent}
+                        y={r.y_percent}
+                        width={r.width_percent}
+                        height={r.height_percent}
+                        fill={applyOpacityToColor(zone.color, 0.12)}
+                        stroke={applyOpacityToColor(zone.color, 0.6)}
+                        strokeWidth="0.3"
+                        rx="0.3"
+                      />
+                    );
+                  }
+                  return null;
+                })}
+              </svg>
+
+              {/* Labels positioned over zones */}
+              {zonesWithShape.map((zone) => {
+                let labelX: number, labelY: number;
+                if (zone.zonePolygon && zone.zonePolygon.points.length >= 3) {
+                  const bbox = polygonBBox(zone.zonePolygon.points);
+                  labelX = bbox.minX;
+                  labelY = bbox.minY;
+                } else if (zone.zoneRect) {
+                  labelX = zone.zoneRect.x_percent;
+                  labelY = zone.zoneRect.y_percent;
+                } else {
+                  return null;
+                }
+                return (
+                  <span
+                    key={`zone-label-${zone.id}`}
+                    className="absolute text-[11px] font-semibold px-1.5 py-0.5 rounded whitespace-nowrap"
+                    style={{
+                      zIndex: ZONE_Z_VISUAL + 1,
+                      left: `${labelX}%`,
+                      top: `${labelY}%`,
+                      color: "white",
+                      background: applyOpacityToColor(zone.color, 0.75),
+                      pointerEvents: "none",
+                      transform: "translate(4px, 4px)",
+                    }}
+                  >
+                    {zone.name}
+                  </span>
+                );
+              })}
+
+              {/* Interactive handles for polygon zones */}
+              {onLotZoneChange && !isDrawingZone && zonesWithShape.map((zone) => {
+                if (zone.zonePolygon && zone.zonePolygon.points.length >= 3) {
+                  const pts = zone.zonePolygon.points;
+                  const bbox = polygonBBox(pts);
+                  return (
+                    <div key={`zone-handles-${zone.id}`}>
+                      {/* Invisible hit area for move (polygon bounding box) */}
                       <div
-                        key={`zone-handle-${zone.id}-${handle}`}
-                        className="absolute pointer-events-auto"
+                        className="absolute"
                         style={{
-                          width: HANDLE_HIT_SIZE,
-                          height: HANDLE_HIT_SIZE,
-                          ...posStyle,
-                          cursor: cursorMap[handle],
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
+                          zIndex: ZONE_Z_HANDLES,
+                          left: `${bbox.minX}%`,
+                          top: `${bbox.minY}%`,
+                          width: `${bbox.maxX - bbox.minX}%`,
+                          height: `${bbox.maxY - bbox.minY}%`,
+                          cursor: "move",
+                          pointerEvents: "auto",
                         }}
                         onMouseDown={(e) => {
-                          e.stopPropagation();
-                          e.preventDefault();
-                          handleZoneDragStart(zone.id, "resize", e.clientX, e.clientY, handle);
+                          // Only move if clicked inside the polygon
+                          const pct = clientToPercent(e.clientX, e.clientY);
+                          if (pointInPolygon(pct.x, pct.y, pts)) {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            handleZoneDragStart(zone.id, "move", e.clientX, e.clientY);
+                          }
                         }}
                         onTouchStart={(e) => {
-                          e.stopPropagation();
                           const t = e.touches[0];
-                          handleZoneDragStart(zone.id, "resize", t.clientX, t.clientY, handle);
+                          const pct = clientToPercent(t.clientX, t.clientY);
+                          if (pointInPolygon(pct.x, pct.y, pts)) {
+                            e.stopPropagation();
+                            handleZoneDragStart(zone.id, "move", t.clientX, t.clientY);
+                          }
                         }}
                         role="button"
-                        aria-label={`Redimensionner la zone ${zone.name} — ${ariaLabels[handle]}`}
-                      >
-                        {isCorner ? (
+                        aria-label={`Déplacer la zone ${zone.name}`}
+                      />
+
+                      {/* Vertex handles — one per point */}
+                      {pts.map((pt, idx) => (
+                        <div
+                          key={`zone-vertex-${zone.id}-${idx}`}
+                          className="absolute pointer-events-auto"
+                          style={{
+                            zIndex: ZONE_Z_HANDLES + 1,
+                            left: `${pt.x_percent}%`,
+                            top: `${pt.y_percent}%`,
+                            width: HANDLE_HIT_SIZE,
+                            height: HANDLE_HIT_SIZE,
+                            transform: "translate(-50%, -50%)",
+                            cursor: "grab",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                          onMouseDown={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            handleZoneDragStart(zone.id, "resize", e.clientX, e.clientY, idx);
+                          }}
+                          onTouchStart={(e) => {
+                            e.stopPropagation();
+                            const t = e.touches[0];
+                            handleZoneDragStart(zone.id, "resize", t.clientX, t.clientY, idx);
+                          }}
+                          role="button"
+                          aria-label={`Déplacer le point ${idx + 1} de la zone ${zone.name}`}
+                        >
                           <div
                             style={{
                               width: 10,
@@ -1723,59 +1878,136 @@ export default function PlanEditor({
                               pointerEvents: "none",
                             }}
                           />
-                        ) : (
-                          <div
-                            style={{
-                              width: handle === "n" || handle === "s" ? 20 : 6,
-                              height: handle === "e" || handle === "w" ? 20 : 6,
-                              borderRadius: 3,
-                              background: applyOpacityToColor(zone.color, 0.8),
-                              border: "1.5px solid white",
-                              pointerEvents: "none",
-                            }}
-                          />
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                }
+                // Legacy rectangle handles
+                if (zone.zoneRect) {
+                  const r = zone.zoneRect;
+                  return (
+                    <div
+                      key={`zone-handles-${zone.id}`}
+                      className="absolute"
+                      style={{
+                        zIndex: ZONE_Z_HANDLES,
+                        left: `${r.x_percent}%`,
+                        top: `${r.y_percent}%`,
+                        width: `${r.width_percent}%`,
+                        height: `${r.height_percent}%`,
+                        cursor: "move",
+                        pointerEvents: "auto",
+                      }}
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        handleZoneDragStart(zone.id, "move", e.clientX, e.clientY);
+                      }}
+                      onTouchStart={(e) => {
+                        e.stopPropagation();
+                        const t = e.touches[0];
+                        handleZoneDragStart(zone.id, "move", t.clientX, t.clientY);
+                      }}
+                      role="button"
+                      aria-label={`Déplacer la zone ${zone.name}`}
+                    />
+                  );
+                }
+                return null;
+              })}
+            </>
           );
-        })}
+        })()}
 
-        {/* Zone drawing preview — while user is drawing a new zone */}
-        {isReady && isDrawingZone && zoneDrawStart && zoneDrawCurrent && (() => {
+        {/* Zone polygon drawing preview — points placed so far + cursor line */}
+        {isReady && isDrawingZone && zoneDrawPoints.length > 0 && (() => {
           const drawingZone = lotZones?.find((z) => z.id === drawingLotId);
           if (!drawingZone) return null;
-          const x1 = Math.min(zoneDrawStart.x, zoneDrawCurrent.x);
-          const y1 = Math.min(zoneDrawStart.y, zoneDrawCurrent.y);
-          const w = Math.abs(zoneDrawCurrent.x - zoneDrawStart.x);
-          const h = Math.abs(zoneDrawCurrent.y - zoneDrawStart.y);
+          const allPts = zoneDrawPoints;
+          const strokeColor = applyOpacityToColor(drawingZone.color, 0.8);
+          const fillColor = applyOpacityToColor(drawingZone.color, 0.15);
+
+          // Build the polyline points string (placed points)
+          const placedStr = allPts.map((p) => `${p.x},${p.y}`).join(" ");
+          // Cursor line from last placed point to cursor
+          const lastPt = allPts[allPts.length - 1];
+          const cursorPt = zoneDrawCursor;
+
           return (
-            <div
-              className="absolute pointer-events-none"
-              style={{
-                zIndex: ZONE_Z_HANDLES + 1,
-                left: `${x1}%`,
-                top: `${y1}%`,
-                width: `${w}%`,
-                height: `${h}%`,
-                backgroundColor: applyOpacityToColor(drawingZone.color, 0.2),
-                border: `2px dashed ${applyOpacityToColor(drawingZone.color, 0.8)}`,
-                borderRadius: "3px",
-              }}
-            >
+            <>
+              <svg
+                className="absolute inset-0 w-full h-full"
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
+                style={{ zIndex: ZONE_Z_HANDLES + 1, pointerEvents: "none" }}
+              >
+                {/* Filled preview if >= 3 points */}
+                {allPts.length >= 3 && (
+                  <polygon
+                    points={placedStr}
+                    fill={fillColor}
+                    stroke="none"
+                  />
+                )}
+                {/* Placed segments */}
+                <polyline
+                  points={placedStr}
+                  fill="none"
+                  stroke={strokeColor}
+                  strokeWidth="0.3"
+                  strokeDasharray="0.6 0.4"
+                />
+                {/* Cursor line from last point */}
+                {cursorPt && (
+                  <line
+                    x1={lastPt.x} y1={lastPt.y}
+                    x2={cursorPt.x} y2={cursorPt.y}
+                    stroke={strokeColor}
+                    strokeWidth="0.2"
+                    strokeDasharray="0.4 0.3"
+                    opacity="0.6"
+                  />
+                )}
+                {/* Closing preview line (cursor to first point) when >= 3 pts */}
+                {cursorPt && allPts.length >= 2 && (
+                  <line
+                    x1={cursorPt.x} y1={cursorPt.y}
+                    x2={allPts[0].x} y2={allPts[0].y}
+                    stroke={strokeColor}
+                    strokeWidth="0.15"
+                    strokeDasharray="0.3 0.3"
+                    opacity="0.3"
+                  />
+                )}
+                {/* Point markers */}
+                {allPts.map((p, i) => (
+                  <circle
+                    key={`draw-pt-${i}`}
+                    cx={p.x} cy={p.y}
+                    r={i === 0 && allPts.length >= 3 ? "0.8" : "0.5"}
+                    fill={i === 0 && allPts.length >= 3 ? strokeColor : "white"}
+                    stroke={strokeColor}
+                    strokeWidth="0.2"
+                  />
+                ))}
+              </svg>
+              {/* Label preview */}
               <span
-                className="absolute top-1 left-1.5 text-[11px] font-semibold px-1.5 py-0.5 rounded whitespace-nowrap"
+                className="absolute text-[11px] font-semibold px-1.5 py-0.5 rounded whitespace-nowrap"
                 style={{
+                  zIndex: ZONE_Z_HANDLES + 2,
+                  left: `${allPts[0].x}%`,
+                  top: `${allPts[0].y}%`,
                   color: "white",
                   background: applyOpacityToColor(drawingZone.color, 0.75),
+                  pointerEvents: "none",
+                  transform: "translate(4px, -24px)",
                 }}
               >
                 {drawingZone.name}
               </span>
-            </div>
+            </>
           );
         })()}
 

@@ -202,6 +202,11 @@ export async function ensureProTables(): Promise<void> {
     ALTER TABLE pro_lots ADD COLUMN IF NOT EXISTS zone_rect JSONB;
   `).catch(() => { /* column may already exist */ });
 
+  // zone_polygon: zone polygonale dessinée sur le plan (points en % de l'image)
+  await db.query(`
+    ALTER TABLE pro_lots ADD COLUMN IF NOT EXISTS zone_polygon JSONB;
+  `).catch(() => { /* column may already exist */ });
+
   // photo_direction: position et angle de prise de vue sur le plan
   await db.query(`
     ALTER TABLE pro_rooms ADD COLUMN IF NOT EXISTS photo_direction JSONB;
@@ -322,6 +327,7 @@ export interface CreateLotInput {
   color?: string | null;
   sortOrder?: number | null;
   zoneRect?: LotZoneRect | null;
+  zonePolygon?: LotZonePolygon | null;
 }
 
 export interface LotZoneRect {
@@ -329,6 +335,10 @@ export interface LotZoneRect {
   y_percent: number;
   width_percent: number;
   height_percent: number;
+}
+
+export interface LotZonePolygon {
+  points: Array<{ x_percent: number; y_percent: number }>;
 }
 
 export interface ProLot {
@@ -349,6 +359,7 @@ export interface ProLot {
   color: string | null;
   sort_order: number | null;
   zone_rect: LotZoneRect | null;
+  zone_polygon: LotZonePolygon | null;
   created_at: Date;
 }
 
@@ -356,8 +367,8 @@ export async function createLot(input: CreateLotInput): Promise<ProLot> {
   await ensureProTables();
   const db = getPool();
   const result = await db.query<ProLot>(
-    `INSERT INTO pro_lots (project_id, name, floor, target_buyer, style_id, lot_type, color, sort_order, zone_rect)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    `INSERT INTO pro_lots (project_id, name, floor, target_buyer, style_id, lot_type, color, sort_order, zone_rect, zone_polygon)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
      RETURNING *`,
     [
       input.projectId,
@@ -369,6 +380,7 @@ export async function createLot(input: CreateLotInput): Promise<ProLot> {
       input.color ?? null,
       input.sortOrder ?? 0,
       input.zoneRect ? JSON.stringify(input.zoneRect) : null,
+      input.zonePolygon ? JSON.stringify(input.zonePolygon) : null,
     ]
   );
   return result.rows[0];

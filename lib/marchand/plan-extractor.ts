@@ -47,22 +47,28 @@ export interface LotZone {
     width_percent: number;
     height_percent: number;
   } | null;
+  zone_polygon?: {
+    points: Array<{ x_percent: number; y_percent: number }>;
+  } | null;
 }
 
 /**
  * Build the lot zones spatial constraint section for the system prompt.
- * Returns empty string if no lots with zone_rect are provided.
+ * Returns empty string if no lots with zones are provided.
  */
 function buildLotZonesSection(lots?: LotZone[]): string {
   if (!lots || lots.length === 0) return "";
-  const lotsWithZones = lots.filter((l) => l.zone_rect);
+  const lotsWithZones = lots.filter((l) => l.zone_polygon || l.zone_rect);
   if (lotsWithZones.length === 0) return "";
 
   const zoneLines = lotsWithZones
-    .map(
-      (l) =>
-        `- ${l.name}: x=${l.zone_rect!.x_percent.toFixed(1)}%, y=${l.zone_rect!.y_percent.toFixed(1)}%, width=${l.zone_rect!.width_percent.toFixed(1)}%, height=${l.zone_rect!.height_percent.toFixed(1)}%`
-    )
+    .map((l) => {
+      if (l.zone_polygon && l.zone_polygon.points.length >= 3) {
+        const ptsStr = l.zone_polygon.points.map((p) => `(${p.x_percent.toFixed(1)}%,${p.y_percent.toFixed(1)}%)`).join(" → ");
+        return `- ${l.name}: polygon ${ptsStr}`;
+      }
+      return `- ${l.name}: x=${l.zone_rect!.x_percent.toFixed(1)}%, y=${l.zone_rect!.y_percent.toFixed(1)}%, width=${l.zone_rect!.width_percent.toFixed(1)}%, height=${l.zone_rect!.height_percent.toFixed(1)}%`;
+    })
     .join("\n");
 
   return `
@@ -81,60 +87,69 @@ RULES:
 
 // ─── System prompt ──────────────────────────────────────────────────
 function buildSystemPrompt(typeBien: TypeBien, lots?: LotZone[]): string {
-  return `You are an expert architectural floor plan analyzer. Your job is to extract structured data from a floor plan image (photograph, scan, or CAD export).
+  return `You are an expert architectural floor plan analyzer. Extract structured room data from a floor plan image.
 
-TASK: Analyze this floor plan and return a JSON object listing every room with its properties.
+COORDINATE SYSTEM: All coordinates are percentages of the FULL IMAGE (0-100). x=0 is the left edge of the image, y=0 is the top edge. The plan drawing is a subset of the image — title blocks, legends, and margins are NOT part of the plan.
 
-STEP 1 — IDENTIFY THE BUILDING OUTLINE:
-Before looking at individual rooms, identify the EXTERIOR WALLS of the building on this plan. Determine the tightest-fitting rectangle that contains ALL exterior walls. Express it as percentages of the full image: x_percent, y_percent (top-left corner), width_percent, height_percent. Return this in the "building_outline" field. ALL rooms MUST be placed INSIDE this outline. Nothing can be outside the building walls.
+STEP 1 — READING THE PLAN (distinguish elements):
+  - WALLS: thick solid lines (black, grey, or colored fills) defining rooms.
+  - PARTITIONS: thinner solid lines inside the building separating rooms.
+  - DASHED/DOTTED lines: property boundaries or future work — NOT walls.
+  - HATCHED/FILLED rectangles: wall cross-sections confirming wall positions.
+  - DIMENSION LINES (cotes): thin lines with numbers — read the numbers, ignore the lines.
+  - ANNOTATIONS: room names, surface values (e.g., "12.0 m²"). Read text, do not confuse with walls.
+  - STAIRCASES: zigzag/curved lines with steps. Note position but do NOT create a room for them.
+  - OUTDOOR (terraces, balconies, gardens): outside exterior walls. Exclude unless fully enclosed.
 
-STEP 2 — IDENTIFY EVERY ROOM:
-Identify every enclosed space: living rooms, bedrooms, kitchens, bathrooms, toilets, offices, hallways, storage, cellars. Exclude outdoor spaces (balconies, terraces) unless enclosed.
+STEP 2 — BUILDING OUTLINE:
+Find the outermost thick lines forming the building perimeter. Return the tightest axis-aligned rectangle containing ALL exterior walls as building_outline. EXCLUDE title blocks, legends, scale bars, margin text from this rectangle. Every room must fit INSIDE it.
 
-STEP 3 — READ SURFACES (PRIORITY ORDER):
-For each room, determine surface_m2 using this priority:
-  A. FIRST: Look for surface values WRITTEN DIRECTLY on the plan (e.g., "25.8 m²", "12.3", "S=8.5m²"). These are the MOST RELIABLE. Use them AS-IS. This is by far the most common format on French architectural plans.
-  B. SECOND: If no surface is written but LENGTH × WIDTH dimensions are readable, calculate surface_m2 = length_m × width_m. Dimensions are in METERS. If values seem > 50, they are in centimeters — divide by 100.
-  C. LAST RESORT: If nothing is readable, estimate from relative room proportions using door width as reference (standard French door = 83cm).
+STEP 3 — IDENTIFY ROOMS:
+For each enclosed space bounded by walls/partitions:
+  a. Use the room name EXACTLY as written on the plan (e.g., "Chambre", "SdB", "Séjour/Cuisine"). Do NOT rename.
+  b. If no name is written, infer from fixtures (sink=bathroom, stove=kitchen) and set confidence < 0.6.
+  c. Include: living, bedrooms, kitchens, bathrooms, WC, hallways, entries, storage, cellars, utility rooms.
+  d. Exclude: outdoor terraces, balconies, gardens, staircases.
+  e. Open-plan rooms (e.g., "Séjour/Cuisine" with no dividing wall): ONE room, not two.
 
-SANITY CHECK on every surface:
-  - WC: 1–4 m²  |  Salle de bain: 3–15 m²  |  Chambre: 8–25 m²
-  - Cuisine: 5–25 m²  |  Salon/séjour: 15–60 m²  |  Couloir/entrée: 2–15 m²
-  - If a surface is OUTSIDE these ranges, you MISREAD it. Look again at the plan.
-  - The sum of all rooms on one floor CANNOT exceed 200 m² for a typical apartment.
-  - No single room can be > 60 m² in a standard residential building.
+STEP 4 — SURFACES (read, do not guess):
+  Priority A: Read the surface value PRINTED on the plan next to the room name (e.g., "21.8 m²", "3.6 m²", "S=12.0"). Use this value AS-IS. This is standard on French plans.
+  Priority B: If no surface is printed but dimensions (cotes) are readable: surface_m2 = length_m × width_m. Values > 50 are centimeters — divide by 100.
+  Priority C: If nothing is readable: estimate using door width = 83cm as scale reference. Set confidence < 0.5.
+  SANITY: WC 1-4 m² | SdB 3-15 m² | Chambre 8-25 m² | Cuisine 5-25 m² | Séjour 15-60 m² | Couloir 2-15 m²
+  If a value falls outside these ranges, re-read. Sum of all rooms on one floor: 20-200 m² for a typical dwelling.
 
-STEP 4 — BOUNDING BOXES (follow the walls):
-  TRACE THE WALLS: each bounding box must EXACTLY match the interior walls visible on the plan.
-  - The x_percent and y_percent must be at the TOP-LEFT corner of the room.
-  - The width_percent and height_percent must extend to the WALLS (not beyond).
-  - Adjacent rooms must share edges — NO gaps between rooms. Their bounding boxes must TOUCH with zero gap.
-  - The sum of all rooms should approximately FILL the building outline.
-  - The building outline you identified in STEP 1 is the ABSOLUTE BOUNDARY — no room extends beyond it.
-  - Box SIZE must be proportional to surface_m2 — a 3m² WC is MUCH smaller than a 25m² séjour.
-  - x_percent + width_percent <= 100. y_percent + height_percent <= 100.
+STEP 5 — BOUNDING BOXES (critical — anchor to wall positions):
+  Each bounding_box = tightest axis-aligned rectangle enclosing one room.
+  RULES (priority order):
+  1. ANCHOR TO WALLS: x_percent/y_percent = top-left WHERE THE ROOM'S WALLS BEGIN on the image. width_percent/height_percent extend to WHERE WALLS END. Measure from INNER face of walls.
+  2. NON-RECTANGULAR (L-shape, irregular): tightest rectangle containing the entire room. Set shape accordingly.
+  3. ADJACENCY: shared-wall rooms MUST have touching boxes. A.x + A.width = B.x (within 1%).
+  4. PROPORTIONALITY: box area proportional to surface_m2. A 3 m² WC is much smaller than a 22 m² séjour.
+  5. COVERAGE: union of all boxes fills the building_outline. No large empty gaps.
+  6. CONTAINMENT: every box inside building_outline. room.x >= outline.x, room.x+room.width <= outline.x+outline.width.
+  7. BOUNDS: x_percent + width_percent <= 100, y_percent + height_percent <= 100, all >= 0.
 
-STEP 5 — METADATA:
-  - WINDOWS & DOORS: Count windows and doors for each room.
-  - FLOOR: If multiple levels visible, set floor (0 = RDC). Otherwise all rooms = floor 0.
-  - CONFIDENCE: 0-1. Lower if surface was estimated or room function is ambiguous.
-  - SCALE REFERENCE: "dimensions_on_plan" if cotes/surfaces readable, "door_standard_83cm" if estimated, "scale_bar" if graphical scale present, "none" otherwise.
-  - IGNORE: Electrical symbols, plumbing, furniture, north arrow, title block.
+STEP 6 — METADATA:
+  - windows_count / doors_count: count per room. Windows = parallel lines on exterior walls. Doors = arcs/gaps in partitions.
+  - floor: 0 = RDC, default 0 if single level.
+  - confidence: 0-1. Lower if estimated or ambiguous.
+  - scale_reference: "dimensions_on_plan" if surfaces/cotes printed, "scale_bar" if graphical scale, "door_standard_83cm" if estimated, "none" otherwise.
+  - shape: "rectangular", "square", "L-shaped", "narrow_corridor", or "irregular".
+  - IGNORE: electrical/plumbing symbols, furniture outlines, north arrows, title blocks.
 ${buildLotZonesSection(lots)}
-STEP 6 — SELF-REVIEW (mandatory before returning):
-  Ask yourself these questions and FIX any issues:
-  1. Does each room's surface_m2 match what is WRITTEN on the plan? If the plan says "25.8 m²" and I have 241 m², I made an error.
-  2. Is any room larger than 60 m²? If yes, re-read the plan — I likely misread a dimension or surface.
-  3. Does the sum of all surfaces make sense for a ${typeBien}? A typical apartment floor is 40-120 m² total.
-  4. Are ALL bounding boxes INSIDE the building outline? If a room is outside the walls, I placed it wrong.
-  5. Do bounding boxes follow the visible wall lines? If not, adjust to match the walls.
-  6. Are small rooms (WC, SDB) smaller than large rooms (séjour) in both surface AND bounding box?
-  7. Is the building_outline tight around the exterior walls? It should NOT include title blocks, legends, annotations, or outdoor spaces.
-  8. Do ALL room bounding boxes fit WITHIN building_outline? Check: room.x >= outline.x AND room.x+room.width <= outline.x+outline.width (same for y).
+STEP 7 — SELF-REVIEW (mandatory):
+  1. Does each surface_m2 match what is PRINTED on the plan? If plan says "3.6" and I have 36, I misread (likely ×10 error).
+  2. Sum of surfaces: does it make sense for a ${typeBien}? Typical apartment = 40-120 m².
+  3. Every bounding box inside building_outline? If not, fix.
+  4. Adjacent rooms sharing a wall → their boxes touch? If gaps > 2%, fix.
+  5. Small rooms (WC, SdB) have smaller boxes than large rooms (Séjour)? If not, fix proportions.
+  6. Did I use the EXACT room names from the plan? If I renamed a room, revert to the plan's text.
+  7. Did I invent a room that is NOT visible on the plan? If yes, remove it.
 
 TYPE DE BIEN: "${typeBien}". If "immeuble", there may be multiple units — identify them if possible.
 
-OUTPUT: Return valid JSON matching the provided schema. French room names. No commentary outside the JSON.`;
+OUTPUT: valid JSON matching the schema. French room names as written on the plan. No text outside JSON.`;
 }
 
 // ─── JSON Schema for structured output ──────────────────────────────
@@ -148,19 +163,20 @@ const PLAN_EXTRACTION_JSON_SCHEMA = {
     properties: {
       rooms: {
         type: "array" as const,
+        description: "Every enclosed room detected on the plan",
         items: {
           type: "object" as const,
           properties: {
-            temp_id: { type: "string" as const },
-            name_raw: { type: "string" as const },
-            surface_m2: { type: ["number", "null"] as const },
+            temp_id: { type: "string" as const, description: "Unique ID: r1, r2, r3..." },
+            name_raw: { type: "string" as const, description: "Room name in French as written on the plan (e.g. 'Chambre', 'SdB', 'Séjour/Cuisine')" },
+            surface_m2: { type: ["number", "null"] as const, description: "Surface in m² read from the plan. null only if unreadable" },
             dimensions: {
               anyOf: [
                 {
                   type: "object" as const,
                   properties: {
-                    length_m: { type: "number" as const },
-                    width_m: { type: "number" as const },
+                    length_m: { type: "number" as const, description: "Length in meters (if > 50, value is in cm — divide by 100)" },
+                    width_m: { type: "number" as const, description: "Width in meters (if > 50, value is in cm — divide by 100)" },
                   },
                   required: ["length_m", "width_m"],
                   additionalProperties: false,
@@ -168,27 +184,29 @@ const PLAN_EXTRACTION_JSON_SCHEMA = {
                 { type: "null" as const },
               ],
             },
-            ceiling_height_m: { type: ["number", "null"] as const },
-            windows_count: { type: "integer" as const },
-            doors_count: { type: "integer" as const },
-            floor: { type: ["integer", "null"] as const },
-            confidence: { type: "number" as const },
+            ceiling_height_m: { type: ["number", "null"] as const, description: "Ceiling height in meters, null if not indicated on plan" },
+            windows_count: { type: "integer" as const, description: "Number of windows (thin parallel lines on exterior walls)" },
+            doors_count: { type: "integer" as const, description: "Number of doors (arcs or gaps in partition lines)" },
+            floor: { type: ["integer", "null"] as const, description: "Floor number: 0=RDC, 1=1er étage, etc." },
+            confidence: { type: "number" as const, description: "Confidence 0.0-1.0. Lower if surface was estimated or name inferred" },
             shape: {
               anyOf: [
                 { type: "string" as const, enum: ["rectangular", "square", "L-shaped", "narrow_corridor", "irregular"] },
                 { type: "null" as const },
               ],
+              description: "Room shape. Use L-shaped or irregular for non-rectangular rooms",
             },
-            notes: { type: ["string", "null"] as const },
+            notes: { type: ["string", "null"] as const, description: "Optional notes (e.g. 'mur porteur détecté', 'pièce humide')" },
             bounding_box: {
               anyOf: [
                 {
                   type: "object" as const,
+                  description: "Tightest axis-aligned rectangle around this room, anchored to wall positions on the image",
                   properties: {
-                    x_percent: { type: "number" as const },
-                    y_percent: { type: "number" as const },
-                    width_percent: { type: "number" as const },
-                    height_percent: { type: "number" as const },
+                    x_percent: { type: "number" as const, description: "Left edge of room as % of image width (0=left edge of image)" },
+                    y_percent: { type: "number" as const, description: "Top edge of room as % of image height (0=top edge of image)" },
+                    width_percent: { type: "number" as const, description: "Room width as % of image width" },
+                    height_percent: { type: "number" as const, description: "Room height as % of image height" },
                   },
                   required: ["x_percent", "y_percent", "width_percent", "height_percent"],
                   additionalProperties: false,
@@ -209,11 +227,12 @@ const PLAN_EXTRACTION_JSON_SCHEMA = {
         anyOf: [
           {
             type: "object" as const,
+            description: "Tightest rectangle around ALL exterior walls, excluding title blocks/legends/margins",
             properties: {
-              x_percent: { type: "number" as const },
-              y_percent: { type: "number" as const },
-              width_percent: { type: "number" as const },
-              height_percent: { type: "number" as const },
+              x_percent: { type: "number" as const, description: "Left edge of building as % of image width" },
+              y_percent: { type: "number" as const, description: "Top edge of building as % of image height" },
+              width_percent: { type: "number" as const, description: "Building width as % of image width" },
+              height_percent: { type: "number" as const, description: "Building height as % of image height" },
             },
             required: ["x_percent", "y_percent", "width_percent", "height_percent"],
             additionalProperties: false,
@@ -221,10 +240,11 @@ const PLAN_EXTRACTION_JSON_SCHEMA = {
           { type: "null" as const },
         ],
       },
-      total_surface_m2: { type: ["number", "null"] as const },
-      floors_count: { type: "integer" as const },
+      total_surface_m2: { type: ["number", "null"] as const, description: "Sum of all room surfaces in m²" },
+      floors_count: { type: "integer" as const, description: "Number of floors detected (minimum 1)" },
       extraction_warnings: {
         type: "array" as const,
+        description: "Issues encountered during extraction",
         items: {
           type: "string" as const,
           enum: [
@@ -238,6 +258,7 @@ const PLAN_EXTRACTION_JSON_SCHEMA = {
       },
       scale_reference: {
         type: "string" as const,
+        description: "How surfaces/dimensions were determined",
         enum: ["dimensions_on_plan", "door_standard_83cm", "scale_bar", "none"],
       },
     },
@@ -275,7 +296,8 @@ export async function extractPlanData(
     console.log("[plan-extractor] PDF detected — converting to PNG via pdf-to-img...");
     try {
       const pdfBuffer = Buffer.from(planBase64, "base64");
-      const pages = await pdf(pdfBuffer, { scale: 2 });
+      // scale: 3 = higher resolution for reading small text (surface values, room names)
+      const pages = await pdf(pdfBuffer, { scale: 3 });
       for await (const page of pages) {
         // Use first page only (multi-page handled by extractMultiplePlans)
         imageBase64 = Buffer.from(page).toString("base64");
@@ -847,6 +869,45 @@ export function validateExtraction(
   });
   if (surfaceCoverage < 0.5) {
     warnings.push("La majorité des surfaces n'ont pas pu être lues. Saisissez-les manuellement.");
+  }
+
+  // GATE 9 — Excessive bbox overlap (two rooms sharing > 30% of area = misplacement)
+  let excessiveOverlaps = 0;
+  const overlapPairs: string[] = [];
+  for (let i = 0; i < data.rooms.length; i++) {
+    for (let j = i + 1; j < data.rooms.length; j++) {
+      const a = data.rooms[i];
+      const b = data.rooms[j];
+      if (a.bounding_box && b.bounding_box) {
+        const ax1 = a.bounding_box.x_percent;
+        const ay1 = a.bounding_box.y_percent;
+        const ax2 = ax1 + a.bounding_box.width_percent;
+        const ay2 = ay1 + a.bounding_box.height_percent;
+        const bx1 = b.bounding_box.x_percent;
+        const by1 = b.bounding_box.y_percent;
+        const bx2 = bx1 + b.bounding_box.width_percent;
+        const by2 = by1 + b.bounding_box.height_percent;
+        const overlapX = Math.max(0, Math.min(ax2, bx2) - Math.max(ax1, bx1));
+        const overlapY = Math.max(0, Math.min(ay2, by2) - Math.max(ay1, by1));
+        const overlapArea = overlapX * overlapY;
+        const areaA = a.bounding_box.width_percent * a.bounding_box.height_percent;
+        const areaB = b.bounding_box.width_percent * b.bounding_box.height_percent;
+        const smallerArea = Math.min(areaA, areaB);
+        if (smallerArea > 0 && overlapArea / smallerArea > 0.3) {
+          excessiveOverlaps++;
+          overlapPairs.push(`${a.name_raw} / ${b.name_raw}`);
+        }
+      }
+    }
+  }
+  gates.push({
+    id: "G9_NO_EXCESSIVE_OVERLAP",
+    label: "Pas de chevauchement excessif entre pièces",
+    passed: excessiveOverlaps === 0,
+    detail: excessiveOverlaps > 0 ? overlapPairs.join(", ") : undefined,
+  });
+  if (excessiveOverlaps > 0) {
+    warnings.push(`${excessiveOverlaps} paire(s) de pièces se chevauchent excessivement : ${overlapPairs.join(", ")}. Repositionnez-les.`);
   }
 
   // ── Score calculation ──────────────────────────────────────────

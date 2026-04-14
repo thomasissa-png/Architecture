@@ -182,13 +182,14 @@ export async function POST(
     // ─── Load lots for spatial constraint injection ───────────────
     const preDb = getPool();
     const preLotsResult = await preDb.query(
-      `SELECT id, name, zone_rect FROM pro_lots WHERE project_id = $1 ORDER BY sort_order`,
+      `SELECT id, name, zone_rect, zone_polygon FROM pro_lots WHERE project_id = $1 ORDER BY sort_order`,
       [projectId]
     );
-    const lotZones = preLotsResult.rows.map((r: { id: string; name: string; zone_rect: { x_percent: number; y_percent: number; width_percent: number; height_percent: number } | null }) => ({
+    const lotZones = preLotsResult.rows.map((r: { id: string; name: string; zone_rect: { x_percent: number; y_percent: number; width_percent: number; height_percent: number } | null; zone_polygon: { points: Array<{ x_percent: number; y_percent: number }> } | null }) => ({
       id: r.id as string,
       name: r.name as string,
       zone_rect: r.zone_rect as { x_percent: number; y_percent: number; width_percent: number; height_percent: number } | null,
+      zone_polygon: r.zone_polygon as { points: Array<{ x_percent: number; y_percent: number }> } | null,
     }));
 
     // ─── Call extraction IA + sanitize + quality gates ──────────
@@ -365,19 +366,20 @@ export async function POST(
 
     // ─── Auto-assign rooms to lots by zone containment ──────────
     // Lots are defined BEFORE extraction — load them and assign rooms
-    // based on bounding_box center being inside lot zone_rect
+    // based on bounding_box center being inside lot zone (polygon or rect)
     const lotsResult = await db.query(
-      `SELECT id, zone_rect FROM pro_lots WHERE project_id = $1 ORDER BY sort_order`,
+      `SELECT id, zone_rect, zone_polygon FROM pro_lots WHERE project_id = $1 ORDER BY sort_order`,
       [projectId]
     );
     const projectLots = lotsResult.rows as Array<{
       id: string;
       zone_rect: { x_percent: number; y_percent: number; width_percent: number; height_percent: number } | null;
+      zone_polygon: { points: Array<{ x_percent: number; y_percent: number }> } | null;
     }>;
 
     if (projectLots.length > 0) {
-      // Lots with zones for spatial assignment
-      const lotsWithZones = projectLots.filter((l) => l.zone_rect);
+      // Lots with zones for spatial assignment (polygon or rect)
+      const lotsWithZones = projectLots.filter((l) => l.zone_polygon || l.zone_rect);
 
       for (const room of insertedRooms) {
         let assignedLotId: string | null = null;
@@ -390,18 +392,48 @@ export async function POST(
           // Find the lot whose zone contains this room's center (smallest zone wins tiebreaker)
           let bestArea = Infinity;
           for (const lot of lotsWithZones) {
-            const z = lot.zone_rect!;
-            if (
-              cx >= z.x_percent &&
-              cx <= z.x_percent + z.width_percent &&
-              cy >= z.y_percent &&
-              cy <= z.y_percent + z.height_percent
-            ) {
-              const area = z.width_percent * z.height_percent;
-              if (area < bestArea) {
-                bestArea = area;
-                assignedLotId = lot.id;
+            let inside = false;
+            let area = Infinity;
+
+            // Polygon takes priority over rect
+            if (lot.zone_polygon && lot.zone_polygon.points.length >= 3) {
+              // Ray casting point-in-polygon
+              const poly = lot.zone_polygon.points;
+              let isInside = false;
+              for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+                const xi = poly[i].x_percent, yi = poly[i].y_percent;
+                const xj = poly[j].x_percent, yj = poly[j].y_percent;
+                if ((yi > cy) !== (yj > cy) && cx < (xj - xi) * (cy - yi) / (yj - yi) + xi) {
+                  isInside = !isInside;
+                }
               }
+              inside = isInside;
+              if (inside) {
+                // Approximate area via bounding box for tiebreaker
+                let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                for (const p of poly) {
+                  if (p.x_percent < minX) minX = p.x_percent;
+                  if (p.y_percent < minY) minY = p.y_percent;
+                  if (p.x_percent > maxX) maxX = p.x_percent;
+                  if (p.y_percent > maxY) maxY = p.y_percent;
+                }
+                area = (maxX - minX) * (maxY - minY);
+              }
+            } else if (lot.zone_rect) {
+              const z = lot.zone_rect;
+              inside =
+                cx >= z.x_percent &&
+                cx <= z.x_percent + z.width_percent &&
+                cy >= z.y_percent &&
+                cy <= z.y_percent + z.height_percent;
+              if (inside) {
+                area = z.width_percent * z.height_percent;
+              }
+            }
+
+            if (inside && area < bestArea) {
+              bestArea = area;
+              assignedLotId = lot.id;
             }
           }
         }

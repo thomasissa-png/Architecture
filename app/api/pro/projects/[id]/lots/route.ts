@@ -80,6 +80,9 @@ interface LotInput {
     width_percent: number;
     height_percent: number;
   } | null;
+  zone_polygon?: {
+    points: Array<{ x_percent: number; y_percent: number }>;
+  } | null;
 }
 
 export async function PUT(
@@ -172,6 +175,7 @@ export async function PUT(
         color: lotInput.color || null,
         sortOrder: i,
         zoneRect: lotInput.zone_rect || null,
+        zonePolygon: lotInput.zone_polygon || null,
       });
 
       // Assign rooms to this lot (if rooms exist)

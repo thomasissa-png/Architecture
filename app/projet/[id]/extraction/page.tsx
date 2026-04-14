@@ -42,6 +42,11 @@ interface ExtractedRoom {
   bounding_box?: BoundingBox | null;
 }
 
+/** Polygon zone type */
+interface ZonePolygonData {
+  points: Array<{ x_percent: number; y_percent: number }>;
+}
+
 /** Lot data loaded from GET /api/pro/projects/:id/lots (read-only on this page) */
 interface LotData {
   id: string;
@@ -53,6 +58,7 @@ interface LotData {
     width_percent: number;
     height_percent: number;
   } | null;
+  zone_polygon: ZonePolygonData | null;
 }
 
 type ExtractionState = "idle" | "loading" | "success" | "error";
@@ -420,6 +426,9 @@ export default function ExtractionPage() {
                 zone_rect: l.zone_rect && typeof l.zone_rect === "object"
                   ? l.zone_rect as LotData["zone_rect"]
                   : null,
+                zone_polygon: l.zone_polygon && typeof l.zone_polygon === "object"
+                  ? l.zone_polygon as LotData["zone_polygon"]
+                  : null,
               }))
             );
           }
@@ -470,6 +479,7 @@ export default function ExtractionPage() {
       name: lot.name,
       color: lot.color || "#D1D0CB",
       zoneRect: lot.zone_rect,
+      zonePolygon: lot.zone_polygon,
     }));
   }, [lots]);
 

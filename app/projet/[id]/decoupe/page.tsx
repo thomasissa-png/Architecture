@@ -19,7 +19,7 @@ import { useParams, useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProStepper from "@/components/marchand/ProStepper";
-import PlanEditor, { type PlanRoom, type LotZone, type BuildingOutlineRect } from "@/components/marchand/PlanEditor";
+import PlanEditor, { type PlanRoom, type LotZone, type BuildingOutlineRect, type ZonePolygon, pointInPolygon } from "@/components/marchand/PlanEditor";
 import { getCompletedSteps, floorLabel } from "@/lib/constants";
 
 // ─── Constants ─────────────────────────────────────────────────────
@@ -64,6 +64,7 @@ interface LotData {
   color: string;
   room_ids: string[];
   zone_rect: BuildingOutlineRect | null;
+  zone_polygon: ZonePolygon | null;
 }
 
 interface DetectedLot {
@@ -76,6 +77,7 @@ interface DetectedLot {
     width_percent: number;
     height_percent: number;
   } | null;
+  zone_polygon?: ZonePolygon | null;
 }
 
 type PageState = "loading" | "detecting" | "ready" | "saving" | "error";
@@ -186,6 +188,7 @@ export default function DecoupePage() {
       name: lot.name,
       color: lot.color,
       zoneRect: lot.zone_rect,
+      zonePolygon: lot.zone_polygon,
     }));
   }, [lots]);
 
@@ -196,7 +199,7 @@ export default function DecoupePage() {
       const roomsWithBBox = roomsOnFloor.filter((r) => r.bounding_box);
       if (roomsWithBBox.length === 0) return;
 
-      const lotsWithZones = updatedLots.filter((l) => l.zone_rect);
+      const lotsWithZones = updatedLots.filter((l) => l.zone_polygon || l.zone_rect);
       if (lotsWithZones.length === 0) return;
 
       // Compute room center → assign to the lot whose zone contains it
@@ -208,23 +211,42 @@ export default function DecoupePage() {
         const cy = bb.y_percent + bb.height_percent / 2;
 
         let bestLot: string | null = null;
-        let bestOverlap = 0;
+        let bestOverlap = Infinity;
 
         for (const lot of lotsWithZones) {
-          const z = lot.zone_rect!;
-          // Check if center is inside zone
-          if (
-            cx >= z.x_percent &&
-            cx <= z.x_percent + z.width_percent &&
-            cy >= z.y_percent &&
-            cy <= z.y_percent + z.height_percent
-          ) {
-            // If multiple zones overlap, pick the smallest (most specific)
-            const area = z.width_percent * z.height_percent;
-            if (!bestLot || area < bestOverlap) {
-              bestLot = lot.id;
-              bestOverlap = area;
+          let inside = false;
+          let area = Infinity;
+
+          // Polygon takes priority over rect
+          if (lot.zone_polygon && lot.zone_polygon.points.length >= 3) {
+            inside = pointInPolygon(cx, cy, lot.zone_polygon.points);
+            if (inside) {
+              // Approximate area via bounding box for tiebreaker
+              const pts = lot.zone_polygon.points;
+              let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+              for (const p of pts) {
+                if (p.x_percent < minX) minX = p.x_percent;
+                if (p.y_percent < minY) minY = p.y_percent;
+                if (p.x_percent > maxX) maxX = p.x_percent;
+                if (p.y_percent > maxY) maxY = p.y_percent;
+              }
+              area = (maxX - minX) * (maxY - minY);
             }
+          } else if (lot.zone_rect) {
+            const z = lot.zone_rect;
+            inside =
+              cx >= z.x_percent &&
+              cx <= z.x_percent + z.width_percent &&
+              cy >= z.y_percent &&
+              cy <= z.y_percent + z.height_percent;
+            if (inside) {
+              area = z.width_percent * z.height_percent;
+            }
+          }
+
+          if (inside && area < bestOverlap) {
+            bestLot = lot.id;
+            bestOverlap = area;
           }
         }
 
@@ -259,10 +281,10 @@ export default function DecoupePage() {
 
   // ─── Zone change handler ───────────────────────────────────────
   const handleLotZoneChange = useCallback(
-    (lotId: string, rect: BuildingOutlineRect | null) => {
+    (lotId: string, rect: BuildingOutlineRect | null, polygon: ZonePolygon | null) => {
       setLots((prev) => {
         const updated = prev.map((l) =>
-          l.id === lotId ? { ...l, zone_rect: rect } : l
+          l.id === lotId ? { ...l, zone_rect: rect, zone_polygon: polygon } : l
         );
         // Auto-assign rooms after zone change (microtask to let state settle)
         setTimeout(() => autoAssignRoomsByZone(updated), 0);
@@ -306,13 +328,14 @@ export default function DecoupePage() {
           const existingLots = lotsData.lots || [];
           if (existingLots.length > 0) {
             // Lots already defined — rebuild state
-            const rebuiltLots: LotData[] = existingLots.map((l: { id: string; name: string; lot_type?: string; color?: string; zone_rect?: BuildingOutlineRect | null; rooms?: { id: string }[] }, i: number) => ({
+            const rebuiltLots: LotData[] = existingLots.map((l: { id: string; name: string; lot_type?: string; color?: string; zone_rect?: BuildingOutlineRect | null; zone_polygon?: ZonePolygon | null; rooms?: { id: string }[] }, i: number) => ({
               id: l.id,
               name: l.name,
               lot_type: l.lot_type || "appartement",
               color: l.color || LOT_COLORS[i % LOT_COLORS.length],
               room_ids: (l.rooms || []).map((r: { id: string }) => r.id),
               zone_rect: l.zone_rect || null,
+              zone_polygon: l.zone_polygon || null,
             }));
             if (!cancelled) {
               setLots(rebuiltLots);
@@ -369,6 +392,7 @@ export default function DecoupePage() {
               lot_type: "appartement",
               room_ids: [],
               zone_rect: null,
+              zone_polygon: null,
             },
           ];
           setDetectionFallback(true);
@@ -382,6 +406,7 @@ export default function DecoupePage() {
           color: LOT_COLORS[i % LOT_COLORS.length],
           room_ids: d.room_ids || [],
           zone_rect: d.zone_rect || null,
+          zone_polygon: d.zone_polygon || null,
         }));
 
         setLots(newLots);
@@ -396,6 +421,7 @@ export default function DecoupePage() {
           color: LOT_COLORS[0],
           room_ids: [],
           zone_rect: null,
+          zone_polygon: null,
         };
         setLots([fallbackLot]);
         setPageState("ready");
@@ -434,6 +460,7 @@ export default function DecoupePage() {
       color: LOT_COLORS[newIndex % LOT_COLORS.length],
       room_ids: [],
       zone_rect: null,
+      zone_polygon: null,
     };
     setLots((prev) => [...prev, newLot]);
   }, [lots.length]);
@@ -499,6 +526,7 @@ export default function DecoupePage() {
           color: l.color,
           room_ids: l.room_ids,
           zone_rect: l.zone_rect || null,
+          zone_polygon: l.zone_polygon || null,
         })),
       };
 
@@ -907,16 +935,16 @@ export default function DecoupePage() {
                                            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] min-h-[36px]
                                            disabled:opacity-40 disabled:cursor-not-allowed
                                            border-[#1C1C1E]/10 text-[#1C1C1E]/60 hover:bg-[#1C1C1E]/5 hover:text-[#1C1C1E]"
-                                title={lot.zone_rect ? "Redessiner la zone sur le plan" : "Dessiner la zone sur le plan"}
+                                title={(lot.zone_polygon || lot.zone_rect) ? "Redessiner la zone sur le plan" : "Dessiner la zone sur le plan"}
                               >
                                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                                  <rect x="1.5" y="1.5" width="11" height="11" rx="1" stroke="currentColor" strokeWidth="1.2" strokeDasharray="2 2" />
+                                  <polygon points="2,12 7,2 12,12 10,8 4,8" stroke="currentColor" strokeWidth="1.2" fill="none" strokeDasharray="2 2" strokeLinejoin="round" />
                                 </svg>
-                                {lot.zone_rect ? "Redessiner" : "Dessiner la zone"}
+                                {(lot.zone_polygon || lot.zone_rect) ? "Redessiner" : "Dessiner la zone"}
                               </button>
-                              {lot.zone_rect && (
+                              {(lot.zone_polygon || lot.zone_rect) && (
                                 <button
-                                  onClick={() => handleLotZoneChange(lot.id, null)}
+                                  onClick={() => handleLotZoneChange(lot.id, null, null)}
                                   className="text-xs text-[#1C1C1E]/40 hover:text-red-500 px-1.5 py-1.5 rounded transition-colors
                                              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] min-h-[36px]"
                                   title="Supprimer la zone"
