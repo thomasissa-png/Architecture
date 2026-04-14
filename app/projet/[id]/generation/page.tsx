@@ -317,6 +317,55 @@ export default function GenerationPage() {
     }
   }, [projectId, pageState]);
 
+  // ─── Retry all failed rooms at once ──────────────────────────────
+
+  const retryAllFailed = useCallback(async () => {
+    const failedRooms = rooms.filter((r) => r.generation_status === "failed");
+    if (failedRooms.length === 0) return;
+
+    // Mark all failed rooms as retrying
+    setRetryingRooms((prev) => {
+      const updated = new Set(prev);
+      for (const room of failedRooms) {
+        updated.add(room.id);
+      }
+      return updated;
+    });
+
+    try {
+      const response = await fetch(`/api/pro/projects/${projectId}/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ room_ids: failedRooms.map((r) => r.id) }),
+      });
+
+      if (!response.ok) {
+        // Remove all from retrying set on error
+        setRetryingRooms((prev) => {
+          const updated = new Set(prev);
+          for (const room of failedRooms) {
+            updated.delete(room.id);
+          }
+          return updated;
+        });
+        return;
+      }
+
+      // Restart polling
+      if (pageState === "complete") {
+        setPageState("generating");
+      }
+    } catch {
+      setRetryingRooms((prev) => {
+        const updated = new Set(prev);
+        for (const room of failedRooms) {
+          updated.delete(room.id);
+        }
+        return updated;
+      });
+    }
+  }, [rooms, projectId, pageState]);
+
   // ─── Iterate on a generated room ──────────────────────────────────
 
   const iterateRoom = useCallback(async (roomId: string) => {
@@ -857,15 +906,28 @@ export default function GenerationPage() {
         {/* Complete state — navigation */}
         {pageState === "complete" && (
           <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-[#D1D0CB]/40">
-            <button
-              onClick={() => router.push(`/projet/${projectId}/dossier`)}
-              className="flex-1 py-3 px-4 rounded-lg bg-[#7D9B76] text-white text-sm font-semibold
-                         hover:bg-[#4A7A42] transition-colors
-                         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] focus-visible:ring-offset-2
-                         shadow-[0_2px_8px_rgba(28,28,30,0.12)]"
-            >
-              Voir le dossier
-            </button>
+            {summary.failed > 0 && (
+              <button
+                onClick={retryAllFailed}
+                className="flex-1 py-3 px-4 rounded-lg bg-[#1C1C1E] text-white text-sm font-semibold
+                           hover:bg-[#1C1C1E]/80 transition-colors
+                           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1C1E] focus-visible:ring-offset-2
+                           shadow-[0_2px_8px_rgba(28,28,30,0.12)]"
+              >
+                Relancer les {summary.failed} pièce{summary.failed > 1 ? "s" : ""} en échec
+              </button>
+            )}
+            {summary.done > 0 && (
+              <button
+                onClick={() => router.push(`/projet/${projectId}/dossier`)}
+                className="flex-1 py-3 px-4 rounded-lg bg-[#7D9B76] text-white text-sm font-semibold
+                           hover:bg-[#4A7A42] transition-colors
+                           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] focus-visible:ring-offset-2
+                           shadow-[0_2px_8px_rgba(28,28,30,0.12)]"
+              >
+                Voir le dossier
+              </button>
+            )}
             <button
               onClick={() => router.push("/mes-biens")}
               className="py-3 px-4 rounded-lg border border-[#D1D0CB] bg-white
