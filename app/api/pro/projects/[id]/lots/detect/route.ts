@@ -46,6 +46,7 @@ interface DetectedLot {
   lot_type: LotType;
   room_ids: string[];
   zone_rect: ZoneRect | null;
+  plan_index: number;
 }
 
 // ─── POST handler ──────────────────────────────────────────────────
@@ -87,7 +88,7 @@ export async function POST(
       });
     }
 
-    // Load plan image for vision analysis
+    // Load plan image(s) for vision analysis
     if (!project.plan_file_path) {
       return NextResponse.json({
         lots: [{ lot_name: "Lot 1", lot_type: "appartement", room_ids: [], zone_rect: null }],
@@ -95,30 +96,54 @@ export async function POST(
       });
     }
 
-    // Get the first plan image path
-    let firstPath = project.plan_file_path;
+    // Parse all plan paths from the stored value (single string or JSON array)
+    let allPlanPaths: string[] = [];
     try {
-      if (firstPath.startsWith("[")) {
-        const parsed = JSON.parse(firstPath);
-        firstPath = Array.isArray(parsed) ? parsed[0] : firstPath;
+      if (project.plan_file_path.startsWith("[")) {
+        const parsed = JSON.parse(project.plan_file_path);
+        allPlanPaths = Array.isArray(parsed) ? (parsed as string[]) : [project.plan_file_path];
+      } else {
+        allPlanPaths = [project.plan_file_path];
       }
-    } catch { /* use raw path */ }
+    } catch {
+      allPlanPaths = [project.plan_file_path];
+    }
 
     // For PDFs, use the preview PNG
-    if (firstPath.endsWith(".pdf")) firstPath = firstPath + "-preview.png";
+    allPlanPaths = allPlanPaths.map((p) =>
+      p.toLowerCase().endsWith(".pdf") ? `${p}-preview.png` : p
+    );
 
-    // Load image from Object Storage
-    let imageBase64: string | null = null;
-    try {
-      const imageBuffer = await withStorageRetry(async (storage) => {
-        const result = await storage.downloadAsBytes(firstPath);
-        if (!result.ok || !result.value) throw new Error("Download failed");
-        const buf = result.value[0];
-        return Buffer.from(buf.buffer, buf.byteOffset, buf.byteLength);
-      }, `downloadPlan(${firstPath})`);
-      imageBase64 = imageBuffer.toString("base64");
-    } catch {
-      // Can't load plan image — fallback
+    // Load ALL plan images from Object Storage
+    const planLabels = allPlanPaths.length === 1
+      ? [""]
+      : allPlanPaths.map((_, i) => {
+          // Floor label: 0 = RDC, 1 = Étage 1, etc.
+          return i === 0 ? "RDC" : `Étage ${i}`;
+        });
+
+    const imageBase64List: { base64: string; label: string }[] = [];
+    for (let i = 0; i < allPlanPaths.length; i++) {
+      const planPath = allPlanPaths[i];
+      try {
+        const imageBuffer = await withStorageRetry(async (storage) => {
+          const result = await storage.downloadAsBytes(planPath);
+          if (!result.ok || !result.value) throw new Error("Download failed");
+          const buf = result.value[0];
+          return Buffer.from(buf.buffer, buf.byteOffset, buf.byteLength);
+        }, `downloadPlan(${planPath})`);
+        imageBase64List.push({
+          base64: imageBuffer.toString("base64"),
+          label: planLabels[i],
+        });
+      } catch {
+        console.warn(`[detect] Could not load plan image: ${planPath}`);
+        // Skip this plan — continue with the others
+      }
+    }
+
+    // If no plan images could be loaded, fallback
+    if (imageBase64List.length === 0) {
       return NextResponse.json({
         lots: [{ lot_name: "Lot 1", lot_type: "appartement", room_ids: [], zone_rect: null }],
         source: "fallback",
@@ -127,7 +152,20 @@ export async function POST(
 
     const openai = new OpenAI({ apiKey, timeout: 30000 });
 
-    const systemPrompt = `You are an expert real estate analyst. You are looking at a floor plan image. Your job is to identify how many separate residential/commercial units (lots/biens) are visible on this plan, AND locate each unit spatially on the image.
+    const totalPlans = imageBase64List.length;
+    const multiPlanInstructions = totalPlans > 1
+      ? `
+You are looking at ${totalPlans} floor plan images representing DIFFERENT FLOORS of the same building.
+Each image is labeled "Plan X/${totalPlans} (floor name)".
+Units/lots can span multiple floors (e.g. a duplex) or be on a single floor.
+When identifying lots, specify which plan(s)/floor(s) each lot is on.
+The zone bounding box for each lot refers to the plan image where that lot is primarily located.
+Add a "plan_index" field (0-based) to each lot indicating which plan image the zone_rect refers to.`
+      : `You are looking at a single floor plan image.`;
+
+    const systemPrompt = `You are an expert real estate analyst. ${multiPlanInstructions}
+
+Your job is to identify how many separate residential/commercial units (lots/biens) are visible, AND locate each unit spatially on its plan image.
 
 Rules:
 - Look for patterns indicating separate units: multiple entrances, separate staircases, dividing walls, apartment numbers
@@ -155,6 +193,7 @@ Return a JSON object with this exact structure:
     {
       "lot_name": "string (descriptive name in French)",
       "lot_type": "appartement" | "commerce" | "bureau" | "parking" | "autre",
+      "plan_index": 0,
       "zone": {
         "x_percent": 5,
         "y_percent": 10,
@@ -166,25 +205,48 @@ Return a JSON object with this exact structure:
   "reasoning": "Brief explanation of why you identified these lots"
 }`;
 
+    // Build multi-image content blocks
+    const userContentBlocks: Array<
+      | { type: "text"; text: string }
+      | { type: "image_url"; image_url: { url: string; detail: "high" } }
+    > = [];
+
+    if (totalPlans > 1) {
+      userContentBlocks.push({
+        type: "text",
+        text: `Analyze these ${totalPlans} floor plans of the same building. How many separate units/lots do you see across all floors? Propose a division.`,
+      });
+    } else {
+      userContentBlocks.push({
+        type: "text",
+        text: "Analyze this floor plan. How many separate units/lots do you see? Propose a division.",
+      });
+    }
+
+    for (let i = 0; i < imageBase64List.length; i++) {
+      const { base64, label } = imageBase64List[i];
+      if (totalPlans > 1) {
+        userContentBlocks.push({
+          type: "text",
+          text: `Plan ${i + 1}/${totalPlans} (${label}):`,
+        });
+      }
+      userContentBlocks.push({
+        type: "image_url",
+        image_url: {
+          url: `data:image/png;base64,${base64}`,
+          detail: "high",
+        },
+      });
+    }
+
     const response = await openai.chat.completions.create({
       model: "gpt-4.1-mini",
       messages: [
         { role: "system", content: systemPrompt },
         {
           role: "user",
-          content: [
-            {
-              type: "text",
-              text: "Analyze this floor plan. How many separate units/lots do you see? Propose a division.",
-            },
-            {
-              type: "image_url",
-              image_url: {
-                url: `data:image/png;base64,${imageBase64}`,
-                detail: "high",
-              },
-            },
-          ],
+          content: userContentBlocks,
         },
       ],
       response_format: { type: "json_object" },
@@ -201,7 +263,7 @@ Return a JSON object with this exact structure:
     }
 
     // ─── Parse and validate response ─────────────────────────────
-    let parsed: { lots?: Array<{ lot_name: string; lot_type?: string; zone?: { x_percent?: number; y_percent?: number; width_percent?: number; height_percent?: number } }> };
+    let parsed: { lots?: Array<{ lot_name: string; lot_type?: string; plan_index?: number; zone?: { x_percent?: number; y_percent?: number; width_percent?: number; height_percent?: number } }> };
     try {
       parsed = JSON.parse(content);
     } catch {
@@ -223,6 +285,11 @@ Return a JSON object with this exact structure:
       const lotType = VALID_LOT_TYPES.includes(lot.lot_type as LotType)
         ? (lot.lot_type as LotType)
         : "appartement";
+
+      // plan_index: which plan image the zone refers to (0-based, default 0)
+      const planIndex = typeof lot.plan_index === "number"
+        ? Math.max(0, Math.min(lot.plan_index, totalPlans - 1))
+        : 0;
 
       // Parse and clamp zone bounding box (0-100 range)
       let zoneRect: ZoneRect | null = null;
@@ -247,6 +314,7 @@ Return a JSON object with this exact structure:
         lot_type: lotType,
         room_ids: [], // No rooms yet — extraction happens after lot definition
         zone_rect: zoneRect,
+        plan_index: planIndex,
       };
     });
 

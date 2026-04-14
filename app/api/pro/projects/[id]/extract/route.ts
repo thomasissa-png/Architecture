@@ -179,10 +179,24 @@ export async function POST(
       );
     }
 
+    // ─── Load lots for spatial constraint injection ───────────────
+    const preDb = getPool();
+    const preLotsResult = await preDb.query(
+      `SELECT id, name, zone_rect FROM pro_lots WHERE project_id = $1 ORDER BY sort_order`,
+      [projectId]
+    );
+    const lotZones = preLotsResult.rows.map((r: { id: string; name: string; zone_rect: { x_percent: number; y_percent: number; width_percent: number; height_percent: number } | null }) => ({
+      id: r.id as string,
+      name: r.name as string,
+      zone_rect: r.zone_rect as { x_percent: number; y_percent: number; width_percent: number; height_percent: number } | null,
+    }));
+
     // ─── Call extraction IA + sanitize + quality gates ──────────
     let rawResult = await extractMultiplePlans(
       planInputs,
-      project.type_bien as TypeBien
+      project.type_bien as TypeBien,
+      undefined, // retryContext
+      lotZones, // lot zones for spatial constraint
     );
 
     // Sanitize surfaces (10x correction, cm→m, cap per typeBien)
@@ -209,7 +223,8 @@ export async function POST(
         rawResult = await extractMultiplePlans(
           planInputs,
           project.type_bien as TypeBien,
-          retryContext
+          retryContext,
+          lotZones,
         );
         sanitized = sanitizeSurfaces(rawResult, project.type_bien);
         extractionResult = sanitized.data;

@@ -37,8 +37,50 @@ function isPdf(mimeType: string, base64Data: string): boolean {
   return base64Data.startsWith("JVBERi0");
 }
 
+// ─── Lot zone type (for spatial constraints) ──────────────────────
+export interface LotZone {
+  id: string;
+  name: string;
+  zone_rect: {
+    x_percent: number;
+    y_percent: number;
+    width_percent: number;
+    height_percent: number;
+  } | null;
+}
+
+/**
+ * Build the lot zones spatial constraint section for the system prompt.
+ * Returns empty string if no lots with zone_rect are provided.
+ */
+function buildLotZonesSection(lots?: LotZone[]): string {
+  if (!lots || lots.length === 0) return "";
+  const lotsWithZones = lots.filter((l) => l.zone_rect);
+  if (lotsWithZones.length === 0) return "";
+
+  const zoneLines = lotsWithZones
+    .map(
+      (l) =>
+        `- ${l.name}: x=${l.zone_rect!.x_percent.toFixed(1)}%, y=${l.zone_rect!.y_percent.toFixed(1)}%, width=${l.zone_rect!.width_percent.toFixed(1)}%, height=${l.zone_rect!.height_percent.toFixed(1)}%`
+    )
+    .join("\n");
+
+  return `
+SPATIAL CONSTRAINT — LOT ZONES:
+The plan has been divided into the following lots (zones). Each room MUST be placed inside the lot zone it belongs to. Use the zone boundaries as spatial constraints for your bounding boxes.
+
+${zoneLines}
+
+RULES:
+- Every room bounding_box MUST be INSIDE one of the lot zones above.
+- Place rooms so that adjacent rooms SHARE WALLS — their bounding boxes must TOUCH with zero gap.
+- Rooms cannot float in empty space — they must fill the lot zone.
+
+`;
+}
+
 // ─── System prompt ──────────────────────────────────────────────────
-function buildSystemPrompt(typeBien: TypeBien): string {
+function buildSystemPrompt(typeBien: TypeBien, lots?: LotZone[]): string {
   return `You are an expert architectural floor plan analyzer. Your job is to extract structured data from a floor plan image (photograph, scan, or CAD export).
 
 TASK: Analyze this floor plan and return a JSON object listing every room with its properties.
@@ -63,11 +105,12 @@ SANITY CHECK on every surface:
   - No single room can be > 60 m² in a standard residential building.
 
 STEP 4 — BOUNDING BOXES (follow the walls):
-  - x_percent, y_percent = top-left corner of the room (0-100% of image width/height).
-  - width_percent, height_percent = room size relative to full image.
-  - TRACE THE WALLS: each box must align with the interior walls visible on the plan.
+  TRACE THE WALLS: each bounding box must EXACTLY match the interior walls visible on the plan.
+  - The x_percent and y_percent must be at the TOP-LEFT corner of the room.
+  - The width_percent and height_percent must extend to the WALLS (not beyond).
+  - Adjacent rooms must share edges — NO gaps between rooms. Their bounding boxes must TOUCH with zero gap.
+  - The sum of all rooms should approximately FILL the building outline.
   - The building outline you identified in STEP 1 is the ABSOLUTE BOUNDARY — no room extends beyond it.
-  - Adjacent rooms share walls → their bounding boxes must be ADJACENT (touching), never overlapping.
   - Box SIZE must be proportional to surface_m2 — a 3m² WC is MUCH smaller than a 25m² séjour.
   - x_percent + width_percent <= 100. y_percent + height_percent <= 100.
 
@@ -77,7 +120,7 @@ STEP 5 — METADATA:
   - CONFIDENCE: 0-1. Lower if surface was estimated or room function is ambiguous.
   - SCALE REFERENCE: "dimensions_on_plan" if cotes/surfaces readable, "door_standard_83cm" if estimated, "scale_bar" if graphical scale present, "none" otherwise.
   - IGNORE: Electrical symbols, plumbing, furniture, north arrow, title block.
-
+${buildLotZonesSection(lots)}
 STEP 6 — SELF-REVIEW (mandatory before returning):
   Ask yourself these questions and FIX any issues:
   1. Does each room's surface_m2 match what is WRITTEN on the plan? If the plan says "25.8 m²" and I have 241 m², I made an error.
@@ -218,10 +261,11 @@ export async function extractPlanData(
   planBase64: string,
   mimeType: string,
   typeBien: TypeBien,
-  retryContext?: string
+  retryContext?: string,
+  lots?: LotZone[]
 ): Promise<PlanExtractionResult> {
   const openai = getOpenAI();
-  const systemPrompt = buildSystemPrompt(typeBien);
+  const systemPrompt = buildSystemPrompt(typeBien, lots);
 
   // If PDF, convert to PNG first — same pipeline for all formats
   let imageBase64 = planBase64;
@@ -334,7 +378,8 @@ interface PlanInput {
 export async function extractMultiplePlans(
   plans: PlanInput[],
   typeBien: TypeBien,
-  retryContext?: string
+  retryContext?: string,
+  lots?: LotZone[]
 ): Promise<PlanExtractionResult> {
   if (plans.length === 0) {
     throw new PlanExtractionError("PLAN_UNREADABLE", "Aucun plan fourni.");
@@ -342,7 +387,7 @@ export async function extractMultiplePlans(
 
   // Single plan — no merge needed
   if (plans.length === 1) {
-    return extractPlanData(plans[0].base64, plans[0].mimeType, typeBien, retryContext);
+    return extractPlanData(plans[0].base64, plans[0].mimeType, typeBien, retryContext, lots);
   }
 
   const allRooms: PlanExtractionResult["rooms"] = [];
@@ -356,7 +401,7 @@ export async function extractMultiplePlans(
   for (const plan of plans) {
     console.log(`[plan-extractor] Extracting floor ${plan.floorIndex} (${plan.mimeType})`);
 
-    const result = await extractPlanData(plan.base64, plan.mimeType, typeBien, retryContext);
+    const result = await extractPlanData(plan.base64, plan.mimeType, typeBien, retryContext, lots);
 
     // Keep first floor's building outline
     if (firstBuildingOutline === null && result.building_outline) {

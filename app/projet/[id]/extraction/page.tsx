@@ -17,7 +17,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProStepper from "@/components/marchand/ProStepper";
 import { ROOM_TYPE_LABELS } from "@/components/marchand/RoomCard";
-import PlanEditor, { type PlanRoom, type BuildingOutlineRect } from "@/components/marchand/PlanEditor";
+import PlanEditor, { type PlanRoom, type LotZone, type BuildingOutlineRect } from "@/components/marchand/PlanEditor";
 import { floorLabel, getCompletedSteps } from "@/lib/constants";
 
 // ─── Types ──────────────────────────────────────────────────────────
@@ -40,6 +40,19 @@ interface ExtractedRoom {
   is_new?: boolean;
   confidence?: number;
   bounding_box?: BoundingBox | null;
+}
+
+/** Lot data loaded from GET /api/pro/projects/:id/lots (read-only on this page) */
+interface LotData {
+  id: string;
+  name: string;
+  color: string | null;
+  zone_rect: {
+    x_percent: number;
+    y_percent: number;
+    width_percent: number;
+    height_percent: number;
+  } | null;
 }
 
 type ExtractionState = "idle" | "loading" | "success" | "error";
@@ -174,6 +187,7 @@ export default function ExtractionPage() {
   const [state, setState] = useState<ExtractionState>("idle");
   const [projectStatus, setProjectStatus] = useState("lots_defined");
   const [rooms, setRooms] = useState<ExtractedRoom[]>([]);
+  const [lots, setLots] = useState<LotData[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [projectAdresse, setProjectAdresse] = useState<string | null>(null);
@@ -391,6 +405,29 @@ export default function ExtractionPage() {
       } catch {
         // Status check failed — proceed with extraction anyway
       }
+
+      // Load lots defined at étape 2 (découpe) — for zone overlay on plan
+      try {
+        const lotsRes = await fetch(`/api/pro/projects/${projectId}/lots`);
+        if (lotsRes.ok) {
+          const lotsData = await lotsRes.json();
+          if (Array.isArray(lotsData.lots)) {
+            setLots(
+              lotsData.lots.map((l: Record<string, unknown>) => ({
+                id: String(l.id ?? ""),
+                name: String(l.name ?? ""),
+                color: typeof l.color === "string" ? l.color : null,
+                zone_rect: l.zone_rect && typeof l.zone_rect === "object"
+                  ? l.zone_rect as LotData["zone_rect"]
+                  : null,
+              }))
+            );
+          }
+        }
+      } catch {
+        // Lots fetch failed — continue without lot zones (non-blocking)
+      }
+
       runExtraction();
     }
     checkAndRun();
@@ -425,6 +462,16 @@ export default function ExtractionPage() {
     const activeIds = new Set(activeFloorRooms.map((r) => r.id));
     return planRooms.filter((pr) => activeIds.has(pr.id));
   }, [hasMultipleFloors, planRooms, activeFloorRooms]);
+
+  // ─── Lot zones for PlanEditor (read-only) ─────────────────────────
+  const lotZonesForEditor: LotZone[] = useMemo(() => {
+    return lots.map((lot) => ({
+      id: lot.id,
+      name: lot.name,
+      color: lot.color || "#D1D0CB",
+      zoneRect: lot.zone_rect,
+    }));
+  }, [lots]);
 
   /** Update a single room field */
   const updateRoom = useCallback(
@@ -778,6 +825,7 @@ export default function ExtractionPage() {
                       setBuildingOutline(outline);
                       setIsPlanDirty(true);
                     }}
+                    lotZones={lotZonesForEditor}
                   />
                 </div>
               </div>
