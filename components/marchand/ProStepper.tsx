@@ -24,8 +24,8 @@ import { useRouter } from "next/navigation";
 
 const STEPS = [
   { label: "Projet", sublabel: "Upload" },
-  { label: "Analyse", sublabel: "Détection des pièces" },
   { label: "Découpe", sublabel: "Biens et lots" },
+  { label: "Analyse", sublabel: "Détection des pièces" },
   { label: "Validation", sublabel: "Pièces" },
   { label: "Qualification", sublabel: "Cible" },
   { label: "Recommandations", sublabel: "Architecte" },
@@ -61,8 +61,8 @@ function getStepRoute(stepNumber: number, projectId?: string): string | null {
   if (stepNumber === 1) return "/projet/nouveau";
   if (!projectId) return null;
   switch (stepNumber) {
-    case 2: return `/projet/${projectId}/extraction`;
-    case 3: return `/projet/${projectId}/decoupe`;
+    case 2: return `/projet/${projectId}/decoupe`;
+    case 3: return `/projet/${projectId}/extraction`;
     case 4: return `/projet/${projectId}/validation`;
     case 5: return `/projet/${projectId}/qualification`;
     case 6: return `/projet/${projectId}/recommandations`;

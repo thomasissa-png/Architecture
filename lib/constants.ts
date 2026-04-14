@@ -87,9 +87,9 @@ export function floorLabel(floorIndex: number): string {
 export function getCompletedSteps(status: string): number[] {
   switch (status) {
     case "plan_uploaded": return [1];
-    case "extraction_done": return [1, 2];
-    case "extraction_failed": return [1];
-    case "lots_defined": return [1, 2, 3];
+    case "lots_defined": return [1, 2];
+    case "extraction_done": return [1, 2, 3];
+    case "extraction_failed": return [1, 2];
     case "validated": return [1, 2, 3, 4];
     case "qualified": return [1, 2, 3, 4, 5];
     case "plan_final": return [1, 2, 3, 4, 5, 6];

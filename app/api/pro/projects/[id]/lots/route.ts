@@ -73,7 +73,7 @@ interface LotInput {
   name: string;
   lot_type?: string;
   color?: string;
-  room_ids: string[];
+  room_ids?: string[];
   zone_rect?: {
     x_percent: number;
     y_percent: number;
@@ -106,7 +106,7 @@ export async function PUT(
       );
     }
 
-    // Validate all room_ids belong to this project
+    // Validate lot structure
     const projectRooms = await getRoomsByProject(projectId);
     const validRoomIds = new Set(projectRooms.map((r) => r.id));
 
@@ -117,18 +117,22 @@ export async function PUT(
           { status: 400 }
         );
       }
-      if (!Array.isArray(lot.room_ids)) {
+      // room_ids is optional — rooms may not exist yet (lots defined before extraction)
+      if (lot.room_ids && !Array.isArray(lot.room_ids)) {
         return NextResponse.json(
-          { error: "INVALID_BODY", message: "Chaque lot doit avoir un tableau room_ids." },
+          { error: "INVALID_BODY", message: "room_ids doit être un tableau." },
           { status: 400 }
         );
       }
-      for (const roomId of lot.room_ids) {
-        if (!validRoomIds.has(roomId)) {
-          return NextResponse.json(
-            { error: "INVALID_ROOM", message: `Pièce inconnue : ${roomId}` },
-            { status: 400 }
-          );
+      // Validate room_ids if provided and rooms exist
+      if (lot.room_ids && validRoomIds.size > 0) {
+        for (const roomId of lot.room_ids) {
+          if (!validRoomIds.has(roomId)) {
+            return NextResponse.json(
+              { error: "INVALID_ROOM", message: `Pièce inconnue : ${roomId}` },
+              { status: 400 }
+            );
+          }
         }
       }
     }
@@ -154,9 +158,11 @@ export async function PUT(
         zoneRect: lotInput.zone_rect || null,
       });
 
-      // Assign rooms to this lot
-      for (const roomId of lotInput.room_ids) {
-        await updateRoomLot(roomId, created.id);
+      // Assign rooms to this lot (if rooms exist)
+      if (lotInput.room_ids) {
+        for (const roomId of lotInput.room_ids) {
+          await updateRoomLot(roomId, created.id);
+        }
       }
 
       createdLots.push(created);

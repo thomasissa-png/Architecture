@@ -7,7 +7,7 @@
  *
  * Flow : Thomas saisit l'adresse, le type de bien, la surface,
  * uploade le plan (PDF/JPG/PNG), puis crée le projet (gratuit pendant la bêta).
- * Après création : redirect vers /projet/[id]/extraction.
+ * Après création : redirect vers /projet/[id]/decoupe (définition des lots).
  */
 
 import { useState, useRef, useCallback, useEffect } from "react";
@@ -393,9 +393,9 @@ export default function NouveauProjetPage() {
         return;
       }
 
-      // Success — redirect to extraction
+      // Success — redirect to découpe (lot definition first, then extraction)
       const projectId = data.project_id;
-      router.push(`/projet/${projectId}/extraction`);
+      router.push(`/projet/${projectId}/decoupe`);
     } catch {
       setError("Erreur de connexion. Vérifiez votre réseau et réessayez.");
     } finally {

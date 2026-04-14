@@ -19,7 +19,6 @@ import {
 } from "@/lib/marchand/auth-helpers";
 import { extractMultiplePlans, PlanExtractionError, sanitizeSurfaces, validateExtraction } from "@/lib/marchand/plan-extractor";
 import type { TypeBien } from "@/lib/marchand/schemas";
-// TODO: import { suggestLots } from "@/lib/marchand/plan-extractor";
 
 export const dynamic = "force-dynamic";
 
@@ -61,11 +60,12 @@ export async function POST(
   await ensureProTables();
 
   // ─── Status check ──────────────────────────────────────────────
-  if (project.status !== "plan_uploaded" && project.status !== "extraction_failed") {
+  // Extraction runs AFTER lot definition (lots_defined) or on retry (extraction_failed)
+  if (project.status !== "lots_defined" && project.status !== "extraction_failed") {
     return NextResponse.json(
       {
         error: "INVALID_STATUS",
-        message: "L'extraction n'est possible que sur un projet avec plan uploadé.",
+        message: "L'extraction nécessite que les lots soient définis d'abord.",
       },
       { status: 409 }
     );
@@ -292,39 +292,61 @@ export async function POST(
       });
     }
 
-    // ─── Auto-assign rooms to lot for non-immeuble projects ─────
-    if (project.type_bien !== "immeuble") {
-      const lotResult = await db.query(
-        `SELECT id FROM pro_lots WHERE project_id = $1 LIMIT 1`,
-        [projectId]
-      );
-      if (lotResult.rows.length > 0) {
-        const lotId = lotResult.rows[0].id;
-        const roomIds = insertedRooms.map((r) => r.id);
-        if (roomIds.length > 0) {
+    // ─── Auto-assign rooms to lots by zone containment ──────────
+    // Lots are defined BEFORE extraction — load them and assign rooms
+    // based on bounding_box center being inside lot zone_rect
+    const lotsResult = await db.query(
+      `SELECT id, zone_rect FROM pro_lots WHERE project_id = $1 ORDER BY sort_order`,
+      [projectId]
+    );
+    const projectLots = lotsResult.rows as Array<{
+      id: string;
+      zone_rect: { x_percent: number; y_percent: number; width_percent: number; height_percent: number } | null;
+    }>;
+
+    if (projectLots.length > 0) {
+      // Lots with zones for spatial assignment
+      const lotsWithZones = projectLots.filter((l) => l.zone_rect);
+
+      for (const room of insertedRooms) {
+        let assignedLotId: string | null = null;
+
+        if (room.bounding_box && lotsWithZones.length > 0) {
+          // Compute room center
+          const cx = room.bounding_box.x_percent + room.bounding_box.width_percent / 2;
+          const cy = room.bounding_box.y_percent + room.bounding_box.height_percent / 2;
+
+          // Find the lot whose zone contains this room's center (smallest zone wins tiebreaker)
+          let bestArea = Infinity;
+          for (const lot of lotsWithZones) {
+            const z = lot.zone_rect!;
+            if (
+              cx >= z.x_percent &&
+              cx <= z.x_percent + z.width_percent &&
+              cy >= z.y_percent &&
+              cy <= z.y_percent + z.height_percent
+            ) {
+              const area = z.width_percent * z.height_percent;
+              if (area < bestArea) {
+                bestArea = area;
+                assignedLotId = lot.id;
+              }
+            }
+          }
+        }
+
+        // Fallback: assign to first lot if no zone match (single-lot projects)
+        if (!assignedLotId && projectLots.length === 1) {
+          assignedLotId = projectLots[0].id;
+        }
+
+        if (assignedLotId) {
           await db.query(
-            `UPDATE pro_rooms SET lot_id = $1 WHERE id = ANY($2)`,
-            [lotId, roomIds]
+            `UPDATE pro_rooms SET lot_id = $1 WHERE id = $2`,
+            [assignedLotId, room.id]
           );
         }
       }
-    }
-
-    // ─── Lot suggestions for immeuble with multiple floors ────────
-    const lotSuggestions = undefined;
-
-    if (
-      project.type_bien === "immeuble" &&
-      extractionResult.floors_count > 1
-    ) {
-      // TODO: Call suggestLots() when available
-      // lotSuggestions = await suggestLots({
-      //   rooms: extractionResult.rooms,
-      //   floorsCount: extractionResult.floors_count,
-      // });
-      console.warn(
-        `[POST /api/pro/projects/${projectId}/extract] suggestLots() not yet available.`
-      );
     }
 
     console.log(
@@ -336,7 +358,6 @@ export async function POST(
       rooms_count: insertedRooms.length,
       rooms: insertedRooms,
       building_outline: extractionResult.building_outline ?? null,
-      lot_suggestions: lotSuggestions,
       quality: {
         score: qualityReport.score,
         warnings: qualityReport.warnings,

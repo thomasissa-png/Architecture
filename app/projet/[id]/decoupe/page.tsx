@@ -1,13 +1,13 @@
 "use client";
 
 /**
- * Page découpe en biens/lots (Étape 3).
+ * Page découpe en biens/lots (Étape 2).
  *
- * Rendu : Client Component — assignation visuelle des pièces aux lots.
+ * Rendu : Client Component — définition des lots/biens sur le plan.
  *
- * Au mount : charge les pièces du projet et lance la détection IA.
- * Thomas clique sur une pièce du plan pour changer son lot.
- * Bouton "Confirmer et continuer" sauvegarde et redirige vers /validation.
+ * Au mount : charge le plan et lance la détection IA des lots.
+ * Thomas dessine les zones de chaque lot sur le plan.
+ * Bouton "Confirmer et continuer" sauvegarde et redirige vers /extraction.
  *
  * Note: hex tokens (#FAFAF8, #1C1C1E, #7D9B76) are used directly for
  * cross-page consistency with extraction, validation, qualification pages.
@@ -84,7 +84,7 @@ export default function DecoupePage() {
   // ─── State ─────────────────────────────────────────────────────
   const [pageState, setPageState] = useState<PageState>("loading");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [projectStatus, setProjectStatus] = useState("extraction_done");
+  const [projectStatus, setProjectStatus] = useState("plan_uploaded");
   const [rooms, setRooms] = useState<RoomData[]>([]);
   const [lots, setLots] = useState<LotData[]>([]);
   const [planImageUrl, setPlanImageUrl] = useState<string | null>(null);
@@ -247,7 +247,7 @@ export default function DecoupePage() {
         const statusRes = await fetch(`/api/pro/projects/${projectId}/status`);
         if (statusRes.ok) {
           const statusData = await statusRes.json();
-          if (!cancelled) setProjectStatus(statusData.project_status || "extraction_done");
+          if (!cancelled) setProjectStatus(statusData.project_status || "plan_uploaded");
           if (!cancelled && statusData.project_plan_path) {
             // Convert storage path to displayable image URL
             const planPath = statusData.project_plan_path;
@@ -265,11 +265,16 @@ export default function DecoupePage() {
           }
         }
 
-        // Load rooms
-        const roomsRes = await fetch(`/api/pro/projects/${projectId}/rooms`);
-        if (!roomsRes.ok) throw new Error("Impossible de charger les pièces.");
-        const roomsData = await roomsRes.json();
-        if (!cancelled) setRooms(roomsData.rooms || []);
+        // Load rooms if they exist (optional — rooms may not be extracted yet)
+        try {
+          const roomsRes = await fetch(`/api/pro/projects/${projectId}/rooms`);
+          if (roomsRes.ok) {
+            const roomsData = await roomsRes.json();
+            if (!cancelled) setRooms(roomsData.rooms || []);
+          }
+        } catch {
+          // Rooms not available yet — that's expected at this stage
+        }
 
         // Check if lots already exist
         const lotsRes = await fetch(`/api/pro/projects/${projectId}/lots`);
@@ -288,7 +293,7 @@ export default function DecoupePage() {
             }));
             if (!cancelled) {
               setLots(rebuiltLots);
-              // Set lot_id on rooms
+              // Set lot_id on rooms (if rooms exist)
               setRooms((prev) =>
                 prev.map((room) => {
                   const lot = rebuiltLots.find((l: LotData) => l.room_ids.includes(room.id));
@@ -301,10 +306,10 @@ export default function DecoupePage() {
           }
         }
 
-        // No lots yet — trigger detection
+        // No lots yet — trigger detection from plan image
         if (!cancelled) {
           setPageState("detecting");
-          detectLots(roomsData.rooms || []);
+          detectLots();
         }
       } catch (err) {
         if (!cancelled) {
@@ -319,9 +324,9 @@ export default function DecoupePage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
 
-  // ─── Detect lots via IA ────────────────────────────────────────
+  // ─── Detect lots via IA (from plan image, no rooms needed) ─────
   const detectLots = useCallback(
-    async (currentRooms: RoomData[]) => {
+    async () => {
       try {
         const res = await fetch(`/api/pro/projects/${projectId}/lots/detect`, {
           method: "POST",
@@ -333,54 +338,42 @@ export default function DecoupePage() {
           detected = data.lots || [];
         }
 
-        // Fallback: 1 lot = all rooms
+        // Fallback: 1 default lot
         if (detected.length === 0) {
           detected = [
             {
               lot_name: "Lot 1",
               lot_type: "appartement",
-              room_ids: currentRooms.map((r) => r.id),
+              room_ids: [],
             },
           ];
           setDetectionFallback(true);
         }
 
-        // Build lots with colors
+        // Build lots with colors (room_ids may be empty at this stage)
         const newLots: LotData[] = detected.map((d, i) => ({
           id: `temp_${i}`,
           name: d.lot_name,
           lot_type: d.lot_type || "appartement",
           color: LOT_COLORS[i % LOT_COLORS.length],
-          room_ids: d.room_ids,
+          room_ids: d.room_ids || [],
           zone_rect: null,
         }));
 
         setLots(newLots);
-
-        // Assign lot_id to rooms
-        setRooms((prev) =>
-          prev.map((room) => {
-            const lot = newLots.find((l) => l.room_ids.includes(room.id));
-            return { ...room, lot_id: lot?.id || null };
-          })
-        );
-
         setPageState("ready");
       } catch {
-        // Fallback on error: 1 lot = all rooms
+        // Fallback on error: 1 default lot
         setDetectionFallback(true);
         const fallbackLot: LotData = {
           id: "temp_0",
           name: "Lot 1",
           lot_type: "appartement",
           color: LOT_COLORS[0],
-          room_ids: currentRooms.map((r) => r.id),
+          room_ids: [],
           zone_rect: null,
         };
         setLots([fallbackLot]);
-        setRooms((prev) =>
-          prev.map((room) => ({ ...room, lot_id: fallbackLot.id }))
-        );
         setPageState("ready");
       }
     },
@@ -499,7 +492,7 @@ export default function DecoupePage() {
       // Show success toast before redirect
       setSaveToast(true);
       await new Promise((r) => setTimeout(r, 800));
-      router.push(`/projet/${projectId}/validation`);
+      router.push(`/projet/${projectId}/extraction`);
     } catch (err) {
       setErrorMessage((err as Error).message);
       setPageState("ready");
@@ -520,7 +513,7 @@ export default function DecoupePage() {
         {/* Stepper */}
         <div className="mb-8">
           <ProStepper
-            currentStep={3}
+            currentStep={2}
             completedSteps={getCompletedSteps(projectStatus)}
             projectId={projectId}
           />
@@ -1018,7 +1011,7 @@ export default function DecoupePage() {
             {/* CTA sticky */}
             <div className="sticky bottom-0 bg-[#FAFAF8]/95 backdrop-blur-sm border-t border-[#1C1C1E]/10 py-4 mt-8 -mx-4 px-4 flex items-center justify-between gap-3">
               <button
-                onClick={() => router.push(`/projet/${projectId}/extraction`)}
+                onClick={() => router.push(`/projet/nouveau`)}
                 className="px-4 py-2.5 text-sm text-[#1C1C1E]/60 hover:text-[#1C1C1E] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] rounded-lg min-h-[44px]"
               >
                 Retour

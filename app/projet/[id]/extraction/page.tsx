@@ -1,14 +1,14 @@
 "use client";
 
 /**
- * Page extraction IA (Étape 2).
+ * Page extraction IA (Étape 3 — après la découpe des lots).
  *
  * Rendu : Client Component — appel API + polling + affichage résultats.
  *
  * Au mount : appelle POST /api/pro/projects/[id]/extract.
  * Affiche les pièces extraites groupées par étage avec édition inline.
- * Bouton "Valider et continuer" redirige vers /projet/[id]/decoupe.
- * En cas d'erreur : message + lien vers saisie manuelle (decoupe).
+ * Bouton "Valider et continuer" redirige vers /projet/[id]/validation.
+ * En cas d'erreur : message + lien vers saisie manuelle (validation).
  */
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
@@ -328,8 +328,8 @@ export default function ExtractionPage() {
         } else if (response.status === 429) {
           setErrorMessage(data.message || "Trop de tentatives. Réessayez plus tard.");
         } else if (response.status === 409) {
-          // Already extracted — redirect to decoupe (lot assignment)
-          router.push(`/projet/${projectId}/decoupe`);
+          // Already extracted — redirect to validation
+          router.push(`/projet/${projectId}/validation`);
           return;
         } else {
           setErrorMessage(data.message || "Erreur lors de l'analyse du plan.");
@@ -381,8 +381,8 @@ export default function ExtractionPage() {
           if (data.project_plan_path) setPlanPath(data.project_plan_path);
           if (data.building_outline) setBuildingOutline(data.building_outline as BuildingOutlineRect);
           // If already past extraction, redirect immediately without loading flash
-          if (status && status !== "plan_uploaded" && status !== "extraction_failed") {
-            router.replace(`/projet/${projectId}/decoupe`);
+          if (status && status !== "lots_defined" && status !== "extraction_failed") {
+            router.replace(`/projet/${projectId}/validation`);
             return;
           }
         }
@@ -477,11 +477,11 @@ export default function ExtractionPage() {
         // Best-effort — don't block navigation
       }
     }
-    router.push(`/projet/${projectId}/decoupe`);
+    router.push(`/projet/${projectId}/validation`);
   }, [router, projectId, buildingOutline, isPlanDirty, rooms]);
 
   const handleSkipToManual = useCallback(() => {
-    router.push(`/projet/${projectId}/decoupe`);
+    router.push(`/projet/${projectId}/validation`);
   }, [router, projectId]);
 
   // ─── Render ──────────────────────────────────────────────────────
@@ -494,9 +494,9 @@ export default function ExtractionPage() {
         {/* Stepper — centré max-w-2xl */}
         <div className="max-w-2xl mx-auto mb-8">
           <ProStepper
-            currentStep={2}
-            completedSteps={[1]}
-            errorSteps={state === "error" ? [2] : []}
+            currentStep={3}
+            completedSteps={[1, 2]}
+            errorSteps={state === "error" ? [3] : []}
             projectId={projectId}
           />
         </div>
