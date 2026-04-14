@@ -235,8 +235,17 @@ export default function ExtractionPage() {
   const [scaleFactor, setScaleFactor] = useState(50);
   // P1 UX — état dirty : Thomas a modifié le plan, signal visuel de prise en compte
   const [isPlanDirty, setIsPlanDirty] = useState(false);
+  const [hasEditedRooms, setHasEditedRooms] = useState(false);
   // Building outline detected by AI (percentages 0-100)
   const [buildingOutline, setBuildingOutline] = useState<BuildingOutlineRect | null>(null);
+
+  // ─── beforeunload guard — prevent accidental loss of edits ─────
+  useEffect(() => {
+    if (!isPlanDirty && !hasEditedRooms) return;
+    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [isPlanDirty, hasEditedRooms]);
 
   // ─── Cache planRooms per floor to preserve edits on floor switch ──
   const planRoomsCacheRef = useRef<Map<number, PlanRoom[]>>(new Map());
@@ -489,6 +498,7 @@ export default function ExtractionPage() {
       setRooms((prev) =>
         prev.map((r) => (r.id === roomId ? { ...r, ...updates } : r))
       );
+      setHasEditedRooms(true);
     },
     []
   );
@@ -496,6 +506,7 @@ export default function ExtractionPage() {
   /** Delete a room */
   const deleteRoom = useCallback((roomId: string) => {
     setRooms((prev) => prev.filter((r) => r.id !== roomId));
+    setHasEditedRooms(true);
   }, []);
 
   /** Add a new empty room to a given floor */
@@ -509,6 +520,7 @@ export default function ExtractionPage() {
       floor_index: floorIndex,
     };
     setRooms((prev) => [...prev, newRoom]);
+    setHasEditedRooms(true);
     // Auto-focus the name field
     setTimeout(() => setEditingNameId(tempId), 50);
   }, []);
