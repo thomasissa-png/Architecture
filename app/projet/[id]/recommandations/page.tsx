@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Page recommandations architecte IA (Étape 5).
+ * Page recommandations architecte IA (Étape 6).
  *
  * Rendu : Client Component — appel IA + interactions accepter/refuser.
  *

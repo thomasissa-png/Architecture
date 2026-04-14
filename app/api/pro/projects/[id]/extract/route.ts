@@ -31,14 +31,24 @@ export const dynamic = "force-dynamic";
  */
 function inferRoomType(nameRaw: string): string {
   const n = nameRaw.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  if (/salon|sejour|living|salle.*manger/.test(n)) return "salon";
+  if (/salle.*manger|dining/.test(n)) return "salle_a_manger";
+  if (/salon|sejour|living/.test(n)) return "salon";
   if (/cuisine|kitchen|kitchenette/.test(n)) return "cuisine";
+  if (/chambre.*parent|suite.*parent|master/.test(n)) return "chambre_parentale";
   if (/chambre|bedroom/.test(n)) return "chambre";
   if (/salle.*bain|sdb|bathroom/.test(n)) return "sdb";
   if (/\bwc\b|toilet/.test(n)) return "wc";
-  if (/bureau|office|salle.*reunion|meeting/.test(n)) return "bureau";
-  if (/open.*space/.test(n)) return "salon";
-  if (/couloir|hall|entree|degagement|palier|accueil|reception/.test(n)) return "couloir";
+  if (/salle.*reunion|meeting/.test(n)) return "salle_reunion";
+  if (/open.*space/.test(n)) return "open_space";
+  if (/bureau|office/.test(n)) return "bureau";
+  if (/entree|hall.*entree/.test(n)) return "entree";
+  if (/dressing/.test(n)) return "dressing";
+  if (/cellier|buanderie|laundry/.test(n)) return "cellier";
+  if (/terrasse|balcon|loggia/.test(n)) return "terrasse";
+  if (/garage|parking/.test(n)) return "garage";
+  if (/accueil|reception/.test(n)) return "accueil";
+  if (/local.*tech|technique/.test(n)) return "local_technique";
+  if (/couloir|degagement|palier/.test(n)) return "couloir";
   if (/cave|cellier|rangement|buanderie|local.*technique|technique|archive|stockage/.test(n)) return "cave";
   return "autre";
 }

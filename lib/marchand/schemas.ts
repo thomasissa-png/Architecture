@@ -19,13 +19,25 @@ export type TypeBien = z.infer<typeof TypeBienEnum>;
 
 export const RoomTypeEnum = z.enum([
   "salon",
+  "sejour",
+  "salle_a_manger",
   "cuisine",
   "chambre",
+  "chambre_parentale",
   "sdb",
   "wc",
   "bureau",
+  "entree",
+  "dressing",
+  "cellier",
+  "terrasse",
+  "garage",
   "couloir",
   "cave",
+  "salle_reunion",
+  "open_space",
+  "accueil",
+  "local_technique",
   "autre",
 ]);
 export type RoomType = z.infer<typeof RoomTypeEnum>;

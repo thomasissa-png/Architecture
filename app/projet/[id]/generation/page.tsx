@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Page génération des visuels (Étape 6).
+ * Page génération des visuels (Étape 7).
  *
  * Rendu : Client Component — lance la génération, poll le statut, affiche en temps réel.
  *
@@ -66,8 +66,8 @@ const GENERATION_STATUS_CONFIG: Record<
   { label: string; color: string; pulse?: boolean }
 > = {
   pending: { label: "En attente", color: "text-[#9B9A94]" },
-  generating_pass1: { label: "Préparation de la pièce", color: "text-[#1D4ED8]", pulse: true },
-  generating_pass2: { label: "Ajout du mobilier", color: "text-[#1D4ED8]", pulse: true },
+  generating_pass1: { label: "Préparation de la pièce", color: "text-[#7D9B76]", pulse: true },
+  generating_pass2: { label: "Ajout du mobilier", color: "text-[#7D9B76]", pulse: true },
   done: { label: "Terminée", color: "text-[#4A7A42]" },
   failed: { label: "Erreur", color: "text-[#B91C1C]" },
 };
@@ -389,7 +389,7 @@ export default function GenerationPage() {
             <div className="w-full h-2 rounded-full bg-[#F5F5F0] overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all duration-500 ease-out ${
-                  pageState === "complete" ? "bg-[#7D9B76]" : "bg-[#3B82F6]"
+                  pageState === "complete" ? "bg-[#7D9B76]" : "bg-[#7D9B76]/60"
                 }`}
                 style={{ width: `${progressPercent}%` }}
               />
@@ -475,7 +475,7 @@ export default function GenerationPage() {
                           </svg>
                         ) : (
                           <svg
-                            className="animate-spin w-6 h-6 text-[#3B82F6]"
+                            className="animate-spin w-6 h-6 text-[#7D9B76]"
                             viewBox="0 0 24 24"
                             fill="none"
                             aria-hidden="true"
@@ -575,8 +575,8 @@ export default function GenerationPage() {
                       </button>
                     )}
                     {retryingRooms.has(room.id) && (
-                      <p className="mt-2 text-xs text-[#1D4ED8] flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#1D4ED8] animate-pulse" aria-hidden="true" />
+                      <p className="mt-2 text-xs text-[#7D9B76] flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#7D9B76] animate-pulse" aria-hidden="true" />
                         Relancement en cours…
                       </p>
                     )}
@@ -626,7 +626,7 @@ export default function GenerationPage() {
                     {/* Iterating state */}
                     {iteratingRooms.has(room.id) && (
                       <div className="mt-3 pt-3 border-t border-[#D1D0CB]/30">
-                        <p className="text-xs text-[#1D4ED8] flex items-center gap-1.5">
+                        <p className="text-xs text-[#7D9B76] flex items-center gap-1.5">
                           <svg className="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
@@ -646,7 +646,7 @@ export default function GenerationPage() {
         {pageState === "triggering" && (
           <div className="flex flex-col items-center justify-center py-16 gap-4">
             <svg
-              className="animate-spin w-8 h-8 text-[#3B82F6]"
+              className="animate-spin w-8 h-8 text-[#7D9B76]"
               viewBox="0 0 24 24"
               fill="none"
               aria-hidden="true"

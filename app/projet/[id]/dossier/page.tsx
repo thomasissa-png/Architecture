@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Page dossier de pré-commercialisation (Étape 7).
+ * Page dossier de pré-commercialisation (Étape 8).
  *
  * Rendu : Client Component — visuels, description, partage, PDF.
  *
@@ -404,7 +404,10 @@ export default function DossierPage() {
     if (pdfUrl) {
       const a = document.createElement("a");
       a.href = pdfUrl;
-      a.download = `dossier-${projectId}.pdf`;
+      const slug = projectAddress
+        ? projectAddress.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "").slice(0, 60)
+        : projectId;
+      a.download = `dossier-${slug}.pdf`;
       a.click();
     }
   }

@@ -18,7 +18,7 @@ import Footer from "@/components/Footer";
 import ProStepper from "@/components/marchand/ProStepper";
 import { ROOM_TYPE_LABELS } from "@/components/marchand/RoomCard";
 import PlanEditor, { type PlanRoom, type BuildingOutlineRect } from "@/components/marchand/PlanEditor";
-import { floorLabel } from "@/lib/constants";
+import { floorLabel, getCompletedSteps } from "@/lib/constants";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -172,6 +172,7 @@ export default function ExtractionPage() {
   const projectId = params.id as string;
 
   const [state, setState] = useState<ExtractionState>("idle");
+  const [projectStatus, setProjectStatus] = useState("lots_defined");
   const [rooms, setRooms] = useState<ExtractedRoom[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -377,6 +378,7 @@ export default function ExtractionPage() {
         if (res.ok) {
           const data = await res.json();
           const status = data.project_status;
+          if (status) setProjectStatus(status);
           if (data.project_adresse) setProjectAdresse(data.project_adresse);
           if (data.project_plan_path) setPlanPath(data.project_plan_path);
           if (data.building_outline) setBuildingOutline(data.building_outline as BuildingOutlineRect);
@@ -495,7 +497,7 @@ export default function ExtractionPage() {
         <div className="max-w-2xl mx-auto mb-8">
           <ProStepper
             currentStep={3}
-            completedSteps={[1, 2]}
+            completedSteps={getCompletedSteps(projectStatus)}
             errorSteps={state === "error" ? [3] : []}
             projectId={projectId}
           />

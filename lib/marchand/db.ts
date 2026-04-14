@@ -100,7 +100,7 @@ export async function ensureProTables(): Promise<void> {
       project_id          UUID NOT NULL REFERENCES pro_projects(id) ON DELETE CASCADE,
       name                TEXT NOT NULL,
       room_type           TEXT NOT NULL DEFAULT 'autre'
-                          CHECK (room_type IN ('salon','cuisine','chambre','sdb','wc','bureau','couloir','cave','autre')),
+                          CHECK (room_type IN ('salon','sejour','salle_a_manger','cuisine','chambre','chambre_parentale','sdb','wc','bureau','entree','dressing','cellier','terrasse','garage','couloir','cave','salle_reunion','open_space','accueil','local_technique','autre')),
       surface_m2          DECIMAL(6,2) CHECK (surface_m2 IS NULL OR (surface_m2 > 0 AND surface_m2 < 1000)),
       length_m            DECIMAL(5,2) CHECK (length_m IS NULL OR length_m > 0),
       width_m             DECIMAL(5,2) CHECK (width_m IS NULL OR width_m > 0),

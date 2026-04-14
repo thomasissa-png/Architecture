@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Page validation et association photos/pièces (Étape 3).
+ * Page validation et association photos/pièces (Étape 4).
  *
  * Rendu : Client Component — tableau éditable, upload photos.
  *
@@ -747,6 +747,7 @@ export default function ValidationPage() {
                       }}
                       type="file"
                       accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+                      capture="environment"
                       className="hidden"
                       onChange={(e) => {
                         const file = e.target.files?.[0];

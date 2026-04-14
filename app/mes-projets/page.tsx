@@ -43,16 +43,16 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  plan_uploaded: "bg-blue-100 text-blue-700",
-  lots_defined: "bg-cyan-100 text-cyan-700",
-  extraction_done: "bg-amber-100 text-amber-700",
-  extraction_failed: "bg-amber-100 text-amber-700",
-  validated: "bg-indigo-100 text-indigo-700",
-  qualified: "bg-purple-100 text-purple-700",
-  plan_final: "bg-orange-100 text-orange-700",
-  generating: "bg-orange-100 text-orange-700",
-  visuals_done: "bg-green-100 text-green-700",
-  delivered: "bg-green-100 text-green-700",
+  plan_uploaded: "bg-[#F5F5F0] text-[#9B9A94]",
+  lots_defined: "bg-[#F5F5F0] text-[#9B9A94]",
+  extraction_done: "bg-[#F5F5F0] text-[#9B9A94]",
+  extraction_failed: "bg-[#FEF2F2] text-[#B91C1C]",
+  validated: "bg-[#F5F5F0] text-[#9B9A94]",
+  qualified: "bg-[#F5F5F0] text-[#9B9A94]",
+  plan_final: "bg-[#F5F5F0] text-[#9B9A94]",
+  generating: "bg-[#ECFDF5] text-[#4A7A42]",
+  visuals_done: "bg-[#ECFDF5] text-[#4A7A42]",
+  delivered: "bg-[#ECFDF5] text-[#4A7A42]",
 };
 
 const STATUS_ROUTES: Record<string, string> = {

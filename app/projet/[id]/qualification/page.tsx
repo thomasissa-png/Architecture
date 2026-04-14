@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Page qualification des besoins par lot (Étape 4).
+ * Page qualification des besoins par lot (Étape 5).
  *
  * Rendu : Client Component — formulaire éditable par lot.
  *

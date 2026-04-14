@@ -25,10 +25,10 @@ import { useRouter } from "next/navigation";
 const STEPS = [
   { label: "Projet", sublabel: "Upload" },
   { label: "Découpe", sublabel: "Définition des biens" },
-  { label: "Analyse", sublabel: "Pièces par bien" },
-  { label: "Validation", sublabel: "Pièces" },
-  { label: "Qualification", sublabel: "Cible" },
-  { label: "Recommandations", sublabel: "Architecte" },
+  { label: "Pièces", sublabel: "Détection IA" },
+  { label: "Validation", sublabel: "Ajustements" },
+  { label: "Style", sublabel: "Cible et ambiance" },
+  { label: "Conseils", sublabel: "Propositions IA" },
   { label: "Visuels", sublabel: "Génération" },
   { label: "Dossier", sublabel: "PDF" },
 ] as const;

@@ -507,9 +507,9 @@ export default function DecoupePage() {
   // ─── Render ────────────────────────────────────────────────────
   return (
     <div className="min-h-screen flex flex-col bg-[#FAFAF8]">
-      <Header />
+      <Header variant="internal" />
 
-      <main className="flex-1 px-4 py-8 max-w-7xl mx-auto w-full">
+      <main className="flex-1 px-4 pt-20 pb-8 max-w-7xl mx-auto w-full">
         {/* Stepper */}
         <div className="mb-8">
           <ProStepper
@@ -544,15 +544,15 @@ export default function DecoupePage() {
 
         {/* Error */}
         {pageState === "error" && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-            <p className="text-red-700 text-sm">{errorMessage}</p>
+          <div className="bg-[#FEF2F2] border border-[#EF4444]/20 rounded-lg p-4 mb-6">
+            <p className="text-[#B91C1C] text-sm">{errorMessage}</p>
             <button
               onClick={() => {
                 setPageState("loading");
                 setErrorMessage(null);
                 window.location.reload();
               }}
-              className="mt-2 text-sm text-red-600 underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] rounded"
+              className="mt-2 text-sm text-[#B91C1C] underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] rounded"
             >
               Réessayer
             </button>

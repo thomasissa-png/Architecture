@@ -912,6 +912,12 @@ export async function POST(
       `[POST /api/pro/projects/${projectId}/dossier/pdf] Generated PDF: ${dossierLots.length} lot(s), ${pdfBytes.length} bytes`
     );
 
+    // Mark project as delivered (fire-and-forget)
+    getPool().query(
+      `UPDATE pro_projects SET status = 'delivered', updated_at = NOW() WHERE id = $1 AND status IN ('visuals_done', 'delivered')`,
+      [projectId]
+    ).catch(() => { /* swallow — don't block PDF delivery */ });
+
     return new NextResponse(Buffer.from(pdfBytes), {
       status: 200,
       headers: {
