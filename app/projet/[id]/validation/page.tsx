@@ -261,13 +261,67 @@ export default function ValidationPage() {
   // ─── Photo upload per room ───────────────────────────────────────
 
   const handlePhotoSelect = useCallback((roomId: string, file: File) => {
-    const url = URL.createObjectURL(file);
-    setRooms((prev) =>
-      prev.map((r) =>
-        r.id === roomId ? { ...r, photoUrl: url, photoFile: file } : r
-      )
-    );
-    setIsDirty(true);
+    // Resize large photos client-side before upload (max 2048px, JPEG 85%)
+    const MAX_DIM = 2048;
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+    img.onload = () => {
+      const maxSide = Math.max(img.width, img.height);
+      if (maxSide > MAX_DIM) {
+        // Resize needed
+        const scale = MAX_DIM / maxSide;
+        const w = Math.round(img.width * scale);
+        const h = Math.round(img.height * scale);
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, w, h);
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                const resizedFile = new File([blob], file.name.replace(/\.[^.]+$/, ".jpg"), { type: "image/jpeg" });
+                const resizedUrl = URL.createObjectURL(resizedFile);
+                setRooms((prev) =>
+                  prev.map((r) =>
+                    r.id === roomId ? { ...r, photoUrl: resizedUrl, photoFile: resizedFile } : r
+                  )
+                );
+              } else {
+                // Fallback: use original
+                setRooms((prev) =>
+                  prev.map((r) =>
+                    r.id === roomId ? { ...r, photoUrl: objectUrl, photoFile: file } : r
+                  )
+                );
+              }
+              setIsDirty(true);
+            },
+            "image/jpeg",
+            0.85
+          );
+          return;
+        }
+      }
+      // No resize needed — use original
+      setRooms((prev) =>
+        prev.map((r) =>
+          r.id === roomId ? { ...r, photoUrl: objectUrl, photoFile: file } : r
+        )
+      );
+      setIsDirty(true);
+    };
+    img.onerror = () => {
+      // Can't load — use original file
+      setRooms((prev) =>
+        prev.map((r) =>
+          r.id === roomId ? { ...r, photoUrl: objectUrl, photoFile: file } : r
+        )
+      );
+      setIsDirty(true);
+    };
+    img.src = objectUrl;
   }, []);
 
   // ─── Validate and continue ───────────────────────────────────────

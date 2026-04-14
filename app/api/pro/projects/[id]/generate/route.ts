@@ -259,6 +259,21 @@ export async function POST(
             throw new Error(`Photo introuvable pour la pièce ${room.name}`);
           }
 
+          // Resize photo to max 2048px on longest side (OpenAI rejects very large images)
+          try {
+            const meta = await sharp(photoBuffer).metadata();
+            const maxDim = Math.max(meta.width || 0, meta.height || 0);
+            if (maxDim > 2048) {
+              console.log(`[generate] Resizing photo for ${room.name}: ${meta.width}x${meta.height} → max 2048px`);
+              photoBuffer = await sharp(photoBuffer)
+                .resize(2048, 2048, { fit: "inside", withoutEnlargement: true })
+                .jpeg({ quality: 85 })
+                .toBuffer();
+            }
+          } catch (resizeErr) {
+            console.warn(`[generate] Photo resize failed for ${room.name}, using original:`, resizeErr);
+          }
+
           const photoBase64 = photoBuffer.toString("base64");
 
           // Build dimension context for the prompt
