@@ -1004,6 +1004,19 @@ export default function ValidationPage() {
             )}
 
             {/* Navigation — stacked on mobile, inline on sm+ */}
+            {/* Warning if no rooms have photos */}
+            {rooms.length > 0 && !rooms.some((r) => r.photoUrl || r.photoFile) && (
+              <div className="bg-[#FFFBEB] border border-[#D97706]/30 rounded-lg p-3 flex items-start gap-2.5">
+                <svg className="w-5 h-5 text-[#D97706] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <div>
+                  <p className="text-sm font-medium text-[#92400E]">Aucune photo ajoutée</p>
+                  <p className="text-xs text-[#B45309] mt-0.5">Sans photo, les visuels meublés ne pourront pas être générés à l{"'"}étape suivante. Ajoutez au moins une photo par pièce à meubler.</p>
+                </div>
+              </div>
+            )}
+
             <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-[#D1D0CB]/40">
               {/* Primary CTA first on mobile (visual order = importance) */}
               <button

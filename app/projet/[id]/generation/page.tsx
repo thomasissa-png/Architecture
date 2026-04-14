@@ -575,22 +575,34 @@ export default function GenerationPage() {
                 {error || "Génération indisponible — réessayez dans quelques instants."}
               </p>
             </div>
-            <button
-              onClick={() => {
-                isGenerationTriggered.current = false;
-                setPageState("triggering");
-                setError(null);
-                setElapsedSeconds(0);
-                // Re-trigger
-                isGenerationTriggered.current = false;
-                window.location.reload();
-              }}
-              className="py-2.5 px-4 min-h-[44px] rounded-lg bg-[#7D9B76] text-white text-sm font-medium
-                         hover:bg-[#4A7A42] transition-colors
-                         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76]"
-            >
-              Réessayer
-            </button>
+            <div className="flex gap-3">
+              {error?.includes("photo") ? (
+                <button
+                  onClick={() => router.push(`/projet/${projectId}/validation`)}
+                  className="py-2.5 px-4 min-h-[44px] rounded-lg bg-[#7D9B76] text-white text-sm font-medium
+                             hover:bg-[#4A7A42] transition-colors
+                             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76]"
+                >
+                  Ajouter des photos
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    isGenerationTriggered.current = false;
+                    setPageState("triggering");
+                    setError(null);
+                    setElapsedSeconds(0);
+                    isGenerationTriggered.current = false;
+                    window.location.reload();
+                  }}
+                  className="py-2.5 px-4 min-h-[44px] rounded-lg bg-[#7D9B76] text-white text-sm font-medium
+                             hover:bg-[#4A7A42] transition-colors
+                             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76]"
+                >
+                  Réessayer
+                </button>
+              )}
+            </div>
           </div>
         )}
 
