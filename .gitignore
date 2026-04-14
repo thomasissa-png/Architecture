@@ -43,3 +43,4 @@ audit-data/
 audit-data-*/
 test-screenshots/
 test-results/
+.local-storage/
