@@ -41,3 +41,5 @@ playwright-report/
 test-results/
 audit-data/
 audit-data-*/
+test-screenshots/
+test-results/
