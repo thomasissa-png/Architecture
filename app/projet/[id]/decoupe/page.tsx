@@ -97,7 +97,6 @@ export default function DecoupePage() {
   const [highlightedLotId, setHighlightedLotId] = useState<string | null>(null);
   const [detectionFallback, setDetectionFallback] = useState(false);
   const [drawingLotId, setDrawingLotId] = useState<string | null>(null);
-  const [forceFullEditor, setForceFullEditor] = useState(false);
   const renameInputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -117,14 +116,6 @@ export default function DecoupePage() {
     [rooms]
   );
 
-  const isSingleLot = lots.length === 1 && unassignedRooms.length === 0;
-
-  // Simplified mode: 1 lot detected by IA, no rooms extracted yet, not a fallback
-  const showSimplifiedMode =
-    isSingleLot &&
-    rooms.length === 0 &&
-    !detectionFallback &&
-    !forceFullEditor;
 
   // ─── Room → lot color mapping ──────────────────────────────────
   const roomLotColor = useCallback(
@@ -579,90 +570,7 @@ export default function DecoupePage() {
               </div>
             )}
 
-            {/* ─── Simplified single-lot mode ─────────────────────── */}
-            {showSimplifiedMode && (
-              <div className="max-w-lg mx-auto">
-                {/* Success header */}
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-8 h-8 rounded-full bg-[#7D9B76]/10 flex items-center justify-center shrink-0">
-                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-                      <path d="M4 9.5l3.5 3.5L14 5" stroke="#7D9B76" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h2 className="text-lg font-semibold text-[#1C1C1E]">
-                      Votre bien a été analysé
-                    </h2>
-                    <p className="text-sm text-[#1C1C1E]/50">
-                      1 bien détecté : <span className="font-medium text-[#1C1C1E]/80">{lots[0].name}</span>
-                    </p>
-                  </div>
-                </div>
-
-                {/* Lot type selector */}
-                <div className="mb-6">
-                  <label htmlFor="simplified-lot-type" className="block text-xs font-medium text-[#1C1C1E]/60 mb-1.5">
-                    Type de bien
-                  </label>
-                  <select
-                    id="simplified-lot-type"
-                    value={lots[0].lot_type}
-                    onChange={(e) => changeLotType(lots[0].id, e.target.value)}
-                    className="w-full text-sm border border-[#1C1C1E]/10 rounded-lg px-3 py-2.5 bg-white text-[#1C1C1E] appearance-none focus:outline-none focus:ring-2 focus:ring-[#7D9B76] min-h-[44px]"
-                  >
-                    {LOT_TYPE_OPTIONS.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Plan thumbnail */}
-                {planImageUrl && (
-                  <div className="mb-6 rounded-lg overflow-hidden border border-[#1C1C1E]/10 bg-white">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={planImageUrl}
-                      alt="Aperçu du plan"
-                      className="w-full max-h-[280px] object-contain"
-                    />
-                  </div>
-                )}
-
-                {/* CTA */}
-                <button
-                  onClick={handleSave}
-                  disabled={pageState === "saving"}
-                  className="w-full px-6 py-3 text-sm font-medium bg-[#1C1C1E] text-white rounded-lg hover:bg-[#1C1C1E]/80 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] min-h-[48px]"
-                >
-                  {pageState === "saving" ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      Enregistrement...
-                    </span>
-                  ) : (
-                    <span className="flex items-center justify-center gap-2">
-                      Confirmer et continuer
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                        <path d="M6 3l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </span>
-                  )}
-                </button>
-
-                {/* Link to full editor */}
-                <button
-                  onClick={() => setForceFullEditor(true)}
-                  className="w-full mt-3 text-xs text-[#1C1C1E]/40 hover:text-[#1C1C1E]/60 transition-colors py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] rounded"
-                >
-                  Modifier manuellement
-                </button>
-              </div>
-            )}
-
-            {/* ─── Full editor mode ───────────────────────────────── */}
-            {!showSimplifiedMode && (
+            {/* ─── Full editor — plan with lot zones ────────────── */}
             <>
             {/* Floor tabs */}
             {floors.length > 1 && (
@@ -1116,7 +1024,6 @@ export default function DecoupePage() {
               </button>
             </div>
             </>
-            )}
           </>
         )}
       </main>

@@ -220,6 +220,46 @@ export async function POST(
       }
     }
 
+    // ─── Resolve overlapping bounding boxes ─────────────────────
+    // GPT-4.1 vision estimates can produce overlapping rooms.
+    // If two rooms overlap > 50%, keep the one with higher confidence.
+    if (extractionResult.rooms.length > 1) {
+      const rooms = extractionResult.rooms;
+      const toRemove = new Set<number>();
+
+      for (let i = 0; i < rooms.length; i++) {
+        if (toRemove.has(i)) continue;
+        const a = rooms[i].bounding_box;
+        if (!a) continue;
+
+        for (let j = i + 1; j < rooms.length; j++) {
+          if (toRemove.has(j)) continue;
+          const b = rooms[j].bounding_box;
+          if (!b) continue;
+
+          // Compute intersection area
+          const overlapX = Math.max(0, Math.min(a.x_percent + a.width_percent, b.x_percent + b.width_percent) - Math.max(a.x_percent, b.x_percent));
+          const overlapY = Math.max(0, Math.min(a.y_percent + a.height_percent, b.y_percent + b.height_percent) - Math.max(a.y_percent, b.y_percent));
+          const overlapArea = overlapX * overlapY;
+          const areaA = a.width_percent * a.height_percent;
+          const areaB = b.width_percent * b.height_percent;
+          const smallerArea = Math.min(areaA, areaB);
+
+          // If overlap > 50% of the smaller room, remove the lower-confidence one
+          if (smallerArea > 0 && overlapArea / smallerArea > 0.5) {
+            const confA = rooms[i].confidence ?? 0;
+            const confB = rooms[j].confidence ?? 0;
+            toRemove.add(confA >= confB ? j : i);
+          }
+        }
+      }
+
+      if (toRemove.size > 0) {
+        console.log(`[extract] Removed ${toRemove.size} overlapping rooms`);
+        extractionResult.rooms = rooms.filter((_, idx) => !toRemove.has(idx));
+      }
+    }
+
     if (extractionResult.rooms.length === 0) {
       // Mark project as extraction_failed
       const db = getPool();
@@ -239,6 +279,12 @@ export async function POST(
 
     // ─── Save extraction data + rooms in DB ───────────────────────
     const db = getPool();
+
+    // Delete old rooms from previous extraction (re-extraction after lot modification)
+    await db.query(
+      `DELETE FROM pro_rooms WHERE project_id = $1`,
+      [projectId]
+    );
 
     // Archive raw extraction in project
     await db.query(

@@ -1587,54 +1587,23 @@ export default function PlanEditor({
                     top: `${r.y_percent}%`,
                     width: `${r.width_percent}%`,
                     height: `${r.height_percent}%`,
-                    pointerEvents: "none",
+                    cursor: "move",
+                    pointerEvents: "auto",
                   }}
+                  onMouseDown={(e) => {
+                    // Drag from anywhere inside the zone to move it
+                    e.stopPropagation();
+                    e.preventDefault();
+                    handleZoneDragStart(zone.id, "move", e.clientX, e.clientY);
+                  }}
+                  onTouchStart={(e) => {
+                    e.stopPropagation();
+                    const t = e.touches[0];
+                    handleZoneDragStart(zone.id, "move", t.clientX, t.clientY);
+                  }}
+                  role="button"
+                  aria-label={`Déplacer la zone ${zone.name}`}
                 >
-                  {/* Move handle — center of zone */}
-                  <div
-                    className="absolute pointer-events-auto"
-                    style={{
-                      top: "50%",
-                      left: "50%",
-                      transform: "translate(-50%, -50%)",
-                      width: HANDLE_HIT_SIZE,
-                      height: HANDLE_HIT_SIZE,
-                      cursor: "move",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                    onMouseDown={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      handleZoneDragStart(zone.id, "move", e.clientX, e.clientY);
-                    }}
-                    onTouchStart={(e) => {
-                      e.stopPropagation();
-                      const t = e.touches[0];
-                      handleZoneDragStart(zone.id, "move", t.clientX, t.clientY);
-                    }}
-                    role="button"
-                    aria-label={`Déplacer la zone ${zone.name}`}
-                  >
-                    <div
-                      style={{
-                        width: 20,
-                        height: 20,
-                        borderRadius: "50%",
-                        background: applyOpacityToColor(zone.color, 0.8),
-                        border: "2px solid white",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        pointerEvents: "none",
-                      }}
-                    >
-                      <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                        <path d="M5 1v8M1 5h8" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-                      </svg>
-                    </div>
-                  </div>
 
                   {/* Corner resize handles */}
                   {(["nw", "ne", "sw", "se"] as const).map((corner) => (
