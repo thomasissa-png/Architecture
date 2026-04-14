@@ -47,6 +47,18 @@ export async function POST(
 
   const { project } = authResult;
 
+  // ─── Status guard — detection only before extraction ───────────
+  const validStatuses = ["plan_uploaded", "lots_defined"];
+  if (!validStatuses.includes(project.status)) {
+    return NextResponse.json(
+      {
+        error: "INVALID_STATUS",
+        message: "La détection des lots n'est possible qu'avant l'extraction.",
+      },
+      { status: 409 }
+    );
+  }
+
   try {
     await ensureProTables();
 

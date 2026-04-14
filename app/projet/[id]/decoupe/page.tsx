@@ -524,7 +524,7 @@ export default function DecoupePage() {
           Découpe en biens
         </h1>
         <p className="text-sm text-[#9B9A94] mb-6">
-          Assignez chaque pièce à un lot. Cliquez sur une pièce du plan pour changer son lot.
+          Définissez les zones de chaque bien sur le plan. Dessinez ou ajustez les limites de chaque lot.
         </p>
 
         {/* Loading / Detecting */}
@@ -533,7 +533,7 @@ export default function DecoupePage() {
             <div className="w-8 h-8 border-2 border-[#7D9B76] border-t-transparent rounded-full animate-spin" />
             <p className="text-sm text-[#1C1C1E]/60">
               {pageState === "loading"
-                ? "Chargement des pièces..."
+                ? "Chargement du plan..."
                 : "Détection automatique des lots..."}
             </p>
             {pageState === "detecting" && (
@@ -575,7 +575,7 @@ export default function DecoupePage() {
             {isSingleLot && !detectionFallback && (
               <div className="bg-[#1C1C1E]/[0.03] border border-[#1C1C1E]/10 rounded-lg p-4 mb-6">
                 <p className="text-sm text-[#1C1C1E]">
-                  Toutes les pièces sont dans un seul bien. Vous pouvez ajouter des lots si nécessaire.
+                  Un seul bien détecté sur ce plan. Vous pouvez ajouter des lots si nécessaire.
                 </p>
               </div>
             )}
@@ -639,9 +639,9 @@ export default function DecoupePage() {
                       drawingLotId={drawingLotId}
                       onDrawingComplete={() => setDrawingLotId(null)}
                     />
-                    {planRooms.length === 0 && roomsOnFloor.length > 0 && (
+                    {planRooms.length === 0 && rooms.length === 0 && (
                       <p className="text-xs text-[#1C1C1E]/40 mt-2 text-center">
-                        Les pièces n&apos;ont pas pu être localisées sur le plan — assignez-les depuis la liste ci-contre.
+                        Dessinez les zones de chaque lot directement sur le plan.
                       </p>
                     )}
                   </>
@@ -943,7 +943,7 @@ export default function DecoupePage() {
                       </p>
                     </div>
                     <p className="text-xs text-amber-600/80 mb-2">
-                      Cliquez sur une pièce du plan pour l&apos;assigner à un lot.
+                      Dessinez une zone sur le plan pour définir les limites de ce lot.
                     </p>
                     {unassignedRooms.map((r) => (
                       <div

@@ -51,7 +51,7 @@ export async function ensureProTables(): Promise<void> {
       plan_file_path  TEXT,
       plan_mime_type  TEXT,
       status          TEXT NOT NULL DEFAULT 'plan_uploaded'
-                      CHECK (status IN ('plan_uploaded','extraction_done','validated','qualified',
+                      CHECK (status IN ('plan_uploaded','lots_defined','extraction_done','validated','qualified',
                                         'plan_final','generating','visuals_done','delivered','extraction_failed')),
       extraction_data JSONB,
       stripe_payment_id TEXT,

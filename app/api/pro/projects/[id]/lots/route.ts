@@ -92,6 +92,20 @@ export async function PUT(
   const authResult = await requireProjectOwnership(request, projectId);
   if (isErrorResponse(authResult)) return authResult;
 
+  const { project } = authResult;
+
+  // ─── Status guard — lots can only be defined/redefined before extraction ─
+  const validStatuses = ["plan_uploaded", "lots_defined"];
+  if (!validStatuses.includes(project.status)) {
+    return NextResponse.json(
+      {
+        error: "INVALID_STATUS",
+        message: "La découpe n'est possible qu'avant l'extraction des pièces.",
+      },
+      { status: 409 }
+    );
+  }
+
   try {
     await ensureProTables();
 

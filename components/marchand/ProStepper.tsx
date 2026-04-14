@@ -24,8 +24,8 @@ import { useRouter } from "next/navigation";
 
 const STEPS = [
   { label: "Projet", sublabel: "Upload" },
-  { label: "Découpe", sublabel: "Biens et lots" },
-  { label: "Analyse", sublabel: "Détection des pièces" },
+  { label: "Découpe", sublabel: "Définition des biens" },
+  { label: "Analyse", sublabel: "Pièces par bien" },
   { label: "Validation", sublabel: "Pièces" },
   { label: "Qualification", sublabel: "Cible" },
   { label: "Recommandations", sublabel: "Architecte" },

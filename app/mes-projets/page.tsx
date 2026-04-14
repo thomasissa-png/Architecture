@@ -31,6 +31,7 @@ interface Project {
 
 const STATUS_LABELS: Record<string, string> = {
   plan_uploaded: "Plan uploadé",
+  lots_defined: "Lots définis",
   extraction_done: "Pièces détectées",
   extraction_failed: "Extraction échouée",
   validated: "Pièces validées",
@@ -43,6 +44,7 @@ const STATUS_LABELS: Record<string, string> = {
 
 const STATUS_COLORS: Record<string, string> = {
   plan_uploaded: "bg-blue-100 text-blue-700",
+  lots_defined: "bg-cyan-100 text-cyan-700",
   extraction_done: "bg-amber-100 text-amber-700",
   extraction_failed: "bg-amber-100 text-amber-700",
   validated: "bg-indigo-100 text-indigo-700",
@@ -54,9 +56,10 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 const STATUS_ROUTES: Record<string, string> = {
-  plan_uploaded: "/extraction",
+  plan_uploaded: "/decoupe",
+  lots_defined: "/extraction",
   extraction_done: "/validation",
-  extraction_failed: "/validation",
+  extraction_failed: "/extraction",
   validated: "/qualification",
   qualified: "/recommandations",
   plan_final: "/generation",
@@ -85,7 +88,7 @@ function formatDateFR(dateString: string): string {
 }
 
 function getProjectRoute(project: Project): string {
-  const suffix = STATUS_ROUTES[project.status] ?? "/extraction";
+  const suffix = STATUS_ROUTES[project.status] ?? "/decoupe";
   return `/projet/${project.id}${suffix}`;
 }
 
