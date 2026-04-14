@@ -107,6 +107,34 @@ export default function DecoupePage() {
   const renameInputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Parse planPath into array — handles single path or JSON array string
+  // For PDFs: use the -preview.png version for display in <img> tags
+  const parsedPlanPaths = useMemo(() => {
+    if (!planPath) return [];
+    let paths: string[];
+    try {
+      if (planPath.startsWith("[")) {
+        const parsed = JSON.parse(planPath);
+        paths = Array.isArray(parsed) ? (parsed as string[]) : [planPath];
+      } else {
+        paths = [planPath];
+      }
+    } catch {
+      paths = [planPath];
+    }
+    // PDF files can't be displayed in <img> tags — use the preview PNG instead
+    return paths.map((p) =>
+      p.toLowerCase().endsWith(".pdf") ? p.replace(/\.pdf$/i, "-preview.png") : p
+    );
+  }, [planPath]);
+
+  // Active plan image URL derived from parsedPlanPaths + activePlanIndex
+  const planImageUrl = useMemo(() => {
+    if (parsedPlanPaths.length === 0) return null;
+    const path = parsedPlanPaths[activePlanIndex] ?? parsedPlanPaths[0];
+    return `/api/logs/image?path=${encodeURIComponent(path)}`;
+  }, [parsedPlanPaths, activePlanIndex]);
+
   // ─── Derived ───────────────────────────────────────────────────
   const floors = useMemo(() => {
     const set = new Set(rooms.map((r) => r.floor));
@@ -255,19 +283,8 @@ export default function DecoupePage() {
           const statusData = await statusRes.json();
           if (!cancelled) setProjectStatus(statusData.project_status || "plan_uploaded");
           if (!cancelled && statusData.project_plan_path) {
-            // Convert storage path to displayable image URL
-            const planPath = statusData.project_plan_path;
-            // Handle JSON array of paths (multi-page PDF) — use first page
-            let firstPath = planPath;
-            try {
-              if (planPath.startsWith("[")) {
-                const parsed = JSON.parse(planPath);
-                firstPath = Array.isArray(parsed) ? parsed[0] : planPath;
-              }
-            } catch { /* use raw path */ }
-            // For PDFs, use the preview PNG
-            if (firstPath.endsWith(".pdf")) firstPath = firstPath.replace(/\.pdf$/i, "-preview.png");
-            setPlanImageUrl(`/api/logs/image?path=${encodeURIComponent(firstPath)}`);
+            // Store raw path — parsedPlanPaths useMemo handles parsing + PDF preview
+            setPlanPath(statusData.project_plan_path);
           }
         }
 
@@ -613,7 +630,9 @@ export default function DecoupePage() {
                       <div className="w-4 h-4 rounded-full shrink-0 animate-pulse" style={{ backgroundColor: drawingLot.color }} />
                       <p className="text-sm text-[#1C1C1E] flex-1">
                         Dessinez un rectangle sur le plan pour délimiter <strong>{drawingLot.name}</strong>.
-                        Les pièces dont le centre est dans la zone seront automatiquement assignées.
+                        {rooms.length > 0
+                          ? " Les pièces dont le centre est dans la zone seront automatiquement assignées."
+                          : ""}
                       </p>
                       <button
                         onClick={() => setDrawingLotId(null)}
@@ -625,6 +644,32 @@ export default function DecoupePage() {
                     </div>
                   ) : null;
                 })()}
+
+                {/* Multi-plan tabs */}
+                {parsedPlanPaths.length > 1 && (
+                  <div className="flex items-center gap-2 mb-3" role="tablist" aria-label="Navigation par plan">
+                    {parsedPlanPaths.map((path, i) => (
+                      <button
+                        key={path}
+                        type="button"
+                        role="tab"
+                        aria-selected={i === activePlanIndex}
+                        onClick={() => setActivePlanIndex(i)}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all
+                          ${i === activePlanIndex
+                            ? "bg-[#7D9B76] text-white"
+                            : "bg-[#F5F5F0] text-[#9B9A94] hover:bg-[#ECFDF5] hover:text-[#4A7A42]"
+                          }
+                          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76]`}
+                      >
+                        <span>{i === 0 ? "RDC" : `Étage ${i}`}</span>
+                      </button>
+                    ))}
+                    <span className="text-xs text-[#9B9A94] ml-1">
+                      Plan {activePlanIndex + 1}/{parsedPlanPaths.length}
+                    </span>
+                  </div>
+                )}
 
                 {planImageUrl ? (
                   <>
@@ -653,8 +698,8 @@ export default function DecoupePage() {
                   </div>
                 )}
 
-                {/* Room assignment — Desktop dropdown */}
-                {selectedRoomId && (
+                {/* Room assignment — Desktop dropdown (only when rooms exist) */}
+                {rooms.length > 0 && selectedRoomId && (
                   <div ref={dropdownRef} className="hidden lg:block absolute top-4 right-4 bg-white border border-[#1C1C1E]/10 rounded-lg shadow-lg p-3 z-20 min-w-[200px]">
                     <p className="text-xs text-[#1C1C1E]/60 mb-2">
                       Assigner à un lot :
@@ -686,8 +731,8 @@ export default function DecoupePage() {
                   </div>
                 )}
 
-                {/* Room assignment — Mobile bottom sheet */}
-                {selectedRoomId && (
+                {/* Room assignment — Mobile bottom sheet (only when rooms exist) */}
+                {rooms.length > 0 && selectedRoomId && (
                   <>
                     <div
                       className="lg:hidden fixed inset-0 bg-black/20 z-40"
@@ -887,28 +932,30 @@ export default function DecoupePage() {
                         </div>
                       )}
 
-                      {/* Stats */}
-                      <div className="flex items-center gap-3 text-xs text-[#1C1C1E]/50">
-                        <span>{lotRooms.length} pièce{lotRooms.length > 1 ? "s" : ""}</span>
-                        {totalSurface > 0 && (
-                          <span>{totalSurface.toFixed(1)} m²</span>
-                        )}
-                        {/* Multi-floor indicator */}
-                        {(() => {
-                          const lotFloors = new Set(lotRooms.map((r) => r.floor));
-                          if (lotFloors.size > 1) {
-                            return (
-                              <span className="text-[#1C1C1E]/50 font-medium">
-                                Étages {Array.from(lotFloors).sort().join("+")}
-                              </span>
-                            );
-                          }
-                          return null;
-                        })()}
-                      </div>
+                      {/* Stats — only when rooms exist (post-extraction) */}
+                      {rooms.length > 0 && (
+                        <div className="flex items-center gap-3 text-xs text-[#1C1C1E]/50">
+                          <span>{lotRooms.length} pièce{lotRooms.length > 1 ? "s" : ""}</span>
+                          {totalSurface > 0 && (
+                            <span>{totalSurface.toFixed(1)} m²</span>
+                          )}
+                          {/* Multi-floor indicator */}
+                          {(() => {
+                            const lotFloors = new Set(lotRooms.map((r) => r.floor));
+                            if (lotFloors.size > 1) {
+                              return (
+                                <span className="text-[#1C1C1E]/50 font-medium">
+                                  Étages {Array.from(lotFloors).sort().join("+")}
+                                </span>
+                              );
+                            }
+                            return null;
+                          })()}
+                        </div>
+                      )}
 
-                      {/* Room list */}
-                      {lotRooms.length > 0 && (
+                      {/* Room list — only when rooms exist (post-extraction) */}
+                      {rooms.length > 0 && lotRooms.length > 0 && (
                         <div className="mt-2 space-y-0.5">
                           {lotRooms.slice(0, 6).map((r) => (
                             <div
@@ -930,8 +977,8 @@ export default function DecoupePage() {
                   );
                 })}
 
-                {/* Unassigned rooms warning */}
-                {unassignedRooms.length > 0 && (
+                {/* Unassigned rooms warning — only when rooms exist (post-extraction) */}
+                {rooms.length > 0 && unassignedRooms.length > 0 && (
                   <div className="border border-dashed border-amber-300 rounded-lg p-3 bg-amber-50">
                     <div className="flex items-center gap-1.5 mb-1.5">
                       <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-amber-500 shrink-0">
@@ -975,15 +1022,17 @@ export default function DecoupePage() {
                     style={{ backgroundColor: lot.color }}
                   />
                   {lot.name}
-                  <span className="text-[#1C1C1E]/40">
-                    ({rooms.filter((r) => r.lot_id === lot.id).length})
-                  </span>
+                  {rooms.length > 0 && (
+                    <span className="text-[#1C1C1E]/40">
+                      ({rooms.filter((r) => r.lot_id === lot.id).length})
+                    </span>
+                  )}
                 </button>
               ))}
             </div>
 
-            {/* Recap summary */}
-            {lots.length > 1 && (
+            {/* Recap summary — only when rooms exist (post-extraction) */}
+            {rooms.length > 0 && lots.length > 1 && (
               <div className="mt-6 bg-[#1C1C1E]/[0.02] border border-[#1C1C1E]/10 rounded-lg px-4 py-3">
                 <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-[#1C1C1E]/60">
                   {lots.map((lot) => {

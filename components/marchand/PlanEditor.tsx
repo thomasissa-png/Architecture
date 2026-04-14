@@ -8,7 +8,7 @@
  * Affiche le plan en image de fond avec des zones rectangulaires
  * semi-transparentes pour chaque pièce. Thomas peut :
  * - Déplacer les zones (drag mouse + touch)
- * - Redimensionner via 4 poignées aux coins
+ * - Redimensionner via 8 poignées (4 coins + 4 bords)
  * - Créer de nouvelles pièces
  * - Supprimer des pièces
  * - Éditer le nom (double-clic) et le type (select)
@@ -1665,7 +1665,6 @@ export default function PlanEditor({
                   {/* Resize handles — 4 corners + 4 edges */}
                   {(["nw", "n", "ne", "e", "se", "s", "sw", "w"] as HandlePosition[]).map((handle) => {
                     const isCorner = handle.length === 2;
-                    const isEdge = handle.length === 1;
                     // Position
                     const posStyle: React.CSSProperties = {};
                     if (handle.includes("n")) posStyle.top = -HANDLE_HIT_SIZE / 2;
@@ -2370,41 +2369,64 @@ export default function PlanEditor({
                   </button>
                 )}
 
-                {/* Resize handles — TOUJOURS visibles (mobile n'a pas de hover) */}
-                {(["nw", "ne", "sw", "se"] as HandlePosition[]).map((handle) => {
-                    const isLeft = handle.includes("w");
-                    const isTop = handle.includes("n");
-                    const cursor =
-                      handle === "nw" || handle === "se"
-                        ? "nwse-resize"
-                        : "nesw-resize";
+                {/* Resize handles — 4 coins + 4 bords, TOUJOURS visibles (mobile n'a pas de hover) */}
+                {(["nw", "n", "ne", "e", "se", "s", "sw", "w"] as HandlePosition[]).map((handle) => {
+                    const isCorner = handle.length === 2;
+                    const cursorMap: Record<HandlePosition, string> = {
+                      nw: "nwse-resize", se: "nwse-resize",
+                      ne: "nesw-resize", sw: "nesw-resize",
+                      n: "ns-resize", s: "ns-resize",
+                      e: "ew-resize", w: "ew-resize",
+                    };
+                    const ariaLabels: Record<HandlePosition, string> = {
+                      nw: "coin haut-gauche", n: "bord haut", ne: "coin haut-droite",
+                      e: "bord droite", se: "coin bas-droite", s: "bord bas",
+                      sw: "coin bas-gauche", w: "bord gauche",
+                    };
+
+                    // Position: corners at their respective corners, edges centered on their side
+                    const posStyle: React.CSSProperties = {};
+                    if (isCorner) {
+                      // Corner positioning (existing logic)
+                      const isLeft = handle.includes("w");
+                      const isTop = handle.includes("n");
+                      if (isLeft) posStyle.left = -HANDLE_SIZE / 2; else posStyle.right = -HANDLE_SIZE / 2;
+                      if (isTop) posStyle.top = -HANDLE_SIZE / 2; else posStyle.bottom = -HANDLE_SIZE / 2;
+                    } else {
+                      // Edge positioning — centered on the edge
+                      if (handle === "n") { posStyle.top = -HANDLE_SIZE / 2; posStyle.left = "50%"; posStyle.transform = "translateX(-50%)"; }
+                      if (handle === "s") { posStyle.bottom = -HANDLE_SIZE / 2; posStyle.left = "50%"; posStyle.transform = "translateX(-50%)"; }
+                      if (handle === "e") { posStyle.right = -HANDLE_SIZE / 2; posStyle.top = "50%"; posStyle.transform = "translateY(-50%)"; }
+                      if (handle === "w") { posStyle.left = -HANDLE_SIZE / 2; posStyle.top = "50%"; posStyle.transform = "translateY(-50%)"; }
+                    }
+
+                    // Edge handles are visually wider bars (horizontal or vertical)
+                    const visualWidth = isCorner ? HANDLE_SIZE : (handle === "n" || handle === "s" ? HANDLE_SIZE * 1.5 : HANDLE_SIZE);
+                    const visualHeight = isCorner ? HANDLE_SIZE : (handle === "e" || handle === "w" ? HANDLE_SIZE * 1.5 : HANDLE_SIZE);
 
                     return (
                       <div
                         key={handle}
                         className="absolute z-30"
                         style={{
-                          width: HANDLE_SIZE,
-                          height: HANDLE_SIZE,
-                          left: isLeft ? -HANDLE_SIZE / 2 : undefined,
-                          right: isLeft ? undefined : -HANDLE_SIZE / 2,
-                          top: isTop ? -HANDLE_SIZE / 2 : undefined,
-                          bottom: isTop ? undefined : -HANDLE_SIZE / 2,
-                          cursor,
+                          width: visualWidth,
+                          height: visualHeight,
+                          ...posStyle,
+                          cursor: cursorMap[handle],
                           // Enlarge touch target to HANDLE_HIT_SIZE (44px)
-                          padding: (HANDLE_HIT_SIZE - HANDLE_SIZE) / 2,
-                          margin: -(HANDLE_HIT_SIZE - HANDLE_SIZE) / 2,
+                          padding: (HANDLE_HIT_SIZE - Math.min(visualWidth, visualHeight)) / 2,
+                          margin: -(HANDLE_HIT_SIZE - Math.min(visualWidth, visualHeight)) / 2,
                           opacity: isSelected ? 1 : 0.6,
                           transition: "opacity 150ms ease",
                         }}
                         onMouseDown={(e) => handlePointerDown(e, room.id, "resize", handle)}
                         onTouchStart={(e) => handlePointerDown(e, room.id, "resize", handle)}
                         role="presentation"
-                        aria-label={`Redimensionner ${room.name} depuis le coin ${handle === "nw" ? "haut-gauche" : handle === "ne" ? "haut-droite" : handle === "sw" ? "bas-gauche" : "bas-droite"}`}
+                        aria-label={`Redimensionner ${room.name} depuis le ${ariaLabels[handle]}`}
                         tabIndex={-1}
                       >
                         <div
-                          className="w-full h-full rounded-sm bg-white border-2 shadow-sm"
+                          className={`w-full h-full bg-white border-2 shadow-sm ${isCorner ? "rounded-sm" : "rounded-[3px]"}`}
                           style={{ borderColor: brdColor }}
                         />
                       </div>
