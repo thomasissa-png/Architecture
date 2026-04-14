@@ -37,28 +37,45 @@
 
 ---
 
-## Étape 2 — Extraction IA (Lecture du plan)
+## Étape 2 — Découpe (Définition des biens)
 
 | Élément | Texte FR |
 |---|---|
-| Loading — message principal | Lecture du plan en cours… |
-| Loading — message secondaire | L'IA identifie les pièces, les surfaces et les liaisons. Cela prend 30 à 60 secondes. |
-| Titre résultat | Plan extrait — {N} pièce(s) détectée(s) |
-| Sous-titre résultat | Vérifiez les pièces extraites. Vous pouvez renommer, corriger les surfaces ou supprimer une pièce avant de continuer. |
-| Fallback — plan illisible (titre) | Le plan n'a pas pu être analysé |
-| Fallback — plan illisible (explication) | La qualité ou la résolution du fichier est insuffisante pour l'extraction automatique. |
-| Fallback — plan illisible (action) | Importez une version plus nette du plan, ou saisissez les pièces manuellement. |
-| CTA fallback — ressaisie manuelle | Saisir les pièces manuellement |
-| CTA fallback — réimporter | Importer un autre plan |
-| CTA continuer | Valider et continuer |
+| Titre page | Délimitez vos biens |
+| Sous-titre | Dessinez les lots qui composent votre bien sur le plan. L'IA extraira les pièces de chaque lot à l'étape suivante. |
+| Instruction zone plan | Cliquez ou glissez pour délimiter chaque lot. |
+| Label champ — Nom du lot | Référence du lot |
+| Placeholder nom lot | Ex. : T3 RDC gauche, Lot A |
+| CTA ajouter lot | Ajouter un lot |
+| Message — lot sans nom | Nommez ce lot avant de continuer. |
+| Message — overlap détecté | Ces zones se chevauchent. Vérifiez les limites avant de continuer. |
+| Compteur lots | {N} lot(s) défini(s) |
+| CTA continuer | Valider et analyser les pièces |
 
 ---
 
-## Étape 3 — Validation / Correction
+## Étape 3 — Pièces (Détection IA)
 
 | Élément | Texte FR |
 |---|---|
-| Titre page | Validation des pièces |
+| Loading — message principal | Analyse du plan en cours… |
+| Loading — message secondaire | L'IA identifie les pièces, les surfaces et les liaisons par lot. Cela prend 30 à 60 secondes. |
+| Titre résultat | Plan analysé — {N} pièce(s) détectée(s) |
+| Sous-titre résultat | Vérifiez les pièces extraites à l'étape suivante. Vous pourrez renommer, corriger les surfaces ou supprimer une pièce. |
+| Fallback — plan illisible (titre) | Le plan n'a pas pu être analysé |
+| Fallback — plan illisible (explication) | La qualité ou la résolution du fichier est insuffisante pour l'extraction automatique. |
+| Fallback — plan illisible (action) | Importez une version plus nette du plan, ou saisissez les pièces manuellement à l'étape suivante. |
+| CTA fallback — ressaisie manuelle | Saisir les pièces manuellement |
+| CTA fallback — réimporter | Importer un autre plan |
+| CTA continuer | Vérifier les pièces |
+
+---
+
+## Étape 4 — Validation (Ajustements)
+
+| Élément | Texte FR |
+|---|---|
+| Titre page | Vérifiez les pièces |
 | Instruction | Vérifiez les pièces extraites. Associez chaque photo à la pièce correspondante. |
 | Label colonne — Pièce | Pièce |
 | Label colonne — Surface | Surface (m²) |
@@ -76,7 +93,7 @@
 
 ---
 
-## Étape 4 — Qualification du projet
+## Étape 5 — Style (Cible et ambiance)
 
 | Élément | Texte FR |
 |---|---|
@@ -88,7 +105,7 @@
 | Label select — Style déco | Style d'ambiance |
 | Options style | Contemporain — Scandinave — Haussmannien — Japandi — Mid-Century — Bohème — Art Déco — Industriel — Méditerranéen — Cosy — Wabi-Sabi — Maximaliste |
 | Placeholder style | Sélectionnez un style |
-| Note style | Vous pouvez choisir un style global ou un style différent par lot, à l'étape suivante. |
+| Note style | Vous pouvez choisir un style global ou un style différent par lot. |
 | Label select — Standing | Standing du bien |
 | Options standing | Entrée de gamme — Intermédiaire — Premium — Grand luxe |
 | Placeholder standing | Sélectionnez le standing |
@@ -98,26 +115,27 @@
 
 ---
 
-## Étape 5 — Recommandations architecte IA
+## Étape 6 — Conseils (Propositions IA)
 
 | Élément | Texte FR |
 |---|---|
 | Loading — message | Analyse des possibilités d'agencement… |
 | Loading — message secondaire | L'IA examine les surfaces, les liaisons et le profil acquéreur. Cela prend 20 à 40 secondes. |
-| Titre résultat | {N} recommandation(s) d'agencement |
+| Titre résultat | {N} conseil(s) d'agencement |
 | Sous-titre résultat | Validez les suggestions à intégrer au dossier ou ignorez celles qui ne correspondent pas au projet. |
 | Label colonne — Lot / Pièce | Lot / Pièce |
-| Label colonne — Recommandation | Recommandation |
+| Label colonne — Recommandation | Conseil |
 | Label colonne — Impact | Impact estimé |
 | Label colonne — Action | Intégrer / Ignorer |
-| Texte vide — aucune recommandation | Aucune recommandation générée pour ce profil. La configuration des pièces et la cible sélectionnée ne suggèrent pas de réagencement significatif. |
+| Texte vide — aucune recommandation | Aucun conseil généré pour ce profil. La configuration des pièces et la cible sélectionnée ne suggèrent pas de réagencement significatif. |
 | CTA — aucune reco, continuer | Passer à la génération des visuels |
-| CTA générer avec sélection | Intégrer les recommandations sélectionnées — continuer |
+| CTA générer avec sélection | Intégrer les conseils sélectionnés — continuer |
 | CTA tout ignorer | Ignorer et continuer |
+| CTA contourner | Passer et générer |
 
 ---
 
-## Étape 6 — Génération des visuels
+## Étape 7 — Visuels (Génération)
 
 | Élément | Texte FR |
 |---|---|
@@ -135,7 +153,7 @@
 
 ---
 
-## Étape 7 — Dossier acquéreur (PDF + partage)
+## Étape 8 — Dossier (PDF + partage)
 
 | Élément | Texte FR |
 |---|---|
@@ -185,5 +203,5 @@
 
 **Handoff → @fullstack**
 - Fichiers produits : `/home/user/Architecture/docs/marchand-pivot/copy/parcours-copy.md`
-- Décisions prises : vouvoiement sobre uniforme sur tout le parcours ; vocabulaire "bien / lot / acquéreur / dossier / visuel" systématique ; durées IA chiffrées ("30 à 60 secondes", "20 à 40 secondes") cohérentes avec les specs UX ; mentions légales visuels IA incluses à l'Étape 7 (disclaimer simulation) ; lien acquéreur limité à 30 jours en lecture seule ; prix affiché "99 € HT" avec précision HT conforme usage B2B
-- Points d'attention : le compteur de progression Étape 6 doit dériver du nombre réel de pièces traitées (variable `{N done}/{N total}`) — ne pas afficher un index séquentiel si le traitement est parallèle (cf. REGLE LABELS POST-PARALLELISATION dans CLAUDE.md) ; les toasts de sauvegarde automatique doivent être silencieux (apparaître, disparaître sans action requise) ; le texte du lien acquéreur ("expire dans 30 jours") suppose une implémentation token côté API — à confirmer avec le back
+- Décisions prises : vouvoiement sobre uniforme sur tout le parcours ; vocabulaire "bien / lot / acquéreur / dossier / visuel" systématique ; durées IA chiffrées ("30 à 60 secondes", "20 à 40 secondes") cohérentes avec les specs UX ; mentions légales visuels IA incluses à l'Étape 8 (disclaimer simulation) ; lien acquéreur limité à 30 jours en lecture seule ; prix affiché "99 € HT" avec précision HT conforme usage B2B ; CTA "Passer et générer" ajouté à l'Étape 6 (Conseils) — l'étape est contournable ; label "Recommandation" → "Conseil" dans les colonnes de l'étape 6 (cohérence avec label stepper "Conseils")
+- Points d'attention : le compteur de progression Étape 7 doit dériver du nombre réel de pièces traitées (variable `{N done}/{N total}`) — ne pas afficher un index séquentiel si le traitement est parallèle (cf. REGLE LABELS POST-PARALLELISATION dans CLAUDE.md) ; les toasts de sauvegarde automatique doivent être silencieux (apparaître, disparaître sans action requise) ; le texte du lien acquéreur ("expire dans 30 jours") suppose une implémentation token côté API — à confirmer avec le back

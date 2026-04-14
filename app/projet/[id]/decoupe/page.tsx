@@ -494,7 +494,7 @@ export default function DecoupePage() {
       router.push(`/projet/${projectId}/extraction`);
     } catch (err) {
       setErrorMessage((err as Error).message);
-      setPageState("ready");
+      setPageState("error");
     }
   }, [lots, projectId, router]);
 
@@ -1011,7 +1011,7 @@ export default function DecoupePage() {
               <button
                 onClick={handleSave}
                 disabled={pageState === "saving" || lots.length === 0}
-                className="px-6 py-2.5 text-sm font-medium bg-[#1C1C1E] text-white rounded-lg hover:bg-[#1C1C1E]/80 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76]"
+                className="px-6 py-2.5 text-sm font-medium bg-[#1C1C1E] text-white rounded-lg hover:bg-[#1C1C1E]/80 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] min-h-[44px]"
               >
                 {pageState === "saving" ? (
                   <span className="flex items-center gap-2">

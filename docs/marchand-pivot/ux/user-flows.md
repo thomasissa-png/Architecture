@@ -3,50 +3,60 @@
 
 ---
 
-## 1. Carte du parcours (overview 7 étapes)
+## 1. Carte du parcours (overview 8 étapes)
 
 Contexte de déclenchement : Thomas vient d'acquérir un immeuble à rénover (ou en chantier actif). Il a des photos prises sur site avec son iPhone 15 Pro. Son objectif immédiat : sortir un dossier acquéreur présentable pour commencer la pré-commercialisation avant même la fin des travaux.
 
 ```
 [ENTRÉE] Thomas arrive sur versimo.fr (mobile ou laptop)
     ↓
-[ÉTAPE 1] Upload plan + photos
+[ÉTAPE 1] Projet (Upload)
     — Dépose plan de l'immeuble (PDF/image) + photos de chaque pièce
     — Durée estimée : 2-5 min
     ↓
-[ÉTAPE 2] Extraction et cartographie IA
-    — L'IA lit le plan, extrait les pièces, les dimensions, les liaisons
-    — Thomas visualise le résultat (carte interactive des lots/pièces)
+[ÉTAPE 2] Découpe (Définition des biens)
+    — Thomas définit les lots/biens AVANT l'extraction des pièces
+    — Éditeur complet toujours actif (mode simplifié supprimé)
+    — Zones de lots draggables depuis n'importe où sur le plan
+    — Durée : 1-3 min
+    ↓
+[ÉTAPE 3] Pièces (Détection IA)
+    — L'IA lit le plan et extrait les pièces PAR lot défini à l'étape 2
+    — Re-extraction : supprime les anciennes pièces avant INSERT
+    — 21 types de pièces supportés
     — Durée IA : 30-60 sec
     ↓
-[ÉTAPE 3] Validation / Correction
+[ÉTAPE 4] Validation (Ajustements)
     — Thomas valide les pièces extraites ou corrige (renommer, redimensionner, supprimer/ajouter)
     — Il associe chaque photo à la pièce correspondante
     — Durée : 3-8 min selon nombre de pièces
     ↓
-[DÉCISION PAIEMENT] → 99€/bien — avant génération IA
-    — Paiement carte ou Stripe, 1 clic
-    ↓
-[ÉTAPE 4] Qualification du projet
+[ÉTAPE 5] Style (Cible et ambiance)
     — Cible acquéreur (famille, couple, investisseur locatif)
-    — Style déco par lot (ou global)
+    — Style déco par lot (ou global) parmi 12 styles
     — Budget / standing (entrée de gamme, intermédiaire, premium)
     — Durée : 2-4 min
     ↓
-[ÉTAPE 5] Recommandations architecte IA
+[ÉTAPE 6] Conseils (Propositions IA) — contournable
     — L'agent propose des réagencements par lot (cloisons, ouvertures, usage des espaces)
     — Thomas valide ou ignore les recommandations
+    — CTA "Passer et générer" pour contourner l'étape sans attendre
     — Durée IA : 20-40 sec
     ↓
-[ÉTAPE 6] Génération des visuels
+[DÉCISION PAIEMENT] → 99€/bien — avant génération IA
+    — Paiement carte ou Stripe, 1 clic
+    ↓
+[ÉTAPE 7] Visuels (Génération)
     — Pipeline 2 passes pour chaque pièce (surfaces → mobilier)
     — Traitement parallèle, max 2 concurrent
+    — Visuels téléchargeables/partageables individuellement dès disponibles
     — Durée : 90 sec par pièce × N pièces (affichées au fur et à mesure)
     ↓
-[ÉTAPE 7] Dossier PDF + partage
-    — Génération du dossier PDF par lot (visuels avant/après, plan, disclaimer légal)
+[ÉTAPE 8] Dossier (PDF)
+    — Génération du dossier PDF par lot (visuels avant/après, plan, surface, nb pièces, disclaimer légal)
     — Partage WhatsApp / email / lien sécurisé
     — Téléchargement ZIP des visuels HD
+    — Statut "delivered" set lors de la génération du PDF
     — [SORTIE] Thomas envoie le dossier à ses acquéreurs
 ```
 
@@ -54,14 +64,15 @@ Contexte de déclenchement : Thomas vient d'acquérir un immeuble à rénover (o
 
 | Étape | État défaut | État loading | État vide | État erreur | État succès |
 |---|---|---|---|---|---|
-| 1. Upload | Zone drag & drop inactive | Progress bar upload | "Déposez votre premier fichier" | "Format non supporté / fichier trop lourd" | Toast vert + miniature visible |
-| 2. Extraction IA | — | Spinner + "Analyse du plan en cours…" | — | "Plan illisible — essayez une photo plus nette" | Carte des pièces affichée |
-| 3. Validation | Pièces pré-remplies | Sauvegarde auto silencieuse | Pièce sans photo affichée en gris | Photo non associée signalée | Toutes les pièces avec photo = bouton "Continuer" actif |
+| 1. Projet (Upload) | Zone drag & drop inactive | Progress bar upload | "Déposez votre premier fichier" | "Format non supporté / fichier trop lourd" | Toast vert + miniature visible |
+| 2. Découpe (Définition des biens) | Plan affiché, éditeur de lots actif | — | "Aucun lot défini — dessinez une zone" | "Zone invalide — délimitez au moins un lot" | Lots nommés + validation active |
+| 3. Pièces (Détection IA) | — | Spinner + "Analyse du plan en cours…" | — | "Plan illisible — essayez une photo plus nette" | Liste des pièces par lot affichée |
+| 4. Validation (Ajustements) | Pièces pré-remplies | Sauvegarde auto silencieuse | Pièce sans photo affichée en gris | Photo non associée signalée | Toutes les pièces avec photo = bouton "Continuer" actif |
+| 5. Style (Cible et ambiance) | Champs vides avec placeholder | — | — | — | Résumé de la qualification affiché |
+| 6. Conseils (Propositions IA) | — | "L'architecte IA analyse votre projet…" | — | "Analyse indisponible — vous pouvez continuer" | Recommandations listées par lot |
 | Paiement | Récapitulatif bien + prix | "Paiement en cours…" | — | "Échec paiement — réessayez" | Confirmation + récapitulatif |
-| 4. Qualification | Champs vides avec placeholder | — | — | — | Résumé de la qualification affiché |
-| 5. Recommandations | — | "L'architecte IA analyse votre projet…" | — | "Analyse indisponible — vous pouvez continuer" | Recommandations listées par lot |
-| 6. Génération | Vignettes en attente | Blur progressif pièce par pièce | Pièce sans photo → skipped | Retry automatique silencieux | Comparateur avant/après activé |
-| 7. Dossier PDF | Aperçu du dossier | "Génération du PDF…" | — | "Erreur PDF — réessayez" | PDF prêt + options de partage |
+| 7. Visuels (Génération) | Vignettes en attente | Blur progressif pièce par pièce | Pièce sans photo → skipped | Retry automatique silencieux | Comparateur avant/après activé |
+| 8. Dossier (PDF) | Aperçu du dossier | "Génération du PDF…" | — | "Erreur PDF — réessayez" | PDF prêt + options de partage |
 
 ---
 
@@ -128,14 +139,49 @@ Contexte de déclenchement : Thomas vient d'acquérir un immeuble à rénover (o
 
 ---
 
-### Étape 2 — Extraction et cartographie IA
+### Étape 2 — Découpe (Définition des biens)
 
-**Contexte** : uniquement si Thomas a déposé un plan. L'IA lit le plan et propose une cartographie des pièces.
+**Contexte** : Thomas définit les lots/biens qui composent son immeuble AVANT l'extraction IA. L'éditeur complet est toujours actif — le mode simplifié mono-lot a été supprimé. Les zones sont draggables depuis n'importe où sur le plan.
 
 **Écran principal**
 ```
 ┌─────────────────────────────────────────┐
-│  Étape 2/7    [●●○○○○○]                 │
+│  Étape 2/8    [●●○○○○○○]                │
+│  Délimitez vos biens sur le plan        │
+│  ─────────────────────────────────────  │
+│  [Plan affiché avec zones dessinables]  │
+│                                         │
+│  Lot A — T3 RDC gauche    [Renommer]    │
+│  Lot B — T2 RDC droite    [Renommer]    │
+│                                         │
+│  [+ Ajouter un lot]                     │
+│  [← Retour]    [Continuer →]            │
+└─────────────────────────────────────────┘
+```
+
+**Actions utilisateur**
+- Dessiner/déplacer des zones sur le plan pour délimiter les lots (draggable depuis n'importe quel point)
+- Nommer chaque lot (référence interne : "T3 RDC gauche", "Lot A"…)
+- Ajouter ou supprimer un lot
+- Valider et passer à l'étape 3
+
+**Feedback système**
+- Les zones se superposant (>50% overlap) sont signalées en orange avec message "Ces zones se chevauchent — vérifiez vos limites"
+- Compteur "X lot(s) défini(s)"
+- Bouton "Continuer" actif dès qu'au moins 1 lot est nommé
+
+**Transition** : clic "Continuer" → déclenche l'extraction IA (étape 3) et auto-scroll vers l'étape suivante
+
+---
+
+### Étape 3 — Pièces (Détection IA)
+
+**Contexte** : l'IA lit le plan et extrait les pièces PAR lot défini à l'étape 2. La re-extraction supprime les anciennes pièces avant d'insérer les nouvelles.
+
+**Écran principal**
+```
+┌─────────────────────────────────────────┐
+│  Étape 3/8    [●●●○○○○○]                │
 │  ─────────────────────────────────────  │
 │  Analyse du plan en cours…              │
 │                                         │
@@ -160,23 +206,23 @@ Contexte de déclenchement : Thomas vient d'acquérir un immeuble à rénover (o
 
 **États**
 - Loading : animation de scan sur le plan (lignes de balayage)
-- Erreur : plan illisible → skip automatique vers étape 3 en mode manuel
-- Succès : carte des pièces affichée avec surfaces et liaisons
+- Erreur : plan illisible → skip automatique vers étape 4 en mode manuel
+- Succès : liste des pièces par lot affichée avec surfaces
 
-**Transition** : auto-avance vers étape 3 dès l'analyse terminée (pas de clic requis)
+**Transition** : auto-avance vers étape 4 dès l'analyse terminée (pas de clic requis)
 
 **Mobile vs desktop** : identique — la carte est scrollable sur mobile
 
 ---
 
-### Étape 3 — Validation et association photos/pièces
+### Étape 4 — Validation (Ajustements) et association photos/pièces
 
 **Contexte** : Thomas vérifie que les pièces extraites correspondent à la réalité et associe chaque photo à la bonne pièce.
 
 **Écran principal**
 ```
 ┌─────────────────────────────────────────┐
-│  Étape 3/7    [●●●○○○○]                 │
+│  Étape 4/8    [●●●●○○○○]                │
 │  Vérifiez les pièces de votre bien      │
 │  ─────────────────────────────────────  │
 │  ┌─────────────────────────────────┐    │
@@ -230,7 +276,7 @@ Contexte de déclenchement : Thomas vient d'acquérir un immeuble à rénover (o
 
 ### Point de paiement — 99€/bien
 
-**Positionnement** : à l'Étape 1, AVANT tout le parcours. Décision fondateur : "On paie avant. Pas après." Thomas paie 99€/bien dès la création du projet. Le paiement est la porte d'entrée — les étapes 2-7 ne sont accessibles qu'après paiement validé. Abonnés Pro : crédit débité automatiquement, pas d'écran Stripe.
+**Positionnement** : entre l'étape 6 (Conseils) et l'étape 7 (Visuels), juste avant la génération payante. Décision fondateur : "On paie avant. Pas après." Thomas paie 99€/bien avant le lancement de la génération. Abonnés Pro : crédit débité automatiquement, pas d'écran Stripe.
 
 **Écran**
 ```
@@ -258,14 +304,14 @@ Contexte de déclenchement : Thomas vient d'acquérir un immeuble à rénover (o
 
 ---
 
-### Étape 4 — Qualification du projet
+### Étape 5 — Style (Cible et ambiance)
 
 **Contexte** : Thomas définit le positionnement commercial de chaque lot pour que l'IA cible le bon style.
 
 **Écran principal**
 ```
 ┌─────────────────────────────────────────┐
-│  Étape 4/7    [●●●●○○○]                 │
+│  Étape 5/8    [●●●●●○○○]                │
 │  Qualifiez votre projet                 │
 │  ─────────────────────────────────────  │
 │  Ces informations guident l'IA pour     │
@@ -305,14 +351,14 @@ Contexte de déclenchement : Thomas vient d'acquérir un immeuble à rénover (o
 
 ---
 
-### Étape 5 — Recommandations architecte IA
+### Étape 6 — Conseils (Propositions IA) — contournable
 
-**Contexte** : l'agent architecte IA analyse le plan et les qualifications pour proposer des recommandations de réagencement. C'est le "aha moment" N°1 pour Thomas — il voit la valeur-ajoutée intellectuelle de Versimo.
+**Contexte** : l'agent architecte IA analyse le plan et les qualifications pour proposer des recommandations de réagencement. C'est le "aha moment" N°1 pour Thomas — il voit la valeur-ajoutée intellectuelle de Versimo. L'étape est contournable via "Passer et générer".
 
 **Écran principal**
 ```
 ┌─────────────────────────────────────────┐
-│  Étape 5/7    [●●●●●○○]                 │
+│  Étape 6/8    [●●●●●●○○]                │
 │  Recommandations de l'architecte IA     │
 │  ─────────────────────────────────────  │
 │  Basées sur votre plan et votre cible   │
@@ -358,14 +404,14 @@ Contexte de déclenchement : Thomas vient d'acquérir un immeuble à rénover (o
 
 ---
 
-### Étape 6 — Génération des visuels
+### Étape 7 — Visuels (Génération)
 
-**Contexte** : le pipeline 2 passes (surfaces → mobilier) tourne pour chaque pièce. C'est le "aha moment" N°2 — Thomas voit ses pièces se transformer en direct.
+**Contexte** : le pipeline 2 passes (surfaces → mobilier) tourne pour chaque pièce. C'est le "aha moment" N°2 — Thomas voit ses pièces se transformer en direct. Chaque visuel est téléchargeable et partageable individuellement dès sa disponibilité.
 
 **Écran principal**
 ```
 ┌─────────────────────────────────────────┐
-│  Étape 6/7    [●●●●●●○]                 │
+│  Étape 7/8    [●●●●●●●○]                │
 │  Génération en cours…                   │
 │  ─────────────────────────────────────  │
 │  4 pièces · ~6 minutes au total         │
@@ -415,14 +461,14 @@ Contexte de déclenchement : Thomas vient d'acquérir un immeuble à rénover (o
 
 ---
 
-### Étape 7 — Dossier PDF + partage
+### Étape 8 — Dossier (PDF + partage)
 
-**Contexte** : Thomas a ses visuels. Versimo génère automatiquement un dossier acquéreur prêt à partager. C'est la livraison finale — la raison pour laquelle il a payé 99€.
+**Contexte** : Thomas a ses visuels. Versimo génère automatiquement un dossier acquéreur prêt à partager. C'est la livraison finale — la raison pour laquelle il a payé 99€. Le statut "delivered" est set à la génération du PDF.
 
 **Écran principal**
 ```
 ┌─────────────────────────────────────────┐
-│  Étape 7/7    [●●●●●●●]                 │
+│  Étape 8/8    [●●●●●●●●]                │
 │  Votre dossier est prêt                 │
 │  ─────────────────────────────────────  │
 │  ┌─────────────────────────────────┐    │
@@ -478,12 +524,13 @@ Contexte de déclenchement : Thomas vient d'acquérir un immeuble à rénover (o
 | Transition | Retour possible ? | Contrainte |
 |---|---|---|
 | Étape 1 → 2 | Oui, libre | Aucune |
-| Étape 2 → 3 | Oui, libre | Aucune |
-| Étape 3 → Paiement | Oui, libre | Aucune |
-| Paiement → Étape 4 | Oui (vers étape 3) | Paiement non remboursé automatiquement (support requis) |
-| Étape 4 → 5 | Oui, libre | Requalification possible |
-| Étape 5 → 6 | Oui, libre | Recommandations non perdues |
-| Étape 6 → 7 | Non (génération déjà lancée) | Les visuels générés restent accessibles depuis le tableau de bord |
+| Étape 2 → 3 | Oui, libre | Modifier les lots relance l'extraction (étape 3) |
+| Étape 3 → 4 | Oui, libre | Aucune |
+| Étape 4 → 5 | Oui, libre | Aucune |
+| Étape 5 → 6 | Oui, libre | Requalification possible |
+| Étape 6 → Paiement | Oui, libre | Recommandations non perdues |
+| Paiement → Étape 7 | Oui (vers étape 6) | Paiement non remboursé automatiquement (support requis) |
+| Étape 7 → 8 | Non (génération déjà lancée) | Les visuels générés restent accessibles depuis le tableau de bord |
 
 **Règle UX** : le bouton "Retour" est visible à chaque étape jusqu'au lancement de la génération (étape 6). Une fois la génération lancée, "Retour" est remplacé par "Voir tous mes biens" (tableau de bord).
 
@@ -517,7 +564,7 @@ Justification :
 **Comportement** :
 1. Message inline sous l'aperçu plan : "Ce plan est difficile à lire. Passez à l'étape suivante pour associer vos photos manuellement."
 2. Bouton "Réessayer avec une meilleure photo" (remplacer le plan)
-3. Bouton "Continuer sans plan" (étape 3 en mode création manuelle)
+3. Bouton "Continuer sans plan" (étape 4 en mode création manuelle)
 4. Le plan illisible n'est PAS une erreur bloquante — Thomas peut créer ses pièces à la main
 
 **[FRICTION H9]** : l'erreur doit proposer la solution, pas juste indiquer l'échec. Formulation : "Plan illisible — voici comment continuer :" suivi des 2 options.
@@ -530,9 +577,9 @@ Justification :
 
 **Comportement** :
 1. À l'étape 1, lien "Je n'ai pas de plan" visible et proéminent (pas caché en bas de page)
-2. L'étape 2 (extraction IA) est sautée entièrement
-3. Thomas crée ses pièces manuellement à l'étape 3 (nom + surface approximative + photo)
-4. Les recommandations architecte (étape 5) sont limitées : "Plan non disponible — recommandations basées sur les photos uniquement"
+2. L'étape 2 (découpe) est simplifiée : Thomas crée un ou plusieurs lots nommés sans support visuel
+3. L'étape 3 (extraction IA) est sautée entièrement — Thomas crée ses pièces manuellement à l'étape 4 (nom + surface approximative + photo)
+4. Les recommandations architecte (étape 6) sont limitées : "Plan non disponible — recommandations basées sur les photos uniquement"
 
 **UX note** : le parcours sans plan doit être une first-class experience, pas un fallback dégradé. 40% des marchands n'ont pas le plan au moment de la pré-commercialisation (chantier actif).
 
@@ -543,7 +590,7 @@ Justification :
 **Scénario** : Thomas a listé 5 pièces mais n'a une photo que pour 3 d'entre elles (cave non photographiée, SDB en travaux).
 
 **Comportement** :
-1. Les pièces sans photo sont signalées en orange à l'étape 3 (pas bloquant)
+1. Les pièces sans photo sont signalées en orange à l'étape 4 (pas bloquant)
 2. Tooltip : "Sans photo, cette pièce ne sera pas générée. Elle peut être ajoutée plus tard."
 3. Le dossier PDF final inclut une page par lot avec les pièces générées et une note "Autres pièces : à venir"
 4. Option "Générer plus tard" : Thomas peut uploader la photo manquante depuis son tableau de bord et relancer la génération pour cette pièce seule (crédit supplémentaire : 0 si abonné Pro, sinon tarif unitaire)

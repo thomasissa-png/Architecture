@@ -1448,6 +1448,37 @@ export default function PlanEditor({
             : isPlacingPhoto && photoPlaceStart ? handlePhotoPlaceEnd
             : undefined
           }
+          onTouchStart={isDrawingZone ? (e) => {
+            e.preventDefault();
+            const t = e.touches[0];
+            handleZoneDrawStart({ clientX: t.clientX, clientY: t.clientY, stopPropagation: () => {}, preventDefault: () => {} } as unknown as React.MouseEvent<HTMLDivElement>);
+          } : isPlacingPhoto ? (e) => {
+            e.preventDefault();
+            const t = e.touches[0];
+            handlePhotoPlaceStart({ clientX: t.clientX, clientY: t.clientY, stopPropagation: () => {}, preventDefault: () => {} } as unknown as React.MouseEvent<HTMLDivElement>);
+          } : undefined}
+          onTouchMove={
+            isDrawingZone && zoneDrawStart ? (e) => {
+              e.preventDefault();
+              const t = e.touches[0];
+              handleZoneDrawMove({ clientX: t.clientX, clientY: t.clientY } as unknown as React.MouseEvent<HTMLDivElement>);
+            }
+            : isPlacingPhoto && photoPlaceStart ? (e) => {
+              e.preventDefault();
+              const t = e.touches[0];
+              handlePhotoPlaceMove({ clientX: t.clientX, clientY: t.clientY } as unknown as React.MouseEvent<HTMLDivElement>);
+            }
+            : undefined
+          }
+          onTouchEnd={
+            isDrawingZone && zoneDrawStart ? () => {
+              handleZoneDrawEnd();
+            }
+            : isPlacingPhoto && photoPlaceStart ? () => {
+              handlePhotoPlaceEnd();
+            }
+            : undefined
+          }
           role="application"
           aria-label="Éditeur de plan interactif — déplacez et redimensionnez les pièces"
         >
@@ -1456,6 +1487,15 @@ export default function PlanEditor({
             src={planImageUrl}
             alt="Plan du bien"
             onLoad={handleImageLoad}
+            onError={(e) => {
+              // Show fallback message instead of broken image icon
+              const target = e.currentTarget;
+              target.style.display = "none";
+              const fallback = document.createElement("div");
+              fallback.className = "flex items-center justify-center py-20 text-sm text-[#9B9A94]";
+              fallback.textContent = "Impossible de charger le plan. Vérifiez votre connexion.";
+              target.parentElement?.appendChild(fallback);
+            }}
             className="block w-full h-auto select-none pointer-events-none"
             draggable={false}
           />

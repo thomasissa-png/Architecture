@@ -94,13 +94,15 @@ export async function PUT(
 
   const { project } = authResult;
 
-  // ─── Status guard — lots can only be defined/redefined before extraction ─
-  const validStatuses = ["plan_uploaded", "lots_defined"];
-  if (!validStatuses.includes(project.status)) {
+  // ─── Status guard — lots can be redefined at any stage ─────────
+  // Thomas can go back to decoupe to adjust lots at any point.
+  // Re-saving lots resets status to lots_defined, which forces re-extraction.
+  const blockedStatuses = ["generating"];
+  if (blockedStatuses.includes(project.status)) {
     return NextResponse.json(
       {
         error: "INVALID_STATUS",
-        message: "La découpe n'est possible qu'avant l'extraction des pièces.",
+        message: "Impossible de modifier la découpe pendant la génération.",
       },
       { status: 409 }
     );

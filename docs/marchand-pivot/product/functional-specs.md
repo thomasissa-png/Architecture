@@ -6,49 +6,62 @@
 
 ---
 
-## 1. Vue d'ensemble du parcours (7 étapes)
+## 1. Vue d'ensemble du parcours (8 étapes)
 
 ```
 Thomas arrive sur /pro (landing marchand)
          |
          v
-[ÉTAPE 1] Création du projet
+[ÉTAPE 1] Projet (Upload)
   Upload plan (PDF/JPG/PNG/photo) + infos bien (adresse, type, surface)
   → Projet créé en DB, statut "plan_uploaded"
          |
          v
-[ÉTAPE 2] Extraction IA du plan
-  GPT-4.1 vision → JSON {pièces, dimensions, ouvertures}
+[ÉTAPE 2] Découpe (Définition des biens)
+  Thomas définit les lots/biens AVANT l'extraction des pièces
+  Éditeur complet (toujours actif — mode simplifié supprimé)
+  Zones de lots draggables depuis n'importe où sur le plan
+  → Statut "lots_defined"
+         |
+         v
+[ÉTAPE 3] Pièces (Détection IA)
+  GPT-4.1 vision extrait les pièces PAR bien défini à l'étape 2
+  → JSON {pièces, dimensions, ouvertures} par lot
+  Re-extraction : DELETE des anciennes pièces avant INSERT
+  Bounding boxes chevauchantes (>50% overlap) : suppression du moins confiant
+  21 types de pièces supportés
   → Statut "extraction_done" (ou "extraction_failed" si plan illisible)
          |
          v
-[ÉTAPE 3] Validation par le marchand
+[ÉTAPE 4] Validation (Ajustements)
   UI tableau éditable — Thomas corrige noms, surfaces, affectations
-  Si immeuble multi-lots : confirmation de la découpe en lots
   → Statut "validated"
          |
          v
-[ÉTAPE 4] Qualification des besoins
-  Cible acheteur par lot, style, budget travaux, contraintes
+[ÉTAPE 5] Style (Cible et ambiance)
+  Cible acheteur par lot, style parmi 12, budget travaux, contraintes
   → Statut "qualified"
          |
          v
-[ÉTAPE 5] Recommandations architecte IA
+[ÉTAPE 6] Conseils (Propositions IA) — contournable
   GPT-4.1 text analyse le JSON validé → suggestions réagencement
   Thomas accepte / refuse chaque reco → plan final validé
+  CTA "Passer et générer" disponible pour contourner l'étape
   → Statut "plan_final"
          |
          v
-[ÉTAPE 6] Génération des visuels
+[ÉTAPE 7] Visuels (Génération)
   Photos réelles (si uploadées) ou prompt-only (si pas de photo)
   Pipeline 2 passes enrichi dimensions — 1 visuel/pièce
+  Visuels téléchargeables/partageables individuellement
   → Statut "visuals_done"
          |
          v
-[ÉTAPE 7] Dossier de pré-commercialisation
+[ÉTAPE 8] Dossier (PDF)
   1 PDF par lot : plan annoté + visuels meublés + description commerciale
+  Affiche surface, nombre de pièces, type, plan
   Partage WhatsApp / email / lien direct
-  → Statut "delivered"
+  → Statut "delivered" (set lors de la génération du PDF)
 ```
 
 **Paiement** : déclenché à l'Étape 1 (création du projet). Thomas paie 99€/bien AVANT d'accéder au parcours. Décision fondateur : "On paie avant. Pas après." Le paiement est la porte d'entrée — aucune étape du parcours n'est accessible sans paiement validé (sauf pour abonnés Pro dont le crédit est débité automatiquement).
@@ -203,9 +216,15 @@ En tant que Thomas, je veux voir tous mes projets en cours et terminés afin de 
 
 ---
 
-## 3. Étape 2 — Extraction IA du plan
+## 3. Étape 2 — Découpe (Définition des biens)
 
-**Principe** : GPT-4.1 vision analyse le plan uploadé et produit un JSON structuré listant pièces, dimensions estimées et ouvertures. La validation humaine (étape 3) est OBLIGATOIRE — l'IA ne décide jamais seule de la structure finale du bien.
+**Principe** : avant toute extraction IA, Thomas définit les lots/biens qui composent son immeuble. L'éditeur complet est toujours actif (le mode simplifié mono-lot a été supprimé). Les zones de lots sont draggables depuis n'importe où sur le plan (pas uniquement depuis le centre). Cette étape conditionne l'extraction de l'étape 3 — l'IA extrait les pièces PAR bien défini.
+
+---
+
+## 4. Étape 3 — Pièces (Détection IA)
+
+**Principe** : GPT-4.1 vision analyse le plan uploadé et produit un JSON structuré listant pièces, dimensions estimées et ouvertures, organisées par lot défini à l'étape 2. La validation humaine (étape 4) est OBLIGATOIRE — l'IA ne décide jamais seule de la structure finale du bien. Une re-extraction supprime toutes les anciennes pièces du lot (DELETE avant INSERT). Les bounding boxes qui se chevauchent à plus de 50% sont résolues automatiquement : la moins confiante est supprimée. 21 types de pièces sont supportés.
 
 ### US-PM-04 : Déclencher et suivre l'extraction IA du plan
 
@@ -336,7 +355,7 @@ En tant que Thomas dont le plan n'a pas de cotes, je veux que l'IA estime les di
 
 ---
 
-## 4. Étape 3 — Validation par le marchand
+## 5. Étape 4 — Validation (Ajustements)
 
 **Principe** : Thomas vérifie et corrige les données extraites avant de qualifier les besoins. Aucune donnée IA n'est traitée comme définitive sans validation humaine explicite. C'est le point de confiance central du parcours.
 
@@ -351,9 +370,9 @@ En tant que Thomas dont le plan n'a pas de cotes, je veux que l'IA estime les di
 En tant que Thomas, je veux corriger les noms, surfaces et affectations des pièces détectées par l'IA afin que les données du dossier reflètent la réalité du bien et ne comportent pas d'erreurs.
 
 #### Contexte de navigation
-- **Page d'origine** : /pro/projects/:id/extract (étape 2 terminée)
+- **Page d'origine** : /pro/projects/:id/extract (étape 3 terminée)
 - **Déclencheur** : statut "extraction_done" → redirection automatique ou clic "Valider le plan"
-- **Page de destination (succès)** : /pro/projects/:id/qualify (étape 4)
+- **Page de destination (succès)** : /pro/projects/:id/qualify (étape 5)
 - **Page de destination (échec)** : reste sur /pro/projects/:id/validate avec messages d'erreur inline
 
 #### Données et champs
@@ -361,7 +380,7 @@ En tant que Thomas, je veux corriger les noms, surfaces et affectations des piè
 |---|---|---|---|---|---|
 | room_name | string | Oui | Non vide | 2–50 caractères | "Séjour-cuisine" |
 | surface_m2 | number | Non | > 0, < 1 000 | 1–999 | 18.5 |
-| room_type | enum | Oui | Valeur dans la liste | salon / cuisine / chambre / sdb / wc / bureau / couloir / cave / autre | "salon" |
+| room_type | enum | Oui | Valeur dans la liste | sejour / salle_a_manger / chambre_parentale / chambre / cuisine / sdb / wc / bureau / couloir / cave / entree / dressing / cellier / terrasse / garage / salle_reunion / open_space / accueil / local_technique / balcon / autre | "sejour" |
 | floor | integer | Non | >= 0 | 0–20 | 0 |
 | lot_id | string | Conditionnel (immeuble) | Référence lot existant | N/A | "lot_A" |
 
@@ -372,14 +391,14 @@ En tant que Thomas, je veux corriger les noms, surfaces et affectations des piè
 | Loading | Sauvegarde en cours après clic "Valider" | Spinner sur le bouton "Valider et continuer" |
 | Vide | Aucune pièce extraite ni saisie | CTA "Ajouter une pièce" + lien "Réessayer l'extraction" |
 | Erreur | Validation KO (champ obligatoire vide) | Message inline rouge sous le champ concerné |
-| Succès | Validation OK → toast + redirection | "Plan validé — X pièces confirmées." puis redirection étape 4 |
+| Succès | Validation OK → toast + redirection | "Plan validé — X pièces confirmées." puis redirection étape 5 |
 
 #### Critères d'acceptance
 
 **Happy path :**
 - [ ] GIVEN le statut est "extraction_done" et 5 pièces ont été extraites WHEN Thomas accède à /pro/projects/:id/validate THEN il voit un tableau avec 5 lignes éditables : nom, type, surface, étage
 - [ ] GIVEN Thomas modifie le nom "Room_1" en "Chambre principale" WHEN il clique hors du champ THEN la modification est sauvegardée en auto-save (debounce 500ms, PATCH API)
-- [ ] GIVEN Thomas a validé toutes les pièces WHEN il clique "Valider et continuer" THEN le statut passe à "validated" et il est redirigé vers l'étape 4
+- [ ] GIVEN Thomas a validé toutes les pièces WHEN il clique "Valider et continuer" THEN le statut passe à "validated" et il est redirigé vers l'étape 5
 
 **Cas d'erreur :**
 - [ ] GIVEN Thomas laisse le champ "nom" vide pour une pièce WHEN il clique "Valider et continuer" THEN le submit est bloqué, la ligne concernée est surlignée en rouge, message : "Chaque pièce doit avoir un nom."
@@ -474,9 +493,9 @@ En tant que Thomas, je veux supprimer les pièces incorrectement détectées (ex
 
 ---
 
-## 5. Étape 4 — Qualification des besoins
+## 6. Étape 5 — Style (Cible et ambiance)
 
-**Principe** : Thomas définit le positionnement commercial de chaque lot — qui est l'acheteur cible, quel style mettra en valeur le bien, quel budget travaux est prévu. Ces données alimentent les recommandations de l'étape 5 et les prompts de génération de l'étape 6.
+**Principe** : Thomas définit le positionnement commercial de chaque lot — qui est l'acheteur cible, quel style mettra en valeur le bien, quel budget travaux est prévu. Ces données alimentent les recommandations de l'étape 6 et les prompts de génération de l'étape 7.
 
 ### US-PM-10 : Définir la cible acheteur par lot
 
@@ -530,12 +549,12 @@ En tant que Thomas, je veux choisir le style de décoration de chaque lot parmi 
 #### Critères d'acceptance
 
 **Happy path :**
-- [ ] GIVEN Thomas est sur l'étape 4 pour un lot "famille" WHEN il parcourt les 12 styles THEN chaque style affiche une miniature de référence, son nom et une description courte orientée acquéreur (ex : Haussmannien — "Élégance classique, idéal pour les CSP+ cherchant du cachet")
+- [ ] GIVEN Thomas est sur l'étape 5 pour un lot "famille" WHEN il parcourt les 12 styles THEN chaque style affiche une miniature de référence, son nom et une description courte orientée acquéreur (ex : Haussmannien — "Élégance classique, idéal pour les CSP+ cherchant du cachet")
 - [ ] GIVEN Thomas sélectionne "Haussmannien" pour le lot A WHEN il valide THEN le style est sauvegardé (colonne `style_id` dans `lots`) et sera injecté dans les prompts de génération
 - [ ] GIVEN la cible acheteur est "etudiant" WHEN Thomas ouvre la sélection de style THEN les styles recommandés (Scandinave, Contemporain) sont mis en avant avec un badge "Recommandé pour votre cible"
 
 **Cas d'erreur :**
-- [ ] GIVEN Thomas n'a sélectionné aucun style WHEN il tente de passer à l'étape 5 THEN message : "Choisissez un style pour chaque lot."
+- [ ] GIVEN Thomas n'a sélectionné aucun style WHEN il tente de passer à l'étape 6 THEN message : "Choisissez un style pour chaque lot."
 
 **Cas limites :**
 - [ ] GIVEN Thomas veut un style custom (non listé) WHEN il clique "Style personnalisé" THEN un textarea apparaît (même flow que le mode Custom existant sur la page principale) — le texte est pré-processé par GPT-4.1-mini comme dans le pipeline actuel
@@ -622,8 +641,8 @@ En tant que Thomas, je veux voir un récapitulatif de toutes mes qualifications 
 #### Critères d'acceptance
 
 **Happy path :**
-- [ ] GIVEN tous les lots sont qualifiés WHEN Thomas arrive au bas de l'étape 4 THEN un tableau récapitulatif s'affiche : lot / cible acheteur / style / budget / nb photos uploadées
-- [ ] GIVEN le récapitulatif est affiché WHEN Thomas clique "Lancer les recommandations" THEN le statut passe à "qualified" et l'étape 5 démarre
+- [ ] GIVEN tous les lots sont qualifiés WHEN Thomas arrive au bas de l'étape 5 THEN un tableau récapitulatif s'affiche : lot / cible acheteur / style / budget / nb photos uploadées
+- [ ] GIVEN le récapitulatif est affiché WHEN Thomas clique "Lancer les recommandations" THEN le statut passe à "qualified" et l'étape 6 démarre
 
 **Cas d'erreur :**
 - [ ] GIVEN au moins un lot n'a pas de cible acheteur WHEN Thomas clique "Lancer les recommandations" THEN le bouton est grisé + message : "Complétez la qualification de tous les lots (cible acheteur obligatoire)."
@@ -639,9 +658,9 @@ En tant que Thomas, je veux voir un récapitulatif de toutes mes qualifications 
 
 ---
 
-## 6. Étape 5 — Recommandations architecte IA
+## 7. Étape 6 — Conseils (Propositions IA) — contournable
 
-**Principe** : GPT-4.1 text (pas vision) analyse le JSON validé de l'étape 3 et les qualifications de l'étape 4, puis produit des suggestions de réagencement par lot. Thomas accepte ou refuse chaque recommandation. Le résultat est le "plan final" qui guidera les prompts de génération visuelle.
+**Principe** : GPT-4.1 text (pas vision) analyse le JSON validé de l'étape 4 et les qualifications de l'étape 5, puis produit des suggestions de réagencement par lot. Thomas accepte ou refuse chaque recommandation. Le résultat est le "plan final" qui guidera les prompts de génération visuelle. L'étape est contournable via le CTA "Passer et générer" — Thomas n'est pas obligé d'attendre ou de lire les conseils.
 
 **Modèle** : GPT-4.1 text via `openai.responses.create` — pas besoin de vision car le JSON structuré est suffisant. System prompt : rôle architecte d'intérieur expert marchands de biens, connaissance des 12 styles Versimo, budget comme contrainte.
 
@@ -786,7 +805,7 @@ En tant que Thomas, je veux pouvoir régénérer les recommandations en modifian
 #### Critères d'acceptance
 
 **Happy path :**
-- [ ] GIVEN Thomas a des recommandations "famille" WHEN il clique "Modifier la qualification" THEN il retourne à l'étape 4, peut changer la cible (ex : "investisseur_locatif"), et régénère les recommandations
+- [ ] GIVEN Thomas a des recommandations "famille" WHEN il clique "Modifier la qualification" THEN il retourne à l'étape 5, peut changer la cible (ex : "investisseur_locatif"), et régénère les recommandations
 - [ ] GIVEN les nouvelles recommandations sont générées WHEN elles s'affichent THEN l'historique des versions précédentes est accessible via un lien "Voir les recommandations précédentes"
 
 **Cas d'erreur :**
@@ -803,9 +822,9 @@ En tant que Thomas, je veux pouvoir régénérer les recommandations en modifian
 
 ---
 
-## 7. Étape 6 — Génération des visuels
+## 8. Étape 7 — Visuels (Génération)
 
-**Principe** : le pipeline 2 passes existant (passe 1 surfaces, passe 2 mobilier) est réutilisé sans modification d'architecture. Les prompts sont enrichis avec les dimensions validées à l'étape 3. Le paiement est déclenché ICI avant la génération — c'est la seule étape coûteuse en API.
+**Principe** : le pipeline 2 passes existant (passe 1 surfaces, passe 2 mobilier) est réutilisé sans modification d'architecture. Les prompts sont enrichis avec les dimensions validées à l'étape 4. Le paiement est déclenché ICI avant la génération — c'est la seule étape coûteuse en API. Les visuels sont téléchargeables et partageables individuellement dès qu'ils sont disponibles.
 
 **Modèle** : gpt-image-1.5 via Responses API, `input_fidelity: "high"`. Pas de fallback (décision fondateur 2026-04-04).
 
@@ -969,11 +988,11 @@ En tant que Thomas insatisfait d'un visuel, je veux le régénérer afin d'obten
 
 ---
 
-## 8. Étape 7 — Dossier de pré-commercialisation
+## 9. Étape 8 — Dossier (PDF)
 
-**Principe** : chaque lot produit un dossier PDF autonome, prêt à partager directement avec les acquéreurs. C'est le livrable final de la valeur Versimo — c'est ce que Thomas envoie le lundi matin avant une visite. Le PDF est généré côté serveur (pas côté client) pour des raisons de taille et de fiabilité.
+**Principe** : chaque lot produit un dossier PDF autonome, prêt à partager directement avec les acquéreurs. C'est le livrable final de la valeur Versimo — c'est ce que Thomas envoie le lundi matin avant une visite. Le PDF est généré côté serveur (pas côté client) pour des raisons de taille et de fiabilité. Le statut "delivered" est set lors de la génération du PDF.
 
-**Contenu par dossier** : plan annoté + visuels meublés par pièce + description commerciale générée par IA (1 paragraphe par lot basé sur cible acheteur + style + surfaces) + tableau des surfaces + infos techniques (type de bien, surface habitable, étage, exposition).
+**Contenu par dossier** : plan annoté + visuels meublés par pièce + description commerciale générée par IA (1 paragraphe par lot basé sur cible acheteur + style + surfaces) + tableau des surfaces (surface, nombre de pièces, type) + infos techniques (type de bien, surface habitable, étage, exposition, plan).
 
 ### US-PM-23 : Générer le dossier PDF d'un lot
 
@@ -989,7 +1008,7 @@ En tant que Thomas, je veux générer le dossier PDF de chaque lot en 1 clic afi
 
 **Happy path :**
 - [ ] GIVEN tous les visuels d'un lot sont terminés WHEN Thomas clique "Générer le dossier" pour ce lot THEN le PDF est généré côté serveur et disponible en téléchargement en < 30 secondes
-- [ ] GIVEN le PDF est généré WHEN Thomas l'ouvre THEN il contient dans cet ordre : (1) page de couverture (adresse, type, surface, logo Versimo discret), (2) plan annoté (noms des pièces, surfaces), (3) visuels meublés avec légende (1 visuel par pièce sur pleine page), (4) description commerciale (1 paragraphe IA par lot), (5) tableau des surfaces (nom, m², type), (6) mention légale : "Visuels de home staging virtuel — à titre indicatif, non contractuels"
+- [ ] GIVEN le PDF est généré WHEN Thomas l'ouvre THEN il contient dans cet ordre : (1) page de couverture (adresse, type, surface, nombre de pièces, logo Versimo discret), (2) plan annoté (noms des pièces, surfaces), (3) visuels meublés avec légende (1 visuel par pièce sur pleine page), (4) description commerciale (1 paragraphe IA par lot), (5) tableau des surfaces (nom, m², type de pièce), (6) mention légale : "Visuels de home staging virtuel — à titre indicatif, non contractuels"
 - [ ] GIVEN Thomas génère le PDF de 6 lots WHEN tous sont prêts THEN un bouton "Tout télécharger (ZIP)" s'affiche
 
 **Cas d'erreur :**
@@ -1140,7 +1159,7 @@ projects (
   type_bien       ENUM('immeuble','appartement','maison','bureaux','local_commercial'),
   surface_totale  DECIMAL(8,2),
   plan_file_path  TEXT,                 -- clé Object Storage
-  status          ENUM('plan_uploaded','extraction_done','validated','qualified','plan_final','generating','visuals_done','delivered','extraction_failed'),
+  status          ENUM('plan_uploaded','lots_defined','extraction_done','validated','qualified','plan_final','generating','visuals_done','delivered','extraction_failed'),
   created_at      TIMESTAMPTZ DEFAULT NOW(),
   updated_at      TIMESTAMPTZ DEFAULT NOW()
 )
@@ -1168,7 +1187,7 @@ rooms (
   lot_id          UUID REFERENCES lots(id) ON DELETE CASCADE,
   project_id      UUID REFERENCES projects(id) ON DELETE CASCADE,
   name            TEXT NOT NULL,
-  room_type       ENUM('salon','cuisine','chambre','sdb','wc','bureau','couloir','cave','autre'),
+  room_type       ENUM('sejour','salle_a_manger','chambre_parentale','chambre','cuisine','sdb','wc','bureau','couloir','cave','entree','dressing','cellier','terrasse','garage','salle_reunion','open_space','accueil','local_technique','balcon','autre'),
   surface_m2      DECIMAL(6,2),
   length_m        DECIMAL(5,2),
   width_m         DECIMAL(5,2),
@@ -1295,9 +1314,9 @@ rooms → generation_logs (1:N, via room_id)
 
 ### Parcours critiques (à tester en priority 1)
 
-1. **Happy path complet** : upload plan → extraction → validation → qualification 1 lot / 1 style → recommandations (skip) → génération 1 pièce avec photo → PDF → lien WhatsApp
+1. **Happy path complet** : upload plan → découpe lots → extraction pièces → validation → style 1 lot / 1 style → conseils (skip via "Passer et générer") → génération 1 pièce avec photo → PDF → lien WhatsApp
 2. **Plan illisible** : extraction failed → saisie manuelle → continuation normale
-3. **Immeuble 2 lots** : découpe lots → qualification séparée → PDF × 2 → ZIP
+3. **Immeuble 2 lots** : découpe 2 lots (étape 2) → extraction pièces par lot (étape 3) → qualification séparée (étape 5) → PDF × 2 → ZIP
 
 ---
 
@@ -1306,11 +1325,11 @@ rooms → generation_logs (1:N, via room_id)
 - Décisions prises :
   - Pipeline 2 passes existant réutilisé sans modification d'architecture (enrichissement prompt uniquement)
   - GPT-4.1 vision pour extraction, GPT-4.1 text pour recommandations et descriptions, gpt-image-1.5 pour visuels
-  - Paiement déclenché à l'étape 6 uniquement — étapes 1-5 gratuites
+  - Paiement déclenché à l'étape 7 uniquement — étapes 1-6 gratuites
   - PDFs générés à la demande (pas de cache) — garantit la fraîcheur
   - Liens de partage tokenisés (UUID, 30 jours) — pas d'authentification requise pour les acquéreurs
 - Points d'attention :
-  - Validation utilisateur OBLIGATOIRE étape 3 — jamais de donnée IA envoyée directement en génération
+  - Validation utilisateur OBLIGATOIRE étape 4 — jamais de donnée IA envoyée directement en génération
   - Parallélisation génération : max 2 pièces concurrentes (comme pipeline existant)
   - Rate limiting sur /extract : 3 tentatives max par projet (anti-boucle coûteuse)
   - Table generation_logs : étendre via ALTER TABLE, ne pas recréer
