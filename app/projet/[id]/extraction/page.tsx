@@ -459,8 +459,8 @@ export default function ExtractionPage() {
   // ─── Navigation ──────────────────────────────────────────────────
 
   const handleContinue = useCallback(async () => {
-    // Save building outline to DB if it was modified
-    if (buildingOutline && isPlanDirty) {
+    // Always save rooms + building outline to DB (edits inline don't set isPlanDirty)
+    if (rooms.length > 0) {
       try {
         await fetch(`/api/pro/projects/${projectId}/draft`, {
           method: "PATCH",
@@ -471,8 +471,9 @@ export default function ExtractionPage() {
               name: r.name,
               room_type: r.room_type,
               surface_m2: r.surface_m2,
+              isNew: r.id.startsWith("temp_") || r.id.startsWith("new-"),
             })),
-            building_outline: buildingOutline,
+            building_outline: buildingOutline ?? null,
           }),
         });
       } catch {
@@ -480,7 +481,7 @@ export default function ExtractionPage() {
       }
     }
     router.push(`/projet/${projectId}/validation`);
-  }, [router, projectId, buildingOutline, isPlanDirty, rooms]);
+  }, [router, projectId, buildingOutline, rooms]);
 
   const handleSkipToManual = useCallback(() => {
     router.push(`/projet/${projectId}/validation`);
@@ -919,9 +920,29 @@ export default function ExtractionPage() {
                               </button>
                             )}
                             <div className="flex items-center gap-2 flex-wrap">
-                              {room.surface_m2 != null && (
-                                <span className="text-xs text-[#9B9A94]">{room.surface_m2} m²</span>
-                              )}
+                              <div className="flex items-center gap-0.5">
+                                <input
+                                  type="number"
+                                  step="0.1"
+                                  min="1"
+                                  max="500"
+                                  value={room.surface_m2 ?? ""}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    updateRoom(room.id, {
+                                      surface_m2: val === "" ? null : parseFloat(val),
+                                    });
+                                  }}
+                                  placeholder="—"
+                                  className="w-16 text-xs text-[#9B9A94] bg-transparent border-b border-transparent
+                                             hover:border-[#D1D0CB] focus:border-[#7D9B76] focus:text-[#1C1C1E]
+                                             outline-none py-0.5 transition-colors
+                                             [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none
+                                             [&::-webkit-inner-spin-button]:appearance-none"
+                                  aria-label={`Surface de ${room.name || "la pièce"} en m²`}
+                                />
+                                <span className="text-xs text-[#9B9A94]">m²</span>
+                              </div>
                               {room.length_m != null && room.width_m != null && (
                                 <span className="text-xs text-[#9B9A94]">{room.length_m} × {room.width_m} m</span>
                               )}
