@@ -657,7 +657,7 @@ export default function DecoupePage() {
                     >
                       <div className="w-4 h-4 rounded-full shrink-0 animate-pulse" style={{ backgroundColor: drawingLot.color }} />
                       <p className="text-sm text-[#1C1C1E] flex-1">
-                        Dessinez un rectangle sur le plan pour délimiter <strong>{drawingLot.name}</strong>.
+                        Tracez le contour de la zone sur le plan pour délimiter <strong>{drawingLot.name}</strong>.
                         {rooms.length > 0
                           ? " Les pièces dont le centre est dans la zone seront automatiquement assignées."
                           : ""}
@@ -665,7 +665,7 @@ export default function DecoupePage() {
                       <button
                         onClick={() => setDrawingLotId(null)}
                         className="text-xs px-3 py-1.5 rounded-md bg-[#1C1C1E]/5 text-[#1C1C1E]/60 hover:text-[#1C1C1E] transition-colors
-                                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] min-h-[36px]"
+                                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] min-h-[44px]"
                       >
                         Annuler
                       </button>
@@ -811,7 +811,7 @@ export default function DecoupePage() {
                   <button
                     onClick={addLot}
                     disabled={lots.length >= 12}
-                    className="text-xs px-2.5 py-1 rounded-md bg-[#1C1C1E] text-white hover:bg-[#1C1C1E]/80 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76]"
+                    className="text-xs px-2.5 py-1 rounded-md bg-[#1C1C1E] text-white hover:bg-[#1C1C1E]/80 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] min-h-[44px]"
                   >
                     + Ajouter un lot
                   </button>
@@ -932,7 +932,7 @@ export default function DecoupePage() {
                                 onClick={() => setDrawingLotId(lot.id)}
                                 disabled={drawingLotId != null}
                                 className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md border transition-colors
-                                           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] min-h-[36px]
+                                           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] min-h-[44px]
                                            disabled:opacity-40 disabled:cursor-not-allowed
                                            border-[#1C1C1E]/10 text-[#1C1C1E]/60 hover:bg-[#1C1C1E]/5 hover:text-[#1C1C1E]"
                                 title={(lot.zone_polygon || lot.zone_rect) ? "Redessiner la zone sur le plan" : "Dessiner la zone sur le plan"}
@@ -946,7 +946,7 @@ export default function DecoupePage() {
                                 <button
                                   onClick={() => handleLotZoneChange(lot.id, null, null)}
                                   className="text-xs text-[#1C1C1E]/40 hover:text-red-500 px-1.5 py-1.5 rounded transition-colors
-                                             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] min-h-[36px]"
+                                             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7D9B76] min-h-[44px]"
                                   title="Supprimer la zone"
                                   aria-label={`Supprimer la zone de ${lot.name}`}
                                 >
