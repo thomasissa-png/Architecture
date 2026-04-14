@@ -113,7 +113,7 @@ export default function ValidationPage() {
               firstPath = Array.isArray(parsed) ? parsed[0] : firstPath;
             }
           } catch { /* use raw path */ }
-          if (firstPath.endsWith(".pdf")) firstPath = firstPath + "-preview.png";
+          if (firstPath.endsWith(".pdf")) firstPath = firstPath.replace(/\.pdf$/i, "-preview.png");
           setPlanImageUrl(`/api/logs/image?path=${encodeURIComponent(firstPath)}`);
         }
         const loadedRooms: RoomEntry[] = (data.rooms || []).map(

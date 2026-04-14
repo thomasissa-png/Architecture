@@ -268,7 +268,7 @@ export default function DecoupePage() {
               }
             } catch { /* use raw path */ }
             // For PDFs, use the preview PNG
-            if (firstPath.endsWith(".pdf")) firstPath = firstPath + "-preview.png";
+            if (firstPath.endsWith(".pdf")) firstPath = firstPath.replace(/\.pdf$/i, "-preview.png");
             setPlanImageUrl(`/api/logs/image?path=${encodeURIComponent(firstPath)}`);
           }
         }

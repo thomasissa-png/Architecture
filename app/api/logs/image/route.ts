@@ -11,6 +11,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Normalize: accept either "logs/foo.jpg", "/logs/foo.jpg", or just "foo.jpg"
+  // For pro plan paths like "pro/projects/xxx/plan-0.jpg", try raw path first
   const basename = file.split("/").pop() || file;
   const normalizedKey = `logs/${basename}`;
 
@@ -23,10 +24,15 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  // Try normalized key first, then raw key as fallback (in case the stored key
-  // uses a different prefix than "logs/")
-  const keysToTry = [normalizedKey];
-  if (file !== normalizedKey && !file.startsWith("/")) {
+  // Build keys to try: raw path first (handles pro/ namespace), then normalized
+  const keysToTry: string[] = [];
+  // If the path contains a directory separator, it's a full path — try it first
+  if (file.includes("/") && !file.startsWith("/")) {
+    keysToTry.push(file);
+  }
+  keysToTry.push(normalizedKey);
+  // Also add raw path as last fallback if not already added
+  if (!keysToTry.includes(file) && file !== normalizedKey && !file.startsWith("/")) {
     keysToTry.push(file);
   }
 
