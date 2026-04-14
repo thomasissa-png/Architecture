@@ -35,6 +35,44 @@ export const dynamic = "force-dynamic";
 // Max 2 concurrent generations
 const MAX_CONCURRENT = 2;
 
+// ─── Error message sanitizer ───────────────────────────────────────
+// Raw OpenAI/API errors are technical (e.g. "400 The image data you provided
+// does not represent a valid image"). Replace with clear French messages.
+function sanitizeErrorMessage(rawError: string): string {
+  const lower = rawError.toLowerCase();
+
+  if (lower.includes("image data") && lower.includes("not represent a valid image")) {
+    return "La photo n'a pas pu être traitée. Vérifiez qu'il s'agit bien d'un fichier JPG ou PNG valide.";
+  }
+  if (lower.includes("image") && (lower.includes("too large") || lower.includes("size"))) {
+    return "La photo est trop volumineuse. Essayez avec une image de moins de 10 Mo.";
+  }
+  if (lower.includes("rate limit") || lower.includes("429")) {
+    return "Trop de demandes simultanées. Réessayez dans quelques instants.";
+  }
+  if (lower.includes("timeout") || lower.includes("timed out") || lower.includes("deadline")) {
+    return "La génération a pris trop de temps. Réessayez — la pièce sera traitée au prochain essai.";
+  }
+  if (lower.includes("content_policy") || lower.includes("safety")) {
+    return "La photo n'a pas passé les contrôles de sécurité. Essayez avec une autre photo.";
+  }
+  if (lower.includes("billing") || lower.includes("quota") || lower.includes("insufficient")) {
+    return "Service temporairement indisponible. Réessayez dans quelques minutes.";
+  }
+  if (lower.includes("api key") || lower.includes("authentication") || lower.includes("unauthorized")) {
+    return "Service temporairement indisponible. Réessayez dans quelques minutes.";
+  }
+  if (lower.includes("photo introuvable")) {
+    return rawError; // Already in French
+  }
+  if (lower.includes("délai dépassé")) {
+    return rawError; // Already in French
+  }
+
+  // Generic fallback — never show raw technical errors
+  return "Une erreur est survenue lors de la génération de cette pièce. Réessayez.";
+}
+
 // Route deadline to avoid Replit 504 (150s)
 const ROUTE_DEADLINE_MS = 150_000;
 
@@ -259,19 +297,44 @@ export async function POST(
             throw new Error(`Photo introuvable pour la pièce ${room.name}`);
           }
 
-          // Resize photo to max 2048px on longest side (OpenAI rejects very large images)
+          // Resize photo to max 2048px on longest side + force JPEG conversion.
+          // Fixes "400 The image data you provided does not represent a valid image":
+          //   - iPhone DSC photos are 4000x6000+ px → too large for OpenAI
+          //   - HEIC/HEIF format is not supported by OpenAI → must convert to JPEG
+          //   - Any non-standard format → JPEG normalization ensures valid image data
+          const MAX_SERVER_DIM = 2048;
           try {
             const meta = await sharp(photoBuffer).metadata();
-            const maxDim = Math.max(meta.width || 0, meta.height || 0);
-            if (maxDim > 2048) {
-              console.log(`[generate] Resizing photo for ${room.name}: ${meta.width}x${meta.height} → max 2048px`);
-              photoBuffer = await sharp(photoBuffer)
-                .resize(2048, 2048, { fit: "inside", withoutEnlargement: true })
-                .jpeg({ quality: 85 })
-                .toBuffer();
+            const origW = meta.width || 0;
+            const origH = meta.height || 0;
+            const needsResize = origW > MAX_SERVER_DIM || origH > MAX_SERVER_DIM;
+            const needsConvert = meta.format !== "jpeg" && meta.format !== "png" && meta.format !== "webp";
+
+            if (needsResize || needsConvert) {
+              let pipeline = sharp(photoBuffer);
+              if (needsResize) {
+                pipeline = pipeline.resize(MAX_SERVER_DIM, MAX_SERVER_DIM, {
+                  fit: "inside",
+                  withoutEnlargement: true,
+                });
+              }
+              // Always output as JPEG — guaranteed valid for OpenAI
+              photoBuffer = await pipeline.jpeg({ quality: 85 }).toBuffer();
+              console.log(
+                `[generate] Processed photo for ${room.name}: ${origW}x${origH} ${meta.format} → JPEG ${needsResize ? `max ${MAX_SERVER_DIM}px` : "same size"} (${(photoBuffer.length / 1024).toFixed(0)}KB)`
+              );
             }
           } catch (resizeErr) {
-            console.warn(`[generate] Photo resize failed for ${room.name}, using original:`, resizeErr);
+            console.warn(`[generate] Photo processing failed for ${room.name}, using original:`, resizeErr);
+            // If sharp can't read the image at all (corrupt or unsupported format), fail clearly
+            if (photoBuffer.length > 0) {
+              try {
+                // Last resort: try converting with no resize
+                photoBuffer = await sharp(photoBuffer).jpeg({ quality: 85 }).toBuffer();
+              } catch {
+                throw new Error(`La photo de la pièce ${room.name} n'a pas pu être lue. Vérifiez le format (JPG, PNG, WEBP).`);
+              }
+            }
           }
 
           const photoBase64 = photoBuffer.toString("base64");
@@ -387,13 +450,15 @@ export async function POST(
       if (result.status === "rejected") {
         failedCount++;
         const roomId = roomsWithPhotos[i].id;
-        const errorMsg =
+        const rawError =
           result.reason instanceof Error
             ? result.reason.message
             : String(result.reason);
+        const userMessage = sanitizeErrorMessage(rawError);
+        console.error(`[generate] Room ${roomId} failed (raw): ${rawError}`);
         await db.query(
           `UPDATE pro_rooms SET generation_status = 'failed', generation_error = $1 WHERE id = $2`,
-          [errorMsg, roomId]
+          [userMessage, roomId]
         );
       } else {
         doneCount++;

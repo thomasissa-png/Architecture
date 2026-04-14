@@ -112,12 +112,19 @@ For each enclosed space bounded by walls/partitions:
   d. Exclude: outdoor terraces, balconies, gardens, staircases.
   e. Open-plan rooms (e.g., "Séjour/Cuisine" with no dividing wall): ONE room, not two.
 
-STEP 4 — SURFACES (read, do not guess):
-  Priority A: Read the surface value PRINTED on the plan next to the room name (e.g., "21.8 m²", "3.6 m²", "S=12.0"). Use this value AS-IS. This is standard on French plans.
-  Priority B: If no surface is printed but dimensions (cotes) are readable: surface_m2 = length_m × width_m. Values > 50 are centimeters — divide by 100.
+STEP 4 — SURFACES (READ from plan, do NOT calculate):
+  Priority A (MANDATORY — always try this first): Look for the surface value PRINTED on the plan next to or inside the room. French plans commonly display surfaces as "21.8 m²", "3.6 m²", "S=12.0", "12,5", or just a number near the room name. Use this value AS-IS. Do NOT calculate from dimensions if a printed value exists.
+  COMMON MISREAD ERRORS — check yourself:
+    - "3.6 m²" misread as "36 m²" → a WC is 3.6 not 36. If you see a number ≥10 for a WC/SdB, it's likely a decimal misread.
+    - "12,5 m²" (French comma = decimal separator) → 12.5 m², NOT 125 m².
+    - Numbers near dimension lines (cotes) are LENGTHS in meters, not surfaces. Only use numbers near room NAMES as surfaces.
+    - If the plan shows "S=" or "m²" next to the number, it IS a surface. Otherwise verify.
+  Priority B: If no surface is printed but dimensions (cotes) are readable: surface_m2 = length_m × width_m. Values > 50 are likely centimeters — divide by 100.
   Priority C: If nothing is readable: estimate using door width = 83cm as scale reference. Set confidence < 0.5.
-  SANITY: WC 1-4 m² | SdB 3-15 m² | Chambre 8-25 m² | Cuisine 5-25 m² | Séjour 15-60 m² | Couloir 2-15 m²
-  If a value falls outside these ranges, re-read. Sum of all rooms on one floor: 20-200 m² for a typical dwelling.
+  SANITY CHECK — mandatory for EVERY room:
+    WC 1-4 m² | SdB 3-12 m² | Chambre 8-25 m² | Cuisine 5-25 m² | Séjour 15-60 m² | Couloir 2-12 m² | Cellier/Rangement 1-8 m²
+  If a value falls outside these ranges, RE-READ the plan. The printed value is almost always correct — your reading of it may be wrong.
+  Sum of all rooms on one floor: 20-200 m² for a typical dwelling.
 
 STEP 5 — BOUNDING BOXES (critical — anchor to wall positions):
   Each bounding_box = tightest axis-aligned rectangle enclosing one room.
@@ -138,9 +145,12 @@ STEP 6 — METADATA:
   - shape: "rectangular", "square", "L-shaped", "narrow_corridor", or "irregular".
   - IGNORE: electrical/plumbing symbols, furniture outlines, north arrows, title blocks.
 ${buildLotZonesSection(lots)}
-STEP 7 — SELF-REVIEW (mandatory):
-  1. Does each surface_m2 match what is PRINTED on the plan? If plan says "3.6" and I have 36, I misread (likely ×10 error).
-  2. Sum of surfaces: does it make sense for a ${typeBien}? Typical apartment = 40-120 m².
+STEP 7 — SELF-REVIEW (mandatory — do NOT skip):
+  1. SURFACES — Does each surface_m2 match what is PRINTED on the plan? Go back and re-read each number.
+     - If plan says "3.6" and you wrote 36 → you misread a decimal (×10 error). Fix to 3.6.
+     - If plan says "12,5" and you wrote 125 → French comma is decimal separator. Fix to 12.5.
+     - If a WC is >5 m² or a Chambre is >30 m², re-read the plan — these values are almost certainly wrong.
+  2. Sum of surfaces: does it make sense for a ${typeBien}? Typical apartment = 40-120 m². If sum > 200 m² for an apartment, you have systematic errors.
   3. Every bounding box inside building_outline? If not, fix.
   4. Adjacent rooms sharing a wall → their boxes touch? If gaps > 2%, fix.
   5. Small rooms (WC, SdB) have smaller boxes than large rooms (Séjour)? If not, fix proportions.

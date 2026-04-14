@@ -582,11 +582,23 @@ export default function PlanEditor({
       const maxW = naturalSize.width;
       const maxH = naturalSize.height;
 
+      // ─── Building outline constraint ──────────────────────────
+      // When a building outline exists, constrain room positions to it.
+      // This prevents rooms from being placed outside the building.
+      const outline = outlineRef.current;
+      let minX = 0, minY = 0, limW = maxW, limH = maxH;
+      if (outline) {
+        minX = (outline.x_percent / 100) * maxW;
+        minY = (outline.y_percent / 100) * maxH;
+        limW = minX + (outline.width_percent / 100) * maxW;
+        limH = minY + (outline.height_percent / 100) * maxH;
+      }
+
       let updated: Partial<PlanRoom>;
 
       if (dragState.type === "move") {
-        const rawX = clamp(dragState.origX + dx, 0, maxW - dragState.origWidth);
-        const rawY = clamp(dragState.origY + dy, 0, maxH - dragState.origHeight);
+        const rawX = clamp(dragState.origX + dx, minX, limW - dragState.origWidth);
+        const rawY = clamp(dragState.origY + dy, minY, limH - dragState.origHeight);
         updated = {
           x: snapToGrid(rawX, SNAP_GRID),
           y: snapToGrid(rawY, SNAP_GRID),
@@ -598,39 +610,45 @@ export default function PlanEditor({
         let newW = dragState.origWidth;
         let newH = dragState.origHeight;
 
+        // Use building outline as resize boundary when available
+        const resMinX = minX;
+        const resMinY = minY;
+        const resMaxW = limW;
+        const resMaxH = limH;
+
         switch (dragState.handle) {
           case "se":
-            newW = clamp(dragState.origWidth + dx, MIN_ROOM_SIZE, maxW - dragState.origX);
-            newH = clamp(dragState.origHeight + dy, MIN_ROOM_SIZE, maxH - dragState.origY);
+            newW = clamp(dragState.origWidth + dx, MIN_ROOM_SIZE, resMaxW - dragState.origX);
+            newH = clamp(dragState.origHeight + dy, MIN_ROOM_SIZE, resMaxH - dragState.origY);
             break;
           case "sw":
-            newW = clamp(dragState.origWidth - dx, MIN_ROOM_SIZE, dragState.origX + dragState.origWidth);
-            newH = clamp(dragState.origHeight + dy, MIN_ROOM_SIZE, maxH - dragState.origY);
+            newW = clamp(dragState.origWidth - dx, MIN_ROOM_SIZE, dragState.origX + dragState.origWidth - resMinX);
+            newH = clamp(dragState.origHeight + dy, MIN_ROOM_SIZE, resMaxH - dragState.origY);
             newX = dragState.origX + dragState.origWidth - newW;
             break;
           case "ne":
-            newW = clamp(dragState.origWidth + dx, MIN_ROOM_SIZE, maxW - dragState.origX);
-            newH = clamp(dragState.origHeight - dy, MIN_ROOM_SIZE, dragState.origY + dragState.origHeight);
+            newW = clamp(dragState.origWidth + dx, MIN_ROOM_SIZE, resMaxW - dragState.origX);
+            newH = clamp(dragState.origHeight - dy, MIN_ROOM_SIZE, dragState.origY + dragState.origHeight - resMinY);
             newY = dragState.origY + dragState.origHeight - newH;
             break;
           case "nw":
-            newW = clamp(dragState.origWidth - dx, MIN_ROOM_SIZE, dragState.origX + dragState.origWidth);
-            newH = clamp(dragState.origHeight - dy, MIN_ROOM_SIZE, dragState.origY + dragState.origHeight);
+            newW = clamp(dragState.origWidth - dx, MIN_ROOM_SIZE, dragState.origX + dragState.origWidth - resMinX);
+            newH = clamp(dragState.origHeight - dy, MIN_ROOM_SIZE, dragState.origY + dragState.origHeight - resMinY);
             newX = dragState.origX + dragState.origWidth - newW;
             newY = dragState.origY + dragState.origHeight - newH;
             break;
           case "n":
-            newH = clamp(dragState.origHeight - dy, MIN_ROOM_SIZE, dragState.origY + dragState.origHeight);
+            newH = clamp(dragState.origHeight - dy, MIN_ROOM_SIZE, dragState.origY + dragState.origHeight - resMinY);
             newY = dragState.origY + dragState.origHeight - newH;
             break;
           case "s":
-            newH = clamp(dragState.origHeight + dy, MIN_ROOM_SIZE, maxH - dragState.origY);
+            newH = clamp(dragState.origHeight + dy, MIN_ROOM_SIZE, resMaxH - dragState.origY);
             break;
           case "e":
-            newW = clamp(dragState.origWidth + dx, MIN_ROOM_SIZE, maxW - dragState.origX);
+            newW = clamp(dragState.origWidth + dx, MIN_ROOM_SIZE, resMaxW - dragState.origX);
             break;
           case "w":
-            newW = clamp(dragState.origWidth - dx, MIN_ROOM_SIZE, dragState.origX + dragState.origWidth);
+            newW = clamp(dragState.origWidth - dx, MIN_ROOM_SIZE, dragState.origX + dragState.origWidth - resMinX);
             newX = dragState.origX + dragState.origWidth - newW;
             break;
         }
@@ -717,17 +735,27 @@ export default function PlanEditor({
 
     const id = `plan_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     // Place near last selected room if possible, otherwise center. Size = 15% of plan.
+    // Constrain to building outline when available.
+    const outline = outlineRef.current;
+    const oMinX = outline ? (outline.x_percent / 100) * naturalSize.width : 0;
+    const oMinY = outline ? (outline.y_percent / 100) * naturalSize.height : 0;
+    const oMaxX = outline ? oMinX + (outline.width_percent / 100) * naturalSize.width : naturalSize.width;
+    const oMaxY = outline ? oMinY + (outline.height_percent / 100) * naturalSize.height : naturalSize.height;
+
+    const roomW = Math.round(Math.min(naturalSize.width * 0.15, oMaxX - oMinX));
+    const roomH = Math.round(Math.min(naturalSize.height * 0.15, oMaxY - oMinY));
+
     const lastSelected = rooms.find((r) => r.id === selectedRoomId);
-    const baseX = lastSelected ? lastSelected.x + lastSelected.width + 20 : naturalSize.width / 2 - naturalSize.width * 0.075;
-    const baseY = lastSelected ? lastSelected.y : naturalSize.height / 2 - naturalSize.height * 0.075;
+    const baseX = lastSelected ? lastSelected.x + lastSelected.width + 20 : (oMinX + oMaxX) / 2 - roomW / 2;
+    const baseY = lastSelected ? lastSelected.y : (oMinY + oMaxY) / 2 - roomH / 2;
     const newRoom: PlanRoom = {
       id,
       name: "Nouvelle pièce",
       roomType: "autre",
-      x: Math.round(clamp(baseX, 0, naturalSize.width * 0.8)),
-      y: Math.round(clamp(baseY, 0, naturalSize.height * 0.8)),
-      width: Math.round(naturalSize.width * 0.15),
-      height: Math.round(naturalSize.height * 0.15),
+      x: Math.round(clamp(baseX, oMinX, oMaxX - roomW)),
+      y: Math.round(clamp(baseY, oMinY, oMaxY - roomH)),
+      width: roomW,
+      height: roomH,
       color: colorForType("autre"),
       isNew: true,
     };

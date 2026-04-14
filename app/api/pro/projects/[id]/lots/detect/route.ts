@@ -187,6 +187,11 @@ Spatial zone (bounding box) rules:
 - Zones must NOT overlap each other. Each lot occupies a distinct area of the plan.
 - Draw the zone tightly around the unit's walls/boundaries visible on the plan.
 
+CRITICAL: You MUST provide a "zone" bounding box for EVERY lot. Never return zone as null.
+If you see only one unit, the zone should cover the entire building footprint on the plan.
+If you see multiple units, divide the plan area so each unit gets its own non-overlapping zone.
+Estimate as best you can — an approximate zone is far better than no zone.
+
 Return a JSON object with this exact structure:
 {
   "lots": [
@@ -317,6 +322,38 @@ Return a JSON object with this exact structure:
         plan_index: planIndex,
       };
     });
+
+    // ─── Fallback: compute zones for lots that have none ─────────
+    // If GPT didn't return zone data, divide the plan evenly among lots
+    const lotsWithoutZone = validatedLots.filter((l) => !l.zone_rect);
+    if (lotsWithoutZone.length > 0 && lotsWithoutZone.length === validatedLots.length) {
+      // No lots have zones — divide the plan horizontally among all lots
+      const count = validatedLots.length;
+      const margin = 2; // 2% margin from edges
+      const availableWidth = 100 - 2 * margin;
+      const lotWidth = availableWidth / count;
+      for (let i = 0; i < validatedLots.length; i++) {
+        validatedLots[i].zone_rect = {
+          x_percent: margin + i * lotWidth,
+          y_percent: margin,
+          width_percent: lotWidth,
+          height_percent: 100 - 2 * margin,
+        };
+      }
+      console.log(`[detect] Computed fallback zones for ${count} lots (no zone data from AI)`);
+    } else if (lotsWithoutZone.length > 0) {
+      // Some lots have zones, some don't — fill in the gaps
+      // Find the bounding box of existing zones and assign remaining space
+      for (const lot of lotsWithoutZone) {
+        lot.zone_rect = {
+          x_percent: 5,
+          y_percent: 5,
+          width_percent: 90,
+          height_percent: 90,
+        };
+      }
+      console.log(`[detect] Computed fallback zones for ${lotsWithoutZone.length}/${validatedLots.length} lots missing zone data`);
+    }
 
     return NextResponse.json({
       lots: validatedLots,
