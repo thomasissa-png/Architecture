@@ -171,16 +171,25 @@ function distributeRoomsOnPlan(
  */
 function syncPlanToExtracted(
   planRooms: PlanRoom[],
-  scaleFactor: number
+  scaleFactor: number,
+  existingRooms: ExtractedRoom[]
 ): ExtractedRoom[] {
-  return planRooms.map((pr) => ({
-    id: pr.id,
-    name: pr.name,
-    room_type: pr.roomType,
-    surface_m2: parseFloat(((pr.width / scaleFactor) * (pr.height / scaleFactor)).toFixed(1)),
-    floor_index: 0,
-    is_new: pr.isNew ?? false,
-  }));
+  return planRooms.map((pr) => {
+    // Preserve the AI-extracted surface unless the room was manually added (temp/new)
+    const existing = existingRooms.find((r) => r.id === pr.id);
+    const isManualRoom = pr.id.startsWith("temp_") || pr.id.startsWith("new-") || pr.isNew;
+    const surface = isManualRoom || !existing?.surface_m2
+      ? parseFloat(((pr.width / scaleFactor) * (pr.height / scaleFactor)).toFixed(1))
+      : existing.surface_m2;
+    return {
+      id: pr.id,
+      name: pr.name,
+      room_type: pr.roomType,
+      surface_m2: surface,
+      floor_index: existing?.floor_index ?? 0,
+      is_new: pr.isNew ?? false,
+    };
+  });
 }
 
 // ─── Component ──────────────────────────────────────────────────────
@@ -276,8 +285,10 @@ export default function ExtractionPage() {
       // Save to floor cache so switching floors preserves changes
       planRoomsCacheRef.current.set(activePlanIndex, newPlanRooms);
       // P0 — Use the calibrated scaleFactor instead of hardcoded 50 (Thomas)
-      const synced = syncPlanToExtracted(newPlanRooms, scaleFactor);
-      setRooms(synced);
+      setRooms((prevRooms) => {
+        const synced = syncPlanToExtracted(newPlanRooms, scaleFactor, prevRooms);
+        return synced;
+      });
       // P1 UX — signaler que le plan a été modifié
       setIsPlanDirty(true);
     },
