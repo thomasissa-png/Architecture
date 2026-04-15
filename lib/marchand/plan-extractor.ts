@@ -50,6 +50,7 @@ export interface LotZone {
   zone_polygon?: {
     points: Array<{ x_percent: number; y_percent: number }>;
   } | null;
+  surface_m2?: number | null;
 }
 
 /**
@@ -63,11 +64,12 @@ function buildLotZonesSection(lots?: LotZone[]): string {
 
   const zoneLines = lotsWithZones
     .map((l) => {
+      const surfaceHint = l.surface_m2 ? ` (confirmed total: ~${l.surface_m2.toFixed(0)}m²)` : "";
       if (l.zone_polygon && l.zone_polygon.points.length >= 3) {
         const ptsStr = l.zone_polygon.points.map((p) => `(${p.x_percent.toFixed(1)}%,${p.y_percent.toFixed(1)}%)`).join(" → ");
-        return `- ${l.name}: polygon ${ptsStr}`;
+        return `- ${l.name}: polygon ${ptsStr}${surfaceHint}`;
       }
-      return `- ${l.name}: x=${l.zone_rect!.x_percent.toFixed(1)}%, y=${l.zone_rect!.y_percent.toFixed(1)}%, width=${l.zone_rect!.width_percent.toFixed(1)}%, height=${l.zone_rect!.height_percent.toFixed(1)}%`;
+      return `- ${l.name}: x=${l.zone_rect!.x_percent.toFixed(1)}%, y=${l.zone_rect!.y_percent.toFixed(1)}%, width=${l.zone_rect!.width_percent.toFixed(1)}%, height=${l.zone_rect!.height_percent.toFixed(1)}%${surfaceHint}`;
     })
     .join("\n");
 
@@ -699,7 +701,8 @@ export interface ExtractionQualityReport {
 export function validateExtraction(
   data: PlanExtractionResult,
   sanitizationLog?: SanitizationEntry[],
-  typeBien?: string
+  typeBien?: string,
+  lotSurfaces?: Array<{ name: string; surface_m2: number | null }>
 ): ExtractionQualityReport {
   const gates: ExtractionQualityGate[] = [];
   const warnings: string[] = [];
@@ -760,6 +763,24 @@ export function validateExtraction(
   });
   if (!totalOk && totalSurface >= maxTotalSurface) {
     warnings.push(`Surface totale de ${totalSurface.toFixed(1)}m² — semble trop grande.`);
+  }
+
+  // GATE 2b — Total surface vs lot surface (if lot surface was confirmed at step 2)
+  if (lotSurfaces && lotSurfaces.length > 0) {
+    const confirmedTotal = lotSurfaces.reduce((s, l) => s + (l.surface_m2 ?? 0), 0);
+    if (confirmedTotal > 0 && totalSurface > 0) {
+      const ratio = totalSurface / confirmedTotal;
+      const lotSurfaceOk = ratio >= 0.5 && ratio <= 1.5; // rooms should be 50-150% of lot surface
+      gates.push({
+        id: "G2B_LOT_SURFACE_MATCH",
+        label: `Surface pièces cohérente avec surface lot (${confirmedTotal.toFixed(0)}m²)`,
+        passed: lotSurfaceOk,
+        detail: !lotSurfaceOk ? `Pièces: ${totalSurface.toFixed(1)}m² vs Lot: ${confirmedTotal.toFixed(0)}m² (ratio ${(ratio * 100).toFixed(0)}%)` : undefined,
+      });
+      if (!lotSurfaceOk) {
+        warnings.push(`La surface des pièces (${totalSurface.toFixed(1)}m²) est très différente de la surface du lot confirmée à l'étape 2 (${confirmedTotal.toFixed(0)}m²). Vérifiez les surfaces.`);
+      }
+    }
   }
 
   // GATE 3 — Bounding boxes within BUILDING OUTLINE (or image bounds as fallback)

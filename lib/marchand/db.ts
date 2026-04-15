@@ -207,6 +207,11 @@ export async function ensureProTables(): Promise<void> {
     ALTER TABLE pro_lots ADD COLUMN IF NOT EXISTS zone_polygon JSONB;
   `).catch(() => { /* column may already exist */ });
 
+  // surface_m2: surface calculée de la zone du lot (pour validation quality gates)
+  await db.query(`
+    ALTER TABLE pro_lots ADD COLUMN IF NOT EXISTS surface_m2 DECIMAL(8,2);
+  `).catch(() => { /* column may already exist */ });
+
   // photo_direction: position et angle de prise de vue sur le plan
   await db.query(`
     ALTER TABLE pro_rooms ADD COLUMN IF NOT EXISTS photo_direction JSONB;
@@ -328,6 +333,7 @@ export interface CreateLotInput {
   sortOrder?: number | null;
   zoneRect?: LotZoneRect | null;
   zonePolygon?: LotZonePolygon | null;
+  surfaceM2?: number | null;
 }
 
 export interface LotZoneRect {
@@ -360,6 +366,7 @@ export interface ProLot {
   sort_order: number | null;
   zone_rect: LotZoneRect | null;
   zone_polygon: LotZonePolygon | null;
+  surface_m2: number | null;
   created_at: Date;
 }
 
@@ -367,8 +374,8 @@ export async function createLot(input: CreateLotInput): Promise<ProLot> {
   await ensureProTables();
   const db = getPool();
   const result = await db.query<ProLot>(
-    `INSERT INTO pro_lots (project_id, name, floor, target_buyer, style_id, lot_type, color, sort_order, zone_rect, zone_polygon)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+    `INSERT INTO pro_lots (project_id, name, floor, target_buyer, style_id, lot_type, color, sort_order, zone_rect, zone_polygon, surface_m2)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
      RETURNING *`,
     [
       input.projectId,
@@ -381,6 +388,7 @@ export async function createLot(input: CreateLotInput): Promise<ProLot> {
       input.sortOrder ?? 0,
       input.zoneRect ? JSON.stringify(input.zoneRect) : null,
       input.zonePolygon ? JSON.stringify(input.zonePolygon) : null,
+      input.surfaceM2 ?? null,
     ]
   );
   return result.rows[0];

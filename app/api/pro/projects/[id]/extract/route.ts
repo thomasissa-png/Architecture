@@ -182,14 +182,15 @@ export async function POST(
     // ─── Load lots for spatial constraint injection ───────────────
     const preDb = getPool();
     const preLotsResult = await preDb.query(
-      `SELECT id, name, zone_rect, zone_polygon FROM pro_lots WHERE project_id = $1 ORDER BY sort_order`,
+      `SELECT id, name, zone_rect, zone_polygon, surface_m2 FROM pro_lots WHERE project_id = $1 ORDER BY sort_order`,
       [projectId]
     );
-    const lotZones = preLotsResult.rows.map((r: { id: string; name: string; zone_rect: { x_percent: number; y_percent: number; width_percent: number; height_percent: number } | null; zone_polygon: { points: Array<{ x_percent: number; y_percent: number }> } | null }) => ({
+    const lotZones = preLotsResult.rows.map((r: { id: string; name: string; zone_rect: { x_percent: number; y_percent: number; width_percent: number; height_percent: number } | null; zone_polygon: { points: Array<{ x_percent: number; y_percent: number }> } | null; surface_m2: string | null }) => ({
       id: r.id as string,
       name: r.name as string,
       zone_rect: r.zone_rect as { x_percent: number; y_percent: number; width_percent: number; height_percent: number } | null,
       zone_polygon: r.zone_polygon as { points: Array<{ x_percent: number; y_percent: number }> } | null,
+      surface_m2: r.surface_m2 !== null ? Number(r.surface_m2) : null,
     }));
 
     // ─── Call extraction IA + sanitize + quality gates ──────────
@@ -205,7 +206,7 @@ export async function POST(
     let extractionResult = sanitized.data;
 
     // Quality gates with sanitization log for explicit warnings
-    let qualityReport = validateExtraction(extractionResult, sanitized.log, project.type_bien);
+    let qualityReport = validateExtraction(extractionResult, sanitized.log, project.type_bien, lotZones.map(l => ({ name: l.name, surface_m2: l.surface_m2 })));
     console.log(`[extract] Quality score: ${qualityReport.score}/100, gates: ${qualityReport.gates.filter(g => g.passed).length}/${qualityReport.gates.length}, shouldRetry: ${qualityReport.shouldRetry}, sanitized: ${sanitized.log.length} corrections`);
 
     // Auto-retry ONCE if critical gates fail — with contextual feedback
@@ -229,7 +230,7 @@ export async function POST(
         );
         sanitized = sanitizeSurfaces(rawResult, project.type_bien);
         extractionResult = sanitized.data;
-        qualityReport = validateExtraction(extractionResult, sanitized.log, project.type_bien);
+        qualityReport = validateExtraction(extractionResult, sanitized.log, project.type_bien, lotZones.map(l => ({ name: l.name, surface_m2: l.surface_m2 })));
         console.log(`[extract] Retry quality score: ${qualityReport.score}/100`);
       } catch (retryErr) {
         console.error(`[extract] Retry failed:`, retryErr);

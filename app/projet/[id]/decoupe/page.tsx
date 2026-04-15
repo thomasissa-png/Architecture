@@ -561,6 +561,9 @@ export default function DecoupePage() {
           room_ids: l.room_ids,
           zone_rect: l.zone_rect || null,
           zone_polygon: l.zone_polygon || null,
+          surface_m2: l.zone_polygon && planNaturalSize
+            ? computePolygonAreaM2(l.zone_polygon.points, planNaturalSize.width, planNaturalSize.height, scaleFactor)
+            : null,
         })),
       };
 
