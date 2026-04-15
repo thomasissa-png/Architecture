@@ -55,10 +55,20 @@ Marathon — 30+ agents lancés, ~35 commits, 4 rounds d'itération.
 - Feature 3 : Itération visuelle par texte (POST iterate, classify intent, enrichissement GPT-4.1-mini)
 - 3 commits (7d876a4, 6a30670, 6b1a6f9)
 
-## État final
-- Commits sessions 42-45 sur `claude/session-recovery-analysis-SoNoa`
-- Build vérifié : tsc + lint = 0 erreurs
-- 1418 tests PASS (10 pré-existants échoués — quality-gates 10x correction, non liés)
-- Parcours marchand 7 étapes complet avec zone lots, direction photo, itération visuelle
+### Phase 7 — Session 47 : Refonte workflow + test visuel (COMPLETE)
+- Swap etapes 2/3 (lots AVANT extraction)
+- Zones polygonales + multi-plan + detection IA multi-etages
+- Photo resize + messages FR + zones predessinees + surfaces lues
+- Prompt extraction 5.9→7.8/10
+- Infra test visuel : PostgreSQL + mock OpenAI + Playwright screenshots
+- Surface lot sauvegardee en DB + quality gate G2B
+- 20+ commits, 4 audits complets, 2 audits cibles etapes 2-3
 
-<!-- SESSION: phases=6 tasks_prod=26 tasks_consult=14 -->
+## État final
+- Commits sessions 42-47 sur `claude/extract-project-context-X8Rqd`
+- Build vérifié : tsc + lint = 0 erreurs
+- Parcours marchand 8 étapes avec zones polygonales, metrages confirmes, surfaces preservees
+- Etapes 1-5 testees visuellement via Playwright (screenshots confirmes)
+- Etapes 6-8 non testees (API OpenAI requise)
+
+<!-- SESSION: phases=7 tasks_prod=40 tasks_consult=20 -->

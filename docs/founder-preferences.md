@@ -29,6 +29,10 @@
 | 2026-03-28 | "Je ne veux plus de trous dans la raquette" — couverture exhaustive des types de pièce | A demandé un audit @ia pour vérifier que TOUS les types ont les corrections d'échelle | Quand une correction de prompt est faite, la propager à TOUS les builders (Responses + Flux × tous types). |
 | 2026-04-02 | "Gros problème sur l'itération" = priorité absolue | A signalé la régression d'itération comme urgence, avant les autres sujets | L'itération est le coeur de l'UX Versimo. Toute régression = P0 immédiat, audits formels + corrections dans la même session. |
 | 2026-04-02 | "Fais vérifier" = audits agents formels avec rapport | A demandé des audits Yann+Lucas structurés, pas des checks rapides | Les vérifications = toujours des rapports écrits dans docs/reviews/, pas des réponses verbales. |
+| 2026-04-15 | **Test visuel obligatoire** — ne JAMAIS confirmer sans screenshot | "tu n'as rien testé proprement", "teste sil te plait", "tu n'es pas au niveau" (4x). tsc + lint ≠ "ça marche". | L'orchestrateur DOIT prendre des screenshots Playwright AVANT de confirmer. Les agents de code review ne remplacent PAS les tests visuels. |
+| 2026-04-15 | **Données calculées = utilisées en aval** | "est-ce que cette taille est bien utilisée par la suite ?" → réponse était NON → inacceptable. | Chaque donnée confirmée par l'utilisateur à une étape DOIT influencer les étapes suivantes (prompt IA, quality gates, affichage). Sinon c'est de la décoration. |
+| 2026-04-15 | **Messages d'erreur en français, jamais techniques** | A vu "400 The image data you provided does not represent a valid image" → furieux. | sanitizeErrorMessage() obligatoire. Erreurs techniques → logs serveur. Utilisateur → message FR actionnable. |
+| 2026-04-15 | **Ne pas ignorer mes demandes** — quand le fondateur dit quelque chose, c'est à faire | "arretez d'ignorer mes messages" quand la demande de métrages à l'étape 2 n'a pas été implémentée. | Chaque message du fondateur qui contient une demande DOIT être tracé et implémenté. Si reporté, le signaler explicitement ("noté pour la prochaine session"). |
 
 ## Session 33 — 2026-04-05
 

@@ -345,35 +345,49 @@
 
 ---
 
-## Mémo de reprise — dernière session (Session 46 — Swap étapes lots/extraction)
+## Mémo de reprise — dernière session (Session 47 — Refonte workflow marchand + test visuel)
 
-- **Date de clôture** : 2026-04-14
+- **Date de clôture** : 2026-04-15
 - **Branche** : `claude/extract-project-context-X8Rqd`
-- **HEAD** : `6f34c24` (fix: P0 audit corrections)
-- **Objet** : Correction structurelle du flow marchand — lots AVANT extraction
+- **HEAD** : `2d2813b`
+- **Objet** : Refonte workflow marchand (zones polygonales, test visuel Playwright, 20+ corrections)
 
-### Ce qui a été fait (Session 46)
+### Ce qui a été fait (Session 47)
 
-1. **Swap étapes 2/3** (commit `7cd904e`) : étape 2 = Découpe (lots), étape 3 = Analyse (pièces par bien). 8 fichiers modifiés.
-2. **Corrections P0 audit** (commit `6f34c24`) : mes-projets routing (plan_uploaded → /decoupe), DB constraint (lots_defined ajouté), status guards sur PUT /lots et POST /lots/detect, UX copy (plus de mention de "pièces" avant extraction), sublabels stepper améliorés.
-3. **API lots/detect réécrite** : analyse le plan IMAGE via GPT-4.1 vision (plus besoin de pièces existantes).
-4. **API extract** : auto-assigne les pièces aux lots par zone containment (centre pièce dans zone lot).
-5. **Build vérifié** : tsc + lint = 0, 1418 tests PASS (10 pré-existants inchangés)
+1. **Zones polygonales** : PlanEditor supporte SVG polygon (dessin point par point, vertex drag, move interieur). Conversion auto rect→polygon. Point-in-polygon ray casting pour auto-assignation.
+2. **Detection IA multi-plan** : tous les etages envoyes a GPT-4.1 vision, pas juste le premier. Fallback zones toujours dessinees (jamais null).
+3. **Prompt extraction 5.9→7.8** (@ia) : lexique visuel, coordonnees explicites, anti-hallucination, surfaces lues sur le plan.
+4. **Photo resize** : Sony A7 (7008px, 10Mo) → max 2048px JPEG 85%. Client + serveur. Fix 400 OpenAI.
+5. **Surfaces preservees** : syncPlanToExtracted ne recalcule plus les surfaces IA sauf resize > 5%.
+6. **Overlap per-floor** : comparaison cross-etages supprimee (eliminait les faux doublons).
+7. **Metrages etape 2** : dimensions SVG + surface shoelace + sauvegardee en DB + quality gate G2B.
+8. **5 bugs production** : messages FR, zones predessinees, surfaces lues, pieces contraintes au contour.
+9. **Infra test visuel** : PostgreSQL local + mock OpenAI + Playwright + screenshots automatiques.
+10. **21 room types** partout (Zod + DB + frontend + validate + draft routes).
+11. **UX** : stepper relabele, dossier enrichi, download/partage visuels, skip recommandations, warning photos, beforeunload.
 
-### Ce qui reste (session 47)
-1. **Deploy Replit** + test terrain complet du flow lots→extraction→validation→photos→génération
-2. **Audit Thomas 9.5+** sur le nouveau flow complet
-3. **Cleanup page découpe** : supprimer le code vestigial lié aux rooms (fonctionne mais inutile à l'étape 2)
-4. **Consommer photo_direction dans le pipeline de génération** (P2)
-5. **Fix les 10 tests quality-gates** (dette technique P2)
-6. **P2-5 QA** : décider si validate route doit encore accepter plan_uploaded (skip extraction pour saisie manuelle)
+### Ce qui reste (session 48)
+1. **Deploy Replit** + test terrain complet du flow avec les 4 vrais plans + 5 photos
+2. **Tester etapes 6-7-8** en production (recommandations, generation visuels, dossier PDF) — impossible en local sans API OpenAI reelle
+3. **Audit Thomas 9.5+** sur le flow complet deploye
+4. **photo_direction** : injecter dans le pipeline de generation (P2, donnee stockee mais pas utilisee)
+5. **Fix 10 tests quality-gates** pre-existants (dette technique P2)
+6. **Nettoyage code vestigial** page decoupe (rooms UI conditionnel mais code encore present)
 
-### Commande de reprise session 47
+### Commande de reprise session 48
 ```
-@orchestrator Reprends Versimo session 47. Session 46 close : swap étapes 2/3 (lots AVANT extraction).
-Branche : claude/extract-project-context-X8Rqd. HEAD : 6f34c24.
-Reste : (1) deploy + test terrain, (2) audit Thomas 9.5+, (3) cleanup découpe, (4) photo_direction P2, (5) fix 10 tests.
+@orchestrator Reprends Versimo session 48. Session 47 close : refonte workflow marchand + test visuel.
+Branche : claude/extract-project-context-X8Rqd. HEAD : 2d2813b.
+Infra test : PostgreSQL local + mock OpenAI (tests/mock-openai-server.js) + Playwright screenshots.
+Plans test : 4 PDFs + 5 photos JPG a la racine du repo.
+Reste : (1) deploy + test prod avec vrais plans/photos, (2) audit Thomas etapes 6-7-8 en production, (3) photo_direction P2.
 ```
+
+### Learnings session 47
+- Le test visuel (Playwright + screenshots) est INDISPENSABLE — les agents d'audit de code ne detectent pas les bugs visuels (image plan vide, surfaces fausses, zones absentes)
+- Le mock OpenAI server est la cle pour tester localement sans credits API — retourne des donnees realistes calibrees sur les plans du repo
+- Le fondateur insiste sur la coherence bout-en-bout : si une donnee est calculee a l'etape 2, elle DOIT etre utilisee aux etapes suivantes (pas juste affichee)
+- Les messages d'erreur OpenAI bruts sont INACCEPTABLES pour un marchand — toujours sanitizer en francais
 
 ### Learnings session 46
 - L'extraction globale sans contexte de lot est fondamentalement faux — il faut d'abord définir les frontières, puis extraire à l'intérieur
