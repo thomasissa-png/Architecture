@@ -175,12 +175,31 @@ function syncPlanToExtracted(
   existingRooms: ExtractedRoom[]
 ): ExtractedRoom[] {
   return planRooms.map((pr) => {
-    // Preserve the AI-extracted surface unless the room was manually added (temp/new)
     const existing = existingRooms.find((r) => r.id === pr.id);
     const isManualRoom = pr.id.startsWith("temp_") || pr.id.startsWith("new-") || pr.isNew;
-    const surface = isManualRoom || !existing?.surface_m2
-      ? parseFloat(((pr.width / scaleFactor) * (pr.height / scaleFactor)).toFixed(1))
-      : existing.surface_m2;
+    const calculatedSurface = parseFloat(((pr.width / scaleFactor) * (pr.height / scaleFactor)).toFixed(1));
+
+    // For manual rooms or rooms without AI surface: always recalculate
+    // For AI rooms: use AI surface UNLESS the room was resized (dimensions changed significantly)
+    let surface: number;
+    if (isManualRoom || !existing?.surface_m2) {
+      surface = calculatedSurface;
+    } else {
+      // Check if room was resized by comparing bbox dimensions
+      const bb = existing.bounding_box;
+      if (bb) {
+        const origW = bb.width_percent;
+        const origH = bb.height_percent;
+        const newW = pr.width;
+        const newH = pr.height;
+        // If dimensions changed > 5%, recalculate surface
+        const wRatio = Math.abs(newW - origW) / Math.max(origW, 1);
+        const hRatio = Math.abs(newH - origH) / Math.max(origH, 1);
+        surface = (wRatio > 0.05 || hRatio > 0.05) ? calculatedSurface : existing.surface_m2;
+      } else {
+        surface = existing.surface_m2;
+      }
+    }
     return {
       id: pr.id,
       name: pr.name,
@@ -542,7 +561,7 @@ export default function ExtractionPage() {
     // Always save rooms + building outline to DB (edits inline don't set isPlanDirty)
     if (rooms.length > 0) {
       try {
-        await fetch(`/api/pro/projects/${projectId}/draft`, {
+        const res = await fetch(`/api/pro/projects/${projectId}/draft`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -556,10 +575,16 @@ export default function ExtractionPage() {
             building_outline: buildingOutline ?? null,
           }),
         });
+        if (!res.ok) {
+          throw new Error("Save failed");
+        }
       } catch {
-        // Best-effort — don't block navigation
+        // Show error and DON'T navigate — Thomas must not lose edits silently
+        alert("Impossible de sauvegarder vos modifications. Vérifiez votre connexion et réessayez.");
+        return;
       }
     }
+    setHasEditedRooms(false);
     router.push(`/projet/${projectId}/validation`);
   }, [router, projectId, buildingOutline, rooms]);
 
