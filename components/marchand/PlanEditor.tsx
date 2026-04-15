@@ -266,6 +266,49 @@ export function pointInPolygon(x: number, y: number, polygon: Array<{ x_percent:
   return inside;
 }
 
+/** Compute polygon area in m² from percentage points + natural image size + scaleFactor (px/m) */
+export function computePolygonAreaM2(
+  points: Array<{ x_percent: number; y_percent: number }>,
+  naturalWidth: number,
+  naturalHeight: number,
+  scaleFactor: number,
+): number {
+  // Convert % points to metres
+  const metrePoints = points.map((p) => ({
+    x: (p.x_percent / 100) * naturalWidth / scaleFactor,
+    y: (p.y_percent / 100) * naturalHeight / scaleFactor,
+  }));
+  // Shoelace formula
+  let area = 0;
+  const n = metrePoints.length;
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n;
+    area += metrePoints[i].x * metrePoints[j].y;
+    area -= metrePoints[j].x * metrePoints[i].y;
+  }
+  return Math.abs(area) / 2;
+}
+
+/** Compute segment length in metres between two % points (exported for sidebar use) */
+export function computeSegmentLengthM(
+  p1: { x_percent: number; y_percent: number },
+  p2: { x_percent: number; y_percent: number },
+  naturalWidth: number,
+  naturalHeight: number,
+  scaleFactor: number,
+): number {
+  const dx = ((p2.x_percent - p1.x_percent) / 100) * naturalWidth / scaleFactor;
+  const dy = ((p2.y_percent - p1.y_percent) / 100) * naturalHeight / scaleFactor;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+/** Compute centroid of a polygon (in percentage coords) */
+function polygonCentroid(points: Array<{ x_percent: number; y_percent: number }>): { x: number; y: number } {
+  let cx = 0, cy = 0;
+  for (const p of points) { cx += p.x_percent; cy += p.y_percent; }
+  return { x: cx / points.length, y: cy / points.length };
+}
+
 /** Compute bounding box of a polygon */
 function polygonBBox(points: Array<{ x_percent: number; y_percent: number }>): { minX: number; minY: number; maxX: number; maxY: number } {
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
@@ -1793,6 +1836,84 @@ export default function PlanEditor({
                   return null;
                 })}
               </svg>
+
+              {/* Measurements SVG layer — segment lengths + surface area */}
+              {naturalSize && (
+                <svg
+                  className="absolute inset-0 w-full h-full"
+                  viewBox="0 0 100 100"
+                  preserveAspectRatio="none"
+                  style={{ zIndex: ZONE_Z_VISUAL + 1, pointerEvents: "none" }}
+                  aria-hidden="true"
+                >
+                  {zonesWithShape.map((zone) => {
+                    if (!zone.zonePolygon || zone.zonePolygon.points.length < 3) return null;
+                    const pts = zone.zonePolygon.points;
+                    const areaM2 = computePolygonAreaM2(pts, naturalSize.width, naturalSize.height, scaleFactor);
+                    const centroid = polygonCentroid(pts);
+
+                    return (
+                      <g key={`zone-measures-${zone.id}`}>
+                        {/* Segment lengths along each edge */}
+                        {pts.map((p1, idx) => {
+                          const p2 = pts[(idx + 1) % pts.length];
+                          const lengthM = computeSegmentLengthM(p1, p2, naturalSize.width, naturalSize.height, scaleFactor);
+                          if (lengthM < 0.1) return null;
+                          const midX = (p1.x_percent + p2.x_percent) / 2;
+                          const midY = (p1.y_percent + p2.y_percent) / 2;
+                          const edgeDx = p2.x_percent - p1.x_percent;
+                          const edgeDy = p2.y_percent - p1.y_percent;
+                          const edgeLen = Math.sqrt(edgeDx * edgeDx + edgeDy * edgeDy);
+                          const nx = -edgeDy / (edgeLen || 1);
+                          const ny = edgeDx / (edgeLen || 1);
+                          const toCentroidX = centroid.x - midX;
+                          const toCentroidY = centroid.y - midY;
+                          const dot = nx * toCentroidX + ny * toCentroidY;
+                          const sign = dot > 0 ? -1 : 1;
+                          const offsetX = midX + sign * nx * 1.8;
+                          const offsetY = midY + sign * ny * 1.8;
+
+                          return (
+                            <text
+                              key={`seg-${zone.id}-${idx}`}
+                              x={offsetX}
+                              y={offsetY}
+                              textAnchor="middle"
+                              dominantBaseline="central"
+                              fontSize="1.6"
+                              fontWeight="600"
+                              fontFamily="Inter, sans-serif"
+                              fill="#1C1C1E"
+                              stroke="white"
+                              strokeWidth="0.3"
+                              paintOrder="stroke"
+                            >
+                              {lengthM.toFixed(1)} m
+                            </text>
+                          );
+                        })}
+
+                        {/* Surface area at centroid */}
+                        <text
+                          x={centroid.x}
+                          y={centroid.y}
+                          textAnchor="middle"
+                          dominantBaseline="central"
+                          fontSize="2.2"
+                          fontWeight="700"
+                          fontFamily="Inter, sans-serif"
+                          fill="#1C1C1E"
+                          stroke="white"
+                          strokeWidth="0.4"
+                          paintOrder="stroke"
+                        >
+                          {areaM2.toFixed(1)} m²
+                        </text>
+                      </g>
+                    );
+                  })}
+                </svg>
+              )}
 
               {/* Labels positioned over zones */}
               {zonesWithShape.map((zone) => {

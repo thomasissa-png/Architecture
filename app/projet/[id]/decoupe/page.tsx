@@ -19,7 +19,7 @@ import { useParams, useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProStepper from "@/components/marchand/ProStepper";
-import PlanEditor, { type PlanRoom, type LotZone, type BuildingOutlineRect, type ZonePolygon, pointInPolygon } from "@/components/marchand/PlanEditor";
+import PlanEditor, { type PlanRoom, type LotZone, type BuildingOutlineRect, type ZonePolygon, pointInPolygon, computePolygonAreaM2 } from "@/components/marchand/PlanEditor";
 import { getCompletedSteps, floorLabel } from "@/lib/constants";
 
 // ─── Constants ─────────────────────────────────────────────────────
@@ -106,6 +106,9 @@ export default function DecoupePage() {
   const [highlightedLotId, setHighlightedLotId] = useState<string | null>(null);
   const [detectionFallback, setDetectionFallback] = useState(false);
   const [drawingLotId, setDrawingLotId] = useState<string | null>(null);
+  const [scaleFactor, setScaleFactor] = useState(50); // px/m — default, can be calibrated via PlanEditor
+  const [planNaturalSize, setPlanNaturalSize] = useState<{ width: number; height: number } | null>(null);
+  const isScaleCalibrated = scaleFactor !== 50; // true if user calibrated via PlanEditor
   const renameInputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -136,6 +139,18 @@ export default function DecoupePage() {
     const path = parsedPlanPaths[activePlanIndex] ?? parsedPlanPaths[0];
     return `/api/logs/image?path=${encodeURIComponent(path)}`;
   }, [parsedPlanPaths, activePlanIndex]);
+
+  // Load natural dimensions of the plan image for surface calculations
+  useEffect(() => {
+    if (!planImageUrl) {
+      setPlanNaturalSize(null);
+      return;
+    }
+    const img = new Image();
+    img.onload = () => setPlanNaturalSize({ width: img.naturalWidth, height: img.naturalHeight });
+    img.onerror = () => setPlanNaturalSize(null);
+    img.src = planImageUrl;
+  }, [planImageUrl]);
 
   // ─── Derived ───────────────────────────────────────────────────
   const floors = useMemo(() => {
@@ -726,6 +741,8 @@ export default function DecoupePage() {
                       onRoomsChange={() => {}}
                       onRoomClick={handlePlanRoomClick}
                       highlightedRoomId={selectedRoomId}
+                      scaleFactor={scaleFactor}
+                      onScaleFactorChange={setScaleFactor}
                       lotZones={lotZonesForEditor}
                       onLotZoneChange={handleLotZoneChange}
                       drawingLotId={drawingLotId}
@@ -975,6 +992,29 @@ export default function DecoupePage() {
                                 </button>
                               )}
                             </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Zone surface — calculated from polygon geometry */}
+                      {lot.zone_polygon && lot.zone_polygon.points.length >= 3 && planNaturalSize && (
+                        <div className="mb-2 p-2 rounded-md bg-[#FAFAF8] border border-[#1C1C1E]/5">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-medium text-[#1C1C1E]/70">
+                              {isScaleCalibrated ? "Surface calculée" : "Surface estimée"}
+                            </span>
+                            <span className="text-sm font-semibold text-[#1C1C1E]">
+                              {computePolygonAreaM2(lot.zone_polygon.points, planNaturalSize.width, planNaturalSize.height, scaleFactor).toFixed(1)} m²
+                            </span>
+                          </div>
+                          {!isScaleCalibrated && (
+                            <p className="text-[10px] text-amber-600 mt-1 flex items-center gap-1">
+                              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0">
+                                <path d="M6 1L11 10H1L6 1z" stroke="currentColor" strokeWidth="1" strokeLinejoin="round" fill="none" />
+                                <path d="M6 4.5v2M6 8v.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+                              </svg>
+                              Calibrez l&apos;échelle pour des mesures précises
+                            </p>
                           )}
                         </div>
                       )}
