@@ -335,7 +335,15 @@ export default function DecoupePage() {
               color: l.color || LOT_COLORS[i % LOT_COLORS.length],
               room_ids: (l.rooms || []).map((r: { id: string }) => r.id),
               zone_rect: l.zone_rect || null,
-              zone_polygon: l.zone_polygon || null,
+              // Auto-convert rect to polygon for unified editing (polygon has vertex handles)
+              zone_polygon: l.zone_polygon || (l.zone_rect ? {
+                points: [
+                  { x_percent: l.zone_rect.x_percent, y_percent: l.zone_rect.y_percent },
+                  { x_percent: l.zone_rect.x_percent + l.zone_rect.width_percent, y_percent: l.zone_rect.y_percent },
+                  { x_percent: l.zone_rect.x_percent + l.zone_rect.width_percent, y_percent: l.zone_rect.y_percent + l.zone_rect.height_percent },
+                  { x_percent: l.zone_rect.x_percent, y_percent: l.zone_rect.y_percent + l.zone_rect.height_percent },
+                ],
+              } : null),
             }));
             if (!cancelled) {
               setLots(rebuiltLots);
@@ -399,15 +407,26 @@ export default function DecoupePage() {
         }
 
         // Build lots with colors (room_ids may be empty at this stage)
-        const newLots: LotData[] = detected.map((d, i) => ({
-          id: `temp_${i}`,
-          name: d.lot_name,
-          lot_type: d.lot_type || "appartement",
-          color: LOT_COLORS[i % LOT_COLORS.length],
-          room_ids: d.room_ids || [],
-          zone_rect: d.zone_rect || null,
-          zone_polygon: d.zone_polygon || null,
-        }));
+        const newLots: LotData[] = detected.map((d, i) => {
+          // Auto-convert rect to polygon for unified editing
+          const zp = d.zone_polygon || (d.zone_rect ? {
+            points: [
+              { x_percent: d.zone_rect.x_percent, y_percent: d.zone_rect.y_percent },
+              { x_percent: d.zone_rect.x_percent + d.zone_rect.width_percent, y_percent: d.zone_rect.y_percent },
+              { x_percent: d.zone_rect.x_percent + d.zone_rect.width_percent, y_percent: d.zone_rect.y_percent + d.zone_rect.height_percent },
+              { x_percent: d.zone_rect.x_percent, y_percent: d.zone_rect.y_percent + d.zone_rect.height_percent },
+            ],
+          } : null);
+          return {
+            id: `temp_${i}`,
+            name: d.lot_name,
+            lot_type: d.lot_type || "appartement",
+            color: LOT_COLORS[i % LOT_COLORS.length],
+            room_ids: d.room_ids || [],
+            zone_rect: d.zone_rect || null,
+            zone_polygon: zp,
+          };
+        });
 
         setLots(newLots);
         setPageState("ready");

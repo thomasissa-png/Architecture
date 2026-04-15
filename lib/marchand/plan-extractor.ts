@@ -888,6 +888,8 @@ export function validateExtraction(
     for (let j = i + 1; j < data.rooms.length; j++) {
       const a = data.rooms[i];
       const b = data.rooms[j];
+      // Only compare rooms on the same floor — different floors have independent coordinate systems
+      if ((a.floor ?? 0) !== (b.floor ?? 0)) continue;
       if (a.bounding_box && b.bounding_box) {
         const ax1 = a.bounding_box.x_percent;
         const ay1 = a.bounding_box.y_percent;

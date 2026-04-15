@@ -253,6 +253,10 @@ export async function POST(
           const b = rooms[j].bounding_box;
           if (!b) continue;
 
+          // Only compare rooms on the SAME floor — different floors have
+          // independent coordinate systems (% relative to their plan image)
+          if ((rooms[i].floor ?? 0) !== (rooms[j].floor ?? 0)) continue;
+
           // Compute intersection area
           const overlapX = Math.max(0, Math.min(a.x_percent + a.width_percent, b.x_percent + b.width_percent) - Math.max(a.x_percent, b.x_percent));
           const overlapY = Math.max(0, Math.min(a.y_percent + a.height_percent, b.y_percent + b.height_percent) - Math.max(a.y_percent, b.y_percent));
